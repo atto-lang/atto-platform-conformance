@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "contract": "atto-entry-map-upsert-v1",
+  "status": "TARGET_NOT_EXECUTED",
+  "spec": "https://github.com/atto-lang/atto-spec/pull/69",
+  "compiler_stage": "atto-source.rs#274 parse-only (guest explicitly unsupported)",
+  "evidence_policy": "No PASSED without exact compiler/fixture Git SHAs, nonzero executed compile/tests, successful guest outcome or expected rejection, and run/receipt provenance.",
+  "backend_status": {
+    "java": "not_executed",
+    "llvm": "not_executed",
+    "rs-browser-wasm": "not_executed",
+    "wasm-independent": "not_executed",
+    "net": "not_executed",
+    "forge": "not_executed",
+    "cranelift": "not_executed",
+    "js": "not_executed",
+    "hdl": "not_executed"
+  },
+  "cases": [
+    {
+      "id": "entry-map-upsert-five",
+      "fixture": "fixtures/collections/pass/entry_map_upsert.atto",
+      "expect": "accept",
+      "expected_exit": 5,
+      "group": "guest-mutation",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "wasm-independent": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed"
+      }
+    },
+    {
+      "id": "entry-mismatched-value",
+      "fixture": "fixtures/collections/fail/entry_bad_type.atto",
+      "expect": "reject",
+      "expected_error": "E_TYPE",
+      "group": "nominal-type",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "wasm-independent": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed"
+      }
+    },
+    {
+      "id": "map-readonly-write",
+      "fixture": "fixtures/collections/fail/map_mutation_readonly.atto",
+      "expect": "reject",
+      "expected_error": "E_MUTABILITY",
+      "group": "ownership",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "wasm-independent": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed"
+      }
+    },
+    {
+      "id": "map-duplicate-constant",
+      "fixture": "fixtures/collections/fail/map_duplicate_constant.atto",
+      "expect": "reject",
+      "expected_error": "E_DUPLICATE",
+      "group": "key-identity",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "wasm-independent": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed"
+      }
+    },
+    {
+      "id": "entry-arrow-chain",
+      "fixture": "fixtures/collections/fail/entry_arrow_chain.atto",
+      "expect": "reject",
+      "expected_error": "E_SYNTAX",
+      "group": "syntax",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "wasm-independent": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed"
+      }
+    }
+  ]
+}
