@@ -129,7 +129,7 @@ test('cancellable task lock leases have pinned positive and negative sources', (
     assert.equal(cases[id].expected.diagnostic, code);
     assert.equal(cases[id].expected.no_artifact, true);
   }
-  assert.equal(registry.lock_cancellation_runtime_probes.length, 15);
+  assert.equal(registry.lock_cancellation_runtime_probes.length, 16);
   const ids = registry.lock_cancellation_runtime_probes.map(p => p.id);
   assert.equal(new Set(ids).size, 15);
   for (const p of registry.lock_cancellation_runtime_probes) {
@@ -259,6 +259,25 @@ test('atomic host ready admission cannot lose a lock grant or dispatch twice', (
     ['HOST_READY_ADMISSION','SCHEDULER_POP_READY'],
     ['SCHEDULER_POP_READY','GUEST_CLAIM_OR_CANCEL_UNWIND']
   ]);
+  assert.ok(Object.values(registry.backends).every(b =>
+    b.status === 'NOT_EXECUTED' && b.release_qualified === false));
+});
+
+test('parked or ready-but-undispatched tasks cannot create lock tickets or children', () => {
+  const probe = registry.lock_cancellation_runtime_probes.find(p =>
+    p.id === 'parked_ready_task_admission_fence');
+  assert.ok(probe, 'required lifecycle probe absent');
+  assert.equal(probe.evidence_required, true);
+  assert.equal(probe.release_qualified, false);
+  for (const invariant of [
+    'PARKED_TASK_CANNOT_ACQUIRE_ANOTHER_MUTEX',
+    'PARKED_TASK_CANNOT_SPAWN_CHILD',
+    'READY_BUT_UNDISPATCHED_TASK_CANNOT_ACQUIRE_MUTEX',
+    'READY_BUT_UNDISPATCHED_TASK_CANNOT_SPAWN_CHILD',
+    'NO_GHOST_TICKET_ON_REJECTION',
+    'NO_FORGED_CHILD_TASK_CAPABILITY',
+    'TASK_MAY_RETRY_ONLY_AFTER_AUTHENTICATED_READY_TO_RUNNING_TRANSITION'
+  ]) assert.ok(probe.assertions.includes(invariant), invariant);
   assert.ok(Object.values(registry.backends).every(b =>
     b.status === 'NOT_EXECUTED' && b.release_qualified === false));
 });
