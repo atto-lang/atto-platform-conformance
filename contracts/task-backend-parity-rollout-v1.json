@@ -195,12 +195,28 @@
     "hdl": {
       "repository": "atto-lang/atto-source.hdl",
       "platform": "hdl",
-      "stage": "HARDWARE_RESTRICTED",
+      "stage": "DRAFT_HARDWARE_FAIL_CLOSED",
       "execution_status": "NOT_EXECUTED",
       "full_task_runtime_status": "NOT_EXECUTED",
       "release_qualified": false,
-      "source_export_policy": "REQUIRES_BACKEND_SPECIFIC_APPROVAL",
-      "evidence_note": "combinational RTL subset; dynamic actor/task execution unsupported, must reject with no RTL"
+      "source_export_policy": "NO_EXPORT_HOLD",
+      "evidence_note": "RTL-only combinational subset; explicit sync/await rejection staged in draft #20, no dynamic task execution",
+      "canonical_draft_pr": "https://github.com/atto-lang/atto-source.hdl/pull/20",
+      "current_observed_head": "ff8d04cf05e649ddf78ce633555ab321bab1ddde",
+      "restricted_source_probe": {
+        "evidence_grade": "ISOLATED_V8_EXACT_BLOB_WITH_ASCII_BYTE_LENGTH_SHIM",
+        "compiler_file": "src/compiler.mjs",
+        "compiler_blob_sha": "52cda57c8fea27d9717c6f5c2d865556529418a6",
+        "negative_cases_checked": 6,
+        "negative_cases_rejected": 6,
+        "valid_combinational_output_checked": true,
+        "node22_cli_test_run": false,
+        "source_actions_zero_step_run_ids": [
+          44814469808,
+          44814469886
+        ],
+        "full_task_guest_runtime_verified": false
+      }
     },
     "atto": {
       "repository": "atto-lang/atto-source.atto",
@@ -210,7 +226,8 @@
       "full_task_runtime_status": "NOT_EXECUTED",
       "release_qualified": false,
       "source_export_policy": "NO_COMPILER_TO_TEST",
-      "evidence_note": "self-hosting project README/AGENTS only; no compiler"
+      "evidence_note": "self-hosting project README/AGENTS only; no compiler",
+      "tracking_issue": "https://github.com/atto-lang/atto-source.atto/issues/12"
     },
     "realtime": {
       "repository": "atto-lang/atto-source.realtime",
@@ -220,7 +237,8 @@
       "full_task_runtime_status": "NOT_EXECUTED",
       "release_qualified": false,
       "source_export_policy": "NO_COMPILER_TO_TEST",
-      "evidence_note": "realtime project README/AGENTS only; no compiler"
+      "evidence_note": "realtime project README/AGENTS only; no compiler",
+      "tracking_issue": "https://github.com/atto-lang/atto-source.realtime/issues/5"
     }
   }
 }

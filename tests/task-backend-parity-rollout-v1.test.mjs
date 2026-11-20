@@ -37,13 +37,15 @@ test('backend audit snapshots never masquerade as full compilation results',()=>
    assert.ok(allowed.has(b.execution_status),name);
    assert.ok(b.source_export_policy && b.evidence_note,name);
    if(b.canonical_draft_pr){
-     assert.equal(b.canonical_draft_pr,`https://github.com/atto-lang/atto-source.${name}/pull/${name==='java'?59:name==='llvm'?72:name==='net'?30:name==='forge'?52:name==='cranelift'?54:name==='rs'?438:name==='wasm'?53:68}`);
+     assert.equal(b.canonical_draft_pr,`https://github.com/atto-lang/atto-source.${name}/pull/${name==='java'?59:name==='llvm'?72:name==='net'?30:name==='forge'?52:name==='cranelift'?54:name==='rs'?438:name==='wasm'?53:name==='hdl'?20:68}`);
      assert.match(b.current_observed_head,/^[0-9a-f]{40}$/);
-   } else assert.ok(['atto','realtime','hdl'].includes(name));
+   } else assert.ok(['atto','realtime'].includes(name));
  }
  assert.equal(matrix.backends.wasm.source_export_policy,'NO_EXPORT_HOLD');
  assert.equal(matrix.backends.js.source_export_policy,'NO_EXPORT_HOLD');
  assert.equal(matrix.backends.llvm.source_export_policy,'NO_EXPORT_HOLD');
+ assert.equal(matrix.backends.hdl.source_export_policy,'NO_EXPORT_HOLD');
+ assert.equal(matrix.backends.hdl.restricted_source_probe.node22_cli_test_run,false);
  assert.equal(matrix.backends.java.execution_status,'EXECUTED_LIMITED_PROFILE');
  assert.equal(matrix.backends.java.restricted_execution_receipt,'contracts/task-java-inline-typed-v2-20261120.json');
 });
