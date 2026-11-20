@@ -286,9 +286,9 @@
         "guest_exit": 42,
         "witnesses": [
           "cancel_request_may_race_with_completion",
-          "claimed_lease_release_exactly_once",
-          "guard_release_precedes_physical_retire",
-          "no_unreleased_permit"
+          "if_guard_claimed:lease_release_exactly_once",
+          "if_guard_claimed:guard_release_before_physical_retire",
+          "no_unreleased_permit_or_orphan_waiter"
         ]
       }
     },
@@ -300,7 +300,7 @@
       "expected": {
         "guest_exit": 42,
         "witnesses": [
-          "early_return_releases_held_guard",
+          "if_guard_claimed:early_return_releases_guard",
           "no_duplicate_release",
           "scope_physically_retired"
         ]
@@ -314,8 +314,8 @@
       "expected": {
         "guest_exit": 42,
         "witnesses": [
-          "inner_guard_released_before_outer_guard",
-          "all_claimed_leases_released_exactly_once",
+          "if_both_claimed:inner_guard_released_before_outer_guard",
+          "each_claimed_lease_released_exactly_once",
           "scope_physically_retired"
         ]
       }
@@ -465,7 +465,6 @@
         "A_CANCEL_REQUEST",
         "A_SAFE_POINT_UNWIND",
         "A_LOCK_RELEASE",
-        "B_LOCK_CLAIM",
         "A_PHYSICAL_RETIRE"
       ],
       "assertions": [
@@ -473,6 +472,16 @@
         "ONE_RELEASE",
         "NO_USE_AFTER_RELEASE",
         "A_DONE_AFTER_CLEANUP_AND_CALLBACK_DRAIN"
+      ],
+      "happens_before": [
+        [
+          "A_LOCK_RELEASE",
+          "B_LOCK_CLAIM"
+        ],
+        [
+          "A_LOCK_RELEASE",
+          "A_PHYSICAL_RETIRE"
+        ]
       ]
     },
     {
