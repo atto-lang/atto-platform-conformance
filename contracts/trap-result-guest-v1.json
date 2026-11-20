@@ -186,6 +186,80 @@
         "diagnostic": "E_TYPE",
         "no_artifact": true
       }
+    },
+    {
+      "id": "int-parse-min",
+      "source": "fixtures/trap-result-v1/int-parse-min.atto",
+      "status": "TARGET_ONLY",
+      "expect": {
+        "kind": "guest_exit",
+        "exit_code": 42
+      }
+    },
+    {
+      "id": "int-parse-max-overflow",
+      "source": "fixtures/trap-result-v1/int-parse-max-overflow.atto",
+      "status": "TARGET_ONLY",
+      "expect": {
+        "kind": "guest_exit",
+        "exit_code": 42
+      }
+    },
+    {
+      "id": "int-parse-min-overflow",
+      "source": "fixtures/trap-result-v1/int-parse-min-overflow.atto",
+      "status": "TARGET_ONLY",
+      "expect": {
+        "kind": "guest_exit",
+        "exit_code": 42
+      }
+    },
+    {
+      "id": "int-parse-leading-zeroes",
+      "source": "fixtures/trap-result-v1/int-parse-leading-zeroes.atto",
+      "status": "TARGET_ONLY",
+      "expect": {
+        "kind": "guest_exit",
+        "exit_code": 42
+      }
+    },
+    {
+      "id": "int-parse-empty",
+      "source": "fixtures/trap-result-v1/int-parse-empty.atto",
+      "status": "TARGET_ONLY",
+      "expect": {
+        "kind": "guest_exit",
+        "exit_code": 42
+      }
+    },
+    {
+      "id": "int-parse-nonascii",
+      "source": "fixtures/trap-result-v1/int-parse-nonascii.atto",
+      "status": "TARGET_ONLY",
+      "expect": {
+        "kind": "guest_exit",
+        "exit_code": 42
+      }
+    },
+    {
+      "id": "int-parse-overlong",
+      "source": "fixtures/trap-result-v1/int-parse-overlong.atto",
+      "status": "TARGET_ONLY",
+      "expect": {
+        "kind": "guest_exit",
+        "exit_code": 42
+      }
+    },
+    {
+      "id": "int-parse-max-admitted-length",
+      "source": "fixtures/trap-result-v1/int-parse-max-admitted-length.atto",
+      "status": "TARGET_ONLY",
+      "expect": {
+        "kind": "guest_exit",
+        "exit_code": 42
+      }
     }
-  ]
+  ],
+  "int_parse_normative_candidate": "https://github.com/atto-lang/atto-spec/pull/124",
+  "int_parse_profile": "ASCII signed-i64, optional +/- and leading zeroes, 1..1024 UTF-8 bytes; malformed/overlong/overflow => Err(Error) in guest; no host parsing"
 }
