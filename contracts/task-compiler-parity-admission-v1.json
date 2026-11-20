@@ -86,9 +86,9 @@
     "java": {
       "repository": "atto-lang/atto-source.java",
       "pr_url": "https://github.com/atto-lang/atto-source.java/pull/59",
-      "head_sha": "528c33407ad9b60aaadb82cd7bea8a0b436a362f",
+      "head_sha": "11444064480f896d1d2de2d7d0fc1d0849d494d3",
       "source_file": "src/compiler/asyncv1/AttoAsyncV1Compiler.java",
-      "source_blob_sha": "7944c7cc56f2954f9ec6b769b81656391eb13237",
+      "source_blob_sha": "805e28e6b6f99798e8d737662e7531ec3e98b288",
       "profile": "CLOSED_WORLD_COMPLETED_FUTURE_INT_SOURCE_PROFILE",
       "status": "SOURCE_ONLY_NOT_EXECUTED",
       "task_cancellation": "NOT_EXECUTED",
@@ -125,7 +125,7 @@
     "forge": {
       "repository": "atto-lang/atto-source.forge",
       "pr_url": "https://github.com/atto-lang/atto-source.forge/pull/52",
-      "head_sha": "cb599d2f6b36be28b794384fc20dfd724aaac67c",
+      "head_sha": "33110d1577369ec0115826e7b4cfc30b93956ff4",
       "source_file": "include/atto/scalar_parser.hpp",
       "source_blob_sha": "4ade67b1c2399b01852b879140e0dac44a740c1c",
       "profile": "RESERVED_SYNC_FAIL_CLOSED",
