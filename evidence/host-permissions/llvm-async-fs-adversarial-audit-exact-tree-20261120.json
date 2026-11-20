@@ -1,0 +1,97 @@
+{
+  "schema": "atto.host_fs_security.adversarial_audit.stepful_ci.v1",
+  "date_utc": "2026-11-20",
+  "execution_scope": "HOST_ONLY_EXECUTED",
+  "audited_source": {
+    "repository": "atto-lang/atto-source.llvm",
+    "draft_pull_request": 62,
+    "branch": "security/linux-host-fs-broker-v1",
+    "exact_head_commit": "23284c09e97cd503ea43de195828a3abb035e04e",
+    "exact_root_tree_sha": "8bb39f3b89476ec83f2c6c5afd45b6e247c78cb4",
+    "blobs": 238,
+    "total_tree_entries": 283,
+    "tree_recursive_truncated": false
+  },
+  "authorized_private_carrier": {
+    "repository": "opto-sync/atto-ci",
+    "branch": "ci/fs-audit-fifo-llvm-23284c09-20261120",
+    "snapshot_commit": "9e0dbf8a6cc49b7a707ded469fb1e831fa69c4ae",
+    "snapshot_root_tree_sha": "8bb39f3b89476ec83f2c6c5afd45b6e247c78cb4",
+    "independent_harness_commit": "b33d09a2969ab5b003d4c260f6d8c4aa2fd88137",
+    "whole_git_tree_sha_equal": true,
+    "token_free_local_carrier_checkout": true,
+    "source_private_checkout_across_orgs": false,
+    "checkout_persist_credentials": false,
+    "source_branch_mirror_does_not_push_to_source": true
+  },
+  "executed_actions": {
+    "filesystem_security": {
+      "run_id": 44825617076,
+      "job_id": 136597338144,
+      "url": "https://github.com/opto-sync/atto-ci/actions/runs/44825617076",
+      "conclusion": "success",
+      "actual_steps_executed": true,
+      "exact_source_tree_gate": "passed",
+      "compiler_sanitizer_matrix": "GCC and Clang, O1/O2, ASan+UBSan host-only",
+      "mock_async_worker_revocation_race": "passed in all four compiler/optimization variants",
+      "fifo_exhaustion": "last representable sequence admitted, next request denied with EOVERFLOW and zero ticket",
+      "native_fs_ctest": {
+        "passed": 8,
+        "failed": 0
+      },
+      "signed_loader_host_ctest": {
+        "passed": 1,
+        "failed": 0
+      },
+      "scheduler_and_lifecycle_ctest": {
+        "passed": 2,
+        "failed": 0
+      },
+      "tenant_vm_smoke": {
+        "passed": 3,
+        "failed": 0
+      }
+    },
+    "independent_actor_process_isolation": {
+      "run_id": 44825617068,
+      "url": "https://github.com/opto-sync/atto-ci/actions/runs/44825617068",
+      "conclusion": "success",
+      "actual_steps_executed": true,
+      "matrix_jobs_successful": 4,
+      "matrix_jobs_failed": 0
+    }
+  },
+  "audit_findings_and_hardening": [
+    {
+      "finding": "Security-relevant scheduler/lifecycle source paths absent from native filesystem workflow pull_request trigger",
+      "fix": "Include TenantVm.cpp/.hpp, turn authentication header, and lifecycle/witness test files in path filters",
+      "status": "fixed"
+    },
+    {
+      "finding": "Duplicate source workflow strict-evidence step and duplicate async-header path trigger",
+      "fix": "Deduplicate reporting and path entries; test through carrier workflow assertion",
+      "status": "fixed"
+    },
+    {
+      "finding": "Actor service revoke may occur while a broker write is already running",
+      "fix": "Add synchronized mock write race proving nonblocking admission cutoff, no subsequent submit/poll/cancel, and indeterminate completion of pre-revocation write; document limitations and teardown barrier",
+      "status": "tested_and_contract_clarified"
+    },
+    {
+      "finding": "A monotonically incremented uint64 FIFO queue sequence could wrap and reorder jobs after exhaustion",
+      "fix": "Fail closed with EOVERFLOW in both queue preflight and lock-protected second check; add final-valid-sequence and exhaustion assertions",
+      "status": "fixed"
+    }
+  ],
+  "risk_boundaries": [
+    "Revocation does not roll back already-running writes; an already-entered read publication may finish. VM scheduler-turn completion and host-worker destruction are separate barriers.",
+    "Async service and broker are externally owned host objects; never destroy before all caller turns have quiesced and async worker joins.",
+    "Guest ABI-v5 filesystem submit/poll/cancel dispatch remains disabled.",
+    "Signed loader test exercises trusted-host C ABI-v4 fixture, not compiler-produced .atto filesystem code.",
+    "Production signed artifact trust store, transitive dependency closure and native guest memory/control-flow/syscall confinement not verified.",
+    "No compiled .atto FS guest execution or cross-backend guest conformance was performed."
+  ],
+  "compiled_atto_fs_guest_status": "NOT_EXECUTED",
+  "untrusted_guest_confinement_status": "NOT_EXECUTED",
+  "release_gate": "DRAFT_ONLY_NO_GUEST_PARITY_NO_UNTRUSTED_NATIVE_ADMISSION_NO_MERGE_BY_HOST_ONLY_CI"
+}
