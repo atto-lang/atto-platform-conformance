@@ -13,7 +13,7 @@ AI-011	codec_only	move	same	yes	yes	yes	E_ACTOR_SEND_NOT_SENDABLE	NOT_EXECUTED
 AI-012	record_nested_pointer	move	same	yes	yes	no	E_ACTOR_CAPABILITY_ESCAPE	NOT_EXECUTED
 AI-013	frozen_arc_mutable	share	same	yes	yes	no	E_ACTOR_SHARE_NOT_SHAREABLE	NOT_EXECUTED
 AI-014	unique_owned	share	same	yes	yes	no	E_ACTOR_SHARE_NOT_SHAREABLE	NOT_EXECUTED
-AI-015	actor_ref	delegate	same	yes	yes	no	ALLOW	NOT_EXECUTED
+AI-015	actor_ref	delegate	same	yes	yes	no	E_ACTOR_CAPABILITY_ESCAPE	NOT_EXECUTED
 AI-016	actor_ref	delegate	same	yes	no	no	E_ACTOR_STALE_REF	NOT_EXECUTED
 AI-017	actor_ref	delegate	same	no	yes	no	E_TENANT_MESSAGE_DENIED	NOT_EXECUTED
 AI-018	actor_ref	move	cross	yes	yes	no	E_TENANT_MESSAGE_DENIED	NOT_EXECUTED
@@ -33,5 +33,5 @@ AI-031	result_nested_borrow	move	same	yes	yes	no	E_ACTOR_BORROW_ESCAPE	NOT_EXECU
 AI-032	option_nested_socket	wire	cross	yes	yes	yes	E_ACTOR_CAPABILITY_ESCAPE	NOT_EXECUTED
 AI-033	mutable_alias	wire	cross	yes	yes	yes	E_ACTOR_SEND_NOT_SENDABLE	NOT_EXECUTED
 AI-034	frozen_arc_mutable	wire	cross	yes	yes	yes	E_ACTOR_SHARE_NOT_SHAREABLE	NOT_EXECUTED
-AI-035	actor_ref	delegate	same	yes	yes	yes	ALLOW	NOT_EXECUTED
+AI-035	actor_ref	delegate	same	yes	yes	yes	E_ACTOR_CAPABILITY_ESCAPE	NOT_EXECUTED
 AI-036	borrowed	share	same	yes	yes	no	E_ACTOR_BORROW_ESCAPE	NOT_EXECUTED
