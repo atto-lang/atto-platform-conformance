@@ -45,12 +45,26 @@ test('every backend must carry independent genuine execution evidence', () => {
       assert.equal(receipt.real_guest, true, name);
       assert.match(receipt.compiler_head_sha, sha);
       assert.match(receipt.compiler_tree_sha, sha);
-      assert.match(receipt.source_fixture_blob_sha, sha);
       assert.match(receipt.ci_run_url, /^https:\/\/github\.com\/[^/]+\/[^/]+\/actions\/runs\/[0-9]+$/);
       assert.ok(receipt.command && typeof receipt.command === 'string', name);
-      assert.ok(receipt.exit_status === 83 || receipt.exit_status === 42, name);
-      assert.equal(receipt.stdout, '');
-      assert.equal(receipt.negative_has_no_artifact, true);
+      assert.ok(receipt.toolchain && typeof receipt.toolchain === 'string', name);
+      assert.equal(receipt.case_results?.length, ledger.cases.length, name);
+      const results = new Map(receipt.case_results.map(c => [c.file, c]));
+      assert.equal(results.size, ledger.cases.length, name);
+      for (const sourceCase of ledger.cases) {
+        const evidence = results.get(sourceCase.file);
+        assert.ok(evidence, name + ': missing ' + sourceCase.file);
+        assert.equal(evidence.source_fixture_blob_sha, sourceCase.blob_sha);
+        if (sourceCase.kind === 'positive') {
+          assert.equal(evidence.guest_executed, true);
+          assert.match(evidence.guest_artifact_sha256, /^[a-f0-9]{64}$/);
+          assert.equal(evidence.observed_exit, sourceCase.expected_exit);
+          assert.equal(evidence.observed_stdout, sourceCase.expected_stdout);
+        } else {
+          assert.equal(evidence.observed_rejection, sourceCase.expected_rejection);
+          assert.equal(evidence.artifact_exists, false);
+        }
+      }
     } else {
       assert.equal(row.receipt, null, 'unexecuted/failed/unsupported status may not carry pass evidence: ' + name);
     }
