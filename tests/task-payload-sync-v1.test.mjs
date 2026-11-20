@@ -10,8 +10,8 @@ const cases = Object.fromEntries(registry.cases.map(c => [c.id,c]));
 test('versioned typed task fixtures are pinned to exact Git blob identity', () => {
   assert.equal(registry.schema, 'atto.task-payload-sync.v1');
   assert.equal(registry.status, 'TARGET_NOT_GUEST_VERIFIED');
-  assert.equal(registry.cases.length, 37);
-  assert.equal(new Set(registry.cases.map(x=>x.id)).size,32);
+  assert.equal(registry.cases.length, 42);
+  assert.equal(new Set(registry.cases.map(x=>x.id)).size,37);
   for (const c of registry.cases) {
     assert.match(c.source_path,/^fixtures\/task-payload-sync-v1\/[a-z0-9_]+\.atto$/);
     assert.equal(gitSha(getSource(c)),c.source_git_blob,c.id);
@@ -52,6 +52,29 @@ test('sync is an inline execution mode, not a spawned await/do-task alias', () =
   assert.ok(doSync.expected.witnesses.includes('INLINE_VOID_COMPLETION_NO_RESULT'));
   assert.match(getSource(doTask).toString('utf8'),/do task<int>/);
 });
+test('void-only do sync task and standalone statements match the canonical spec', () => {
+  const demo = cases.sync_inline_void_do_demo;
+  const demoSource = getSource(demo).toString('utf8');
+  assert.equal(demo.kind, 'positive');
+  assert.match(demoSource, /do sync task \\{\\};/);
+  assert.match(demoSource, /do sync task<void> \\{\\};/);
+  assert.match(demoSource, /val result = sync task<int>/);
+  assert.match(demoSource, /return result;/);
+  assert.ok(demo.expected.witnesses.includes('INLINE_VOID_COMPLETION_NO_RESULT'));
+  for (const id of ['sync_void_stmt_requires_do','sync_typed_void_stmt_requires_do']) {
+    assert.equal(cases[id].kind, 'negative');
+    assert.equal(cases[id].expected.diagnostic, 'E_SYNTAX');
+    assert.equal(cases[id].expected.no_artifact, true);
+    assert.doesNotMatch(getSource(cases[id]).toString('utf8'), /do sync task/);
+  }
+  for (const id of ['do_sync_nonvoid_type_rejected','do_sync_nonvoid_inferred_rejected']) {
+    assert.equal(cases[id].kind, 'negative');
+    assert.equal(cases[id].expected.diagnostic, 'E_TASK_RETURN_TYPE');
+    assert.equal(cases[id].expected.no_artifact, true);
+    assert.match(getSource(cases[id]).toString('utf8'), /do sync task/);
+  }
+});
+
 test('inline sync task requires only transitive effects and never suspends under guard', () => {
   const pure = cases.sync_inline_non_susp;
   const ordered = cases.sync_inline_order;

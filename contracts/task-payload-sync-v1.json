@@ -2,7 +2,7 @@
   "schema": "atto.task-payload-sync.v1",
   "status": "TARGET_NOT_GUEST_VERIFIED",
   "source_contract": "atto-lang/atto-spec/language/typed-task-payload-sync-v1.md",
-  "meaning": "task<T> returns Future<T> and is independently schedulable; await task<T> spawns and joins; sync task<T> and void-only do sync task<void> execute inline on caller TaskId, without an independent spawn or Future; do task<T> is supervised child spawn",
+  "meaning": "task<T> returns Future<T> and is independently schedulable; await task<T> spawns and joins; sync task<T> and void-only do sync task<void> execute inline on caller TaskId, without an independent spawn or Future; do task<T> is supervised child spawn; standalone inline void statements require 'do sync task', and do-inline may only return void",
   "execution_frame_model": "independent logical continuations for spawned task<T> within a structured TaskScope; inline sync task runs in its caller's logical continuation and creates no independent child; physical frame sharing only after proven lifetime and alias safety",
   "cases": [
     {
@@ -456,6 +456,64 @@
       "kind": "negative",
       "expected": {
         "diagnostic": "E_GUARD_SUSPEND",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "sync_inline_void_do_demo",
+      "source_path": "fixtures/task-payload-sync-v1/sync_inline_void_do_demo.atto",
+      "source_git_blob": "ad61fec3079b6248d81b24428926a40aececae70",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "INLINE_ENTER_BEFORE_BODY",
+          "NO_SYNTHETIC_SYNC_CHILD_SPAWN",
+          "SAME_LOGICAL_TASK_ID",
+          "INLINE_EXIT_BEFORE_NEXT_PARENT_STATEMENT",
+          "NO_INDEPENDENT_WORKER_DISPATCH",
+          "INLINE_VOID_COMPLETION_NO_RESULT",
+          "INLINE_RETURN_VALUE_42"
+        ]
+      }
+    },
+    {
+      "id": "sync_void_stmt_requires_do",
+      "source_path": "fixtures/task-payload-sync-v1/sync_void_stmt_requires_do.atto",
+      "source_git_blob": "8252e8ca12908983b6c81af39c385854aa79a780",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_SYNTAX",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "sync_typed_void_stmt_requires_do",
+      "source_path": "fixtures/task-payload-sync-v1/sync_typed_void_stmt_requires_do.atto",
+      "source_git_blob": "22d7e84a576f57b6a9a140aaafaffa36bc0cf96e",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_SYNTAX",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "do_sync_nonvoid_type_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/do_sync_nonvoid_type_rejected.atto",
+      "source_git_blob": "4fa2c9987b4bea05733d7f2dd90a9e7e9b555f45",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_TASK_RETURN_TYPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "do_sync_nonvoid_inferred_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/do_sync_nonvoid_inferred_rejected.atto",
+      "source_git_blob": "36d25a5af510f7d3b72784bf9597260f1ac7adb6",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_TASK_RETURN_TYPE",
         "no_artifact": true
       }
     }
