@@ -292,6 +292,43 @@
         "status": "FAILED_BEFORE_JOB_STEPS",
         "full_CTest_executed": false,
         "artifact_sha256": null
+      },
+      "hosted_full_ctest": {
+        "status": "PASS_EXACT_SOURCE_FULL_EXISTING_FORGE_CTEST_ONLY",
+        "tested_source_commit": "f0e5089805850f537a3bbbeb7659f780179c8acb",
+        "source_git_tree": "87fbf5217e55fbb2cf5646157689ed2ab2d67266",
+        "carrier_repository": "opto-sync/atto-ci",
+        "carrier_branch": "ci/forge-pr50-exact-ctest-20261120",
+        "carrier_commit": "d14667eddb66ebed5aac5e2873f323f86427fef8",
+        "carrier_mirror_git_tree": "87fbf5217e55fbb2cf5646157689ed2ab2d67266",
+        "mirrored_source_blob_count": 80,
+        "cross_organization_checkout_token_used": false,
+        "runner_job_steps_executed": true,
+        "workflow_run": "https://github.com/opto-sync/atto-ci/actions/runs/44767154207",
+        "jobs": [
+          {
+            "compiler": "g++",
+            "job_id": 136394717927,
+            "ctest_passed": 16,
+            "ctest_total": 16,
+            "result": "SUCCESS"
+          },
+          {
+            "compiler": "clang++",
+            "job_id": 136394717572,
+            "ctest_passed": 16,
+            "ctest_total": 16,
+            "result": "SUCCESS"
+          }
+        ],
+        "run_configuration": "ubuntu-24.04; CMake C++20; -DATTO_FORGE_SANITIZERS=ON (ASan+UBSan); full ctest --output-on-failure --parallel 2",
+        "scoped_coverage": "Full existing Forge native CTest suite, including bounded Pointer<int> 4 compiled guests and 24 negative artifact-preservation tests, scalar, ownership, checked i64, typed pointer and diagnostics tests",
+        "compiler_artifact_sha256": null,
+        "guest_artifact_sha256": null,
+        "process_result_abi_parity": false,
+        "full_36_case_conformance": "NOT_EXECUTED",
+        "full_11_backend_parity": false,
+        "evidence_comment": "https://github.com/atto-lang/atto-source.forge/pull/50#issuecomment-7043968320"
       }
     }
   ]
