@@ -41,10 +41,10 @@ test('token-free carrier verification preserves full Git modes, symlink, binary 
     const manifest={schema:'atto.token-free-carrier-mirror.v1',
       source_commit_sha:sha,source_tree_sha:tree,entries};
     const mpath=join(base,'manifest.json');
-    const run=(obj=manifest,wantTree=tree)=>{
+    const run=(obj=manifest,wantTree=tree,wantCommit=sha)=>{
       // The manifest is independent of the carrier's Git worktree.
       return writeFile(mpath,JSON.stringify(obj)).then(()=>spawnSync(process.execPath,
-        [verifier,mpath,repo,wantTree],{encoding:'utf8',timeout:15000}));
+        [verifier,mpath,repo,wantTree,wantCommit],{encoding:'utf8',timeout:15000}));
     };
     await t.test('exact four-entry text/executable/binary/symlink mirror accepted',async()=>{
       const r=await run();assert.equal(r.status,0,r.stderr);
@@ -58,10 +58,16 @@ test('token-free carrier verification preserves full Git modes, symlink, binary 
       ['file mode mismatch',mutate(x=>x.entries[0].mode='100755')],
       ['duplicate entry',mutate(x=>x.entries.push(x.entries[0]))],
       ['parent traversal',mutate(x=>x.entries[0].path='../escape')],
-      ['stale source tree',mutate(x=>x.source_tree_sha='b'.repeat(40))]
+      ['stale source tree',mutate(x=>x.source_tree_sha='b'.repeat(40))],
+      ['spurious source commit',mutate(x=>x.source_commit_sha='b'.repeat(40))]
     ]) await t.test(name,async()=>{
       const r=await run(bad);assert.notEqual(r.status,0,name);
       assert.match(r.stderr,/E_MIRROR_/);
+    });
+    await t.test('externally pinned source commit mismatches manifest',async()=>{
+      const r=await run(manifest,tree,'b'.repeat(40));
+      assert.notEqual(r.status,0);
+      assert.match(r.stderr,/E_MIRROR_MANIFEST/);
     });
     await t.test('tampered tracked source cannot be certified',async()=>{
       const orig=await readFile(source);
@@ -105,7 +111,7 @@ test('token-free carrier verification preserves full Git modes, symlink, binary 
       });
       const next={schema:manifest.schema,source_commit_sha:nextCommit,
         source_tree_sha:nextTree,entries:nextEntries};
-      const r=await run(next,nextTree);
+      const r=await run(next,nextTree,nextCommit);
       assert.notEqual(r.status,0);
       assert.match(r.stderr,/E_MIRROR_SYMLINK_ESCAPE/);
     });
