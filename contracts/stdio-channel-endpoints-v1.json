@@ -29,14 +29,14 @@
       "runs": [
         {
           "id": "one_line",
-          "stdin": "hello\\n",
+          "stdin": "hello\n",
           "stdout": "Echo the next input item:hello",
           "stderr": "echo complete",
           "exit": 0
         },
         {
           "id": "empty_line",
-          "stdin": "\\n",
+          "stdin": "\n",
           "stdout": "Echo the next input item:",
           "stderr": "echo complete",
           "exit": 0
@@ -57,22 +57,22 @@
         },
         {
           "id": "crlf",
-          "stdin": "hello\\r\\n",
+          "stdin": "hello\r\n",
           "stdout": "Echo the next input item:hello",
           "stderr": "echo complete",
           "exit": 0
         },
         {
           "id": "unicode",
-          "stdin": "é💡\\n",
+          "stdin": "é💡\n",
           "stdout": "Echo the next input item:é💡",
           "stderr": "echo complete",
           "exit": 0
         },
         {
           "id": "nul",
-          "stdin": "a\\u0000b\\n",
-          "stdout": "Echo the next input item:a\\u0000b",
+          "stdin": "a\u0000b\n",
+          "stdout": "Echo the next input item:a\u0000b",
           "stderr": "echo complete",
           "exit": 0
         }
