@@ -213,11 +213,11 @@ mod tests {
         assert_eq!(authorize(&frozen, Request { mode: Mode::Share, ..req }), Err(DENY));
         assert_eq!(authorize(&frozen, Request { grant: false, ..req }), Err(DENY));
     }
-    #[test] fn live_actor_ref_requires_auth_and_generation() {
+    #[test] fn nominal_actor_ref_requires_authenticated_broker_ticket() {
         let reference = Shape::ActorRef;
         let req = Request { mode: Mode::Delegate, route: Route::SameTenant,
             grant: true, generation_current: true, wire_schema: false };
-        assert_eq!(authorize(&reference, req), Ok(()));
+        assert_eq!(authorize(&reference, req), Err(CAP));
         assert_eq!(authorize(&reference, Request { generation_current: false, ..req }), Err(STALE));
         assert_eq!(authorize(&reference, Request { grant: false, ..req }), Err(DENY));
         assert_eq!(authorize(&reference, Request { route: Route::CrossTenant, ..req }), Err(DENY));
