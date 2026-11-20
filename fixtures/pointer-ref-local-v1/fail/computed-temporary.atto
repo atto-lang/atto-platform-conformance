@@ -1,0 +1,6 @@
+pub fnc main(): int {
+  val Pointer<int> ptr = rt ref (40 + 2);
+  val answer = rt deref ptr;
+  rt unref ptr;
+  return answer;
+}

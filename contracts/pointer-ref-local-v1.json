@@ -3,7 +3,7 @@
   "status": "TARGET_ONLY_NOT_EXECUTED",
   "normative_source": "atto-lang/atto-spec#18",
   "candidate_prototype": "atto-lang/atto-source.rs#264 (class handles only, NOT Pointer<int>)",
-  "description": "Exact user rt/mixed-bang pointer-local samples plus compile-negative safety gates; no parser-only proof may promote a backend.",
+  "description": "Exact user local pointer aliases and 30+ target scenarios for lifetime, aliasing, syntax, CFG, provenance and pointer/class-handle separation. NOT compiler evidence.",
   "typing": {
     "rt ref local": "Pointer<T> compiler-minted nonallocating local-place checked capability",
     "deref! ptr / rt deref ptr": "copy T when T is Copy, otherwise scoped immutable loan",
@@ -152,6 +152,201 @@
       "error_category": "E_POINTER_LIFETIME",
       "why": "no certified all-exits cleanup for live handle",
       "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "PRL-009",
+      "path": "fixtures/pointer-ref-local-v1/pass/all-bang.atto",
+      "why": "all canonical bang aliases with contextual Pointer<int>",
+      "status": "NOT_EXECUTED",
+      "result": "PASS",
+      "exit": 42
+    },
+    {
+      "id": "PRL-010",
+      "path": "fixtures/pointer-ref-local-v1/pass/compact-bang.atto",
+      "why": "contiguous prefix tokens without whitespace",
+      "status": "NOT_EXECUTED",
+      "result": "PASS",
+      "exit": 42
+    },
+    {
+      "id": "PRL-011",
+      "path": "fixtures/pointer-ref-local-v1/pass/grouped-place.atto",
+      "why": "grouped place and pointer preserve provenance",
+      "status": "NOT_EXECUTED",
+      "result": "PASS",
+      "exit": 42
+    },
+    {
+      "id": "PRL-012",
+      "path": "fixtures/pointer-ref-local-v1/pass/repeated-reads.atto",
+      "why": "multiple readonly reads of one handle are nonconsuming",
+      "status": "NOT_EXECUTED",
+      "result": "PASS",
+      "exit": 42
+    },
+    {
+      "id": "PRL-013",
+      "path": "fixtures/pointer-ref-local-v1/pass/owner-after-release.atto",
+      "why": "referent remains writable after pointer release",
+      "status": "NOT_EXECUTED",
+      "result": "PASS",
+      "exit": 42
+    },
+    {
+      "id": "PRL-014",
+      "path": "fixtures/pointer-ref-local-v1/pass/reacquire.atto",
+      "why": "fresh handle to same place after prior unref",
+      "status": "NOT_EXECUTED",
+      "result": "PASS",
+      "exit": 42
+    },
+    {
+      "id": "PRL-015",
+      "path": "fixtures/pointer-ref-local-v1/pass/independent-places.atto",
+      "why": "independent locals can carry concurrent handles",
+      "status": "NOT_EXECUTED",
+      "result": "PASS",
+      "exit": 42
+    },
+    {
+      "id": "PRL-016",
+      "path": "fixtures/pointer-ref-local-v1/pass/parallel-readers.atto",
+      "why": "multiple separately minted readonly handles may share a live referent",
+      "status": "NOT_EXECUTED",
+      "result": "PASS",
+      "exit": 42
+    },
+    {
+      "id": "PRL-017",
+      "path": "fixtures/pointer-ref-local-v1/fail/computed-temporary.atto",
+      "why": "cannot ref temporary rvalue",
+      "status": "NOT_EXECUTED",
+      "result": "REJECT_NO_ARTIFACT",
+      "error_category": "E_POINTER_PLACE"
+    },
+    {
+      "id": "PRL-018",
+      "path": "fixtures/pointer-ref-local-v1/fail/copy-handle.atto",
+      "why": "cannot copy unique capability binding",
+      "status": "NOT_EXECUTED",
+      "result": "REJECT_NO_ARTIFACT",
+      "error_category": "E_POINTER_ALIAS"
+    },
+    {
+      "id": "PRL-019",
+      "path": "fixtures/pointer-ref-local-v1/fail/drop-borrowed-local.atto",
+      "why": "cannot drop referent while pointer remains live",
+      "status": "NOT_EXECUTED",
+      "result": "REJECT_NO_ARTIFACT",
+      "error_category": "E_POINTER_LIFETIME"
+    },
+    {
+      "id": "PRL-020",
+      "path": "fixtures/pointer-ref-local-v1/fail/mismatched-type.atto",
+      "why": "cannot reinterpret Pointer<int> as Pointer<bool>",
+      "status": "NOT_EXECUTED",
+      "result": "REJECT_NO_ARTIFACT",
+      "error_category": "E_POINTER_TYPE"
+    },
+    {
+      "id": "PRL-021",
+      "path": "fixtures/pointer-ref-local-v1/fail/unref-return-value.atto",
+      "why": "local-place pointer unref yields void not owned int",
+      "status": "NOT_EXECUTED",
+      "result": "REJECT_NO_ARTIFACT",
+      "error_category": "E_POINTER_CONTEXT"
+    },
+    {
+      "id": "PRL-022",
+      "path": "fixtures/pointer-ref-local-v1/fail/early-return-leak.atto",
+      "why": "unreachable late unref does not discharge live handle",
+      "status": "NOT_EXECUTED",
+      "result": "REJECT_NO_ARTIFACT",
+      "error_category": "E_POINTER_LIFETIME"
+    },
+    {
+      "id": "PRL-023",
+      "path": "fixtures/pointer-ref-local-v1/fail/branch-unref-leak.atto",
+      "why": "conditional-only cleanup leaves live handle on another exit",
+      "status": "NOT_EXECUTED",
+      "result": "REJECT_NO_ARTIFACT",
+      "error_category": "E_POINTER_LIFETIME"
+    },
+    {
+      "id": "PRL-024",
+      "path": "fixtures/pointer-ref-local-v1/fail/raw-address-of.atto",
+      "why": "raw ampersand pointer construction forbidden",
+      "status": "NOT_EXECUTED",
+      "result": "REJECT_NO_ARTIFACT",
+      "error_category": "E_POINTER_SYNTAX"
+    },
+    {
+      "id": "PRL-025",
+      "path": "fixtures/pointer-ref-local-v1/fail/raw-star.atto",
+      "why": "unary star is not checked dereference",
+      "status": "NOT_EXECUTED",
+      "result": "REJECT_NO_ARTIFACT",
+      "error_category": "E_POINTER_SYNTAX"
+    },
+    {
+      "id": "PRL-026",
+      "path": "fixtures/pointer-ref-local-v1/fail/space-before-deref-bang.atto",
+      "why": "deref !ptr must not tokenize as deref! ptr",
+      "status": "NOT_EXECUTED",
+      "result": "REJECT_NO_ARTIFACT",
+      "error_category": "E_POINTER_SYNTAX"
+    },
+    {
+      "id": "PRL-027",
+      "path": "fixtures/pointer-ref-local-v1/fail/space-before-unref-bang.atto",
+      "why": "unref !ptr must not tokenize as unref! ptr",
+      "status": "NOT_EXECUTED",
+      "result": "REJECT_NO_ARTIFACT",
+      "error_category": "E_POINTER_SYNTAX"
+    },
+    {
+      "id": "PRL-028",
+      "path": "fixtures/pointer-ref-local-v1/fail/deref-integer.atto",
+      "why": "bare int is not an authenticated pointer handle",
+      "status": "NOT_EXECUTED",
+      "result": "REJECT_NO_ARTIFACT",
+      "error_category": "E_POINTER_TYPE"
+    },
+    {
+      "id": "PRL-029",
+      "path": "fixtures/pointer-ref-local-v1/fail/copy-operator.atto",
+      "why": "copy! cannot clone live pointer capability",
+      "status": "NOT_EXECUTED",
+      "result": "REJECT_NO_ARTIFACT",
+      "error_category": "E_POINTER_ALIAS"
+    },
+    {
+      "id": "PRL-030",
+      "path": "fixtures/pointer-ref-local-v1/fail/share-operator.atto",
+      "why": "share! cannot publish local pointer outside its scope",
+      "status": "NOT_EXECUTED",
+      "result": "REJECT_NO_ARTIFACT",
+      "error_category": "E_POINTER_ALIAS"
+    },
+    {
+      "id": "PRL-031",
+      "path": "fixtures/pointer-ref-local-v1/fail/ref-after-drop.atto",
+      "why": "cannot mint pointer to explicitly dropped owner",
+      "status": "NOT_EXECUTED",
+      "result": "REJECT_NO_ARTIFACT",
+      "error_category": "E_POINTER_LIFETIME"
+    },
+    {
+      "id": "PRL-032",
+      "path": "fixtures/pointer-ref-local-v1/fail/unref-unknown.atto",
+      "why": "unref requires pointer not scalar",
+      "status": "NOT_EXECUTED",
+      "result": "REJECT_NO_ARTIFACT",
+      "error_category": "E_POINTER_TYPE"
     }
-  ]
+  ],
+  "case_count": 32,
+  "pass_count": 10,
+  "reject_count": 22
 }

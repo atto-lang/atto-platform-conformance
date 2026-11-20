@@ -1,0 +1,10 @@
+fnc candidate(bool release): int {
+  let value: int = 42;
+  val Pointer<int> ptr = rt ref value;
+  val answer = deref! ptr;
+  do if release then
+    rt unref ptr;
+  fi
+  return answer;
+}
+pub fnc main(): int { return candidate(true); }
