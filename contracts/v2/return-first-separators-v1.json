@@ -285,6 +285,28 @@
         "hdl": "NOT_EXECUTED",
         "realtime": "NOT_EXECUTED"
       }
+    },
+    {
+      "id": "N07_duplicate_signature",
+      "path": "fixtures/return-first-separators-v1/N07-duplicate-signature.atto",
+      "git_blob_sha": "4f6e5290346f90fe7f5182e9adffa4f0317d8bdb",
+      "kind": "negative",
+      "expect": "diagnostic",
+      "value": "E_DUPLICATE",
+      "negative_no_artifact": true,
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
     }
   ],
   "backends": {
