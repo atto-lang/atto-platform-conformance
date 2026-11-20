@@ -132,3 +132,31 @@ test('no backend can inherit a PASS from a host-only candidate or zero-step fail
   assert.ok(doc.required.includes('no-artifact negatives'));
   assert.equal(cases.status,'TARGET_ONLY_NOT_EXECUTED');
 });
+
+test('hosted full Forge CTest evidence is exact-head scoped and cannot certify cross-backend parity',()=> {
+  const forge=doc.candidates.find(c=>c.backend==='atto-source.forge');
+  const hosted=forge.hosted_full_ctest;
+  assert.equal(hosted.status,'PASS_EXACT_SOURCE_FULL_EXISTING_FORGE_CTEST_ONLY');
+  assert.equal(hosted.tested_source_commit,'f0e5089805850f537a3bbbeb7659f780179c8acb');
+  assert.equal(hosted.source_git_tree,'87fbf5217e55fbb2cf5646157689ed2ab2d67266');
+  assert.equal(hosted.carrier_mirror_git_tree,hosted.source_git_tree);
+  assert.equal(hosted.carrier_commit,'d14667eddb66ebed5aac5e2873f323f86427fef8');
+  assert.equal(hosted.carrier_repository,'opto-sync/atto-ci');
+  assert.equal(hosted.mirrored_source_blob_count,80);
+  assert.equal(hosted.cross_organization_checkout_token_used,false);
+  assert.equal(hosted.runner_job_steps_executed,true);
+  assert.equal(hosted.workflow_run,'https://github.com/opto-sync/atto-ci/actions/runs/44767154207');
+  assert.deepEqual(hosted.jobs.map(j=>j.compiler),['g++','clang++']);
+  assert.deepEqual(hosted.jobs.map(j=>j.job_id),[136394717927,136394717572]);
+  assert.deepEqual(hosted.jobs.map(j=>[j.ctest_passed,j.ctest_total,j.result]),[
+    [16,16,'SUCCESS'],[16,16,'SUCCESS']
+  ]);
+  assert.equal(hosted.compiler_artifact_sha256,null);
+  assert.equal(hosted.guest_artifact_sha256,null);
+  assert.equal(hosted.process_result_abi_parity,false);
+  assert.equal(hosted.full_36_case_conformance,'NOT_EXECUTED');
+  assert.equal(hosted.full_11_backend_parity,false);
+  assert.match(hosted.evidence_comment,/^https:\/\/github\.com\/atto-lang\/atto-source\.forge\/pull\/50#issuecomment-\d+$/);
+  assert.equal(forge.execution_status,'NOT_EXECUTED');
+  assert.equal(doc.overall_status,'NOT_EXECUTED');
+});
