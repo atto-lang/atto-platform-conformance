@@ -1,0 +1,5 @@
+// expect-error: E_SUSPENDS_REQUIRED
+pub fnc main(): int using io {
+  val item = readch stdio.in;
+  return 0;
+}
