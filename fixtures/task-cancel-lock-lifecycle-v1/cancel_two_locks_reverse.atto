@@ -1,0 +1,16 @@
+// TARGET ONLY: if both grants occur, release in reverse acquisition order.
+pub susp fnc main(): int {
+  val first = Mutex<int>(0);
+  val second = Mutex<int>(0);
+  val Future<void> worker = task<void> {
+    using first.lock() as left {
+      using second.lock() as right {
+        left.value += 1;
+        right.value += 1;
+      }
+    }
+    return;
+  };
+  worker.cancel();
+  return 42;
+}
