@@ -58,10 +58,10 @@
       "authenticated_transport_status": "NOT_EXECUTED",
       "native_aot_status": "NOT_EXECUTED",
       "guest_evidence": null,
-      "notes": "Exact four original restricted-sender source/test blobs locally compiled and executed on JDK21, including adversarial syntax rejection; offline source-head/blob gate added. Consolidated M6+M10 selector cross-process new source head and private runner attempts still NOT_EXECUTED, latest twelve-blob carrier run 44662438767 failed with zero steps. Native/compiled canonical guest IPC gates remain unexecuted.",
+      "notes": "Java #44 now includes two restricted .atto source files compiled to Java in separate JVM processes via an injected trusted-host synchronous bridge. Four original sender-compiler/interface/fixture/test Git blobs compile and execute locally JDK21; output atomic CREATE_NEW+NOFOLLOW tested. Full Java M6/M10 two-process combined current-head JDK25 CI remains NOT_EXECUTED: private GitHub carrier jobs have zero steps. No canonical sender async ABI, verified TenantVM authorization or cross-backend parity.",
       "host_ticket_scope": "REAL_MAILBOX",
       "host_ticket_status": "CURRENT_HEAD_NOT_EXECUTED",
-      "host_ticket_pr_head_sha": "57ce436879fd03b334efcc50db9348ec15179c95",
+      "host_ticket_pr_head_sha": "85023b83868e92032cc6abf79edbf7cecb87e695",
       "host_ticket_ci": null,
       "host_ticket_previous_verified": {
         "source_head_sha": "e7dbc3f9f584f16c872af8858335767986ea9be8",
@@ -72,22 +72,23 @@
       "gateway_integration": {
         "kind": "EXPERIMENTAL_M10_SELECTOR_USES_M6_RUNTIME_ISSUED_TICKET",
         "status": "NOT_EXECUTED_CURRENT_HEAD",
-        "source_head_sha": "57ce436879fd03b334efcc50db9348ec15179c95",
+        "source_head_sha": "85023b83868e92032cc6abf79edbf7cecb87e695",
         "source_pr": "https://github.com/atto-lang/atto-source.java/pull/44",
         "prior_independent_m10_ci": "https://github.com/bait-bikes-test/atto-ci/actions/runs/44635718533",
         "blocked_attempts": [
           "https://github.com/bait-bikes-test/atto-ci/actions/runs/44660093745",
           "https://github.com/ores-stack/ores-stack-cli/actions/runs/44660323082",
-          "https://github.com/ores-stack/ores-stack-cli/actions/runs/44662438767"
+          "https://github.com/ores-stack/ores-stack-cli/actions/runs/44662438767",
+          "https://github.com/ores-stack/ores-stack-cli/actions/runs/44662916007"
         ],
         "caveats": "Both consolidation attempts failed before any job steps (0); no compiled Atto sender, canonical authenticated transport or full guest parity."
       },
       "restricted_sender_local_evidence": {
         "status": "LOCAL_JDK21_EXACT_FOUR_BLOBS_PASSED",
         "implementation": "EXPERIMENTAL_RESTRICTED_COMPILER_HOST_INJECTED_PROXY_NOT_CANONICAL_ASYNC",
-        "compiler_blob": "d8b826311f54825dcda6bf533afaeefd9eaf83c4",
+        "compiler_blob": "237ebb31b6eede0ca3cfa398839424c697fc3771",
         "host_interface_blob": "7135a6c23ffd1a40abb348240899319e3fe95abb",
-        "test_blob": "bbfed6d798e34fff1f6b4fe01c025350b783edbe",
+        "test_blob": "c68890f886e3a40923180ece262af96df2be73ac",
         "fixture_blob": "57f122f708787a61e88e93f81cd14996e66757af",
         "tested_toolchain": "OpenJDK javac 21.0.12.1 --release 21 -Xlint:all,-try -Werror",
         "generated_class": "M10GeneratedSender",
@@ -95,7 +96,8 @@
         "limits": "Compiled Atto preview only. Host injected callback, not canonical parser/type checking, suspends lowering, TenantVM security or verified two-process IPC.",
         "verified_ssh_free_blob_count": 4,
         "offline_test_script_sha": "46bebe944a4f8e91666b2529f94f7ea229cec396",
-        "tested_profile": "isolated exact-original-blob local Git checkout, --release 21 and -Werror; no M6/M10 IPC linked"
+        "tested_profile": "Exact four original Git blobs compiled and executed locally on JDK21 with -Werror; source injection, input symlink, dangling output symlink and output overwrite all rejected.",
+        "hardening_marker": "M10_SOURCE_SYMLINK_AND_OUTPUT_NOFOLLOW=PASS"
       }
     },
     {
