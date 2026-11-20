@@ -27,6 +27,30 @@ test('pipe/rpipe contract explicitly declares source-only evidence, not guest pa
     repos.add(backend.repo);
   }
   assert.match(contract.gating, /not passing conformance/i);
+  // Exact-source compiler mirrors are source evidence ONLY. A backend that
+  // intentionally rejects continuous guest transport is still NOT_EXECUTED
+  // in the guest parity ledger, even when its host/compiler tests pass.
+  assert.equal(contract.exact_source_compiler_mirrors.length,5);
+  const caseIds=new Set(contract.cases.map(x=>x.id));
+  const mirrors=new Set();
+  for(const mirror of contract.exact_source_compiler_mirrors){
+    assert.ok(!mirrors.has(mirror.repo),'duplicate compiler mirror');
+    mirrors.add(mirror.repo);
+    assert.ok(repos.has(mirror.repo),'mirror not listed as a tracked backend');
+    assert.ok(mirror.pr.startsWith('https://github.com/'+mirror.repo+'/pull/'));
+    assert.equal(mirror.guest_execution,'NOT_EXECUTED');
+    assert.ok(mirror.limitation?.length>30,'missing capability/semantics gap');
+    assert.equal(new Set(mirror.case_ids).size,mirror.case_ids.length);
+    assert.ok(mirror.case_ids.every(x=>caseIds.has(x)), 'mirror references unknown .atto fixture');
+    if(mirror.repo==='atto-lang/atto-source.rs') {
+      assert.equal(mirror.case_ids.length,6);
+      assert.match(mirror.limitation,/PipeSetupError/);
+    } else {
+      assert.equal(mirror.case_ids.length,12);
+      assert.equal(mirror.admission,'exact_shared_source_explicit_unsupported_guest_diagnostic');
+    }
+  }
+
   // A PR link or typed host planner is NOT an executable guest receipt.
   assert.equal(contract.compiler_workstreams.length, 8);
   const workstreamRepos=new Set();
