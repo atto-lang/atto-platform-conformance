@@ -3,6 +3,8 @@ name: Typed actor message v1 Rust oracle (source-only)
 on:
   push:
     paths:
+      - 'tools/actor_isolation_types_v1.rs'
+      - 'contracts/actor-isolation-types-v1.tsv'
       - 'tools/typed_actor_v1.rs'
       - 'tools/typed_actor_bool_v1.rs'
       - 'contracts/typed-actor-bool-v1.tsv'
@@ -18,6 +20,8 @@ on:
       - '.github/workflows/typed-actor-v1-rust.yml'
   pull_request:
     paths:
+      - 'tools/actor_isolation_types_v1.rs'
+      - 'contracts/actor-isolation-types-v1.tsv'
       - 'tools/typed_actor_v1.rs'
       - 'tools/typed_actor_bool_v1.rs'
       - 'contracts/typed-actor-bool-v1.tsv'
@@ -80,6 +84,10 @@ jobs:
           "$RUNNER_TEMP/actor_bool_source_tests"
           rustc --edition=2021 -D warnings tools/typed_actor_bool_v1.rs -o "$RUNNER_TEMP/actor_bool_source"
           "$RUNNER_TEMP/actor_bool_source"
+          rustc --edition=2021 --test -D warnings tools/actor_isolation_types_v1.rs -o "$RUNNER_TEMP/actor_isolation_source_tests"
+          "$RUNNER_TEMP/actor_isolation_source_tests"
+          rustc --edition=2021 -D warnings tools/actor_isolation_types_v1.rs -o "$RUNNER_TEMP/actor_isolation_source"
+          "$RUNNER_TEMP/actor_isolation_source"
       - name: Explicitly prohibit reference-model promotion to compiler parity
         run: |
           echo 'ATTO_TYPED_ACTOR_V1_SOURCE_ONLY=PASS'
