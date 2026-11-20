@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 
 const manifest = JSON.parse(readFileSync(new URL('../contracts/option-type-suffix-native-v1.json', import.meta.url), 'utf8'));
-const blobHash = bytes => createHash('sha1').update('blob ' + bytes.length + '\\0').update(bytes).digest('hex');
+const blobHash = bytes => createHash('sha1').update('blob ' + bytes.length + '\0').update(bytes).digest('hex');
 const requiredBackends = ['java-graalvm','llvm-cpp-native','llvm-rust-native','net','wasm','rs','forge','js','cranelift'];
 
 test('T? corpus is versioned, scoped and not falsely certified', () => {
@@ -31,8 +31,8 @@ test('all ten exact .atto source Git blob identities match the manifest', () => 
     const source = readFileSync(new URL('../' + entry.source, import.meta.url));
     assert.equal(blobHash(source), entry.git_blob_sha1, 'Git blob changed: ' + entry.id);
     const text = source.toString('utf8');
-    assert.match(text, /\\bfnc main\\(/, 'fixture must be a standalone source program');
-    assert.doesNotMatch(text, /\\b(?:import java|import dotnet|unsafe host)\\b/);
+    assert.match(text, /\bfnc main\(/, 'fixture must be a standalone source program');
+    assert.doesNotMatch(text, /\b(?:import java|import dotnet|unsafe host)\b/);
     assert.ok(source.length < 2048, 'fixture exceeds minimal native ABI bound');
     assert.ok(Object.hasOwn(kinds, entry.kind), entry.kind);
     kinds[entry.kind]++;
@@ -52,10 +52,10 @@ test('type suffix and omittable formal remain distinct', () => {
   const some = readFileSync(new URL('../' + byId['positive-some'].source, import.meta.url), 'utf8');
   const explicit = readFileSync(new URL('../' + byId['positive-explicit'].source, import.meta.url), 'utf8');
   const omitted = readFileSync(new URL('../' + byId['reject-omittable-formal'].source, import.meta.url), 'utf8');
-  assert.match(some, /val int\\? value = Some\\(42\\)/);
-  assert.match(explicit, /val Option<int> value = Some\\(42\\)/);
-  assert.match(omitted, /int value\\?/);
-  assert.doesNotMatch(omitted, /int\\? value/);
+  assert.match(some, /val int\? value = Some\(42\)/);
+  assert.match(explicit, /val Option<int> value = Some\(42\)/);
+  assert.match(omitted, /int value\?/);
+  assert.doesNotMatch(omitted, /int\? value/);
   assert.equal(byId['reject-omittable-formal'].kind, 'invalid_source');
   assert.equal(byId['reject-nested'].kind, 'native_unsupported');
 });
