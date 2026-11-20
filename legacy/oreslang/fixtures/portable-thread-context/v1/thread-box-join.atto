@@ -1,0 +1,15 @@
+// Candidate guest fixture. NOT_EXECUTED by any backend.
+// Expected once Thread.spawn, Box<Send>, Task and await are implemented.
+fnc main() -> int {
+    let Box<int> value = Box.new(40);
+    let JoinHandle<int> job = Thread.spawn(
+        ThreadOptions.default(),
+        rt take || -> int {
+            return value.value + 2;
+        }
+    )?;
+    let Task<int> waiter = task {
+        return await job.join_async()?;
+    };
+    return await waiter;
+}

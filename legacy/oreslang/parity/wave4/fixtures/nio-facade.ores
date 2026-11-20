@@ -1,0 +1,11 @@
+define module net_core as
+  pub fnc accept(borrow NioTcpListener listener): Future<NioTcpConnection> {
+    return listener.accept_async();
+  }
+  pub fnc read(borrow NioTcpConnection connection, int maximum): Future<Array<int>> {
+    return connection.read_bytes_async(maximum);
+  }
+  pub fnc write(borrow NioTcpConnection connection, Array<int> bytes): Future<int> {
+    return connection.write_bytes_async(bytes);
+  }
+end

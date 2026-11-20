@@ -1,0 +1,6 @@
+routine identity<T>(T value) -> T ::
+  return value
+end
+fnc main() -> int ::
+  return identity<T=int>(42)
+end

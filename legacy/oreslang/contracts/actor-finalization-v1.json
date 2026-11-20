@@ -1,0 +1,271 @@
+{
+  "schema": "oreslang.actor-finalization.v1",
+  "status": "candidate-unattested",
+  "backendTargets": [
+    "java",
+    "llvm",
+    "wasm",
+    "cranelift",
+    "net"
+  ],
+  "additionalExperimentalBackendTargets": [
+    "forge"
+  ],
+  "interpretation": {
+    "supportedFeature": "guest-executed-observable-behavior",
+    "unsupportedFeature": "fail-closed-safety-only-not-parity",
+    "hostModel": "reference-oracle-only",
+    "sourceOnly": "authored-not-executed",
+    "zeroStepCI": "infrastructure-non-evidence"
+  },
+  "invariants": {
+    "stopCauseOrder": [
+      "requested",
+      "cancelled",
+      "unhandled_throw",
+      "raised",
+      "panicked"
+    ],
+    "actorOwnPanicInterceptable": false,
+    "callbackRunsDuringStopRequest": false,
+    "crossSupervisorRetirementWinnersPerIncarnation": 1,
+    "unadmittedStopMayFenceActor": false,
+    "unboundedQueueOrResourceAdmission": false,
+    "staleGenerationMayModifyReplacement": false,
+    "hardRealtimeFromHostLocks": false
+  },
+  "scenarios": [
+    {
+      "id": "AF01",
+      "name": "admission-atomic-with-capacity",
+      "phase": "host-runtime",
+      "requires": [
+        "capacity-reserved-before-stop",
+        "full-rejection-does-not-stop-actor"
+      ]
+    },
+    {
+      "id": "AF02",
+      "name": "stop-request-fences-new-turns",
+      "phase": "runtime",
+      "requires": [
+        "linearizable-admission-fence",
+        "no-fresh-actor-lease-after-stop"
+      ]
+    },
+    {
+      "id": "AF03",
+      "name": "stop-request-does-not-run-observers",
+      "phase": "runtime",
+      "requires": [
+        "callback-free-stop-request",
+        "cleanup-on-supervisor-lane"
+      ]
+    },
+    {
+      "id": "AF04",
+      "name": "draining-lease-retains-incarnation",
+      "phase": "runtime",
+      "requires": [
+        "old-lease-finishes-before-retire",
+        "no-new-admissions"
+      ]
+    },
+    {
+      "id": "AF05",
+      "name": "supervisor-cleanup-exactly-once",
+      "phase": "runtime",
+      "requires": [
+        "one-resource-callback",
+        "one-retirement-winner"
+      ]
+    },
+    {
+      "id": "AF06",
+      "name": "cross-supervisor-duplicate-completion",
+      "phase": "runtime",
+      "requires": [
+        "one-completed-receipt",
+        "other-receipts-deduplicated"
+      ]
+    },
+    {
+      "id": "AF07",
+      "name": "stale-generation-request-no-side-effects",
+      "phase": "runtime",
+      "requires": [
+        "old-snapshot-cannot-stop-replacement",
+        "payload-intact"
+      ]
+    },
+    {
+      "id": "AF08",
+      "name": "stale-ticket-does-not-revoke-restart",
+      "phase": "runtime",
+      "requires": [
+        "obsolete-generation-receipt",
+        "new-actor-keeps-authority"
+      ]
+    },
+    {
+      "id": "AF09",
+      "name": "concurrent-restart-vs-stop-request",
+      "phase": "runtime",
+      "requires": [
+        "generation-checked-stop",
+        "serializable-outcomes"
+      ]
+    },
+    {
+      "id": "AF10",
+      "name": "panic-priority-control-only",
+      "phase": "runtime",
+      "requires": [
+        "panic-priority-above-raise",
+        "parent-control-notice",
+        "actor-cannot-catch-own-panic"
+      ]
+    },
+    {
+      "id": "AF11",
+      "name": "raise-throw-cancelled-notices",
+      "phase": "runtime",
+      "requires": [
+        "distinct-notice-kind",
+        "supervisor-priority-path"
+      ]
+    },
+    {
+      "id": "AF12",
+      "name": "bounded-queue-overflow-retains-liveness",
+      "phase": "runtime",
+      "requires": [
+        "full-reject-no-side-effect",
+        "retry-when-capacity-returns"
+      ]
+    },
+    {
+      "id": "AF13",
+      "name": "retirement-callback-no-registry-lock",
+      "phase": "host-runtime",
+      "requires": [
+        "snapshot-under-lock",
+        "callback-after-unlock"
+      ]
+    },
+    {
+      "id": "AF14",
+      "name": "resource-registration-dedup",
+      "phase": "host-runtime",
+      "requires": [
+        "same-resource-one-slot",
+        "one-observer-callback"
+      ]
+    },
+    {
+      "id": "AF15",
+      "name": "resource-weak-slot-reuse",
+      "phase": "host-runtime",
+      "requires": [
+        "expired-resource-not-resurrected",
+        "bounded-slot-reuse"
+      ]
+    },
+    {
+      "id": "AF16",
+      "name": "cross-actor-callback-chain",
+      "phase": "runtime",
+      "requires": [
+        "callback-stop-another-actor",
+        "no-lock-cycle",
+        "queue-overflow-safe"
+      ]
+    },
+    {
+      "id": "AF17",
+      "name": "wrong-thread-lease-fail-closed",
+      "phase": "host-runtime",
+      "requires": [
+        "thread-affine-lease",
+        "foreign-release-denied"
+      ]
+    },
+    {
+      "id": "AF18",
+      "name": "worker-isolate-generation-fencing",
+      "phase": "guest-runtime",
+      "requires": [
+        "isolate-bound-actor-identity",
+        "stale-worker-handle-denied"
+      ]
+    },
+    {
+      "id": "AF19",
+      "name": "ets-transfer-and-owner-death",
+      "phase": "guest-runtime",
+      "requires": [
+        "transfer-notice",
+        "stale-owner-denied",
+        "heir-or-retire"
+      ]
+    },
+    {
+      "id": "AF20",
+      "name": "exact-head-execution-provenance",
+      "phase": "evidence",
+      "requires": [
+        "stepful-runner",
+        "pinned-compiler-binary",
+        "guest-execution-receipt",
+        "zero-step-never-a-pass"
+      ]
+    }
+  ],
+  "backendEvidence": {
+    "java": {
+      "status": "unverified",
+      "hostModelCountsAsPass": false,
+      "unsupportedSyntaxCountsAsPass": false
+    },
+    "llvm": {
+      "status": "unverified",
+      "hostModelCountsAsPass": false,
+      "unsupportedSyntaxCountsAsPass": false
+    },
+    "wasm": {
+      "status": "unverified",
+      "hostModelCountsAsPass": false,
+      "unsupportedSyntaxCountsAsPass": false
+    },
+    "cranelift": {
+      "status": "unverified",
+      "hostModelCountsAsPass": false,
+      "unsupportedSyntaxCountsAsPass": false
+    },
+    "net": {
+      "status": "unverified",
+      "hostModelCountsAsPass": false,
+      "unsupportedSyntaxCountsAsPass": false
+    },
+    "forge": {
+      "status": "unverified",
+      "hostModelCountsAsPass": false,
+      "unsupportedSyntaxCountsAsPass": false
+    }
+  },
+  "promotion": {
+    "exactSourceHead": true,
+    "runnerIdNonzero": true,
+    "executedStepsNonempty": true,
+    "nativeGuestExecution": true,
+    "noPrivateSourceTransferWithoutSecurityClearance": true,
+    "compilerSha256": true,
+    "sanitizersFor": [
+      "llvm",
+      "cranelift",
+      "forge"
+    ],
+    "unsupportedSyntaxOnlySafety": true,
+    "evidenceMustBeIndependentlyVerified": true
+  }
+}

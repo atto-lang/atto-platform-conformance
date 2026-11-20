@@ -1,0 +1,6 @@
+pub fnc main(): void {
+  let int result = await (async task |int a, string b| -> {
+    return a;
+  })(5, "xyz");
+  return;
+}

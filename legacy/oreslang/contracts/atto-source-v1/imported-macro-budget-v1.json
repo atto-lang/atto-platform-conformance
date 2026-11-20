@@ -1,0 +1,55 @@
+{
+  "schema": "attolang.imported-macro-budget.v1",
+  "language_extension": ".atto",
+  "macro_producer": "define pub macro identity(Syntax<Expr> value) -> Syntax<Expr> { return value; }",
+  "macro_invocation": "lib.identity!(syntax expr 1)",
+  "import_statement": "import * as lib from \"./producer.atto\";",
+  "budget_scope": "single_consumer_source_unit",
+  "max_expansions": 128,
+  "cases": [
+    {
+      "id": "exactly-128",
+      "expansions": 128,
+      "expected": "COMPILE_AND_EXECUTE",
+      "exit_code": 42
+    },
+    {
+      "id": "over-128",
+      "expansions": 129,
+      "expected": "COMPILE_REJECT",
+      "diagnostic_class": "macro_expansion_budget",
+      "emitted_ir_bytes": 0,
+      "emitted_artifacts": 0
+    }
+  ],
+  "backend_states": [
+    {
+      "backend": "java",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "backend": "llvm",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "backend": "wasm",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "backend": "forge",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "backend": "net",
+      "evidence": "NOT_EXECUTED"
+    }
+  ],
+  "source_only": true,
+  "requires": [
+    "exact source tree/head SHA",
+    "compiler log with executed steps",
+    "native guest binary hash for success",
+    "no IR or output artifact on rejection",
+    "independent backend review"
+  ]
+}

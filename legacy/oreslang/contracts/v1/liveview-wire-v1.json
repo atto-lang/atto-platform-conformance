@@ -1,0 +1,140 @@
+{
+  "schema": "ores-liveview-wire-v1",
+  "purpose": "Independent portable RFC6455 client-frame acceptance; does not establish native execution",
+  "source": {
+    "repo": "ores-truffle-oreslang/oreslang-phoenix-server.ores",
+    "pr": 11,
+    "head": "f968a05e99bce54610412a4582aa8c5552dd8bb3",
+    "blob": "640a085a96d37814811efa5b99f2c387d5159503"
+  },
+  "limits": {
+    "max_message_bytes": 65536,
+    "max_fragments": 64
+  },
+  "cases": [
+    {
+      "id": "masked-hello",
+      "frames_hex": "81850102030469676f686e",
+      "expected": [
+        {
+          "type": "text",
+          "data": "hello"
+        }
+      ]
+    },
+    {
+      "id": "masked-unicode",
+      "frames_hex": "818701020304696b23f49e8e93",
+      "expected": [
+        {
+          "type": "text",
+          "data": "hi 🌐"
+        }
+      ]
+    },
+    {
+      "id": "fragmented-unicode",
+      "frames_hex": "018201020304f19d8082010203048d92",
+      "expected": [
+        {
+          "type": "text",
+          "data": "🌐"
+        }
+      ]
+    },
+    {
+      "id": "interleaved-control",
+      "frames_hex": "0183010203046e6c668981010203042080830102030475756c",
+      "expected": [
+        {
+          "type": "ping",
+          "data_hex": "21"
+        },
+        {
+          "type": "text",
+          "data": "onetwo"
+        }
+      ]
+    },
+    {
+      "id": "ping-and-pong",
+      "frames_hex": "898201020304696b8a8301020304637b66",
+      "expected": [
+        {
+          "type": "ping",
+          "data_hex": "6869"
+        },
+        {
+          "type": "pong",
+          "data_hex": "627965"
+        }
+      ]
+    },
+    {
+      "id": "masked-close",
+      "frames_hex": "88820102030402ea",
+      "expected": [
+        {
+          "type": "close",
+          "data_hex": "03e8"
+        }
+      ]
+    },
+    {
+      "id": "coalesced-text",
+      "frames_hex": "8181010203044081810102030443",
+      "expected": [
+        {
+          "type": "text",
+          "data": "A"
+        },
+        {
+          "type": "text",
+          "data": "B"
+        }
+      ]
+    },
+    {
+      "id": "unmasked-rejected",
+      "frames_hex": "810141",
+      "expected": null,
+      "error_code": 1002
+    },
+    {
+      "id": "rsv-rejected",
+      "frames_hex": "c18001020304",
+      "expected": null,
+      "error_code": 1002
+    },
+    {
+      "id": "binary-rejected",
+      "frames_hex": "828601020304636b6d65737b",
+      "expected": null,
+      "error_code": 1003
+    },
+    {
+      "id": "invalid-utf8-rejected",
+      "frames_hex": "818101020304fe",
+      "expected": null,
+      "error_code": 1007
+    },
+    {
+      "id": "invalid-close-rejected",
+      "frames_hex": "88820102030402ef",
+      "expected": null,
+      "error_code": 1002
+    },
+    {
+      "id": "orphan-continuation-rejected",
+      "frames_hex": "8082010203046f6d",
+      "expected": null,
+      "error_code": 1002
+    },
+    {
+      "id": "non-minimal-length-rejected",
+      "frames_hex": "81fe00010102030400",
+      "expected": null,
+      "error_code": 1002
+    }
+  ]
+}

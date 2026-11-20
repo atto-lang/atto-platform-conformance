@@ -1,0 +1,129 @@
+{
+  "schema": "oreslang.tenant-isolation.v2",
+  "version": 2,
+  "status": "SOURCE_FREE_REFERENCE_NOT_BACKEND_EXECUTION",
+  "supersedes": "oreslang.tenant-isolation.v1",
+  "decision": {
+    "date": "2026-11-03",
+    "processModel": "shared-os-process",
+    "unit": "one VM-isolate per tenant incarnation; many tenant isolates share one OS process, as GraalVM isolates do",
+    "hostileTenantsShareProcess": true,
+    "processSandboxRequired": false,
+    "processSandboxRole": "optional defense in depth; never a precondition for admitting an untrusted tenant, and never claimed unless implemented and tested"
+  },
+  "design": {
+    "unit": "a tenant incarnation owns one VM-isolate: its own heap, actors, generation and failure domain; multiple actors may live within it",
+    "identity": ["tenantId", "generation", "opaqueHostAuthority"],
+    "phases": ["created", "running", "quiescing", "stopped", "destroyed"],
+    "memory": "each isolate has a private heap with an enforced per-tenant cap; tenant-owned mutable state never crosses into another tenant; cross-tenant delivery copies or re-encodes values",
+    "actor_execution": "no actor reentrancy, including across suspension or independent lock queues",
+    "resource_accounting": "limit tenants per process, actors, heap and inflight work per tenant; account host overhead separately; the scalar reference turn is non-reentrant even if tenant inflight capacity exceeds one",
+    "termination": "the host can end one tenant's running guest code without the guest's cooperation, or through checks the trusted code producer inserted, and without ending the process or any other tenant",
+    "failure": "a guest trap, out-of-bounds access, stack overflow, heap-limit or deadline breach ends only that isolate; the process and every other tenant continue; restart gets fresh handles and memory",
+    "fairness": "scheduling is fair per tenant, not per actor; a tenant with many ready actors cannot starve a quiet tenant",
+    "capabilities": "fail-closed denial of FFI, WASI, filesystem, network, native memory and host imports unless explicitly authorized; guest code calls only the host API, never libc",
+    "trust": "logical heap/arena quotas or a shared language context are not an isolate; an isolate needs a private heap, enforced limits and independent termination",
+    "untrusted": "untrusted tenants run only in a VM-isolate whose guest code came from a trusted producer: a validated Wasm module (lowered or engine-compiled) or Truffle inside a Graal isolate; tenants never supply native code or raw CIL",
+    "aot": "signed/approved native artifacts required before any unsafe deserialization; caller-supplied SHA is only identity check",
+    "shutdown": "fence queued/running work, drain references and resource loans, then reclaim; a killed isolate's guest turns are abandoned but host-owned loans still drain before stop",
+    "root_authority": "Opaque authority belongs to one root VM; matching tenant ID and numeric generation from another root never grants access",
+    "tenant_id_validation": "ASCII [A-Za-z0-9_.-], 1..128 bytes, excluding reserved path components '.' and '..'; strings are identifiers, not filesystem paths"
+  },
+  "securityBoundary": {
+    "enforcedBy": "the per-tenant isolate plus the trusted code producer (Wasm validator and lowerer, or the Graal compiler), exactly as Graal's compiler is the boundary for its isolates",
+    "admissibleUntrustedGuestCode": ["validated-wasm", "truffle-isolate"],
+    "refusedUntrustedGuestCode": {
+      "native": "tenant-supplied native code can address anything in the process",
+      "cil": "CoreCLR has no in-process isolate: one process-wide GC heap, no runtime IL verification, no AppDomains, and an AssemblyLoadContext is not a security boundary"
+    }
+  },
+  "acceptedSharedProcessRisks": [
+    "a bug in the runtime, the Wasm validator, the lowerer or the Graal compiler can reach every tenant in the process",
+    "a crash outside guest code ends every tenant in the process",
+    "speculative and timing side channels between tenants are not addressed by this contract"
+  ],
+  "backendProfiles": {
+    "java": {
+      "isolate": "one Graal polyglot isolate (own Engine and heap) per tenant",
+      "untrustedGuest": "truffle-isolate",
+      "termination": "Truffle safepoint cancellation of the tenant context",
+      "memoryCap": "isolate heap limit",
+      "caveat": "polyglot isolates and SandboxPolicy.UNTRUSTED require Oracle GraalVM, not Community Edition",
+      "status": "NOT_EXECUTED",
+      "drafts": ["oreslang-source.java#2346 (trusted per-tenant Contexts only)"]
+    },
+    "llvm": {
+      "isolate": "TenantVm cage: private 4 GiB window plus guard per tenant, addressed as cage + u32 offset",
+      "untrustedGuest": "validated-wasm",
+      "termination": "interrupt the tenant's carrier threads; no compiler-inserted checks needed",
+      "memoryCap": "cage commit limit",
+      "caveat": "the runtime does not enforce the addressing rule; validated Wasm lowered by wasm2c is the enforced path",
+      "status": "NOT_EXECUTED",
+      "drafts": ["oreslang-source.llvm#1343", "oreslang-source.llvm#1158"]
+    },
+    "wasm": {
+      "isolate": "one Wasmtime Store + Instance per tenant",
+      "untrustedGuest": "validated-wasm",
+      "termination": "per-Store kill flag checked from an epoch callback, or fuel",
+      "memoryCap": "Store resource limiter",
+      "caveat": "epochs are per Engine, so targeted kill needs a per-Store flag; one Store runs on one thread at a time",
+      "status": "NOT_EXECUTED",
+      "drafts": ["oreslang-source.wasm#173"]
+    },
+    "net": {
+      "isolate": "TenantVm cage on the shared native core, called from .NET through TenantVmCApi",
+      "untrustedGuest": "validated-wasm",
+      "termination": "native carrier interrupt (native threads, not CLR threads)",
+      "memoryCap": "cage commit limit; tenants add no CLR GC load",
+      "caveat": "direct CIL stays a first-class backend for trusted tenants only",
+      "status": "NOT_EXECUTED",
+      "drafts": ["oreslang-source.net#243 (host admission)", "oreslang-source.llvm#1343 tests/tenant-vm/spikes/dotnet"]
+    },
+    "forge": {
+      "isolate": "none yet",
+      "untrustedGuest": null,
+      "status": "NO_UNTRUSTED_PATH",
+      "caveat": "untrusted tenants are refused until Forge emits validated Wasm or an equivalent proven boundary"
+    },
+    "cranelift": {
+      "isolate": "none yet",
+      "untrustedGuest": null,
+      "status": "NO_UNTRUSTED_PATH",
+      "caveat": "direct native JIT output is not validated; untrusted tenants are refused until it routes through validated Wasm"
+    },
+    "js": {
+      "isolate": "candidate: one V8 isolate (Worker with resourceLimits) per tenant, exposing no Node built-ins to guest code",
+      "untrustedGuest": "validated-wasm",
+      "termination": "Worker.terminate()",
+      "memoryCap": "Worker resourceLimits",
+      "status": "NOT_EXECUTED",
+      "caveat": "a Worker that can reach Node built-ins is not an isolate under this contract"
+    }
+  },
+  "requiredScenarios": [
+    "separate-tenant-mutable-state",
+    "same-tenant-independent-actor-state",
+    "stale-handle-after-reincarnation",
+    "foreign-resource-handle-rejected",
+    "tenant-capacity-exhausted",
+    "queued-work-rejected-after-quiescence",
+    "inflight-drain-before-destroy",
+    "trap-retires-compartment",
+    "no-implicit-host-capabilities",
+    "untrusted-requires-vm-isolate",
+    "untrusted-native-and-cil-guest-code-refused",
+    "isolate-limits-required-for-untrusted",
+    "process-sandbox-optional-and-never-falsely-claimed",
+    "host-kills-spinning-tenant-without-cooperation",
+    "turn-deadline-ends-only-that-tenant",
+    "heap-limit-ends-only-that-tenant",
+    "many-tenants-share-one-process",
+    "verified-real-compiler-artifact-required",
+    "exact-pr-tree-nonzero-step-ci-evidence",
+    "same-tenant-scalar-turn-nonreentrant",
+    "resource-loan-drain-before-stop",
+    "foreign-vm-root-handle-rejected-even-if-generation-collides",
+    "reserved-dot-tenant-id-denial",
+    "neighbor-survives-tenant-trap-and-reincarnation"
+  ]
+}

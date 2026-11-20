@@ -1,0 +1,22 @@
+{
+  "copy-scalar-ok": "pub async fnc main():int{const int x=41;let Future<int> f=task{return rt copy x + 1;};return await f;}",
+  "share-scalar-ok": "pub async fnc main():int{const int x=41;let Future<int> f=task{return rt share x + 1;};return await f;}",
+  "borrow-capture-reject": "define class Box as pub let int value=1; end pub async fnc main():int{let Box owner=new Box();val loan=rt borrow owner;let Future<int> f=task{return loan.value;};return await f;}",
+  "mut-borrow-capture-reject": "define class Box as pub let int value=1; end pub async fnc main():int{let Box owner=new Box();val loan=rt mut borrow owner;let Future<int> f=task{return loan.value;};return await f;}",
+  "double-owned-capture-reject": "define class Box as pub let int value=1; end pub async fnc main():int{let Box owner=new Box();let Future<int> a=task{return owner.value;};let Future<int> b=task{return owner.value;};return await a + await b;}",
+  "parent-use-after-move-reject": "define class Box as pub let int value=1; end pub async fnc main():int{let Box owner=new Box();let Future<int> f=task{return owner.value;};stdio.stdout.write(owner.value);return await f;}",
+  "future-affine-move-ok": "pub async fnc main():int{let Future<int> a=task{return 41;};let Future<int> b=task{return (await a)+1;};return await b;}",
+  "future-double-use-reject": "pub async fnc main():int{let Future<int> a=task{return 41;};let Future<int> b=task{return await a;};return await a + await b;}",
+  "actor-self-capture-reject": "define actor Worker as receive(ActorMail<int> mail):void{let Future<void> f=task{self.end();return;};return;} end",
+  "nested-borrow-reject": "define class Box as pub let int value=1; end pub async fnc main():int{let Box owner=new Box();let Future<int> f=task{return await task{return (rt borrow owner).value;};};return await f;}",
+  "for-initializer-borrow-reject": "define class Box as pub let int value=1; end pub async fnc main():int{let Box owner=new Box();let Future<int> f=task{for(val x=rt borrow owner;false;){return x.value;}return 0;};return await f;}",
+  "task-local-shadow-ok": "define class Box as pub let int value=1; end pub async fnc main():int{let Box owner=new Box();let Future<int> f=task{let Box owner=new Box();return owner.value;};stdio.stdout.write(owner.value);return await f;}",
+  "borrow-across-await-reject": "define class Box as pub let int value=1; end pub async fnc main():int{let Box owner=new Box();val loan=rt borrow owner;let Future<int> f=task{return 1;};await f;return loan.value;}",
+  "gpu-borrow-without-fence-reject": "define class Buffer as pub let int length=1; end pub async fnc main():int{let Buffer b=new Buffer();let Future<int> f=gpu task{return (rt borrow b).length;};return await f;}",
+  "borrowed-future-payload-reject": "define class Box as pub let int value=1; end pub async fnc main():Future<Box>{let Box owner=new Box();return task{return rt borrow owner;};}",
+  "task-contextual-identifier-ok": "pub fnc main():int{let int task=41;return task+1;}",
+  "mutex-owned-capture-ok": "pub fnc moveMutex(Mutex<int> lock):Future<void>{let Future<void> f=task{let Mutex<int> moved=lock;return;};return f;}",
+  "send-wrapper-capture-ok": "define class SendWrapper as pub let Mutex<int> lock; end pub fnc moveWrapper(SendWrapper owner):Future<void>{let Future<void> f=task{let SendWrapper moved=owner;return;};return f;}",
+  "rc-owned-capture-reject": "pub fnc moveRc(Rc<int> owner):Future<void>{let Future<void> f=task{let Rc<int> moved=owner;return;};return f;}",
+  "non-send-wrapper-launder-reject": "define class UnsafeWrapper as pub let Rc<int> value; end pub fnc moveWrapper(UnsafeWrapper owner):Future<void>{let Future<void> f=task{let UnsafeWrapper moved=owner;return;};return f;}"
+}

@@ -1,0 +1,6 @@
+routine invalid(int n): int {
+  return helper(n);
+}
+fnc helper(int n): int {
+  return invalid(n);
+}

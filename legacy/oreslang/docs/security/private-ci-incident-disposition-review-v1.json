@@ -1,0 +1,81 @@
+{
+  "schema": "oreslang-private-ci-incident-disposition-review-v1",
+  "status": "NON_AUTHORIZING_REVIEW_ONLY",
+  "incident_repository": "ores-truffle-oreslang/oreslang-platform-conformance",
+  "incident_repository_id": 1413795502,
+  "independent_reviewer": {
+    "login": "ORESoftware",
+    "user_id": 11139560
+  },
+  "resolution_marker_template": "PRIVATE_CI_INCIDENT_DISPOSITION_RESOLVED issue=#{issue}",
+  "source_transfer_authorized": false,
+  "incidents": [
+    {
+      "number": 22,
+      "issue_id": 5832921751,
+      "status": "hold",
+      "packet": "docs/security/incident-22-containment-and-exit-gates.md"
+    },
+    {
+      "number": 77,
+      "issue_id": 5904679716,
+      "status": "hold",
+      "packet": "docs/security/P0_PRIVATE_CARRIER_DISPOSITION_77_127_2026-10-26.md"
+    },
+    {
+      "number": 127,
+      "issue_id": 5935338521,
+      "status": "hold",
+      "packet": "docs/security/P0_PRIVATE_CARRIER_DISPOSITION_77_127_2026-10-26.md"
+    },
+    {
+      "number": 171,
+      "issue_id": 6042555082,
+      "status": "hold",
+      "packet": "docs/security/P0_PRIVATE_CARRIER_CLASSIFICATION_171_172_2026-10-27.md"
+    },
+    {
+      "number": 172,
+      "issue_id": 6042602777,
+      "status": "hold",
+      "packet": "docs/security/P0_PRIVATE_CARRIER_CLASSIFICATION_171_172_2026-10-27.md"
+    },
+    {
+      "number": 198,
+      "issue_id": 6070465058,
+      "status": "hold",
+      "packet": "docs/security/P0_PRIVATE_CARRIER_CLASSIFICATION_198_200_2026-10-30.md"
+    },
+    {
+      "number": 200,
+      "issue_id": 6071264936,
+      "status": "hold",
+      "packet": "docs/security/P0_PRIVATE_CARRIER_CLASSIFICATION_198_200_2026-10-30.md"
+    },
+    {
+      "number": 252,
+      "issue_id": 6129229261,
+      "status": "hold",
+      "packet": "docs/security/P0_PRIVATE_CARRIER_CLASSIFICATION_252_2026-10-31.md"
+    }
+  ],
+  "required_independent_disposition_fields": [
+    "source_or_placement_provenance",
+    "contemporaneous_authorization_classification",
+    "git_object_and_ref_retention_or_purge_disposition",
+    "actions_logs_artifacts_and_cache_disposition",
+    "credential_secret_and_audit_log_review",
+    "fork_clone_external_copy_disposition",
+    "provider_retention_limitations",
+    "future_private_source_mirroring_decision",
+    "closure_decision"
+  ],
+  "closure_contract": {
+    "issue_state": "closed",
+    "state_reason": "completed",
+    "closed_by_login": "ORESoftware",
+    "closed_by_user_id": 11139560,
+    "pinned_exact_resolution_comment_required": true,
+    "registry_must_be_updated_on_protected_source_main": true
+  }
+}

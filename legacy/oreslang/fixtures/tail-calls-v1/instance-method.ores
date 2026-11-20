@@ -1,0 +1,10 @@
+define class Counter as
+  pub down(int n): int {
+    return n == 0 ? 0 : self.down(n - 1);
+  }
+end
+pub routine main(): void {
+  val counter = new Counter();
+  stdio.stdout.write(counter.down(100000));
+  return;
+}

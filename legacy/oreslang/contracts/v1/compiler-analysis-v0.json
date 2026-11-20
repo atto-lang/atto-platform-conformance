@@ -1,0 +1,87 @@
+{
+  "schema": "atto-compiler-analysis/v0",
+  "mode": "--analyze",
+  "source_extension": ".atto",
+  "legacy_source_extension": ".ores",
+  "semantics": {
+    "no_codegen": true,
+    "no_guest_execution": true,
+    "no_source_rewrite": true,
+    "outcome_codes": {
+      "0": "closed-scalar-analysis-only",
+      "1": "source-or-compiler-failure",
+      "2": "inconclusive-or-unsupported"
+    },
+    "effect_unknown_not_pure": true,
+    "exception_grammar_proven": false
+  },
+  "backend_status": {
+    "java": "candidate-unexecuted",
+    "llvm": "candidate-unexecuted",
+    "wasm": "unverified",
+    "forge": "unverified",
+    "net": "unverified"
+  },
+  "fixtures": [
+    {
+      "file": "analysis-literal.atto",
+      "expected_exit": 0,
+      "expected_record": "status=known",
+      "scope": "narrow-scalar"
+    },
+    {
+      "file": "analysis-arithmetic.atto",
+      "expected_exit": 2,
+      "expected_record": "status=inconclusive",
+      "scope": "checked-arithmetic-unproven"
+    },
+    {
+      "file": "analysis-malformed.atto",
+      "expected_exit": "nonzero",
+      "expected_record": "must-not-report-known",
+      "scope": "syntax-rejection"
+    },
+    {
+      "file": "analysis-transitive.atto",
+      "expected_exit": 0,
+      "expected_record": "status=known",
+      "scope": "closed-static-direct-call"
+    },
+    {
+      "file": "analysis-recursive.atto",
+      "expected_exit": "nonzero",
+      "expected_record": "must-not-report-known",
+      "scope": "unproven-recursive-call-graph"
+    },
+    {
+      "file": "analysis-bool.atto",
+      "expected_exit": 0,
+      "expected_record": "status=known",
+      "scope": "closed-boolean-literal"
+    },
+    {
+      "file": "analysis-parameter.atto",
+      "expected_exit": 0,
+      "expected_record": "status=known",
+      "scope": "closed-direct-call-scalar-parameter"
+    },
+    {
+      "file": "analysis-transitive-unknown.atto",
+      "expected_exit": 2,
+      "expected_record": "status=inconclusive",
+      "scope": "checked-arithmetic-in-callee-propagates-to-caller"
+    }
+  ],
+  "provenance": {
+    "status": "contract-not-backend-proof",
+    "required": [
+      "compiler commit SHA",
+      "artifact checksum",
+      "nonempty build and test steps",
+      "actual stdout/stderr and exit codes",
+      "real parser/typechecker admission",
+      "no source or artifacts changed",
+      "java and llvm direct positive-fixture byte-for-byte output comparison"
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "schema": "atto-core-source-ledger-v1",
+  "source_organization": "ores-truffle-oreslang",
+  "modules": {
+    "ores.core/numeric": "5ced991f1d49b3c2a60fdd72b9003c0a4d18cd72",
+    "ores.std/core": "d2cd9b8e0cd3e3bb3ee6a5f9cebf9ab3312c44f4"
+  },
+  "backends": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED"
+  },
+  "claim_tier": "SOURCE_ONLY_NO_GUEST_EXECUTION"
+}

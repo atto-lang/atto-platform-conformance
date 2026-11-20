@@ -1,0 +1,94 @@
+{
+  "schema": "oreslang.tenant-isolation.v1",
+  "version": 1,
+  "status": "SUPERSEDED_BY_V2",
+  "design": {
+    "unit": "tenant incarnation owns one IsolateVM security/accounting domain; multiple actors may live within it",
+    "identity": [
+      "tenantId",
+      "generation",
+      "opaqueHostAuthority"
+    ],
+    "phases": [
+      "created",
+      "running",
+      "quiescing",
+      "stopped",
+      "destroyed"
+    ],
+    "memory": "tenant-owned mutable state never crosses into another tenant; cross-tenant delivery copies or re-encodes values",
+    "actor_execution": "no actor reentrancy, including across suspension or independent lock queues",
+    "resource_accounting": "limit tenant admissions, per-tenant guest memory/actors and inflight work; account host overhead separately; the scalar reference turn is non-reentrant even if tenant inflight capacity exceeds one",
+    "failure": "guest trap or unrecoverable execution error quarantines incarnation, disallows future calls and must retire its resources before reuse",
+    "capabilities": "fail-closed denial of FFI, WASI, filesystem, network, native memory and host imports unless explicitly authorized",
+    "trust": "logical heap/arena quotas are not physical security boundaries",
+    "untrusted": "hostile tenant workloads need a proven runtime sandbox plus process/OS security enforcement; no silent backend downgrade",
+    "aot": "signed/approved native artifacts required before any unsafe deserialization; caller-supplied SHA is only identity check",
+    "shutdown": "fence queued/running work, drain references and resource loans, then reclaim; never resolve shutdown before physical retirement",
+    "root_authority": "Opaque authority belongs to one root VM; matching tenant ID and numeric generation from another root never grants access",
+    "tenant_id_validation": "ASCII [A-Za-z0-9_.-], 1..128 bytes, excluding reserved path components '.' and '..'; strings are identifiers, not filesystem paths"
+  },
+  "backendProfiles": {
+    "java": {
+      "draft": "graalvm-isolate-or-exec-worker",
+      "currentGuarantee": "actor-owned arenas/context or shared VM do not prove separate physical heaps",
+      "hostileTenant": "PROCESS_SANDBOX_REQUIRED"
+    },
+    "llvm": {
+      "draft": "OresVM with native heap and process-mode fail-closed",
+      "currentGuarantee": "TrustedInProcess is not native code sandbox",
+      "hostileTenant": "PROCESS_SANDBOX_NOT_IMPLEMENTED"
+    },
+    "wasm": {
+      "draft": "Wasmtime Store + Instance per tenant in native AOT host",
+      "currentGuarantee": "distinct Wasm linear memories in one process; not OS security",
+      "hostileTenant": "PROCESS_SANDBOX_REQUIRED"
+    },
+    "cranelift": {
+      "draft": "Rust Cranelift stage-0 scalar native JIT, actor lowering rejected",
+      "currentGuarantee": "not an actor IsolateVM or tenant heap and not safe for hostile source execution",
+      "hostileTenant": "PROCESS_SANDBOX_NOT_IMPLEMENTED"
+    },
+    "net": {
+      "draft": "NativeAOT OresVmHost logical state",
+      "currentGuarantee": "not separate CLR heaps, AppDomains or OS processes",
+      "hostileTenant": "PROCESS_SANDBOX_NOT_IMPLEMENTED"
+    },
+    "forge": {
+      "draft": "native actor mailbox and arena ownership",
+      "currentGuarantee": "not a tenant OS memory compartment",
+      "hostileTenant": "PROCESS_SANDBOX_NOT_IMPLEMENTED"
+    },
+    "js": {
+      "draft": "Node/browser Worker actor",
+      "currentGuarantee": "Workers are in-process, not hostile tenant OS sandbox",
+      "hostileTenant": "PROCESS_SANDBOX_NOT_IMPLEMENTED"
+    }
+  },
+  "requiredScenarios": [
+    "separate-tenant-mutable-state",
+    "same-tenant-independent-actor-state",
+    "stale-handle-after-reincarnation",
+    "foreign-resource-handle-rejected",
+    "tenant-capacity-exhausted",
+    "queued-work-rejected-after-quiescence",
+    "inflight-drain-before-destroy",
+    "trap-retires-compartment",
+    "no-implicit-host-capabilities",
+    "no-implicit-untrusted-sandbox-downgrade",
+    "verified-real-compiler-artifact-required",
+    "exact-pr-tree-nonzero-step-ci-evidence",
+    "same-tenant-scalar-turn-nonreentrant",
+    "resource-loan-drain-before-stop",
+    "foreign-vm-root-handle-rejected-even-if-generation-collides",
+    "typed-untrusted-boundary-fails-closed",
+    "reserved-dot-tenant-id-denial",
+    "neighbor-survives-tenant-trap-and-reincarnation",
+    "cranelift-scalar-only-actor-admission-rejected",
+    "tenant-close-revokes-pinned-actor-memory",
+    "zeroized-actor-region-before-final-free",
+    "native-actor-control-and-data-stepful-integration"
+  ],
+  "supersededBy": "oreslang.tenant-isolation.v2",
+  "supersededReason": "2026-11-03 decision: hostile tenants share one OS process, one VM-isolate per tenant; a per-tenant process or OS sandbox is no longer required. v1 text below is kept as history."
+}

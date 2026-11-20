@@ -1,0 +1,22 @@
+{
+  "schema": "oreslang.explicit-exports.conformance-provenance.v1",
+  "common_source_repository": "ores-truffle-oreslang/oreslang-common-source",
+  "common_source_pr": 156,
+  "common_source_ref": "spec/explicit-exports-v1-hardening-20261025",
+  "common_source_contract_blob": "30ac6fd83c25a2f4a62b6c9611bb86daebf39cbb",
+  "source_free": true,
+  "private_compiler_source_required": false,
+  "backend_reports_require_execution": true,
+  "unexecuted_status": "NOT_EXECUTED",
+  "supersedes_common_source_pr": 150,
+  "common_source_head": "70ba178f3f658be66d7813ea39f2bfed96896d8e",
+  "common_source_oracle_blob": "8844f67fd2a678c2c29118c1f74f6b1e91dcd455",
+  "contract_revision": "explicit-exports-v1.2026-10-26.5",
+  "report_sections": [
+    "modifier",
+    "semantic",
+    "syntax",
+    "abi",
+    "access"
+  ]
+}

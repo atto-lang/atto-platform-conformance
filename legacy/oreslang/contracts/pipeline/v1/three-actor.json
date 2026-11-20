@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "kind": "typed-actor-pipeline-proposal-v1",
+  "operations": {"forward": "self.forward", "backward": "self.backward"},
+  "semantics": {
+    "forwardAcknowledges": "mailbox-admission",
+    "backwardCorrelation": "explicit",
+    "supervisorDataRouting": false,
+    "generationFencing": true,
+    "atomicPublication": true
+  },
+  "stages": [
+    {"id": "source", "role": "readable", "forwardIn": null, "forwardOut": "Message.Compute", "backwardIn": "Message.Result", "backwardOut": null},
+    {"id": "transform", "role": "transform", "forwardIn": "Message.Compute", "forwardOut": "Message.Compute", "backwardIn": "Message.Result", "backwardOut": "Message.Result"},
+    {"id": "sink", "role": "writable", "forwardIn": "Message.Compute", "forwardOut": null, "backwardIn": null, "backwardOut": "Message.Result"}
+  ],
+  "edges": [
+    {"from": "source", "to": "transform", "forwardType": "Message.Compute", "backwardType": "Message.Result", "capacity": 8},
+    {"from": "transform", "to": "sink", "forwardType": "Message.Compute", "backwardType": "Message.Result", "capacity": 8}
+  ],
+  "confirmedBackends": [],
+  "pendingBackends": ["java-graalvm", "llvm", "wasm", "browser-worker"]
+}

@@ -1,0 +1,13 @@
+fnc count_up(int remaining): int {
+  if remaining == 0; do
+    return 0;
+  else
+    // Non-tail recursion: the addition needs this caller's frame.
+    return 1 + count_up(remaining - 1);
+  fi
+}
+
+pub routine main(): void {
+  stdio.stdout.write(count_up(100000));
+  return;
+}
