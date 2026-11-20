@@ -143,7 +143,13 @@ test('cancellable task lock leases have pinned positive and negative sources', (
     'A_CANCEL_REQUEST',
     'A_SAFE_POINT_UNWIND',
     'A_LOCK_RELEASE',
-    'B_LOCK_CLAIM',
     'A_PHYSICAL_RETIRE',
   ]);
+  assert.deepEqual(active.happens_before, [
+    ['A_LOCK_RELEASE','B_LOCK_CLAIM'],
+    ['A_LOCK_RELEASE','A_PHYSICAL_RETIRE'],
+  ]);
+  for (const id of positives) {
+    assert.ok(cases[id].expected.witnesses.some(w => /if_guard_claimed|if_both_claimed|each_claimed_lease/.test(w)), id);
+  }
 });
