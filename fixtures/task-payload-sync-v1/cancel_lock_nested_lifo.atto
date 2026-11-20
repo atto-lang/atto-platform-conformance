@@ -1,0 +1,15 @@
+// TARGET ONLY: inner lock() is a nonparking immediate acquisition.
+pub susp fnc main(): int {
+  val Future<int> worker = task<int> {
+    val outer = new Mutex<int>(40);
+    val inner = new Mutex<int>(2);
+    using await outer.lock_async() as outer_guard {
+      using inner.lock() as inner_guard {
+        outer_guard.value += inner_guard.value;
+      }
+    }
+    return 42;
+  };
+  worker.cancel();
+  return 42;
+}
