@@ -1,0 +1,5 @@
+pub fnc main(): int {
+  val props = Map.of("foo", 5);
+  val r = Record.of(...props);
+  return 0;
+}
