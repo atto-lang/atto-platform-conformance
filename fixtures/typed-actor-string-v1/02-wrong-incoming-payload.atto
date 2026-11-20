@@ -1,0 +1,10 @@
+// ACTOR-STRING-02; TARGET_REJECT; expected E_TYPE; NOT_EXECUTED
+// A declared actor's receives type, not its sends type, checks external calls.
+define actor Router receives string sends int as
+  susp receive(ActorMail<string> mail): void { return; }
+end
+pub susp fnc main(): int {
+  val router = spawn Router();
+  router.send(42);
+  return 0;
+}
