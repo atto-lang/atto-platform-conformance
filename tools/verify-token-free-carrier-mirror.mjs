@@ -9,9 +9,10 @@ import {spawnSync} from 'node:child_process';
 const fail = message => { throw new Error('E_MIRROR_' + message); };
 const SHA = /^[0-9a-f]{40}$/;
 const MODES = new Set(['100644','100755','120000']);
-const [manifestFile, checkoutDir, trustedSourceTreeSha] = process.argv.slice(2);
-if (!manifestFile || !checkoutDir || !SHA.test(trustedSourceTreeSha || ''))
-  fail('USAGE: manifest.json checkout-dir trusted-source-tree-sha');
+const [manifestFile, checkoutDir, trustedSourceTreeSha, trustedSourceCommitSha] = process.argv.slice(2);
+if (!manifestFile || !checkoutDir || !SHA.test(trustedSourceTreeSha || '') ||
+    !SHA.test(trustedSourceCommitSha || ''))
+  fail('USAGE: manifest.json checkout-dir trusted-source-tree-sha trusted-source-commit-sha');
 const root = resolve(checkoutDir);
 function git(...args) {
   const result = spawnSync('git', args, {cwd:root, encoding:'buffer', maxBuffer:32*1024*1024, timeout:60000});
@@ -27,7 +28,7 @@ function safePath(path) {
 }
 const manifest = JSON.parse(await readFile(manifestFile,'utf8'));
 if (manifest.schema !== 'atto.token-free-carrier-mirror.v1' ||
-    !SHA.test(manifest.source_commit_sha || '') ||
+    manifest.source_commit_sha !== trustedSourceCommitSha ||
     manifest.source_tree_sha !== trustedSourceTreeSha ||
     !Array.isArray(manifest.entries) || manifest.entries.length < 1 ||
     manifest.entries.length > 50000) fail('MANIFEST');
