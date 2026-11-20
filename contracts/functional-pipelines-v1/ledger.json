@@ -2,7 +2,7 @@
   "schema": "atto.functional-pipelines.evidence.v1",
   "authority": {
     "repo": "atto-lang/atto-spec",
-    "head_sha": "d93a0cfc2a723b7575c0babc050a5e48dbcae1c2",
+    "head_sha": "af7e2279122ee2efab76ec8cc8dad4361bebbd43",
     "contract": "conformance/functional-pipelines-v1/cases.json",
     "contract_blob_sha": "85eb550491972543a48a7a2c92cd49e8307db56b"
   },
@@ -81,7 +81,7 @@
       "repo": "atto-lang/atto-source.rs",
       "implementation": "code_authored",
       "implementation_pr": "https://github.com/atto-lang/atto-source.rs/pull/381",
-      "proposed_head_sha": "aef93dc5c6a859f9849958ecc46f97fb531a0deb",
+      "proposed_head_sha": "6d38bb09693d68e95cfe98020b062fff988f6ca5",
       "execution_status": "not_executed",
       "receipt": null,
       "result_profile": null
@@ -90,7 +90,7 @@
       "repo": "atto-lang/atto-source.rs",
       "implementation": "code_authored",
       "implementation_pr": "https://github.com/atto-lang/atto-source.rs/pull/381",
-      "proposed_head_sha": "aef93dc5c6a859f9849958ecc46f97fb531a0deb",
+      "proposed_head_sha": "6d38bb09693d68e95cfe98020b062fff988f6ca5",
       "execution_status": "not_executed",
       "receipt": null,
       "result_profile": null
@@ -108,7 +108,7 @@
       "repo": "atto-lang/atto-source.llvm",
       "implementation": "code_authored",
       "implementation_pr": "https://github.com/atto-lang/atto-source.llvm/pull/54",
-      "proposed_head_sha": "3ae7f7f026e415eb1dd3807bafa160914b1316fa",
+      "proposed_head_sha": "42c3b0be7872ffb5a6c5c148e976823556082768",
       "execution_status": "not_executed",
       "receipt": null,
       "result_profile": "os_exit_code"
@@ -126,7 +126,7 @@
       "repo": "atto-lang/atto-source.net",
       "implementation": "code_authored",
       "implementation_pr": "https://github.com/atto-lang/atto-source.net/pull/16",
-      "proposed_head_sha": "c452af80d40754fa5900b1ba0880c50c0aa6c790",
+      "proposed_head_sha": "fbf715495b7bd63339cbfa2e3e3ad6a6aabc5460",
       "execution_status": "not_executed",
       "receipt": null,
       "result_profile": "os_exit_code"
@@ -135,7 +135,7 @@
       "repo": "atto-lang/atto-source.java",
       "implementation": "code_authored",
       "implementation_pr": "https://github.com/atto-lang/atto-source.java/pull/51",
-      "proposed_head_sha": "cd0ecec4788423b37f1f3ea89e99e49cb96da5fe",
+      "proposed_head_sha": "d39a65a01082f6744287c1eeac77c6d277bf975d",
       "execution_status": "not_executed",
       "receipt": null,
       "result_profile": "os_exit_code",
@@ -188,7 +188,10 @@
         },
         "executed_test_groups": 4,
         "failing_test_groups": 0,
-        "scope": "Local actual checked Atto source→Java source→javac JVM class→java guest-process execution under JDK21. Four canonical exact Git blobs and 11 extended negative test sources were exercised; signed min through compiled f_main observer. Authored GraalVM25 full CI script, whole repo suite, Native Image and source-org CI remain unexecuted."
+        "scope": "Local actual checked Atto source→Java source→javac JVM class→java guest-process execution under JDK21. Four canonical exact Git blobs and 11 extended negative test sources were exercised; signed min through compiled f_main observer. Authored GraalVM25 full CI script, whole repo suite, Native Image and source-org CI remain unexecuted.",
+        "observed_compiler_blob_sha": "61f31581970076f88af694063e68e3e748c8d4b6",
+        "current_compiler_blob_sha": "3267621f3a544cc5b3632530a1c138d6fcb282ab",
+        "source_changed_since_local_observation": true
       }
     },
     "java-production-compiler": {
@@ -204,7 +207,7 @@
       "repo": "atto-lang/atto-source.forge",
       "implementation": "code_authored",
       "implementation_pr": "https://github.com/atto-lang/atto-source.forge/pull/45",
-      "proposed_head_sha": "813d4481f110cf9a2505da48dbad3c8d0354c301",
+      "proposed_head_sha": "c4c2dd86e7ceb8ab44c0f91776991222c38265d3",
       "execution_status": "not_executed",
       "receipt": null,
       "result_profile": "stdout_line_i64",
@@ -303,7 +306,7 @@
       "repo": "atto-lang/atto-source.cranelift",
       "implementation": "code_authored",
       "implementation_pr": "https://github.com/atto-lang/atto-source.cranelift/pull/50",
-      "proposed_head_sha": "97a4404d30df887fa3ad26c79d7c0ef2dab8c8c0",
+      "proposed_head_sha": "93072d2202dceb3babda228992e9625f767eefe9",
       "execution_status": "not_executed",
       "receipt": null,
       "result_profile": "stdout_line_i64"
@@ -357,7 +360,7 @@
       "repo": "atto-lang/atto-source.js",
       "implementation": "code_authored",
       "implementation_pr": "https://github.com/atto-lang/atto-source.js/pull/41",
-      "proposed_head_sha": "816d9b59d40bcc6e9a573507d34ef6cf350a8f75",
+      "proposed_head_sha": "f370a6fc558b40a633f2560183b4a5fd70560b4f",
       "result_profile": "stdout_line_i64",
       "execution_status": "not_executed",
       "receipt": null,
@@ -380,7 +383,9 @@
         ],
         "executed_test_groups": 4,
         "failing_test_groups": 0,
-        "scope": "local Node child-process ESM guest tests, not exact-head GitHub Actions, not production tenant isolation"
+        "scope": "local Node child-process ESM guest tests, not exact-head GitHub Actions, not production tenant isolation",
+        "current_test_blob_sha": "b0dd02dc252a2972e37c5506124236eb21aca45b",
+        "new_test_script_not_yet_run_in_Node": true
       }
     }
   },
@@ -425,5 +430,128 @@
     "unexecuted code generation",
     "one backend's result reused for another"
   ],
-  "tracking_issue": "https://github.com/atto-lang/atto-platform-conformance/issues/105"
+  "tracking_issue": "https://github.com/atto-lang/atto-platform-conformance/issues/105",
+  "edge_contract": {
+    "schema": "atto.functional-pipelines.edge.evidence.v1",
+    "source_authority": "atto-lang/atto-spec#121",
+    "authority_head_sha": "af7e2279122ee2efab76ec8cc8dad4361bebbd43",
+    "manifest": "conformance/functional-pipelines-v1/edge/cases.json",
+    "manifest_blob_sha": "bd715b9984b3803c8015e7fa4ba3ee5b42ebb1ea",
+    "relationship": "Supplemental 7-case boundary/argument-order suite; original 8 canonical cases remain unchanged and mandatory",
+    "cases": [
+      {
+        "file": "two-argument-61.atto",
+        "blob_sha": "4089c524db1d076593994ad65acb5ca7f90eea32",
+        "expected": "61"
+      },
+      {
+        "file": "preapplied-grouped-42.atto",
+        "blob_sha": "9a89ada18865fead0d92a7de75415957fbb5f67f",
+        "expected": "42"
+      },
+      {
+        "file": "signed-i64-min.atto",
+        "blob_sha": "bbc22347d7ccb0a5be1a7c2193f11c5f2f4805cc",
+        "expected": "-9223372036854775808"
+      },
+      {
+        "file": "checked-overflow.atto",
+        "blob_sha": "59bb890b54addc1659065ab55cd565771523bfce",
+        "expected": "runtime_checked_overflow"
+      },
+      {
+        "file": "reject-i64-positive-overflow.atto",
+        "blob_sha": "2e584ee01ee74a3a31e282cf0116957f9ff95bd1",
+        "expected": "source_rejection"
+      },
+      {
+        "file": "reject-i64-negative-underflow.atto",
+        "blob_sha": "8b63b45e406db3e19aa793e0f7a627914623b9e0",
+        "expected": "source_rejection"
+      },
+      {
+        "file": "reject-reserved-unsafe.atto",
+        "blob_sha": "b159def3fa26ca6023395e1c546b95c1b929fd14",
+        "expected": "source_rejection"
+      }
+    ],
+    "overall_execution_status": "not_executed",
+    "guest_result_abi_must_be_recorded_separately": true,
+    "targets": {
+      "rs-browser-wasm-compiler": {
+        "implementation_repo": "atto-lang/atto-source.rs",
+        "proposed_head_sha": "6d38bb09693d68e95cfe98020b062fff988f6ca5",
+        "fixture_files_copied_and_blob_verified": 2,
+        "tests_authored": true,
+        "execution_status": "not_executed",
+        "receipt": null
+      },
+      "llvm-rust-aot": {
+        "implementation_repo": "atto-lang/atto-source.llvm",
+        "proposed_head_sha": "42c3b0be7872ffb5a6c5c148e976823556082768",
+        "fixture_files_copied_and_blob_verified": 2,
+        "tests_authored": true,
+        "execution_status": "not_executed",
+        "receipt": null
+      },
+      "net-direct-cil": {
+        "implementation_repo": "atto-lang/atto-source.net",
+        "proposed_head_sha": "fbf715495b7bd63339cbfa2e3e3ad6a6aabc5460",
+        "fixture_files_copied_and_blob_verified": 7,
+        "tests_authored": true,
+        "execution_status": "not_executed",
+        "receipt": null
+      },
+      "java-scalar-bootstrap": {
+        "implementation_repo": "atto-lang/atto-source.java",
+        "proposed_head_sha": "d39a65a01082f6744287c1eeac77c6d277bf975d",
+        "fixture_files_copied_and_blob_verified": 7,
+        "tests_authored": true,
+        "execution_status": "not_executed",
+        "receipt": null
+      },
+      "forge": {
+        "implementation_repo": "atto-lang/atto-source.forge",
+        "proposed_head_sha": "c4c2dd86e7ceb8ab44c0f91776991222c38265d3",
+        "fixture_files_copied_and_blob_verified": 7,
+        "tests_authored": true,
+        "execution_status": "not_executed",
+        "receipt": null
+      },
+      "cranelift": {
+        "implementation_repo": "atto-lang/atto-source.cranelift",
+        "proposed_head_sha": "93072d2202dceb3babda228992e9625f767eefe9",
+        "fixture_files_copied_and_blob_verified": 7,
+        "tests_authored": true,
+        "execution_status": "not_executed",
+        "receipt": null
+      },
+      "js-compiled-esm": {
+        "implementation_repo": "atto-lang/atto-source.js",
+        "proposed_head_sha": "f370a6fc558b40a633f2560183b4a5fd70560b4f",
+        "fixture_files_copied_and_blob_verified": 7,
+        "tests_authored": true,
+        "execution_status": "not_executed",
+        "receipt": null
+      }
+    },
+    "local_v8_smoke": {
+      "status": "actual_generated_js_executed_in_process_no_Node_CI_admission",
+      "compiler_blob_sha": "2d3cd3a30e6cd41bcd7eac0294053ff3e77ccd99",
+      "emitted_guest_observed_main_values": [
+        "61",
+        "42",
+        "-9223372036854775808"
+      ],
+      "compiled_overflow_observed": "E_OVERFLOW",
+      "source_rejections": [
+        "E_LITERAL",
+        "E_LITERAL",
+        "E_NAME"
+      ],
+      "input_blobs_verified": 7,
+      "method": "exact compiler ESM code exported functions loaded into isolated V8 function scope; emitted JS code executed by V8",
+      "scope": "In-process V8 compiled-code smoke; not OS-process Node ESM import, not independent backend, not Actions CI"
+    }
+  }
 }
