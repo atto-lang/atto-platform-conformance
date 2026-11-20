@@ -146,6 +146,46 @@
       "expect": "reject_unparenthesized_direction_mix",
       "error_family": "E_PIPE_DIRECTION",
       "source_git_blob_sha": "1addd9cc44879d24f7e76b2d5eb69d6837a711ab"
+    },
+    {
+      "id": "stopped-source",
+      "path": "fixtures/pipe-rpipe-v1/stopped-source.atto",
+      "expect": "reject_closed_or_stopped_port",
+      "phase": "runtime_admission",
+      "error_family": "PipeSetupError",
+      "expected_data_publication": "NONE",
+      "expected_delivery_count": 0,
+      "source_git_blob_sha": "cdfa3473793a0eed556288db06ebaa3ed8f9d4c7"
+    },
+    {
+      "id": "closed-channel",
+      "path": "fixtures/pipe-rpipe-v1/closed-channel.atto",
+      "expect": "reject_closed_or_stopped_port",
+      "phase": "runtime_admission",
+      "error_family": "PipeSetupError",
+      "expected_data_publication": "NONE",
+      "expected_delivery_count": 0,
+      "source_git_blob_sha": "523e0da79a1e373c03c1ef216259b34c0b0c0889"
+    },
+    {
+      "id": "stopped-consumer",
+      "path": "fixtures/pipe-rpipe-v1/stopped-consumer.atto",
+      "expect": "reject_closed_or_stopped_port",
+      "phase": "runtime_admission",
+      "error_family": "PipeSetupError",
+      "expected_data_publication": "NONE",
+      "expected_delivery_count": 0,
+      "source_git_blob_sha": "8896a1bf0aef74926be291ace2d86ecf852985b1"
+    },
+    {
+      "id": "stopped-actor-sink",
+      "path": "fixtures/pipe-rpipe-v1/stopped-actor-sink.atto",
+      "expect": "reject_closed_or_stopped_port",
+      "phase": "runtime_admission",
+      "error_family": "PipeSetupError",
+      "expected_data_publication": "NONE",
+      "expected_delivery_count": 0,
+      "source_git_blob_sha": "329661c81fa4bb832fcacbbff5a4fb068e1bb6dd"
     }
   ],
   "backend_evidence": [
@@ -222,7 +262,8 @@
     "ownership_release",
     "actor_supervisor_CONTROL_isolation",
     "CI_run_url",
-    "executed_steps_nonzero"
+    "executed_steps_nonzero",
+    "closed_or_stopped_port_denial"
   ],
   "security_invariants": [
     "no CONTROL to DATA reroute",
@@ -231,7 +272,8 @@
     "no implicit fanout or duplicated admission",
     "bounded buffers",
     "ownership across await and cancellation",
-    "once-only error settlement"
+    "once-only error settlement",
+    "closed or stopped source/sink ports reject before publication"
   ],
   "gating": "Source fixtures and manifest are not passing conformance; positive cases need compiled guest transfer and observed receipts. A backend can report TARGET_UNSUPPORTED with an explicit diagnostic, not PASS.",
   "fixture_sha_lock_version": 1,
