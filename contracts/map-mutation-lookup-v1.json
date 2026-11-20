@@ -2,7 +2,7 @@
   "schema_version": 1,
   "contract": "atto-map-mutation-lookup-v1",
   "normative_spec": "https://github.com/atto-lang/atto-spec/blob/feat/map-mutation-api-v1-20261119/language/map-mutation-api-v1.md",
-  "summary": "Proposed Map mutability/get/set/add/index write and Option safety. No parser or guest test is claimed passed by this registry.",
+  "summary": "Proposed Map mutability, first-class Entry<K,V> values, two whole-entry `as` spellings, get/set/add/index write, Option safety; NO compiled guest execution is claimed.",
   "status": "not_executed",
   "allowed_verification_statuses": [
     "passed",
@@ -295,6 +295,272 @@
         "cranelift": "not_executed",
         "atto_native": "not_executed"
       }
+    },
+    {
+      "id": "entry-global-dual-cast-duplicate-add",
+      "group": "guest",
+      "expect": "accept",
+      "source": "let entry1 = (\"foo\" => 5) as Entry<string, int>;\nlet entry2 = \"foo\" => 5 (as Entry<string, int>);\n\npub fnc main(): int {\n  let mut Map<string, int> x = {\n    \"foo\" => 5\n  };\n  x.set(\"foo\", 6);\n  x[\"foo\"] = 3;\n  x.add(entry1);\n  x.add(entry2);\n  return x.get(\"foo\").unwrap();\n}",
+      "reason": "User's exact two ascription forms, static file-scope entries, and duplicate add leave the key at 3",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "atto_native": "not_executed"
+      },
+      "expected_exit": 3
+    },
+    {
+      "id": "entry-local-parenthesized-as",
+      "group": "guest",
+      "expect": "accept",
+      "source": "pub fnc main(): int {\n  let e = (\"foo\" => 5) as Entry<string, int>;\n  let mut Map<string, int> m = {};\n  m.add(e);\n  return m.get(\"foo\").unwrap();\n}",
+      "reason": "Whole-entry ordinary parenthesized ascription",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "atto_native": "not_executed"
+      },
+      "expected_exit": 5
+    },
+    {
+      "id": "entry-local-trailing-as",
+      "group": "guest",
+      "expect": "accept",
+      "source": "pub fnc main(): int {\n  let e = \"foo\" => 5 (as Entry<string, int>);\n  let mut Map<string, int> m = {};\n  m.add(e);\n  return m.get(\"foo\").unwrap();\n}",
+      "reason": "Trailing parenthesized (as Type) applies to the complete Entry",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "atto_native": "not_executed"
+      },
+      "expected_exit": 5
+    },
+    {
+      "id": "entry-direct-as-expression",
+      "group": "guest",
+      "expect": "accept",
+      "source": "pub fnc main(): int {\n  let mut Map<string, int> m = {};\n  m.add((\"foo\" => 5) as Entry<string, int>);\n  return m.get(\"foo\").unwrap();\n}",
+      "reason": "First-class Entry passed directly to add",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "atto_native": "not_executed"
+      },
+      "expected_exit": 5
+    },
+    {
+      "id": "entry-inferred-add-argument",
+      "group": "guest",
+      "expect": "accept",
+      "source": "pub fnc main(): int {\n  let mut Map<string, int> m = {};\n  m.add(\"foo\" => 5);\n  return m.get(\"foo\").unwrap();\n}",
+      "reason": "Previously contextual => sugar and first-class Entry overload are observationally equivalent",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "atto_native": "not_executed"
+      },
+      "expected_exit": 5
+    },
+    {
+      "id": "entry-inferred-standalone",
+      "group": "guest",
+      "expect": "accept",
+      "source": "pub fnc main(): int {\n  let e = \"foo\" => 5;\n  let mut Map<string, int> m = {};\n  m.add(e);\n  return m.get(\"foo\").unwrap();\n}",
+      "reason": "Unambiguous literal inference constructs an Entry without a cast",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "atto_native": "not_executed"
+      },
+      "expected_exit": 5
+    },
+    {
+      "id": "entry-duplicate-add-reusable",
+      "group": "guest",
+      "expect": "accept",
+      "source": "pub fnc main(): int {\n  let e = (\"foo\" => 5) as Entry<string, int>;\n  let mut Map<string, int> m = {\"foo\" => 3};\n  m.add(e);\n  m.add(e);\n  return m.get(\"foo\").unwrap();\n}",
+      "reason": "Same immutable Entry may be passed twice and add never overwrites a duplicate",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "atto_native": "not_executed"
+      },
+      "expected_exit": 3
+    },
+    {
+      "id": "entry-key-type-mismatch",
+      "group": "negative",
+      "expect": "reject",
+      "source": "pub fnc main(): int {\n  let e = (7 => 5) as Entry<int, int>;\n  let mut Map<string, int> m = {};\n  m.add(e);\n  return 0;\n}",
+      "reason": "Entry<K,V> key type must match Map<K,V> key type",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "atto_native": "not_executed"
+      },
+      "expected_error": "E_TYPE"
+    },
+    {
+      "id": "entry-value-type-mismatch",
+      "group": "negative",
+      "expect": "reject",
+      "source": "pub fnc main(): int {\n  let e = (\"foo\" => \"wrong\") as Entry<string, int>;\n  return 0;\n}",
+      "reason": "Ascription checks V without unsafe conversion",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "atto_native": "not_executed"
+      },
+      "expected_error": "E_TYPE"
+    },
+    {
+      "id": "entry-generic-arity",
+      "group": "negative",
+      "expect": "reject",
+      "source": "pub fnc main(): int {\n  let e = (\"foo\" => 5) as Entry<string>;\n  return 0;\n}",
+      "reason": "Exactly two generic arguments are required",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "atto_native": "not_executed"
+      },
+      "expected_error": "E_TYPE"
+    },
+    {
+      "id": "entry-invalid-map-ascription",
+      "group": "negative",
+      "expect": "reject",
+      "source": "pub fnc main(): int {\n  let e = (\"foo\" => 5) as Map<string, int>;\n  return 0;\n}",
+      "reason": "Entry cannot be reinterpreted as a Map",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "atto_native": "not_executed"
+      },
+      "expected_error": "E_TYPE"
+    },
+    {
+      "id": "entry-suffix-missing-delimiter",
+      "group": "negative",
+      "expect": "reject",
+      "source": "pub fnc main(): int {\n  let e = \"foo\" => 5 (as Entry<string, int>;\n  return 0;\n}",
+      "reason": "Malformed special suffix rejected rather than parsed as call",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "atto_native": "not_executed"
+      },
+      "expected_error": "E_SYNTAX"
+    },
+    {
+      "id": "entry-static-impure-init",
+      "group": "negative",
+      "expect": "reject",
+      "source": "let entry1 = (\"foo\" => impure_call()) as Entry<string, int>;\npub fnc main(): int { return 0; }",
+      "reason": "Static file-scope Entry bindings require proven pure, frozen initializers",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "atto_native": "not_executed"
+      },
+      "expected_error": "E_UNSUPPORTED"
+    },
+    {
+      "id": "entry-record-is-not-entry",
+      "group": "negative",
+      "expect": "reject",
+      "source": "pub fnc main(): int {\n  let Entry<string, int> e = {\"foo\": 5};\n  return 0;\n}",
+      "reason": "Static Record cannot masquerade as first-class Entry",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "atto_native": "not_executed"
+      },
+      "expected_error": "E_TYPE"
     }
   ],
   "verification": {
@@ -317,6 +583,9 @@
     "atto-source.rs#274",
     "atto-source.rs#278",
     "oreslang-source.java#2735",
-    "oreslang-source.java#1668"
+    "oreslang-source.java#1668",
+    "atto-spec#116",
+    "atto-platform-conformance#98",
+    "atto-platform-conformance#67"
   ]
 }
