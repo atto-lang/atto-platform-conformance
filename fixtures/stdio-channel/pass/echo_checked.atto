@@ -1,21 +1,23 @@
 // TARGET ONLY — expected guest stdout/stderr/status are in the contract.
-// No compiler/backend guest run is claimed by this fixture.
+// Compiled Rust/Wasm and every backend remain NOT_EXECUTED until verified CI.
 pub suspends fnc main(): int using io, suspend {
   val input = stdio.in;
-  val output = stdio.out;
+  val output = process.stdout;
   val prompt = writech output, "Echo the next input item:";
   return match prompt over
     on Err(_) -> 10,
-    on Ok(_) -> match readch input over
-      on Ok(Some(item)) -> match writech output, item over
-        on Err(_) -> 12,
-        on Ok(_) -> match writech stdio.err, "echo complete" over
-          on Ok(_) -> 0,
-          on Err(_) -> 13
-        end
+    on Ok(_) -> match << input over
+      on Err(_) -> 14,
+      on Ok(line) -> match line over
+        on None -> 11,
+        on Some(item) -> match writech output, item over
+          on Err(_) -> 12,
+          on Ok(_) -> match writech stdio.err, "echo complete" over
+            on Ok(_) -> 0,
+            on Err(_) -> 13,
+          end,
+        end,
       end,
-      on Ok(None) -> 11,
-      on Err(_) -> 14
-    end
+    end,
   end;
 }
