@@ -140,7 +140,7 @@
       "source_export_policy": "REQUIRES_APPROVED_CARRIER",
       "evidence_note": "native scalar; parser/emit overlap and conflicting PR #102 require reconciliation",
       "canonical_draft_pr": "https://github.com/atto-lang/atto-source.forge/pull/52",
-      "current_observed_head": "62752c7f604900d9a62f4db4db8da13fd6a363a7"
+      "current_observed_head": "d2fcba8abcf7df8a0bb8132f770586e85133fecf"
     },
     "cranelift": {
       "repository": "atto-lang/atto-source.cranelift",
@@ -189,7 +189,7 @@
       "source_export_policy": "NO_EXPORT_HOLD",
       "evidence_note": "stacked on #47; constrained V8 only, native Node/browser unverified",
       "canonical_draft_pr": "https://github.com/atto-lang/atto-source.js/pull/68",
-      "current_observed_head": "28fc10e978931f429c61615d027474b3269096e3",
+      "current_observed_head": "db35b92152f7519cae885a882ee541dfef60f971",
       "stacked_pr": "https://github.com/atto-lang/atto-source.js/pull/47"
     },
     "hdl": {
@@ -245,25 +245,32 @@
   "reconciliation_findings": [
     {
       "id": "js_bare_void_statement_diagnostic",
-      "status": "OPEN",
+      "status": "SOURCE_FIXED_GUEST_UNVERIFIED",
       "canonical_diagnostic": "E_SYNTAX",
-      "observed_diagnostic": "E_TASK_DISCARD_REQUIRES_DO",
+      "observed_diagnostic": "E_SYNTAX",
       "repository": "atto-lang/atto-source.js",
       "canonical_pr": "https://github.com/atto-lang/atto-source.js/pull/68",
       "source_file": "src/transpile-worker.mjs",
-      "source_blob": "27f86321243d5374949cd4d81ad2ecca60deaf46",
-      "action": "Reconcile JS #47 + stacked #68 without changing the rejected syntax or weakening no-artifact gate; assert E_SYNTAX in actual Node/browser guests"
+      "source_blob": "76509247bda94724307464db73751cefa4ce0368",
+      "action": "Both JS #47 and stacked #68 source/test fixes committed; rebase/retarget integration and run actual Node 22/browser guest, no export before independent policy approval",
+      "previous_observed_diagnostic": "E_TASK_DISCARD_REQUIRES_DO",
+      "source_head": "db35b92152f7519cae885a882ee541dfef60f971",
+      "parent_source_head": "e9a3ab0396d164af9e0906678ff1c247b22063c7",
+      "verification": "ISOLATED_V8_EXACT_SOURCE_4_NEGATIVE_1_POSITIVE; NODE_BROWSER_NOT_EXECUTED"
     },
     {
       "id": "forge_bare_void_statement_diagnostic",
-      "status": "OPEN",
+      "status": "SOURCE_FIXED_GUEST_UNVERIFIED",
       "canonical_diagnostic": "E_SYNTAX",
-      "observed_diagnostic": "E_PARSE_SYNTAX",
+      "observed_diagnostic": "E_SYNTAX",
       "repository": "atto-lang/atto-source.forge",
       "canonical_pr": "https://github.com/atto-lang/atto-source.forge/pull/52",
       "source_file": "include/atto/scalar_parser.hpp",
-      "source_blob": "4deb154917d98cb466325b19521b2121fd60c0b2",
-      "action": "Reconcile bare standalone inline statement diagnostic to canonical E_SYNTAX in existing draft #52; preserve generic parser rejection and native guest tests"
+      "source_blob": "ea7c5701bee37dab6172c5627eeccfde1f8c1300",
+      "action": "Targeted ParseError::sync_stmt_requires_do maps E_SYNTAX; generic E_PARSE_SYNTAX unchanged; execute current-head compiler/guest and reconcile overlapping #102",
+      "previous_observed_diagnostic": "E_PARSE_SYNTAX",
+      "source_head": "d2fcba8abcf7df8a0bb8132f770586e85133fecf",
+      "verification": "CPP_TEST_ASSERTIONS_AND_CMAKE_CLI_EXPECTATIONS_AUTHORED; CURRENT_GCC_CLANG_CTEST_NOT_EXECUTED"
     },
     {
       "id": "llvm_mixed_rust_cpp_frontend",

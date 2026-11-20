@@ -76,9 +76,13 @@ test('canonical diagnostic mismatches remain open until exact guest evidence res
  const forge=matrix.reconciliation_findings.find(x=>x.id==='forge_bare_void_statement_diagnostic');
  assert.equal(js.canonical_diagnostic,'E_SYNTAX');
  assert.equal(forge.canonical_diagnostic,'E_SYNTAX');
- assert.equal(js.observed_diagnostic,'E_TASK_DISCARD_REQUIRES_DO');
- assert.equal(forge.observed_diagnostic,'E_PARSE_SYNTAX');
- assert.equal(js.status,'OPEN');
- assert.equal(forge.status,'OPEN');
+ assert.equal(js.previous_observed_diagnostic,'E_TASK_DISCARD_REQUIRES_DO');
+ assert.equal(forge.previous_observed_diagnostic,'E_PARSE_SYNTAX');
+ assert.equal(js.observed_diagnostic,'E_SYNTAX');
+ assert.equal(forge.observed_diagnostic,'E_SYNTAX');
+ assert.equal(js.status,'SOURCE_FIXED_GUEST_UNVERIFIED');
+ assert.equal(forge.status,'SOURCE_FIXED_GUEST_UNVERIFIED');
+ assert.equal(matrix.backends.js.execution_status,'NATIVE_NODE_BROWSER_NOT_EXECUTED');
+ assert.equal(matrix.backends.forge.execution_status,'NOT_CURRENT_HEAD_VERIFIED');
  assert.equal(matrix.rollup.production_task_runtime_certified,0);
 });
