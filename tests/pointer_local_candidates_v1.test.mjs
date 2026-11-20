@@ -8,16 +8,17 @@ const known={
   'atto-source.rs':{pr:419,sha:'00a6d3e8a86e27f635cf3b2a808b6a0b61a2b977'},
   'atto-source.llvm':{pr:64,sha:'b4049c77c71f6834a93f294c129779bfaf3ec1f1'},
   'atto-source.net':{pr:22,sha:'fa732820a0f0bc3de2c7422efd06ad365518fde1'},
+  'atto-source.forge':{pr:50,sha:'93935c18c9977462a5630c835e9e5ef0e2035bfb'},
 };
 test('candidate ledger keeps actual source commits distinct from executed evidence',()=>{
   assert.equal(doc.schema,'atto.pointer-local-candidate-evidence.v1');
   assert.equal(doc.normative_spec,'atto-lang/atto-spec#18');
   assert.equal(doc.overall_status,'NOT_EXECUTED');
   assert.equal(doc.target_case_registry,'contracts/pointer-ref-local-v1.json');
-  assert.equal(doc.candidate_count,3);
-  assert.equal(doc.candidates.length,3);
-  assert.equal(new Set(doc.candidates.map(c=>c.backend)).size,3);
-  assert.equal(Object.keys(known).length,3);
+  assert.equal(doc.candidate_count,4);
+  assert.equal(doc.candidates.length,4);
+  assert.equal(new Set(doc.candidates.map(c=>c.backend)).size,4);
+  assert.equal(Object.keys(known).length,4);
   assert.equal(doc.backend_count,Object.keys(cases.backend_status).length);
   assert.equal(doc.total_target_cases,cases.case_count);
   assert.equal(doc.expected_positive,cases.pass_count);
@@ -35,6 +36,22 @@ test('candidate ledger keeps actual source commits distinct from executed eviden
     assert.equal(c.guest_artifact_sha256,null);
     assert.equal(c.runner_job_id,null);
     assert.equal(c.executed_step_count,0);
+    if (c.backend === 'atto-source.forge') {
+      assert.equal(c.compiler_subtree,'151c08add7df9db670033b27bcefdba36f61753b');
+      assert.equal(c.target_run_contract.compiler,'forge_scalar');
+      assert.equal(c.target_run_contract.native_guest_count,4);
+      assert.equal(c.target_run_contract.negative_no_artifact_count,24);
+      assert.equal(c.target_run_contract.process_exit_status,0);
+      assert.equal(c.target_run_contract.full_abi_parity,false);
+      assert.deepEqual(c.exact_canonical_guest_sources,{
+        'PRL-001':'6056400afa8d7b9b71f29be5ca4cfb15240a59b3',
+        'PRL-002':'8fa66e68b386c2c6d1f2b15b9399e70a116c0828'
+      });
+      assert.equal(c.execution_status,'NOT_EXECUTED');
+      assert.equal(c.executed_step_count,0);
+      assert.equal(c.guest_exit_receipt,null);
+    }
+
     if (c.backend === 'atto-source.rs') {
       const mirror=c.token_free_carrier;
       assert.equal(mirror.repository,'gha-indie-worker/atto-ci');

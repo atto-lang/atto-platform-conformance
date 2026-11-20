@@ -8,7 +8,7 @@
   "expected_positive": 10,
   "expected_negative": 26,
   "backend_count": 11,
-  "candidate_count": 3,
+  "candidate_count": 4,
   "overall_status": "NOT_EXECUTED",
   "required": "Immutable runner receipts with nonzero real job steps, exact source/compiler/artifact SHA, backend guest output and no-artifact negatives",
   "candidates": [
@@ -105,6 +105,42 @@
       "guest_exit_receipt": null,
       "negative_rejection_receipt": null,
       "independent_approval": null
+    },
+    {
+      "backend": "atto-source.forge",
+      "pr": 50,
+      "repository": "atto-lang/atto-source.forge",
+      "source_head": "93935c18c9977462a5630c835e9e5ef0e2035bfb",
+      "compiler_subtree": "151c08add7df9db670033b27bcefdba36f61753b",
+      "scope": "Restricted canonical lexer/typed BorrowedLocal Pointer<int> compilation to actual native C++ guest stack read, one nonowning unref; Forge stage-0 prints logical result and exits 0",
+      "test_entry": "tests/pointer_local_guest.cmake",
+      "expected_guest_ids": [
+        "PRL-001",
+        "PRL-002"
+      ],
+      "last_attempted_ci_run": "https://github.com/atto-lang/atto-source.forge/actions/runs/44664282171",
+      "source_state": "CANDIDATE_COMMITTED",
+      "execution_status": "NOT_EXECUTED",
+      "compiler_artifact_sha256": null,
+      "guest_artifact_sha256": null,
+      "runner_job_id": null,
+      "executed_step_count": 0,
+      "guest_exit_receipt": null,
+      "negative_rejection_receipt": null,
+      "independent_approval": null,
+      "exact_canonical_guest_sources": {
+        "PRL-001": "6056400afa8d7b9b71f29be5ca4cfb15240a59b3",
+        "PRL-002": "8fa66e68b386c2c6d1f2b15b9399e70a116c0828"
+      },
+      "target_run_contract": {
+        "compiler": "forge_scalar",
+        "native_guest_count": 4,
+        "negative_no_artifact_count": 24,
+        "logical_main_scalar": "stdout:42\\n",
+        "process_exit_status": 0,
+        "full_abi_parity": false,
+        "optimization": "native local const-reference read; nonowning handle invalidation"
+      }
     }
   ]
 }

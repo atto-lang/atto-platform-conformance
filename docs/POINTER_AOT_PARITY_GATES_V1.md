@@ -1,3 +1,24 @@
+### Fourth compiler candidate: Forge native bounded Pointer<int>
+
+[atto-source.forge #50](https://github.com/atto-lang/atto-source.forge/pull/50)
+pins compiler head `93935c18c9977462a5630c835e9e5ef0e2035bfb` and native
+`include/atto` tree `151c08add7df9db670033b27bcefdba36f61753b`.
+The canonical PRL-001/002 Atto input blobs match exactly. The Forge
+frontend now has candidate typed local-ref parsing and emits restricted
+native C++ stack-pointer read code, not owning allocation.
+
+CTest has been authored to compile four real native guest binaries under
+GCC/Clang and ASan/UBSan and reject 24 invalid sources before C++ output.
+**Both matrix jobs in run #44664282171 failed before any steps executed**,
+so Forge remains **NOT_EXECUTED**.
+
+Forge stage-0 guests print main's logical scalar (e.g. 42) and exit 0,
+not the same process-return ABI as the Rust/Wasm, LLVM and .NET targets.
+This is an explicit remaining compiler ABI parity gap and can never count
+as a full-result/36-case pass without separately verified contract
+alignment. Lexer/parser overlaps with Forge #44/#42/#49/#36 must be
+resolved before merging.
+
 ### Exact private mirror attempt — mainline Rust/Wasm PR #419
 
 A private, token-free carrier has been built at
