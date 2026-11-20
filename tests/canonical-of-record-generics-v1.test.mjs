@@ -8,7 +8,7 @@ test("canonical factories registry is explicitly NOT_EXECUTED for all 11 compile
   assert.equal(spec.contract, "atto-canonical-of-record-generics-v1");
   assert.equal(spec.status, "TARGET_NOT_EXECUTED");
   assert.equal(backs.length, 11);
-  assert.equal(spec.cases.length, 16);
+  assert.equal(spec.cases.length, 21);
   assert.equal(new Set(spec.cases.map(x => x.id)).size, spec.cases.length);
   for (const b of backs) assert.equal(spec.backend_status[b], "not_executed");
   for (const c of spec.cases) {

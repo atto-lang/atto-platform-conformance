@@ -1,0 +1,6 @@
+// TARGET: exact closed structural row annotations; field order is not type identity.
+pub fnc main(): int {
+  val Record<{z: bool, a: int}> first = Record.of(z=true, a=40);
+  val Record<{a: int, z: bool}> second = Record.of(a=2, z=false);
+  return first.a + second.a;
+}
