@@ -1,0 +1,164 @@
+{
+  "schema": "atto.stdio.channel.endpoints.v1",
+  "version": 1,
+  "status": "TARGET_NOT_EXECUTED",
+  "normative_reference": {
+    "repo": "atto-lang/atto-spec",
+    "pr": 32,
+    "path": "language/stdio-channel-endpoints-v1.md"
+  },
+  "data_contract": {
+    "process_aliases": {
+      "stdio.in": "process.stdin",
+      "stdio.out": "process.stdout",
+      "stdio.err": "process.stderr"
+    },
+    "text_encoding": "utf-8",
+    "input_framing": "LF-delimited records, CR before LF stripped, nonempty final line once",
+    "stdin_outcome": "Result<Option<string>,IoError>",
+    "output_outcome": "Result<void,IoError>",
+    "carrier_threads_may_park": false,
+    "active_stdin_consumers": 1,
+    "tenant_stdio_ambient": false
+  },
+  "required_cases": [
+    {
+      "id": "checked_echo",
+      "kind": "guest-pass",
+      "path": "fixtures/stdio-channel/pass/echo_checked.atto",
+      "runs": [
+        {
+          "id": "one_line",
+          "stdin": "hello\\n",
+          "stdout": "Echo the next input item:hello",
+          "stderr": "echo complete",
+          "exit": 0
+        },
+        {
+          "id": "empty_line",
+          "stdin": "\\n",
+          "stdout": "Echo the next input item:",
+          "stderr": "echo complete",
+          "exit": 0
+        },
+        {
+          "id": "eof",
+          "stdin": "",
+          "stdout": "Echo the next input item:",
+          "stderr": "",
+          "exit": 11
+        },
+        {
+          "id": "unterminated",
+          "stdin": "last",
+          "stdout": "Echo the next input item:last",
+          "stderr": "echo complete",
+          "exit": 0
+        },
+        {
+          "id": "crlf",
+          "stdin": "hello\\r\\n",
+          "stdout": "Echo the next input item:hello",
+          "stderr": "echo complete",
+          "exit": 0
+        },
+        {
+          "id": "unicode",
+          "stdin": "é💡\\n",
+          "stdout": "Echo the next input item:é💡",
+          "stderr": "echo complete",
+          "exit": 0
+        },
+        {
+          "id": "nul",
+          "stdin": "a\\u0000b\\n",
+          "stdout": "Echo the next input item:a\\u0000b",
+          "stderr": "echo complete",
+          "exit": 0
+        }
+      ]
+    },
+    {
+      "id": "unchecked_read_payload",
+      "kind": "compile-fail",
+      "path": "fixtures/stdio-channel/fail/unchecked_read_payload.atto",
+      "expected_error": "E_IO_PAYLOAD_TYPE",
+      "no_guest_artifact": true
+    },
+    {
+      "id": "wrong_read_direction",
+      "kind": "compile-fail",
+      "path": "fixtures/stdio-channel/fail/wrong_read_direction.atto",
+      "expected_error": "E_IO_READABLE",
+      "no_guest_artifact": true
+    },
+    {
+      "id": "wrong_write_direction",
+      "kind": "compile-fail",
+      "path": "fixtures/stdio-channel/fail/wrong_write_direction.atto",
+      "expected_error": "E_IO_WRITABLE",
+      "no_guest_artifact": true
+    },
+    {
+      "id": "read_without_suspend",
+      "kind": "compile-fail",
+      "path": "fixtures/stdio-channel/fail/read_without_suspend.atto",
+      "expected_error": "E_SUSPENDS_REQUIRED",
+      "no_guest_artifact": true
+    },
+    {
+      "id": "stream_and_readch_conflict",
+      "kind": "compile-or-runtime-deny",
+      "path": "fixtures/stdio-channel/fail/stream_and_readch_conflict.atto",
+      "expected_error": "E_IO_CONSUMER_CONFLICT",
+      "no_guest_artifact_or_input_consumed": true
+    }
+  ],
+  "dynamic_gates": [
+    "stdin alias identity",
+    "no blocking carrier",
+    "bounded output queue/backpressure",
+    "read cancellation before/after commit",
+    "exactly one resumed read",
+    "injected browser/Wasm stdin admission",
+    "tenant generation revocation",
+    "same-process no cross-tenant descriptors",
+    "malformed UTF-8 checked error",
+    "max-item-size checked error",
+    "SIGPIPE converted to checked error",
+    "teardown drain cannot park carrier"
+  ],
+  "backend_status": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "rs": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "atto": "NOT_EXECUTED",
+    "hdl": "NOT_EXECUTED",
+    "realtime": "NOT_EXECUTED"
+  },
+  "profile_policy": {
+    "full_host_cli": [
+      "java",
+      "llvm",
+      "forge",
+      "net",
+      "rs",
+      "js",
+      "cranelift",
+      "atto",
+      "realtime"
+    ],
+    "injected_stdio_only": [
+      "wasm"
+    ],
+    "must_fail_closed_unsupported_profile": [
+      "hdl"
+    ]
+  },
+  "evidence_rule": "No backend is marked PASS on source-only contract tests, host models, parser acceptance, stale/other backend receipts, or zero executed CI steps. Require exact compiler/tree SHA, actual compiled .atto guest, input/output/exit witnesses, negative codegen refusal, carrier liveness/security evidence, and runnable target receipt."
+}
