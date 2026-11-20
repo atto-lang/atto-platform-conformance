@@ -65,3 +65,20 @@ test('no backend is silently allowed to redefine inline vs spawned semantics',()
  assert.match(v.bare_typed_void_statement_reject.target,/E_SYNTAX/);
  assert.ok(matrix.required_gates.length>=10);
 });
+
+test('canonical diagnostic mismatches remain open until exact guest evidence resolves them',()=>{
+ const ids=new Set(matrix.reconciliation_findings.map(x=>x.id));
+ assert.equal(ids.size,matrix.reconciliation_findings.length);
+ for(const id of ['js_bare_void_statement_diagnostic',
+ 'forge_bare_void_statement_diagnostic','llvm_mixed_rust_cpp_frontend',
+ 'hardware_rtl_profile_semantics'])assert.ok(ids.has(id),id);
+ const js=matrix.reconciliation_findings.find(x=>x.id==='js_bare_void_statement_diagnostic');
+ const forge=matrix.reconciliation_findings.find(x=>x.id==='forge_bare_void_statement_diagnostic');
+ assert.equal(js.canonical_diagnostic,'E_SYNTAX');
+ assert.equal(forge.canonical_diagnostic,'E_SYNTAX');
+ assert.equal(js.observed_diagnostic,'E_TASK_DISCARD_REQUIRES_DO');
+ assert.equal(forge.observed_diagnostic,'E_PARSE_SYNTAX');
+ assert.equal(js.status,'OPEN');
+ assert.equal(forge.status,'OPEN');
+ assert.equal(matrix.rollup.production_task_runtime_certified,0);
+});
