@@ -72,3 +72,14 @@ test('checked new Channel<int> constructor parity is explicit and unverified', a
     assert.equal(byId[id].expected_error,'E_TYPE');
   }
 });
+
+test('backend admission evidence is scoped and never confused with executable parity',()=>{
+  for(const backend of ['rs-browser','java','llvm','forge']) {
+    assert.match(m.backend_admission_prs[backend],/^https:\/\/github\.com\/atto-lang\/atto-source\./);
+    assert.ok(m.backend_evidence_boundaries[backend].length>30);
+    for(const c of m.cases) {
+      assert.equal(c.backend_status[backend],'NOT_EXECUTED',
+        backend+' admission work is not exact-head guest execution: '+c.id);
+    }
+  }
+});
