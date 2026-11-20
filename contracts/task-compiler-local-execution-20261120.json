@@ -99,6 +99,52 @@
       "asan_options": "detect_leaks=1",
       "ubsan_options": "halt_on_error=1",
       "scope": "full checked-in source parser regression test; not a compiled guest"
+    },
+    "exact_tree_github_actions": {
+      "source_repo": "atto-lang/atto-source.forge",
+      "source_pr": 52,
+      "source_pr_head": "33110d1577369ec0115826e7b4cfc30b93956ff4",
+      "source_tree_sha": "5b5c2a42e78ac78fe7b912faa823af7ae822c079",
+      "source_git_blobs_verified": 49,
+      "source_git_blobs_total": 49,
+      "carrier_repo": "r2g-test/atto-ci",
+      "carrier_visibility": "private",
+      "carrier_commit": "3dc6c0030f31aa28cfcefb360bf37379138a3184",
+      "carrier_tree_sha": "5b5c2a42e78ac78fe7b912faa823af7ae822c079",
+      "run_id": 44767662174,
+      "run_url": "https://github.com/r2g-test/atto-ci/actions/runs/44767662174",
+      "conclusion": "success",
+      "runs_on": "ubuntu-24.04",
+      "permissions": "contents: read",
+      "cross_org_checkout": false,
+      "source_token_used": false,
+      "toolchains": [
+        {
+          "name": "g++",
+          "job_id": 136396527543,
+          "job_conclusion": "success",
+          "executed_steps": 7,
+          "cmake": "-DATTO_FORGE_SANITIZERS=ON",
+          "ctest_passed": 14,
+          "ctest_total": 14,
+          "ctest_failed": 0
+        },
+        {
+          "name": "clang++",
+          "job_id": 136396528149,
+          "job_conclusion": "success",
+          "executed_steps": 7,
+          "cmake": "-DATTO_FORGE_SANITIZERS=ON",
+          "ctest_passed": 14,
+          "ctest_total": 14,
+          "ctest_failed": 0
+        }
+      ],
+      "limitations": [
+        "Exact source tree reconstructed in carrier, not original commit hash (different parent).",
+        "Supports Forge scalar compiler/checked-integer source profiles only.",
+        "No compiled task<T>/Future.cancel()/TenantVM guard unwind; canonical cancellation runtime cells remain NOT_EXECUTED."
+      ]
     }
   },
   "shared_limits": [
