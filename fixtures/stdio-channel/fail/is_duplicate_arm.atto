@@ -1,0 +1,9 @@
+// expect-error: E_MATCH
+// TARGET. Invalid ADT extractor must not emit a guest artifact.
+pub suspends fnc main(): int using io, suspend {
+  return match writech stdio.out, "x" over
+    on is Ok<_> -> 0,
+    on Ok(_) -> 1,
+    on is Err<error> -> 2,
+  end;
+}
