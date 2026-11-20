@@ -7,19 +7,23 @@
   "source": {
     "repo": "atto-lang/atto-source.java",
     "pr": 59,
-    "head_sha": "11226e12a5fcfcdf74dcbd7f760efb248f7c7255",
-    "git_tree_sha": "f4b787f20b874b334733100ea554ad860ca63c1b",
-    "total_git_blobs": 114,
+    "head_sha": "c4b2c349a0decedc94f24441be9e78f6af7cb112",
+    "git_tree_sha": "6180130e9f612da1df955884c52c4f9cb6987e7a",
+    "total_git_blobs": 116,
     "focus_blobs": {
-      "src/compiler/asyncv1/AttoAsyncV1Compiler.java": "c48e58b40ba8631d46aa877094842e9b99312310",
-      "src/compiler/asyncv1/AttoInlineTaskV2Compiler.java": "ea9e507b8b331a289b413c875c69137b7c30952d",
-      "tests/compiler/AttoInlineTaskV2Probe.java": "0f7ff773e1c0c4583fc498f8d2e57b98a205fa20",
-      "ci/async/verify-compiled-completed-future.sh": "c121b537e3557664e6b8065884077f9d6426809d",
+      "src/compiler/asyncv1/AttoAsyncV1Compiler.java": "9c00837e226aee14087943773c23f5f73bfef22d",
+      "src/compiler/asyncv1/AttoInlineTaskV2Compiler.java": "fc06ba594814e894d351c733caa70e13e0cd5ca5",
+      "tests/compiler/AttoInlineTaskV2Probe.java": "e4916cf859dc0743bae6c804eaf6a06f86996124",
+      "ci/async/verify-compiled-completed-future.sh": "0f374ebf65d93ca80ed1b741ee324955c1f071ae",
       "fixtures/async_v1/inline_v2_nested.atto": "75cf086a35b312f63231ac8ee657afbc433c5fee",
       "fixtures/async_v1/inline_v2_arithmetic.atto": "a74ee3189583073596577a3b61939ef0cf2e7ca1",
       "fixtures/async_v1/inline_v2_bad_void.atto": "be169f6ba762b740016d7cc6905aeeecbaef32f6",
       "fixtures/async_v1/inline_v2_unsupported_effect.atto": "de962de0f0060b5dab9e497d9364b550f8ce9890",
-      "fixtures/async_v1/inline_v2_overflow.atto": "3e148e7a403d27c336cfc353b055cc56bb3aa779"
+      "fixtures/async_v1/inline_v2_overflow.atto": "63b0e091fec293622d9f0cb5b5636b0c4e2ab57f",
+      "tests/compiler/AttoAsyncV1CompilerProbe.java": "58bf8c08123af3566889d4d381ad45b5e888a421",
+      "tests/compiler/AttoAsyncV1CliSecurityProbe.java": "edaaedd6e773403de1ee636fb9dd254500a5abb7",
+      "fixtures/async_v1/inline_v2_wide.atto": "fa55297a7d9d482889fd36298716b634930d29f7",
+      "fixtures/async_v1/inline_v2_min_i64.atto": "405fc71bf46c2660da9a11ec6bcb0cd8f275d3a5"
     }
   },
   "runner": {
@@ -27,22 +31,23 @@
     "private": true,
     "no_source_token": true,
     "cross_org_checkout": false,
-    "mirror_commit_sha": "e07c036a33d614d6185059311561d63772a33bd1",
-    "mirror_tree_sha": "f4b787f20b874b334733100ea554ad860ca63c1b",
+    "mirror_commit_sha": "41c7bebe28a390a8ae78616750392bee6290dc36",
+    "mirror_tree_sha": "6180130e9f612da1df955884c52c4f9cb6987e7a",
     "exact_full_source_tree": true,
-    "exact_source_blobs": 114,
-    "carrier_commit_sha": "e89081c26ea27359977c069d3edd417e04c9d1ed",
-    "carrier_tree_sha": "08bd289843e93f0a0b470163acbd9c778e11ffbf",
-    "carrier_only_delta": ".github/workflows/atto-java-inline-v2.yml",
-    "workflow_run_id": 44803310176,
-    "workflow_url": "https://github.com/r2g-test/atto-ci/actions/runs/44803310176",
-    "job_id": 136520708509,
+    "exact_source_blobs": 116,
+    "carrier_commit_sha": "b76402bbd5078896521cfc0128a6e1548c0f1d3e",
+    "carrier_tree_sha": "b821485af6de18f21b656f6fb9e9e369418a85f6",
+    "carrier_only_delta": ".github/workflows/atto-java-v2-keyword-security.yml",
+    "workflow_run_id": 44811782037,
+    "workflow_url": "https://github.com/r2g-test/atto-ci/actions/runs/44811782037",
+    "job_id": 136549922446,
     "workflow_conclusion": "success",
     "job_conclusion": "success",
     "exact_tree_gate": "PASS",
     "runner": "ubuntu-24.04",
     "jdk": "GraalVM JDK 25",
-    "native_image": "GraalVM Native Image --no-fallback --gc=epsilon"
+    "native_image": "GraalVM Native Image --no-fallback --gc=epsilon",
+    "shell_syntax_and_unique_sections": "PASS"
   },
   "execution": {
     "existing_source_admission": {
@@ -50,8 +55,8 @@
       "total": 97
     },
     "new_typed_inline_parser": {
-      "positive_passed": 15,
-      "negative_passed": 34
+      "positive_passed": 20,
+      "negative_passed": 116
     },
     "existing_cli_security": {
       "passed": 10,
@@ -85,9 +90,14 @@
       "no_artifact": true,
       "diagnostics": [
         "E_TASK_RETURN_TYPE",
-        "E_UNSUPPORTED_INLINE_EFFECT"
+        "E_UNSUPPORTED_INLINE_EFFECT",
+        "E_SYNTAX"
       ],
-      "marker": "ATTO_INLINE_V2_NEGATIVE_NO_ARTIFACT=PASS"
+      "markers": [
+        "ATTO_DO_SYNC_VOID_ONLY_NO_ARTIFACT=PASS",
+        "ATTO_SYNC_STANDALONE_REQUIRES_DO_NO_ARTIFACT=PASS",
+        "ATTO_INLINE_V2_NEGATIVE_NO_ARTIFACT=PASS"
+      ]
     },
     "checked_overflow": {
       "jvm_exception": "java.lang.ArithmeticException: integer overflow",
@@ -105,6 +115,27 @@
     "failed_prior_proof": {
       "run_url": "https://github.com/r2g-test/atto-ci/actions/runs/44802925515",
       "result": "failed Bash quoted-grep syntax, despite 97/97 legacy and 15/34 new source probes; corrected, not counted as runtime evidence"
+    },
+    "signed_int64_admission": {
+      "wide_32bit_plus_one_stdout": "ATTO_ASYNC_V1_RESULT=2147483648",
+      "min_signed_i64_stdout": "ATTO_ASYNC_V1_RESULT=-9223372036854775808",
+      "both_jvm_guest_runs": "PASS",
+      "old_32bit_overflow_no_longer_traps": true,
+      "signed_i64_max_overflow_traps": true,
+      "overflow_exception": "java.lang.ArithmeticException: long overflow",
+      "overflow_no_success_result": true,
+      "evidence_marker": "ATTO_INLINE_V2_SIGNED_I64_JVM=PASS",
+      "overflow_marker": "ATTO_INLINE_V2_CHECKED_OVERFLOW=PASS"
+    },
+    "lexer_keyword_hardening": {
+      "shared_legacy_reserved_words": true,
+      "sync_task_whitespace_crlf_tabs": true,
+      "size_validation_before_profile": true,
+      "explicit_typed_profile_vs_public_lexer_diagnostics": true,
+      "fail_closed_effects": true,
+      "shell_preflight": "ATTO_ASYNC_HARNESS_SYNTAX=PASS",
+      "source_admission": "ATTO_ASYNC_V1_ADMISSION_PASS checks=97",
+      "typed_parser": "ATTO_INLINE_V2_PASS positives=20 negatives=116"
     }
   },
   "scope": {
@@ -120,6 +151,17 @@
     "independent_security_review_proven": false,
     "source_org_exact_head_actions_verified": false,
     "full_source_private_carrier_verified": true,
-    "pr_remains_draft": true
+    "pr_remains_draft": true,
+    "signed_atto_int_lowering": "java long (signed i64), checked Math.*Exact, explicit L literals; limited scalar profile"
+  },
+  "previous_verified_execution": {
+    "source_head_sha": "11226e12a5fcfcdf74dcbd7f760efb248f7c7255",
+    "source_tree_sha": "f4b787f20b874b334733100ea554ad860ca63c1b",
+    "carrier_run": "https://github.com/r2g-test/atto-ci/actions/runs/44803310176",
+    "job_id": 136520708509,
+    "parser_positive": 15,
+    "parser_negative": 34,
+    "conclusion": "success",
+    "note": "Historical bounded pure-inline Java scalar proof, before keyword/whitespace and signed i64 hardening"
   }
 }

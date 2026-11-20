@@ -622,6 +622,22 @@
       "path": "contracts/task-java-inline-typed-v2-20261120.json",
       "status": "EXECUTED_LIMITED_PROFILE",
       "full_task_backend_status": "NOT_EXECUTED",
+      "source_head": "c4b2c349a0decedc94f24441be9e78f6af7cb112",
+      "source_tree": "6180130e9f612da1df955884c52c4f9cb6987e7a",
+      "full_source_blobs": 116,
+      "carrier_run": "https://github.com/r2g-test/atto-ci/actions/runs/44811782037",
+      "typed_ast_positive": 20,
+      "typed_ast_negative": 116,
+      "native_image_guest_exit": 42,
+      "release_qualified": false,
+      "signed_i64_boundary_guest_verified": true,
+      "signed_i64_checked_overflow_verified": true,
+      "shell_syntax_gate": true
+    },
+    "java_inline_typed_v2_prior": {
+      "path": "contracts/task-java-inline-typed-v2-20261120.json",
+      "status": "EXECUTED_LIMITED_PROFILE",
+      "full_task_backend_status": "NOT_EXECUTED",
       "source_head": "11226e12a5fcfcdf74dcbd7f760efb248f7c7255",
       "source_tree": "f4b787f20b874b334733100ea554ad860ca63c1b",
       "full_source_blobs": 114,
@@ -629,7 +645,8 @@
       "typed_ast_positive": 15,
       "typed_ast_negative": 34,
       "native_image_guest_exit": 42,
-      "release_qualified": false
+      "release_qualified": false,
+      "note": "Previously verified 114-file, 15/34 source profile, retained as historical source SHA"
     }
   },
   "cancellation_model": "owned Future<T>.cancel(): void requests nonblocking idempotent cancellation; TaskCancelled terminal distinct from success/failure; scope cascades and physically retires all children; receipt witnesses mandatory",
