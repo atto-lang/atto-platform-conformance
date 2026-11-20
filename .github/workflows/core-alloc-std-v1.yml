@@ -1,0 +1,35 @@
+name: Core/alloc/std candidate source contract (NOT guest execution)
+on:
+  pull_request:
+    paths:
+      - 'fixtures/core-alloc-std-v1/**'
+      - 'contracts/core-alloc-std-v1.json'
+      - 'tests/core-alloc-std-v1.test.mjs'
+      - '.github/workflows/core-alloc-std-v1.yml'
+  push:
+    paths:
+      - 'fixtures/core-alloc-std-v1/**'
+      - 'contracts/core-alloc-std-v1.json'
+      - 'tests/core-alloc-std-v1.test.mjs'
+      - '.github/workflows/core-alloc-std-v1.yml'
+permissions:
+  contents: read
+jobs:
+  candidate-source-gate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Confirm exact head and Git tree
+        env:
+          HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$HEAD"
+          git rev-parse HEAD^{tree}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Verify source inventory and mathematical host oracle (NOT Atto guests)
+        run: node --test tests/core-alloc-std-v1.test.mjs
