@@ -1,0 +1,4 @@
+pub fnc main(): int {
+  val r = (foo=1,foo=2);
+  return 0;
+}

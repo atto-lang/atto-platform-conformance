@@ -1,0 +1,4 @@
+pub fnc main(): int {
+  val Map<int,string> items = {"oops"=>"wrong"};
+  return 0;
+}

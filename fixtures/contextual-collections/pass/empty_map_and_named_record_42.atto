@@ -1,0 +1,5 @@
+pub fnc main(): int {
+  val Map<int,string> empty = {};
+  val Record r = (foo=42);
+  return r.foo;
+}

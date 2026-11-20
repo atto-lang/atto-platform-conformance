@@ -1,0 +1,4 @@
+pub fnc main(): int {
+  val items = {};
+  return 0;
+}
