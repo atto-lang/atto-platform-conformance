@@ -1,0 +1,12 @@
+// INVALID: even a ready await cannot suspend inside a synchronous lock lease.
+pub susp fnc main(): int {
+  val Future<int> worker = task<int> {
+    val lock = new Mutex<int>(41);
+    using await lock.lock_async() as guard {
+      val int answer = await task<int> { return 42; };
+      guard.value = answer;
+    }
+    return 42;
+  };
+  return await worker;
+}
