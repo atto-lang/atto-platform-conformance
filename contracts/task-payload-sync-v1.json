@@ -266,6 +266,16 @@
         "diagnostic": "E_TASK_CANCEL_TARGET",
         "no_artifact": true
       }
+    },
+    {
+      "id": "cancel_implicit_scope_exit_needs_susp",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_implicit_scope_exit_needs_susp.atto",
+      "source_git_blob": "b6f054871b6a5467dbb660153dbdcf83a98f9338",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_EFFECT",
+        "no_artifact": true
+      }
     }
   ],
   "backends": {
