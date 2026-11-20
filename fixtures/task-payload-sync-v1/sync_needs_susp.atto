@@ -1,4 +1,6 @@
 pub fnc main(): int {
-  val int result = sync task<int> { return 42; };
+  val int result = sync task<int> {
+    return await task<int> { return 42; };
+  };
   return result;
 }
