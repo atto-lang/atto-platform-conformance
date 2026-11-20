@@ -21,7 +21,7 @@ function blobHash(s) {
 test('original user examples remain byte-identical and equivalently lowered target sources',()=>{
   const a=source(manifest.cases[0].path), b=source(manifest.cases[1].path);
   assert.equal(blobHash(a),'6056400afa8d7b9b71f29be5ca4cfb15240a59b3');
-  assert.equal(blobHash(b),'8fa66e68b386c2c6d1f2b15b939e70a116c0828');
+  assert.equal(blobHash(b),'8fa66e68b386c2c6d1f2b15b9399e70a116c0828');
   assert.equal(a.replace('rt deref ptr','deref! ptr').replace('rt unref ptr','unref! ptr'),b);
 });
 test('36 unique target fixtures have valid positive or no-artifact negative obligations',()=>{
