@@ -1,0 +1,9 @@
+import module sizes from pkg "core.size_math";
+
+pub fnc main(): int {
+  val a = sizes.size_add_fits(10, 5, 15);
+  val b = sizes.size_add_fits(10, 6, 15);
+  val c = sizes.size_mul_fits(12, 4, 48);
+  val d = sizes.size_mul_fits(12, 5, 48);
+  return a && !b && c && !d ? 1 : 0;
+}
