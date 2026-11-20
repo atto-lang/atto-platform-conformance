@@ -28,6 +28,7 @@ denied(x => x.backends[0].release_qualified = true, 'backend release status cann
 denied(x => x.release_qualified = true, 'overall release status cannot self-promote');
 denied(x => x.workstreams.pop(), 'missing normative workstream is rejected');
 denied(x => x.workstreams[0].approval_state = 'ratified', 'unapproved spec promotion is rejected');
+denied(x => x.workstreams[0].reference = 'https://untrusted.example/spec', 'off-host spec reference is rejected');
 denied(x => x.backends[0].features.checked_i64.skip = true, 'unknown feature escape hatch is rejected');
 test('historical scope contains no self-attested success', () => {
   for (const b of base.backends) for (const cell of Object.values(b.features)) {
