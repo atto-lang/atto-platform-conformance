@@ -129,6 +129,22 @@
       "kind": "runtime_probe",
       "expected": "Calling susp function creates lazy task without side effects; explicitly scheduling a child task may start it before first await; cancellation and parentage are tracked independently",
       "evidence_required": true
+    },
+    {
+      "id": "two-sequential-ready",
+      "kind": "compiled_guest_positive",
+      "source": "two-sequential-ready.atto",
+      "expected_exit": 2,
+      "expected_runtime_suspensions": 0,
+      "expected_sequential_acquisitions": 2,
+      "expected_releases": 2
+    },
+    {
+      "id": "reject-guard-overflow",
+      "kind": "compile_negative",
+      "source": "negative-guard-overflow.atto",
+      "expected_diagnostic": "E_OVERFLOW",
+      "guest_artifact": false
     }
   ],
   "backend_evidence": {
