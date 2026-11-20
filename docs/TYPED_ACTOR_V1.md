@@ -13,6 +13,36 @@ rustc --edition=2021 tools/typed_actor_v1.rs -o /tmp/typed_actor_oracle
 
 This verifier must never be used to promote Java/LLVM/.NET/Wasm/Forge support. Each backend requires independently executed compile-positive, compile-negative and runtime guest traces with exact compiler SHA, toolchain and target, and real CONTROL/mailbox evidence. Existing Java `ActorRef<ActorClass>` must remain compatible until an explicit migration plan is proven.
 
+## Additional string-mailbox guest targets (not executed)
+
+`contracts/typed-actor-string-v1.tsv` pins five additional candidate fixtures
+under `fixtures/typed-actor-string-v1/`, separate from the original fifteen
+immutable protocol cases. **ACTOR-STRING-01** reproduces the required
+`define actor Router receives string sends int as` program with
+`router.send("hello")`. Targets **02–05** reject an incorrectly typed
+external sender, mismatched `ActorMail<T>` handler, wrong actor outbound
+effect, and duplicate `sends` clause. The outbound-effect case assumes
+future actor-to-actor message lowering; an earlier unsupported-feature error
+is *not* evidence that the target diagnostic passed.
+
+All five registry statuses are `NOT_EXECUTED`. The Rust-only
+`tools/typed_actor_string_targets.rs` verifies exact fixture Git blob SHAs,
+source-only evidence labels and no unrecorded cases. It **does not** compile
+AttoLang or prove that the string message crossed worker memories.
+
+```sh
+rustc --edition=2021 --test -D warnings tools/typed_actor_string_targets.rs -o /tmp/atto_actor_string_target_tests
+/tmp/atto_actor_string_target_tests
+```
+
+Compiler [atto-source.rs #406](https://github.com/atto-lang/atto-source.rs/pull/406)
+contains a candidate strict UTF-8 DATA frame codec with a ten-byte header and
+64 KiB payload budget, but still rejects `ActorMail<string>` until the
+runtime/guest memory bridge exists. A codec unit test or SHA match never
+promotes a backend to guest PASS. The required next evidence is an executed
+pinned Wasm guest receive, negative compile/no-artifact checks, and cross-memory
+lifetime and capability validation.
+
 ## Canonical source identity and backend admission (v1)
 
 **11 separate source repositories were independently inventoried.** The snapshot
