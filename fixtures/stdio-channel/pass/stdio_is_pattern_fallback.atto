@@ -1,0 +1,18 @@
+// TARGET ONLY. This exactly exercises user-proposed on is ADT match syntax.
+// Not a claim of backend execution.
+pub suspends fnc next_text(): string using io, suspend {
+  val input = stdio.in;
+  val output = stdio.out;
+  val status = writech output, "prompt";
+  return match status over
+    on is Ok<_> -> match << input over
+      on is Ok<line> -> match line over
+        on is Some<item> -> item,
+        on None -> "",
+      end,
+      on is Err<error> -> "",
+    end,
+    on is Err<error> -> "",
+  end;
+}
+pub fnc main(): int { return 0; }
