@@ -23,7 +23,8 @@
     "source_blob_sha",
     "compiler_head_sha",
     "target_triple",
-    "nonzero_executed_steps"
+    "nonzero_executed_steps",
+    "pure_policy_imports_real_guest_exit_42"
   ],
   "requiredNegativeEvidence": [
     "network_permission_denial_pre_dns",
@@ -83,5 +84,11 @@
       "backend": "realtime",
       "execution": "NOT_EXECUTED"
     }
-  ]
+  ],
+  "purePolicyFixture": "fixtures/hosted-async-http-fs-v1/pass/pure_policy_imports.atto",
+  "purePolicyStatus": "SOURCE_ONLY_NOT_EXECUTED",
+  "purePolicySourceBlobs": {
+    "stdlib/std/http_response_policy.atto": "22757dafe89bc9601d04c8726a09ddf676206c7e",
+    "stdlib/std/fs_text_policy.atto": "0cd53216e91ef8de1a764ba5b80ce85c5796c1f2"
+  }
 }
