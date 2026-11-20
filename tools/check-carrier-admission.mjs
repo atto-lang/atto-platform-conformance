@@ -1,5 +1,5 @@
 // Source-free GitHub Actions capacity admission. This does not authorize private exports.
-// Usage: GH_TOKEN=... node tools/check-carrier-admission.mjs owner/repo 123456 <head-sha> <workflow-path> <workflow-blob-sha> <job-name>
+// Usage: GH_TOKEN=... node tools/check-carrier-admission.mjs owner/repo <repo-id> 123456 <head-sha> <workflow-path> <workflow-blob-sha> <job-name>
 import { pathToFileURL } from 'node:url';
 
 export class AdmissionFailure extends Error {
@@ -13,13 +13,14 @@ function absoluteTime(value) { const n = Date.parse(value); return Number.isFini
 
 export function assessAdmission({ repository, run, jobs, workflow, expected }) {
   requireGate(REPO.test(expected.repo), 'invalid expected repository');
+  requireGate(POSITIVE(expected.repoId), 'immutable destination repository ID required');
   requireGate(SHA.test(expected.headSha), 'invalid expected head SHA');
   requireGate(SHA.test(expected.workflowBlobSha), 'invalid approved workflow blob');
   requireGate(expected.workflowPath.startsWith('.github/workflows/') && expected.workflowPath.endsWith('.yml'), 'bad workflow path');
   requireGate(typeof expected.jobName === 'string' && expected.jobName.length > 0, 'job name required');
   requireGate(repository?.full_name === expected.repo && repository.archived === false, 'destination repository is missing, archived or mismatched');
   requireGate(POSITIVE(repository.id), 'destination immutable repository ID missing');
-  requireGate(expected.repoId == null || repository.id === expected.repoId, 'destination repository ID changed');
+  requireGate(repository.id === expected.repoId, 'destination repository ID changed');
   requireGate(run?.repository?.full_name === expected.repo && run.repository.id === repository.id, 'run repository mismatch');
   requireGate(POSITIVE(run.id) && run.id === expected.runId, 'run ID mismatch');
   requireGate(run.head_sha === expected.headSha, 'run head does not match approved source-free canary');
@@ -55,6 +56,7 @@ export function assessAdmission({ repository, run, jobs, workflow, expected }) {
 export async function checkLiveAdmission(expected, { token, fetchImpl = fetch } = {}) {
   requireGate(token && typeof token === 'string', 'GH_TOKEN or GITHUB_TOKEN required for private repositories');
   requireGate(REPO.test(expected.repo), 'invalid expected repository');
+  requireGate(POSITIVE(expected.repoId), 'immutable destination repository ID required');
   requireGate(POSITIVE(expected.runId), 'run ID required');
   requireGate(SHA.test(expected.headSha), 'expected SHA must be 40 lowercase hex');
   requireGate(SHA.test(expected.workflowBlobSha), 'expected workflow blob must be 40 lowercase hex');
@@ -83,9 +85,9 @@ export async function checkLiveAdmission(expected, { token, fetchImpl = fetch } 
 
 const invokedAsCLI = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
 if (invokedAsCLI) {
-  const [repo, runIdText, headSha, workflowPath, workflowBlobSha, jobName, proofStep = 'ADMISSION_PROOF'] = process.argv.slice(2);
+  const [repo, repoIdText, runIdText, headSha, workflowPath, workflowBlobSha, jobName, proofStep = 'ADMISSION_PROOF'] = process.argv.slice(2);
   const runId = Number(runIdText);
-  const expected = {repo, runId, headSha, workflowPath, workflowBlobSha, jobName, proofStep};
+  const expected = {repo, repoId: Number(repoIdText), runId, headSha, workflowPath, workflowBlobSha, jobName, proofStep};
   checkLiveAdmission(expected, {token: process.env.GH_TOKEN || process.env.GITHUB_TOKEN})
     .then(value => { console.log(JSON.stringify(value, null, 2)); })
     .catch(error => { console.error('ADMISSION_DENIED: ' + error.message); process.exitCode = 1; });
