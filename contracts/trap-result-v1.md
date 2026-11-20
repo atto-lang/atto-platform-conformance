@@ -72,3 +72,18 @@ The machine-readable registry records implementation_stage and draft_pr for
 each backend while retaining status=NOT_EXECUTED and guest_receipt=null.
 A native host test may pass without changing this guest status. No current
 release or merge should infer full multi-backend parity from any of these PRs.
+
+## Obsolete caller-trap Option contract quarantine
+
+The historical `contracts/v1/caller-trap-parity/manifest.json` and its
+`Some`/`None` fixtures describe a superseded language profile and **cannot**
+qualify current AttoLang v1. Do not mutate or silently reinterpret the
+historical v1 manifest: its original Git blob is a reproducibility input.
+Canonical v1 instead requires `Result<T,F>` and must reject an assignment
+such as `val legacy: Option<int> = trap (40 + 2);` with a compiler-owned
+`E_TYPE` diagnostic and **no emitted guest artifact**.
+
+The source-only target `reject-obsolete-option-trap-binding` pins that negative
+fixture, while `tests/trap_result_source_cases.mjs` locks its Git blob identity.
+`atto-source.wasm` PR #51 adds the separate real-compiler/Wasm guest proof
+gate. Source-only passing checks never promote any backend to guest PASSED.
