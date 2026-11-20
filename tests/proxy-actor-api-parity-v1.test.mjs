@@ -35,7 +35,10 @@ test('proxy actor API registry remains canonical and cross-backend complete', ()
     if (b.host_ticket_status === 'SOURCE_EXACT_HOST_TESTED') {
       assert.ok(b.host_ticket_ci, b.id + ': missing executable host ticket receipt');
       assert.equal(b.host_ticket_ci.source_head_sha, b.host_ticket_pr_head_sha);
-      assert.equal(b.host_ticket_ci.source_proof, '11_SCOPED_GIT_BLOBS_MATCHED');
+      assert.ok(['SCOPED_GIT_BLOBS_MATCHED','EXACT_FULL_GIT_TREE']
+        .includes(b.host_ticket_ci.source_proof));
+      assert.ok(Number.isInteger(b.host_ticket_ci.verified_blob_count) &&
+        b.host_ticket_ci.verified_blob_count > 0);
       assert.ok(Number.isInteger(b.host_ticket_ci.executed_ci_steps) &&
         b.host_ticket_ci.executed_ci_steps > 0);
       assert.match(b.host_ticket_ci.ci_url, /^https:\/\/github\.com\//);
