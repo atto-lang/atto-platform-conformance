@@ -563,5 +563,84 @@
       "recheck_after_suspension": "public channel send and receive revalidate claim before each retry; internal actor send must match source-owner record",
       "guest_execution": "NOT_EXECUTED"
     }
+  },
+  "alternate_ci_runner_probe_2026_11_20": {
+    "purpose": "Discover any working GitHub-hosted runner before attempting private cross-org exact-tree Atto source transfer",
+    "carrier_repo_pattern": "<org>/atto-ci",
+    "workflow": "Atto CI runner capacity probe",
+    "trigger": "temporary draft pull_request",
+    "credentials": "no secrets, no cross-org checkout, read-only GitHub token",
+    "observed_status": "NO_RUNNER_STEPS_EXECUTED",
+    "outcomes": [
+      {
+        "org": "voxletra",
+        "run_url": "https://github.com/voxletra/atto-ci/actions/runs/44765943043",
+        "run_id": 44765943043,
+        "job": "capacity",
+        "conclusion": "failure",
+        "executed_steps": 0
+      },
+      {
+        "org": "benefactor-cc",
+        "run_url": "https://github.com/benefactor-cc/atto-ci/actions/runs/44766280216",
+        "run_id": 44766280216,
+        "job": "capacity",
+        "conclusion": "failure",
+        "executed_steps": 0
+      },
+      {
+        "org": "athlet-o",
+        "run_url": "https://github.com/athlet-o/atto-ci/actions/runs/44766287011",
+        "run_id": 44766287011,
+        "job": "capacity",
+        "conclusion": "failure",
+        "executed_steps": 0
+      },
+      {
+        "org": "agent-pontifex",
+        "run_url": "https://github.com/agent-pontifex/atto-ci/actions/runs/44766294425",
+        "run_id": 44766294425,
+        "job": "capacity",
+        "conclusion": "failure",
+        "executed_steps": 0
+      },
+      {
+        "org": "scintilla-run",
+        "run_url": "https://github.com/scintilla-run/atto-ci/actions/runs/44766300320",
+        "run_id": 44766300320,
+        "job": "capacity",
+        "conclusion": "failure",
+        "executed_steps": 0
+      },
+      {
+        "org": "akrion-sim",
+        "run_url": "https://github.com/akrion-sim/atto-ci/actions/runs/44766470645",
+        "run_id": 44766470645,
+        "job": "capacity",
+        "conclusion": "failure",
+        "executed_steps": 0
+      },
+      {
+        "org": "zed-pkg-test",
+        "run_url": "https://github.com/zed-pkg-test/atto-ci/actions/runs/44766465049",
+        "run_id": 44766465049,
+        "job": "capacity",
+        "conclusion": "failure",
+        "executed_steps": 0
+      },
+      {
+        "org": "honeypot-r-us-test",
+        "run_url": "https://github.com/honeypot-r-us-test/atto-ci/actions/runs/44766457989",
+        "run_id": 44766457989,
+        "job": "capacity",
+        "conclusion": "failure",
+        "executed_steps": 0
+      }
+    ],
+    "temporary_probe_prs": "all eight closed unmerged",
+    "reason_for_failure": "UNKNOWN_FROM_ZERO_STEP_STATUS",
+    "available_budget": "NOT_PROVEN",
+    "guest_compiler_test": "NOT_EXECUTED",
+    "note": "A 0-step pre-execution failure does not prove account billing/minutes exhaustion. No actual exact-tree cross-org mirror was performed for this head."
   }
 }
