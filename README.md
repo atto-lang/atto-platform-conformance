@@ -12,6 +12,10 @@ Execute portable language fixtures and record target-specific results.
 - Use test fixtures and reproducible evidence to distinguish proposed behavior from implemented behavior.
 - Record breaking changes, migration notes, and dependencies on other AttoLang components.
 
+## Typed std.pattern fragment targets (NOT EXECUTED)
+
+[Typed pattern-fragments v1 registry](contracts/typed-pattern-fragments-v1.json) records 38 prospective cases (16 semantic matches, 22 rejection targets). Every listed backend is NOT_EXECUTED; [Node integrity tests](tests/typed-pattern-fragments-v1-registry.test.mjs) check provenance and case structure only. The canonical proposal is on [atto-spec #59](https://github.com/atto-lang/atto-spec/pull/59). This is not stdlib implementation, compiler parsing, formatter equivalence or compiled guest execution.
+
 ## Sequence pattern v2 target registry
 
 [Sequence matching v2 registry](contracts/sequence-pattern-v2-registry.json) pins 40 proposed positive/negative semantics (20 match and 20 parse-reject targets). Every backend result is explicitly **NOT_EXECUTED** until an independent compiler executes its source-derived guest fixture; [the registry integrity suite](tests/sequence-pattern-v2-registry.test.mjs) is host-only and cannot certify parity. Contract [atto-spec #59](https://github.com/atto-lang/atto-spec/pull/59); compiler tracking [atto-source.rs #123](https://github.com/atto-lang/atto-source.rs/issues/123).
