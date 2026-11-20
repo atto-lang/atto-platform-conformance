@@ -22,50 +22,58 @@
       "id": "actor-forward",
       "path": "fixtures/pipe-rpipe-v1/actor-forward.atto",
       "expect": "accept_typechecked_graph",
-      "required_direction": "Producer->Consumer"
+      "required_direction": "Producer->Consumer",
+      "source_git_blob_sha": "dd59abdb707d05dabac30139feb4bd03b60459d1"
     },
     {
       "id": "actor-reverse",
       "path": "fixtures/pipe-rpipe-v1/actor-reverse.atto",
       "expect": "accept_typechecked_graph",
-      "required_direction": "Producer->Consumer"
+      "required_direction": "Producer->Consumer",
+      "source_git_blob_sha": "da3d759d56aac4cfd6919521df862edb594f426f"
     },
     {
       "id": "actor-missing-emits",
       "path": "fixtures/pipe-rpipe-v1/actor-missing-emits.atto",
       "expect": "reject_source_role",
-      "error_family": "E_TYPE"
+      "error_family": "E_TYPE",
+      "source_git_blob_sha": "6755a01ce43f7ac33f64d86d43dff7c7257185ca"
     },
     {
       "id": "actor-wrong-direction",
       "path": "fixtures/pipe-rpipe-v1/actor-wrong-direction.atto",
       "expect": "reject_source_role",
-      "error_family": "E_TYPE"
+      "error_family": "E_TYPE",
+      "source_git_blob_sha": "12ee1a935c43477213604593d73b0cecf761fead"
     },
     {
       "id": "mixed-channel-stream-forward",
       "path": "fixtures/pipe-rpipe-v1/mixed-channel-stream-forward.atto",
       "expect": "accept_typechecked_graph",
-      "required_direction": "Producer->Channel<int>->Stream<int>->Consumer"
+      "required_direction": "Producer->Channel<int>->Stream<int>->Consumer",
+      "source_git_blob_sha": "6e2528f7c4b278c0fff9671c8c5985bfbd94adb1"
     },
     {
       "id": "mixed-channel-stream-reverse",
       "path": "fixtures/pipe-rpipe-v1/mixed-channel-stream-reverse.atto",
       "expect": "accept_typechecked_graph",
-      "required_direction": "Producer->Channel<int>->Stream<int>->Consumer"
+      "required_direction": "Producer->Channel<int>->Stream<int>->Consumer",
+      "source_git_blob_sha": "060b61b80cfb3946a9510edd1190be6256212424"
     },
     {
       "id": "actor-duplicate-direction",
       "path": "fixtures/pipe-rpipe-v1/actor-duplicate-direction.atto",
       "expect": "reject_second_connection_if_unicast_port_occupied",
       "required_direction": "Producer->Consumer twice, NEVER duplex",
-      "phase": "runtime_admission"
+      "phase": "runtime_admission",
+      "source_git_blob_sha": "d738937d72c791c41d55f088eaed65a5f9ed224f"
     },
     {
       "id": "actor-mixed-directions",
       "path": "fixtures/pipe-rpipe-v1/actor-mixed-directions.atto",
       "expect": "reject_unparenthesized_direction_mix",
-      "error_family": "E_PIPE_DIRECTION"
+      "error_family": "E_PIPE_DIRECTION",
+      "source_git_blob_sha": "1addd9cc44879d24f7e76b2d5eb69d6837a711ab"
     }
   ],
   "backend_evidence": [
@@ -153,5 +161,6 @@
     "ownership across await and cancellation",
     "once-only error settlement"
   ],
-  "gating": "Source fixtures and manifest are not passing conformance; positive cases need compiled guest transfer and observed receipts. A backend can report TARGET_UNSUPPORTED with an explicit diagnostic, not PASS."
+  "gating": "Source fixtures and manifest are not passing conformance; positive cases need compiled guest transfer and observed receipts. A backend can report TARGET_UNSUPPORTED with an explicit diagnostic, not PASS.",
+  "fixture_sha_lock_version": 1
 }
