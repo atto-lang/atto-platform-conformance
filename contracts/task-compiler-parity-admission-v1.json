@@ -86,9 +86,9 @@
     "java": {
       "repository": "atto-lang/atto-source.java",
       "pr_url": "https://github.com/atto-lang/atto-source.java/pull/59",
-      "head_sha": "11444064480f896d1d2de2d7d0fc1d0849d494d3",
+      "head_sha": "35339c0df48fe42d2dd450495979732e285ce803",
       "source_file": "src/compiler/asyncv1/AttoAsyncV1Compiler.java",
-      "source_blob_sha": "805e28e6b6f99798e8d737662e7531ec3e98b288",
+      "source_blob_sha": "a7e4f4d24bd1a1105229a443f2527b7ead210189",
       "profile": "CLOSED_WORLD_COMPLETED_FUTURE_INT_SOURCE_PROFILE",
       "status": "SOURCE_ONLY_NOT_EXECUTED",
       "task_cancellation": "NOT_EXECUTED",
