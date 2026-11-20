@@ -89,5 +89,25 @@ test('token-free carrier verification preserves full Git modes, symlink, binary 
       try{const r=await run();assert.notEqual(r.status,0);assert.match(r.stderr,/E_MIRROR_DIRTY_CHECKOUT/);}
       finally{await writeFile(binary,bytes);}
     });
+    await t.test('tracked symlink escaping checkout is rejected even with a matching tree',async()=>{
+      const escape=join(repo,'escape.link');
+      await symlink('../../../etc/passwd',escape);
+      command(repo,'git',['add','escape.link']);
+      command(repo,'git',['commit','-qm','tracked external symlink is not admissible']);
+      const nextTree=command(repo,'git',['rev-parse','HEAD^{tree}']);
+      const nextCommit=command(repo,'git',['rev-parse','HEAD']);
+      const output=spawnSync('git',['ls-tree','-r','-z','HEAD'],{cwd:repo,encoding:'buffer'});
+      assert.equal(output.status,0);
+      const nextEntries=output.stdout.toString('utf8').split('\0').filter(Boolean).map(line=>{
+        const m=/^(\d{6}) (\w+) ([0-9a-f]{40})\t(.+)$/.exec(line);
+        assert.ok(m,line);
+        return {path:m[4],mode:m[1],type:m[2],sha:m[3]};
+      });
+      const next={schema:manifest.schema,source_commit_sha:nextCommit,
+        source_tree_sha:nextTree,entries:nextEntries};
+      const r=await run(next,nextTree);
+      assert.notEqual(r.status,0);
+      assert.match(r.stderr,/E_MIRROR_SYMLINK_ESCAPE/);
+    });
   } finally {await rm(base,{recursive:true,force:true});}
 });
