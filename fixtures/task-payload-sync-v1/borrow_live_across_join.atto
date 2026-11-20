@@ -1,6 +1,9 @@
+define class Foo as
+  pub let int value = 1;
+end
 pub susp fnc main(): int {
   val owner = new Foo();
   val loan = borrow! owner;
   val int result = sync task<int> { return 42; };
-  return result;
+  return result + loan.value;
 }
