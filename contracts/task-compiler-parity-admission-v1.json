@@ -112,10 +112,10 @@
     "cranelift": {
       "repository": "atto-lang/atto-source.cranelift",
       "pr_url": "https://github.com/atto-lang/atto-source.cranelift/pull/54",
-      "head_sha": "a546a1a2ec03bb52c0aedd4845a713680cb15411",
+      "head_sha": "0f142ff8185902d48cd7efcbdb7e40893d0a9ad4",
       "source_file": "src/frontend.rs",
-      "source_blob_sha": "6b970d03bc954d037be370f99891449025bde987",
-      "profile": "RESERVED_SYNC_FAIL_CLOSED",
+      "source_blob_sha": "757a3a9dabc02d1a1ac3f4eecf0b49348c12f6d6",
+      "profile": "TRUSTED_INLINE_SCALAR_VOID_ONLY_SOURCE_ADMISSION",
       "status": "SOURCE_ONLY_NOT_EXECUTED",
       "task_cancellation": "NOT_EXECUTED",
       "guard_cleanup": "NOT_EXECUTED",
