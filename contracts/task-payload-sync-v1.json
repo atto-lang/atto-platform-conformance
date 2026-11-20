@@ -535,6 +535,43 @@
         "NO_GUEST_DEFER_ASSUMED",
         "NO_CROSS_TENANT_LEASE_REPLAY"
       ]
+    },
+    {
+      "id": "rwlock_cancel_read_write",
+      "given": [
+        "two_active_read_guards",
+        "writer_waiting"
+      ],
+      "action": "cancel_one_reader_then_cancel_writer",
+      "required_order": [
+        "READER_1_UNWIND_RELEASE",
+        "WRITER_WAIT_CANCELLED",
+        "READER_2_UNWIND_RELEASE",
+        "SCOPE_PHYSICAL_RETIRE"
+      ],
+      "assertions": [
+        "NO_WRITER_GRANTED_BEFORE_ALL_READERS_RELEASE",
+        "READ_COUNT_NEVER_NEGATIVE",
+        "NO_WRITER_PERMIT_AFTER_CANCEL",
+        "NO_DUPLICATE_READ_RELEASE",
+        "NO_STARVED_CANCELLED_WAITER"
+      ]
+    },
+    {
+      "id": "actor_critical_write_task_cancel",
+      "given": [
+        "tenant_actor_owns_critical_write_guard",
+        "child_task_cancel_requested"
+      ],
+      "action": "cancel_task_while_guard_active",
+      "assertions": [
+        "CRITICAL_WRITE_NOT_REENTRANT",
+        "NO_RELEASE_WHILE_HANDLER_STILL_RUNNING",
+        "EXACTLY_ONCE_GUARD_CLEANUP",
+        "SUPERVISOR_CONTROL_NOT_FORGEABLE",
+        "PHYSICAL_RETIRED_AFTER_LEASE_SETTLED",
+        "NO_CROSS_TENANT_GRANT"
+      ]
     }
   ]
 }
