@@ -240,5 +240,6 @@
       "evidence_note": "realtime project README/AGENTS only; no compiler",
       "tracking_issue": "https://github.com/atto-lang/atto-source.realtime/issues/5"
     }
-  }
+  },
+  "tracking_issue": "https://github.com/atto-lang/atto-compilers-parity-testing/issues/34"
 }
