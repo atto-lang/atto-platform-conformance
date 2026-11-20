@@ -3,6 +3,7 @@
   "status": "TARGET_NOT_GUEST_VERIFIED",
   "source_contract": "atto-lang/atto-spec/language/typed-task-payload-sync-v1.md",
   "meaning": "task<T> returns Future<T>; await/sync unwrap exactly once; do sync task is supervised nonjoining do task",
+  "execution_frame_model": "independent logical continuations within one structured TaskScope; physical frame sharing only after proven lifetime and alias safety",
   "cases": [
     {
       "id": "await_payload",
@@ -136,6 +137,33 @@
       "expected": {
         "diagnostic": "E_TASK_RETURN_TYPE",
         "no_artifact": true
+      }
+    },
+    {
+      "id": "two_live_task_frames",
+      "source_path": "fixtures/task-payload-sync-v1/two_live_task_frames.atto",
+      "source_git_blob": "71f67d57e9e41332db75810d3683e72ebed29340",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42
+      }
+    },
+    {
+      "id": "parent_child_frame_isolation",
+      "source_path": "fixtures/task-payload-sync-v1/parent_child_frame_isolation.atto",
+      "source_git_blob": "06bde2e462d9a03b38961451dc32af7050e89d52",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42
+      }
+    },
+    {
+      "id": "nested_task_frames",
+      "source_path": "fixtures/task-payload-sync-v1/nested_task_frames.atto",
+      "source_git_blob": "1502b715d41de991352153ba75eb828c1eb62cad",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42
       }
     }
   ],
