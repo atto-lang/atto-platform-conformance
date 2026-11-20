@@ -135,10 +135,61 @@
       "repo": "atto-lang/atto-source.java",
       "implementation": "code_authored",
       "implementation_pr": "https://github.com/atto-lang/atto-source.java/pull/51",
-      "proposed_head_sha": "20f760bd002a750f6cacb823ac3cce510a1d6367",
+      "proposed_head_sha": "cd0ecec4788423b37f1f3ea89e99e49cb96da5fe",
       "execution_status": "not_executed",
       "receipt": null,
-      "result_profile": "os_exit_code"
+      "result_profile": "os_exit_code",
+      "local_execution": {
+        "status": "executed_locally_not_ci_admitted",
+        "toolchain": "OpenJDK 21.0.12.1 (javac -Xlint:all -Werror; Linux 64-bit)",
+        "compiler_blob_sha": "61f31581970076f88af694063e68e3e748c8d4b6",
+        "tests_blob_sha": "ade26f07ea32c9730288e80ced78e0acfedad3b5",
+        "tests_blob_role": "authored GraalVM25 CI script, not itself executed locally",
+        "guest_main_values": [
+          83,
+          83,
+          42,
+          42
+        ],
+        "observed_process_exit": [
+          83,
+          83,
+          42,
+          42
+        ],
+        "observed_guest_stdout": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "guest_artifact_sha256": [
+          "e1c2a6c53c1608d3d0a7115036f67381e8786a4ff16b0b08fcbf10123f5212ae",
+          "e1c2a6c53c1608d3d0a7115036f67381e8786a4ff16b0b08fcbf10123f5212ae",
+          "e7069353619fc3f65c243696a4a021db2b2b615278e048f0f603d3952a79c431",
+          "e7069353619fc3f65c243696a4a021db2b2b615278e048f0f603d3952a79c431"
+        ],
+        "canonical_negative_results": [
+          "E_TYPE",
+          "E_PARSE",
+          "E_PARSE",
+          "E_PARSE"
+        ],
+        "canonical_negative_no_output_artifact": true,
+        "extended_negative_cases": 11,
+        "extended_negative_no_output_artifact": true,
+        "i64_min_observed": "-9223372036854775808",
+        "i64_min_input_blob_sha": "52b2880b835af88f2a0376b9ae154adc23b24e34",
+        "i64_underflow_input_blob_sha": "5c52861ff94b1771970cb4d57cb8be00a4443ef5",
+        "signed_underflow_rejection": {
+          "exit": 2,
+          "diagnostic": "E_LITERAL",
+          "artifact_exists": false
+        },
+        "executed_test_groups": 4,
+        "failing_test_groups": 0,
+        "scope": "Local actual checked Atto source→Java source→javac JVM class→java guest-process execution under JDK21. Four canonical exact Git blobs and 11 extended negative test sources were exercised; signed min through compiled f_main observer. Authored GraalVM25 full CI script, whole repo suite, Native Image and source-org CI remain unexecuted."
+      }
     },
     "java-production-compiler": {
       "repo": "atto-lang/atto-source.java",
