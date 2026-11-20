@@ -7,18 +7,21 @@
   "source": {
     "repo": "atto-lang/atto-source.java",
     "pr": 59,
-    "head_sha": "751ac8cc70edaceb240bd4f425c4bf9ee3fb8e38",
+    "head_sha": "be4a6e6cccacfc7c956457398130c7808e4e6915",
     "source_blobs": {
-      "src/compiler/asyncv1/AttoAsyncV1Compiler.java": "f6fc5a677dbcf65273540dc78587cf3617a3ae7d",
-      "tests/compiler/AttoAsyncV1CompilerProbe.java": "b78622bbe9a25d01796f237041d14cd15fa0e68d",
+      "src/compiler/asyncv1/AttoAsyncV1Compiler.java": "011b00b2f53c1c6d4989fab71e5ffe9060bad9bc",
+      "tests/compiler/AttoAsyncV1CompilerProbe.java": "9e0ea507761a4f739c40594b621f9b52fc801285",
+      "tests/compiler/AttoAsyncV1CliSecurityProbe.java": "50693aefe758f2dc97726a9385faf673031d891b",
       "tests/compiler/AttoAsyncV1GeneratedIdentifierProbe.java": "3d73792dbeb346412652600496124f49d0d673c1",
       "fixtures/async_v1/completed_future.atto": "b2c23fcf15bebda5449032f41e3096dae68302c0",
       "fixtures/async_v1/completed_future_typed.atto": "240fc8e0ad724722b13f8e0034b30bc69db76925",
-      "ci/async/verify-compiled-completed-future.sh": "d27ef89964f36c21e1250174e67a279d4723a75b",
+      "ci/async/verify-compiled-completed-future.sh": "09fb451df6d4e53759a37f6d4a412de15ab10d5b",
       "ci/admission/exact-tree.sh": "3a52135b8ea8986b38e877bbc291823f52bca947",
       "fixtures/async_v1/sync_inline_int.atto": "b2d53bc49d9ed1e7e7da479fd528f926e09620d9",
-      "fixtures/async_v1/sync_inline_empty.atto": "82e885f6ec2d8fa731da65e26e2c53db1b9a9ec0",
-      "fixtures/async_v1/sync_inline_do_nonvoid.atto": "e612895b2067c52fd38d1e66c8f6a551e1aa2762"
+      "fixtures/async_v1/sync_inline_empty.atto": "8700004089b03e01672e6f94a3f70e9564162622",
+      "fixtures/async_v1/sync_inline_do_nonvoid.atto": "e612895b2067c52fd38d1e66c8f6a551e1aa2762",
+      "fixtures/async_v1/sync_inline_bare_without_do.atto": "82e885f6ec2d8fa731da65e26e2c53db1b9a9ec0",
+      "fixtures/async_v1/sync_inline_bare_typed_void.atto": "94d39c4c94a8a1641b3337f7252d68a54e7f73c7"
     }
   },
   "alternate_runner": {
@@ -26,25 +29,25 @@
     "private": true,
     "no_source_token": true,
     "cross_org_checkout": false,
-    "exact_source_blob_count": 10,
+    "exact_source_blob_count": 13,
     "source_scope": "SHA_VERIFIED_TEST_DEPENDENCY_CLOSURE_ONLY_NOT_FULL_SOURCE_TREE",
-    "carrier_commit_sha": "bce6e403e3f58c89c5381776abf56830034988c1",
-    "carrier_tree_sha": "9e5043cf6716b15150e2c394c9a7330fadc8fcb2",
-    "workflow_run_id": 44795596059,
-    "workflow_url": "https://github.com/r2g-test/atto-ci/actions/runs/44795596059",
-    "job_id": 136494184667,
+    "carrier_commit_sha": "40e3e0de2cae8c779426fa4b972935966aa057a4",
+    "carrier_tree_sha": "fcd0fd9b7faae3a6b56c9ccef8b14af51d88f678",
+    "workflow_run_id": 44800166180,
+    "workflow_url": "https://github.com/r2g-test/atto-ci/actions/runs/44800166180",
+    "job_id": 136509927771,
     "workflow_conclusion": "success",
     "job_conclusion": "success",
     "exact_tree_gate": "PASS",
-    "source_blob_pin_gate": "10/10",
+    "source_blob_pin_gate": "13/13",
     "runner": "ubuntu-24.04",
     "jdk": "GraalVM JDK 25",
     "native_image": "GraalVM Native Image 25 --no-fallback --gc=epsilon"
   },
   "execution": {
     "compiler_admission_checks": {
-      "passed": 95,
-      "total": 95
+      "passed": 97,
+      "total": 97
     },
     "generated_identifier_checks": {
       "java_compiled": 19,
@@ -58,7 +61,6 @@
     },
     "pure_inline_sync_task": {
       "accepted_forms": [
-        "sync task {}",
         "sync task<int> { return N; }",
         "do sync task {}",
         "do sync task<void> {}",
@@ -75,12 +77,22 @@
         "do sync task<int> { return N; }",
         "do sync task { return N; }",
         "do sync task<void> { return N; }",
-        "do sync task<Future<int>> {}"
+        "do sync task<Future<int>> {}",
+        "sync task {} as standalone statement",
+        "sync task<void> { return; } as standalone statement"
       ],
       "do_sync_payload_type": "void only (explicit or inferred)",
       "do_sync_invalid_diagnostic": "E_TASK_RETURN_TYPE",
       "do_sync_invalid_no_generated_artifact": true,
-      "negative_cli_marker": "ATTO_DO_SYNC_VOID_ONLY_NO_ARTIFACT=PASS"
+      "negative_cli_marker": "ATTO_DO_SYNC_VOID_ONLY_NO_ARTIFACT=PASS",
+      "bare_statement_diagnostic": "E_SYNTAX",
+      "bare_statement_no_generated_artifact": true,
+      "bare_statement_negative_cli_marker": "ATTO_SYNC_STANDALONE_REQUIRES_DO_NO_ARTIFACT=PASS"
+    },
+    "cli_security_checks": {
+      "passed": 10,
+      "total": 10,
+      "marker": "ATTO_ASYNC_V1_CLI_SECURITY_PASS checks=10"
     }
   },
   "boundaries": {
@@ -103,5 +115,26 @@
       "total": 81
     },
     "note": "Historical prior profile admitted do sync task<int>, which is invalid in current normative spec; superseded by the exact-head void-only run."
+  },
+  "superseded_void_only_evidence": {
+    "source_head": "751ac8cc70edaceb240bd4f425c4bf9ee3fb8e38",
+    "run_url": "https://github.com/r2g-test/atto-ci/actions/runs/44795596059",
+    "admission": {
+      "passed": 95,
+      "total": 95
+    },
+    "source_blobs": {
+      "src/compiler/asyncv1/AttoAsyncV1Compiler.java": "f6fc5a677dbcf65273540dc78587cf3617a3ae7d",
+      "tests/compiler/AttoAsyncV1CompilerProbe.java": "b78622bbe9a25d01796f237041d14cd15fa0e68d",
+      "tests/compiler/AttoAsyncV1GeneratedIdentifierProbe.java": "3d73792dbeb346412652600496124f49d0d673c1",
+      "fixtures/async_v1/completed_future.atto": "b2c23fcf15bebda5449032f41e3096dae68302c0",
+      "fixtures/async_v1/completed_future_typed.atto": "240fc8e0ad724722b13f8e0034b30bc69db76925",
+      "ci/async/verify-compiled-completed-future.sh": "d27ef89964f36c21e1250174e67a279d4723a75b",
+      "ci/admission/exact-tree.sh": "3a52135b8ea8986b38e877bbc291823f52bca947",
+      "fixtures/async_v1/sync_inline_int.atto": "b2d53bc49d9ed1e7e7da479fd528f926e09620d9",
+      "fixtures/async_v1/sync_inline_empty.atto": "82e885f6ec2d8fa731da65e26e2c53db1b9a9ec0",
+      "fixtures/async_v1/sync_inline_do_nonvoid.atto": "e612895b2067c52fd38d1e66c8f6a551e1aa2762"
+    },
+    "scope": "10/10"
   }
 }
