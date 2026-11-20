@@ -1,0 +1,2 @@
+export pub[pkg] fnc answer;
+pub fnc answer(): int { return 42; }

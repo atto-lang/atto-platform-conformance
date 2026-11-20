@@ -1,0 +1,14 @@
+// expect-error: E_OWNERSHIP
+// A method dispatch on under-construction self may transitively leak it.
+define class Counter as
+    pub let int value = 0;
+    constructor(int initial) {
+        self.peek();
+        self.value = initial;
+    }
+    peek(): int { return self.value; }
+end
+pub fnc main(): int {
+    val counter = new Counter(42);
+    return counter.value;
+}

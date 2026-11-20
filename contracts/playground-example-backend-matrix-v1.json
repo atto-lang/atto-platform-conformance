@@ -1,0 +1,833 @@
+{
+  "schema": "atto.playground.backend-execution-matrix.v1",
+  "description": "A pinned snapshot and executed-evidence ledger, never an assertion that all Oreslang backends support previews.",
+  "site": {
+    "repository": "atto-lang/atto-lang.github.io",
+    "commit": "77d48789295d42c20f39c0810c3257b63b4e1fe8",
+    "tree": "3821c8b035cbd05ccbd1c75b693f7ca665409951"
+  },
+  "statuses": [
+    "passed",
+    "expected_reject",
+    "not_executed"
+  ],
+  "backend_order": [
+    "atto_rs_native",
+    "atto_rs_wasm_compiler",
+    "atto_browser_pinned",
+    "ores_java",
+    "ores_llvm",
+    "ores_wasm",
+    "ores_forge",
+    "ores_net"
+  ],
+  "evidence": {
+    "atto_rs_native": {
+      "status": "executed",
+      "url": "https://github.com/zed-pkg-test/oreslang-private-pr-validation-20261012/actions/runs/43757643264",
+      "head": "851aedd73c2c23b415949629ba775c149c69c6f8",
+      "tree": "d1a0c428ba810115a3cfeaa3106583b09bda6c88",
+      "toolchain": "Rust 1.85.1",
+      "description": "Native attoc compiled all nine; eight executed in common guest Wasm runner, one rejected"
+    },
+    "atto_rs_wasm_compiler": {
+      "status": "executed",
+      "url": "https://github.com/zed-pkg-test/oreslang-private-pr-validation-20261012/actions/runs/43757643264",
+      "head": "851aedd73c2c23b415949629ba775c149c69c6f8",
+      "tree": "d1a0c428ba810115a3cfeaa3106583b09bda6c88",
+      "toolchain": "Rust 1.85.1 wasm32-unknown-unknown",
+      "description": "Compiled guest Wasm was byte-identical to native attoc"
+    },
+    "atto_browser_pinned": {
+      "status": "executed",
+      "url": "https://github.com/atto-lang/atto-lang.github.io/actions/runs/43756990286",
+      "head": "77d48789295d42c20f39c0810c3257b63b4e1fe8",
+      "tree": "3821c8b035cbd05ccbd1c75b693f7ca665409951",
+      "toolchain": "pinned browser guest v2",
+      "description": "Site CI tested real shipped compiler and guest; eight runnable, one expected compile rejection"
+    }
+  },
+  "backend_gaps": {
+    "ores_java": "not_executed",
+    "ores_llvm": "not_executed",
+    "ores_wasm": "not_executed",
+    "ores_forge": "not_executed",
+    "ores_net": "not_executed"
+  },
+  "examples": [
+    {
+      "id": "runnable.actors",
+      "path": "play/examples/actors.atto",
+      "blob_sha1": "141e1c42f4d37bfe8bb4a78b99a7ff718f0d9675",
+      "bytes": 603,
+      "published_tier": "runnable",
+      "expected_result": "guest_executed",
+      "backend_status": {
+        "atto_rs_native": "passed",
+        "atto_rs_wasm_compiler": "passed",
+        "atto_browser_pinned": "passed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "runnable.classes",
+      "path": "play/examples/classes.atto",
+      "blob_sha1": "bfe87cd97e6b5d1354ccf2d5253e1ecd75c37623",
+      "bytes": 548,
+      "published_tier": "runnable",
+      "expected_result": "guest_executed",
+      "backend_status": {
+        "atto_rs_native": "passed",
+        "atto_rs_wasm_compiler": "passed",
+        "atto_browser_pinned": "passed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "runnable.conditions",
+      "path": "play/examples/conditions.atto",
+      "blob_sha1": "955ba34f565ca762bb1e47ca57f6a09a25681013",
+      "bytes": 756,
+      "published_tier": "runnable",
+      "expected_result": "guest_executed",
+      "backend_status": {
+        "atto_rs_native": "passed",
+        "atto_rs_wasm_compiler": "passed",
+        "atto_browser_pinned": "passed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "runnable.enums",
+      "path": "play/examples/enums.atto",
+      "blob_sha1": "2beb5f850fde538d9e634e3a4f4d25dd755344db",
+      "bytes": 521,
+      "published_tier": "runnable",
+      "expected_result": "guest_executed",
+      "backend_status": {
+        "atto_rs_native": "passed",
+        "atto_rs_wasm_compiler": "passed",
+        "atto_browser_pinned": "passed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "runnable.error",
+      "path": "play/examples/error.atto",
+      "blob_sha1": "7c7f1673024e607cb4d0599048c346324854d2e5",
+      "bytes": 126,
+      "published_tier": "expected_diagnostic",
+      "expected_result": "E_IMMUTABLE",
+      "backend_status": {
+        "atto_rs_native": "expected_reject",
+        "atto_rs_wasm_compiler": "expected_reject",
+        "atto_browser_pinned": "expected_reject",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "runnable.fib",
+      "path": "play/examples/fib.atto",
+      "blob_sha1": "c92d095feb60c480590dd181dc182f53ce6032eb",
+      "bytes": 295,
+      "published_tier": "runnable",
+      "expected_result": "guest_executed",
+      "backend_status": {
+        "atto_rs_native": "passed",
+        "atto_rs_wasm_compiler": "passed",
+        "atto_browser_pinned": "passed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "runnable.hello",
+      "path": "play/examples/hello.atto",
+      "blob_sha1": "c47e66424a708f1735677a8436e70f8aaabe80a5",
+      "bytes": 228,
+      "published_tier": "runnable",
+      "expected_result": "guest_executed",
+      "backend_status": {
+        "atto_rs_native": "passed",
+        "atto_rs_wasm_compiler": "passed",
+        "atto_browser_pinned": "passed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "runnable.overflow",
+      "path": "play/examples/overflow.atto",
+      "blob_sha1": "e2ec3bb25ed02e47645946c1db221eed05579ee3",
+      "bytes": 235,
+      "published_tier": "expected_panic",
+      "expected_result": "panic_code=1",
+      "backend_status": {
+        "atto_rs_native": "passed",
+        "atto_rs_wasm_compiler": "passed",
+        "atto_browser_pinned": "passed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "preview.actor-pipeline",
+      "path": "play/examples/preview/actor-pipeline.atto",
+      "blob_sha1": "7736f9710da491050fa5e71307eb933561791774",
+      "bytes": 990,
+      "published_tier": "preview_disabled",
+      "expected_result": "not_executed",
+      "backend_status": {
+        "atto_rs_native": "not_executed",
+        "atto_rs_wasm_compiler": "not_executed",
+        "atto_browser_pinned": "not_executed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "preview.actor-receiver-methods",
+      "path": "play/examples/preview/actor-receiver-methods.atto",
+      "blob_sha1": "aac346b631d1a0faf06b17d156c00c2ab54f39a2",
+      "bytes": 1765,
+      "published_tier": "preview_disabled",
+      "expected_result": "not_executed",
+      "backend_status": {
+        "atto_rs_native": "not_executed",
+        "atto_rs_wasm_compiler": "not_executed",
+        "atto_browser_pinned": "not_executed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "preview.async-iterators",
+      "path": "play/examples/preview/async-iterators.atto",
+      "blob_sha1": "5ef19f8968ac4d29ff66fc65a4a775b7c00edee6",
+      "bytes": 393,
+      "published_tier": "preview_disabled",
+      "expected_result": "not_executed",
+      "backend_status": {
+        "atto_rs_native": "not_executed",
+        "atto_rs_wasm_compiler": "not_executed",
+        "atto_browser_pinned": "not_executed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "preview.boolean-operators",
+      "path": "play/examples/preview/boolean-operators.atto",
+      "blob_sha1": "a323f261ed2d4e92bf489e71819fd522233762e8",
+      "bytes": 1063,
+      "published_tier": "preview_disabled",
+      "expected_result": "not_executed",
+      "backend_status": {
+        "atto_rs_native": "not_executed",
+        "atto_rs_wasm_compiler": "not_executed",
+        "atto_browser_pinned": "not_executed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "preview.channel-bounded",
+      "path": "play/examples/preview/channel-bounded.atto",
+      "blob_sha1": "4c272c8a288a84ef6842651722bbf4ed3d430035",
+      "bytes": 777,
+      "published_tier": "preview_disabled",
+      "expected_result": "not_executed",
+      "backend_status": {
+        "atto_rs_native": "not_executed",
+        "atto_rs_wasm_compiler": "not_executed",
+        "atto_browser_pinned": "not_executed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "preview.channel-probe",
+      "path": "play/examples/preview/channel-probe.atto",
+      "blob_sha1": "0f8a65616e09fb7560c025f3e00dc4040402ebec",
+      "bytes": 714,
+      "published_tier": "preview_disabled",
+      "expected_result": "not_executed",
+      "backend_status": {
+        "atto_rs_native": "not_executed",
+        "atto_rs_wasm_compiler": "not_executed",
+        "atto_browser_pinned": "not_executed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "preview.channel-unbounded",
+      "path": "play/examples/preview/channel-unbounded.atto",
+      "blob_sha1": "70e7325e584aa688eccfd7ff0a72759f70b81424",
+      "bytes": 586,
+      "published_tier": "preview_disabled",
+      "expected_result": "not_executed",
+      "backend_status": {
+        "atto_rs_native": "not_executed",
+        "atto_rs_wasm_compiler": "not_executed",
+        "atto_browser_pinned": "not_executed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "preview.data-shapes",
+      "path": "play/examples/preview/data-shapes.atto",
+      "blob_sha1": "300227bcaf5a6f34ed3f946462e0b35a131dd4ff",
+      "bytes": 948,
+      "published_tier": "preview_disabled",
+      "expected_result": "not_executed",
+      "backend_status": {
+        "atto_rs_native": "not_executed",
+        "atto_rs_wasm_compiler": "not_executed",
+        "atto_browser_pinned": "not_executed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "preview.effects",
+      "path": "play/examples/preview/effects.atto",
+      "blob_sha1": "d536a2857e675e6a050dd15731fb4e9a47ae4af5",
+      "bytes": 905,
+      "published_tier": "preview_disabled",
+      "expected_result": "not_executed",
+      "backend_status": {
+        "atto_rs_native": "not_executed",
+        "atto_rs_wasm_compiler": "not_executed",
+        "atto_browser_pinned": "not_executed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "preview.fib-match",
+      "path": "play/examples/preview/fib-match.atto",
+      "blob_sha1": "6dfec3f23bb47ab4a3536e8120f7f2f280846800",
+      "bytes": 489,
+      "published_tier": "preview_disabled",
+      "expected_result": "not_executed",
+      "backend_status": {
+        "atto_rs_native": "not_executed",
+        "atto_rs_wasm_compiler": "not_executed",
+        "atto_browser_pinned": "not_executed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "preview.function-pipeline",
+      "path": "play/examples/preview/function-pipeline.atto",
+      "blob_sha1": "b7d1d0c494b53f414e8bb17a3cf50e56b5963707",
+      "bytes": 395,
+      "published_tier": "preview_disabled",
+      "expected_result": "not_executed",
+      "backend_status": {
+        "atto_rs_native": "not_executed",
+        "atto_rs_wasm_compiler": "not_executed",
+        "atto_browser_pinned": "not_executed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "preview.generators",
+      "path": "play/examples/preview/generators.atto",
+      "blob_sha1": "2251e22ae1b22447d89b30d0e39a792af66ebcf5",
+      "bytes": 516,
+      "published_tier": "preview_disabled",
+      "expected_result": "not_executed",
+      "backend_status": {
+        "atto_rs_native": "not_executed",
+        "atto_rs_wasm_compiler": "not_executed",
+        "atto_browser_pinned": "not_executed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "preview.guard",
+      "path": "play/examples/preview/guard.atto",
+      "blob_sha1": "ec5b695237addeaeab3939a794ce71ccc7130bbe",
+      "bytes": 981,
+      "published_tier": "preview_disabled",
+      "expected_result": "not_executed",
+      "backend_status": {
+        "atto_rs_native": "not_executed",
+        "atto_rs_wasm_compiler": "not_executed",
+        "atto_browser_pinned": "not_executed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "preview.lambdas",
+      "path": "play/examples/preview/lambdas.atto",
+      "blob_sha1": "e685d26161c77803d0c98b0cf138aac093a4ce51",
+      "bytes": 650,
+      "published_tier": "preview_disabled",
+      "expected_result": "not_executed",
+      "backend_status": {
+        "atto_rs_native": "not_executed",
+        "atto_rs_wasm_compiler": "not_executed",
+        "atto_browser_pinned": "not_executed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "preview.match-types-is",
+      "path": "play/examples/preview/match-types-is.atto",
+      "blob_sha1": "51c4361b8146d4dbb904eac2500fa5893fb7df31",
+      "bytes": 531,
+      "published_tier": "preview_disabled",
+      "expected_result": "not_executed",
+      "backend_status": {
+        "atto_rs_native": "not_executed",
+        "atto_rs_wasm_compiler": "not_executed",
+        "atto_browser_pinned": "not_executed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "preview.match-values",
+      "path": "play/examples/preview/match-values.atto",
+      "blob_sha1": "e0791c8a0ba767329a2b7765b0ec3c276f580365",
+      "bytes": 665,
+      "published_tier": "preview_disabled",
+      "expected_result": "not_executed",
+      "backend_status": {
+        "atto_rs_native": "not_executed",
+        "atto_rs_wasm_compiler": "not_executed",
+        "atto_browser_pinned": "not_executed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "preview.modules",
+      "path": "play/examples/preview/modules.atto",
+      "blob_sha1": "09ea30a1d609723b2c7f009aa553b663c6113ec0",
+      "bytes": 657,
+      "published_tier": "preview_disabled",
+      "expected_result": "not_executed",
+      "backend_status": {
+        "atto_rs_native": "not_executed",
+        "atto_rs_wasm_compiler": "not_executed",
+        "atto_browser_pinned": "not_executed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "preview.mutable-state",
+      "path": "play/examples/preview/mutable-state.atto",
+      "blob_sha1": "6a1c000a200af65e09cd67e6dd73e01ca49d10a3",
+      "bytes": 1089,
+      "published_tier": "preview_disabled",
+      "expected_result": "not_executed",
+      "backend_status": {
+        "atto_rs_native": "not_executed",
+        "atto_rs_wasm_compiler": "not_executed",
+        "atto_browser_pinned": "not_executed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "preview.mutex-locks",
+      "path": "play/examples/preview/mutex-locks.atto",
+      "blob_sha1": "31b08b6bebdbd0c243a98679e1a2968b7aea0ed9",
+      "bytes": 962,
+      "published_tier": "preview_disabled",
+      "expected_result": "not_executed",
+      "backend_status": {
+        "atto_rs_native": "not_executed",
+        "atto_rs_wasm_compiler": "not_executed",
+        "atto_browser_pinned": "not_executed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "preview.namespaces",
+      "path": "play/examples/preview/namespaces.atto",
+      "blob_sha1": "a11b92a93b82c2955048fffad998a3254b647957",
+      "bytes": 738,
+      "published_tier": "preview_disabled",
+      "expected_result": "not_executed",
+      "backend_status": {
+        "atto_rs_native": "not_executed",
+        "atto_rs_wasm_compiler": "not_executed",
+        "atto_browser_pinned": "not_executed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "preview.nio-reactor",
+      "path": "play/examples/preview/nio-reactor.atto",
+      "blob_sha1": "c6b816255d8a02c89d771fb8e63f207980fd2781",
+      "bytes": 1082,
+      "published_tier": "preview_disabled",
+      "expected_result": "not_executed",
+      "backend_status": {
+        "atto_rs_native": "not_executed",
+        "atto_rs_wasm_compiler": "not_executed",
+        "atto_browser_pinned": "not_executed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "preview.result-option-end",
+      "path": "play/examples/preview/result-option-end.atto",
+      "blob_sha1": "4996a3924bb8223d7f3ccb966622f9f4de17ab46",
+      "bytes": 755,
+      "published_tier": "preview_disabled",
+      "expected_result": "not_executed",
+      "backend_status": {
+        "atto_rs_native": "not_executed",
+        "atto_rs_wasm_compiler": "not_executed",
+        "atto_browser_pinned": "not_executed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "preview.result-option",
+      "path": "play/examples/preview/result-option.atto",
+      "blob_sha1": "f3934f0b6edd69cf975ec8ab5a4dfb5166991b77",
+      "bytes": 837,
+      "published_tier": "preview_disabled",
+      "expected_result": "not_executed",
+      "backend_status": {
+        "atto_rs_native": "not_executed",
+        "atto_rs_wasm_compiler": "not_executed",
+        "atto_browser_pinned": "not_executed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "preview.routine",
+      "path": "play/examples/preview/routine.atto",
+      "blob_sha1": "107943ceb68393f8b096712616da9d8023767041",
+      "bytes": 790,
+      "published_tier": "preview_disabled",
+      "expected_result": "not_executed",
+      "backend_status": {
+        "atto_rs_native": "not_executed",
+        "atto_rs_wasm_compiler": "not_executed",
+        "atto_browser_pinned": "not_executed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "preview.rx-interop",
+      "path": "play/examples/preview/rx-interop.atto",
+      "blob_sha1": "eb58878db01df3e86e6d2e2110ebfd025799f421",
+      "bytes": 938,
+      "published_tier": "preview_disabled",
+      "expected_result": "not_executed",
+      "backend_status": {
+        "atto_rs_native": "not_executed",
+        "atto_rs_wasm_compiler": "not_executed",
+        "atto_browser_pinned": "not_executed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "preview.rx-observable",
+      "path": "play/examples/preview/rx-observable.atto",
+      "blob_sha1": "e05fbef46066b7418a3c8362a8ef0cbd6cbdb8e8",
+      "bytes": 585,
+      "published_tier": "preview_disabled",
+      "expected_result": "not_executed",
+      "backend_status": {
+        "atto_rs_native": "not_executed",
+        "atto_rs_wasm_compiler": "not_executed",
+        "atto_browser_pinned": "not_executed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "preview.stdio-channels",
+      "path": "play/examples/preview/stdio-channels.atto",
+      "blob_sha1": "912eb5b9b14c8fd2bbd4f7bac27a6d27309a043c",
+      "bytes": 670,
+      "published_tier": "preview_disabled",
+      "expected_result": "not_executed",
+      "backend_status": {
+        "atto_rs_native": "not_executed",
+        "atto_rs_wasm_compiler": "not_executed",
+        "atto_browser_pinned": "not_executed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "preview.supervisor-mailbox",
+      "path": "play/examples/preview/supervisor-mailbox.atto",
+      "blob_sha1": "ca5cb7c193c65c9d18237122651dc11c40e1b8b2",
+      "bytes": 719,
+      "published_tier": "preview_disabled",
+      "expected_result": "not_executed",
+      "backend_status": {
+        "atto_rs_native": "not_executed",
+        "atto_rs_wasm_compiler": "not_executed",
+        "atto_browser_pinned": "not_executed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "preview.suspends",
+      "path": "play/examples/preview/suspends.atto",
+      "blob_sha1": "503d8548bbaabb234eaefac11a0e76f47fd5cda7",
+      "bytes": 904,
+      "published_tier": "preview_disabled",
+      "expected_result": "not_executed",
+      "backend_status": {
+        "atto_rs_native": "not_executed",
+        "atto_rs_wasm_compiler": "not_executed",
+        "atto_browser_pinned": "not_executed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "preview.tasks-async",
+      "path": "play/examples/preview/tasks-async.atto",
+      "blob_sha1": "046010b7eb46159ff46f9d09f1ba9a7d09ce904c",
+      "bytes": 469,
+      "published_tier": "preview_disabled",
+      "expected_result": "not_executed",
+      "backend_status": {
+        "atto_rs_native": "not_executed",
+        "atto_rs_wasm_compiler": "not_executed",
+        "atto_browser_pinned": "not_executed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "preview.traits-interfaces",
+      "path": "play/examples/preview/traits-interfaces.atto",
+      "blob_sha1": "59e04d922e4a9cbd2a58cea7526a0b1c0b31b627",
+      "bytes": 881,
+      "published_tier": "preview_disabled",
+      "expected_result": "not_executed",
+      "backend_status": {
+        "atto_rs_native": "not_executed",
+        "atto_rs_wasm_compiler": "not_executed",
+        "atto_browser_pinned": "not_executed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "preview.trap",
+      "path": "play/examples/preview/trap.atto",
+      "blob_sha1": "f0945cbe67dce4c3343552b2cf6e6d2889e6a9a3",
+      "bytes": 1385,
+      "published_tier": "preview_disabled",
+      "expected_result": "not_executed",
+      "backend_status": {
+        "atto_rs_native": "not_executed",
+        "atto_rs_wasm_compiler": "not_executed",
+        "atto_browser_pinned": "not_executed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "preview.use-using-with",
+      "path": "play/examples/preview/use-using-with.atto",
+      "blob_sha1": "0f148133c967412fa8a25ccc79cfcc8d34158d98",
+      "bytes": 453,
+      "published_tier": "preview_disabled",
+      "expected_result": "not_executed",
+      "backend_status": {
+        "atto_rs_native": "not_executed",
+        "atto_rs_wasm_compiler": "not_executed",
+        "atto_browser_pinned": "not_executed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "preview.visibility-modifiers",
+      "path": "play/examples/preview/visibility-modifiers.atto",
+      "blob_sha1": "3c15b61abe91cbf679b64c4ef2ab64a31bbe9ad2",
+      "bytes": 1074,
+      "published_tier": "preview_disabled",
+      "expected_result": "not_executed",
+      "backend_status": {
+        "atto_rs_native": "not_executed",
+        "atto_rs_wasm_compiler": "not_executed",
+        "atto_browser_pinned": "not_executed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    },
+    {
+      "id": "runnable.primes",
+      "path": "play/examples/primes.atto",
+      "blob_sha1": "44feefd86acc13039d0536b473e8bef9e67a9ef2",
+      "bytes": 589,
+      "published_tier": "runnable",
+      "expected_result": "guest_executed",
+      "backend_status": {
+        "atto_rs_native": "passed",
+        "atto_rs_wasm_compiler": "passed",
+        "atto_browser_pinned": "passed",
+        "ores_java": "not_executed",
+        "ores_llvm": "not_executed",
+        "ores_wasm": "not_executed",
+        "ores_forge": "not_executed",
+        "ores_net": "not_executed"
+      }
+    }
+  ]
+}

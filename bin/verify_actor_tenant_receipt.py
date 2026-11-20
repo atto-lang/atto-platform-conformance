@@ -34,6 +34,7 @@ def validate_manifest(manifest):
 
 
 def validate_receipt(receipt, manifest):
+    """Validate shape only. A receipt never independently authenticates GitHub."""
     cases = validate_manifest(manifest)
     require(isinstance(receipt, dict), "receipt-is-not-object")
     require(receipt.get("backend") in manifest["backends"], "unknown-backend")
@@ -49,28 +50,67 @@ def validate_receipt(receipt, manifest):
         require(isinstance(receipt.get("reason"), str)
                 and bool(receipt["reason"].strip()), "missing-failure-reason")
         return
-    require(receipt.get("guest_executed") is True, "no-executed-guest")
-    require(receipt.get("evidence_kind") == "compiled-guest", "host-model-not-guest")
-    require(isinstance(receipt.get("head_sha"), str)
-            and SHA40.fullmatch(receipt["head_sha"]), "invalid-head-sha")
+
+    case = cases[receipt["case_id"]]
+    compile_denial = case["kind"] == "compile-negative"
+    sandbox_denial = receipt["case_id"] == "untrusted-tenant-missing-sandbox"
+    admission_denial = compile_denial or sandbox_denial
+    expected_kind = ("compiler-rejection" if compile_denial else
+                     "sandbox-admission-rejection" if sandbox_denial else "compiled-guest")
+    require(receipt.get("evidence_kind") == expected_kind, "wrong-evidence-class")
+    # A compiler rejection and a deny-before-execution case MUST NOT claim that
+    # a guest ran. A negative test still needs a real executed CI test step.
+    require(receipt.get("guest_executed") is (not admission_denial),
+            "guest-execution-misclassified")
+
+    head = receipt.get("head_sha")
+    require(isinstance(head, str) and SHA40.fullmatch(head), "invalid-head-sha")
+    require(receipt.get("checked_out_sha") == head, "checkout-is-not-pr-head")
+    tree = receipt.get("head_tree_sha")
+    require(isinstance(tree, str) and SHA40.fullmatch(tree), "invalid-head-tree")
     require(isinstance(receipt.get("artifact_sha256"), str)
             and SHA256.fullmatch(receipt["artifact_sha256"]), "invalid-artifact-sha")
-    require(isinstance(receipt.get("workflow_url"), str)
-            and receipt["workflow_url"].startswith("https://github.com/"), "missing-workflow-url")
-    require(isinstance(receipt.get("command"), str)
-            and bool(receipt["command"].strip()), "missing-command")
+    for key in ("run_id", "run_attempt", "job_id"):
+        require(type(receipt.get(key)) is int and receipt[key] > 0, "invalid-" + key)
+    url = receipt.get("workflow_url")
+    require(isinstance(url, str) and re.fullmatch(
+        r"https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/actions/runs/([1-9][0-9]*)", url),
+        "invalid-workflow-url")
+    require(url.rsplit("/", 1)[-1] == str(receipt["run_id"]),
+            "workflow-run-id-mismatch")
+    command = receipt.get("command")
+    require(isinstance(command, str) and bool(command.strip()), "missing-command")
+    steps = receipt.get("steps")
+    require(isinstance(steps, list) and len(steps) > 0, "zero-executed-steps")
+    require(all(isinstance(step, dict) and
+                isinstance(step.get("name"), str) and bool(step["name"].strip()) and
+                step.get("status") == "completed" and
+                step.get("conclusion") in {"success", "failure"} and
+                isinstance(step.get("command"), str) and bool(step["command"].strip())
+                for step in steps), "invalid-step-evidence")
+    require(len({step["name"] for step in steps}) == len(steps),
+            "ambiguous-step-names")
+    require(any(step["conclusion"] == "success" and step["command"] == command
+                for step in steps), "no-executed-matching-test-step")
+
     require(isinstance(receipt.get("observed"), str)
-            and receipt["observed"] == cases[receipt["case_id"]]["expect"], "unexpected-outcome")
+            and receipt["observed"] == case["expect"], "unexpected-outcome")
     require(type(receipt.get("exit_code")) is int, "missing-exit-code")
-    if cases[receipt["case_id"]]["kind"] == "compile-negative":
-        require(receipt["exit_code"] != 0, "compiler-must-reject")
+    if admission_denial:
+        require(receipt["exit_code"] != 0, "denial-must-exit-nonzero")
     else:
         require(receipt["exit_code"] == 0, "guest-must-exit-successfully")
-    if cases[receipt["case_id"]]["kind"].startswith("security-"):
-        require(receipt.get("boundary") in
-                {"validated-wasm-isolate", "graal-isolate", "os-process", "hardware-compartment"},
-                "no-identified-enforced-boundary")
-        require(receipt.get("enforcement_tested") is True, "sandbox-enforcement-not-tested")
+    if case["kind"].startswith("security-"):
+        if sandbox_denial:
+            require(receipt.get("boundary") == "none" and
+                    receipt.get("enforcement_tested") is False,
+                    "missing-sandbox-must-not-claim-enforcement")
+        else:
+            require(receipt.get("boundary") in
+                    {"validated-wasm-isolate", "graal-isolate", "os-process",
+                     "hardware-compartment"}, "no-identified-enforced-boundary")
+            require(receipt.get("enforcement_tested") is True,
+                    "sandbox-enforcement-not-tested")
 
 
 def main(argv):
