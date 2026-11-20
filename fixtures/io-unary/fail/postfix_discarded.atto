@@ -1,0 +1,4 @@
+// No silently discarded Result<Option<T>,IoError> on standalone reads.
+pub susp fnc bad(Channel<int> c): void using io, suspend {
+    c >>;
+}

@@ -1,0 +1,4 @@
+// > > with intervening space is not the directional operator.
+pub susp fnc bad(Channel<int> c): Result<Option<int>, IoError> using io, suspend {
+    return (c > >);
+}

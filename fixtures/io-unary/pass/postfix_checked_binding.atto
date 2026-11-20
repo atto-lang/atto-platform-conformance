@@ -1,0 +1,5 @@
+// Candidate: checked outcome is preserved in a val binder.
+pub susp fnc receive(Channel<int> c): Result<Option<int>, IoError> using io, suspend {
+    val Result<Option<int>, IoError> answer = (c >>);
+    return answer;
+}

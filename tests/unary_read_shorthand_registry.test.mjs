@@ -11,7 +11,12 @@ test('unary read contract is explicit and not falsely certified',()=>{
   assert.equal(m.positive_guest_execution,'PENDING_PER_BACKEND');
   assert.ok(m.rust_preflight_evidence.scope.includes('rejected E_UNSUPPORTED'));
   assert.ok(m.evidence_rule.includes('actual compiled guest'));
-  for(const c of m.cases) for(const status of Object.values(c.backend_status)) assert.equal(status,'NOT_EXECUTED');
+  const backends=["atto","cranelift","forge","hdl","java","js","llvm","net","realtime","rs","rs-browser","wasm"];
+  for(const c of m.cases) {
+    assert.deepEqual(Object.keys(c.backend_status).sort(),backends);
+    for(const status of Object.values(c.backend_status)) assert.equal(status,'NOT_EXECUTED');
+  }
+  assert.equal(m.postfix_guest_execution,'PENDING_EXACT_HEAD_TESTS_PER_BACKEND');
 });
 test('all portable source candidate and negative files are present',async()=>{
   const ids=new Set(),paths=new Set();
@@ -28,7 +33,7 @@ test('all portable source candidate and negative files are present',async()=>{
       'must exercise direction operator or its deliberate whitespace-nearmiss');
     assert.ok(source.length>40);
   }
-  assert.equal(ids.size,17);
+  assert.equal(ids.size,25);
 });
 test('required effect, unary, type-first and compound variants are represented',async()=>{
   const byId=Object.fromEntries(m.cases.map(c=>[c.id,c]));
@@ -41,4 +46,17 @@ test('required effect, unary, type-first and compound variants are represented',
   assert.equal(byId.missing_susp.expected_error,'E_SUSPENDS_REQUIRED');
   assert.equal(byId.checked_compound_mismatch.expected_error,'E_TYPE');
   assert.equal(byId.trap_must_not_remove_susp.expected_error,'E_SUSPENDS_REQUIRED');
+});
+
+test('postfix expression shorthand matrix distinguishes alias, type and effects', async()=>{
+  const byId=Object.fromEntries(m.cases.map(c=>[c.id,c]));
+  const read=async id=>readFile(resolve(root,byId[id].path),'utf8');
+  assert.match(await read('postfix_parenthesized'),/return \(c >>\);/);
+  assert.match(await read('postfix_bare'),/return c >>;/);
+  assert.match(await read('postfix_checked_binding'),/Result<Option<int>, IoError> answer = \(c >>\)/);
+  for(const id of ['postfix_int_mismatch','postfix_missing_susp','postfix_nonreadable',
+                    'postfix_discarded','postfix_spaced']) {
+    assert.equal(byId[id].kind,'fail');
+    assert.ok(byId[id].expected_error.startsWith('E_'));
+  }
 });

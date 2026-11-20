@@ -1,0 +1,4 @@
+// Candidate: postfix and prefix produce the same checked single read.
+pub susp fnc receive(Channel<int> c): Result<Option<int>, IoError> using io, suspend {
+    return (c >>);
+}

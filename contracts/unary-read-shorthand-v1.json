@@ -19,7 +19,10 @@
     "compound-target-checked",
     "no-hidden-unwrap",
     "trap-does-not-erase-suspend",
-    "borrow-check-across-suspend"
+    "borrow-check-across-suspend",
+    "postfix-source-gtgt-equals-prefix-ltlt",
+    "postfix-contiguous-expression-terminal-only",
+    "no-ambiguous-gtgt-binder-or-triple-shift"
   ],
   "positive_guest_execution": "PENDING_PER_BACKEND",
   "cases": [
@@ -32,7 +35,15 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "rs-browser": "NOT_EXECUTED"
+        "rs-browser": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
       }
     },
     {
@@ -44,7 +55,15 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "rs-browser": "NOT_EXECUTED"
+        "rs-browser": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
       }
     },
     {
@@ -56,7 +75,15 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "rs-browser": "NOT_EXECUTED"
+        "rs-browser": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
       }
     },
     {
@@ -68,7 +95,15 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "rs-browser": "NOT_EXECUTED"
+        "rs-browser": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
       }
     },
     {
@@ -80,7 +115,15 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "rs-browser": "NOT_EXECUTED"
+        "rs-browser": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
       }
     },
     {
@@ -92,7 +135,15 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "rs-browser": "NOT_EXECUTED"
+        "rs-browser": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
       }
     },
     {
@@ -104,7 +155,15 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "rs-browser": "NOT_EXECUTED"
+        "rs-browser": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
       }
     },
     {
@@ -117,7 +176,15 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "rs-browser": "NOT_EXECUTED"
+        "rs-browser": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
       }
     },
     {
@@ -130,7 +197,15 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "rs-browser": "NOT_EXECUTED"
+        "rs-browser": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
       }
     },
     {
@@ -143,7 +218,15 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "rs-browser": "NOT_EXECUTED"
+        "rs-browser": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
       }
     },
     {
@@ -156,7 +239,15 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "rs-browser": "NOT_EXECUTED"
+        "rs-browser": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
       }
     },
     {
@@ -169,7 +260,15 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "rs-browser": "NOT_EXECUTED"
+        "rs-browser": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
       }
     },
     {
@@ -182,7 +281,15 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "rs-browser": "NOT_EXECUTED"
+        "rs-browser": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
       }
     },
     {
@@ -195,7 +302,15 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "rs-browser": "NOT_EXECUTED"
+        "rs-browser": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
       }
     },
     {
@@ -208,7 +323,15 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "rs-browser": "NOT_EXECUTED"
+        "rs-browser": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
       }
     },
     {
@@ -221,7 +344,15 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "rs-browser": "NOT_EXECUTED"
+        "rs-browser": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
       }
     },
     {
@@ -234,9 +365,185 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "rs-browser": "NOT_EXECUTED"
+        "rs-browser": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "postfix_parenthesized",
+      "path": "fixtures/io-unary/pass/postfix_parenthesized.atto",
+      "kind": "pass",
+      "stage": "TYPECHECK_TARGET",
+      "backend_status": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "postfix_bare",
+      "path": "fixtures/io-unary/pass/postfix_bare.atto",
+      "kind": "pass",
+      "stage": "TYPECHECK_TARGET",
+      "backend_status": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "postfix_checked_binding",
+      "path": "fixtures/io-unary/pass/postfix_checked_binding.atto",
+      "kind": "pass",
+      "stage": "TYPECHECK_TARGET",
+      "backend_status": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "postfix_int_mismatch",
+      "path": "fixtures/io-unary/fail/postfix_int_mismatch.atto",
+      "kind": "fail",
+      "stage": "COMPILE_REJECT_TARGET",
+      "expected_error": "E_TYPE",
+      "backend_status": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "postfix_missing_susp",
+      "path": "fixtures/io-unary/fail/postfix_missing_susp.atto",
+      "kind": "fail",
+      "stage": "COMPILE_REJECT_TARGET",
+      "expected_error": "E_SUSPENDS_REQUIRED",
+      "backend_status": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "postfix_nonreadable",
+      "path": "fixtures/io-unary/fail/postfix_nonreadable.atto",
+      "kind": "fail",
+      "stage": "COMPILE_REJECT_TARGET",
+      "expected_error": "E_IO_READABLE",
+      "backend_status": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "postfix_discarded",
+      "path": "fixtures/io-unary/fail/postfix_discarded.atto",
+      "kind": "fail",
+      "stage": "COMPILE_REJECT_TARGET",
+      "expected_error": "E_IO_DISCARD",
+      "backend_status": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "postfix_spaced",
+      "path": "fixtures/io-unary/fail/postfix_spaced.atto",
+      "kind": "fail",
+      "stage": "COMPILE_REJECT_TARGET",
+      "expected_error": "E_SYNTAX",
+      "backend_status": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
       }
     }
   ],
-  "evidence_rule": "Do not label backend PASS without exact source/compiler Git tree, actual compiled guest/negative no-artifact execution, runner and runtime receipts. Preflight or host models are not guest execution."
+  "evidence_rule": "Do not label backend PASS without exact source/compiler Git tree, actual compiled guest/negative no-artifact execution, runner and runtime receipts. Preflight or host models are not guest execution.",
+  "postfix_spec_pr": "https://github.com/atto-lang/atto-spec/pull/52",
+  "postfix_rust_implementation_pr": "https://github.com/atto-lang/atto-source.rs/pull/257",
+  "postfix_guest_execution": "PENDING_EXACT_HEAD_TESTS_PER_BACKEND"
 }

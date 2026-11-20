@@ -1,0 +1,5 @@
+// A fallible read is not an int, even if a message was previously sent.
+pub susp fnc bad(Channel<int> c): int using io, suspend {
+    val int answer = (c >>);
+    return answer;
+}
