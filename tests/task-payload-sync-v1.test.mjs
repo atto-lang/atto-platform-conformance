@@ -11,7 +11,7 @@ test('versioned typed task fixtures are pinned to exact Git blob identity', () =
   assert.equal(registry.schema, 'atto.task-payload-sync.v1');
   assert.equal(registry.status, 'TARGET_NOT_GUEST_VERIFIED');
   assert.equal(registry.cases.length, 42);
-  assert.equal(new Set(registry.cases.map(x=>x.id)).size,37);
+  assert.equal(new Set(registry.cases.map(x=>x.id)).size,42);
   for (const c of registry.cases) {
     assert.match(c.source_path,/^fixtures\/task-payload-sync-v1\/[a-z0-9_]+\.atto$/);
     assert.equal(gitSha(getSource(c)),c.source_git_blob,c.id);
@@ -56,8 +56,8 @@ test('void-only do sync task and standalone statements match the canonical spec'
   const demo = cases.sync_inline_void_do_demo;
   const demoSource = getSource(demo).toString('utf8');
   assert.equal(demo.kind, 'positive');
-  assert.match(demoSource, /do sync task \\{\\};/);
-  assert.match(demoSource, /do sync task<void> \\{\\};/);
+  assert.match(demoSource, /do sync task \{\};/);
+  assert.match(demoSource, /do sync task<void> \{\};/);
   assert.match(demoSource, /val result = sync task<int>/);
   assert.match(demoSource, /return result;/);
   assert.ok(demo.expected.witnesses.includes('INLINE_VOID_COMPLETION_NO_RESULT'));
