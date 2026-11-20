@@ -1,0 +1,131 @@
+{
+  "schema": "atto.task-cancel-lock-lifecycle.v1",
+  "status": "TARGET_NOT_GUEST_VERIFIED",
+  "parent_registry": "contracts/task-payload-sync-v1.json",
+  "mutex_contract": "atto-spec/language/mutex-async-lease-and-suspension-v1.md",
+  "task_contract": "atto-spec/language/typed-task-payload-sync-v1.md",
+  "causal_requirements": [
+    "Cancellation request must not force unlock active lease",
+    "Cancelled queued waiter and unclaimed grant may be revoked atomically",
+    "Child cleanup releases all acquired guards exactly once and in reverse order before terminal publication",
+    "Tenant/actor ownership and generation-fenced wakeups are mandatory",
+    "Cancellation request, terminal outcome and physical retirement are distinct",
+    "No scheduler-carrier parking or suspension under a synchronous guard",
+    "No cross-tenant access or unverified scoped borrowed capture"
+  ],
+  "cases": [
+    {
+      "id": "cancel_active_lock_scope",
+      "source_path": "fixtures/task-cancel-lock-lifecycle-v1/cancel_active_lock_scope.atto",
+      "source_git_blob": "75b7b71ecb6ce96a8747efbf85d93460bca61aad",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "runtime_witnesses": [
+          "if_granted: lease_released_exactly_once_before_child_retired",
+          "cancel_requested_not_equivalent_to_retired",
+          "no_handoff_while_active_lease",
+          "parent_capture_storage_reclaimed_after_child_physically_retired"
+        ]
+      }
+    },
+    {
+      "id": "cancel_no_await_under_guard",
+      "source_path": "fixtures/task-cancel-lock-lifecycle-v1/cancel_no_await_under_guard.atto",
+      "source_git_blob": "8031606fc3ec60d68c212f7bcf6d89dbba50d4e1",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_GUARD_SUSPEND",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "cancel_no_guard_capture",
+      "source_path": "fixtures/task-cancel-lock-lifecycle-v1/cancel_no_guard_capture.atto",
+      "source_git_blob": "555e70ea72c477014a64385d420d1e28fb80f4da",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_GUARD_ESCAPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "cancel_two_locks_reverse",
+      "source_path": "fixtures/task-cancel-lock-lifecycle-v1/cancel_two_locks_reverse.atto",
+      "source_git_blob": "7f09adb8d9ddc62217f12c0a2c45a3ccc37b8477",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "runtime_witnesses": [
+          "if_grant(first): release(first)=1 before child_retired",
+          "if_grant(second): release(second)=1 before release(first)",
+          "never_handoff_active_lease_before_guard_release",
+          "task_physically_retired_before_owner_storage_reclaimed"
+        ]
+      }
+    }
+  ],
+  "backends": {
+    "rs-wasm": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_receipt": null,
+      "release_qualified": false
+    },
+    "java": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_receipt": null,
+      "release_qualified": false
+    },
+    "llvm": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_receipt": null,
+      "release_qualified": false
+    },
+    "forge": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_receipt": null,
+      "release_qualified": false
+    },
+    "net": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_receipt": null,
+      "release_qualified": false
+    },
+    "independent-wasm": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_receipt": null,
+      "release_qualified": false
+    },
+    "js": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_receipt": null,
+      "release_qualified": false
+    },
+    "cranelift": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_receipt": null,
+      "release_qualified": false
+    },
+    "atto": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_receipt": null,
+      "release_qualified": false
+    },
+    "hdl": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_receipt": null,
+      "release_qualified": false
+    }
+  },
+  "verification": "Every positive requires an exact-compiler-head, compiled .atto guest result plus authenticated scheduler/lock physical retirement trace. All negatives must fail before guest artifact emission. Host-only Rust and source-blob checks do not satisfy guest execution."
+}
