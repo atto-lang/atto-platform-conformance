@@ -1,0 +1,5 @@
+pub fnc main(): int {
+  val name = "foo";
+  val r = Record.of(name => 5);
+  return 0;
+}
