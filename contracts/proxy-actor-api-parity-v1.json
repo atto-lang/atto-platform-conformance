@@ -58,16 +58,28 @@
       "authenticated_transport_status": "NOT_EXECUTED",
       "native_aot_status": "NOT_EXECUTED",
       "guest_evidence": null,
-      "notes": "Real M6 scoped per-message receipts: exact mailbox admission, start, processed scalar result, panic fail, queued abandon. Forked UDS restricted compiled .atto receiver and host sender. Java #45 is an overlapping independent M10 IPC pilot; reconcile before merge.",
+      "notes": "Consolidated #44 includes real scoped M6 exact-message tickets plus copied/adapted #45 M10 nonblocking selector UDS gateway and strict compiled RemoteAdder receiver. New current-head M10 integration has no executed tests: two private runner attempts failed before all steps. Original M6 host tests and independent M10 tests passed on earlier separate SHAs only.",
       "host_ticket_scope": "REAL_MAILBOX",
-      "host_ticket_status": "SOURCE_EXACT_HOST_TESTED",
-      "host_ticket_pr_head_sha": "e7dbc3f9f584f16c872af8858335767986ea9be8",
-      "host_ticket_ci": {
+      "host_ticket_status": "CURRENT_HEAD_NOT_EXECUTED",
+      "host_ticket_pr_head_sha": "0aa81d06533ef6c9cbe19c54af4d51b86a250cac",
+      "host_ticket_ci": null,
+      "host_ticket_previous_verified": {
         "source_head_sha": "e7dbc3f9f584f16c872af8858335767986ea9be8",
+        "scoped_blob_count": 11,
         "ci_url": "https://github.com/bait-bikes-test/atto-ci/actions/runs/44653461640",
-        "source_proof": "SCOPED_GIT_BLOBS_MATCHED",
-        "executed_ci_steps": 9,
-        "verified_blob_count": 11
+        "scope": "Prior-head M6 exact tickets and restricted compiled receiver, not M10 selector consolidation."
+      },
+      "gateway_integration": {
+        "kind": "EXPERIMENTAL_M10_SELECTOR_USES_M6_RUNTIME_ISSUED_TICKET",
+        "status": "NOT_EXECUTED_CURRENT_HEAD",
+        "source_head_sha": "0aa81d06533ef6c9cbe19c54af4d51b86a250cac",
+        "source_pr": "https://github.com/atto-lang/atto-source.java/pull/44",
+        "prior_independent_m10_ci": "https://github.com/bait-bikes-test/atto-ci/actions/runs/44635718533",
+        "blocked_attempts": [
+          "https://github.com/bait-bikes-test/atto-ci/actions/runs/44660093745",
+          "https://github.com/ores-stack/ores-stack-cli/actions/runs/44660323082"
+        ],
+        "caveats": "Both consolidation attempts failed before any job steps (0); no compiled Atto sender, canonical authenticated transport or full guest parity."
       }
     },
     {
