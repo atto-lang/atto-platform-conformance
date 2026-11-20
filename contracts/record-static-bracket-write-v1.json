@@ -1,0 +1,423 @@
+{
+  "schema_version": 1,
+  "contract": "atto-record-static-bracket-write-v1",
+  "normative_spec": "https://github.com/atto-lang/atto-spec/blob/feat/inline-collections-literals-v1-20261117/language/inline-collection-literals-v1.md",
+  "status": "not_executed",
+  "summary": "Target closed-Record quoted static field writes and explicit exclusion of nominal Struct indexing. All backend outcomes not executed, never conflate with existing limited Record bracket read guest evidence.",
+  "allowed_verification_statuses": [
+    "passed",
+    "failed",
+    "unsupported",
+    "not_executed"
+  ],
+  "cases": [
+    {
+      "id": "record-write-identifier",
+      "group": "guest",
+      "expect": "accept",
+      "expected_exit": 3,
+      "source": "pub fnc main(): int { let mut Record r = {foo: 1}; r[\"foo\"] = 3; return r[\"foo\"]; }",
+      "reason": "Checked static bracket lvalue for identifier field",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "atto_native": "not_executed"
+      }
+    },
+    {
+      "id": "record-write-hyphen",
+      "group": "guest",
+      "expect": "accept",
+      "expected_exit": 7,
+      "source": "pub fnc main(): int { let mut Record r = {\"content-type\": 2}; r[\"content-type\"] = 7; return r[\"content-type\"]; }",
+      "reason": "Quoted nonidentifier UTF-8 field uses canonical static slot",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "atto_native": "not_executed"
+      }
+    },
+    {
+      "id": "record-dot-bracket-same-field",
+      "group": "guest",
+      "expect": "accept",
+      "expected_exit": 3,
+      "source": "pub fnc main(): int { let mut Record r = {foo: 1}; r.foo = 2; r[\"foo\"] = 3; return r.foo; }",
+      "reason": "Both notations select one existing field identity",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "atto_native": "not_executed"
+      }
+    },
+    {
+      "id": "record-write-empty-key",
+      "group": "guest",
+      "expect": "accept",
+      "expected_exit": 4,
+      "source": "pub fnc main(): int { let mut Record r = {\"\": 1}; r[\"\"] = 4; return r[\"\"]; }",
+      "reason": "Empty quoted Record field has a valid static slot",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "atto_native": "not_executed"
+      }
+    },
+    {
+      "id": "record-write-unicode",
+      "group": "guest",
+      "expect": "accept",
+      "expected_exit": 5,
+      "source": "pub fnc main(): int { let mut Record r = {\"café\": 1}; r[\"café\"] = 5; return r[\"café\"]; }",
+      "reason": "Unicode exact decoded key identity",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "atto_native": "not_executed"
+      }
+    },
+    {
+      "id": "record-write-val-mut",
+      "group": "guest",
+      "expect": "accept",
+      "expected_exit": 6,
+      "source": "pub fnc main(): int { val mut Record r = {foo: 1}; r[\"foo\"] = 6; return r.foo; }",
+      "reason": "Fixed val name with mutable owned referent",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "atto_native": "not_executed"
+      }
+    },
+    {
+      "id": "record-write-other-fields-preserved",
+      "group": "guest",
+      "expect": "accept",
+      "expected_exit": 5,
+      "source": "pub fnc main(): int { let mut Record r = {foo: 1, bar: 2}; r[\"foo\"] = 3; return r.foo + r.bar; }",
+      "reason": "Updating one static slot does not mutate other fields",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "atto_native": "not_executed"
+      }
+    },
+    {
+      "id": "record-write-nfc-nfd-distinct",
+      "group": "guest",
+      "expect": "accept",
+      "expected_exit": 8,
+      "source": "pub fnc main(): int { let mut Record r = {\"é\": 1, \"é\": 2}; r[\"é\"] = 7; return r[\"é\"] + r[\"é\"]; }",
+      "reason": "Distinct NFC/NFD UTF-8 keys must never alias slots",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "atto_native": "not_executed"
+      }
+    },
+    {
+      "id": "record-immutable-val",
+      "group": "negative",
+      "expect": "reject",
+      "expected_error": "E_IMMUTABLE",
+      "source": "pub fnc main(): int { val Record r = {foo: 1}; r[\"foo\"] = 3; return 0; }",
+      "reason": "Immutable val referent cannot be written",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "atto_native": "not_executed"
+      }
+    },
+    {
+      "id": "record-immutable-let",
+      "group": "negative",
+      "expect": "reject",
+      "expected_error": "E_IMMUTABLE",
+      "source": "pub fnc main(): int { let Record r = {foo: 1}; r[\"foo\"] = 3; return 0; }",
+      "reason": "Let rebinding is not referent write authority",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "atto_native": "not_executed"
+      }
+    },
+    {
+      "id": "record-missing-field",
+      "group": "negative",
+      "expect": "reject",
+      "expected_error": "E_NO_FIELD",
+      "source": "pub fnc main(): int { let mut Record r = {foo: 1}; r[\"bar\"] = 3; return 0; }",
+      "reason": "Cannot add a new field using indexed Record assignment",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "atto_native": "not_executed"
+      }
+    },
+    {
+      "id": "record-wrong-field-type",
+      "group": "negative",
+      "expect": "reject",
+      "expected_error": "E_TYPE",
+      "source": "pub fnc main(): int { let mut Record r = {foo: 1}; r[\"foo\"] = \"bad\"; return 0; }",
+      "reason": "Existing field type cannot be silently retyped",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "atto_native": "not_executed"
+      }
+    },
+    {
+      "id": "record-computed-index",
+      "group": "negative",
+      "expect": "reject",
+      "expected_error": "E_UNSUPPORTED",
+      "source": "pub fnc main(): int { let mut Record r = {foo: 1}; let string key = \"foo\"; r[key] = 3; return 0; }",
+      "reason": "Computed key is not a closed Record static field",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "atto_native": "not_executed"
+      }
+    },
+    {
+      "id": "record-expression-index",
+      "group": "negative",
+      "expect": "reject",
+      "expected_error": "E_UNSUPPORTED",
+      "source": "pub fnc main(): int { let mut Record r = {foo: 1}; r[\"f\" + \"oo\"] = 3; return 0; }",
+      "reason": "Even compile-time-foldable expressions are not literal-key syntax",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "atto_native": "not_executed"
+      }
+    },
+    {
+      "id": "record-numeric-index",
+      "group": "negative",
+      "expect": "reject",
+      "expected_error": "E_UNSUPPORTED",
+      "source": "pub fnc main(): int { let mut Record r = {foo: 1}; r[0] = 3; return 0; }",
+      "reason": "Numeric indexing is not Record field addressing",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "atto_native": "not_executed"
+      }
+    },
+    {
+      "id": "struct-bracket-read",
+      "group": "negative",
+      "expect": "reject",
+      "expected_error": "E_UNSUPPORTED",
+      "source": "define struct Point as int foo; end\npub fnc main(): int { val p = Point{foo: 1}; return p[\"foo\"]; }",
+      "reason": "Nominal Struct bracket reading is forbidden",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "atto_native": "not_executed"
+      }
+    },
+    {
+      "id": "struct-bracket-write",
+      "group": "negative",
+      "expect": "reject",
+      "expected_error": "E_UNSUPPORTED",
+      "source": "define struct Point as int foo; end\npub fnc main(): int { let mut p = Point{foo: 1}; p[\"foo\"] = 3; return 0; }",
+      "reason": "Nominal Struct bracket writing is forbidden",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "atto_native": "not_executed"
+      }
+    },
+    {
+      "id": "record-shadowed-scalar",
+      "group": "negative",
+      "expect": "reject",
+      "expected_error": "E_UNSUPPORTED",
+      "source": "pub fnc main(): int { let mut Record r = {foo: 1}; block { let int r = 7; r[\"foo\"] = 3; } return 0; }",
+      "reason": "Lexical shadowing cannot inherit Record write authority",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "atto_native": "not_executed"
+      }
+    },
+    {
+      "id": "record-after-take",
+      "group": "negative",
+      "expect": "reject",
+      "expected_error": "E_MOVED",
+      "source": "pub fnc main(): int { let mut Record r = {foo: 1}; val moved = take! r; r[\"foo\"] = 3; return 0; }",
+      "reason": "Moved Record storage is not writable through old owner",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "atto_native": "not_executed"
+      }
+    },
+    {
+      "id": "record-shared-loan-conflict",
+      "group": "negative",
+      "expect": "reject",
+      "expected_error": "E_BORROW",
+      "source": "pub fnc main(): int { let mut Record r = {foo: 1}; val reader = borrow! r; r[\"foo\"] = 3; return reader.foo; }",
+      "reason": "No indexed write through an owner with an active read loan",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "atto_native": "not_executed"
+      }
+    }
+  ],
+  "backend_status": {
+    "rust_browser_wasm": "not_executed",
+    "java": "not_executed",
+    "llvm": "not_executed",
+    "net": "not_executed",
+    "forge": "not_executed",
+    "independent_wasm": "not_executed",
+    "cranelift": "not_executed",
+    "atto_native": "not_executed"
+  },
+  "verification": {
+    "required": "Proof from exact-source compiled guest execution and precise negative no-artifact diagnostics. Parser syntax/host-only tests are insufficient.",
+    "constraints": [
+      "immutable vs mutable owned referent",
+      "exact UTF-8 field keys",
+      "closed-shape field/type invariants",
+      "no Struct bracket indexing",
+      "no Map-host-hash lookup masquerade",
+      "no mutable loan or actor state escape"
+    ]
+  },
+  "related_prs": [
+    "atto-lang/atto-spec#69",
+    "atto-lang/atto-spec#116",
+    "atto-lang/atto-source.rs#287",
+    "atto-lang/atto-source.rs#292",
+    "atto-lang/atto-platform-conformance#98"
+  ]
+}
