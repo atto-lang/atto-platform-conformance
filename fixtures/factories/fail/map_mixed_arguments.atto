@@ -1,0 +1,4 @@
+pub fnc main(): int {
+  val x = Map.of("a" => 1, "b", 2);
+  return 0;
+}
