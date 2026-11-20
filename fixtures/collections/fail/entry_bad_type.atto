@@ -1,0 +1,5 @@
+// Expect E_TYPE (or canonical equivalent), no guest artifact.
+pub fnc main(): int {
+    let Entry<string, int> entry = 5 => "foo";
+    return 0;
+}
