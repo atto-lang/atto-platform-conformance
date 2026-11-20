@@ -78,3 +78,34 @@ test('unproven compiler parity is never marked passed by host fixture checks', (
   assert.match(manifest.backends['atto-source.wasm'].compiler_implementation, /^adapter/);
   assert.match(manifest.backends['atto-source.realtime'].compiler_implementation, /^runtime-only/);
 });
+
+test('executed Rust/Wasm LLVM-repository frontend evidence is segregated from native AOT', () => {
+  const profile = manifest.source.candidate_llvm_frontend;
+  assert.equal(profile.profile,
+    'frontend Rust/Wasm compiler (NOT the native C++ LLVM AOT compiler)');
+  assert.equal(profile.status, 'PASS_FRONTEND_SUBPROFILE');
+  assert.match(profile.head, /^[0-9a-f]{40}$/);
+  assert.match(profile.frontend_tree_sha, /^[0-9a-f]{40}$/);
+  assert.equal(profile.mirrored_blobs_verified, 27);
+  assert.equal(profile.carrier.conclusion, 'SUCCESS');
+  assert.ok(profile.carrier.run_id > 0 && profile.carrier.linux_job_id > 0);
+  assert.deepEqual(profile.portable_cases.map(c => c.id),
+    manifest.cases.map(c => c.id));
+  for (const [i, entry] of profile.portable_cases.entries()) {
+    const oracle = manifest.cases[i].expect;
+    if (oracle.kind === 'guest') {
+      assert.equal(entry.status, 'PASS_EXECUTED_GUEST');
+      assert.equal(entry.stdout, oracle.stdout);
+      assert.equal(entry.exit, oracle.exit);
+    } else {
+      assert.equal(entry.status, 'PASS_REJECTED_NO_ARTIFACT');
+      assert.equal(entry.diagnostic, oracle.code);
+      assert.equal(entry.no_guest, true);
+    }
+  }
+  assert.equal(profile.additional_adt_guards.passed, 4);
+  assert.equal(profile.native_vs_wasm_compiler_guest_bytes, 'IDENTICAL');
+  assert.equal(profile.native_cpp_llvm_aot, 'NOT_EXECUTED');
+  // Compiler-family parity is NOT a frontend-only result.
+  assert.equal(manifest.backends['atto-source.llvm'].status, 'NOT_EXECUTED');
+});
