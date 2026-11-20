@@ -16,15 +16,15 @@
       "backend": "atto-source.rs",
       "pr": 419,
       "repository": "atto-lang/atto-source.rs",
-      "source_head": "eb23ae9677cab04398f85253a7c7b810be89e590",
-      "compiler_subtree": null,
+      "source_head": "00a6d3e8a86e27f635cf3b2a808b6a0b61a2b977",
+      "compiler_subtree": "274523e1adffc85c4f86c84e1983917ff089d4e0",
       "scope": "Single initialized Pointer<int> local, one readonly copy and unref, Rust/Wasm guest compiler with scalar stack-promotion",
       "test_entry": "tests/pointer_local_aot.rs",
       "expected_guest_ids": [
         "PRL-001",
         "PRL-002"
       ],
-      "last_attempted_ci_run": null,
+      "last_attempted_ci_run": "https://github.com/atto-lang/atto-source.rs/actions/runs/44659591700",
       "source_state": "MAINLINE_CANDIDATE_COMMITTED",
       "execution_status": "NOT_EXECUTED",
       "compiler_artifact_sha256": null,
@@ -35,7 +35,11 @@
       "negative_rejection_receipt": null,
       "independent_approval": null,
       "overlapping_draft_pr": 264,
-      "previous_candidate_head": "56356874cb2da41fcd7a4cf61994aa08e9ef5a85"
+      "previous_candidate_head": "56356874cb2da41fcd7a4cf61994aa08e9ef5a85",
+      "exact_canonical_guest_sources": {
+        "PRL-001": "6056400afa8d7b9b71f29be5ca4cfb15240a59b3",
+        "PRL-002": "8fa66e68b386c2c6d1f2b15b9399e70a116c0828"
+      }
     },
     {
       "backend": "atto-source.llvm",

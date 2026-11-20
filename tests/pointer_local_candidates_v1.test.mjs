@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 const doc=JSON.parse(readFileSync(new URL('../contracts/pointer-local-candidate-evidence-v1.json',import.meta.url),'utf8'));
 const cases=JSON.parse(readFileSync(new URL('../contracts/pointer-ref-local-v1.json',import.meta.url),'utf8'));
 const known={
-  'atto-source.rs':{pr:419,sha:'eb23ae9677cab04398f85253a7c7b810be89e590'},
+  'atto-source.rs':{pr:419,sha:'00a6d3e8a86e27f635cf3b2a808b6a0b61a2b977'},
   'atto-source.llvm':{pr:64,sha:'b4049c77c71f6834a93f294c129779bfaf3ec1f1'},
   'atto-source.net':{pr:22,sha:'fa732820a0f0bc3de2c7422efd06ad365518fde1'},
 };
