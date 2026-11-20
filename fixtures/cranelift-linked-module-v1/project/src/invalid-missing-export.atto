@@ -1,0 +1,5 @@
+import missing from "+src/lib/helpers.atto";
+
+pub fnc main(): int {
+  return missing(41);
+}
