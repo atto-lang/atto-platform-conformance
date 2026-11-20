@@ -23,7 +23,7 @@
     {
       "id": "discard_do_sync_task",
       "source_path": "fixtures/task-payload-sync-v1/discard_do_sync_task.atto",
-      "source_git_blob": "eed8205d70528244d2a5b0655c1e999fad6d1194"
+      "source_git_blob": "4bed36abc94abfb7daa47bf0a6b1c0d497cb12f4"
     },
     {
       "id": "sync_reserved",
@@ -176,7 +176,7 @@
     "A source-only or host-only check MUST NOT set compiled guest PASS.",
     "The Java profile is only a closed-world already-completed int Future pipeline, not general task/async/lock support.",
     "Unsupported backends must reject task syntax before native guest artifact emission, not silently block or inline.",
-    "The normative equivalences task<T> -> Future<T>, sync task<T> == await task<T>, do sync task == do task and cancellation cleanup require executed tests.",
+    "The normative distinctions are: task<T> creates Future<T>; await task<T> spawns and joins; sync task<T> is inline on the caller; do sync task accepts void only, never aliases do task or discards nonvoid; verified cancellation and lock cleanup still require executed tests.",
     "Every backend requires exact-head compiler binary plus guest execution, cancellation race, reverse lock unwind, verified physical child retirement, and TenantVM isolation receipts."
   ]
 }
