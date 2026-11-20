@@ -30,10 +30,16 @@ const tree=git('rev-parse','HEAD^{tree}');
 assert.equal(tree,expectedTree,'actual compiler tree differs from required exact source tree');
 assert.equal(git('status','--porcelain'),'','compiler tree must be clean');
 const head=git('rev-parse','HEAD');
-const compiler=backend==='rust-wasm'
-  ? resolve(compilerRepo,process.env.ATTOC_RELATIVE??'target/release/attoc')
-  : resolve(compilerRepo,process.env.FORGE_RELATIVE??'build/forge_scalar');
-assert.ok(existsSync(compiler),'production compiler executable is absent');
+const pinned=manifest.implementation_candidates[
+  backend==='rust-wasm'?'rust_wasm':'forge_native'];
+assert.ok(pinned && /^[a-f0-9]{40}$/.test(pinned.head) &&
+  /^[a-f0-9]{40}$/.test(pinned.tree),'registry compiler head/tree pins required');
+assert.equal(head,pinned.head,'compiler head differs from independently pinned registry commit');
+assert.equal(tree,pinned.tree,'compiler tree differs from independently pinned registry tree');
+// Never allow a caller-selected prebuilt executable to impersonate a compiler
+// compiled from this pinned checkout. Build into a clean external scratch dir.
+assert.equal(process.env.ATTOC_RELATIVE,undefined,'prebuilt attoc override is prohibited');
+assert.equal(process.env.FORGE_RELATIVE,undefined,'prebuilt Forge override is prohibited');
 const cxx=process.env.CXX??'c++';
 const sha=buffer=>createHash('sha256').update(buffer).digest('hex');
 const gitBlob=buffer=>createHash('sha1').update('blob '+buffer.length+'\0').update(buffer).digest('hex');
@@ -47,12 +53,39 @@ const expected=[
   ['list-pattern-max-length-32.atto',32],
   ['list-pattern-overflow-panic.atto',null],
 ];
-const commands=(program,args,timeout=30000)=>spawnSync(program,args,{
-  encoding:'utf8',timeout,maxBuffer:1<<20,
+const commands=(program,args,timeout=30000,options={})=>spawnSync(program,args,{
+  encoding:'utf8',timeout,maxBuffer:4<<20,...options,
 });
 const scratch=mkdtempSync(join(tmpdir(),'atto-sequence-parity-'));
 const receipt=[];
+let compiler;
+let compilerHash;
 try{
+  // Build the production compiler NOW, from exactly this checked-out commit.
+  // Merely verifying the Git source tree while trusting a prebuilt binary
+  // would not establish which compiler actually emitted the guest artifact.
+  if(backend==='rust-wasm'){
+    const build=commands('cargo',['build','--locked','--release','--bin','attoc',
+      '--target-dir',join(scratch,'rust-target')],600000,{cwd:compilerRepo});
+    assert.equal(build.error,undefined,'production Rust build subprocess failed');
+    assert.equal(build.status,0,'production attoc failed to build: '+build.stderr);
+    compiler=join(scratch,'rust-target','release','attoc');
+  }else{
+    const buildRoot=join(scratch,'forge-build');
+    const configure=commands('cmake',['-S',compilerRepo,'-B',buildRoot,
+      '-DATTO_FORGE_SANITIZERS=ON','-DCMAKE_CXX_COMPILER='+cxx],120000);
+    assert.equal(configure.error,undefined,'Forge CMake configure subprocess failed');
+    assert.equal(configure.status,0,'Forge CMake configure failed: '+configure.stderr);
+    const build=commands('cmake',['--build',buildRoot,'--target','forge_scalar',
+      '--parallel','2'],600000);
+    assert.equal(build.error,undefined,'Forge compiler build subprocess failed');
+    assert.equal(build.status,0,'production Forge compiler build failed: '+build.stderr);
+    compiler=join(buildRoot,'forge_scalar');
+  }
+  assert.ok(existsSync(compiler),'freshly built compiler executable is absent');
+  assert.equal(git('status','--porcelain'),'',
+    'compiler build mutated tracked or untracked source-tree contents');
+  compilerHash=sha(readFileSync(compiler));
   for(const [name,want] of expected){
     const relative='fixtures/typed-pattern-fragments/'+name;
     const entry=manifest.portable_guest_fixtures.find(x=>x.path===relative);
@@ -120,6 +153,7 @@ try{
   const report={
     schema:'atto.patterns.cross-backend-guests.v1',
     backend,compiler_head:head,compiler_tree:tree,
+    compiler_binary_sha256:compilerHash,compiler_built_from_pinned_tree:true,
     target:backend==='rust-wasm'?'wasm32-guest':'native-cxx20-guest',
     cases:receipt,passed:receipt.length,failed:0,executed:true
   };
