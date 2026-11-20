@@ -1,0 +1,46 @@
+name: Atto eleven-source checked-i64 contract (source only)
+on:
+  pull_request:
+    paths:
+      - 'contracts/checked-i64-all-backends-v1/**'
+      - 'scripts/verify-checked-i64-all-backends-v1.mjs'
+      - 'tests/checked-i64-all-backends-v1.test.mjs'
+      - '.github/workflows/checked-i64-all-backends-source-only.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-only-corpus-integrity:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: \${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+      - name: Prove exact source head and blob identities
+        shell: bash
+        env:
+          EXPECTED: \${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED"
+          test -z "$(git status --porcelain)"
+          for path in \
+            contracts/checked-i64-all-backends-v1/cases.tsv \
+            contracts/checked-i64-all-backends-v1/manifest.json \
+            scripts/verify-checked-i64-all-backends-v1.mjs \
+            tests/checked-i64-all-backends-v1.test.mjs; do
+            test "$(git hash-object "$path")" = "$(git rev-parse "HEAD:$path")"
+          done
+          echo "CONTRACT_SOURCE_HEAD=$EXPECTED TREE=$(git rev-parse 'HEAD^{tree}')"
+      - name: Run source-only BigInt arithmetic oracle and mutation tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-checked-i64-all-backends-v1.mjs
+          node --test tests/checked-i64-all-backends-v1.test.mjs
+          echo "ATTO_11_SOURCE_BACKENDS=11 SOURCE_CORPUS=15 GUEST_EXECUTIONS=0"
