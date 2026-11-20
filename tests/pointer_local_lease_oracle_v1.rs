@@ -35,10 +35,11 @@ impl Local {
     }
     fn mint(&mut self, _spelling: Spelling) -> Result<Token, Fault> {
         if !self.alive { return Err(Fault::Stale); }
-        let next = self.next_id.checked_add(1).ok_or(Fault::Exhausted)?;
         let id = self.next_id;
+        if self.readers.contains(&id) { return Err(Fault::Exhausted); }
+        let next = self.next_id.checked_add(1).ok_or(Fault::Exhausted)?;
         self.next_id = next;
-        assert!(self.readers.insert(id), "model minted duplicate handle ID");
+        self.readers.insert(id);
         Ok(Token { id, generation: self.generation, actor: self.actor, tenant: self.tenant })
     }
     fn validate(&self, token: Token, actor: u64, tenant: u64) -> Result<(), Fault> {
@@ -187,4 +188,15 @@ fn all_paths_require_unreffed_handles_before_exit() {
         if !early { local.release(h, Spelling::Bang).unwrap(); }
         assert_eq!(local.exit(), if early { Err(Fault::Leaked) } else { Ok(()) });
     }
+}
+
+#[test]
+fn duplicate_token_id_rejects_without_panicking_or_overwriting_live_lease() {
+    let mut local = Local::new(Some(42), 3, 5);
+    let existing = local.mint(Spelling::Rt).unwrap();
+    local.next_id = existing.id; // inject a malicious allocator collision
+    assert_eq!(local.mint(Spelling::Bang), Err(Fault::Exhausted));
+    assert_eq!(local.read(existing, Spelling::Rt), Ok(42));
+    local.release(existing, Spelling::Bang).unwrap();
+    assert_eq!(local.exit(), Ok(()));
 }
