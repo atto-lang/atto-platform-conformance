@@ -50,3 +50,12 @@ on `^`/`return`, thrown errors, and actor termination is not yet implemented.
 The `pending` case is a **known unimplemented ownership diagnostic**, not a
 passing fixture. Java, LLVM, .NET, independent Wasm, and Forge require their
 own compiled-guest receipts before any parity claim.
+
+## Process stdio channel endpoint parity (target only)
+
+- Manifest: [stdio-channel-endpoints-v1](contracts/stdio-channel-endpoints-v1.json)
+- Guest source candidates: `fixtures/stdio-channel/{pass,fail}`
+- Source-only integrity validator: `node --test tests/stdio-channel-endpoints.test.mjs`
+- Normative target: [atto-spec #32](https://github.com/atto-lang/atto-spec/pull/32), `language/stdio-channel-endpoints-v1.md`
+
+All 11 `atto-source.*` targets remain **NOT_EXECUTED** for this fixture. Source-only validation must never be presented as guest-runtime parity. Some targets (notably HDL) must explicitly reject process-stdio profiles rather than synthesize a host channel.
