@@ -1,0 +1,13 @@
+pub susp fnc main(): int {
+  val Future<int> left = task<int> {
+    val int local = 18;
+    return local + 2;
+  };
+  val Future<int> right = task<int> {
+    val int local = 20;
+    return local + 2;
+  };
+  val int a = await left;
+  val int b = await right;
+  return a + b;
+}
