@@ -192,12 +192,21 @@ test('seven supplemental edge fixtures require per-backend execution, not author
       assert.equal(row.full_signed_i64_test_authored,true);
       assert.equal(row.checked_overflow_guest_test_authored,true);
       assert.equal(row.three_fail_closed_source_tests_authored,true);
+      assert.deepEqual(row.reserved_authority_keyword_negative_tests,
+        ['unsafe','sync','task','pipe','rpipe']);
     }
     if (backend === 'rs-native-compiler')
       assert.match(row.conditional_compiler_check, /ATTOC/);
     assert.equal(row.execution_status,'not_executed');
     assert.equal(row.receipt,null);
   }
+  const admission=edge.runner_admission_observation;
+  assert.equal(admission.status,'no_jobs_executed');
+  assert.equal(admission.tested_carrier_execution_confirmed,false);
+  assert.equal(admission.source_repository_runs.length,4);
+  assert.ok(admission.source_repository_runs.every(r=>r.executed_steps===0));
+  assert.ok(admission.alternate_carriers_checked.length>=8);
+  assert.match(admission.disposition,/do not mirror private trees/);
   assert.equal(edge.overall_execution_status,'not_executed');
   assert.equal(edge.guest_result_abi_must_be_recorded_separately,true);
   const llvmProbe=edge.local_llvm_adapter_abi_probe;
