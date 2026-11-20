@@ -1,0 +1,6 @@
+// Expect E_MUTABILITY (or canonical equivalent), no guest artifact.
+pub fnc main(): int {
+    let Map<string, int> x = {"foo" => 5};
+    x.set("foo", 6);
+    return 0;
+}
