@@ -9,6 +9,9 @@ const expected = [
   'THROWS_BUFFER_BOUNDS','THROWS_BUFFER_BOUNDS','THROWS_BUFFER_BOUNDS',
   'COMPILE_IMMUTABLE','THROWS_BUFFER_VALUE','THROWS_BUFFER_BOUNDS',
   'THROWS_BUFFER_ALLOCATION',
+  'EXIT_1','EXIT_1','EXIT_1','EXIT_1','EXIT_1',
+  'THROWS_BUFFER_VALUE','THROWS_BUFFER_VALUE','THROWS_BUFFER_BOUNDS',
+  'EXIT_1','THROWS_BUFFER_BOUNDS',
 ];
 const backendNames = ['java','llvm','wasm','rs','net','forge','cranelift','js','atto','hdl'];
 
