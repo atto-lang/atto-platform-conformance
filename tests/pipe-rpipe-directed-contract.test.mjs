@@ -141,6 +141,15 @@ test('operator boundaries and receipt obligations reject inferred duplex or sile
     assert.ok(c.expected_data_edges.every(e=>
       e.source && e.sink && e.payload && e.source!==e.sink));
   }
+  const unicast=contract.unicast_port_ownership;
+  assert.equal(unicast.source_output,'at_most_one_unicast_DATA_attachment');
+  assert.equal(unicast.sink_input,'at_most_one_unicast_DATA_attachment');
+  assert.equal(unicast.duplicate_directed_edge,'E_PIPE_DUPLICATE_EDGE');
+  assert.equal(unicast.occupied_source_output,'E_PIPE_OUTPUT_OCCUPIED');
+  assert.equal(unicast.occupied_sink_input,'E_PIPE_INPUT_OCCUPIED');
+  assert.match(unicast.fan_in_requires,/merge_or_join/);
+  assert.match(unicast.fan_out_requires,/tee_or_broadcast/);
+  assert.match(unicast.admission,/runtime_must_atomically_reserve_and_rollback/);
   assert.equal(contract.normalization_contract.preserve_lexical_constructor_order,true);
   assert.equal(contract.normalization_contract.evaluate_each_stage_once,true);
   assert.equal(contract.normalization_contract.directed_edges_never_supervisor_control,true);
