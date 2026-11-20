@@ -289,7 +289,7 @@
     {
       "repo": "atto-lang/atto-source.rs",
       "pr": "https://github.com/atto-lang/atto-source.rs/pull/224",
-      "phase": "typed_parser_static_check",
+      "phase": "typed_parser_static_check_plus_experimental_3stage_atomic_guest_preflight",
       "guest_pipe_execution": "NOT_EXECUTED"
     },
     {
@@ -313,7 +313,7 @@
     {
       "repo": "atto-lang/atto-source.forge",
       "pr": "https://github.com/atto-lang/atto-source.forge/pull/49",
-      "phase": "tokenized_unsupported_guest_gate",
+      "phase": "native_cpp_typed_preHIR_data_graph_plan_plus_tokenized_unsupported_guest_gate",
       "guest_pipe_execution": "NOT_EXECUTED"
     },
     {
@@ -447,5 +447,9 @@
     "fan_out_requires": "explicit_typed_tee_or_broadcast_adapter",
     "fan_in_requires": "explicit_typed_merge_or_join_adapter",
     "admission": "compiler_preflight_only_runtime_must_atomically_reserve_and_rollback"
+  },
+  "workstream_capability_notes": {
+    "atto-lang/atto-source.forge": "native C++20 typed planning passes local GCC/Clang tests with ASan/UBSan; source GitHub Actions still 0 steps; no compiled .atto pipe guest",
+    "atto-lang/atto-source.rs": "bounded actor-channel-actor triple now stages one guest preflight before any edge publication; still provisional traps and no checked PipeHandle, tenant generations, or complete cancellation proof; no exact-head compiler or guest CI pass"
   }
 }
