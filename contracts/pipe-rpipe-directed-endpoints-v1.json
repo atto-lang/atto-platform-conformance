@@ -288,8 +288,8 @@
   "compiler_workstreams": [
     {
       "repo": "atto-lang/atto-source.rs",
-      "pr": "https://github.com/atto-lang/atto-source.rs/pull/224",
-      "phase": "typed_parser_and_experimental_checked_result_3stage_guest_admission_without_cancellation",
+      "pr": "https://github.com/atto-lang/atto-source.rs/pull/262",
+      "phase": "typed_parser_and_experimental_checked_result_3stage_guest_admission_with_output_input_port_rollback_fixtures_without_cancellation",
       "guest_pipe_execution": "NOT_EXECUTED"
     },
     {
@@ -350,7 +350,7 @@
       ],
       "admission": "typed_declared_actor_ports_and_experimental_guest_wasm",
       "guest_execution": "NOT_EXECUTED",
-      "limitation": "runtime panics on duplicate/closed admission, while canonical spec requires Result/PipeSetupError; no Stream<T> graph lowering"
+      "limitation": "Rust v2 has experimental explicit Result<PipeHandle,PipeSetupError> for bounded 3-stage actor/channel/actor; no cancel/get_done lifecycle, TenantVM generation isolation or executed guest receipts"
     },
     {
       "repo": "atto-lang/atto-source.js",
@@ -450,12 +450,12 @@
   },
   "workstream_capability_notes": {
     "atto-lang/atto-source.forge": "native C++20 typed planning passes local GCC/Clang tests with ASan/UBSan; source GitHub Actions still 0 steps; no compiled .atto pipe guest",
-    "atto-lang/atto-source.rs": "experimental opt-in typed Result<PipeHandle,PipeSetupError> with no partial publication, exact error codes, forward/rpipe/rollback/output-conflict guest fixtures; compiler/guest NOT_EXECUTED, handle cancel/get_done and TenantVM fence still unimplemented"
+    "atto-lang/atto-source.rs": "provisional opt-in typed Result<PipeHandle, PipeSetupError>; six checked forward/reverse, stopped/closed, source-occupied and sink-occupied rollback fixtures; runtime and compiler NOT_EXECUTED; cancellation, opaque lifetime and TenantVM still unavailable"
   },
   "rust_v2_checked_guest_preview": {
     "repo": "atto-lang/atto-source.rs",
     "pull_request": "https://github.com/atto-lang/atto-source.rs/pull/262",
-    "source_commit": "c0de0aab196f2aa2cf6cc75f0c1d5c2e60c1b5f0",
+    "source_commit": "d01e0035bdfe99c26bb25782dfe305548b136084",
     "type": "Result<PipeHandle, PipeSetupError>",
     "opt_in": "explicit_result_binding_annotation_only",
     "endpoint_scope": "single_tenant_bounded_actor_channel_actor_triple",
@@ -465,7 +465,9 @@
       "219-v2-checked-actor-channel-actor-pipe",
       "220-v2-checked-actor-channel-actor-rpipe",
       "221-v2-checked-setup-rollback",
-      "222-v2-checked-setup-output-occupied"
+      "222-v2-checked-setup-output-occupied",
+      "222-v2-checked-output-occupied-rollback",
+      "223-v2-checked-input-occupied-rollback"
     ],
     "checked_setup_compiler": "NOT_EXECUTED",
     "checked_setup_guest": "NOT_EXECUTED",
@@ -484,6 +486,24 @@
     },
     "error_code_accessor": "PipeSetupError.code()",
     "allocation_rule": "success_result_and_guest_bridge_allocated_before_atomic_DATA_publication",
-    "runner_evidence": "NOT_EXECUTED"
+    "runner_evidence": "NOT_EXECUTED",
+    "rollback_recovery_cases": {
+      "source_output_conflict": {
+        "guest_fixture": "tests/fixtures/pass/222-v2-checked-output-occupied-rollback.atto",
+        "error_code": 4,
+        "rejected_publications": 0,
+        "unclaimed_source_channel_sink_reusable": true,
+        "expected_stdout": "40\n2\n",
+        "status": "NOT_EXECUTED"
+      },
+      "sink_input_conflict": {
+        "guest_fixture": "tests/fixtures/pass/223-v2-checked-input-occupied-rollback.atto",
+        "error_code": 5,
+        "rejected_publications": 0,
+        "unclaimed_source_channel_sink_reusable": true,
+        "expected_stdout": "40\n2\n",
+        "status": "NOT_EXECUTED"
+      }
+    }
   }
 }
