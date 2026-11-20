@@ -187,20 +187,21 @@ test('experimental Rust checked PipeHandle preview cannot masquerade as backend 
   });
   assert.equal(preview.allocation_rule,
     'success_result_and_guest_bridge_allocated_before_atomic_DATA_publication');
-  assert.equal(new Set(preview.new_guest_fixture_ids).size,6);
+  assert.equal(new Set(preview.new_guest_fixture_ids).size,7);
   for (const id of preview.new_guest_fixture_ids) {
-    assert.match(id,/^2(?:19|20|21|22|23)-v2-checked-/);
+    assert.match(id,/^2(?:19|20|21|22|23|24)-v2-checked-/);
   }
   const cases=preview.rollback_recovery_cases;
   assert.equal(cases.source_output_conflict.error_code,4);
   assert.equal(cases.sink_input_conflict.error_code,5);
+  assert.equal(cases.channel_occupied_conflict.error_code,6);
   for(const entry of Object.values(cases)){
     assert.equal(entry.status,'NOT_EXECUTED');
     assert.equal(entry.rejected_publications,0);
     assert.equal(entry.unclaimed_source_channel_sink_reusable,true);
     assert.equal(entry.expected_stdout,'40\\n2\\n'.replaceAll('\\n','\n'));
     assert.ok(entry.guest_fixture.startsWith('tests/fixtures/pass/'));
-    assert.match(entry.guest_fixture,/2(?:22|23)-v2-checked-[a-z-]+[.]atto$/);
+    assert.match(entry.guest_fixture,/2(?:22|23|24)-v2-checked-[a-z-]+[.]atto$/);
     assert.ok(entry.shared_fixture.startsWith('fixtures/pipe-rpipe-checked-v2/'));
     assert.match(entry.source_git_blob_sha,/^[0-9a-f]{40}$/);
     const bytes=readFileSync(new URL(entry.shared_fixture,root),'utf8');
