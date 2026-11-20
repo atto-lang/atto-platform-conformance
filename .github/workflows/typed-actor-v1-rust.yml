@@ -4,6 +4,9 @@ on:
   push:
     paths:
       - 'tools/typed_actor_v1.rs'
+      - 'tools/typed_actor_bool_v1.rs'
+      - 'contracts/typed-actor-bool-v1.tsv'
+      - 'fixtures/typed-actor-bool-v1/**'
       - 'tools/typed_actor_string_targets.rs'
       - 'contracts/typed-actor-string-v1.tsv'
       - 'fixtures/typed-actor-string-v1/**'
@@ -16,6 +19,9 @@ on:
   pull_request:
     paths:
       - 'tools/typed_actor_v1.rs'
+      - 'tools/typed_actor_bool_v1.rs'
+      - 'contracts/typed-actor-bool-v1.tsv'
+      - 'fixtures/typed-actor-bool-v1/**'
       - 'tools/typed_actor_string_targets.rs'
       - 'contracts/typed-actor-string-v1.tsv'
       - 'fixtures/typed-actor-string-v1/**'
@@ -70,6 +76,10 @@ jobs:
           "$RUNNER_TEMP/actor_string_target_tests"
           rustc --edition=2021 -D warnings tools/typed_actor_string_targets.rs -o "$RUNNER_TEMP/actor_string_targets"
           "$RUNNER_TEMP/actor_string_targets"
+          rustc --edition=2021 --test -D warnings tools/typed_actor_bool_v1.rs -o "$RUNNER_TEMP/actor_bool_source_tests"
+          "$RUNNER_TEMP/actor_bool_source_tests"
+          rustc --edition=2021 -D warnings tools/typed_actor_bool_v1.rs -o "$RUNNER_TEMP/actor_bool_source"
+          "$RUNNER_TEMP/actor_bool_source"
       - name: Explicitly prohibit reference-model promotion to compiler parity
         run: |
           echo 'ATTO_TYPED_ACTOR_V1_SOURCE_ONLY=PASS'
