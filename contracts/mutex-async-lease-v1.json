@@ -7,6 +7,15 @@
   "source_only_warning": "No backend may report PASS from fixture integrity or accepted syntax; the guest must be compiled and executed and all negatives rejected without artifacts.",
   "cases": [
     {
+      "id": "ready-await-no-forced-yield",
+      "kind": "compiled_guest_positive",
+      "source": "ready-await-no-forced-yield.atto",
+      "feature": "await",
+      "expected_stdout": "42\n",
+      "expected_exit": 42,
+      "expected_runtime_suspensions": 0
+    },
+    {
       "id": "fast-implicit-using",
       "kind": "compiled_guest_positive",
       "source": "implicit-await-fast-path.atto",
@@ -40,6 +49,14 @@
       "id": "reject-guard-suspend",
       "kind": "compile_negative",
       "source": "negative-guard-suspend.atto",
+      "expected_diagnostic": "E_GUARD_SUSPEND",
+      "guest_artifact": false
+    },
+    {
+      "id": "reject-guard-ready-await",
+      "kind": "compile_negative",
+      "source": "negative-guard-ready-await.atto",
+      "feature": "mutex",
       "expected_diagnostic": "E_GUARD_SUSPEND",
       "guest_artifact": false
     },
@@ -84,6 +101,18 @@
       "id": "sync-lock-would-block",
       "kind": "runtime_probe",
       "expected": "lock() never parks carrier; contention reports typed would-block; try_lock yields None",
+      "evidence_required": true
+    },
+    {
+      "id": "legacy-async-2-abi-rejection",
+      "kind": "runtime_probe",
+      "expected": "A guest compiled against mandatory-yield atto.async/2 must not be silently reinterpreted as conditional-ready await; host must reject unsupported ABI, and the new ABI needs a separate version",
+      "evidence_required": true
+    },
+    {
+      "id": "unawaited-call-vs-scheduled-task",
+      "kind": "runtime_probe",
+      "expected": "Calling susp function creates lazy task without side effects; explicitly scheduling a child task may start it before first await; cancellation and parentage are tracked independently",
       "evidence_required": true
     }
   ],
@@ -158,11 +187,20 @@
     "scheduler_nonparking_runtime_trace",
     "guard_lifecycle_race_tests",
     "tenant_vm_isolation",
-    "nonzero_step_ci_url"
+    "nonzero_step_ci_url",
+    "ready_and_pending_await_exact_yield_telemetry",
+    "async_abi_version_rejection"
   ],
   "related_legacy": [
     "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/19",
     "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/56",
     "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1351"
+  ],
+  "spec_deps": [
+    "atto-source.rs#50",
+    "atto-source.rs#77",
+    "atto-source.rs#186",
+    "atto-source.rs#262",
+    "atto-source.rs#397"
   ]
 }
