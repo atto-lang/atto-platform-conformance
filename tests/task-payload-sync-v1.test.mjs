@@ -45,7 +45,11 @@ test('sync is an inline execution mode, not a spawned await/do-task alias', () =
   assert.ok(!doSync.expected.witnesses.includes('INDEPENDENT_CHILD_SPAWN'));
   assert.match(getSource(sync).toString('utf8'),/sync task<int>/);
   assert.match(getSource(awaitTask).toString('utf8'),/await task<int>/);
-  assert.match(getSource(doSync).toString('utf8'),/do sync task<int>/);
+  assert.match(getSource(doSync).toString('utf8'),/do sync task<void>/);
+  assert.doesNotMatch(getSource(doSync).toString('utf8'),/do sync task<(?!void>)[^>]+>/);
+  assert.doesNotMatch(getSource(doSync).toString('utf8'),/do sync task<void>\\s*\\{[^}]*return\\s+[^;]+;/);
+  assert.match(registry.sync_inline_model,/only an explicit void payload or inferred void/);
+  assert.ok(doSync.expected.witnesses.includes('INLINE_VOID_COMPLETION_NO_RESULT'));
   assert.match(getSource(doTask).toString('utf8'),/do task<int>/);
 });
 test('inline sync task requires only transitive effects and never suspends under guard', () => {
