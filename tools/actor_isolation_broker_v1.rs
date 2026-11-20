@@ -54,12 +54,15 @@ enum PayloadState {
     Sender { tenant: u64 },
     Escrow { tenant: u64, recipient: ActorIdentity, epoch: u64 },
     Inbox { recipient: ActorIdentity, epoch: u64 },
-    Retired,
+    Retired, // successfully delivered and processed by the receiver
+    Abandoned, // admitted, but STOP/close retired the undelivered message
 }
 #[derive(Default)]
 struct Mailman {
     payloads: HashMap<u64, PayloadState>,
     inbox_count: usize,
+    delivered_count: usize,
+    abandoned_count: usize,
     capacity: usize,
     closed: bool,
     destination: Option<ActorIdentity>,
@@ -144,6 +147,7 @@ impl Mailman {
                 }
                 *state = PayloadState::Retired;
                 self.inbox_count -= 1;
+                self.delivered_count += 1;
                 Ok(())
             }
             _ => Err(Denial::NotOwner),
@@ -154,7 +158,10 @@ impl Mailman {
         for state in self.payloads.values_mut() {
             match *state {
                 PayloadState::Escrow { tenant, .. } => *state = PayloadState::Sender { tenant },
-                PayloadState::Inbox { .. } => *state = PayloadState::Retired,
+                PayloadState::Inbox { .. } => {
+                    *state = PayloadState::Abandoned;
+                    self.abandoned_count += 1;
+                },
                 _ => (),
             }
         }
@@ -227,6 +234,8 @@ mod tests {
         m.deliver(13, actor(), 22).unwrap();
         assert_eq!(m.deliver(13, actor(), 22), Err(Denial::NotOwner));
         assert_eq!(m.payloads[&13], PayloadState::Retired);
+        assert_eq!(m.delivered_count, 1);
+        assert_eq!(m.abandoned_count, 0);
     }
     #[test] fn full_mailbox_denial_keeps_sender_owner() {
         let mut m = Mailman::new(actor(), 1, 22);
@@ -270,8 +279,10 @@ mod tests {
         for id in 1..=2 { m.register(id, 7).unwrap(); m.stage(id, 7, actor(), 22, true).unwrap(); }
         m.commit(1, actor(), 22, true).unwrap();
         m.close(); m.close();
-        assert_eq!(m.payloads[&1], PayloadState::Retired);
+        assert_eq!(m.payloads[&1], PayloadState::Abandoned);
         assert_eq!(m.payloads[&2], PayloadState::Sender { tenant: 7 });
+        assert_eq!(m.delivered_count, 0);
+        assert_eq!(m.abandoned_count, 1);
         assert_eq!(m.inbox_count, 0);
     }
     #[test] fn old_epoch_cannot_commit_into_new_incarnation() {
@@ -286,6 +297,41 @@ mod tests {
     #[test] fn duplicate_payload_id_fails_closed() {
         let mut m = Mailman::new(actor(), 1, 22);
         m.register(1, 7).unwrap();
+        assert_eq!(m.register(1, 7), Err(Denial::NotOwner));
+    }
+
+    #[test] fn processed_and_abandoned_are_disjoint_terminal_states() {
+        let mut m = Mailman::new(actor(), 3, 22);
+        for id in 1..=3 {
+            m.register(id, 7).unwrap();
+            m.stage(id, 7, actor(), 22, true).unwrap();
+        }
+        m.commit(1, actor(), 22, true).unwrap();
+        m.commit(2, actor(), 22, true).unwrap();
+        m.deliver(1, actor(), 22).unwrap();
+        m.close(); m.close();
+        assert_eq!(m.payloads[&1], PayloadState::Retired);
+        assert_eq!(m.payloads[&2], PayloadState::Abandoned);
+        assert_eq!(m.payloads[&3], PayloadState::Sender { tenant: 7 });
+        assert_eq!(m.delivered_count, 1);
+        assert_eq!(m.abandoned_count, 1);
+        assert_eq!(m.inbox_count, 0);
+        assert_eq!(m.deliver(2, actor(), 22), Err(Denial::NotOwner));
+        assert_eq!(m.abort(2, 7), Err(Denial::NotOwner));
+        assert_eq!(m.stage(3, 7, actor(), 22, true), Err(Denial::Closed));
+    }
+    #[test] fn restart_accounts_old_inbox_as_abandoned_not_processed() {
+        let mut m = Mailman::new(actor(), 1, 22);
+        m.register(1, 7).unwrap();
+        m.stage(1, 7, actor(), 22, true).unwrap();
+        m.commit(1, actor(), 22, true).unwrap();
+        let mut next = actor();
+        next.incarnation += 1;
+        m.restart(next, 23);
+        assert_eq!(m.payloads[&1], PayloadState::Abandoned);
+        assert_eq!(m.abandoned_count, 1);
+        assert_eq!(m.delivered_count, 0);
+        assert_eq!(m.deliver(1, actor(), 22), Err(Denial::NotOwner));
         assert_eq!(m.register(1, 7), Err(Denial::NotOwner));
     }
     #[test] fn zero_capacity_does_not_overflow_or_consume() {
