@@ -435,7 +435,8 @@
       },
       "pattern": "List.of(pattern.of(\"...\"), is int as val x, pattern.of(\"...\")) when x > 5",
       "expected": {
-        "matched": false,
+        "structural_matched": true,
+        "arm_selected": false,
         "bindings": {},
         "fallback_result": 0,
         "guard_evaluations": 1
