@@ -197,6 +197,10 @@ test('seven supplemental edge fixtures require per-backend execution, not author
     }
     if (backend === 'rs-native-compiler')
       assert.match(row.conditional_compiler_check, /ATTOC/);
+    if (['js-compiled-esm','forge','cranelift','net-direct-cil','java-scalar-bootstrap'].includes(backend)) {
+      assert.equal(row.reserved_task_sync_yield_rejection_tests_authored,9);
+      assert.equal(row.reserved_task_sync_yield_test_executed,false);
+    }
     assert.equal(row.execution_status,'not_executed');
     assert.equal(row.receipt,null);
   }
@@ -206,7 +210,18 @@ test('seven supplemental edge fixtures require per-backend execution, not author
   assert.equal(admission.source_repository_runs.length,4);
   assert.ok(admission.source_repository_runs.every(r=>r.executed_steps===0));
   assert.ok(admission.alternate_carriers_checked.length>=8);
-  assert.match(admission.disposition,/do not mirror private trees/);
+  assert.match(admission.disposition,/Do not mirror private source trees/);
+  assert.equal(admission.fresh_canary_runs.length,8);
+  assert.equal(new Set(admission.fresh_canary_runs.map(r=>r.repo)).size,8);
+  for (const canary of admission.fresh_canary_runs) {
+    assert.ok(admission.alternate_carriers_checked.includes(canary.repo));
+    assert.ok(canary.run_id > 0);
+    assert.equal(canary.job_conclusion,'failure');
+    assert.equal(canary.executed_steps,0);
+    assert.equal(canary.runner_assigned,false);
+    assert.match(canary.kind,/no checkout/);
+  }
+  assert.ok(admission.possible_causes_not_verified.includes('billing/minutes'));
   assert.equal(edge.overall_execution_status,'not_executed');
   assert.equal(edge.guest_result_abi_must_be_recorded_separately,true);
   const llvmProbe=edge.local_llvm_adapter_abi_probe;
@@ -217,12 +232,23 @@ test('seven supplemental edge fixtures require per-backend execution, not author
   const smoke=edge.local_v8_smoke;
   assert.equal(smoke.status,'actual_generated_js_executed_in_process_no_Node_CI_admission');
   assert.match(smoke.compiler_blob_sha,sha);
-  assert.equal(smoke.input_blobs_verified,7);
-  assert.deepEqual(smoke.emitted_guest_observed_main_values,
-    ['61','42','-9223372036854775808']);
+  assert.equal(smoke.input_blobs_verified,15);
+  assert.equal(smoke.executed_generated_guest_cases,7);
+  assert.equal(smoke.executed_guest_runtime_traps,1);
+  assert.equal(smoke.admission_rejections,16);
+  assert.deepEqual(smoke.compiled_guest_values,
+    ['83','83','42','42','61','42','-9223372036854775808']);
   assert.equal(smoke.compiled_overflow_observed,'E_OVERFLOW');
-  assert.deepEqual(smoke.source_rejections,['E_LITERAL','E_LITERAL','E_NAME']);
-  assert.match(smoke.scope,/not Actions CI/);
+  assert.deepEqual(smoke.source_rejections,
+    ['E_TYPE','E_PARSE','E_MIXED_PIPE','E_MIXED_PIPE','E_LITERAL','E_LITERAL','E_NAME']);
+  assert.deepEqual(smoke.reserved_binding_rejections,
+    ['sync/fnc','sync/param','sync/local','task/fnc','task/param','task/local','yield/fnc','yield/param','yield/local']);
+  assert.match(smoke.scope,/not GitHub Actions/);
+  const jsLocal=ledger.backend_states['js-compiled-esm'].local_execution;
+  assert.equal(jsLocal.source_changed_since_local_Node_observation,true);
+  assert.notEqual(jsLocal.compiler_blob_sha,jsLocal.current_compiler_blob_sha);
+  assert.equal(jsLocal.current_compiler_blob_sha,smoke.compiler_blob_sha);
+  assert.equal(ledger.backend_states.forge.local_execution.source_changed_since_local_observation,true);
   // A changed Java compiler may not inherit a prior unrelated local receipt.
   assert.equal(ledger.backend_states['java-scalar-bootstrap']
     .local_execution.source_changed_since_local_observation,true);
