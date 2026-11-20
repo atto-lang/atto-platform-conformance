@@ -27,6 +27,19 @@ test('pipe/rpipe contract explicitly declares source-only evidence, not guest pa
     repos.add(backend.repo);
   }
   assert.match(contract.gating, /not passing conformance/i);
+  // A PR link or typed host planner is NOT an executable guest receipt.
+  assert.equal(contract.compiler_workstreams.length, 8);
+  const workstreamRepos=new Set();
+  for (const item of contract.compiler_workstreams) {
+    assert.match(item.repo,/^atto-lang\/atto-source\.[a-z]+$/);
+    assert.ok(!workstreamRepos.has(item.repo),'duplicate compiler workstream');
+    workstreamRepos.add(item.repo);
+    assert.ok(item.pr.startsWith('https://github.com/'+item.repo+'/pull/'));
+    assert.equal(item.guest_pipe_execution,'NOT_EXECUTED');
+    assert.ok(item.phase.length>5);
+    assert.ok(repos.has(item.repo),'workstream must be in full backend evidence roster');
+  }
+
 });
 
 test('fixture paths and expected diagnostics are unique, bounded and pinned to git blobs', ()=>{
