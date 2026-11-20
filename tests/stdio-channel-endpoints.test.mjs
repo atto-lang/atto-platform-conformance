@@ -45,7 +45,7 @@ test('checked echo covers success, empty item, EOF, encoding and framing', () =>
   assert.equal(entry.runs[2].exit, 11);
   assert.equal(entry.runs[2].stderr, '');
   assert.equal(entry.runs[5].stdout, 'Echo the next input item:é💡');
-  assert.equal(entry.runs[6].stdout, 'Echo the next input item:a\\u0000b');
+  assert.equal(entry.runs[6].stdout, 'Echo the next input item:a' + String.fromCharCode(0) + 'b');
   const source = text(entry.path);
   assert.match(source, /readch input/);
   assert.match(source, /writech output, item/);
