@@ -6,6 +6,8 @@ on:
       - 'tests/functional-pipelines-ledger.test.mjs'
       - 'tests/token-free-carrier-mirror.test.mjs'
       - 'tools/verify-token-free-carrier-mirror.mjs'
+      - 'tools/check-carrier-admission.mjs'
+      - 'tests/check-carrier-admission.test.mjs'
       - '.github/workflows/functional-pipelines-evidence.yml'
   workflow_dispatch:
 permissions:
@@ -33,4 +35,4 @@ jobs:
       - name: Verify SHA-pinned conformance matrix without asserting guest PASS
         run: |
           node --version
-          node --test tests/functional-pipelines-ledger.test.mjs tests/token-free-carrier-mirror.test.mjs
+          node --test tests/functional-pipelines-ledger.test.mjs tests/token-free-carrier-mirror.test.mjs tests/check-carrier-admission.test.mjs
