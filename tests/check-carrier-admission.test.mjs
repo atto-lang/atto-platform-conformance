@@ -1,15 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { assessAdmission, checkLiveAdmission, AdmissionFailure } from '../tools/check-carrier-admission.mjs';
+import { CANARY_SOURCE, CANARY_BLOB_SHA } from '../tools/canonical-carrier-workflow.mjs';
 const SHA = 'a'.repeat(40);
 const NOW = Date.parse('2026-11-20T00:00:10Z');
 const expected = {repo:'example-org/canary',repoId:42,runId:123,headSha:SHA,
-  workflowPath:'.github/workflows/source-free-canary.yml',workflowBlobSha:'b'.repeat(40),
+  workflowPath:'.github/workflows/source-free-canary.yml',workflowBlobSha:CANARY_BLOB_SHA,
   jobName:'source-free-check',proofStep:'ADMISSION_PROOF'};
-const repo = {full_name:expected.repo,id:42,archived:false};
-const run = {id:123,head_sha:SHA,repository:{full_name:expected.repo,id:42},path:expected.workflowPath,
+const repo = {full_name:expected.repo,id:42,archived:false,private:true,visibility:'private'};
+const run = {id:123,head_sha:SHA,repository:{full_name:expected.repo,id:42,private:true},path:expected.workflowPath,
   status:'completed',conclusion:'success',run_attempt:1,event:'push',created_at:'2026-11-20T00:00:00Z'};
-const workflow = {sha:expected.workflowBlobSha,path:expected.workflowPath};
+const workflow = {sha:expected.workflowBlobSha,path:expected.workflowPath,type:'file',encoding:'base64',
+  content:Buffer.from(CANARY_SOURCE,'utf8').toString('base64')};
 const job = {id:991,run_id:123,run_attempt:1,head_sha:SHA,name:expected.jobName,
   status:'completed',conclusion:'success',runner_id:777,runner_name:'runner-1',
   started_at:'2026-11-20T00:00:00Z',completed_at:'2026-11-20T00:00:02Z',
@@ -25,6 +27,14 @@ test('one synthetic positive is classified only as capacity, never guest parity'
 });
 const changes=[
  ['archived destination', x=>x.repository.archived=true],
+ ['public destination',x=>x.repository.private=false],
+ ['public visibility despite private flag',x=>x.repository.visibility='public'],
+ ['public run repository',x=>x.run.repository.private=false],
+ ['modified workflow contents',x=>x.workflow.content=Buffer.from(CANARY_SOURCE+'# modified\n').toString('base64')],
+ ['missing workflow bytes',x=>delete x.workflow.content],
+ ['different workflow file type',x=>x.workflow.type='symlink'],
+ ['wrong reviewed canary job name',x=>x.expected.jobName='unreviewed-job'],
+ ['wrong reviewed canary proof step',x=>x.expected.proofStep='unreviewed-step'],
  ['wrong repo',x=>x.run.repository.full_name='elsewhere/other'],
  ['wrong immutable repo id',x=>x.repository.id=43],
  ['wrong head',x=>x.run.head_sha='c'.repeat(40)],
