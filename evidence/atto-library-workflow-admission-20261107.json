@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "classification": "DISTINCT_WORKFLOW_CONFIG_AND_RUNNER_ADMISSION_FAILURES",
+  "source": "GitHub Actions run and job REST metadata verified 2026-11-07 UTC",
+  "before": [
+    {
+      "repo": "ores-truffle-oreslang/oreslang-source.net",
+      "head": "eee2710e68842fd8f7368c2e27b81d9a36177d74",
+      "run_id": 42331491997,
+      "path": ".github/workflows/source-modules-native-aot.yml",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "failure",
+      "jobs": []
+    },
+    {
+      "repo": "ores-truffle-oreslang/oreslang-source.forge",
+      "head": "829a02948fb57858d5badb4e8b3bdad99e6f8493",
+      "run_id": 42331638359,
+      "path": ".github/workflows/ci.yml",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "failure",
+      "jobs": []
+    }
+  ],
+  "after": [
+    {
+      "repo": "ores-truffle-oreslang/oreslang-source.net",
+      "head": "e4a0fc59166a07400d837addcfc04fcfd4304948",
+      "run_id": 42332192855,
+      "path": ".github/workflows/source-modules-native-aot.yml",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "failure",
+      "jobs": [
+        {
+          "id": 128280991492,
+          "name": "native-source-modules (ubuntu-24.04, linux-x64)",
+          "runner_id": 0,
+          "status": "completed",
+          "conclusion": "failure",
+          "steps": []
+        }
+      ]
+    },
+    {
+      "repo": "ores-truffle-oreslang/oreslang-source.forge",
+      "head": "549bac38e908c4b468f1d815d4a543683abdc24e",
+      "run_id": 42332274617,
+      "path": ".github/workflows/ci.yml",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "failure",
+      "jobs": [
+        {
+          "id": 128281257826,
+          "name": "bootstrap (clang++)",
+          "runner_id": 0,
+          "status": "completed",
+          "conclusion": "failure",
+          "steps": []
+        }
+      ]
+    }
+  ],
+  "guestExecution": "NOT_EXECUTED"
+}

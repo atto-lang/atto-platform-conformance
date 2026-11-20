@@ -42,3 +42,125 @@ tree read-back, run attempt, output artifacts, compiler invocation, actual
 guest execution and negative mutation before recording compiler-backed proof.
 The source-contract workflow runs both Node suites but **never** promotes backend
 evidence itself.
+
+## Hardening: exact ARM freestanding ABI allowlist
+
+LLVM's `tools/core-baremetal-gate/src/audit.rs` has a closed 27-symbol
+`SUPPORT_ABI` (memory helpers, exact ARM RTABI helper names, and
+`__mulodi4`). The original blanket `__aeabi_` prefix in this v1
+conformance manifest was broader than LLVM's implementation and could
+misclassify unknown generated helpers as allowed. The v1 source contract
+now pins the **complete exact list** and sets
+`permittedExternalHelperPrefix: null`. Mutation tests prove adding an
+unknown `__aeabi_` name or restoring a prefix fails policy validation.
+
+This aligns with LLVM #1481's *actual* compiler-output IR/object/linker
+negative helper-injection gate. It is still a source/policy model until
+native compilation and QEMU execute on the exact PR head.
+
+## Cross-run, cross-attempt and step-state evidence hardening
+
+The GitHub job snapshot must now match its enclosing run's exact numeric
+`run_id`, positive `run_attempt` and `head_sha`. When a workflow path is
+supplied, it must be the expected source-owned `.github/workflows/*.yml`.
+Step numbers must be monotonically 1-based in reported order and a completed
+job cannot contain queued, null-conclusion, or unknown-outcome steps. Tests
+mutate each field independently to prove that green metadata from another
+run or attempt never upgrades execution evidence.
+
+On 2026-11-07 UTC, a retry of conformance source-only GitHub run
+`42316175135` was accepted as attempt 2 but again failed at runner
+admission (no steps or allocated runner). This is a **runner service or
+administration investigation**, not a compiler failure. Organization Actions,
+billing and runner-management settings are not accessible via the available
+GitHub connector; an administrator must inspect those settings. This
+classifier never converts step metadata alone into verified guest parity.
+
+## Real source-owned runner admission negative fixture (November 7 UTC)
+
+`evidence/atto-library-source-only-runner-admission-20261107.json` records
+GitHub run `42316175135` on exact prior PR head
+`c7ce8820096d273c5edd13d2e0b89e8d6a09f22e`. Initial job
+`128229200850` (attempt 1) and retried job `128244790877` (attempt 2)
+were both reported failed, `runner_id=0`, and `steps=[]` in the GitHub
+attempt-scoped job API. The source-only Node regression checks both real
+snapshots and deliberately substitutes a forged stepful job across attempts;
+both remain non-promoting. This is public run metadata, **not** source export,
+actual compiler testing or proof that a particular billing setting caused
+the admission failure. The administrator incident remains [#315](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/315).
+
+## Fail-closed unfinished and contradictory zero-step classifications
+
+New negative tests distinguish an in-progress job with not-yet-populated
+steps from a **completed, failed, unallocated** runner-admission failure.
+A zero-step job marked successful, or a completed zero-step job with a
+positive runner ID, is now classified `UNTRUSTED_EVIDENCE` rather than
+incorrectly claiming runner-admission failure. Required compiler steps
+marked skipped remain `NO_REQUIRED_EXECUTION`. These are policy-model
+regressions, not compiler guest receipts.
+
+## Count only actually completed command steps
+
+The evidence classifier's `executedSteps` counter no longer counts
+`conclusion=skipped` or `neutral` as observed executed commands.
+A completed, failed, zero-step job is classified as runner admission failure
+**only** when its runner identity is explicitly `runner_id=0`; missing,
+unknown or positive runner IDs instead fail closed as `UNTRUSTED_EVIDENCE`.
+Four independent regression groups check skipped, neutral, missing/invalid
+runner identities and the observed GitHub zero-step incident. These tests
+are source-only checks and do not establish real compiler guest execution.
+
+## GitHub workflow YAML failure is distinct from job runner admission
+
+Two actual source-owned workflow runs had **no jobs created**:
+.NET `42331491997` at head `eee2710e...` and Forge
+`42331638359` at head `829a0294...`. Both corresponded to
+malformed, duplicated YAML introduced by literal-unsafe source editing.
+After reconstruction from pinned intact Git blobs, .NET run
+`42332192855` and Forge run `42332274617` created their expected
+jobs, but those jobs still failed with `runner_id=0`, `steps=[]`.
+The conformance classifier now reports `WORKFLOW_JOB_CREATION_FAILURE`
+for a completed failed run with no jobs and reserves
+`RUNNER_ADMISSION_FAILURE` for completed failed, zero-step jobs with
+explicit zero runner identity. The frozen real API snapshots and four
+mutation/regression tests are source-only evidence. None represents
+native/guest execution.
+
+## Cancelled/skipped jobs are not runner-allocation failures
+
+A completed GitHub run with no job steps must not automatically be called
+a runner-admission failure. The classifier now requires **both** the run
+and target job to conclude `failure`, plus explicit `runner_id=0`.
+Cancellation and skips are `NOT_EXECUTED`; success/unknown/inconsistent
+outcomes are `UNTRUSTED_EVIDENCE`. New adversarial tests cover cancelled
+runs, skipped jobs, timed-out results, null job conclusions and contradictory
+run/job status combinations. This preserves the independent
+`WORKFLOW_JOB_CREATION_FAILURE` class for zero-job runs and continues to
+withhold compiler-parity status from all source-only tests.
+
+## Fail-closed runner identity before step execution classification
+
+The source-only classifier must never label a job with
+`runner_id=0` and purported completed steps as `EXECUTION_FAILED`.
+It now validates a positive allocated runner **before** using the
+step-level outcomes to classify actual execution. Any contradictory
+stepful zero-runner snapshot is `UNTRUSTED_EVIDENCE`, with
+`executedSteps=0`. New negative cases cover forged success, forged
+failure, and an allocated failing control. Real GitHub Actions
+`steps=[]` remain runner-admission failures only under the explicit
+completed/failed/unallocated conditions. This does not prove exact
+guest source execution or artifact provenance.
+
+## Deterministic adversarial execution-evidence matrix
+
+An additional zero-dependency Node test performs **560** deterministic
+metadata mutations against otherwise stepful, head/attempt-bound job
+records. None may reach the `EXECUTED_STEPS_UNVERIFIED` state.
+It explicitly tests cross-run and cross-attempt substitution,
+zero/null runner IDs, skipped/neutral steps, incomplete step states,
+reordered or missing required steps and invalid numbering. The
+control also demonstrates that a fully green stepful job remains
+`EXECUTED_STEPS_UNVERIFIED`, never certified parity, until an independent
+receipt, compiler and source tree audit. A separate zero-step table
+covers cancelled, skipped, failed and contradictory outcomes.
+This suite is source-only security-policy validation.

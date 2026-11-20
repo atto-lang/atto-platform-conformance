@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "claim": "stage1-atto-core-identity-compiler-owned-source-only",
+  "canonical_path": "contracts/atto-core-v1/identity.atto",
+  "git_blob_sha1": "b8a0cf7a45f9c3070ad3bcd42d4a78c7cf83739b",
+  "guest_status": "NOT_EXECUTED",
+  "source_evidence_class": "SOURCE_ONLY",
+  "backends": [
+    {
+      "backend": "net-nativeaot",
+      "repository": "ores-truffle-oreslang/oreslang-source.net",
+      "pr": 381,
+      "head": "39876519087115a7effca8dc8f0290f2527c25b6",
+      "source_blob": "b8a0cf7a45f9c3070ad3bcd42d4a78c7cf83739b",
+      "compiler_implementation": "AUTHORED_UNEXECUTED",
+      "entry_blob": "fd685d84f8a84b84710c257dfa6f5a7c8329dbf9"
+    },
+    {
+      "backend": "forge-stage1-native",
+      "repository": "ores-truffle-oreslang/oreslang-source.forge",
+      "pr": 202,
+      "head": "bc7d599284699b5ae9fc4ab67ba4fb805e9fbb43",
+      "source_blob": "b8a0cf7a45f9c3070ad3bcd42d4a78c7cf83739b",
+      "compiler_implementation": "AUTHORED_UNEXECUTED",
+      "entry_blob": "fd685d84f8a84b84710c257dfa6f5a7c8329dbf9"
+    }
+  ],
+  "not_yet_qualified": [
+    "java-graalvm",
+    "llvm",
+    "wasm"
+  ],
+  "full_numeric_module": "NOT_IMPLEMENTED_IN_STAGE1",
+  "required_before_parity": [
+    "exact-head compiler-backed guest execution",
+    "native artifact and compiler receipts",
+    "independent review",
+    "five-backend canonical semantic fixture"
+  ],
+  "entry_git_blob_sha1": "fd685d84f8a84b84710c257dfa6f5a7c8329dbf9"
+}

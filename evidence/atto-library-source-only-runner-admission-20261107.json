@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "classification": "SOURCE_OWNED_RUNNER_ADMISSION_FAILURE",
+  "repo": "ores-truffle-oreslang/oreslang-platform-conformance",
+  "head_sha": "c7ce8820096d273c5edd13d2e0b89e8d6a09f22e",
+  "path": ".github/workflows/atto-library-profiles-v1.yml",
+  "run": {
+    "id": 42316175135,
+    "head_sha": "c7ce8820096d273c5edd13d2e0b89e8d6a09f22e",
+    "path": ".github/workflows/atto-library-profiles-v1.yml",
+    "status": "completed",
+    "conclusion": "failure"
+  },
+  "attempts": [
+    {
+      "run_attempt": 1,
+      "job": {
+        "id": 128229200850,
+        "run_id": 42316175135,
+        "run_attempt": 1,
+        "head_sha": "c7ce8820096d273c5edd13d2e0b89e8d6a09f22e",
+        "name": "source-contract",
+        "status": "completed",
+        "conclusion": "failure",
+        "runner_id": 0,
+        "steps": []
+      }
+    },
+    {
+      "run_attempt": 2,
+      "job": {
+        "id": 128244790877,
+        "run_id": 42316175135,
+        "run_attempt": 2,
+        "head_sha": "c7ce8820096d273c5edd13d2e0b89e8d6a09f22e",
+        "name": "source-contract",
+        "status": "completed",
+        "conclusion": "failure",
+        "runner_id": 0,
+        "steps": []
+      }
+    }
+  ],
+  "evidenceClass": "RUNNER_ADMISSION_FAILURE",
+  "guestExecution": "NOT_EXECUTED",
+  "note": "Verified via GitHub run and attempt-scoped job APIs 2026-11-07 UTC; no source or compiler was copied."
+}

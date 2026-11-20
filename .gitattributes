@@ -1,0 +1,4 @@
+# Preserve byte-identical AttoLang source and fixture objects across OSes.
+*.atto text eol=lf
+*.ores text eol=lf
+*.json text eol=lf

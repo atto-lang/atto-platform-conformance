@@ -1,0 +1,38 @@
+name: AttoLang five-backend canonical library source ledger (SOURCE ONLY)
+on:
+  pull_request:
+    paths:
+      - 'contracts/atto-library-source-v1.json'
+      - 'lib/atto-library-source-identity-v1.mjs'
+      - 'tests/atto-library-source-identity-v1.test.mjs'
+      - 'fixtures/atto-library-source/**'
+      - 'docs/ATTO_LIBRARY_SOURCE_IDENTITY_V1.md'
+      - '.github/workflows/atto-library-source-identity-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  canonical-source-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Pin exact conformance source head and tree
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_HEAD" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          git diff --quiet --exit-code
+          echo "ATTO_LIBRARY_LEDGER_HEAD=$EXPECTED_HEAD TREE=$(git rev-parse 'HEAD^{tree}')"
+          test "$(git hash-object fixtures/atto-library-source/v1/numeric.atto)" = "5ced991f1d49b3c2a60fdd72b9003c0a4d18cd72"
+      - name: Execute negative source-claim mutations
+        run: |
+          set -euo pipefail
+          node --test tests/atto-library-source-identity-v1.test.mjs
+          echo 'FIVE_BACKEND_SOURCE_LEDGER=SOURCE_ONLY'
+          echo 'COMPILER_BACKED_GUEST=NOT_EXECUTED'

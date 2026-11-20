@@ -60,6 +60,8 @@ test("mutations cannot promote fabricated backend or weaken the profile split",(
  mutate(m=>m.optionalActor.independentOfLibraryTier=false);
  mutate(m=>m.freestanding.requiredEvidence.pop());
  mutate(m=>m.freestanding.permittedExternalHelperNames.push("malloc"));
+ mutate(m=>m.freestanding.permittedExternalHelperPrefix="__aeabi_");
+ mutate(m=>m.freestanding.permittedExternalHelperNames.push("__aeabi_surprise_helper"));
  mutate(m=>m.freestanding.forbiddenArtifactFeatures.splice(0,1));
  mutate(m=>m.fixtures[0].file="../escape.atto");
  mutate(m=>m.sourceSuffix=".ores");
