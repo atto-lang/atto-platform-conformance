@@ -4,7 +4,7 @@
   "compiler_repository": "atto-lang/atto-source.forge",
   "compiler_pull_request": 48,
   "compiler_file": "tools/forge_alloc.cpp",
-  "compiler_file_git_blob": "3748d02d58556b618a2bafba596c1cf5446f2aa1",
+  "compiler_file_git_blob": "2df14b242649ef6dd0dfeb0f6b7d441f9f4cc416",
   "compiler_file_sha256": null,
   "evidence_date_utc": "2026-11-20",
   "environment": "local container; source-org GHA jobs did not execute steps",
@@ -28,7 +28,23 @@
       "compiler_negative_cases": 3,
       "repeated_runs": 2,
       "outcome": "PASSED",
-      "note": "Locally reconstructed harness and equivalent fixtures, not exact checked-out GitHub PR tree"
+      "note": "Locally reconstructed source-equivalent CMake harness and fixtures (GCC and Clang runs); not a full exact GitHub PR tree checkout"
+    },
+    "clang_17_o0": {
+      "compiled_guest_cases": 12,
+      "compiler_negative_cases": 10,
+      "outcome": "PASSED",
+      "source": "local exactly-matching compiler file Git blob"
+    },
+    "input_symlink_rejection": {
+      "outcome": "PASSED",
+      "emitted_artifact": false,
+      "expected_diagnostic": "E_ALLOC_SOURCE"
+    },
+    "experimental_profile_gate": {
+      "outcome": "PASSED",
+      "emitted_artifact": false,
+      "expected_diagnostic": "E_ALLOC_EXPERIMENTAL_REQUIRED"
     }
   },
   "canonical_atto_module_bodies_compiled": false,
