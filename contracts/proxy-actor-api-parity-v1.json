@@ -42,9 +42,13 @@
     "supervisor_control_separate",
     "transport_authenticated",
     "exact_head_ci_steps",
-    "no_insecure_transport_downgrade"
+    "no_insecure_transport_downgrade",
+    "exact_message_ticket_minted_at_mailbox_admission",
+    "processed_requires_own_message_commit",
+    "concurrent_unrelated_turn_must_not_ack",
+    "panic_abandons_queued_mail"
   ],
-  "host_receipt_model": "Existing draft native host-only receipt transition gate, NOT a proof of authenticated wire, production IPC, compiled Atto guest support or any mandatory guest gate.",
+  "host_receipt_model": "Separate layers: stage-only ACK gate; host-owned per-mail ticket model; only Java and LLVM have host tickets attached to actual bounded scheduler mailboxes. Neither host-model tests nor host runtime tests prove compiled cross-process .atto proxy guests.",
   "backends": [
     {
       "id": "java",
@@ -54,7 +58,16 @@
       "authenticated_transport_status": "NOT_EXECUTED",
       "native_aot_status": "NOT_EXECUTED",
       "guest_evidence": null,
-      "notes": "JVM/Graal native integration not executed"
+      "notes": "Real M6 scoped per-message receipts: exact mailbox admission, start, processed scalar result, panic fail, queued abandon. Forked UDS restricted compiled .atto receiver and host sender. Java #45 is an overlapping independent M10 IPC pilot; reconcile before merge.",
+      "host_ticket_scope": "REAL_MAILBOX",
+      "host_ticket_status": "SOURCE_EXACT_HOST_TESTED",
+      "host_ticket_pr_head_sha": "e7dbc3f9f584f16c872af8858335767986ea9be8",
+      "host_ticket_ci": {
+        "source_head_sha": "e7dbc3f9f584f16c872af8858335767986ea9be8",
+        "ci_url": "https://github.com/bait-bikes-test/atto-ci/actions/runs/44653461640",
+        "source_proof": "11_SCOPED_GIT_BLOBS_MATCHED",
+        "executed_ci_steps": 1
+      }
     },
     {
       "id": "llvm",
@@ -64,7 +77,11 @@
       "authenticated_transport_status": "NOT_EXECUTED",
       "native_aot_status": "NOT_EXECUTED",
       "guest_evidence": null,
-      "notes": "Native process-isolation and actor runtime must be connected to real compiled handler"
+      "notes": "Real native C mailbox per-message ticket: exact admission/dequeue/void-handler return, bounded receipt slot/release, ActorRef+incarnation route fencing; not typed reply or recoverable native handler panic. Previous scoped host CI passed before latest target-actor route binding edit.",
+      "host_ticket_scope": "REAL_MAILBOX",
+      "host_ticket_status": "CURRENT_HEAD_NOT_EXECUTED",
+      "host_ticket_pr_head_sha": "9ffba26b48084f2052e3d39191302f54372b04aa",
+      "host_ticket_ci": null
     },
     {
       "id": "net",
@@ -74,7 +91,11 @@
       "authenticated_transport_status": "NOT_EXECUTED",
       "native_aot_status": "NOT_EXECUTED",
       "guest_evidence": null,
-      "notes": "Direct CIL scalar subset is not yet a remote actor runtime"
+      "notes": "C# lock-linearized host queue with scoped receipt and 128 concurrent producer tests; no real compiled CLR actor scheduler/NativeAOT guest proof.",
+      "host_ticket_scope": "HOST_MODEL",
+      "host_ticket_status": "CURRENT_HEAD_NOT_EXECUTED",
+      "host_ticket_pr_head_sha": "69aad553fbc201f5b74ce3dd096d2b5273adfa4b",
+      "host_ticket_ci": null
     },
     {
       "id": "wasm",
@@ -84,7 +105,11 @@
       "authenticated_transport_status": "NOT_EXECUTED",
       "native_aot_status": "NOT_EXECUTED",
       "guest_evidence": null,
-      "notes": "Browser guest cannot open raw Unix sockets; trusted host bridge required"
+      "notes": "Byte-identical to JS bounded host model, host-issued dispatch lease and 128 interleaved messages; no Wasm guest ABI/browser socket.",
+      "host_ticket_scope": "HOST_MODEL",
+      "host_ticket_status": "CURRENT_HEAD_NOT_EXECUTED",
+      "host_ticket_pr_head_sha": "7ce161c4a2aa0acfcc249a46b7c18396c3cf0766",
+      "host_ticket_ci": null
     },
     {
       "id": "rs",
@@ -94,7 +119,11 @@
       "authenticated_transport_status": "NOT_EXECUTED",
       "native_aot_status": "NOT_EXECUTED",
       "guest_evidence": null,
-      "notes": "Browser compiler unary/remote ABI remains unsupported"
+      "notes": "Rust bounded mutex mailbox model, Arc-scoped receipt and four real concurrent producer threads; not connected to canonical compiler/runtime unary registry #250/#254.",
+      "host_ticket_scope": "HOST_MODEL",
+      "host_ticket_status": "CURRENT_HEAD_NOT_EXECUTED",
+      "host_ticket_pr_head_sha": "45e8da7f727f40c54fb44b4e000c8bc9135429b7",
+      "host_ticket_ci": null
     },
     {
       "id": "forge",
@@ -104,7 +133,11 @@
       "authenticated_transport_status": "NOT_EXECUTED",
       "native_aot_status": "NOT_EXECUTED",
       "guest_evidence": null,
-      "notes": "Forge actor frontend/runtime remote path not implemented"
+      "notes": "C++20 mutex-owned host queue/turn model, 128 concurrent sends, panic and stale route; not attached to real Forge compiled guest scheduler.",
+      "host_ticket_scope": "HOST_MODEL",
+      "host_ticket_status": "CURRENT_HEAD_NOT_EXECUTED",
+      "host_ticket_pr_head_sha": "93a8ea6e888ec42282ac6ef30dc8e9bf6579a015",
+      "host_ticket_ci": null
     },
     {
       "id": "cranelift",
@@ -114,7 +147,11 @@
       "authenticated_transport_status": "NOT_EXECUTED",
       "native_aot_status": "NOT_EXECUTED",
       "guest_evidence": null,
-      "notes": "Cranelift host gate does not enable compiled guest remote execution"
+      "notes": "Byte-identical to Rust host mailbox source/test; not attached to Cranelift guest actor runtime.",
+      "host_ticket_scope": "HOST_MODEL",
+      "host_ticket_status": "CURRENT_HEAD_NOT_EXECUTED",
+      "host_ticket_pr_head_sha": "c4448f3bef73eed02f162024af975f13370827ec",
+      "host_ticket_ci": null
     },
     {
       "id": "js",
@@ -124,7 +161,19 @@
       "authenticated_transport_status": "NOT_EXECUTED",
       "native_aot_status": "NOT_EXECUTED",
       "guest_evidence": null,
-      "notes": "Worker host-side receipt gate cannot substitute for compiled Atto guest"
+      "notes": "Node host queue with real lease object identity, 128 interleaved sends and fail-closed panic; no guest JS/Wasm runtime transport.",
+      "host_ticket_scope": "HOST_MODEL",
+      "host_ticket_status": "CURRENT_HEAD_NOT_EXECUTED",
+      "host_ticket_pr_head_sha": "c8f04f512db4629da144f378bf0ac3ee5371bad7",
+      "host_ticket_ci": null
     }
-  ]
+  ],
+  "host_ticket_scope_semantics": {
+    "REAL_MAILBOX": "Ticket minted atomically by destination's live bounded mailbox and advanced by its runtime scheduler after that exact turn.",
+    "HOST_MODEL": "Deterministic bounded trusted-host queue/turn state model; not attached to compiled Atto guest or native production actor scheduler."
+  },
+  "host_ticket_status_semantics": {
+    "SOURCE_EXACT_HOST_TESTED": "Current PR head's imported implementation/test blobs were verified byte-for-byte and executed on a runner; not necessarily full-tree or guest proof.",
+    "CURRENT_HEAD_NOT_EXECUTED": "Implementation/test files committed, but no executable CI steps on current head. Prior-head runs do not count."
+  }
 }
