@@ -187,9 +187,19 @@ test('experimental Rust checked PipeHandle preview cannot masquerade as backend 
   });
   assert.equal(preview.allocation_rule,
     'success_result_and_guest_bridge_allocated_before_atomic_DATA_publication');
-  assert.equal(new Set(preview.new_guest_fixture_ids).size,4);
+  assert.equal(new Set(preview.new_guest_fixture_ids).size,6);
   for (const id of preview.new_guest_fixture_ids) {
-    assert.match(id,/^2(?:19|20|21|22)-v2-checked-/);
+    assert.match(id,/^2(?:19|20|21|22|23)-v2-checked-/);
+  }
+  const cases=preview.rollback_recovery_cases;
+  assert.equal(cases.source_output_conflict.error_code,4);
+  assert.equal(cases.sink_input_conflict.error_code,5);
+  for(const entry of Object.values(cases)){
+    assert.equal(entry.status,'NOT_EXECUTED');
+    assert.equal(entry.rejected_publications,0);
+    assert.equal(entry.unclaimed_source_channel_sink_reusable,true);
+    assert.equal(entry.expected_stdout,'40\\n2\\n'.replaceAll('\\n','\n'));
+    assert.match(entry.guest_fixture,/^tests\\/fixtures\\/pass\\/2(?:22|23)-v2-checked-[a-z-]+\\.atto$/);
   }
   const row=contract.backend_evidence.find(x=>x.repo===preview.repo);
   assert.ok(row);
