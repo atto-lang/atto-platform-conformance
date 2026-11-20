@@ -280,6 +280,16 @@ test('new Linux publication and JS V8 smoke cannot masquerade as compiled CI gue
   assert.equal(p.no_overwrite_symlink,true);
   assert.equal(p.no_named_temporary_publication,true);
   assert.equal(p.exact_head_full_forge_compile_run,false);
+  assert.match(p.current_cmake_test_blob_sha,sha);
+  const input=p.input_reader_probe;
+  assert.equal(input.status,'local_exact_syscall_logic_executed_no_full_forge_guest');
+  assert.match(input.source_compiler_blob_sha,sha);
+  assert.deepEqual(input.toolchains,['g++ 14.2.0','clang++ 17.0.0']);
+  assert.equal(input.matrix_runs,4);
+  assert.ok(input.scenarios.includes('FIFO rejected without blocking'));
+  assert.ok(input.scenarios.includes('symlink rejected'));
+  assert.equal(input.all_expected_outcomes_observed,true);
+  assert.match(input.scope,/NOT full Forge binary/);
   assert.match(p.smoke_gate_executed_against,/stand-in Forge CLI/);
   assert.equal(Object.keys(p.smoke_gate_cases).length,4);
   assert.ok(Object.values(p.smoke_gate_cases).every(s=>s==='passed'));
