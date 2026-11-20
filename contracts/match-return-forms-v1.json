@@ -378,7 +378,7 @@
         "run_url": "https://github.com/usa-acc/atto-ci/actions/runs/44662545614"
       },
       "compiled_guest_results": {
-        "status": "PASS_EXECUTED_EXACT_ORIGINALS",
+        "status": "PASS_EXACT_ORIGINAL_SCOPED_CORECLR_NATIVEAOT",
         "positive_cases": [
           {
             "id": "return-block",
@@ -453,6 +453,50 @@
             42
           ],
           "status": "PASS"
+        },
+        "canonical": [
+          {
+            "id": "return-block",
+            "status": "PASS_EXECUTED_GUEST",
+            "stdout": "2\n2\n",
+            "stderr": "",
+            "coreclr_exit": 0,
+            "nativeaot_exit": 0
+          },
+          {
+            "id": "caret-block",
+            "status": "PASS_EXECUTED_GUEST",
+            "stdout": "2\n2\n",
+            "stderr": "",
+            "coreclr_exit": 0,
+            "nativeaot_exit": 0
+          },
+          {
+            "id": "nonexhaustive-guard",
+            "status": "PASS_REJECTED_NO_ARTIFACT",
+            "diagnostic": "E_MATCH",
+            "no_guest": true
+          },
+          {
+            "id": "fallthrough-block",
+            "status": "PASS_REJECTED_NO_ARTIFACT",
+            "diagnostic": "E_RETURN",
+            "no_guest": true
+          }
+        ],
+        "no_stdio_grant": {
+          "status": "PASS_DENIED_NO_ARTIFACT",
+          "diagnostic": "E_PERMISSION",
+          "cases": 2
+        },
+        "extra_stdio_negatives": {
+          "passed": 6,
+          "failed": 0,
+          "no_artifact": true
+        },
+        "subject_call_scalar": {
+          "coreclr_exit": 42,
+          "nativeaot_exit": 42
         }
       },
       "caveat": "Not TenantVM stdout-capability isolation, not all .NET libraries, and not the other independent compilers; top-level backend status remains NOT_EXECUTED for broader runtime profile"
@@ -484,10 +528,10 @@
       "guest_receipt": null
     },
     "atto-source.net": {
-      "status": "PASS",
-      "compiler_implementation": "direct ECMA-335 CIL compiler; exact 4/4 guarded return/caret match v1 fixtures proven in trusted standalone CoreCLR and NativeAOT, not full .NET/TenantVM feature parity",
-      "source_sha": "29c7ac16de01c966b10324b96131b9658f96efb8",
-      "guest_receipt": "https://github.com/usa-acc/atto-ci/actions/runs/44662545614",
+      "status": "NOT_EXECUTED",
+      "compiler_implementation": "Independent direct ECMA-335 CIL compiler; exact 4/4 guarded match corpus proven in trusted standalone CoreCLR and NativeAOT subprofile (#26), not full .NET/TenantVM feature parity",
+      "source_sha": null,
+      "guest_receipt": null,
       "profile": "direct-cil-v1-trusted-stdio-only",
       "security_boundary": "compiler --allow-stdio explicitly granted by trusted host; not an untrusted TenantVM capability"
     },
