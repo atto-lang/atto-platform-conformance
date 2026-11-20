@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "contract": "atto-unsafe-blocks-v1",
+  "recorded_at": "2026-11-20T02:17:31Z",
+  "result": "verified_rust_browser_guest_denial_with_safe_control",
+  "source_repo": "atto-lang/atto-source.rs",
+  "source_pr": "https://github.com/atto-lang/atto-source.rs/pull/414",
+  "source_commit_sha": "a7d4cccf1d601f5a7606e2a733c65c09d2b32cef",
+  "source_manifest_count": 51,
+  "source_identity": "Every mirrored src/** blob plus Cargo.toml and Cargo.lock checked against git hash-object at source SHA before execution",
+  "carrier_repo": "usa-acc/atto-ci",
+  "carrier_pr": "https://github.com/usa-acc/atto-ci/pull/4",
+  "carrier_head_sha": "24c0c5c841d4e479e0cb9aa2098dd34f4daa357c",
+  "carrier_run": "https://github.com/usa-acc/atto-ci/actions/runs/44659649666",
+  "carrier_job_id": 136034442120,
+  "verification": {
+    "cargo_check_all_targets": "passed",
+    "cargo_test_lib": {
+      "status": "passed",
+      "passed": 63,
+      "failed": 0
+    },
+    "actual_safe_atto_guest": {
+      "source": "pub fnc main(): int { return 42; }",
+      "build": "attoc safe.atto -o safe.wasm",
+      "runner": "node WebAssembly.instantiate",
+      "result": "executed main() returned 42n",
+      "status": "passed"
+    },
+    "unsafe_guest_denial": {
+      "source": "pub fnc main(): int { unsafe { return 1; } }",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "output_file_exists": false,
+      "status": "passed"
+    },
+    "unsafe_imported_module_denial": {
+      "imported_module_source": "pub fnc f(): int { unsafe { return 1; } }",
+      "root_source": "import f from \"./unsafe_mod.atto\"; pub fnc main(): int { return f(); }",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "output_file_exists": false,
+      "status": "passed"
+    },
+    "real_unsafe_execution": "not_enabled",
+    "raw_pointer_ffi_execution": "not_enabled",
+    "independent_compiler_backends": "not_executed",
+    "typed_dynamic_unsafe_call_resolution": "not_implemented",
+    "full_24_case_contract_matrix": "not_executed"
+  },
+  "limitations": [
+    "Only Rust browser guest scalar control and two negative unsafe examples executed; this is not proof for all conformance cases or independent backends",
+    "Production AST parser has analysis-only API; browser guest enforcement denies actual unsafe blocks and unsafe callables",
+    "Rust function-level is_unsafe metadata exists; fully typed dynamic call effect resolution, method/closure polymorphism and trusted native profiles are not implemented",
+    "All nine backend slots in the target conformance registry remain not_executed until their own exact source case execution"
+  ]
+}
