@@ -455,3 +455,30 @@ test('73 Git-exact fixture copies are only source identity proof, never runtime 
     assert.equal(row.receipt, null);
   }
 });
+
+
+test('synthetic private-tree verifier proof cannot be mistaken for a carrier or compiler pass', () => {
+  const mirror=ledger.edge_contract.mirror_verification;
+  assert.equal(mirror.schema,'atto.token-free-carrier-mirror-verification.evidence.v1');
+  assert.equal(mirror.tool_path,'tools/verify-token-free-carrier-mirror.mjs');
+  assert.equal(mirror.test_path,'tests/token-free-carrier-mirror.test.mjs');
+  assert.match(mirror.tool_blob_sha,sha);
+  assert.match(mirror.test_blob_sha,sha);
+  const local=mirror.local_test_result;
+  assert.equal(local.execution_status,'executed_locally_not_ci_admitted');
+  assert.equal(local.tests_total,13);
+  assert.equal(local.tests_passed,13);
+  assert.equal(local.tests_failed,0);
+  assert.equal(local.positive_subcases,1);
+  assert.equal(local.negative_subcases,11);
+  assert.equal(local.source_verified_by_git_blob_sha,true);
+  assert.equal(mirror.actual_private_source_tree_mirrored,false);
+  assert.equal(mirror.carrier_runner_admitted,false);
+  assert.equal(mirror.github_actions_execution_status,'not_executed');
+  assert.equal(mirror.receipt,null);
+  assert.match(mirror.scope,/no real private source tree was copied/);
+  assert.ok(mirror.identity_requirements.some(x=>/binary/.test(x)));
+  assert.ok(mirror.identity_requirements.some(x=>/symlink/.test(x)));
+  assert.ok(ledger.edge_contract.runner_admission_observation.fresh_canary_runs
+    .every(r=>r.executed_steps===0));
+});
