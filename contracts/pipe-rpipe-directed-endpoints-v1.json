@@ -30,6 +30,11 @@
           "sink": "consumer",
           "payload": "int"
         }
+      ],
+      "operator": "pipe",
+      "lexical_stages": [
+        "producer",
+        "consumer"
       ]
     },
     {
@@ -44,6 +49,11 @@
           "sink": "consumer",
           "payload": "int"
         }
+      ],
+      "operator": "rpipe",
+      "lexical_stages": [
+        "consumer",
+        "producer"
       ]
     },
     {
@@ -82,6 +92,13 @@
           "sink": "Consumer",
           "payload": "int"
         }
+      ],
+      "operator": "pipe",
+      "lexical_stages": [
+        "Producer",
+        "Channel<int>",
+        "Stream<int>",
+        "Consumer"
       ]
     },
     {
@@ -106,6 +123,13 @@
           "sink": "Consumer",
           "payload": "int"
         }
+      ],
+      "operator": "rpipe",
+      "lexical_stages": [
+        "Consumer",
+        "Stream<int>",
+        "Channel<int>",
+        "Producer"
       ]
     },
     {
