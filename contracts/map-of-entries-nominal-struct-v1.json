@@ -2,10 +2,13 @@
   "schema_version": 1,
   "contract": "atto-map-of-entries-nominal-struct-v1",
   "status": "TARGET_NOT_EXECUTED",
-  "spec": "https://github.com/atto-lang/atto-spec/pull/130",
+  "spec": "https://github.com/atto-lang/atto-spec/pull/131",
   "related": [
     "https://github.com/atto-lang/atto-source.rs/pull/429",
-    "https://github.com/atto-lang/atto-platform-conformance/pull/116"
+    "https://github.com/atto-lang/atto-platform-conformance/pull/116",
+    "https://github.com/atto-lang/atto-spec/pull/130",
+    "https://github.com/atto-lang/atto-source.rs/pull/430",
+    "https://github.com/atto-lang/atto-platform-conformance/pull/117"
   ],
   "evidence_policy": "PASS requires exact compiler/fixture SHA, compiled guest for accepts, no artifact for rejects, ownership and TenantVM checks. The frozen const Map and variable Entry fixtures are target features NOT supported by the bounded Rust guest.",
   "backend_status": {
