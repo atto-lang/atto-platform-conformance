@@ -8,7 +8,7 @@ const known={
   'atto-source.rs':{pr:419,sha:'00a6d3e8a86e27f635cf3b2a808b6a0b61a2b977'},
   'atto-source.llvm':{pr:64,sha:'b4049c77c71f6834a93f294c129779bfaf3ec1f1'},
   'atto-source.net':{pr:22,sha:'fa732820a0f0bc3de2c7422efd06ad365518fde1'},
-  'atto-source.forge':{pr:50,sha:'60e667238f943e4b6b47c0e4d0f603ad2b440ef5'},
+  'atto-source.forge':{pr:50,sha:'bdbd253abc71c3631cf0d5b3e5922a5b58155936'},
 };
 test('candidate ledger keeps actual source commits distinct from executed evidence',()=>{
   assert.equal(doc.schema,'atto.pointer-local-candidate-evidence.v1');
@@ -56,6 +56,23 @@ test('candidate ledger keeps actual source commits distinct from executed eviden
       assert.deepEqual(local.cxx_variants.map(v=>v.positive_native_guest_executions),[4,4]);
       assert.deepEqual(local.cxx_variants.map(v=>v.negative_no_artifact_rejections),[24,24]);
       assert.equal(local.canonical_rt_and_bang_emitted_cpp_sha256,'088b8c56d2d2cd87b56c99b33dd423038f7929a859465ebd55c7b29e3acd31d6');
+      assert.equal(local.exact_cli_blob,'36f9380be4597771ad6d2b1aa64bc567f62995f1');
+      assert.equal(local.exact_test_runner_blob,'dcb8ae2c808281daa4358352be37a75b95636f37');
+      assert.equal(local.verified_blob_count,36);
+      assert.equal(local.current_head_cmake_pointer_guests,'PASS_GCC_AND_CLANG_LOCAL');
+      assert.deepEqual(local.cxx_variants.map(v=>v.negative_existing_output_preservation),[24,24]);
+      assert.deepEqual(local.cxx_variants.map(v=>v.legacy_scalar_native_guests),[8,8]);
+      assert.deepEqual(local.aggregate_scoped_local_results,{
+        positive_guest_executions:8,
+        negative_reject_fresh_no_artifact:48,
+        negative_reject_existing_preserved:48,
+        scalar_native_regressions:16,
+        typed_ir_test_executables:2,
+        verified_source_git_blobs:36
+      });
+      assert.match(local.local_json_receipt_sha256,/^[a-f0-9]{64}$/);
+      assert.equal(local.public_evidence_pr_comment,'https://github.com/atto-lang/atto-source.forge/pull/50#issuecomment-7031779263');
+      assert.equal(c.prior_local_compiled_guest_subset.tested_source_commit,'60e667238f943e4b6b47c0e4d0f603ad2b440ef5');
       assert.equal(local.full_existing_ctest_suite,'NOT_EXECUTED');
       assert.equal(local.full_36_case_matrix,'NOT_EXECUTED');
       assert.equal(local.github_actions_executed_steps,0);

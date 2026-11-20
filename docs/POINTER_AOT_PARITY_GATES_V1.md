@@ -1,3 +1,36 @@
+### Forge local execution reverified after caller-owned output safety correction
+
+At current [Forge PR #50](https://github.com/atto-lang/atto-source.forge/pull/50)
+head `bdbd253abc71c3631cf0d5b3e5922a5b58155936`, the C++20 production
+`forge_scalar` compiler now preserves pre-existing caller-owned C++ outputs
+on rejected source; it still prevents any new output artifact. Exact
+`tools/forge_scalar.cpp` blob is `36f9380be4597771ad6d2b1aa64bc567f62995f1`,
+and the updated CMake pointer guest suite blob is
+`dcb8ae2c808281daa4358352be37a75b95636f37`.
+
+**Genuine local execution:** GCC 14.2 and Clang 17.0 at O1 with
+ASan/UBSan built four native pointer guests per compiler (8 executions;
+canonical logical values 42, 42, 42, 13; process exit 0), rejected each
+of the 24 negative sources per compiler without creating artifacts
+(48), and preserved pre-existing output byte-for-byte on each of those
+rejections (48). Two independently built typed-plan security test
+executables passed; 16 additional native scalar guest regression
+executions passed; 36 source/fixture files matched exact Git blob SHAs.
+The exact updated CMake suite passed under both GCC and Clang.
+Canonical source rt/bang generated C++ SHA-256:
+`088b8c56d2d2cd87b56c99b33dd423038f7929a859465ebd55c7b29e3acd31d6`.
+Detailed machine-readable local receipt SHA-256:
+`960f73fac1edf1d8e7db4f7436b4f6c6bb2b5c9e883aacb9ec26e73451a10fc6`.
+[Exact-head PR proof comment](https://github.com/atto-lang/atto-source.forge/pull/50#issuecomment-7031779263).
+
+This is **PASS_LOCAL_SUBSET, NOT full conformance certification**.
+[Exact-head Actions #44683428229](https://github.com/atto-lang/atto-source.forge/actions/runs/44683428229)
+failed before either GCC/Clang job executed a step. The full existing
+CMake regression suite, all 36 conformance cases, OS-process return ABI
+parity, independent CI and 11-backend parity remain unverified. Historical
+local evidence at parent `60e667238f943e4b6b47c0e4d0f603ad2b440ef5` is
+preserved separately in the ledger.
+
 ### Forge restricted pointer: real LOCAL guest execution, still not full CI
 
 [Forge #50](https://github.com/atto-lang/atto-source.forge/pull/50)

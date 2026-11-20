@@ -110,7 +110,7 @@
       "backend": "atto-source.forge",
       "pr": 50,
       "repository": "atto-lang/atto-source.forge",
-      "source_head": "60e667238f943e4b6b47c0e4d0f603ad2b440ef5",
+      "source_head": "bdbd253abc71c3631cf0d5b3e5922a5b58155936",
       "compiler_subtree": "151c08add7df9db670033b27bcefdba36f61753b",
       "scope": "Restricted canonical lexer/typed BorrowedLocal Pointer<int> compilation to actual native C++ guest stack read, one nonowning unref; Forge stage-0 prints logical result and exits 0",
       "test_entry": "tests/pointer_local_guest.cmake",
@@ -118,7 +118,7 @@
         "PRL-001",
         "PRL-002"
       ],
-      "last_attempted_ci_run": "https://github.com/atto-lang/atto-source.forge/actions/runs/44664843939",
+      "last_attempted_ci_run": "https://github.com/atto-lang/atto-source.forge/actions/runs/44683428229",
       "source_state": "CANDIDATE_COMMITTED",
       "execution_status": "NOT_EXECUTED",
       "compiler_artifact_sha256": null,
@@ -142,6 +142,78 @@
         "optimization": "native local const-reference read; nonowning handle invalidation"
       },
       "local_compiled_guest_subset": {
+        "status": "PASS_LOCAL_SUBSET_NOT_FULL_CONFORMANCE",
+        "executor": "ChatGPT isolated Linux C++20 container, not GitHub Actions",
+        "verification_kind": "LOCAL_EXACT_PINNED_SOURCE_REAL_NATIVE_GUEST_EXECUTION",
+        "tested_source_commit": "bdbd253abc71c3631cf0d5b3e5922a5b58155936",
+        "verified_blob_count": 36,
+        "exact_test_runner_blob": "dcb8ae2c808281daa4358352be37a75b95636f37",
+        "exact_cli_blob": "36f9380be4597771ad6d2b1aa64bc567f62995f1",
+        "source_git_blob_verification": "8 exact header/CLI/test scripts plus 4 positive Atto blobs and 24 exact negative Atto blobs",
+        "cxx_standard": "c++20",
+        "compile_flags": "-O1 -g -Wall -Wextra -Werror -pedantic -fsanitize=address,undefined -fno-omit-frame-pointer",
+        "sanitizers": [
+          "address",
+          "undefined"
+        ],
+        "cxx_variants": [
+          {
+            "compiler": "g++ 14.2.0",
+            "positive_native_guest_executions": 4,
+            "negative_no_artifact_rejections": 24,
+            "negative_existing_output_preservation": 24,
+            "legacy_scalar_native_guests": 8,
+            "typed_ast_mutation_tests": "PASS",
+            "compiled_forge_executable_sha256": "55851563181b9aae66b26481d04b3bd666a5283d8414cafc3b682e478db097b9"
+          },
+          {
+            "compiler": "clang++ 17.0.0",
+            "positive_native_guest_executions": 4,
+            "negative_no_artifact_rejections": 24,
+            "negative_existing_output_preservation": 24,
+            "legacy_scalar_native_guests": 8,
+            "typed_ast_mutation_tests": "PASS",
+            "compiled_forge_executable_sha256": "ee6c9b7ecd5eda69246542ceb06e55ca9cacb18e32a5b894ed5d204d9e71ab74"
+          }
+        ],
+        "current_head_cmake_pointer_guests": "PASS_GCC_AND_CLANG_LOCAL",
+        "canonical_rt_and_bang_emitted_cpp_sha256": "088b8c56d2d2cd87b56c99b33dd423038f7929a859465ebd55c7b29e3acd31d6",
+        "logical_observations": {
+          "PRL-001": {
+            "stdout": "42\n",
+            "exit_code": 0
+          },
+          "PRL-002": {
+            "stdout": "42\n",
+            "exit_code": 0
+          },
+          "all-bang": {
+            "stdout": "42\n",
+            "exit_code": 0
+          },
+          "alternate-13": {
+            "stdout": "13\n",
+            "exit_code": 0
+          }
+        },
+        "aggregate_scoped_local_results": {
+          "positive_guest_executions": 8,
+          "negative_reject_fresh_no_artifact": 48,
+          "negative_reject_existing_preserved": 48,
+          "scalar_native_regressions": 16,
+          "typed_ir_test_executables": 2,
+          "verified_source_git_blobs": 36
+        },
+        "local_json_receipt_sha256": "960f73fac1edf1d8e7db4f7436b4f6c6bb2b5c9e883aacb9ec26e73451a10fc6",
+        "public_evidence_pr_comment": "https://github.com/atto-lang/atto-source.forge/pull/50#issuecomment-7031779263",
+        "full_existing_ctest_suite": "NOT_EXECUTED",
+        "full_36_case_matrix": "NOT_EXECUTED",
+        "github_actions_executed_steps": 0,
+        "github_actions_artifact_certification": false,
+        "full_process_result_abi_parity": false,
+        "full_cross_backend_parity": false
+      },
+      "prior_local_compiled_guest_subset": {
         "status": "PASS_LOCAL_SUBSET_NOT_FULL_CONFORMANCE",
         "executor": "ChatGPT isolated Linux container, not GitHub Actions",
         "recorded_utc": "2026-11-20T05:34:23Z",
