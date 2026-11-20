@@ -169,6 +169,42 @@
         }
       ],
       "ci_note": "Exact current-head GitHub Actions jobs failed with zero steps; do not count as compiler failure or PASS."
+    },
+    "candidate_net_direct_cil": {
+      "repo": "atto-lang/atto-source.net",
+      "pr": 26,
+      "head": "74468dd7e0ea781fa5c43d91a5adbdecedd02e91",
+      "branch": "feat/guarded-return-match-direct-cil-v1-20261119",
+      "implementation": "int-only ValueMatch AST, scoped typed guards, nonexhaustive/unreachable checks, branch-based ECMA-335 CIL with one-evaluation subject and CoreCLR/NativeAOT guest tests",
+      "exact_shared_fixtures": "4/4 byte-identical Git blob SHA-1 to canonical Rust/conformance",
+      "guest_scalar_variants": {
+        "cases": [
+          "native-return-scalar.atto",
+          "native-caret-scalar.atto"
+        ],
+        "expected_exit": 4,
+        "status": "IN_PROGRESS",
+        "note": "not equivalent to original printing fixtures"
+      },
+      "exact_user_printing_programs": {
+        "status": "UNSUPPORTED",
+        "reason": "direct CIL subset does not lex/lower stdio.println"
+      },
+      "source_org_ci": {
+        "run_id": 44659872311,
+        "status": "NOT_EXECUTED",
+        "zero_step_failure": true
+      },
+      "private_carrier": {
+        "repository": "usa-acc/atto-ci",
+        "branch": "ci/atto-net-match-26-20261119",
+        "carrier_commit": "035bffa6f82728d2f873974f3924e044440f6f8b",
+        "source_tree_sha": "46b7de6e15fcbeaffb008ed4070ce65b5b8aed24",
+        "full_tree_sha_verified": true,
+        "source_blobs_verified": 37,
+        "run_id": 44660359500,
+        "status": "IN_PROGRESS"
+      }
     }
   },
   "backends": {
@@ -198,7 +234,7 @@
     },
     "atto-source.net": {
       "status": "NOT_EXECUTED",
-      "compiler_implementation": "independent or backend-specific target",
+      "compiler_implementation": "Independent direct ECMA-335 CIL compiler, guarded int match candidate PR #26; exact original stdout programs unsupported",
       "source_sha": null,
       "guest_receipt": null
     },
