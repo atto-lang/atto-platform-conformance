@@ -1,0 +1,4 @@
+pub fnc main(): int {
+  val sync = 42;
+  return sync;
+}
