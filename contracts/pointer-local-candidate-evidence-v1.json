@@ -24,7 +24,7 @@
         "PRL-001",
         "PRL-002"
       ],
-      "last_attempted_ci_run": "https://github.com/atto-lang/atto-source.rs/actions/runs/44659591700",
+      "last_attempted_ci_run": "https://github.com/atto-lang/atto-source.rs/actions/runs/44660082938",
       "source_state": "MAINLINE_CANDIDATE_COMMITTED",
       "execution_status": "NOT_EXECUTED",
       "compiler_artifact_sha256": null,
