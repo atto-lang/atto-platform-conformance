@@ -34,6 +34,61 @@
         "job_count": 0
       },
       "guest_verification": "NOT_EXECUTED"
+    },
+    "candidate_llvm_frontend": {
+      "repo": "atto-lang/atto-source.llvm",
+      "pr": 57,
+      "head": "ecc4aa7239f2baaee8e1924fe716a7342ec0d822",
+      "profile": "frontend Rust/Wasm compiler (NOT the native C++ LLVM AOT compiler)",
+      "frontend_tree_sha": "5d7afbebc3dde085b29c6ca22ac1b4bf51cfc240",
+      "mirrored_blobs_verified": 27,
+      "carrier": {
+        "repo": "usa-acc/atto-ci",
+        "commit": "073fe1429e984f8fdb96e06c87f3bd1525a29558",
+        "run_id": 44654940130,
+        "linux_job_id": 136018727179,
+        "conclusion": "SUCCESS"
+      },
+      "status": "PASS_FRONTEND_SUBPROFILE",
+      "portable_cases": [
+        {
+          "id": "return-block",
+          "stdout": "2\n2\n",
+          "exit": 0,
+          "status": "PASS_EXECUTED_GUEST"
+        },
+        {
+          "id": "caret-block",
+          "stdout": "2\n2\n",
+          "exit": 0,
+          "status": "PASS_EXECUTED_GUEST"
+        },
+        {
+          "id": "nonexhaustive-guard",
+          "diagnostic": "E_MATCH",
+          "no_guest": true,
+          "status": "PASS_REJECTED_NO_ARTIFACT"
+        },
+        {
+          "id": "fallthrough-block",
+          "diagnostic": "E_RETURN",
+          "no_guest": true,
+          "status": "PASS_REJECTED_NO_ARTIFACT"
+        }
+      ],
+      "additional_adt_guards": {
+        "passed": 4,
+        "expected_exits": [
+          21,
+          42,
+          42,
+          42
+        ],
+        "matched_source_git_blobs": true
+      },
+      "native_vs_wasm_compiler_guest_bytes": "IDENTICAL",
+      "native_cpp_llvm_aot": "NOT_EXECUTED",
+      "native_issue": "https://github.com/atto-lang/atto-source.llvm/issues/60"
     }
   },
   "backends": {
@@ -57,7 +112,7 @@
     },
     "atto-source.llvm": {
       "status": "NOT_EXECUTED",
-      "compiler_implementation": "independent or backend-specific target",
+      "compiler_implementation": "independent native C++ LLVM AOT; Rust/Wasm frontend separately verified at source.candidate_llvm_frontend",
       "source_sha": null,
       "guest_receipt": null
     },
@@ -149,6 +204,7 @@
   "notes": [
     "Two positive sources are the exact requested return and caret programs; negative tests are fail-closed obligations.",
     "Candidate parser has guarded match/value/block return paths. No new guest execution is implied by adding a fixture.",
-    "Every backend requires exact-head compiled guest output or diagnostic with no artifact. Compiler WAsm built from Rust is not an independent second compiler."
+    "Every backend requires exact-head compiled guest output or diagnostic with no artifact. Compiler WAsm built from Rust is not an independent second compiler.",
+    "Executed 8-case frontend Rust/Wasm guest receipt is scoped to the frontend crate inside atto-source.llvm; native C++ LLVM AOT is still NOT_EXECUTED."
   ]
 }
