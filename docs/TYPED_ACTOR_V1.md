@@ -13,6 +13,30 @@ rustc --edition=2021 tools/typed_actor_v1.rs -o /tmp/typed_actor_oracle
 
 This verifier must never be used to promote Java/LLVM/.NET/Wasm/Forge support. Each backend requires independently executed compile-positive, compile-negative and runtime guest traces with exact compiler SHA, toolchain and target, and real CONTROL/mailbox evidence. Existing Java `ActorRef<ActorClass>` must remain compatible until an explicit migration plan is proven.
 
+## Transitive actor DATA send-effect graph hardening (2026-11-19)
+
+The Rust/Wasm and LLVM-repository Rust frontends now contain one
+byte-identical `actor_send_effect_graph.rs` (Git blob
+`16b475542987066097e4ce66a06e18603d16f796`), wired into their typed
+checkers. They distinguish `ActorSendEffect::Never` from `Type::Void`,
+reject forged `Payload(void)`, and audit application DATA sends through
+actor handlers, methods, transitive helpers and **calls inside actor field
+initializers**. Call-graph cycles terminate via a visited set and malformed
+typed call indices fail closed. This intentionally does not authorize
+supervisor CONTROL or infer effects for omitted clauses.
+
+The module carries 12 Rust unit test cases and exact-head compile-test
+workflows were added/updated in the source PRs. **No current-head executable
+Rust test PASS has been observed.** Private carrier runs
+[zed-pkg-test #44662398968](https://github.com/zed-pkg-test/atto-ci/actions/runs/44662398968),
+[scintilla-run #44662568476](https://github.com/scintilla-run/atto-ci/actions/runs/44662568476)
+and [honeypot-r-us-test #44662860268](https://github.com/honeypot-r-us-test/atto-ci/actions/runs/44662860268)
+all failed before runner steps. The exact Git blob identity is verified,
+not the compiler behavior. See
+`evidence/typed-actor-effect-closure-20261119.json` for immutable-source
+and test-execution status. The native LLVM/C++ actor compiler and real guest
+mailbox execution remain **NOT_EXECUTED**.
+
 ## Bounded bool mailbox and `sends never` compiler parity (2026-11-19)
 
 `fixtures/typed-actor-bool-v1/actor-bool-never-parity-v1.atto` is
