@@ -1,0 +1,347 @@
+{
+  "schema_version": 1,
+  "contract": "atto-canonical-of-record-generics-v1",
+  "status": "TARGET_NOT_EXECUTED",
+  "spec": "https://github.com/atto-lang/atto-spec/pull/38",
+  "related": [
+    "https://github.com/atto-lang/atto-spec/pull/69",
+    "https://github.com/atto-lang/atto-source.rs/pull/274",
+    "https://github.com/atto-lang/atto-source.rs/pull/284"
+  ],
+  "evidence_policy": "PASS requires exact compiler and fixture Git SHA; executed real compiled guest returning expected_exit or exact diagnostic and no artifact on rejection. Source-only validation is not execution.",
+  "backend_status": {
+    "java": "not_executed",
+    "llvm": "not_executed",
+    "wasm-independent": "not_executed",
+    "forge": "not_executed",
+    "net": "not_executed",
+    "cranelift": "not_executed",
+    "rs-browser-wasm": "not_executed",
+    "js": "not_executed",
+    "hdl": "not_executed",
+    "atto": "not_executed",
+    "realtime": "not_executed"
+  },
+  "cases": [
+    {
+      "id": "canonical_of_21",
+      "fixture": "fixtures/factories/pass/canonical_of_21.atto",
+      "expect": "accept",
+      "expected_exit": 21,
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "record_generic_wrap_42",
+      "fixture": "fixtures/factories/pass/record_generic_wrap_42.atto",
+      "expect": "accept",
+      "expected_exit": 42,
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "record_quoted_field_42",
+      "fixture": "fixtures/factories/pass/record_quoted_field_42.atto",
+      "expect": "accept",
+      "expected_exit": 42,
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "map_flat_30",
+      "fixture": "fixtures/factories/pass/map_flat_30.atto",
+      "expect": "accept",
+      "expected_exit": 30,
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "array_empty_explicit_0",
+      "fixture": "fixtures/factories/pass/array_empty_explicit_0.atto",
+      "expect": "accept",
+      "expected_exit": 0,
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "record_field_order_7",
+      "fixture": "fixtures/factories/pass/record_field_order_7.atto",
+      "expect": "accept",
+      "expected_exit": 7,
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "record_colon_field_3",
+      "fixture": "fixtures/factories/pass/record_colon_field_3.atto",
+      "expect": "accept",
+      "expected_exit": 3,
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "record_duplicate",
+      "fixture": "fixtures/factories/fail/record_duplicate.atto",
+      "expect": "reject",
+      "expected_error": "E_DUPLICATE",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "map_odd_arity",
+      "fixture": "fixtures/factories/fail/map_odd_arity.atto",
+      "expect": "reject",
+      "expected_error": "E_FACTORY_ARITY",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "map_mixed_arguments",
+      "fixture": "fixtures/factories/fail/map_mixed_arguments.atto",
+      "expect": "reject",
+      "expected_error": "E_FACTORY_ARITY",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "record_missing_field",
+      "fixture": "fixtures/factories/fail/record_missing_field.atto",
+      "expect": "reject",
+      "expected_error": "E_NO_FIELD",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "record_dynamic_key",
+      "fixture": "fixtures/factories/fail/record_dynamic_key.atto",
+      "expect": "reject",
+      "expected_error": "E_UNSUPPORTED",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "record_wrong_explicit_type",
+      "fixture": "fixtures/factories/fail/record_wrong_explicit_type.atto",
+      "expect": "reject",
+      "expected_error": "E_TYPE",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "array_empty_uninferred",
+      "fixture": "fixtures/factories/fail/array_empty_uninferred.atto",
+      "expect": "reject",
+      "expected_error": "E_TYPE_INFERENCE",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "array_heterogeneous",
+      "fixture": "fixtures/factories/fail/array_heterogeneous.atto",
+      "expect": "reject",
+      "expected_error": "E_TYPE_INFERENCE",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "record_unsafe_spread",
+      "fixture": "fixtures/factories/fail/record_unsafe_spread.atto",
+      "expect": "reject",
+      "expected_error": "E_UNSUPPORTED",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    }
+  ]
+}
