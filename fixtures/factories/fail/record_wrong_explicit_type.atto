@@ -1,0 +1,4 @@
+pub fnc main(): int {
+  val Record<{name: string}> r = Record.of(name=3);
+  return 0;
+}
