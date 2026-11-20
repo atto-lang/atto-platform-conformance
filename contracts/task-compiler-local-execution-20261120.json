@@ -209,5 +209,178 @@
     "conclusion": "failure",
     "source_mirror_created": false,
     "workflow_file_deleted": true
+  },
+  "rust": {
+    "source_repo": "atto-lang/atto-source.rs",
+    "source_pr": 416,
+    "source_pr_head": "c3712257cabf6090adc0e227328ae1f487872f0e",
+    "source_git_tree_sha": "111dd5a1744a1fc89c0382e52277a4bef15a8b78",
+    "source_compiler_src_git_tree_sha": "3fbde653128781524cf4f0fb357180a2657624e9",
+    "mirror_scope": "All 54 root Rust compiler crate Cargo/src files plus 17 Mutex test/fixture files; NOT all 954 repository files",
+    "exact_source_git_blobs_verified": 71,
+    "exact_source_git_blobs_total": 71,
+    "source_manifest_blob_sha": "fc0d2097800c393ce9c9f00bd7937497194ea74a",
+    "carrier_repo": "r2g-test/atto-ci",
+    "carrier_private": true,
+    "carrier_commit": "426dc51cfc1ca185837e293f84e39f8c6cbb2db2",
+    "carrier_tree_sha": "834b49523b5a592bf95da9a674c917d0556d1ef1",
+    "run_id": 44772469684,
+    "run_url": "https://github.com/r2g-test/atto-ci/actions/runs/44772469684",
+    "job_id": 136413417820,
+    "job_conclusion": "success",
+    "job_steps_executed": true,
+    "toolchain": "rustc/cargo 1.100.0, Ubuntu 24.04, Node.js",
+    "compiled_rust_host_and_compiler_library_tests": {
+      "passed": 118,
+      "total": 118,
+      "includes_host_task_lock_model_tests": 56
+    },
+    "mutex_compiler_acceptance_tests": {
+      "passed": 12,
+      "total": 12
+    },
+    "native_attoc_built": true,
+    "strict_clippy_minus_d_warnings": "PASS",
+    "wasm_guest_receipt": {
+      "profile": "single_task_uncontended_only",
+      "compiler_binary_sha256": "fd6bc895639b4c6d9a7c2470ff1abafe6e50c4eae6ad213a3bfdd9ac0db5337c",
+      "cases": [
+        {
+          "id": "return-one",
+          "kind": "real_compiled_wasm_guest",
+          "exit": 1,
+          "stdout": "",
+          "wasm_sha256": "350bc810eedc33ed2638c4e9e24006305f4c694f97a5437df9235c14bc7d3ae0",
+          "wasm_bytes": 409,
+          "status": "PASS"
+        },
+        {
+          "id": "return-twice",
+          "kind": "real_compiled_wasm_guest",
+          "exit": 2,
+          "stdout": "",
+          "wasm_sha256": "02e7cb061fbca7adc274f8460a0f285df9fe3b44524cd1cf88b3097294504d69",
+          "wasm_bytes": 412,
+          "status": "PASS"
+        },
+        {
+          "id": "return-forty",
+          "kind": "real_compiled_wasm_guest",
+          "exit": 40,
+          "stdout": "",
+          "wasm_sha256": "b0008b5ec4734c8fc6963f7d073e187dec1ea7242629db04af7699ddc684cfd0",
+          "wasm_bytes": 409,
+          "status": "PASS"
+        },
+        {
+          "id": "print-explicit",
+          "kind": "real_compiled_wasm_guest",
+          "exit": 0,
+          "stdout": "1\n",
+          "wasm_sha256": "3c365547a759956874de7c1e457f4e857f1fbc12bd9065f176662c872a3ab1d8",
+          "wasm_bytes": 500,
+          "status": "PASS"
+        },
+        {
+          "id": "print-implicit",
+          "kind": "real_compiled_wasm_guest",
+          "exit": 0,
+          "stdout": "1\n",
+          "wasm_sha256": "3c365547a759956874de7c1e457f4e857f1fbc12bd9065f176662c872a3ab1d8",
+          "wasm_bytes": 500,
+          "status": "PASS"
+        },
+        {
+          "id": "lazy-unawaited",
+          "kind": "real_compiled_wasm_guest",
+          "exit": 0,
+          "stdout": "",
+          "wasm_sha256": "b4cee85576b1c8956b546bfb806dc9988da9b271189e58a397af77a8f87e98f6",
+          "wasm_bytes": 359,
+          "status": "PASS"
+        },
+        {
+          "id": "lazy-overflow-unexecuted",
+          "kind": "real_compiled_wasm_guest",
+          "exit": 0,
+          "stdout": "",
+          "wasm_sha256": "0a46ebb3ddbc66ea8deaebc3326ec59cc0a72c962fcb87a7592f9186d80bcd64",
+          "wasm_bytes": 368,
+          "status": "PASS"
+        },
+        {
+          "id": "negative-guard-ready",
+          "kind": "negative",
+          "diagnostic": "E_GUARD_SUSPEND",
+          "guest_artifact": false,
+          "status": "PASS"
+        },
+        {
+          "id": "negative-guard-escape",
+          "kind": "negative",
+          "diagnostic": "E_GUARD_ESCAPE",
+          "guest_artifact": false,
+          "status": "PASS"
+        },
+        {
+          "id": "negative-await-effect",
+          "kind": "negative",
+          "diagnostic": "E_AWAIT_EFFECT",
+          "guest_artifact": false,
+          "status": "PASS"
+        },
+        {
+          "id": "negative-old-constructor",
+          "kind": "negative",
+          "diagnostic": "E_NEW_REQUIRED",
+          "guest_artifact": false,
+          "status": "PASS"
+        },
+        {
+          "id": "negative-old-constructor-no-lock",
+          "kind": "negative",
+          "diagnostic": "E_NEW_REQUIRED",
+          "guest_artifact": false,
+          "status": "PASS"
+        },
+        {
+          "id": "negative-old-constructor-nested",
+          "kind": "negative",
+          "diagnostic": "E_NEW_REQUIRED",
+          "guest_artifact": false,
+          "status": "PASS"
+        },
+        {
+          "id": "negative-new-no-lock",
+          "kind": "negative",
+          "diagnostic": "E_LOCK_UNSUPPORTED",
+          "guest_artifact": false,
+          "status": "PASS"
+        },
+        {
+          "id": "negative-new-nested-no-lock",
+          "kind": "negative",
+          "diagnostic": "E_LOCK_UNSUPPORTED",
+          "guest_artifact": false,
+          "status": "PASS"
+        }
+      ],
+      "pass": true,
+      "positive_executed": 7,
+      "negative_no_artifact_executed": 8
+    },
+    "cross_org_checkout": false,
+    "source_repo_secret_or_token": false,
+    "task_cancel_guest_runtime": "NOT_EXECUTED",
+    "real_contended_mutex_async": "NOT_EXECUTED",
+    "tenantvm_quiescence_and_physical_retirement": "NOT_EXECUTED",
+    "all_ten_backend_canonical_runtime_cells": "NOT_EXECUTED",
+    "limitations": [
+      "Executed guest suite verifies only single-task uncontended closed-world Mutex<int> scalar readiness and no-artifact error gates",
+      "Rust TaskScope cancellation and lock lifecycle tests are host-state-model tests, not executable Atto task<T>/Future.cancel guest semantics",
+      "No production guest scheduler ABI or tenant isolation/physical-quiescence proof; cannot qualify broader runtime parity",
+      "Source repository root tree differs from carrier root: compiler src subtree and 71 source Git blobs match exactly",
+      "Native and browser wasm32 backends beyond this emitted guest profile are not certified by this receipt"
+    ]
   }
 }
