@@ -3,16 +3,16 @@
   "classification": "HOST_ONLY_LOCAL_EXECUTION_NOT_GUEST_CONFORMANCE",
   "source_repo": "atto-lang/atto-source.llvm",
   "source_pr": "https://github.com/atto-lang/atto-source.llvm/pull/62",
-  "source_head_sha": "5ae8720a0581870fc3bb8f9c1d36f0b3c3fcdf55",
+  "source_head_sha": "239b4b69e1aec6a263fde07b0874bb0bdbb5617e",
   "source_git_blobs": {
     "native/include/atto/host_fs_broker.h": "def190c16cdcc4d933d13ba927e973e8f7cd39cf",
     "native/src/host_fs_broker.c": "5b25eada6e07264ba0573973fdcc15ec307a23ef",
     "native/tests/host_fs_broker_test.c": "6ffd147d7d462a1c80bcf45339049ffb4cdd4195",
-    "native/CMakeLists.txt": "ca5ee477efe5e42af36fd6dd4a756ef0f856a86a",
+    "native/CMakeLists.txt": "3c2d27cb8aa3ac8f684137611784511d828f013c",
     "native/include/atto/host_fs_guest_bridge.h": "d42a428b6e7d1d8ae0b2389f282765a9f4587829",
     "native/src/host_fs_guest_bridge.c": "441af427efcb324a5e20861eeb2e36788307b95a",
     "native/tests/host_fs_guest_bridge_test.c": "d2875451907a82ee5206a67d80281be048b4c061",
-    ".github/workflows/native-host-fs-broker.yml": "2898b51ce9829266701d1d13b1de8c5264a52dac",
+    ".github/workflows/native-host-fs-broker.yml": "e677266a607f25fcf6117fdf5d837e86d3cecd67",
     "native/include/atto/host_fs_signed_ceiling.h": "7210d016e4002a2b7f3b24f18487f7ff164b68e2",
     "native/src/host_fs_signed_ceiling.c": "9ae91433e590a65977d166600a1ddb87ab1a15c5",
     "native/tests/host_fs_signed_ceiling_test.c": "cec36a6806be4ecdcff77dea3ce33820cf8a8b70",
@@ -21,7 +21,17 @@
     "native/tests/host_fs_async_test.c": "16f2fcd162ee5a6850d680f511f15b8bae019300",
     "native/tests/host_fs_async_broker_test.c": "60154122672eb2933a1c83c403614993228d8258",
     "src/main/cpp/oreslang/runtime/TenantVmIoAbiV5.h": "3e633d315cb088c68e4eafe6d6a28b92a71ebdd9",
-    "native/tests/host_fs_io_v5_layout_test.c": "5edee3c9209359f09622014b1fcccbdd1428edb2"
+    "native/tests/host_fs_io_v5_layout_test.c": "5edee3c9209359f09622014b1fcccbdd1428edb2",
+    "native/include/atto/host_fs_signed_admission.h": "7f5ca5739ff4ac350c083f0546c404078dafdebf",
+    "native/src/host_fs_signed_admission.c": "20c594e735cc97320ed628943cc2b43b18bcf0ec",
+    "native/tests/host_fs_signed_admission_test.c": "f10d6feb9693e2259bbe20469a0c4daa4afb55e4",
+    "src/main/cpp/oreslang/runtime/TenantVmGuestLoader.hpp": "81cc8657632b66e0429af9d4a77d6c0bc9d1172c",
+    "src/main/cpp/oreslang/runtime/TenantVmGuestLoader.cpp": "2fbb5bb524964cb43d135b506b971e38dbda6571",
+    "src/main/cpp/oreslang/runtime/TenantVmSignedFsLoader.hpp": "5975c55a63b1148bafdcaac3f7dcdd42d34b9411",
+    "src/main/cpp/oreslang/runtime/TenantVmSignedFsLoader.cpp": "5531bdda945c410001aa0407d4d7233586e2c477",
+    "tests/tenant-vm/signed_fs_guest.c": "fd2c0eb145841b4a68862159c00d9c91068e4fe8",
+    "tests/tenant-vm/signed_fs_loader_test.cpp": "a72587e0949690843bc96cee3bb0b0f7fca30402",
+    "tests/tenant-vm/CMakeLists.txt": "b18cbd0ff78cb3c8ab2fef36dac7cc6f66b47dd2"
   },
   "local_verification": {
     "executor": "local isolated tool container; not source-owned GitHub Actions",
@@ -133,17 +143,51 @@
       "current_head_v5_layout_test": "NOT_EXECUTED",
       "current_head_full_cmake_ctest": "NOT_EXECUTED",
       "comparison": "Earlier native broker/offset32 test successes were on an older head; they are not current-head green CI evidence.",
-      "note": "Only the signed verifier and mock-backed async worker were locally compiled/executed against current matching source/test blobs. Actual broker code changed since the earlier test head; its current-head tests are NOT_EXECUTED."
+      "note": "Only the signed verifier and mock-backed async worker were locally compiled/executed against current matching source/test blobs. Actual broker code changed since the earlier test head; its current-head tests are NOT_EXECUTED.",
+      "signed_admission_host_mock": {
+        "classification": "HOST_ONLY_INDEPENDENT_OPENSSL_VERIFIER_WITH_MOCK_BROKER",
+        "gcc_o1": "PASS",
+        "gcc_o2": "PASS",
+        "clang_o1": "PASS",
+        "clang_o2": "PASS",
+        "sanitizers": [
+          "address",
+          "undefined"
+        ],
+        "matched_github_blob_sha": "20c594e735cc97320ed628943cc2b43b18bcf0ec",
+        "proves": "Signed verified artifact scopes are handed to the broker initializer, while wrong public key, tampered artifact and tampered signature are denied before initialization",
+        "real_linux_broker_called": false
+      },
+      "signed_sealed_loader_cpp_mock": {
+        "classification": "HOST_ONLY_EXACT_CPP_WRAPPER_WITH_MOCK_LOAD_AND_MOCK_BROKER",
+        "gxx_o1": "PASS",
+        "gxx_o2": "PASS",
+        "clangxx_o1": "PASS",
+        "clangxx_o2": "PASS",
+        "sanitizers": [
+          "address",
+          "undefined"
+        ],
+        "matched_github_cpp_blob": "5531bdda945c410001aa0407d4d7233586e2c477",
+        "matched_github_header_blob": "5975c55a63b1148bafdcaac3f7dcdd42d34b9411",
+        "proves": "Ed25519 verifier callback accepts mocked exact image bytes and rejects invalid signatures, keys and unloaded/unsigned host-result authority",
+        "actual_private_dlopened_library": false
+      },
+      "signed_admission_real_linux_broker_ctest": "NOT_EXECUTED",
+      "signed_loader_actual_sealed_elf_ctest": "NOT_EXECUTED",
+      "changed_tenant_vm_guest_loader_cpp_compile": "NOT_EXECUTED",
+      "cmake_whole_repo_compile": "NOT_EXECUTED"
     },
     "evidence_source_head_sha": "4195367eed3950da3babe35a261675194a1fbb96",
     "classification": "HISTORICAL_HOST_ONLY_TEST_EXECUTIONS_ON_EARLIER_HEAD"
   },
   "source_ci": {
-    "run_id": 44678661403,
+    "run_id": 44680811883,
+    "job_id": 136103484979,
     "job": "host-security-regression",
     "observed_job_steps": 0,
-    "state": "NOT_EXECUTED_AT_CURRENT_HEAD",
-    "note": "GitHub Actions run failed before any recorded job steps; do not infer code failure or success"
+    "state": "FAILED_BEFORE_ANY_TEST_STEPS",
+    "note": "Exact current head has zero executed steps: neither success nor proof of code failure."
   },
   "guest_parity": {
     "atto_source_compiled": false,
@@ -160,7 +204,10 @@
     "v5_loader_admitted": false,
     "signed_artifact_verifier_tested_locally": true,
     "signed_artifact_ceiling_bound_to_loaded_executable": false,
-    "async_worker_host_only": true
+    "async_worker_host_only": true,
+    "signed_host_ceiling_admission_api": true,
+    "signed_sealed_image_loader_api_candidate": true,
+    "signed_loaded_guest_to_six_layer_broker_host_handoff_candidate": true
   },
   "known_limitations": [
     "Trusted scheduler must authenticate tenant/generation; IDs alone can be spoofed",
@@ -174,6 +221,8 @@
     "No stepful source-org GH Actions admitted on this latest head; local GCC/Clang executions are not CI",
     "Bounded async C worker is not integrated with trusted TenantVm carrier state, and its locally executed test used an in-memory broker mock",
     "Real Linux broker async integration test and ABI-v5 layout CTest committed but not executed on current source head",
-    "Signed Ed25519 descriptor verifier is not wired to artifact loader or enforced before six-layer broker construction"
+    "Signed Ed25519 descriptor verifier is not wired to artifact loader or enforced before six-layer broker construction",
+    "Sealed image loader C++ API is committed, but exact full TenantVmGuestLoader.cpp and dynamic-linker actual CTest have NOT EXECUTED at this head",
+    "Ed25519 signed loaded guest result is mutable trusted-host memory, not a guest capability; source and OS trust store, module owner lifetime and host-dependent library closure remain independent release gates"
   ]
 }
