@@ -1,0 +1,28 @@
+name: Actor execution classes v1 source-only registry
+on:
+  push:
+    branches: [main, 'test/actor-scheduler-domains-v1-20261116']
+    paths:
+      - 'contracts/actor-execution-classes-v1.json'
+      - 'tests/actor-execution-classes-v1.test.mjs'
+      - '.github/workflows/actor-execution-classes-v1.yml'
+  pull_request:
+    paths:
+      - 'contracts/actor-execution-classes-v1.json'
+      - 'tests/actor-execution-classes-v1.test.mjs'
+      - '.github/workflows/actor-execution-classes-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-only-actor-classes:
+    name: HOST_ONLY registry validation (not guest parity)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate source-only registry, syntax targets and evidence rules
+        run: node --test tests/actor-execution-classes-v1.test.mjs
