@@ -1169,16 +1169,37 @@
       "kind": "positive",
       "expected_exit_code": 32,
       "assertion": "bounded 32-element guest collection"
+    },
+    {
+      "path": "fixtures/typed-pattern-fragments/list-pattern-standalone-rest-11.atto",
+      "blob_sha": "5a9bcaaa503828d309f0f5e6de7072ec1ec4ed8b",
+      "kind": "positive",
+      "expected_exit_code": 11,
+      "assertion": "standalone rest must match every bounded List length including 32"
+    },
+    {
+      "path": "fixtures/typed-pattern-fragments/list-pattern-empty-list-9.atto",
+      "blob_sha": "b73c0566b278717c4ec7ad8e132600a81cb06f38",
+      "kind": "positive",
+      "expected_exit_code": 9,
+      "assertion": "exact empty List pattern matches only an empty List"
+    },
+    {
+      "path": "fixtures/typed-pattern-fragments/list-pattern-empty-rest-13.atto",
+      "blob_sha": "99b16e83b151545698f1ef1d4096e0906104e2e7",
+      "kind": "positive",
+      "expected_exit_code": 13,
+      "assertion": "standalone rest must match an empty List"
     }
   ],
   "implementation_candidates": {
     "rust_wasm": {
       "repo": "atto-lang/atto-source.rs",
       "pr": 415,
-      "head": "5821d164ace312038f406c88c2b0fde2f2253771",
+      "head": "0b4800b6c260a337c28ae55819d91d5dfc56ef07",
       "scope": "fixed-local-List<int>-native-rest-only",
       "guest_status": "NOT_EXECUTED",
-      "caveat": "restricted source compiler and 7 positive guest source inputs authored, but exact-head CI had zero steps; no compiled guest results observed",
+      "caveat": "10 positive guest source inputs (including standalone rest and empty List) plus overflow and negative fixtures authored; exact-head Cargo/Clippy/compiler-generated guest verification NOT EXECUTED because runners fail at admission.",
       "tree": "9109ffb05b84600d44887d97e9f152c0f4b1f8d0"
     },
     "forge_native": {
