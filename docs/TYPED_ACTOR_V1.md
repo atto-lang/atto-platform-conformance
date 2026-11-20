@@ -229,3 +229,17 @@ Source organization GitHub Actions for this draft failed with `steps=[]`; these 
 Its executed checkout and SHA gate verified **only two identical source Git blobs**, Rust `2ed736970b5f7da1d2291b4396f1b2df66e73a59` and TSV `298b4d23e526951394aa7fa7eefb1ecbc423cfe4`, from the conformance branch at export head `f217d0084993ee41565875546487cf03706c2372`. On `rustc 1.100.0`, **12/12 Rust unit tests passed** and the standalone binary validated **36/36 SOURCE_ONLY rows**. Both test and executable steps succeeded. Machine-readable receipt: `evidence/actor-isolation-types-v1-source-only-20261119.json`.
 
 **Strict interpretation:** This is a two-file **reference-model-only** successful CI receipt, not a complete source-tree mirror, required source-org CI, compiled `.atto` evidence, runtime TenantVM confinement, real socket broker check, or one backend's guest parity. All 36 per-backend registry statuses remain `NOT_EXECUTED`. No draft promotion or merge is justified by this limited pass.
+
+## ActorRef/escrow adversarial hardening (source-only)
+
+The original 36-case policy registry now rejects AI-015 and AI-035 with
+`E_ACTOR_CAPABILITY_ESCAPE`: a nominal `ActorRef` plus `grant=yes` is not
+an authenticated delegation receipt.
+
+`tools/actor_isolation_broker_v1.rs` adds 15 deterministic Rust reference tests
+for attenuation, re-delegation refusal, incarnation/placement fencing,
+cross-tenant refusal, capacity, two-phase escrow, duplicate IDs, cancellation,
+close and restart. `trusted_grant` is a hypothetical model input, NOT a
+production authority check. All tests remain SOURCE_ONLY and must not be
+promoted to compiled-guest or TenantVM certification without independently
+executed evidence.
