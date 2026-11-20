@@ -9,7 +9,7 @@ const gitBlob = b => createHash('sha1').update('blob '+b.length+String.fromCharC
 test('return-first bullet and arrow fixtures are immutable exact Git blobs', () => {
  const reg=json('contracts/v2/return-first-separators-v1.json');
  assert.equal(reg.status,'SOURCE_ONLY_NOT_EXECUTED');
- assert.equal(reg.cases.length,12);
+ assert.equal(reg.cases.length,13);
  assert.deepEqual(reg.accepted_separators.map(x=>x.spelling),['<-','•']);
  for(const c of reg.cases){
   const bytes=read(c.path);
