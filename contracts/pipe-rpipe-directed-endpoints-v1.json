@@ -450,12 +450,12 @@
   },
   "workstream_capability_notes": {
     "atto-lang/atto-source.forge": "native C++20 typed planning passes local GCC/Clang tests with ASan/UBSan; source GitHub Actions still 0 steps; no compiled .atto pipe guest",
-    "atto-lang/atto-source.rs": "experimental three-stage checked guest admission using explicit Result<PipeHandle,PipeSetupError> binding, plus legacy Channel<T> trap wrapper; compiler and guest execution NOT_EXECUTED; PipeHandle cancellation, completion, generation fencing and general graphs still unimplemented"
+    "atto-lang/atto-source.rs": "experimental opt-in typed Result<PipeHandle,PipeSetupError> with no partial publication, exact error codes, forward/rpipe/rollback/output-conflict guest fixtures; compiler/guest NOT_EXECUTED, handle cancel/get_done and TenantVM fence still unimplemented"
   },
   "rust_v2_checked_guest_preview": {
     "repo": "atto-lang/atto-source.rs",
     "pull_request": "https://github.com/atto-lang/atto-source.rs/pull/262",
-    "source_commit": "212f997c62642afdf6ca4818bb1df04d2681a7a4",
+    "source_commit": "c0de0aab196f2aa2cf6cc75f0c1d5c2e60c1b5f0",
     "type": "Result<PipeHandle, PipeSetupError>",
     "opt_in": "explicit_result_binding_annotation_only",
     "endpoint_scope": "single_tenant_bounded_actor_channel_actor_triple",
@@ -464,13 +464,26 @@
     "new_guest_fixture_ids": [
       "219-v2-checked-actor-channel-actor-pipe",
       "220-v2-checked-actor-channel-actor-rpipe",
-      "221-v2-checked-setup-rollback"
+      "221-v2-checked-setup-rollback",
+      "222-v2-checked-setup-output-occupied"
     ],
     "checked_setup_compiler": "NOT_EXECUTED",
     "checked_setup_guest": "NOT_EXECUTED",
-    "pipe_handle_methods": "NOT_IMPLEMENTED",
+    "pipe_handle_methods": "NOT_IMPLEMENTED_FAIL_CLOSED",
     "cancellation_and_guards": "NOT_IMPLEMENTED",
     "tenant_generation_proof": "NOT_EXECUTED",
-    "binding_spec_status": "NON_NORMATIVE_EXPERIMENTAL"
+    "binding_spec_status": "NON_NORMATIVE_EXPERIMENTAL",
+    "error_codes_v2_preview": {
+      "invalid_alias": 1,
+      "invalid_capacity": 2,
+      "closed_or_stopped": 3,
+      "source_occupied": 4,
+      "sink_occupied": 5,
+      "channel_occupied": 6,
+      "sink_has_downstream": 7
+    },
+    "error_code_accessor": "PipeSetupError.code()",
+    "allocation_rule": "success_result_and_guest_bridge_allocated_before_atomic_DATA_publication",
+    "runner_evidence": "NOT_EXECUTED"
   }
 }
