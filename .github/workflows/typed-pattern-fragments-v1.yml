@@ -3,11 +3,13 @@ on:
   pull_request:
     paths:
       - 'contracts/typed-pattern-fragments-v1.json'
+      - 'fixtures/typed-pattern-fragments/**'
       - 'tests/typed-pattern-fragments-v1-registry.test.mjs'
       - '.github/workflows/typed-pattern-fragments-v1.yml'
   push:
     paths:
       - 'contracts/typed-pattern-fragments-v1.json'
+      - 'fixtures/typed-pattern-fragments/**'
       - 'tests/typed-pattern-fragments-v1-registry.test.mjs'
       - '.github/workflows/typed-pattern-fragments-v1.yml'
 permissions:
