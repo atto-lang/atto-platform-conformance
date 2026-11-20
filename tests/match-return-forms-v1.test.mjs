@@ -109,3 +109,24 @@ test('executed Rust/Wasm LLVM-repository frontend evidence is segregated from na
   // Compiler-family parity is NOT a frontend-only result.
   assert.equal(manifest.backends['atto-source.llvm'].status, 'NOT_EXECUTED');
 });
+
+test('scoped Rust compiler guest receipt cannot certify the full source repository', () => {
+  const candidate = manifest.source.candidate_main_based;
+  assert.equal(candidate.guest_verification,
+    'PASS_SCOPED_COMPILER_SOURCE_GUEST_NOT_FULL_REPOSITORY_CI');
+  const proof = candidate.scoped_carrier_ci;
+  assert.equal(proof.conclusion, 'SUCCESS');
+  assert.match(proof.source_head, /^[0-9a-f]{40}$/);
+  assert.match(proof.compiler_src_tree, /^[0-9a-f]{40}$/);
+  assert.equal(proof.rust_library_tests.passed, 50);
+  assert.equal(proof.rust_library_tests.failed, 0);
+  assert.equal(proof.compiled_guest_cases.passed, 8);
+  assert.equal(proof.compiled_guest_cases.failed, 0);
+  assert.equal(proof.compiled_guest_cases.expected_stdout, '2\n2\n');
+  assert.equal(proof.compiled_guest_cases.expected_main_exit, 0);
+  assert.deepEqual(proof.compiled_guest_cases.negative_codes, ['E_MATCH', 'E_RETURN']);
+  assert.equal(proof.compiled_guest_cases.no_guest_on_failure, true);
+  assert.equal(proof.native_vs_wasm_compiler_guest_bytes, 'IDENTICAL');
+  assert.equal(proof.full_repository_ci, 'NOT_EXECUTED');
+  assert.equal(manifest.backends['atto-source.rs'].status, 'NOT_EXECUTED');
+});
