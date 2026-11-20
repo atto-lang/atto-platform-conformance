@@ -631,6 +631,32 @@
         "PHYSICAL_RETIRE_AFTER_CALLBACK_DRAIN"
       ],
       "evidence_required": true
+    },
+    {
+      "id": "successful_parent_scope_exit_cancels_descendants",
+      "given": [
+        "parent_has_claimed_mutex",
+        "child_waits_on_same_mutex",
+        "grandchild_unfinished",
+        "unrelated_sibling_running"
+      ],
+      "action": "parent_returns_successfully_without_explicit_child_await",
+      "required_order": [
+        "PARENT_SUCCESS_CLAIM",
+        "CHILD_CANCEL_REQUEST",
+        "PARENT_GUARD_RELEASE",
+        "CHILD_PHYSICAL_RETIRE",
+        "PARENT_PHYSICAL_RETIRE"
+      ],
+      "assertions": [
+        "PARENT_SUCCESS_NOT_REPLACED_BY_CANCELLATION",
+        "CHILD_AND_GRANDCHILD_RECEIVE_TRANSITIVE_CANCELLATION",
+        "WAITERS_REMOVED_BEFORE_GUARD_HANDOFF",
+        "NO_CHILD_JOIN_WHILE_PARENT_GUARD_HELD",
+        "UNRELATED_SIBLING_UNAFFECTED",
+        "NO_PARENT_STORAGE_REUSE_BEFORE_DESCENDANTS_RETIRED"
+      ],
+      "evidence_required": true
     }
   ]
 }
