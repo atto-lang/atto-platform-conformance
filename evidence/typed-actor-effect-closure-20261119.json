@@ -1,0 +1,66 @@
+{
+  "schema": "atto.typed_actor_sends_effect_closure.v1",
+  "status": "SOURCE_COMMITTED_TEST_EXECUTION_BLOCKED",
+  "source_repositories": [
+    {
+      "repo": "atto-lang/atto-source.rs",
+      "pr": 406,
+      "head_at_audit": "0398dcdbd4938b1c1de1ef6cb2624f2ef812999d",
+      "file": "src/actor_send_effect_graph.rs"
+    },
+    {
+      "repo": "atto-lang/atto-source.llvm",
+      "pr": 46,
+      "head_at_audit": "cbc04142ab1a96f2a1a53c626de499974561130a",
+      "file": "frontend/src/actor_send_effect_graph.rs"
+    }
+  ],
+  "shared_source_git_blob_sha": "16b475542987066097e4ce66a06e18603d16f796",
+  "implemented": [
+    "distinct ActorSendEffect::Never vs ActorSendEffect::Payload(Type)",
+    "AST-level defense in depth rejects forged Payload(void)",
+    "bounded iterative typed-IR call-graph walk including receiver, methods, and initializer call expressions",
+    "explicit Never rejects any reachable application DATA Send",
+    "unknown call targets fail closed; cycles visited once",
+    "source-owned exact-head CI workflows invoking rustc and cargo compiled guest fixtures"
+  ],
+  "standalone_rust_test_cases_in_source": 12,
+  "observed_runner_attempts": [
+    {
+      "repo": "zed-pkg-test/atto-ci",
+      "pr": 3,
+      "run_id": 44662398968,
+      "job_id": 136043512929,
+      "executed_steps": 0,
+      "result": "INFRASTRUCTURE_FAILURE_NOT_EXECUTED"
+    },
+    {
+      "repo": "scintilla-run/atto-ci",
+      "pr": 5,
+      "run_id": 44662568476,
+      "job_id": 136044055050,
+      "executed_steps": 0,
+      "result": "INFRASTRUCTURE_FAILURE_NOT_EXECUTED"
+    },
+    {
+      "repo": "honeypot-r-us-test/atto-ci",
+      "pr": 2,
+      "run_id": 44662860268,
+      "job_id": 136045022666,
+      "executed_steps": 0,
+      "result": "INFRASTRUCTURE_FAILURE_NOT_EXECUTED"
+    }
+  ],
+  "scope": {
+    "git_blob_identity": "VERIFIED",
+    "source_compilation": "NOT_EXECUTED",
+    "standalone_rust_tests": "NOT_EXECUTED",
+    "rust_wasm_guest_compiler_tests": "NOT_EXECUTED",
+    "llvm_repo_rust_frontend_compiler_tests": "NOT_EXECUTED",
+    "wasm_actor_runtime": "NOT_EXECUTED",
+    "native_llvm_aot_actor": "NOT_EXECUTED",
+    "java_dotnet_forge_cranelift": "NOT_EXECUTED",
+    "cross_backend_parity": "NOT_EXECUTED"
+  },
+  "non_promotion_rule": "Source SHA alignment, workflow presence and zero-step job failures cannot be reported as passing compiler/runtime tests."
+}
