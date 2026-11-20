@@ -1,0 +1,11 @@
+// TARGET ONLY: even an early return must release an acquired guard.
+pub susp fnc main(): int {
+  val Future<int> worker = task<int> {
+    val lock = new Mutex<int>(42);
+    using await lock.lock_async() as guard {
+      return guard.value;
+    }
+  };
+  worker.cancel();
+  return 42;
+}
