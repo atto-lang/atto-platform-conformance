@@ -236,10 +236,14 @@ The original 36-case policy registry now rejects AI-015 and AI-035 with
 `E_ACTOR_CAPABILITY_ESCAPE`: a nominal `ActorRef` plus `grant=yes` is not
 an authenticated delegation receipt.
 
-`tools/actor_isolation_broker_v1.rs` adds 15 deterministic Rust reference tests
+`tools/actor_isolation_broker_v1.rs` adds 16 deterministic Rust reference tests
 for attenuation, re-delegation refusal, incarnation/placement fencing,
 cross-tenant refusal, capacity, two-phase escrow, duplicate IDs, cancellation,
 close and restart. `trusted_grant` is a hypothetical model input, NOT a
 production authority check. All tests remain SOURCE_ONLY and must not be
 promoted to compiled-guest or TenantVM certification without independently
 executed evidence.
+
+### Stepful private reference-model receipt (2026-11-20)
+
+[Private run #44683859021](https://github.com/ores-rate-limit-test/atto-ci/actions/runs/44683859021) executed on the independently authenticated three-source-blob subset: **12/12 isolation policy Rust tests, 16/16 broker Rust tests and 36/36 registry rows** on Rust 1.99.1. Job `136113409387`, carrier commit `0562e3c883d8f152e47c00f1c66578c22e29e0c8`. Machine-readable receipt: `evidence/actor-isolation-reference-audit-20261120.json`. The initial stepful run exposed an incorrect positive ActorRef assertion; that test was corrected before the successful rerun. A complete source tree was also reconstructed in another private carrier with an identical Git tree SHA, but its Actions failed before any steps. Neither run certifies compiled Atto guests or production TenantVM confinement; all backend statuses remain NOT_EXECUTED.
