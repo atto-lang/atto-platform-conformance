@@ -1,0 +1,64 @@
+{
+  "schema": "atto.actor-isolation.reference-audit.v2",
+  "status": "PASS_SOURCE_ONLY_NO_COMPILED_GUEST",
+  "source_repo": "atto-lang/atto-platform-conformance",
+  "source_pr": 33,
+  "source_head_at_mirror": "0e0a87cda2ce1bce064cacffca7f4fbb332c45f4",
+  "source_files": [
+    {
+      "path": "tools/actor_isolation_types_v1.rs",
+      "git_blob_sha": "27adc601175174e3e485398bece95d508fa50548",
+      "verified_in_carrier": true
+    },
+    {
+      "path": "tools/actor_isolation_broker_v1.rs",
+      "git_blob_sha": "9c3539471943ba4a9847537fb89b8b6cec0bf04c",
+      "verified_in_carrier": true
+    },
+    {
+      "path": "contracts/actor-isolation-types-v1.tsv",
+      "git_blob_sha": "1a17731a1836c43720b6964a3782dd57a41c15fa",
+      "verified_in_carrier": true
+    }
+  ],
+  "carrier_repo": "ores-rate-limit-test/atto-ci",
+  "carrier_private": true,
+  "carrier_branch": "ci/atto-actor-isolation-audit-6c46334c-20261120",
+  "carrier_commit": "0562e3c883d8f152e47c00f1c66578c22e29e0c8",
+  "carrier_tree": "47e11620a56f3422ebd01c6ca13a494238679ae9",
+  "run_url": "https://github.com/ores-rate-limit-test/atto-ci/actions/runs/44683859021",
+  "run_id": 44683859021,
+  "job_id": 136113409387,
+  "run_attempt": 1,
+  "conclusion": "success",
+  "toolchain": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
+  "test_results": [
+    {
+      "suite": "actor_isolation_types_v1",
+      "passed": 12,
+      "failed": 0
+    },
+    {
+      "suite": "actor_isolation_broker_v1",
+      "passed": 16,
+      "failed": 0
+    },
+    {
+      "suite": "contract_rows",
+      "validated": 36
+    }
+  ],
+  "source_blob_checks": "3_of_3_verified",
+  "full_source_tree_mirrored_into_passing_carrier": false,
+  "source_tree_mirrored_in": "usa-acc/atto-ci",
+  "source_root_tree_sha": "81084f16b0ec78944b68e8bf3148b746da16d21c",
+  "source_tree_mirror_carrier_commit": "0b5734db13b84a5340d47379a5a7782e647dfe53",
+  "source_tree_carrier_run_stepful": false,
+  "cross_org_checkout_token_used": false,
+  "local_carrier_checkout_uses_scoped_readonly_GITHUB_TOKEN": true,
+  "atto_compiler_executed": false,
+  "atto_guest_executed": false,
+  "tenantvm_security_verified": false,
+  "source_org_required_checks_satisfied": false,
+  "notes": "Stepful separate private carrier validated 3 exact source blobs, passed 28 host-only Rust unit tests and validated 36 policy rows. Other carrier mirrored complete prior source tree, but jobs had zero steps. Evidence does not establish compiled Atto or same-process multi-tenant isolation."
+}
