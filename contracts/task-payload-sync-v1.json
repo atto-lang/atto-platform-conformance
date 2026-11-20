@@ -764,6 +764,42 @@
       ],
       "evidence_required": true,
       "release_qualified": false
+    },
+    {
+      "id": "parked_ready_task_admission_fence",
+      "given": [
+        "task_B_has_contended_lock_wait_ticket",
+        "host_scheduler_has_parked_task_B",
+        "unrelated_mutex_C_is_available",
+        "task_B_has_parent_child_scope_capability"
+      ],
+      "action": "try_lock_admission_and_child_spawn_before_and_after_ready_enqueue_but_before_scheduler_pop",
+      "assertions": [
+        "PARKED_TASK_CANNOT_ACQUIRE_ANOTHER_MUTEX",
+        "PARKED_TASK_CANNOT_SPAWN_CHILD",
+        "READY_BUT_UNDISPATCHED_TASK_CANNOT_ACQUIRE_MUTEX",
+        "READY_BUT_UNDISPATCHED_TASK_CANNOT_SPAWN_CHILD",
+        "NO_GHOST_TICKET_ON_REJECTION",
+        "NO_FORGED_CHILD_TASK_CAPABILITY",
+        "TASK_MAY_RETRY_ONLY_AFTER_AUTHENTICATED_READY_TO_RUNNING_TRANSITION",
+        "CANCELLATION_WINS_BEFORE_REACQUIRE_IF_ALREADY_REQUESTED"
+      ],
+      "required_happens_before": [
+        [
+          "TRUSTED_LOCK_PARK",
+          "HOST_READY_ADMISSION"
+        ],
+        [
+          "HOST_READY_ADMISSION",
+          "TRUSTED_SCHEDULER_DISPATCH"
+        ],
+        [
+          "TRUSTED_SCHEDULER_DISPATCH",
+          "NEW_LOCK_ADMISSION_IF_AUTHORIZED"
+        ]
+      ],
+      "evidence_required": true,
+      "release_qualified": false
     }
   ]
 }
