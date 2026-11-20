@@ -70,3 +70,60 @@ test('unsafe preview is required to be rejected, not silently unwrapped', () => 
   assert.match(source, /writech output, item/);
   assert.ok(c.evidence_rule.includes('actual compiled .atto guest'));
 });
+
+test('nominal on is ADT fixtures are cross-backend targets, not parser-only PASS', () => {
+  const variants=c.required_cases.filter(item=>item.id.startsWith('checked_echo_is_variants'));
+  assert.deepEqual(variants.map(x=>x.id),
+    ['checked_echo_is_variants','checked_echo_is_variants_readch']);
+  const reference=c.required_cases.find(x=>x.id==='checked_echo');
+  for(const item of variants) {
+    assert.equal(item.kind,'guest-pass');
+    assert.equal(item.equivalent_to,'checked_echo');
+    assert.deepEqual(item.runs,reference.runs);
+    const source=text(item.path);
+    assert.match(source,/on is Ok<_> -> match/);
+    assert.match(source,/on is Ok<line> -> match line over/);
+    assert.match(source,/on is Some<item> -> match writech output, item over/);
+    assert.match(source,/on is Err<error>/);
+    assert.match(source,/on is None -> 11/);
+  }
+  assert.match(text(variants[0].path),/match << input over/);
+  assert.match(text(variants[1].path),/match readch input over/);
+  const standalone=c.required_cases.find(x=>x.id==='stdio_is_pattern_fallback');
+  assert.equal(standalone.kind,'source-compile-pass');
+  assert.match(text(standalone.path),/on is Ok<_> -> match << input over/);
+  assert.match(text(standalone.path),/on is Some<item> -> item/);
+  assert.match(text(standalone.path),/on None -> ""/);
+  assert.deepEqual(c.data_contract.is_adt_pattern_equivalences,{
+    'on is Ok<_>':'on Ok(_)',
+    'on is Ok<line>':'on Ok(line)',
+    'on is Some<item>':'on Some(item)',
+    'on is Err<error>':'on Err(error)',
+    'on is None':'on None'
+  });
+  assert.equal(Object.keys(c.backend_status).length,11);
+  assert.ok(Object.values(c.backend_status).every(v=>v==='NOT_EXECUTED'));
+});
+
+test('unsafe dynamic extractor and wrong family/arity cannot pass a compile gate', () => {
+  const invalid=[
+    ['is_unknown_extractor','E_PATTERN'],
+    ['is_none_payload','E_ARITY'],
+    ['is_void_ok_bound','E_ARITY'],
+    ['is_missing_ok_payload','E_ARITY'],
+    ['is_wrong_variant_family','E_TYPE'],
+    ['is_nested_extractor','E_SYNTAX'],
+    ['is_multi_payload','E_SYNTAX'],
+    ['is_duplicate_arm','E_MATCH'],
+  ];
+  for(const [id,code] of invalid) {
+    const spec=c.required_cases.find(x=>x.id===id);
+    assert.ok(spec,id+' is missing from the portable manifest');
+    assert.equal(spec.kind,'compile-fail');
+    assert.equal(spec.expected_error,code);
+    assert.equal(spec.no_guest_artifact,true);
+    assert.match(text(spec.path),new RegExp('expect-error: '+code));
+    assert.match(text(spec.path),/pub suspends fnc main/);
+  }
+  assert.ok(c.evidence_rule.includes('actual guest execution'));
+});
