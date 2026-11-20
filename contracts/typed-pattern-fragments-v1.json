@@ -1196,11 +1196,13 @@
     "rust_wasm": {
       "repo": "atto-lang/atto-source.rs",
       "pr": 415,
-      "head": "0b4800b6c260a337c28ae55819d91d5dfc56ef07",
+      "head": "638ffab8dc949b75ef9ad7f6d027b57b08de0a66",
       "scope": "fixed-local-List<int>-native-rest-only",
       "guest_status": "NOT_EXECUTED",
       "caveat": "10 positive guest source inputs (including standalone rest and empty List) plus overflow and negative fixtures authored; exact-head Cargo/Clippy/compiler-generated guest verification NOT EXECUTED because runners fail at admission.",
-      "tree": "9109ffb05b84600d44887d97e9f152c0f4b1f8d0"
+      "tree": "9109ffb05b84600d44887d97e9f152c0f4b1f8d0",
+      "verification_script": "scripts/verify-list-pattern-guest.sh",
+      "runner_status": "ZERO_STEPS_SOURCE_CI"
     },
     "forge_native": {
       "repo": "atto-lang/atto-source.forge",
