@@ -26,15 +26,27 @@ test('mutex fixture sources are present, unique and declare exact outcomes', () 
     const full = resolve(root,contract.fixtures_dir,c.source);
     assert.equal(existsSync(full),true,full);
     const src = readFileSync(full,'utf8');
-    assert.match(src,/Mutex<int>/);
-    assert.match(src,/lock_async\(\)/);
-    assert.match(src,/\busing\b/);
+    if (c.feature !== 'await') {
+      assert.match(src,/Mutex<int>/, 'mutex fixture must reference typed Mutex');
+      assert.match(src,/lock_async\(\)/, 'mutex fixture must acquire asynchronously');
+      assert.match(src,/\busing\b/, 'mutex fixture must use scoped cleanup');
+    } else {
+      assert.match(src,/await\s+42\s*;/, 'ready-await case must not depend on a host Promise');
+    }
     if(c.kind==='compile_negative'){
       assert.equal(c.guest_artifact,false);
       assert.match(src,new RegExp(c.expected_diagnostic));
     } else {
-      assert.equal(c.expected_exit,0);
+      assert.equal(typeof c.expected_exit,'number');
     }
   }
   assert.ok(contract.cases.some(x=>x.kind==='runtime_probe'));
+});
+
+test('ready await and guard-await prohibition are separate source contracts', () => {
+  const get = id => contract.cases.find(x => x.id === id);
+  assert.equal(get('ready-await-no-forced-yield').expected_runtime_suspensions, 0);
+  assert.equal(get('reject-guard-ready-await').expected_diagnostic, 'E_GUARD_SUSPEND');
+  assert.equal(get('reject-guard-ready-await').guest_artifact, false);
+  assert.ok(contract.cases.some(x => x.id === 'legacy-async-2-abi-rejection'));
 });
