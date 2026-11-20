@@ -10,8 +10,8 @@ const cases = Object.fromEntries(registry.cases.map(c => [c.id,c]));
 test('versioned typed task fixtures are pinned to exact Git blob identity', () => {
   assert.equal(registry.schema, 'atto.task-payload-sync.v1');
   assert.equal(registry.status, 'TARGET_NOT_GUEST_VERIFIED');
-  assert.equal(registry.cases.length, 14);
-  assert.equal(new Set(registry.cases.map(x=>x.id)).size,14);
+  assert.equal(registry.cases.length, 17);
+  assert.equal(new Set(registry.cases.map(x=>x.id)).size,17);
   for (const c of registry.cases) {
     assert.match(c.source_path,/^fixtures\/task-payload-sync-v1\/[a-z0-9_]+\.atto$/);
     assert.equal(gitSha(getSource(c)),c.source_git_blob,c.id);
@@ -39,4 +39,20 @@ test('all compiler backends remain not-executed until real guest receipts', () =
     assert.equal(entry.compiler_sha,null,backend);
     assert.equal(entry.guest_receipt,null,backend);
   }
+});
+
+test('separate logical task frames and safe physical coallocation are the target model', () => {
+  assert.match(registry.execution_frame_model,/independent logical continuations/);
+  assert.match(registry.execution_frame_model,/proven lifetime and alias safety/);
+  const dual = getSource(cases.two_live_task_frames).toString('utf8');
+  const local = getSource(cases.parent_child_frame_isolation).toString('utf8');
+  const nested = getSource(cases.nested_task_frames).toString('utf8');
+  assert.equal((dual.match(/task<int> \{/g) ?? []).length,2);
+  assert.equal((dual.match(/val int local =/g) ?? []).length,2);
+  assert.match(dual,/await left;/);
+  assert.match(dual,/await right;/);
+  assert.equal((local.match(/val int local =/g) ?? []).length,2);
+  assert.match(local,/return local \+ child_result;/);
+  assert.equal((nested.match(/task<int> \{/g) ?? []).length,2);
+  assert.match(nested,/await nested;/);
 });
