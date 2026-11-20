@@ -1,0 +1,95 @@
+{
+  "schema": "atto.native.option-int-guest.v1",
+  "scope": "heapless by-value Option<int>; does not certify Result<int,Error>, int.parse or C++ LLVM backend",
+  "claim": "TARGET_ONLY_NOT_GUEST_VERIFIED",
+  "candidate": {
+    "repository": "atto-lang/atto-source.llvm",
+    "pr": 57,
+    "head": "1e2c14bed4e1724a6e43859f66a80951973dc141",
+    "tree": "623e0a0c3cb4a81500fdb01d5e27a5d539a7ca58",
+    "guest_target": "Linux x86_64 ELF, Clang O0/O2, no GC/heap"
+  },
+  "cases": [
+    {
+      "id": "option-some-match",
+      "source": "fixtures/native-option-int-v1/option-some-match.atto",
+      "git_blob_sha": "1d5fec1cb2b7a82f7aedcc82dbb777be74be7a32",
+      "expect": {
+        "kind": "guest_exit",
+        "exit_code": 42,
+        "stdout": ""
+      },
+      "status": "TARGET_ONLY"
+    },
+    {
+      "id": "option-none-question",
+      "source": "fixtures/native-option-int-v1/option-none-question.atto",
+      "git_blob_sha": "5d6ccab2078ff450a608e85b58b2f212b3c789ba",
+      "expect": {
+        "kind": "guest_exit",
+        "exit_code": 42,
+        "stdout": ""
+      },
+      "status": "TARGET_ONLY"
+    },
+    {
+      "id": "option-some-question",
+      "source": "fixtures/native-option-int-v1/option-some-question.atto",
+      "git_blob_sha": "d73fc7def3a4c1bfa9499c2642865f726cb97b6a",
+      "expect": {
+        "kind": "guest_exit",
+        "exit_code": 42,
+        "stdout": ""
+      },
+      "status": "TARGET_ONLY"
+    }
+  ],
+  "backends": {
+    "atto-source.rs": {
+      "status": "NOT_EXECUTED",
+      "compiler_guest_receipt": null
+    },
+    "atto-source.llvm": {
+      "status": "NOT_EXECUTED",
+      "compiler_guest_receipt": null,
+      "candidate_head": "1e2c14bed4e1724a6e43859f66a80951973dc141",
+      "candidate_role": "atto-llvm native Rust/LLVM scalar AOT executable, not LLVM C++ backend"
+    },
+    "atto-source.java": {
+      "status": "NOT_EXECUTED",
+      "compiler_guest_receipt": null
+    },
+    "atto-source.net": {
+      "status": "NOT_EXECUTED",
+      "compiler_guest_receipt": null
+    },
+    "atto-source.forge": {
+      "status": "NOT_EXECUTED",
+      "compiler_guest_receipt": null
+    },
+    "atto-source.cranelift": {
+      "status": "NOT_EXECUTED",
+      "compiler_guest_receipt": null
+    },
+    "atto-source.js": {
+      "status": "NOT_EXECUTED",
+      "compiler_guest_receipt": null
+    },
+    "atto-source.wasm": {
+      "status": "NOT_EXECUTED",
+      "compiler_guest_receipt": null
+    },
+    "atto-source.atto": {
+      "status": "NOT_EXECUTED",
+      "compiler_guest_receipt": null
+    },
+    "atto-source.hdl": {
+      "status": "NOT_EXECUTED",
+      "compiler_guest_receipt": null
+    },
+    "atto-source.realtime": {
+      "status": "NOT_EXECUTED",
+      "compiler_guest_receipt": null
+    }
+  }
+}

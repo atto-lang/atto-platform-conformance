@@ -7,6 +7,9 @@ on:
       - 'contracts/trap-result-guest-v1.json'
       - 'fixtures/trap-result-v1/**'
       - 'tests/trap_result_source_cases.mjs'
+      - 'tests/native_option_source_cases.mjs'
+      - 'contracts/native-option-int-guest-v1.json'
+      - 'fixtures/native-option-int-v1/**'
       - '.github/workflows/trap-result-host-reference.yml'
   workflow_dispatch:
 permissions:
@@ -22,6 +25,6 @@ jobs:
           node-version: '22'
       - name: Run host-only reference oracle (never guest parity)
         run: |
-          node --test tests/trap_result_reference.mjs tests/trap_result_source_cases.mjs
+          node --test tests/trap_result_reference.mjs tests/trap_result_source_cases.mjs tests/native_option_source_cases.mjs
           echo 'TRAP_RESULT_REFERENCE=PASSED'
           echo 'TRAP_RESULT_GUEST_PARITY=NOT_EXECUTED'
