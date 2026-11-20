@@ -373,55 +373,86 @@
         "conclusion": "SUCCESS",
         "linux_job_id": 136043982286,
         "artifact_id": 14596208271,
-        "artifact_sha256": "076bfa178c6730b2b6451068389a8b56a7e40f10ba9544afa2595f85e8a94d0c"
+        "artifact_sha256": "076bfa178c6730b2b6451068389a8b56a7e40f10ba9544afa2595f85e8a94d0c",
+        "macos_job_id": 136043982591,
+        "run_url": "https://github.com/usa-acc/atto-ci/actions/runs/44662545614"
       },
       "compiled_guest_results": {
-        "status": "PASS_EXACT_ORIGINAL_SCOPED_CORECLR_NATIVEAOT",
-        "suite": "source-compiled Atto direct CIL, explicit trusted stdout grant",
-        "canonical": [
+        "status": "PASS_EXECUTED_EXACT_ORIGINALS",
+        "positive_cases": [
           {
             "id": "return-block",
-            "status": "PASS_EXECUTED_GUEST",
-            "stdout": "2\n2\n",
-            "stderr": "",
-            "coreclr_exit": 0,
-            "nativeaot_exit": 0
+            "coreclr": {
+              "stdout": "2\n2\n",
+              "exit": 0,
+              "stderr": ""
+            },
+            "nativeaot": {
+              "stdout": "2\n2\n",
+              "exit": 0,
+              "stderr": ""
+            },
+            "status": "PASS"
           },
           {
             "id": "caret-block",
-            "status": "PASS_EXECUTED_GUEST",
-            "stdout": "2\n2\n",
-            "stderr": "",
-            "coreclr_exit": 0,
-            "nativeaot_exit": 0
-          },
+            "coreclr": {
+              "stdout": "2\n2\n",
+              "exit": 0,
+              "stderr": ""
+            },
+            "nativeaot": {
+              "stdout": "2\n2\n",
+              "exit": 0,
+              "stderr": ""
+            },
+            "status": "PASS"
+          }
+        ],
+        "negative_cases": [
           {
             "id": "nonexhaustive-guard",
-            "status": "PASS_REJECTED_NO_ARTIFACT",
-            "diagnostic": "E_MATCH",
-            "no_guest": true
+            "code": "E_MATCH",
+            "no_artifact": true,
+            "status": "PASS"
           },
           {
             "id": "fallthrough-block",
-            "status": "PASS_REJECTED_NO_ARTIFACT",
-            "diagnostic": "E_RETURN",
-            "no_guest": true
+            "code": "E_RETURN",
+            "no_artifact": true,
+            "status": "PASS"
           }
         ],
-        "no_stdio_grant": {
-          "status": "PASS_DENIED_NO_ARTIFACT",
-          "diagnostic": "E_PERMISSION",
-          "cases": 2
-        },
-        "extra_stdio_negatives": {
-          "status": "PASS_REJECTED_NO_ARTIFACT",
+        "stdio_negative_tests": {
           "passed": 6,
-          "failed": 0
+          "failed": 0,
+          "no_artifact": true,
+          "codes": [
+            "E_STDIO",
+            "E_STDIO",
+            "E_STDIO",
+            "E_RETURN",
+            "E_TYPE",
+            "E_PARSE"
+          ]
         },
-        "subject_call_scalar": {
-          "status": "PASS_EXECUTED_GUEST",
-          "coreclr_exit": 42,
-          "nativeaot_exit": 42
+        "default_deny_stdout": {
+          "cases": 2,
+          "code": "E_PERMISSION",
+          "no_artifact": true,
+          "status": "PASS"
+        },
+        "baseline_cil": {
+          "positive_compiled_guest": true,
+          "negative_passed": 12
+        },
+        "scalar_regression": {
+          "coreclr_nativeaot_exits": [
+            4,
+            4,
+            42
+          ],
+          "status": "PASS"
         }
       },
       "caveat": "Not TenantVM stdout-capability isolation, not all .NET libraries, and not the other independent compilers; top-level backend status remains NOT_EXECUTED for broader runtime profile"
@@ -453,10 +484,12 @@
       "guest_receipt": null
     },
     "atto-source.net": {
-      "status": "NOT_EXECUTED",
-      "compiler_implementation": "direct CIL guarded integer value-match candidate #27, native CoreCLR/NativeAOT scalar subset; stdout exact original unsupported",
-      "source_sha": null,
-      "guest_receipt": null
+      "status": "PASS",
+      "compiler_implementation": "direct ECMA-335 CIL compiler; exact 4/4 guarded return/caret match v1 fixtures proven in trusted standalone CoreCLR and NativeAOT, not full .NET/TenantVM feature parity",
+      "source_sha": "29c7ac16de01c966b10324b96131b9658f96efb8",
+      "guest_receipt": "https://github.com/usa-acc/atto-ci/actions/runs/44662545614",
+      "profile": "direct-cil-v1-trusted-stdio-only",
+      "security_boundary": "compiler --allow-stdio explicitly granted by trusted host; not an untrusted TenantVM capability"
     },
     "atto-source.forge": {
       "status": "NOT_EXECUTED",
