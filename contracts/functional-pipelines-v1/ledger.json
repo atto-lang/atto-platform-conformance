@@ -289,7 +289,7 @@
         },
         "executed_test_groups": 4,
         "failing_test_groups": 0,
-        "scope": "Exact Git blob of hardened standalone Forge C++ compiler; local GCC14/Clang17 native execution of four SHA-exact canonical source cases + signed minimum/overflow with ASan+UBSan on each toolchain, private mode 0600 and no-clobber temporary-path checks; whole repo CMake/CTest and exact-head CI not executed; no claim of directory-descriptor anchored security or production TenantVM integration.",
+        "scope": "Exact Git blob of hardened standalone Forge C++ compiler; local GCC14/Clang17 native execution of four SHA-exact canonical source cases + signed minimum/overflow with ASan+UBSan on each toolchain, private mode 0600 and no-clobber temporary-path checks; whole repo CMake/CTest and exact-head CI unexecuted; no claim of directory-descriptor anchored security or production TenantVM integration.",
         "relative_output_observed": "compiled_and_executed_83",
         "no_overwrite_observed": true,
         "symlink_output_rejected": true,
