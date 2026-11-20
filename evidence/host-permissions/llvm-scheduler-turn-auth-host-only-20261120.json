@@ -1,0 +1,85 @@
+{
+  "schema": "atto.host_fs_security.scheduler_turn_auth_ci.v1",
+  "date_utc": "2026-11-20",
+  "result": "HOST_ONLY_EXECUTED",
+  "source": {
+    "repository": "atto-lang/atto-source.llvm",
+    "pull_request": 62,
+    "head_commit": "68a186b21385a0ea48e651d8b364eeb5cedbf54c",
+    "git_root_tree_sha": "a5c5922101e82f2a1342ade6a07231481879692b",
+    "file_blobs": 237,
+    "total_tree_entries": 282
+  },
+  "carrier": {
+    "repository": "opto-sync/atto-ci",
+    "private": true,
+    "snapshot_commit": "5757ab95630d8e5f9d55f7bb5cdae178d90e6a1b",
+    "snapshot_root_tree_sha": "a5c5922101e82f2a1342ade6a07231481879692b",
+    "separate_harness_commit": "8efce00696ba8eefd6b62147bb59118ca7cb25be",
+    "branch": "ci/fs-turn-auth-llvm-68a186b2-20261120",
+    "whole_tree_exact": true,
+    "checkout": "carrier_local_only",
+    "persist_credentials": false,
+    "origin_source_access_from_workflow": false,
+    "parent_sha_gate_passed": true
+  },
+  "workflow": {
+    "url": "https://github.com/opto-sync/atto-ci/actions/runs/44820725792",
+    "run_id": 44820725792,
+    "job_id": 136580641690,
+    "run_conclusion": "success",
+    "steps_executed": true,
+    "security_stages": {
+      "GCC_Clang_O1_O2_ASan_UBSan": "success",
+      "async_worker_mock_real_broker_abi_v5_layout": "success",
+      "signed_broker_admission": "success",
+      "native_CMake_CTest": "success",
+      "sealed_image_signed_loader": "success",
+      "authenticated_scheduler_turn_restart_witnesses": "success"
+    },
+    "native_fs_ctest": {
+      "passed": 8,
+      "failed": 0
+    },
+    "sealed_loader_host_ctest": {
+      "passed": 1,
+      "failed": 0
+    },
+    "scheduler_turn_auth_host_ctest": {
+      "passed": 1,
+      "failed": 0
+    },
+    "tenant_vm_runtime_smoke": {
+      "passed": 3,
+      "failed": 0,
+      "cases": [
+        "equal_offsets_are_different_memory",
+        "messaging_stays_inside_the_vm",
+        "a_confined_fault_restarts_only_that_actor"
+      ]
+    }
+  },
+  "implementation": {
+    "files": [
+      "src/main/cpp/oreslang/runtime/TenantVm.cpp",
+      "src/main/cpp/oreslang/runtime/TenantVmFsTurnAuth.hpp",
+      "tests/tenant-vm/tenant_vm_fs_turn_auth_test.cpp",
+      "tests/tenant-vm/CMakeLists.txt",
+      ".github/workflows/native-host-fs-broker.yml"
+    ],
+    "summary": "Bound a trusted-only per-carrier turn witness to TenantVM generation, actor ref, distinct restart incarnation, odd scheduler turn sequence and bounded actor/scratch region. Every existing host API entry rejects invalid or stale turn context, and teardown clears the witness. C++ witness predicates and real VM restart smoke ran on the exact source head.",
+    "identity_limit": "Witness is trusted scheduler-internal only; NOT a guest bearer token and NOT direct live async service admission.",
+    "memory_limit": "Offset32 arithmetic bounds helper tested but not yet live ABI-v5 FS dispatch."
+  },
+  "not_executed": {
+    "compiled_atto_fs_guest": true,
+    "live_guest_abi_v5": true,
+    "scheduler_to_live_broker_filesystem_dispatch": true,
+    "production_trust_store": true,
+    "signed_transitive_dependency_closure": true,
+    "guest_syscall_and_memory_confinement": true,
+    "cross_backend_compiled_guest_parity": true
+  },
+  "release_gate": "KEEP_DRAFT_NO_MERGE_NO_GUEST_SECURITY_CERTIFICATION",
+  "next_action": "Wire scheduler-derived identity and bounds into sealed-image-authorized live FS service only after native confinement and guest ABI-v5 admission are secured; execute compiled-guest conformance then."
+}
