@@ -1,0 +1,7 @@
+// TARGET ONLY — await of an immediately ready scalar is NOT a mandatory yield.
+// Expected stdout "42\n", main return 42, scheduler suspension events 0.
+pub susp fnc main(): int {
+  val answer = await 42;
+  stdio.println(answer);
+  return answer;
+}
