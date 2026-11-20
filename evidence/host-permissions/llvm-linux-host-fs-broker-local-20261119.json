@@ -1,0 +1,86 @@
+{
+  "schema": "atto.host_security.fs_broker_local_observation.v1",
+  "classification": "HOST_ONLY_LOCAL_EXECUTION_NOT_GUEST_CONFORMANCE",
+  "source_repo": "atto-lang/atto-source.llvm",
+  "source_pr": "https://github.com/atto-lang/atto-source.llvm/pull/62",
+  "source_head_sha": "837bf9a0a0728af2477676ea1ced059f590ca3a3",
+  "source_git_blobs": {
+    "native/include/atto/host_fs_broker.h": "3a14858cb3dc74bb11978445f212b2c7053d8803",
+    "native/src/host_fs_broker.c": "238d5d5a741a2d3b59c5709b6746efdfe85d04d1",
+    "native/tests/host_fs_broker_test.c": "4c552ce2a0303c0baf53290dc6a8e70e78494325",
+    "native/CMakeLists.txt": "2a248abf9c9e01e0ab5878b7d400fb512e4ffd39"
+  },
+  "local_verification": {
+    "executor": "local isolated tool container; not source-owned GitHub Actions",
+    "platform": "Linux x86_64 kernel 6.18.57",
+    "compilers": [
+      {
+        "name": "GCC",
+        "version": "14.2.0",
+        "host_test": "PASSED",
+        "sanitizers": [
+          "address",
+          "undefined"
+        ]
+      },
+      {
+        "name": "Clang",
+        "version": "17.0.0",
+        "host_test": "PASSED",
+        "sanitizers": [
+          "address",
+          "undefined"
+        ]
+      }
+    ],
+    "flags": [
+      "-std=c11",
+      "-Wall",
+      "-Wextra",
+      "-Wconversion",
+      "-Werror",
+      "-pedantic",
+      "-fsanitize=address,undefined",
+      "-fno-omit-frame-pointer"
+    ],
+    "test_marker": "ATTO_HOST_FS_BROKER_HOST_ONLY_TEST_PASS",
+    "covered": [
+      "allow_read_write",
+      "deny_override",
+      "rooted_relative_path",
+      "prefix_confusion",
+      "traversal",
+      "symlink_read_escape",
+      "symlink_write_escape",
+      "hardlink_alias",
+      "tenant_id_mismatch",
+      "stale_generation",
+      "atomic_replacement",
+      "root_inode_pin_after_rename",
+      "active_symlink_swap_300_iterations_600_reads"
+    ],
+    "verified_bytes": "Exact Git blob SHA of all four source/test/CMake files equals independently compiled local files"
+  },
+  "source_ci": {
+    "run_id": 44656191613,
+    "job": "host-security-regression",
+    "observed_job_steps": 0,
+    "state": "NOT_EXECUTED_AT_INITIAL_HEAD",
+    "note": "Initial attempt on earlier head failed before steps; source CI on updated head must be inspected separately"
+  },
+  "guest_parity": {
+    "atto_source_compiled": false,
+    "atto_guest_executed": false,
+    "std_fs_linked": false,
+    "manifest_verified": false,
+    "tenant_isolation_proven": false,
+    "backend_status": "NOT_EXECUTED"
+  },
+  "known_limitations": [
+    "Trusted scheduler must authenticate tenant/generation; IDs alone can be spoofed",
+    "Guest can bypass cooperative broker if granted raw syscall/FFI/native memory access",
+    "Host-managed root and directory tree must not be movable by attacker OS principals",
+    "Signed artifact ceiling, async I/O, cancellation and live compiled Atto guest missing",
+    "CMake/CTest at exact checked-in head is not yet observed via an admitted runner"
+  ]
+}
