@@ -209,12 +209,23 @@
     "real_guest": true,
     "compiler_head_sha": true,
     "compiler_tree_sha": true,
-    "source_fixture_blob_sha": true,
+    "toolchain": true,
     "command": true,
-    "exit_status": true,
-    "stdout": true,
     "ci_run_url": true,
-    "negative_has_no_artifact": true
+    "complete_case_results": 8,
+    "per_positive_case": [
+      "source_fixture_blob_sha",
+      "observed_exit",
+      "observed_stdout",
+      "guest_artifact_sha256",
+      "guest_executed"
+    ],
+    "per_negative_case": [
+      "source_fixture_blob_sha",
+      "observed_rejection",
+      "artifact_exists"
+    ],
+    "provenance_rule": "Each of the 8 source-pinned fixtures must be independently evidenced by an actual compiled guest or genuine no-artifact rejection on the exact same backend head."
   },
   "exclusions": [
     "host-only reference tests",
