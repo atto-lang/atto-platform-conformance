@@ -199,7 +199,8 @@ test('experimental Rust checked PipeHandle preview cannot masquerade as backend 
     assert.equal(entry.rejected_publications,0);
     assert.equal(entry.unclaimed_source_channel_sink_reusable,true);
     assert.equal(entry.expected_stdout,'40\\n2\\n'.replaceAll('\\n','\n'));
-    assert.match(entry.guest_fixture,/^tests\\/fixtures\\/pass\\/2(?:22|23)-v2-checked-[a-z-]+\\.atto$/);
+    assert.ok(entry.guest_fixture.startsWith('tests/fixtures/pass/'));
+    assert.match(entry.guest_fixture,/2(?:22|23)-v2-checked-[a-z-]+[.]atto$/);
   }
   const row=contract.backend_evidence.find(x=>x.repo===preview.repo);
   assert.ok(row);
