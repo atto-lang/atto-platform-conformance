@@ -53,6 +53,22 @@ test('every backend must carry independent genuine execution evidence', () => {
         assert.match(hash, /^[a-f0-9]{64}$/);
       assert.ok(row.local_execution.executed_test_groups > 0);
       assert.equal(row.local_execution.failing_test_groups, 0);
+      if (name === 'java-scalar-bootstrap') {
+        const local = row.local_execution;
+        assert.equal(row.result_profile, 'os_exit_code');
+        assert.deepEqual(local.observed_process_exit, [83,83,42,42]);
+        assert.deepEqual(local.observed_guest_stdout, ['', '', '', '']);
+        assert.equal(local.canonical_negative_no_output_artifact, true);
+        assert.equal(local.extended_negative_cases, 11);
+        assert.equal(local.extended_negative_no_output_artifact, true);
+        assert.equal(local.i64_min_observed, '-9223372036854775808');
+        assert.match(local.i64_min_input_blob_sha, sha);
+        assert.match(local.i64_underflow_input_blob_sha, sha);
+        assert.deepEqual(local.signed_underflow_rejection,
+          {exit:2,diagnostic:'E_LITERAL',artifact_exists:false});
+        assert.match(local.scope, /CI remain unexecuted/);
+        assert.match(local.tests_blob_role, /not itself executed locally/);
+      }
       if (name === 'forge') {
         const local = row.local_execution;
         assert.match(local.checked_i64_runtime_blob_sha, sha);
