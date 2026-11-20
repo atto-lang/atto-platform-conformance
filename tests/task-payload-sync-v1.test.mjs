@@ -10,8 +10,8 @@ const cases = Object.fromEntries(registry.cases.map(c => [c.id,c]));
 test('versioned typed task fixtures are pinned to exact Git blob identity', () => {
   assert.equal(registry.schema, 'atto.task-payload-sync.v1');
   assert.equal(registry.status, 'TARGET_NOT_GUEST_VERIFIED');
-  assert.equal(registry.cases.length, 26);
-  assert.equal(new Set(registry.cases.map(x=>x.id)).size,26);
+  assert.equal(registry.cases.length, 32);
+  assert.equal(new Set(registry.cases.map(x=>x.id)).size,32);
   for (const c of registry.cases) {
     assert.match(c.source_path,/^fixtures\/task-payload-sync-v1\/[a-z0-9_]+\.atto$/);
     assert.equal(gitSha(getSource(c)),c.source_git_blob,c.id);
@@ -95,4 +95,55 @@ test('cancellation contracts are pinned, fail closed and require runtime witness
   const nonSusp = cases.cancel_implicit_scope_exit_needs_susp;
   assert.equal(nonSusp.expected.diagnostic, 'E_EFFECT');
   assert.match(getSource(nonSusp).toString('utf8'), /pub fnc main\(\): int/);
+});
+
+test('cancellable task lock leases have pinned positive and negative sources', () => {
+  assert.match(registry.lock_cancellation_model, /exactly-once LIFO release/);
+  assert.match(registry.lock_cancellation_model, /cleanup failures retain fenced ownership/);
+  const positives = [
+    'cancel_lock_scoped_release',
+    'cancel_lock_early_return',
+    'cancel_lock_nested_lifo',
+  ];
+  for (const id of positives) {
+    const item = cases[id];
+    assert.equal(item.kind, 'positive', id);
+    assert.equal(item.expected.guest_exit, 42, id);
+    assert.ok(item.expected.witnesses.length >= 3, id);
+    const source = getSource(item).toString('utf8');
+    assert.match(source, /using await .*\.lock_async\(\) as/, id);
+    assert.match(source, /worker\.cancel\(\);/, id);
+  }
+  const nested = getSource(cases.cancel_lock_nested_lifo).toString('utf8');
+  assert.match(nested, /using inner\.lock\(\) as inner_guard/);
+  assert.doesNotMatch(nested, /using await inner\.lock_async/);
+  const early = getSource(cases.cancel_lock_early_return).toString('utf8');
+  assert.match(early, /return guard\.value;/);
+  const negatives = {
+    cancel_lock_await_inside_guard: 'E_GUARD_SUSPEND',
+    cancel_lock_held_during_join: 'E_GUARD_SUSPEND',
+    cancel_lock_guard_escape: 'E_GUARD_ESCAPE',
+  };
+  for (const [id,code] of Object.entries(negatives)) {
+    assert.equal(cases[id].kind, 'negative');
+    assert.equal(cases[id].expected.diagnostic, code);
+    assert.equal(cases[id].expected.no_artifact, true);
+  }
+  assert.equal(registry.lock_cancellation_runtime_probes.length, 7);
+  const ids = registry.lock_cancellation_runtime_probes.map(p => p.id);
+  assert.equal(new Set(ids).size, 7);
+  for (const p of registry.lock_cancellation_runtime_probes) {
+    assert.ok(p.assertions?.length >= 3, p.id);
+    assert.ok(p.action, p.id);
+    assert.ok(p.given?.length >= 1, p.id);
+  }
+  const active = registry.lock_cancellation_runtime_probes.find(p => p.id === 'active_guard_cancel');
+  assert.deepEqual(active.required_order, [
+    'A_LOCK_CLAIM',
+    'A_CANCEL_REQUEST',
+    'A_SAFE_POINT_UNWIND',
+    'A_LOCK_RELEASE',
+    'B_LOCK_CLAIM',
+    'A_PHYSICAL_RETIRE',
+  ]);
 });
