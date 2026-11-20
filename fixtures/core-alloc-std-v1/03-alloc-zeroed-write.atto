@@ -1,7 +1,7 @@
 import module region from pkg "alloc.byte_region";
 
 pub fnc main(): int throws Error {
-  let bytes = region.ByteRegion.allocate_zeroed(4);
+  val mut bytes = region.ByteRegion.allocate_zeroed(4);
   bytes.write_byte(3, 255);
   return bytes.read_byte(0) eq 0 && bytes.read_byte(3) eq 255 ? 1 : 0;
 }
