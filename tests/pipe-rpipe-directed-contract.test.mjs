@@ -57,6 +57,20 @@ test('operator boundaries and receipt obligations reject inferred duplex or sile
   assert.equal(contract.operator_edges.functional_forward, '|>');
   assert.equal(contract.operator_edges.functional_reverse, '<|');
   const byId = new Map(contract.cases.map(v => [v.id, v]));
+  // Derive DATA edges from written stage indices. This checks the contract,
+  // not a compiler result or a running guest.
+  for (const entry of contract.cases.filter(v=>v.expect==='accept_typechecked_graph')) {
+    assert.ok(entry.lexical_stages?.length >= 2);
+    assert.ok(['pipe','rpipe'].includes(entry.operator));
+    const order = entry.operator === 'rpipe'
+      ? [...entry.lexical_stages].reverse()
+      : [...entry.lexical_stages];
+    const edges = order.slice(0,-1).map((source,i)=>({
+      source, sink:order[i+1], payload:'int',
+    }));
+    assert.deepEqual(edges, entry.expected_data_edges,
+      entry.id + ': lexical normalization must preserve DATA edges');
+  }
   // A reverse-written chain must not be reported as backwards DATA flow.
   assert.deepEqual(
     byId.get('actor-forward').expected_data_edges,
