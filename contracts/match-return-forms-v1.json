@@ -369,9 +369,62 @@
         "full_tree_sha_verified": true,
         "source_blobs_verified": 46,
         "run_id": 44662545614,
-        "status": "IN_PROGRESS"
+        "status": "SUCCESS",
+        "conclusion": "SUCCESS",
+        "linux_job_id": 136043982286,
+        "artifact_id": 14596208271,
+        "artifact_sha256": "076bfa178c6730b2b6451068389a8b56a7e40f10ba9544afa2595f85e8a94d0c"
       },
-      "compiled_guest_results": "NOT_YET_CERTIFIED"
+      "compiled_guest_results": {
+        "status": "PASS_EXACT_ORIGINAL_SCOPED_CORECLR_NATIVEAOT",
+        "suite": "source-compiled Atto direct CIL, explicit trusted stdout grant",
+        "canonical": [
+          {
+            "id": "return-block",
+            "status": "PASS_EXECUTED_GUEST",
+            "stdout": "2\n2\n",
+            "stderr": "",
+            "coreclr_exit": 0,
+            "nativeaot_exit": 0
+          },
+          {
+            "id": "caret-block",
+            "status": "PASS_EXECUTED_GUEST",
+            "stdout": "2\n2\n",
+            "stderr": "",
+            "coreclr_exit": 0,
+            "nativeaot_exit": 0
+          },
+          {
+            "id": "nonexhaustive-guard",
+            "status": "PASS_REJECTED_NO_ARTIFACT",
+            "diagnostic": "E_MATCH",
+            "no_guest": true
+          },
+          {
+            "id": "fallthrough-block",
+            "status": "PASS_REJECTED_NO_ARTIFACT",
+            "diagnostic": "E_RETURN",
+            "no_guest": true
+          }
+        ],
+        "no_stdio_grant": {
+          "status": "PASS_DENIED_NO_ARTIFACT",
+          "diagnostic": "E_PERMISSION",
+          "cases": 2
+        },
+        "extra_stdio_negatives": {
+          "status": "PASS_REJECTED_NO_ARTIFACT",
+          "passed": 6,
+          "failed": 0
+        },
+        "subject_call_scalar": {
+          "status": "PASS_EXECUTED_GUEST",
+          "coreclr_exit": 42,
+          "nativeaot_exit": 42
+        }
+      },
+      "caveat": "Not TenantVM stdout-capability isolation, not all .NET libraries, and not the other independent compilers; top-level backend status remains NOT_EXECUTED for broader runtime profile"
     }
   },
   "backends": {
