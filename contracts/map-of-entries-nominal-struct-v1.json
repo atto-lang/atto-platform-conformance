@@ -1,0 +1,566 @@
+{
+  "schema_version": 1,
+  "contract": "atto-map-of-entries-nominal-struct-v1",
+  "status": "TARGET_NOT_EXECUTED",
+  "spec": "https://github.com/atto-lang/atto-spec/pull/130",
+  "related": [
+    "https://github.com/atto-lang/atto-source.rs/pull/429",
+    "https://github.com/atto-lang/atto-platform-conformance/pull/116"
+  ],
+  "evidence_policy": "PASS requires exact compiler/fixture SHA, compiled guest for accepts, no artifact for rejects, ownership and TenantVM checks. The frozen const Map and variable Entry fixtures are target features NOT supported by the bounded Rust guest.",
+  "backend_status": {
+    "java": "not_executed",
+    "llvm": "not_executed",
+    "wasm-independent": "not_executed",
+    "forge": "not_executed",
+    "net": "not_executed",
+    "cranelift": "not_executed",
+    "rs-browser-wasm": "not_executed",
+    "js": "not_executed",
+    "hdl": "not_executed",
+    "atto": "not_executed",
+    "realtime": "not_executed"
+  },
+  "cases": [
+    {
+      "id": "map_entries_explicit_42",
+      "expect": "accept",
+      "expected_exit": 42,
+      "fixture": "fixtures/map-entries-struct/pass/map_entries_explicit_42.atto",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "map_entries_entry_of_42",
+      "expect": "accept",
+      "expected_exit": 42,
+      "fixture": "fixtures/map-entries-struct/pass/map_entries_entry_of_42.atto",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "map_entries_mixed_42",
+      "expect": "accept",
+      "expected_exit": 42,
+      "fixture": "fixtures/map-entries-struct/pass/map_entries_mixed_42.atto",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "map_entries_inferred_42",
+      "expect": "accept",
+      "expected_exit": 42,
+      "fixture": "fixtures/map-entries-struct/pass/map_entries_inferred_42.atto",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "map_entries_typed_context_42",
+      "expect": "accept",
+      "expected_exit": 42,
+      "fixture": "fixtures/map-entries-struct/pass/map_entries_typed_context_42.atto",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "map_entries_empty_42",
+      "expect": "accept",
+      "expected_exit": 42,
+      "fixture": "fixtures/map-entries-struct/pass/map_entries_empty_42.atto",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "map_entries_const_42",
+      "expect": "accept",
+      "expected_exit": 42,
+      "fixture": "fixtures/map-entries-struct/pass/map_entries_const_42.atto",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "map_entries_variable_42",
+      "expect": "accept",
+      "expected_exit": 42,
+      "fixture": "fixtures/map-entries-struct/pass/map_entries_variable_42.atto",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "struct_named_42",
+      "expect": "accept",
+      "expected_exit": 42,
+      "fixture": "fixtures/map-entries-struct/pass/struct_named_42.atto",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "struct_permuted_42",
+      "expect": "accept",
+      "expected_exit": 42,
+      "fixture": "fixtures/map-entries-struct/pass/struct_permuted_42.atto",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "struct_distinct_nominal_42",
+      "expect": "accept",
+      "expected_exit": 42,
+      "fixture": "fixtures/map-entries-struct/pass/struct_distinct_nominal_42.atto",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "struct_explicit_record_copy_42",
+      "expect": "accept",
+      "expected_exit": 42,
+      "fixture": "fixtures/map-entries-struct/pass/struct_explicit_record_copy_42.atto",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "map_entries_flat_pairs",
+      "expect": "reject",
+      "expected_error": "E_UNSUPPORTED",
+      "fixture": "fixtures/map-entries-struct/fail/map_entries_flat_pairs.atto",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "map_entries_pair_not_entry",
+      "expect": "reject",
+      "expected_error": "E_TYPE",
+      "fixture": "fixtures/map-entries-struct/fail/map_entries_pair_not_entry.atto",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "map_entries_wrong_key",
+      "expect": "reject",
+      "expected_error": "E_TYPE",
+      "fixture": "fixtures/map-entries-struct/fail/map_entries_wrong_key.atto",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "map_entries_wrong_value",
+      "expect": "reject",
+      "expected_error": "E_TYPE",
+      "fixture": "fixtures/map-entries-struct/fail/map_entries_wrong_value.atto",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "map_entries_duplicate",
+      "expect": "reject",
+      "expected_error": "E_DUPLICATE",
+      "fixture": "fixtures/map-entries-struct/fail/map_entries_duplicate.atto",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "map_entries_signed_zero",
+      "expect": "reject",
+      "expected_error": "E_DUPLICATE",
+      "fixture": "fixtures/map-entries-struct/fail/map_entries_signed_zero.atto",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "map_entries_type_conflict",
+      "expect": "reject",
+      "expected_error": "E_TYPE",
+      "fixture": "fixtures/map-entries-struct/fail/map_entries_type_conflict.atto",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "map_entries_uninferred_empty",
+      "expect": "reject",
+      "expected_error": "E_TYPE_INFERENCE",
+      "fixture": "fixtures/map-entries-struct/fail/map_entries_uninferred_empty.atto",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "struct_missing_field",
+      "expect": "reject",
+      "expected_error": "E_SHAPE",
+      "fixture": "fixtures/map-entries-struct/fail/struct_missing_field.atto",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "struct_extra_field",
+      "expect": "reject",
+      "expected_error": "E_SHAPE",
+      "fixture": "fixtures/map-entries-struct/fail/struct_extra_field.atto",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "struct_duplicate_field",
+      "expect": "reject",
+      "expected_error": "E_DUPLICATE",
+      "fixture": "fixtures/map-entries-struct/fail/struct_duplicate_field.atto",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "struct_wrong_field_type",
+      "expect": "reject",
+      "expected_error": "E_TYPE",
+      "fixture": "fixtures/map-entries-struct/fail/struct_wrong_field_type.atto",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "struct_quoted_label",
+      "expect": "reject",
+      "expected_error": "E_SYNTAX",
+      "fixture": "fixtures/map-entries-struct/fail/struct_quoted_label.atto",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "struct_record_implicit_cast",
+      "expect": "reject",
+      "expected_error": "E_TYPE",
+      "fixture": "fixtures/map-entries-struct/fail/struct_record_implicit_cast.atto",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "struct_nominal_cross_assign",
+      "expect": "reject",
+      "expected_error": "E_TYPE",
+      "fixture": "fixtures/map-entries-struct/fail/struct_nominal_cross_assign.atto",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    }
+  ]
+}

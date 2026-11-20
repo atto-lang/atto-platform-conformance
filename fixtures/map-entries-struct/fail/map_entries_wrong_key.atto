@@ -1,0 +1,1 @@
+pub fnc main(): int {val m=Map.of_entries<int,bool>("5" => true);return 0;}

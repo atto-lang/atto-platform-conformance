@@ -1,0 +1,13 @@
+define struct Point as
+  int x;
+  int y;
+end
+define struct Position as
+  int x;
+  int y;
+end
+pub fnc main(): int {
+  val Point p = Point{x:40,y:2};
+  val Position q = Position{x:40,y:2};
+  return p.x+q.y;
+}
