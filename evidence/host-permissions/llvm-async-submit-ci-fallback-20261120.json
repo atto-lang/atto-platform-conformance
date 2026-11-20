@@ -1,0 +1,103 @@
+{
+  "schema": "atto.host_permissions.security_review.ci_fallback.v1",
+  "event_date": "2026-11-20",
+  "classification": "LOCAL_HOST_MOCK_TEST_ONLY_NO_COMPILED_ATTO_GUEST",
+  "source": {
+    "repo": "atto-lang/atto-source.llvm",
+    "pr": "https://github.com/atto-lang/atto-source.llvm/pull/62",
+    "observed_commit": "acdc52b9a53bbb87f79e5c57c8b118ce4d86bb50",
+    "exact_git_blob_shas": {
+      "native/src/host_fs_async.c": "0c2b2bf4c5246844473d5146a278a634457bf6fb",
+      "native/tests/host_fs_async_contention_test.c": "7fcfc32ee0ccc14c56a5e915a60b04c3fabeb37f"
+    }
+  },
+  "security_fixes": [
+    "Eliminate remaining blocking pthread_mutex_lock from actor-facing submit path by using trylock",
+    "Return EAGAIN and ticket zero when service mutex is busy",
+    "Preflight free ticket before allocating up-to-1MiB guest-supplied payload",
+    "Revalidate ticket capacity under second trylock after host-owned input snapshot",
+    "Retain previously implemented nonparking polling and cancel semantics"
+  ],
+  "local_verification": {
+    "platform": "Linux host-only synthetic/mock broker",
+    "toolchains": [
+      "GCC 14.2.0",
+      "Clang 17.0.0"
+    ],
+    "optimizations": [
+      "O1",
+      "O2"
+    ],
+    "flags": [
+      "-std=c11",
+      "-Wall",
+      "-Wextra",
+      "-Wconversion",
+      "-Werror",
+      "-pedantic",
+      "-pthread",
+      "-fsanitize=address,undefined",
+      "-fno-omit-frame-pointer"
+    ],
+    "existing_async_mock_test_runs": 4,
+    "new_deterministic_contention_test_runs": 4,
+    "new_contention_stress_repetitions": 120,
+    "all_observed_executions_passed": true,
+    "markers": [
+      "ATTO_FS_ASYNC_HOST_ONLY_TEST_PASS",
+      "ATTO_FS_ASYNC_SUBMIT_CONTENTION_HOST_ONLY_PASS"
+    ],
+    "verified_source_and_test_git_blob_shas": true,
+    "scope_limits": [
+      "Not a real Linux FS broker execution at current commit",
+      "Not proof of an authentic TenantVM actor turn",
+      "Does not prove signed loader integration",
+      "No compiled Atto guest was executed",
+      "Internal one-TU test deliberately mocks broker responses"
+    ]
+  },
+  "alternate_private_ci_probes": [
+    {
+      "repository": "agent-pontifex/atto-ci",
+      "branch": "ci/llvm-fs-security-probe-274d183f-20261120",
+      "carrier_commit": "8c932e1a619a1515f35c8b3ce89918a03a23fa09",
+      "mirror_source_blob": "9631a901af2e75bf7648047152e49fc46fd1ed16",
+      "source_blob_verified_in_carrier": true,
+      "workflow_run": 44681945053,
+      "linux_steps": 0,
+      "macos_steps": 0,
+      "outcome": "FAILED_BEFORE_ANY_TEST_STEPS",
+      "note": "Earlier source state; minimum one-file token-free blob probe, not entire source tree"
+    },
+    {
+      "repository": "athlet-o/atto-ci",
+      "branch": "ci/llvm-fs-security-probe-169d72ef-20261120",
+      "carrier_commit": "6abbb0e3cfaf6a9ca4f79ccdf3efc87b92caedb1",
+      "mirror_source_blob": "0c2b2bf4c5246844473d5146a278a634457bf6fb",
+      "source_blob_verified_in_carrier": true,
+      "workflow_run": 44682513534,
+      "linux_steps": 0,
+      "macos_steps": 0,
+      "outcome": "FAILED_BEFORE_ANY_TEST_STEPS",
+      "note": "Updated source state; minimum one-file token-free blob probe, not entire source tree"
+    }
+  ],
+  "source_ci": {
+    "run_id": 44682696473,
+    "job": "host-security-regression",
+    "head": "acdc52b9a53bbb87f79e5c57c8b118ce4d86bb50",
+    "steps": 0,
+    "outcome": "FAILED_BEFORE_ANY_TEST_STEPS"
+  },
+  "runner_admission_conclusion": "All eight previously approved alternate carriers have most recent zero-step run failures. A positive current usable minutes/budget was NOT confirmed; no complete private branch was mirrored into an unverified carrier.",
+  "unresolved_release_gates": [
+    "Stepful exact-current-head real Linux broker/async integration test",
+    "Stepful sealed signed-loader and native CMake suite",
+    "Enforce cryptographically signed artifact ceiling and independently authenticated actor turn",
+    "Compile real Atto std.fs guest into ABI-v5 host calls and prove allowed/denied side effects",
+    "Verify independent in-process hostile-native syscall and memory isolation",
+    "Review optional flow-control of host memory allocation on actor carrier"
+  ],
+  "backend_guest_permission_conformance": "NOT_EXECUTED",
+  "merged": false
+}
