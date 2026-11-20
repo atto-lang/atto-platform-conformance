@@ -14,6 +14,16 @@ test('register all backends without inventing guest evidence', () => {
   assert.equal(c.status, 'TARGET_NOT_EXECUTED');
   assert.equal(c.source_policy, 'CANONICAL_ATTO_BYTES_ONLY');
   assert.equal(c.release_authorized, false);
+  assert.equal(c.preview_evidence.status, 'RESTRICTED_FORGE_GUEST_LOCAL_ONLY');
+  assert.equal(c.preview_evidence.canonical_library_compiled, false);
+  const receipt = JSON.parse(read(c.preview_evidence.path));
+  assert.equal(receipt.status, 'RESTRICTED_GUEST_EXECUTED_LOCAL_NOT_CANONICAL_LIBRARY');
+  assert.equal(receipt.compiler_production_profile, false);
+  assert.equal(receipt.experimental_host_profile_required, true);
+  assert.equal(receipt.canonical_atto_module_bodies_compiled, false);
+  assert.equal(receipt.tenant_vm_isolation_proven, false);
+  assert.equal(receipt.backend_parity_certified, false);
+  assert.equal(receipt.release_authorized, false);
   assert.deepEqual(c.layers, ['core','alloc','std']);
   assert.deepEqual(c.backends.map(x=>x.backend), ids);
   for(const b of c.backends){
