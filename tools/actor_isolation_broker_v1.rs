@@ -2,6 +2,7 @@
 //! a trusted broker implementation. All inputs in a production runtime must be
 //! authenticated by the scheduler/broker, not taken from source-supplied IDs.
 #![forbid(unsafe_code)]
+#![cfg_attr(not(test), allow(dead_code))]
 use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -24,7 +25,7 @@ struct AuthenticatedDelegation {
     trusted_grant: bool,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum Denial { NoAuthority, StaleIdentity, Escalation, InFlight, NoCapacity, Closed, NotOwner }
+enum Denial { NoAuthority, StaleIdentity, Escalation, NoCapacity, Closed, NotOwner }
 fn attenuate_ref(reference: ActorRefAuthority, request: AuthenticatedDelegation)
     -> Result<ActorRefAuthority, Denial> {
     if !request.trusted_grant || !reference.can_delegate
@@ -85,7 +86,7 @@ impl Mailman {
             return Err(Denial::StaleIdentity);
         }
         if self.closed { return Err(Denial::Closed); }
-        if self.inbox_count + self.reservation_count() >= self.capacity {
+        if self.inbox_count.saturating_add(self.reservation_count()) >= self.capacity {
             return Err(Denial::NoCapacity);
         }
         match self.payloads.get_mut(&payload_id) {
