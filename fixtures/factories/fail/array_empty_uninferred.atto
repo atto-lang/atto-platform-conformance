@@ -1,0 +1,4 @@
+pub fnc main(): int {
+  val a = Array.of();
+  return 0;
+}
