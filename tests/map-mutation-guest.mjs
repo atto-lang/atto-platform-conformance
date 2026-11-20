@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const registry = JSON.parse(readFileSync(join(root, 'contracts/map-mutation-lookup-v1.json'), 'utf8'));
-assert.equal(registry.cases.length, 15, 'review runner against updated registry');
+assert.equal(registry.cases.length, 29, 'review runner against updated registry');
 const compiler = process.env.ATTOC_BIN;
 const sourceSha = process.env.ATTO_SOURCE_SHA;
 assert.ok(compiler && compiler.startsWith('/'), 'ATTOC_BIN must be an absolute native compiler path');
