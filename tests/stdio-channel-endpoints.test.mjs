@@ -36,9 +36,13 @@ test('all source fixtures exist; negative diagnostics remain explicit', () => {
   }
 });
 
-test('checked echo covers success, empty item, EOF, encoding and framing', () => {
+test('checked echo and unary << / readch aliases preserve checked nested result', () => {
   const entry = c.required_cases.find(x => x.id === 'checked_echo');
+  const alias = c.required_cases.find(x => x.id === 'checked_echo_readch_alias');
   assert.equal(entry.kind, 'guest-pass');
+  assert.equal(alias.kind, 'guest-pass');
+  assert.equal(alias.equivalent_to, 'checked_echo');
+  assert.deepEqual(entry.runs, alias.runs);
   assert.deepEqual(entry.runs.map(x => x.id),
     ['one_line','empty_line','eof','unterminated','crlf','unicode','nul']);
   assert.equal(entry.runs[0].stdout, 'Echo the next input item:hello');
@@ -47,10 +51,17 @@ test('checked echo covers success, empty item, EOF, encoding and framing', () =>
   assert.equal(entry.runs[5].stdout, 'Echo the next input item:é💡');
   assert.equal(entry.runs[6].stdout, 'Echo the next input item:a' + String.fromCharCode(0) + 'b');
   const source = text(entry.path);
-  assert.match(source, /readch input/);
-  assert.match(source, /writech output, item/);
-  assert.match(source, /on Ok\(None\)/);
-  assert.match(source, /on Err\(_\)/);
+  const equivalent = text(alias.path);
+  assert.match(source, /on Ok\(_\) -> match << input over/);
+  assert.match(equivalent, /on Ok\(_\) -> match readch input over/);
+  for(const sample of [source,equivalent]) {
+    assert.match(sample,/on Ok\(line\) -> match line over/);
+    assert.match(sample,/on Some\(item\) -> match writech output, item/);
+    assert.match(sample,/on None -> 11/);
+    assert.match(sample,/on Err\(_\) -> 14/);
+  }
+  assert.deepEqual(c.data_contract.checked_read_spellings,['readch input','<< input']);
+  assert.deepEqual(c.data_contract.checked_success_discard,['on Ok','on Ok(_)']);
 });
 
 test('unsafe preview is required to be rejected, not silently unwrapped', () => {
