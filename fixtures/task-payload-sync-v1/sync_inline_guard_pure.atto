@@ -1,0 +1,7 @@
+pub susp fnc main(): int {
+  val lock = new Mutex<int>(41);
+  using await lock.lock_async() as guard {
+    val int increment = sync task<int> { return 1; };
+    return guard.value + increment;
+  }
+}
