@@ -1,0 +1,168 @@
+{
+  "schema": "atto.conformance.mutex-async-lease.v1",
+  "version": 1,
+  "status": "TARGET_SOURCE_ONLY_NOT_EXECUTED",
+  "authority": "https://github.com/atto-lang/atto-spec/blob/main/language/mutex-async-lease-and-suspension-v1.md",
+  "fixtures_dir": "fixtures/mutex-async-lease-v1",
+  "source_only_warning": "No backend may report PASS from fixture integrity or accepted syntax; the guest must be compiled and executed and all negatives rejected without artifacts.",
+  "cases": [
+    {
+      "id": "fast-implicit-using",
+      "kind": "compiled_guest_positive",
+      "source": "implicit-await-fast-path.atto",
+      "expected_stdout": "1\n",
+      "expected_exit": 0,
+      "expected_runtime_suspensions": 0
+    },
+    {
+      "id": "fast-explicit-using",
+      "kind": "compiled_guest_positive",
+      "source": "explicit-await-fast-path.atto",
+      "expected_stdout": "1\n",
+      "expected_exit": 0,
+      "expected_runtime_suspensions": 0
+    },
+    {
+      "id": "lazy-unawaited",
+      "kind": "compiled_guest_positive",
+      "source": "lazy-unawaited-task.atto",
+      "expected_exit": 0,
+      "expected_acquisitions": 0
+    },
+    {
+      "id": "reject-await-effect",
+      "kind": "compile_negative",
+      "source": "negative-await-effect.atto",
+      "expected_diagnostic": "E_AWAIT_EFFECT",
+      "guest_artifact": false
+    },
+    {
+      "id": "reject-guard-suspend",
+      "kind": "compile_negative",
+      "source": "negative-guard-suspend.atto",
+      "expected_diagnostic": "E_GUARD_SUSPEND",
+      "guest_artifact": false
+    },
+    {
+      "id": "reject-guard-escape",
+      "kind": "compile_negative",
+      "source": "negative-guard-escape.atto",
+      "expected_diagnostic": "E_GUARD_ESCAPE",
+      "guest_artifact": false
+    },
+    {
+      "id": "contention-nonparking",
+      "kind": "runtime_probe",
+      "expected": "On one scheduler carrier, mutex waiter parks only logical continuation; independently runnable task progresses; FIFO/queue bounds and no busy spin",
+      "evidence_required": true
+    },
+    {
+      "id": "cancellation-grant-race",
+      "kind": "runtime_probe",
+      "expected": "Exactly one of cancellation or lease grant is terminal; no orphan waiter or double release; guard acquired on winning path is disposed exactly once",
+      "evidence_required": true
+    },
+    {
+      "id": "return-throw-raise-cleanup",
+      "kind": "runtime_probe",
+      "expected": "One permit cleanup for each supported normal or exceptional exit, not at suspension while waiting",
+      "evidence_required": true
+    },
+    {
+      "id": "reentrancy-and-replay",
+      "kind": "runtime_probe",
+      "expected": "Recursive current-continuation acquisition and stale generation/lease token reuse fail closed",
+      "evidence_required": true
+    },
+    {
+      "id": "actor-tenant-isolation",
+      "kind": "runtime_probe",
+      "expected": "Local Mutex handle and guard cannot cross actor/TenantVM boundary; unauthorized SharedMutex cannot escape security policy",
+      "evidence_required": true
+    },
+    {
+      "id": "sync-lock-would-block",
+      "kind": "runtime_probe",
+      "expected": "lock() never parks carrier; contention reports typed would-block; try_lock yields None",
+      "evidence_required": true
+    }
+  ],
+  "backend_evidence": {
+    "atto-source.java": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_evidence_url": null,
+      "diagnostics_evidence_url": null
+    },
+    "atto-source.llvm": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_evidence_url": null,
+      "diagnostics_evidence_url": null
+    },
+    "atto-source.wasm": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_evidence_url": null,
+      "diagnostics_evidence_url": null
+    },
+    "atto-source.forge": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_evidence_url": null,
+      "diagnostics_evidence_url": null
+    },
+    "atto-source.net": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_evidence_url": null,
+      "diagnostics_evidence_url": null
+    },
+    "atto-source.rs": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_evidence_url": null,
+      "diagnostics_evidence_url": null
+    },
+    "atto-source.js": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_evidence_url": null,
+      "diagnostics_evidence_url": null
+    },
+    "atto-source.cranelift": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_evidence_url": null,
+      "diagnostics_evidence_url": null
+    },
+    "atto-source.hdl": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_evidence_url": null,
+      "diagnostics_evidence_url": null
+    },
+    "atto-source.atto": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_evidence_url": null,
+      "diagnostics_evidence_url": null
+    }
+  },
+  "evidence_required": [
+    "exact_git_source_sha_and_tree",
+    "compiler_git_sha",
+    "real_compiled_guest_artifact_sha",
+    "executed_stdout_and_exit",
+    "negative_no_artifact",
+    "scheduler_nonparking_runtime_trace",
+    "guard_lifecycle_race_tests",
+    "tenant_vm_isolation",
+    "nonzero_step_ci_url"
+  ],
+  "related_legacy": [
+    "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/19",
+    "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/56",
+    "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1351"
+  ]
+}
