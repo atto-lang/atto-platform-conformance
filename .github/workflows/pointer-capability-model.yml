@@ -6,6 +6,8 @@ on:
       - 'contracts/pointer-ref-local-v1.json'
       - 'fixtures/pointer-ref-local-v1/**'
       - 'tests/pointer_ref_local_v1.test.mjs'
+      - 'tests/pointer_local_lease_oracle_v1.rs'
+      - 'docs/POINTER_AOT_PARITY_GATES_V1.md'
       - '.github/workflows/pointer-capability-model.yml'
   workflow_dispatch:
 permissions:
@@ -36,6 +38,12 @@ jobs:
       - name: Verify pointer-local rt/bang fixture registry (SOURCE ONLY)
         run: |
           node --test tests/pointer_ref_local_v1.test.mjs
+      - name: Install pinned Rust toolchain for source-free lease model
+        run: rustup toolchain install 1.85.1 --profile minimal
+      - name: Execute Rust local-lease oracle (HOST ONLY, no Atto guest)
+        run: |
+          rustc +1.85.1 --edition=2021 -D warnings --test tests/pointer_local_lease_oracle_v1.rs -o "$RUNNER_TEMP/atto_local_lease_oracle_v1"
+          "$RUNNER_TEMP/atto_local_lease_oracle_v1" --nocapture
       - name: Scope evidence accurately
         run: |
-          echo "SOURCE_FREE_MODEL_AND_SOURCE_ONLY_FIXTURE_CHECKS; No AttoLang compiler, guest Pointer<T>, native AOT artifact or backend parity was exercised."
+          echo "SOURCE_FREE_CPP_AND_RUST_MODELS_AND_SOURCE_ONLY_FIXTURE_CHECKS; No AttoLang compiler, guest Pointer<T>, native AOT artifact or backend parity was exercised."

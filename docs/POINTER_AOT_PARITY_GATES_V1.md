@@ -2,6 +2,38 @@
 
 **Reference model only.** The C++20 model in models/pointer_capability_aot_v1.cpp is deliberately **not** AttoLang source, a compiler plugin, or a generated AttoLang native binary. Its host-language & and * operators are permitted **inside C++**; AttoLang must reject unary & and unary * for pointer manipulation. See atto-spec/language/pointer-aot-safety-v1.md in the related draft.
 
+## 2026-11-19: local-place reference alias audit, distinct from owned Pointer allocation
+
+The new [PRL-001..036 source fixture registry](../contracts/pointer-ref-local-v1.json)
+pins the exact `rt ref/deref/unref` and `rt ref + deref!/unref!` examples and
+checks 10 positive target runs (each expects 42) plus 26 negative compiler
+admission cases. Both are **TARGET_ONLY / NOT_EXECUTED** on all 11
+`atto-source.*` backends until actual compiler and guest receipts exist.
+
+Two visually identical `Pointer<int>` values must NOT be treated as equivalent
+authority: `rt ref` mints a **non-owning read lease** over an existing local;
+`Pointer.alloc<int>` returns an owning region capability in a separate
+experimental profile. The former cannot `close()`, `write_at()`, be copied,
+shared, serialized, or cast to `int`. Every `unref` consumes its individual
+handle, but never the underlying local. Two separately minted readonly handles
+may coexist; mutation and drop remain blocked until both are released.
+`CheckedRef<Class>` restoration is a third distinct operation family.
+
+Source-only `node --test tests/pointer_ref_local_v1.test.mjs` pins the two
+original files by **exact Git blob SHA**, checks unique paths, 36 case IDs and
+backend evidence slots, plus adversarial fixture contents.
+`rustc --test tests/pointer_local_lease_oracle_v1.rs` is an *independent host*
+state-machine oracle for alias equivalence, concurrent readers, actor/tenant
+authority, stale generation/ABA, overflow, uninitialized reads, cleanup paths
+and wrong owner rights. Neither test compiles `.atto` guest code or
+demonstrates LLVM/Graal/.NET/Forge AOT.
+
+**Mandatory promotion gate:** compiled `.atto` positive guest executions
+return 42 for every supported backend, and exact negative fixtures produce no
+executable guest artifact; capture each compiler SHA, source tree, output hash,
+actual executed job steps, native sanitizers and immutable receipt. A zero-step
+GitHub Actions failure is `NOT_EXECUTED`, never green.
+
 ## Audit status on 2026-11-15
 
 | Target | Evidence | Pointer<T> status |
