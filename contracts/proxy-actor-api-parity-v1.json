@@ -58,10 +58,10 @@
       "authenticated_transport_status": "NOT_EXECUTED",
       "native_aot_status": "NOT_EXECUTED",
       "guest_evidence": null,
-      "notes": "Java #44 now includes two restricted .atto source files compiled to Java in separate JVM processes via an injected trusted-host synchronous bridge. Four original sender-compiler/interface/fixture/test Git blobs compile and execute locally JDK21; output atomic CREATE_NEW+NOFOLLOW tested. Full Java M6/M10 two-process combined current-head JDK25 CI remains NOT_EXECUTED: private GitHub carrier jobs have zero steps. No canonical sender async ABI, verified TenantVM authorization or cross-backend parity.",
+      "notes": "Java #44 has unified M6 tickets + nonblocking M10 host selector gateway, restricted source-compiled sender/receiver. Eight exact source/test/fixture blobs pass independent local JDK21 compiler/IO/security tests, with a minimal M6 handler interface stub, not the actual runtime. Full M6/M10 two-process JDK25 source-specific carrier job still fails before any steps (latest 44683349821). All 24 canonical compiled guest gates remain NOT_EXECUTED.",
       "host_ticket_scope": "REAL_MAILBOX",
       "host_ticket_status": "CURRENT_HEAD_NOT_EXECUTED",
-      "host_ticket_pr_head_sha": "85023b83868e92032cc6abf79edbf7cecb87e695",
+      "host_ticket_pr_head_sha": "1fbce3245dd904d9c038f64e0734c281c9f0c09c",
       "host_ticket_ci": null,
       "host_ticket_previous_verified": {
         "source_head_sha": "e7dbc3f9f584f16c872af8858335767986ea9be8",
@@ -72,32 +72,45 @@
       "gateway_integration": {
         "kind": "EXPERIMENTAL_M10_SELECTOR_USES_M6_RUNTIME_ISSUED_TICKET",
         "status": "NOT_EXECUTED_CURRENT_HEAD",
-        "source_head_sha": "85023b83868e92032cc6abf79edbf7cecb87e695",
+        "source_head_sha": "1fbce3245dd904d9c038f64e0734c281c9f0c09c",
         "source_pr": "https://github.com/atto-lang/atto-source.java/pull/44",
         "prior_independent_m10_ci": "https://github.com/bait-bikes-test/atto-ci/actions/runs/44635718533",
         "blocked_attempts": [
           "https://github.com/bait-bikes-test/atto-ci/actions/runs/44660093745",
           "https://github.com/ores-stack/ores-stack-cli/actions/runs/44660323082",
           "https://github.com/ores-stack/ores-stack-cli/actions/runs/44662438767",
-          "https://github.com/ores-stack/ores-stack-cli/actions/runs/44662916007"
+          "https://github.com/ores-stack/ores-stack-cli/actions/runs/44662916007",
+          "https://github.com/canonical-cloud/atto-ci/actions/runs/44681862933",
+          "https://github.com/ores-stack/ores-stack-cli/actions/runs/44683349821"
         ],
-        "caveats": "Both consolidation attempts failed before any job steps (0); no compiled Atto sender, canonical authenticated transport or full guest parity."
+        "caveats": "Sixteen exact original source/test/fixture blobs are mirrored into a private alternate organization's temporary branch. The JDK25 integration job and independent runner-admission probe failed before any steps. This is NOT test execution; no canonical authenticated TenantVM IPC, compiler frontend or cross-backend guest parity."
       },
       "restricted_sender_local_evidence": {
-        "status": "LOCAL_JDK21_EXACT_FOUR_BLOBS_PASSED",
+        "status": "LOCAL_JDK21_EXACT_EIGHT_BLOBS_PASSED",
         "implementation": "EXPERIMENTAL_RESTRICTED_COMPILER_HOST_INJECTED_PROXY_NOT_CANONICAL_ASYNC",
-        "compiler_blob": "237ebb31b6eede0ca3cfa398839424c697fc3771",
+        "compiler_blob": "fd53ee8d4dc817cbde7fbbe577dcceca4683512c",
         "host_interface_blob": "7135a6c23ffd1a40abb348240899319e3fe95abb",
-        "test_blob": "c68890f886e3a40923180ece262af96df2be73ac",
+        "test_blob": "330f28b1713f554bffd9c52cdb3904392320213b",
         "fixture_blob": "57f122f708787a61e88e93f81cd14996e66757af",
         "tested_toolchain": "OpenJDK javac 21.0.12.1 --release 21 -Xlint:all,-try -Werror",
         "generated_class": "M10GeneratedSender",
         "local_test_marker": "M10_COMPILED_RESTRICTED_ATTO_SENDER_BROKER_AND_NEGATIVES=PASS",
         "limits": "Compiled Atto preview only. Host injected callback, not canonical parser/type checking, suspends lowering, TenantVM security or verified two-process IPC.",
-        "verified_ssh_free_blob_count": 4,
         "offline_test_script_sha": "46bebe944a4f8e91666b2529f94f7ea229cec396",
-        "tested_profile": "Exact four original Git blobs compiled and executed locally on JDK21 with -Werror; source injection, input symlink, dangling output symlink and output overwrite all rejected.",
-        "hardening_marker": "M10_SOURCE_SYMLINK_AND_OUTPUT_NOFOLLOW=PASS"
+        "tested_profile": "Exact eight original Git source/test/fixture blobs compiled with JDK21 -Werror in isolated temp classes: restricted Atto sender/receiver generate Java; host-injected sender, minimal host receive interface stub for receiver, typed i64 overflow, strict source grammar, symlink/CREATE_NEW, 4096-byte NOFOLLOW file descriptor and malformed UTF-8, real local UDS SO_PEERCRED/OS-owned dir. NO M6 runtime, full IPC or canonical guest execution in this local test.",
+        "hardening_marker": "M10_SOURCE_SYMLINK_AND_OUTPUT_NOFOLLOW=PASS",
+        "receiver_compiler_blob": "fe0c3a5b6e434cc22755cf0cb2e976a20b4c8ab1",
+        "receiver_test_blob": "4d9e1cda6a8e82fe0168cc8940cb961b40936ed2",
+        "receiver_fixture_blob": "1dac985dc038a8a3d96c9cfbaffdb01d90190cd4",
+        "os_peer_test_blob": "c3b1187eb689b11665ef51d5036354df90ee4e44",
+        "verified_blob_count": 8,
+        "local_test_markers": [
+          "M10_COMPILED_RESTRICTED_ATTO_SENDER_BROKER_AND_NEGATIVES=PASS",
+          "M10_SOURCE_BOUNDED_FD_UTF8_FAIL_CLOSED=PASS",
+          "M10_RECEIVER_SOURCE_FD_UTF8_AND_OUTPUT_NOFOLLOW=PASS",
+          "M10_RECEIVER_COMPILED_SCALAR_HANDLER_CHECKED_ARITHMETIC=PASS",
+          "M10_UDS_PEER_KERNEL_PRINCIPAL_NOT_USER_NAME_PROPERTY=PASS"
+        ]
       }
     },
     {
