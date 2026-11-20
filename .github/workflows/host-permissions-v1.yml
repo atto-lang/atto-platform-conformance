@@ -1,0 +1,35 @@
+name: Host permissions v1 contract oracle (host-only)
+on:
+  pull_request:
+    paths:
+      - "contracts/host-permissions-v1.tsv"
+      - "contracts/host-permissions-v1.json"
+      - "fixtures/host-permissions-v1/**"
+      - "tests/host-permissions-v1.rs"
+      - ".github/workflows/host-permissions-v1.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  reference-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Require exact requested head
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          git diff --exit-code -- .github/workflows/host-permissions-v1.yml tests/host-permissions-v1.rs contracts/host-permissions-v1.tsv
+      - name: Run reference vector assertions (NOT compiled guest evidence)
+        run: |
+          rustc --edition=2021 --test tests/host-permissions-v1.rs -o /tmp/atto-host-permissions-v1
+          /tmp/atto-host-permissions-v1 --nocapture
+      - name: State verification limit
+        run: |
+          echo "HOST_ONLY: Rust reference oracle tested; no Atto source was compiled or executed."
+          echo "Do not mark any backend guest execution PASSED from this job."
