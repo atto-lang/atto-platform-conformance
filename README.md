@@ -74,7 +74,9 @@ independent Java/LLVM/.NET/Wasm/Forge/Cranelift/JS backends remain
 
 [24 source-level cases](contracts/unsafe-blocks-v1.json) cover `unsafe { }`, explicit `unsafe fnc` call-site obligations, nested lexical scopes, misleading string/comment/Symbol/identifier tokens, denied untrusted TenantVM use, raw pointer/FFI grants, host authority, and suspension/lease escapes.
 
-`node --test tests/unsafe-blocks-v1.test.mjs` validates **registry integrity only**. Every listed backend is currently `not_executed`; this does NOT compile Atto sources, produce guest artifacts, or establish unsafe-call support. Cases containing proposed `RawPointer<T>`, native intrinsics and grants require ABI definitions before executable compiler parity can be claimed. The normative contract is [atto-spec unsafe v1](https://github.com/atto-lang/atto-spec/blob/feat/unsafe-block-contract-v1-20261119/language/unsafe-blocks-v1.md).
+`node --test tests/unsafe-blocks-v1.test.mjs` validates **registry integrity only**. **Scoped host-only receipt:** the three SHA-matched Rust lexer/diagnostic/unsafe-preflight source files compiled in a private isolated Rust crate and five host structural tests passed ([run 44656809437](https://github.com/usa-acc/atto-ci/actions/runs/44656809437), [machine-readable receipt](evidence/unsafe/rs-host-structural-g1-20261119.json)). The full Atto compiler, production parser/import linkage, guest execution, and independent backend parity remain **NOT_EXECUTED**. This does not promote any case in the guest verification matrix.
+
+Every listed backend is currently `not_executed`; this does NOT compile Atto sources, produce guest artifacts, or establish unsafe-call support. Cases containing proposed `RawPointer<T>`, native intrinsics and grants require ABI definitions before executable compiler parity can be claimed. The normative contract is [atto-spec unsafe v1](https://github.com/atto-lang/atto-spec/blob/feat/unsafe-block-contract-v1-20261119/language/unsafe-blocks-v1.md).
 
 ## Validation
 
