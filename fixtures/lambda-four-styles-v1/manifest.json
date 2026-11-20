@@ -170,7 +170,7 @@
   "backend_tracking": {
     "java": "https://github.com/atto-lang/atto-source.java/pull/477",
     "llvm": "https://github.com/atto-lang/atto-source.llvm/issues/185",
-    "rs": "https://github.com/atto-lang/atto-source.rs/pull/300",
+    "rs": "https://github.com/atto-lang/atto-source.rs/pull/303",
     "wasm": "https://github.com/atto-lang/atto-source.wasm/issues/12",
     "net": "https://github.com/atto-lang/atto-source.net/issues/121",
     "forge": "https://github.com/atto-lang/atto-source.forge/issues/108",
@@ -190,6 +190,6 @@
   "implementation_notes": {
     "js": "Draft PR #76 adds closed direct-call noncapturing const-lambda ESM profile. Standalone local Node v22 source-emitter tests 2/2 passed; exact-head repository CI/guest integration NOT_EXECUTED. No full closure/parity claim.",
     "java": "Draft PR #477 now includes actual positive/negative guest fixtures and source SHA checks. Current-head execution NOT_EXECUTED.",
-    "rs": "Draft PR #300 includes all four parsed and compiler-positive cases. Current-head Rust/Wasm compiler and guest execution NOT_EXECUTED."
+    "rs": "Draft #303 is the direct closed local const-v callable/guest-fixture implementation candidate (all eight source fixtures mirrored into executable Wasm runner). Draft #300 adds overlapping typed parameter and const fnc/named-call work; reconcile before merge. New exact-head Cargo and guest execution NOT_EXECUTED; no broader first-class closure parity claim."
   }
 }
