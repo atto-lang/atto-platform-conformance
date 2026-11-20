@@ -1,0 +1,91 @@
+{
+  "schema": "atto.host_fs_security.host_dispatch_exact_tree.v1",
+  "date_utc": "2026-11-20",
+  "execution_status": "HOST_ONLY_EXECUTED",
+  "source": {
+    "repository": "atto-lang/atto-source.llvm",
+    "draft_pr": 62,
+    "branch": "security/linux-host-fs-broker-v1",
+    "head_commit": "a0bf964157b858bd8020cf3ae28825e4adc890ca",
+    "git_root_tree": "0f7c624d9f82a5a6d9fdf8ec42b3fc4bdd83fed6",
+    "blobs": 240,
+    "total_tree_entries": 285,
+    "truncated": false
+  },
+  "carrier": {
+    "repository": "opto-sync/atto-ci",
+    "private": true,
+    "branch": "ci/fs-host-dispatch-asan-llvm-a0bf9641-20261120",
+    "snapshot_commit": "1a701b213f4a0953077c6a890332acd9cb6b05ea",
+    "snapshot_root_tree": "0f7c624d9f82a5a6d9fdf8ec42b3fc4bdd83fed6",
+    "separate_test_harness_commit": "cfe1f31049cd3f06eaaaae77d7462a910fb1d0e3",
+    "exact_whole_tree_sha_match": true,
+    "source_checkout_across_organizations": false,
+    "credentials_persisted": false
+  },
+  "executed": {
+    "run_id": 44831611937,
+    "job_id": 136617663909,
+    "url": "https://github.com/opto-sync/atto-ci/actions/runs/44831611937",
+    "conclusion": "success",
+    "real_steps_executed": true,
+    "whole_source_tree_check": "passed",
+    "gcc_clang_O1_O2_ASan_UBSan_native_matrix": "passed",
+    "native_fs_ctests": {
+      "passed": 8,
+      "failed": 0
+    },
+    "signed_loader_host_ctest": {
+      "passed": 1,
+      "failed": 0
+    },
+    "scheduler_turn_lifecycle_and_dispatch_host_ctests": {
+      "passed": 3,
+      "failed": 0
+    },
+    "separate_asan_ubsan_cpp_fs_dispatch_ctest": {
+      "passed": 1,
+      "failed": 0
+    },
+    "tenant_vm_runtime_smoke": {
+      "passed": 3,
+      "failed": 0
+    }
+  },
+  "implementation": {
+    "files": [
+      "src/main/cpp/oreslang/runtime/TenantVmFsHostDispatch.hpp",
+      "src/main/cpp/oreslang/runtime/TenantVmIoAbiV5.h",
+      "tests/tenant-vm/fs_host_dispatch_test.cpp",
+      "tests/tenant-vm/CMakeLists.txt",
+      ".github/workflows/native-host-fs-broker.yml"
+    ],
+    "properties": [
+      "Host-only ABI-v5-shaped submit_read/submit_write/poll/cancel to one actor-owned async service",
+      "Derives service-owner identity from trusted host tenant_id and bound VM/actor generation, actor ref and separate incarnation",
+      "Requires matching bound and freshly supplied trusted-live scheduler turn witness for every operation; does NOT authenticate actual scheduler TLS itself",
+      "Validates 32-bit offset and length arithmetic in 64 bits against actor region and cage window",
+      "Only publishes reads into actor-private scratch; path and write payload are copied into host-owned async job buffers",
+      "Rejects zero/oversized paths, embedded NUL, malformed traversal, cross-actor and cross-incarnation operations",
+      "No guest ABI v5 callback table is installed; all calls in this test originate in a host C++ fixture",
+      "Distinct candidate v5 statuses WOULD_BLOCK on submit contention and ALREADY_DONE when cancel observes completion",
+      "Explicit nonblocking ASan+UBSan host adapter build; underlying allocator and broker scheduling are not proven hard-real-time"
+    ]
+  },
+  "denied_or_unexecuted": {
+    "compiled_atto_source_fs_guest": "NOT_EXECUTED",
+    "actual_scheduler_tls_to_guest_callback_install": "NOT_EXECUTED",
+    "native_guest_memory_control_flow_syscall_confinement": "NOT_EXECUTED",
+    "production_signed_trust_store": "NOT_EXECUTED",
+    "signed_dependency_closure": "NOT_EXECUTED",
+    "cross_backend_guest_fs_parity": "NOT_EXECUTED"
+  },
+  "prior_executed_failure": "Earlier exact-head run #44831008951 failed because traversal -EINVAL was not mapped to candidate permission-denied. Corrected at source head b1f78d53787c0d6aea339c3c88f42a1eead76d50; the final source head a0bf964157b858bd8020cf3ae28825e4adc890ca passed including separate C++ ASan+UBSan.",
+  "security_notes": [
+    "HostFsDispatch input context is currently provided by a synthetic trusted fixture; merely constructing a matching witness is not a guest security boundary.",
+    "Service and backing broker must outlive every caller and actor VM quiescence; revocation is not an I/O completion barrier and does not undo already-running writes.",
+    "Guest ABI-v5 remains disabled until signed-code admission, compiler lowering and enforceable memory/syscall confinement.",
+    "The host test uses a real six-layer broker configured by test-owned host policy, not independently attested production artifact policy."
+  ],
+  "release_gate": "KEEP_DRAFT_NO_COMPILED_GUEST_PARITY_NO_NATIVE_UNTRUSTED_ADMISSION"
+}
