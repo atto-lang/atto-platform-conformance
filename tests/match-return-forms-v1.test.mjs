@@ -130,3 +130,36 @@ test('scoped Rust compiler guest receipt cannot certify the full source reposito
   assert.equal(proof.full_repository_ci, 'NOT_EXECUTED');
   assert.equal(manifest.backends['atto-source.rs'].status, 'NOT_EXECUTED');
 });
+
+test('direct-CIL real guest results remain scoped below full original-fixture parity', () => {
+  const net = manifest.source.candidate_net_direct_cil;
+  assert.equal(net.pr, 26);
+  assert.equal(net.guest_scalar_variants.status,
+    'PASS_COMPILED_CORECLR_AND_NATIVEAOT_EXACT_HEAD');
+  assert.deepEqual(net.guest_scalar_variants.executed_guest_cases.map(c => c.id),
+    ['scalar-return', 'scalar-caret']);
+  for (const result of net.guest_scalar_variants.executed_guest_cases) {
+    assert.equal(result.coreclr_exit, 4);
+    assert.equal(result.nativeaot_exit, 4);
+    assert.equal(result.verified, true);
+  }
+  assert.deepEqual(net.canonical_negative_cases.map(c => [c.diagnostic, c.status]),
+    [['E_MATCH', 'PASS_REJECTED_NO_ARTIFACT'],
+     ['E_RETURN', 'PASS_REJECTED_NO_ARTIFACT']]);
+  assert.equal(net.additional_negative_cases.passed, 7);
+  assert.equal(net.additional_negative_cases.failed, 0);
+  assert.equal(net.additional_negative_cases.no_artifact, true);
+  assert.equal(net.private_carrier.source_head, net.head);
+  assert.match(net.private_carrier.source_tree_sha, /^[0-9a-f]{40}$/);
+  assert.equal(net.private_carrier.source_blobs_verified, 38);
+  assert.equal(net.private_carrier.full_tree_sha_verified, true);
+  assert.equal(net.private_carrier.conclusion, 'SUCCESS');
+  assert.equal(net.private_carrier.run_id, 44660814076);
+  assert.ok(net.private_carrier.linux_job_id > 0);
+  assert.match(net.private_carrier.artifact_sha256, /^[0-9a-f]{64}$/);
+  assert.equal(net.exact_user_printing_programs.status, 'UNSUPPORTED');
+  assert.equal(net.exact_user_printing_programs.observed_rejection.return_fixture, 'E_LEX');
+  assert.equal(net.exact_user_printing_programs.observed_rejection.caret_fixture, 'E_LEX');
+  // Scalar adaptations do not provide the required stdout 2\\n2\\n.
+  assert.equal(manifest.backends['atto-source.net'].status, 'NOT_EXECUTED');
+});
