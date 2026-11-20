@@ -165,6 +165,107 @@
       "expected": {
         "guest_exit": 42
       }
+    },
+    {
+      "id": "cancel_request_nonblocking",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_request_nonblocking.atto",
+      "source_git_blob": "7b9dee05c9ce843bb68e2325f4400d53b38ebef5",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "cancel_requested",
+          "scope_physically_retired"
+        ]
+      }
+    },
+    {
+      "id": "cancel_idempotent",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_idempotent.atto",
+      "source_git_blob": "970d6c79b0ca5000fbf680b0e563cdab1852d4a3",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "one_terminal_publication",
+          "one_cleanup",
+          "scope_physically_retired"
+        ]
+      }
+    },
+    {
+      "id": "cancel_scope_exit_discard",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_scope_exit_discard.atto",
+      "source_git_blob": "9c730c1fa07a289efd5de98d38428801911234c6",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "scope_auto_cancels_unfinished",
+          "scope_physically_retired"
+        ]
+      }
+    },
+    {
+      "id": "cancel_nested_descendants",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_nested_descendants.atto",
+      "source_git_blob": "a58bb54077b657d7a9a7899bea96b742d06aac58",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "transitive_cancel_requested",
+          "descendant_quiescent_before_parent"
+        ]
+      }
+    },
+    {
+      "id": "cancel_preserves_sibling",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_preserves_sibling.atto",
+      "source_git_blob": "80b4508acd0a05d834f90f36033bfbc13e50c3cf",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "cancelled_worker",
+          "successful_sibling",
+          "scope_physically_retired"
+        ]
+      }
+    },
+    {
+      "id": "cancel_await_error",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_await_error.atto",
+      "source_git_blob": "42fd680e53688a4286564a3162e137a9f0e26432",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "task_cancelled_terminal",
+          "caught_cancel_outcome",
+          "scope_physically_retired"
+        ]
+      }
+    },
+    {
+      "id": "cancel_void_used_as_int",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_void_used_as_int.atto",
+      "source_git_blob": "7dc2c866b4dc3962529105d0fcde49704c274bdb",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_TASK_CANCEL_TYPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "cancel_nonfuture_receiver",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_nonfuture_receiver.atto",
+      "source_git_blob": "d35021fb69a485d85de67fbb931d262dd00a0da4",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_TASK_CANCEL_TARGET",
+        "no_artifact": true
+      }
     }
   ],
   "backends": {
@@ -229,5 +330,6 @@
       "guest_receipt": null
     }
   },
-  "verification": "Source-only registry; requires exact compiler SHA, negative no-artifact proofs, actual guest execution and independent backend receipts."
+  "verification": "Source-only registry; requires exact compiler SHA, negative no-artifact proofs, actual guest execution and independent backend receipts.",
+  "cancellation_model": "owned Future<T>.cancel(): void requests nonblocking idempotent cancellation; TaskCancelled terminal distinct from success/failure; scope cascades and physically retires all children; receipt witnesses mandatory"
 }
