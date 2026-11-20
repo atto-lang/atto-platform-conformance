@@ -40,6 +40,21 @@ test('every backend must carry independent genuine execution evidence', () => {
     assert.ok(statuses.has(row.execution_status), name);
     if (row.proposed_head_sha != null) assert.match(row.proposed_head_sha, sha, name);
     if (row.implementation === 'code_authored') assert.ok(row.implementation_pr, name);
+    if (row.local_execution) {
+      // Local execution may support auditability but is NEVER CI promotion.
+      assert.equal(row.execution_status, 'not_executed', name);
+      assert.equal(row.receipt, null, name);
+      assert.equal(row.local_execution.status, 'executed_locally_not_ci_admitted');
+      assert.match(row.local_execution.compiler_blob_sha, sha);
+      assert.match(row.local_execution.tests_blob_sha, sha);
+      assert.deepEqual(row.local_execution.guest_main_values, [83,83,42,42]);
+      assert.equal(row.local_execution.guest_artifact_sha256.length, 4);
+      for (const hash of row.local_execution.guest_artifact_sha256)
+        assert.match(hash, /^[a-f0-9]{64}$/);
+      assert.ok(row.local_execution.executed_test_groups > 0);
+      assert.equal(row.local_execution.failing_test_groups, 0);
+    }
+
     assert.ok(row.result_profile === null ||
       ledger.acceptance.guest_result_profiles.includes(row.result_profile), name);
     if (name === 'forge' || name === 'cranelift')
