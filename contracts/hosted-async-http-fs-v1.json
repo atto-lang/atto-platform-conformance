@@ -1,0 +1,87 @@
+{
+  "schema": "atto.stdlib.hosted_async_io.v1",
+  "status": "PROPOSED_NOT_EXECUTED",
+  "authority": "atto-lang/atto-spec/language/hosted-async-http-fs-v1.md",
+  "positiveFixture": "fixtures/hosted-async-http-fs-v1/pass/http_fs_roundtrip.atto",
+  "negativeFixtures": [
+    {
+      "path": "fixtures/hosted-async-http-fs-v1/fail/no_module_imports.atto",
+      "error": "E_UNBOUND_OR_IMPORT"
+    },
+    {
+      "path": "fixtures/hosted-async-http-fs-v1/fail/non_susp_await.atto",
+      "error": "E_AWAIT_CONTEXT"
+    }
+  ],
+  "requiredPositiveEvidence": [
+    "real_compiler_acceptance",
+    "linked_guest_execution",
+    "local_loopback_http_get",
+    "response_text_utf8",
+    "tenant_relative_file_write_read",
+    "guest_result_length",
+    "source_blob_sha",
+    "compiler_head_sha",
+    "target_triple",
+    "nonzero_executed_steps"
+  ],
+  "requiredNegativeEvidence": [
+    "network_permission_denial_pre_dns",
+    "fs_permission_denial_pre_open",
+    "redirect_recheck",
+    "invalid_tls",
+    "oversized_body",
+    "invalid_utf8",
+    "path_escape",
+    "symlink_swap",
+    "double_body_consumption",
+    "cancellation_once",
+    "cross_tenant_denial"
+  ],
+  "targets": [
+    {
+      "backend": "llvm",
+      "execution": "NOT_EXECUTED"
+    },
+    {
+      "backend": "java",
+      "execution": "NOT_EXECUTED"
+    },
+    {
+      "backend": "net",
+      "execution": "NOT_EXECUTED"
+    },
+    {
+      "backend": "wasm",
+      "execution": "NOT_EXECUTED"
+    },
+    {
+      "backend": "rs",
+      "execution": "NOT_EXECUTED"
+    },
+    {
+      "backend": "forge",
+      "execution": "NOT_EXECUTED"
+    },
+    {
+      "backend": "cranelift",
+      "execution": "NOT_EXECUTED"
+    },
+    {
+      "backend": "js",
+      "execution": "NOT_EXECUTED"
+    },
+    {
+      "backend": "atto",
+      "execution": "NOT_EXECUTED"
+    },
+    {
+      "backend": "hdl",
+      "execution": "NOT_EXECUTED"
+    },
+    {
+      "backend": "realtime",
+      "execution": "NOT_EXECUTED"
+    }
+  ]
+}
