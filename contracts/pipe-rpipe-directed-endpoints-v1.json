@@ -494,7 +494,9 @@
         "rejected_publications": 0,
         "unclaimed_source_channel_sink_reusable": true,
         "expected_stdout": "40\n2\n",
-        "status": "NOT_EXECUTED"
+        "status": "NOT_EXECUTED",
+        "shared_fixture": "fixtures/pipe-rpipe-checked-v2/output-occupied-rollback.atto",
+        "source_git_blob_sha": "1a3bca1d24e900a5de44cfde011a4c4281558a89"
       },
       "sink_input_conflict": {
         "guest_fixture": "tests/fixtures/pass/223-v2-checked-input-occupied-rollback.atto",
@@ -502,9 +504,12 @@
         "rejected_publications": 0,
         "unclaimed_source_channel_sink_reusable": true,
         "expected_stdout": "40\n2\n",
-        "status": "NOT_EXECUTED"
+        "status": "NOT_EXECUTED",
+        "shared_fixture": "fixtures/pipe-rpipe-checked-v2/input-occupied-rollback.atto",
+        "source_git_blob_sha": "cf1bb6c469851258a794f9275cd7bd817133f3f3"
       }
     },
-    "test_coverage": "Rust compiler fixture, Node compiled guest and Chromium worker guest tests are wired; no executable exact-head run"
+    "test_coverage": "Rust compiler fixture, Node compiled guest and Chromium worker guest tests are wired; no executable exact-head run",
+    "rollback_recovery_scope": "experimental_fixed_3stage_actor_channel_actor_only_not_general_graph_or_TenantVM"
   }
 }
