@@ -1,0 +1,77 @@
+{
+  "schema": "atto.actor-isolation.compiler-effect-closure.source-only.v1",
+  "date": "2026-11-20",
+  "status": "PASS_SOURCE_ONLY_WITH_COMPILER_MODULE_TESTS",
+  "origin_repositories": [
+    {
+      "repository": "atto-lang/atto-platform-conformance",
+      "pr": 33,
+      "head_at_validation": "0e0a87cda2ce1bce064cacffca7f4fbb332c45f4",
+      "blobs": [
+        {
+          "path": "tools/actor_isolation_types_v1.rs",
+          "sha": "27adc601175174e3e485398bece95d508fa50548"
+        },
+        {
+          "path": "tools/actor_isolation_broker_v1.rs",
+          "sha": "9c3539471943ba4a9847537fb89b8b6cec0bf04c"
+        },
+        {
+          "path": "contracts/actor-isolation-types-v1.tsv",
+          "sha": "1a17731a1836c43720b6964a3782dd57a41c15fa"
+        }
+      ]
+    },
+    {
+      "repository": "atto-lang/atto-source.rs",
+      "pr": 406,
+      "head_at_validation": "0398dcdbd4938b1c1de1ef6cb2624f2ef812999d",
+      "blobs": [
+        {
+          "path": "src/actor_send_effect_graph.rs",
+          "sha": "16b475542987066097e4ce66a06e18603d16f796"
+        }
+      ]
+    }
+  ],
+  "private_carrier": "ores-rate-limit-test/atto-ci",
+  "carrier_commit": "02518828aae254c8e061588a373fe3fb8afb31d1",
+  "carrier_branch": "ci/atto-actor-isolation-audit-6c46334c-20261120",
+  "carrier_url": "https://github.com/ores-rate-limit-test/atto-ci/actions/runs/44684194005",
+  "run_id": 44684194005,
+  "job_id": 136114501082,
+  "attempt": 1,
+  "result": "success",
+  "stepful": true,
+  "toolchain": "rustc 1.99.1",
+  "source_blob_identity": "4/4 verified by git hash-object in private carrier",
+  "tests": {
+    "actor_isolation_policy": {
+      "pass": 12,
+      "fail": 0
+    },
+    "actor_broker_escrow": {
+      "pass": 16,
+      "fail": 0
+    },
+    "actor_send_effect_graph": {
+      "pass": 12,
+      "fail": 0
+    },
+    "policy_registry_rows_validated": 36
+  },
+  "checks": {
+    "no_cross_org_checkout_token": true,
+    "local_repo_checkout_readonly": true,
+    "compiler_module_compiled_and_unit_tested": true,
+    "actual_atto_compiler_executed": false,
+    "atto_guest_compiled_or_executed": false,
+    "tenants_security_proved": false,
+    "entire_source_tree_tested": false
+  },
+  "governance": {
+    "source_org_required_checks_satisfied": false,
+    "draft_remains": true,
+    "not_backend_parity": true
+  }
+}
