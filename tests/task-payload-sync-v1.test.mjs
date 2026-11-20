@@ -225,7 +225,8 @@ test('trusted lock-park receipt gates cancel and grant wakes', () => {
     'GRANT_BEFORE_PARK_IS_CLAIMABLE_WITHOUT_PARK',
     'ACK_AFTER_READY_QUEUE_ADMISSION_ONLY',
     'ACK_IDENTIFIES_EXACT_PARKED_TASK_AND_GRANT',
-    'NO_PREMATURE_GUARD_RELEASE'
+    'NO_PREMATURE_GUARD_RELEASE',
+    'PARKED_TASK_CANNOT_CERTIFY_SUCCESSFUL_PHYSICAL_EXIT'
   ]) assert.ok(park.assertions.includes(witness), witness);
   assert.deepEqual(park.required_happens_before, [
     ['TRUSTED_PARK','CANCEL_WAKE_IF_CANCEL_WINS_LATER'],
