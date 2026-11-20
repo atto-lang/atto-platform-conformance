@@ -1,3 +1,28 @@
+### Forge restricted pointer: real LOCAL guest execution, still not full CI
+
+[Forge #50](https://github.com/atto-lang/atto-source.forge/pull/50)
+at exact source SHA `60e667238f943e4b6b47c0e4d0f603ad2b440ef5`
+now has a [SHA-pinned local execution receipt](https://github.com/atto-lang/atto-source.forge/pull/50#issuecomment-7031453507).
+
+Both GCC 14.2 and Clang 17 actually compiled the Forge compiler from
+Git-blob-verified source, compiled all four Atto positive cases to native
+C++20 executables using ASan/UBSan and executed them: logical outputs
+42 / 42 / 42 / 13. Both rejected all **24 actual invalid Atto files** with
+no emitted C++ artifact, even after a stale output file was created. The
+exact checked-in CMake guest test passed for both compilers, as did
+the typed-HIR and existing scalar lexer/parser/emitter tests. The
+canonical rt-vs-bang codegen C++ SHA-256 was
+`088b8c56d2d2cd87b56c99b33dd423038f7929a859465ebd55c7b29e3acd31d6`.
+
+**This is local partial executable evidence only.** The full existing
+Forge CTest suite, 36-case registry, all 11 backends, exact-head external
+GitHub Actions CI and full native process-result ABI remain unverified.
+The latest Forge [Actions #44664843939](https://github.com/atto-lang/atto-source.forge/actions/runs/44664843939)
+failed before any steps. The authoritative `execution_status` is kept
+`NOT_EXECUTED` for the full conformance gate; the distinct
+`local_compiled_guest_subset` field captures the bounded positive
+evidence without certifying more than it tested.
+
 ### Fourth compiler candidate: Forge native bounded Pointer<int>
 
 [atto-source.forge #50](https://github.com/atto-lang/atto-source.forge/pull/50)

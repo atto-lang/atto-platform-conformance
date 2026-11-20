@@ -49,6 +49,19 @@ test('candidate ledger keeps actual source commits distinct from executed eviden
       });
       assert.equal(c.execution_status,'NOT_EXECUTED');
       assert.equal(c.executed_step_count,0);
+      const local=c.local_compiled_guest_subset;
+      assert.equal(local.status,'PASS_LOCAL_SUBSET_NOT_FULL_CONFORMANCE');
+      assert.equal(local.tested_source_commit,c.source_head);
+      assert.equal(local.cxx_variants.length,2);
+      assert.deepEqual(local.cxx_variants.map(v=>v.positive_native_guest_executions),[4,4]);
+      assert.deepEqual(local.cxx_variants.map(v=>v.negative_no_artifact_rejections),[24,24]);
+      assert.equal(local.canonical_rt_and_bang_emitted_cpp_sha256,'088b8c56d2d2cd87b56c99b33dd423038f7929a859465ebd55c7b29e3acd31d6');
+      assert.equal(local.full_existing_ctest_suite,'NOT_EXECUTED');
+      assert.equal(local.full_36_case_matrix,'NOT_EXECUTED');
+      assert.equal(local.github_actions_executed_steps,0);
+      assert.equal(local.github_actions_artifact_certification,false);
+      assert.equal(local.full_process_result_abi_parity,false);
+      assert.equal(c.execution_status,'NOT_EXECUTED','local subset must not certify whole matrix');
       assert.equal(c.guest_exit_receipt,null);
     }
 
