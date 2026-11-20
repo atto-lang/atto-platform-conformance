@@ -1,0 +1,5 @@
+// expect-error: E_IO_WRITABLE
+pub suspends fnc main(): int using io, suspend {
+  val receipt = writech stdio.in, "invalid";
+  return 0;
+}
