@@ -129,7 +129,10 @@ fn authorize(s: &Shape, r: Request) -> Result<(), &'static str> {
     match r.mode {
         Mode::Move => move_proof(s),
         Mode::Share => share_proof(s),
-        Mode::Delegate => if matches!(s, Shape::ActorRef) { Ok(()) } else { Err(CAP) },
+        // A nominal ActorRef shape is never itself a delegation credential.
+        // A host-minted, incarnation-scoped authority is required; the separate
+        // broker reference model checks that evidence. Bare shape must fail closed.
+        Mode::Delegate => Err(CAP),
         Mode::Wire => {
             if !r.wire_schema { return Err(SCHEMA); }
             // A forbidden leaf cannot be laundered through a user codec or generic wrapper.
