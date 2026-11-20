@@ -60,9 +60,9 @@ test('coverage includes runtime/constexpr split, type boundaries, captures, guar
 
 test('portable guest input fixtures are exact Git blobs, never fake pass receipts',()=>{
   const fixtures=registry.portable_guest_fixtures;
-  assert.equal(fixtures.length,7);
+  assert.equal(fixtures.length,11);
   const paths=new Set();
-  let positives=0,negative=0;
+  let positives=0,negative=0,traps=0;
   for(const f of fixtures) {
     assert.match(f.path,/^fixtures\/typed-pattern-fragments\/[a-z0-9_]+\.atto$/);
     assert.ok(!paths.has(f.path),f.path);
@@ -77,17 +77,24 @@ test('portable guest input fixtures are exact Git blobs, never fake pass receipt
     assert.ok(source.toString('utf8').includes('return match<int>'));
     if(f.kind==='positive') {
       positives++;
-      assert.equal(f.expected_exit_code,60);
-      assert.equal(typeof f.paired_with,'string');
+      assert.ok([0,7,30,60].includes(f.expected_exit_code),f.path);
+      if(f.paired_with!==undefined)assert.equal(typeof f.paired_with,'string');
+    }else if(f.kind==='trap'){
+      traps++;
+      assert.equal(f.expected_panic_code,1);
+      assert.ok(f.assertion.includes('checked i64'));
     }else{
       negative++;
+      assert.equal(f.kind,'reject');
       assert.match(f.expected_diagnostic,/^E_PATTERN_[A-Z]+$/);
       assert.equal(f.guest_artifact,false);
     }
   }
-  assert.equal(positives,2);
+  assert.equal(positives,5);
+  assert.equal(traps,1);
   assert.equal(negative,5);
-  for(const f of fixtures.filter(f=>f.kind==='positive'))assert.ok(paths.has(f.paired_with));
+  assert.equal(registry.implementation_candidates.rust_wasm.guest_status,'NOT_EXECUTED');
+  for(const f of fixtures.filter(f=>f.paired_with!==undefined))assert.ok(paths.has(f.paired_with));
   for(const c of registry.cases)for(const backend of registry.backends){
     assert.equal(c.execution[backend],'NOT_EXECUTED');
   }
