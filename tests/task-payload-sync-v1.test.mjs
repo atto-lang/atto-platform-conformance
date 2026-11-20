@@ -169,3 +169,21 @@ test('cross-mutex grant replay and tenant STOP are mandatory negative runtime pr
     'A_SAFE_UNWIND', 'A_LOCK_RELEASE', 'TENANT_PHYSICAL_QUIESCENCE',
   ]);
 });
+
+test('scheduler cancellation and grant wake notifications are lossless and claim-checked', () => {
+  const probes = Object.fromEntries(registry.lock_cancellation_runtime_probes.map(p => [p.id, p]));
+  const queued = probes.queued_wait_cancel;
+  assert.match(queued.notification_contract, /level-triggered notice/);
+  assert.ok(queued.assertions.includes('CANCEL_WAKE_LEVEL_TRIGGERED_UNTIL_TRUSTED_EXIT'));
+  assert.ok(queued.assertions.includes('CANCELLED_WAIT_HAS_NO_GUARD_RELEASE'));
+  const grant = probes.grant_cancel_race;
+  assert.match(grant.notification_contract, /after successful ready-queue admission/);
+  for (const required of [
+    'GRANT_WAKE_SURVIVES_FAILED_SCHEDULER_ENQUEUE',
+    'ACK_ONLY_AFTER_READY_QUEUE_ADMISSION',
+    'STALE_ACK_CANNOT_CLEAR_SUCCESSOR_WAKE',
+    'CLAIM_REVALIDATES_AFTER_ACK',
+  ]) {
+    assert.ok(grant.assertions.includes(required), required);
+  }
+});
