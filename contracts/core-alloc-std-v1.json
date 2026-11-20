@@ -52,6 +52,12 @@
       "source": "fixtures/core-alloc-std-v1/07-std-bytes-not-equal.atto",
       "expected": "EXIT_1",
       "layer": "std"
+    },
+    {
+      "id": "CAS-008",
+      "source": "fixtures/core-alloc-std-v1/08-direct-ownedbytes-negative.atto",
+      "expected": "COMPILE_SEALED_ALLOC",
+      "layer": "alloc"
     }
   ],
   "backends": [
@@ -115,7 +121,8 @@
     "quota-zeroing-revoke-and-no-pointer-leaks",
     "exclusive-mutable-receiver-and-immutable-val-rejection",
     "real-compiled-guest-positives-and-negatives",
-    "nonzero-guest-execution-steps-on-exact-compiler-head"
+    "nonzero-guest-execution-steps-on-exact-compiler-head",
+    "reject-direct-guest-OwnedBytes-and-forged-intrinsic-access"
   ],
   "release_authorized": false
 }
