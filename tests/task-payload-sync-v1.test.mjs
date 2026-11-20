@@ -10,8 +10,8 @@ const cases = Object.fromEntries(registry.cases.map(c => [c.id,c]));
 test('versioned typed task fixtures are pinned to exact Git blob identity', () => {
   assert.equal(registry.schema, 'atto.task-payload-sync.v1');
   assert.equal(registry.status, 'TARGET_NOT_GUEST_VERIFIED');
-  assert.equal(registry.cases.length, 25);
-  assert.equal(new Set(registry.cases.map(x=>x.id)).size,25);
+  assert.equal(registry.cases.length, 26);
+  assert.equal(new Set(registry.cases.map(x=>x.id)).size,26);
   for (const c of registry.cases) {
     assert.match(c.source_path,/^fixtures\/task-payload-sync-v1\/[a-z0-9_]+\.atto$/);
     assert.equal(gitSha(getSource(c)),c.source_git_blob,c.id);
@@ -92,4 +92,7 @@ test('cancellation contracts are pinned, fail closed and require runtime witness
   assert.match(observed, /await worker;/);
   assert.equal(cases.cancel_void_used_as_int.expected.diagnostic, 'E_TASK_CANCEL_TYPE');
   assert.equal(cases.cancel_nonfuture_receiver.expected.diagnostic, 'E_TASK_CANCEL_TARGET');
+  const nonSusp = cases.cancel_implicit_scope_exit_needs_susp;
+  assert.equal(nonSusp.expected.diagnostic, 'E_EFFECT');
+  assert.match(getSource(nonSusp).toString('utf8'), /pub fnc main\(\): int/);
 });
