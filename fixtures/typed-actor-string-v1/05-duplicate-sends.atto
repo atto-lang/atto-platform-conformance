@@ -1,0 +1,6 @@
+// ACTOR-STRING-05; TARGET_REJECT; expected E_ACTOR_CONTRACT; NOT_EXECUTED
+// Duplicate clauses cannot silently override the actor's outbound effect.
+define actor Router receives string sends int sends bool as
+  susp receive(ActorMail<string> mail): void { return; }
+end
+pub susp fnc main(): int { return 0; }
