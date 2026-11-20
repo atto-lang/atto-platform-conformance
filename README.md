@@ -70,6 +70,12 @@ independent Java/LLVM/.NET/Wasm/Forge/Cranelift/JS backends remain
 - [Tuple destructuring v1](contracts/tuple-destructuring-v1.json): 33 acceptance/rejection cases spanning binding modes, aliases, const and ownership. On the **exact final merged Rust/browser-Wasm compiler SHA `026739474d0702d55b02b9772f8b13a7c7b461b0`**, [post-merge CI run 44447960061](https://github.com/usa-acc/atto-ci/actions/runs/44447960061) proved **29 passed** (15 positive compiled-and-executed Wasm guests and 14 expected negative diagnostics), **4 unsupported** (non-Copy object tuples), **0 failed**, using 68/68 exact compiler blobs and 4/4 exact conformance inputs. The earlier [historical receipt](evidence/tuple/rs-browser-wasm-4fd0a231-20261118.json) remains preserved. [Latest machine-readable receipt](evidence/tuple/rs-browser-wasm-02673947-20261118.json) preserves all cases, and [Node contract test](tests/tuple-destructuring-v1.test.mjs) validates receipt provenance and consistency; [guest runner](tests/tuple-destructuring-guest.mjs) performs real compilation and guest execution when provided `ATTOC_BIN` and `ATTO_SOURCE_SHA`. The other five backends remain `not_executed`; case-level aggregate parity stays `not_executed` until independently proven. Do not treat host-only receipt validation as guest execution.
 
 
+## Unsafe block and host-authorization contract (target-only)
+
+[24 source-level cases](contracts/unsafe-blocks-v1.json) cover `unsafe { }`, explicit `unsafe fnc` call-site obligations, nested lexical scopes, misleading string/comment/Symbol/identifier tokens, denied untrusted TenantVM use, raw pointer/FFI grants, host authority, and suspension/lease escapes.
+
+`node --test tests/unsafe-blocks-v1.test.mjs` validates **registry integrity only**. Every listed backend is currently `not_executed`; this does NOT compile Atto sources, produce guest artifacts, or establish unsafe-call support. Cases containing proposed `RawPointer<T>`, native intrinsics and grants require ABI definitions before executable compiler parity can be claimed. The normative contract is [atto-spec unsafe v1](https://github.com/atto-lang/atto-spec/blob/feat/unsafe-block-contract-v1-20261119/language/unsafe-blocks-v1.md).
+
 ## Validation
 
 Validation should rely on checked-in tests and exact-commit CI results. When reporting parity, distinguish **passed**, **failed**, **unsupported**, and **not executed**. Avoid inferring guest-runtime support from host-only tests.
