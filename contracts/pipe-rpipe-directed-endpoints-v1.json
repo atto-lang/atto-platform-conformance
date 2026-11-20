@@ -289,7 +289,7 @@
     {
       "repo": "atto-lang/atto-source.rs",
       "pr": "https://github.com/atto-lang/atto-source.rs/pull/224",
-      "phase": "typed_parser_static_check_plus_experimental_3stage_atomic_guest_preflight",
+      "phase": "typed_parser_and_experimental_checked_result_3stage_guest_admission_without_cancellation",
       "guest_pipe_execution": "NOT_EXECUTED"
     },
     {
@@ -450,6 +450,27 @@
   },
   "workstream_capability_notes": {
     "atto-lang/atto-source.forge": "native C++20 typed planning passes local GCC/Clang tests with ASan/UBSan; source GitHub Actions still 0 steps; no compiled .atto pipe guest",
-    "atto-lang/atto-source.rs": "bounded actor-channel-actor triple now stages one guest preflight before any edge publication; still provisional traps and no checked PipeHandle, tenant generations, or complete cancellation proof; no exact-head compiler or guest CI pass"
+    "atto-lang/atto-source.rs": "experimental three-stage checked guest admission using explicit Result<PipeHandle,PipeSetupError> binding, plus legacy Channel<T> trap wrapper; compiler and guest execution NOT_EXECUTED; PipeHandle cancellation, completion, generation fencing and general graphs still unimplemented"
+  },
+  "rust_v2_checked_guest_preview": {
+    "repo": "atto-lang/atto-source.rs",
+    "pull_request": "https://github.com/atto-lang/atto-source.rs/pull/262",
+    "source_commit": "212f997c62642afdf6ca4818bb1df04d2681a7a4",
+    "type": "Result<PipeHandle, PipeSetupError>",
+    "opt_in": "explicit_result_binding_annotation_only",
+    "endpoint_scope": "single_tenant_bounded_actor_channel_actor_triple",
+    "error_semantics": "Err(PipeSetupError) without trap or DATA publication before successful validation",
+    "legacy_unannotated_behavior": "Channel<T> value, panic_code_10_on_setup_failure",
+    "new_guest_fixture_ids": [
+      "219-v2-checked-actor-channel-actor-pipe",
+      "220-v2-checked-actor-channel-actor-rpipe",
+      "221-v2-checked-setup-rollback"
+    ],
+    "checked_setup_compiler": "NOT_EXECUTED",
+    "checked_setup_guest": "NOT_EXECUTED",
+    "pipe_handle_methods": "NOT_IMPLEMENTED",
+    "cancellation_and_guards": "NOT_IMPLEMENTED",
+    "tenant_generation_proof": "NOT_EXECUTED",
+    "binding_spec_status": "NON_NORMATIVE_EXPERIMENTAL"
   }
 }
