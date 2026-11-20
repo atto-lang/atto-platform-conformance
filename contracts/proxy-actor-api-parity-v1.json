@@ -53,16 +53,26 @@
     {
       "id": "java",
       "host_gate_pr": "https://github.com/atto-lang/atto-source.java/pull/44",
-      "host_gate_status": "DRAFT_UNVERIFIED",
+      "host_gate_status": "SOURCE_ONLY_PASSED",
       "compiled_guest_ipc_status": "NOT_EXECUTED",
       "authenticated_transport_status": "NOT_EXECUTED",
       "native_aot_status": "NOT_EXECUTED",
       "guest_evidence": null,
-      "notes": "Java #44 has unified M6 tickets + nonblocking M10 host selector gateway, restricted source-compiled sender/receiver. Eight exact source/test/fixture blobs pass independent local JDK21 compiler/IO/security tests, with a minimal M6 handler interface stub, not the actual runtime. Full M6/M10 two-process JDK25 source-specific carrier job still fails before any steps (latest 44683349821). All 24 canonical compiled guest gates remain NOT_EXECUTED.",
+      "notes": "Consolidated Java #44 real M6 tickets plus nonblocking M10 UDS gateway pass exact scoped-16-blob JDK25 private runner execution in two OS processes, with restricted .atto sender and receiver, checked errors, 12 concurrent clients, 128 tickets, 100k M6 mailbox stress, replay/restart/OS-peer identity/UTF-8/symlink negative tests. Canonical ProxyActor compiler, secure TenantVM, Native Image and full 24 guest gates still NOT_EXECUTED.",
       "host_ticket_scope": "REAL_MAILBOX",
-      "host_ticket_status": "CURRENT_HEAD_NOT_EXECUTED",
+      "host_ticket_status": "SOURCE_EXACT_HOST_TESTED",
       "host_ticket_pr_head_sha": "1fbce3245dd904d9c038f64e0734c281c9f0c09c",
-      "host_ticket_ci": null,
+      "host_ticket_ci": {
+        "source_head_sha": "1fbce3245dd904d9c038f64e0734c281c9f0c09c",
+        "ci_url": "https://github.com/ORESoftware/ores-clients-core/actions/runs/44684039326",
+        "source_proof": "SCOPED_GIT_BLOBS_MATCHED",
+        "verified_blob_count": 16,
+        "executed_ci_steps": 11,
+        "carrier_commit_sha": "cd54b6c58191472245b98ab8c94b9aa6c9c07132",
+        "job_id": 136113998540,
+        "toolchain": "Temurin JDK25, javac --release 21 -Xlint:all,-try -Werror",
+        "scope": "Real Java M6 actor runtime + M10 UDS reactor, restricted separately source-compiled Atto sender in OS process A and receiver in process B; host-injected synchronous client bridge, not canonical ProxyActor or TenantVM isolation."
+      },
       "host_ticket_previous_verified": {
         "source_head_sha": "e7dbc3f9f584f16c872af8858335767986ea9be8",
         "scoped_blob_count": 11,
@@ -71,7 +81,7 @@
       },
       "gateway_integration": {
         "kind": "EXPERIMENTAL_M10_SELECTOR_USES_M6_RUNTIME_ISSUED_TICKET",
-        "status": "NOT_EXECUTED_CURRENT_HEAD",
+        "status": "SOURCE_EXACT_TESTED",
         "source_head_sha": "1fbce3245dd904d9c038f64e0734c281c9f0c09c",
         "source_pr": "https://github.com/atto-lang/atto-source.java/pull/44",
         "prior_independent_m10_ci": "https://github.com/bait-bikes-test/atto-ci/actions/runs/44635718533",
@@ -83,7 +93,31 @@
           "https://github.com/canonical-cloud/atto-ci/actions/runs/44681862933",
           "https://github.com/ores-stack/ores-stack-cli/actions/runs/44683349821"
         ],
-        "caveats": "Sixteen exact original source/test/fixture blobs are mirrored into a private alternate organization's temporary branch. The JDK25 integration job and independent runner-admission probe failed before any steps. This is NOT test execution; no canonical authenticated TenantVM IPC, compiler frontend or cross-backend guest parity."
+        "caveats": "An alternate private ORESoftware Actions runner executed 11 steps and verified 16 original source/test/fixture Git blobs at current exact PR #44 head. Only host-bridged restricted Atto source programs were compiled; NO production tenant isolation, canonical typed ProxyActor ABI, async sender, or full 24 guest conformance gates.",
+        "executed_evidence": {
+          "source_head_sha": "1fbce3245dd904d9c038f64e0734c281c9f0c09c",
+          "carrier_commit_sha": "cd54b6c58191472245b98ab8c94b9aa6c9c07132",
+          "ci_url": "https://github.com/ORESoftware/ores-clients-core/actions/runs/44684039326",
+          "original_git_blob_count": 16,
+          "executed_job_steps": 11,
+          "markers": [
+            "ATTO_SOURCE_SIXTEEN_ORIGINAL_GIT_BLOBS=PASS",
+            "ATTO_M10_JDK25_STRICT_COMPILER=PASS",
+            "M6_NIO_SCHEDULER_SUPERVISOR_NATIVE_HOST=PASS",
+            "M6_TICKET_128_CONCURRENT_MAIL_EXACT_CORRELATION=PASS",
+            "M10_RECEIVER_SOURCE_FD_UTF8_AND_OUTPUT_NOFOLLOW=PASS",
+            "M10_SOURCE_BOUNDED_FD_UTF8_FAIL_CLOSED=PASS",
+            "M10_UDS_PEER_KERNEL_PRINCIPAL_NOT_USER_NAME_PROPERTY=PASS",
+            "M10_ATOMIC_MAILBOX_ACK_PROCESSED_FAILED_ABANDONED=PASS",
+            "M10_TWO_REAL_JVM_PROCESSES_UDS_IPC=PASS",
+            "M10_RESTRICTED_COMPILED_ATTO_PROCESS_A_SENDER=PASS",
+            "M10_RESTRICTED_COMPILED_ATTO_REMOTE_RECEIVE=PASS",
+            "M10_12_CONCURRENT_PER_MAIL_SCOPED_RESULTS_OR_VERIFIED_FULL=PASS",
+            "M10_UDS_OS_PEER_OWNER_NOT_MUTABLE_USER_PROPERTY=PASS",
+            "M10_REMOTE_DUPLICATE_FAULT_AND_RESTART_FENCING=PASS"
+          ],
+          "scope": "Source-exact scoped 16-file host-bridged JVM M6/M10 restricted compiled two-process integration; not full repository tree mirror or canonical Atto compiler."
+        }
       },
       "restricted_sender_local_evidence": {
         "status": "LOCAL_JDK21_EXACT_EIGHT_BLOBS_PASSED",
