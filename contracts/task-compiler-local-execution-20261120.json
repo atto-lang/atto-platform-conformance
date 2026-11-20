@@ -1,0 +1,80 @@
+{
+  "schema": "atto.task-compiler-local-execution.v1",
+  "observed_utc": "2026-11-20T06:04:06Z",
+  "provenance": "ChatGPT isolated local container; reconstructed exact bytes from authenticated GitHub connector fetch_file then verified with git hash-object. NOT a GitHub Actions CI run.",
+  "grade": "LOCALLY_EXECUTED_LIMITED_PROFILE",
+  "java": {
+    "repo": "atto-lang/atto-source.java",
+    "pr": 59,
+    "head": "11444064480f896d1d2de2d7d0fc1d0849d494d3",
+    "toolchain": "OpenJDK javac 21.0.12.1; -Xlint:all -Werror",
+    "blobs": {
+      "src/compiler/asyncv1/AttoAsyncV1Compiler.java": "805e28e6b6f99798e8d737662e7531ec3e98b288",
+      "tests/compiler/AttoAsyncV1CompilerProbe.java": "5ee6be44c719c29d904ad63c1766b23a7641ed49",
+      "fixtures/async_v1/completed_future_typed.atto": "240fc8e0ad724722b13f8e0034b30bc69db76925",
+      "fixtures/async_v1/completed_future.atto": "b2c23fcf15bebda5449032f41e3096dae68302c0",
+      "ci/async/verify-compiled-completed-future.sh": "56749987ecfa8a7ab681a8d0b6f0ced1768059fe"
+    },
+    "admission": {
+      "checks_passed": 55,
+      "checks_expected": 55
+    },
+    "compiled_guest": {
+      "scope": "CLOSED_WORLD_COMPLETED_FUTURE_INT",
+      "fixtures": [
+        "completed_future_typed.atto",
+        "completed_future.atto"
+      ],
+      "compiled_with_javac": true,
+      "ran_on_core_jvm": true,
+      "exit_codes": [
+        42,
+        42
+      ],
+      "stdout_marker": "ATTO_ASYNC_V1_RESULT=42"
+    },
+    "negative": {
+      "fixture": "uppercase Math-shadows-java.lang.Math",
+      "diagnostic": "E_ASYNC_INVALID_IDENTIFIER",
+      "no_generated_java_artifact": true
+    },
+    "native_image": "NOT_EXECUTED",
+    "task_cancellation": "NOT_EXECUTED",
+    "lock_cleanup": "NOT_EXECUTED"
+  },
+  "forge": {
+    "repo": "atto-lang/atto-source.forge",
+    "pr": 52,
+    "head": "33110d1577369ec0115826e7b4cfc30b93956ff4",
+    "blobs": {
+      "include/atto/scalar_parser.hpp": "4ade67b1c2399b01852b879140e0dac44a740c1c",
+      "include/atto/scalar_lexer.hpp": "e926fb685d5b3db152668979df07a8ddbb692202",
+      "include/atto/decimal_i64.hpp": "e0a026e7b9dde7cfc72f8bf0aa776234106fd98b",
+      "include/atto/checked_i64.hpp": "e9a6598416c919f9ac7c629847f8d6677c703a14",
+      "tests/scalar_parser.cpp": "52060990f6aa190354cab9edbb6a50b80602fc11"
+    },
+    "toolchains": [
+      "g++ 14.2.0 (C++20)",
+      "clang++ 17.0.0 (C++20)"
+    ],
+    "test_builds": [
+      "GCC Debug -O0 -g",
+      "GCC Release -O2 -DNDEBUG",
+      "Clang Debug -O0 -g",
+      "Clang Release -O2 -DNDEBUG"
+    ],
+    "passed_builds": 4,
+    "assertions_active_in_release": true,
+    "scope": "SOURCE_PARSER_TESTS; task<T>/sync deliberately unsupported",
+    "compiled_atto_task_guest": "NOT_EXECUTED",
+    "task_cancellation": "NOT_EXECUTED",
+    "lock_cleanup": "NOT_EXECUTED"
+  },
+  "shared_limits": [
+    "Rust toolchain absent locally (rustc/cargo).",
+    "dotnet SDK absent locally.",
+    "GitHub Actions runner probes previously returned zero executed steps; cannot infer CI pass.",
+    "Browser JSPI host tests execute separately but do not prove guest Future.cancel(), checked MIR or lock cleanup.",
+    "Do not set canonical task/cancellation conformance runtime cells to PASS based on this limited evidence."
+  ]
+}
