@@ -5,10 +5,11 @@
   "candidate": {
     "repository": "atto-lang/atto-source.llvm",
     "pr": 57,
-    "head": "9c9a2e98570a1c60c3f9ae53c25cedefaa5aed90",
-    "tree": "4d93d346d78c8eeb8b1d4b8e871ebe7b43c5dc78",
+    "head": "fd2685e8606dc60208571739ac81378a2e5a1f68",
+    "tree": "fdd2757ae58ac8dc2a895f167c4408d9198e47ca",
     "guest_target": "Linux x86_64 ELF, Clang O0/O2, no GC/heap",
-    "hardening": "deny-by-default recursive typed-IR heapless Option<int> proof; explicit TStmt::Unreachable lowering; not executable CI evidence"
+    "hardening": "deny-by-default recursive typed-IR heapless Option<int> proof; explicit TStmt::Unreachable lowering; not executable CI evidence",
+    "note": "native Option implementation, CI script and six fixture Git blobs unchanged across 9c9a2e9..fd2685e; only frontend parser and tests changed externally; no executed guest receipt"
   },
   "cases": [
     {
@@ -86,7 +87,7 @@
     "atto-source.llvm": {
       "status": "NOT_EXECUTED",
       "compiler_guest_receipt": null,
-      "candidate_head": "9c9a2e98570a1c60c3f9ae53c25cedefaa5aed90",
+      "candidate_head": "fd2685e8606dc60208571739ac81378a2e5a1f68",
       "candidate_role": "atto-llvm native Rust/LLVM scalar AOT executable, not LLVM C++ backend"
     },
     "atto-source.java": {
@@ -129,7 +130,7 @@
   "cross_compiler_candidate_sources": [
     {
       "repository": "atto-lang/atto-source.llvm",
-      "head": "9c9a2e98570a1c60c3f9ae53c25cedefaa5aed90",
+      "head": "fd2685e8606dc60208571739ac81378a2e5a1f68",
       "role": "Rust native LLVM/ELF AOT bootstrap",
       "fixture_prefix": "tests/native-adt/"
     },
