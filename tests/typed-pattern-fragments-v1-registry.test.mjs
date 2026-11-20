@@ -60,7 +60,7 @@ test('coverage includes runtime/constexpr split, type boundaries, captures, guar
 
 test('portable guest input fixtures are exact Git blobs, never fake pass receipts',()=>{
   const fixtures=registry.portable_guest_fixtures;
-  assert.equal(fixtures.length,11);
+  assert.equal(fixtures.length,14);
   const paths=new Set();
   let positives=0,negative=0,traps=0;
   for(const f of fixtures) {
@@ -77,7 +77,7 @@ test('portable guest input fixtures are exact Git blobs, never fake pass receipt
     assert.ok(source.toString('utf8').includes('return match<int>'));
     if(f.kind==='positive') {
       positives++;
-      assert.ok([0,7,30,60].includes(f.expected_exit_code),f.path);
+      assert.ok([0,1,3,7,30,32,60].includes(f.expected_exit_code),f.path);
       if(f.paired_with!==undefined)assert.equal(typeof f.paired_with,'string');
     }else if(f.kind==='trap'){
       traps++;
@@ -90,10 +90,12 @@ test('portable guest input fixtures are exact Git blobs, never fake pass receipt
       assert.equal(f.guest_artifact,false);
     }
   }
-  assert.equal(positives,5);
+  assert.equal(positives,8);
   assert.equal(traps,1);
   assert.equal(negative,5);
   assert.equal(registry.implementation_candidates.rust_wasm.guest_status,'NOT_EXECUTED');
+  assert.equal(registry.implementation_candidates.forge_native.guest_status,'NOT_EXECUTED');
+  assert.equal(registry.implementation_candidates.forge_native.pr,43);
   for(const f of fixtures.filter(f=>f.paired_with!==undefined))assert.ok(paths.has(f.paired_with));
   for(const c of registry.cases)for(const backend of registry.backends){
     assert.equal(c.execution[backend],'NOT_EXECUTED');
