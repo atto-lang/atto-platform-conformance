@@ -1,3 +1,18 @@
+## Three candidate compilers: exact source heads, zero execution receipts
+
+The separate [source-only candidate ledger](../contracts/pointer-local-candidate-evidence-v1.json)
+tracks reviewed draft implementation heads for Rust/Wasm (PR #264),
+LLVM native AOT (PR #64) and .NET CIL / NativeAOT (PR #22).
+They implement a strict single-local, one-read/one-unref subset, **not**
+all 36 conformance cases. Every ledger entry preserves the exact SHA and
+still explicitly reports NOT_EXECUTED, 0 real runner steps, null compiled
+guest artifact hashes and null approval. The canonical registry's
+11 backend evidence slots also remain NOT_EXECUTED.
+
+A source tree, an authored Rust/JavaScript test, a generated CI config,
+and a failed job with zero steps can never promote any backend to PASS.
+Independent compiler-vs-guest evidence is mandatory.
+
 # Pointer<T> / native AOT conformance gate (draft)
 
 **Reference model only.** The C++20 model in models/pointer_capability_aot_v1.cpp is deliberately **not** AttoLang source, a compiler plugin, or a generated AttoLang native binary. Its host-language & and * operators are permitted **inside C++**; AttoLang must reject unary & and unary * for pointer manipulation. See atto-spec/language/pointer-aot-safety-v1.md in the related draft.

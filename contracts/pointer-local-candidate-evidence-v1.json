@@ -1,0 +1,85 @@
+{
+  "schema": "atto.pointer-local-candidate-evidence.v1",
+  "normative_spec": "atto-lang/atto-spec#18",
+  "target_case_registry": "contracts/pointer-ref-local-v1.json",
+  "tracking_issue": "atto-lang/atto-platform-conformance#63",
+  "scope": "Source-verified compiler candidates for PRL-001/002; cannot be used to certify complete 36-case or 11-backend parity",
+  "total_target_cases": 36,
+  "expected_positive": 10,
+  "expected_negative": 26,
+  "backend_count": 11,
+  "candidate_count": 3,
+  "overall_status": "NOT_EXECUTED",
+  "required": "Immutable runner receipts with nonzero real job steps, exact source/compiler/artifact SHA, backend guest output and no-artifact negatives",
+  "candidates": [
+    {
+      "backend": "atto-source.rs",
+      "pr": 264,
+      "repository": "atto-lang/atto-source.rs",
+      "source_head": "56356874cb2da41fcd7a4cf61994aa08e9ef5a85",
+      "compiler_subtree": "eb7461cda2d1c72c001cfd19896ba812c75b3a54",
+      "scope": "Single initialized Pointer<int> local, one readonly copy and unref, Rust/Wasm guest compiler with scalar stack-promotion",
+      "test_entry": "tests/pointer_local_aot.rs",
+      "expected_guest_ids": [
+        "PRL-001",
+        "PRL-002"
+      ],
+      "last_attempted_ci_run": "https://github.com/gha-indie-worker/atto-ci/actions/runs/44653996333",
+      "source_state": "CANDIDATE_COMMITTED",
+      "execution_status": "NOT_EXECUTED",
+      "compiler_artifact_sha256": null,
+      "guest_artifact_sha256": null,
+      "runner_job_id": null,
+      "executed_step_count": 0,
+      "guest_exit_receipt": null,
+      "negative_rejection_receipt": null,
+      "independent_approval": null
+    },
+    {
+      "backend": "atto-source.llvm",
+      "pr": 64,
+      "repository": "atto-lang/atto-source.llvm",
+      "source_head": "b4049c77c71f6834a93f294c129779bfaf3ec1f1",
+      "compiler_subtree": null,
+      "scope": "Opt-in host Pointer<int> BorrowedLocal typed HIR, shared ownership verifier, LLVM alloca/load; native guests and sanitizers",
+      "test_entry": "tests/rust_native_e2e.rs",
+      "expected_guest_ids": [
+        "PRL-001",
+        "PRL-002"
+      ],
+      "last_attempted_ci_run": "https://github.com/atto-lang/atto-source.llvm/actions/runs/44656418672",
+      "source_state": "CANDIDATE_COMMITTED",
+      "execution_status": "NOT_EXECUTED",
+      "compiler_artifact_sha256": null,
+      "guest_artifact_sha256": null,
+      "runner_job_id": null,
+      "executed_step_count": 0,
+      "guest_exit_receipt": null,
+      "negative_rejection_receipt": null,
+      "independent_approval": null
+    },
+    {
+      "backend": "atto-source.net",
+      "pr": 22,
+      "repository": "atto-lang/atto-source.net",
+      "source_head": "fa732820a0f0bc3de2c7422efd06ad365518fde1",
+      "compiler_subtree": null,
+      "scope": "Closed-world BorrowedLocalIntPlan lexical profile, scalar CIL lowering, CoreCLR and Linux NativeAOT guest targets",
+      "test_entry": "scripts/test-cil-guest.sh",
+      "expected_guest_ids": [
+        "PRL-001",
+        "PRL-002"
+      ],
+      "last_attempted_ci_run": "https://github.com/atto-lang/atto-source.net/actions/runs/44657143201",
+      "source_state": "CANDIDATE_COMMITTED",
+      "execution_status": "NOT_EXECUTED",
+      "compiler_artifact_sha256": null,
+      "guest_artifact_sha256": null,
+      "runner_job_id": null,
+      "executed_step_count": 0,
+      "guest_exit_receipt": null,
+      "negative_rejection_receipt": null,
+      "independent_approval": null
+    }
+  ]
+}
