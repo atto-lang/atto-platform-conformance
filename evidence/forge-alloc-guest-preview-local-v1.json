@@ -1,0 +1,50 @@
+{
+  "schema": "atto.alloc-guest.preview-local.v1",
+  "status": "RESTRICTED_GUEST_EXECUTED_LOCAL_NOT_CANONICAL_LIBRARY",
+  "compiler_repository": "atto-lang/atto-source.forge",
+  "compiler_pull_request": 48,
+  "compiler_file": "tools/forge_alloc.cpp",
+  "compiler_file_git_blob": "3748d02d58556b618a2bafba596c1cf5446f2aa1",
+  "compiler_file_sha256": null,
+  "evidence_date_utc": "2026-11-20",
+  "environment": "local container; source-org GHA jobs did not execute steps",
+  "compiler_production_profile": false,
+  "experimental_host_profile_required": true,
+  "generated_language": "C++20",
+  "runtime_header_git_blob": "882cd590bf36db859679ee4417523d098c2dddc4",
+  "compiler_local_checks": {
+    "gcc_14_2_o0": {
+      "compiled_guest_cases": 12,
+      "compiler_negative_cases": 10,
+      "outcome": "PASSED",
+      "source": "local exactly-matching compiler file Git blob"
+    },
+    "gcc_14_2_and_clang_17_o1_asan_ubsan_equal_guest": {
+      "outcome": "PASSED",
+      "note": "Generated equality guest built under ASan/UBSan; checks do not establish production isolation"
+    },
+    "cmake_style_regression": {
+      "compiled_guest_cases": 7,
+      "compiler_negative_cases": 3,
+      "repeated_runs": 2,
+      "outcome": "PASSED",
+      "note": "Locally reconstructed harness and equivalent fixtures, not exact checked-out GitHub PR tree"
+    }
+  },
+  "canonical_atto_module_bodies_compiled": false,
+  "canonical_atto_library_linked": false,
+  "tenant_vm_isolation_proven": false,
+  "production_guest_authority": false,
+  "forge_general_compiler_supported": false,
+  "llvm_backend_compiled_guest": false,
+  "backend_parity_certified": false,
+  "release_authorized": false,
+  "required_before_canonical_parity": [
+    "compile canonical alloc.ByteRegion and std.byte_ops Atto method bodies",
+    "replace fixed test principal with authenticated TenantVM actor-generation authority",
+    "enforce compiler's direct and transitive import capabilities and borrow checks",
+    "run exact-head nonzero-step CI on compiler and standard-library pinned trees",
+    "unify main return value ABI and process exit semantics",
+    "LLVM and remaining compilers independently compile and run target guest cases"
+  ]
+}
