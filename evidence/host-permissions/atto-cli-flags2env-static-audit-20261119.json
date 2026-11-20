@@ -1,0 +1,38 @@
+{
+  "schema": "atto.host_permissions.cli_argv_request_static_audit.v1",
+  "classification": "STATIC_SOURCE_AUDIT_NOT_RUST_EXECUTION_NOT_GUEST_ENFORCEMENT",
+  "sources": {
+    "cli_repo": "atto-lang/atto-cli",
+    "cli_pr": "https://github.com/atto-lang/atto-cli/pull/7",
+    "exact_head_sha": "16e3e635c6fd9dee63d89869d4c3dd2685f2325b",
+    "bundled_parser_repo": "flags-2-env/flags-2-env",
+    "pinned_parser_git_commit": "278245253ee5d37b1fb54285383ab18818de6b18",
+    "parser_c_blob": "786c9314c9a0d9ed51e64e0299ad41745b579aff",
+    "cli_schema_blob": "9b82603226dad028e55b5d3fe518aa9974881780",
+    "cli_permission_model_blob": "1d1ef94304343451d49d180bcc5786ae74363114"
+  },
+  "static_findings": [
+    "26 .cli-flags.toml flag tables, no repeated declared env keys",
+    "16 scoped allow/deny flag declarations",
+    "upstream C parser recognizes require_equals, load, files, type, aliases, identity metadata",
+    "upstream C parser does NOT recognize a bare_value flag-table key; all 16 invalid occurrences removed",
+    "versioned deterministic argv-only request encoding added, including deny-all marker and explicit denies",
+    "unsigned canonical request is NOT a verified artifact manifest or permission grant",
+    "current scalar Wasm host rejects privileged allow requests rather than ignoring them"
+  ],
+  "tests": {
+    "local_rust_compilation": "NOT_EXECUTED_CARGO_UNAVAILABLE",
+    "local_flags2env_parser_audit": "NOT_EXECUTED_NATIVE_PARSER_UNAVAILABLE",
+    "source_owned_ci": "NOT_EXECUTED_ZERO_STEP_RUNNER_ADMISSION_FAILURE",
+    "compiled_atto_guest": "NOT_EXECUTED",
+    "all_backend_parity": "NOT_EXECUTED"
+  },
+  "remaining": [
+    "Actual pinned flags2env bundled-parser audit and Cargo.lock",
+    "Build install-time trusted CLI schema packaging",
+    "Artifact permission ceiling independently integrity-verified",
+    "Authenticated host/TenantVM/actor capability handoff and deny intersection",
+    "Live signed manifest and compiled Atto guest std.fs positive/negative execution",
+    "Upstream canonical optional bare-string scoped flags support or explicit documented incompatibility"
+  ]
+}
