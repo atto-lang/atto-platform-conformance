@@ -241,5 +241,56 @@
     "directed_edges_never_supervisor_control": true,
     "reverse_operator_does_not_imply_duplex": true,
     "rpipe_reverses_written_stage_order_only": true
-  }
+  },
+  "compiler_workstreams": [
+    {
+      "repo": "atto-lang/atto-source.rs",
+      "pr": "https://github.com/atto-lang/atto-source.rs/pull/224",
+      "phase": "typed_parser_static_check",
+      "guest_pipe_execution": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.java",
+      "pr": "https://github.com/atto-lang/atto-source.java/pull/54",
+      "phase": "typed_prehir_data_graph_plan",
+      "guest_pipe_execution": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.llvm",
+      "pr": "https://github.com/atto-lang/atto-source.llvm/pull/66",
+      "phase": "typed_static_plan_with_explicit_guest_gate",
+      "guest_pipe_execution": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.net",
+      "pr": "https://github.com/atto-lang/atto-source.net/pull/25",
+      "phase": "typed_static_plan_with_explicit_cil_gate",
+      "guest_pipe_execution": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.forge",
+      "pr": "https://github.com/atto-lang/atto-source.forge/pull/49",
+      "phase": "tokenized_unsupported_guest_gate",
+      "guest_pipe_execution": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.cranelift",
+      "pr": "https://github.com/atto-lang/atto-source.cranelift/pull/51",
+      "phase": "contextual_reverse_unsupported_guest_gate",
+      "guest_pipe_execution": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.js",
+      "pr": "https://github.com/atto-lang/atto-source.js/pull/31",
+      "phase": "typed_static_plan_with_explicit_js_guest_gate",
+      "guest_pipe_execution": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.wasm",
+      "pr": "https://github.com/atto-lang/atto-source.wasm/pull/42",
+      "phase": "host_only_typed_data_plan",
+      "guest_pipe_execution": "NOT_EXECUTED"
+    }
+  ],
+  "compiler_workstreams_note": "PRs represent unmerged source work only; do not count as executed tests or guest conformance. Each backend must supply its own exact SHA and actual material CI/guest receipt."
 }
