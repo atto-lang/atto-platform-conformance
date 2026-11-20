@@ -183,6 +183,22 @@
       "source": "negative-old-constructor-nested.atto",
       "expected_diagnostic": "E_NEW_REQUIRED",
       "guest_artifact": false
+    },
+    {
+      "id": "reject-canonical-unimplemented-mutex",
+      "kind": "compile_negative",
+      "feature": "constructor_unimplemented",
+      "source": "negative-new-without-lock.atto",
+      "expected_diagnostic": "E_LOCK_UNSUPPORTED",
+      "guest_artifact": false
+    },
+    {
+      "id": "reject-canonical-nested-unimplemented-mutex",
+      "kind": "compile_negative",
+      "feature": "constructor_unimplemented",
+      "source": "negative-new-nested-without-lock.atto",
+      "expected_diagnostic": "E_LOCK_UNSUPPORTED",
+      "guest_artifact": false
     }
   ],
   "backend_evidence": {
@@ -284,7 +300,13 @@
     "ownership": "Unique owner resource, borrow by default for nonprimitive function parameters; no implicit clone or by-value copy",
     "guest_promotion": "No backend may claim constructor parity without source-pinned compiler/type-checker and executed guest evidence",
     "lexing_rule": "Detect bare generic resource-class construction regardless of .lock_async presence; handle nested generic delimiters; type references and commented/quoted code do not instantiate a resource class",
-    "nested_bare_mutex_constructor_rejected": true
+    "nested_bare_mutex_constructor_rejected": true,
+    "unlowered_canonical_constructor": {
+      "source": "new Mutex<int>(0)",
+      "diagnostic": "E_LOCK_UNSUPPORTED",
+      "artifact": false,
+      "when_no_verified_mutex_lease_lowering": true
+    }
   },
   "constructor_parity_tracking": {
     "scope": "source_constructor_diagnostics_only",
