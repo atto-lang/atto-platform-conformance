@@ -523,6 +523,15 @@
     }
   },
   "verification": "Source-only registry; requires exact compiler SHA, negative no-artifact proofs, actual guest execution and independent backend receipts.",
+  "limited_guest_receipts": {
+    "java_pure_inline_scalar": {
+      "path": "contracts/task-java-pure-inline-20261120.json",
+      "status": "EXECUTED_LIMITED_PROFILE",
+      "full_task_backend_status": "NOT_EXECUTED",
+      "source_head": "fd90a137b9cfc59bb23f3cd8945ea7d3fb86e3da",
+      "carrier_run": "https://github.com/r2g-test/atto-ci/actions/runs/44793145432"
+    }
+  },
   "cancellation_model": "owned Future<T>.cancel(): void requests nonblocking idempotent cancellation; TaskCancelled terminal distinct from success/failure; scope cascades and physically retires all children; receipt witnesses mandatory",
   "lock_cancellation_model": "Cancel request != lock release != task retirement. Queued waiter revokes without a guard; active lease never releases until holder safe-point cleanup; exactly-once LIFO release; no child join under live guard; cleanup failures retain fenced ownership and block DONE.",
   "lock_cancellation_runtime_probes": [
