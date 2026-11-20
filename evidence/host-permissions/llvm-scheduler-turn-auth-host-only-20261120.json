@@ -67,7 +67,7 @@
       "tests/tenant-vm/CMakeLists.txt",
       ".github/workflows/native-host-fs-broker.yml"
     ],
-    "summary": "Bound a trusted-only per-carrier turn witness to TenantVM generation, actor ref, distinct restart incarnation, odd scheduler turn sequence and bounded actor/scratch region. Every existing host API entry rejects invalid or stale turn context, and teardown clears the witness. C++ witness predicates and real VM restart smoke ran on the exact source head.",
+    "summary": "Bound a trusted-only per-carrier turn witness to TenantVM generation, actor ref, distinct restart incarnation, odd scheduler turn sequence and bounded actor/scratch region. Existing alloc/free/send/spawn/stop host-call entries reject invalid or stale scheduler context; teardown clears the witness. C++ witness predicates and real VM restart smoke ran on the exact source head.",
     "identity_limit": "Witness is trusted scheduler-internal only; NOT a guest bearer token and NOT direct live async service admission.",
     "memory_limit": "Offset32 arithmetic bounds helper tested but not yet live ABI-v5 FS dispatch."
   },
