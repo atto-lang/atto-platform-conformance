@@ -188,3 +188,40 @@ test('alternate direct-CIL PR27 exact-source guest receipt stays separately scop
   // Canonical older PR26 proof must not be clobbered by alternate PR27.
   assert.equal(manifest.source.candidate_net_direct_cil.pr, 26);
 });
+
+
+test('exact original guarded match stdout is proven in scoped trusted direct-CIL CoreCLR and NativeAOT', () => {
+  const scoped = manifest.source.candidate_net_stdio_v1;
+  assert.equal(scoped.source_head, '29c7ac16de01c966b10324b96131b9658f96efb8');
+  assert.equal(scoped.source_tree, '60f30977956ddd7a8517ea35873ea773995ecb31');
+  assert.equal(scoped.private_carrier.run_id, 44662545614);
+  assert.equal(scoped.private_carrier.linux_job_id, 136043982286);
+  assert.equal(scoped.private_carrier.status, 'SUCCESS');
+  assert.equal(scoped.private_carrier.full_tree_sha_verified, true);
+  assert.equal(scoped.private_carrier.source_blobs_verified, 46);
+  assert.match(scoped.private_carrier.artifact_sha256, /^[a-f0-9]{64}$/);
+  const results = scoped.compiled_guest_results;
+  assert.equal(results.status, 'PASS_EXACT_ORIGINAL_SCOPED_CORECLR_NATIVEAOT');
+  assert.deepEqual(results.canonical.map(c => c.id), manifest.cases.map(c => c.id));
+  for (const [index, result] of results.canonical.entries()) {
+    const expected = manifest.cases[index].expect;
+    if (expected.kind === 'guest') {
+      assert.equal(result.status, 'PASS_EXECUTED_GUEST');
+      assert.equal(result.stdout, expected.stdout);
+      assert.equal(result.stderr, '');
+      assert.equal(result.coreclr_exit, expected.exit);
+      assert.equal(result.nativeaot_exit, expected.exit);
+    } else {
+      assert.equal(result.status, 'PASS_REJECTED_NO_ARTIFACT');
+      assert.equal(result.diagnostic, expected.code);
+      assert.equal(result.no_guest, true);
+    }
+  }
+  assert.equal(results.no_stdio_grant.diagnostic, 'E_PERMISSION');
+  assert.equal(results.no_stdio_grant.status, 'PASS_DENIED_NO_ARTIFACT');
+  assert.equal(results.extra_stdio_negatives.passed, 6);
+  assert.equal(results.subject_call_scalar.coreclr_exit, 42);
+  assert.equal(results.subject_call_scalar.nativeaot_exit, 42);
+  // A trusted standalone compiler grant is not TenantVM authorization.
+  assert.equal(manifest.backends['atto-source.net'].status, 'NOT_EXECUTED');
+});
