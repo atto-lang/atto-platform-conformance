@@ -1,0 +1,145 @@
+{
+  "schema": "atto.pointer-source-traits-operators.v1",
+  "status": "TARGET_ONLY_NOT_EXECUTED",
+  "normative_source": "atto-lang/atto-spec#18",
+  "description": "Operator disambiguation and built-in Pointer<T> trait coherence across all eleven compiler backends; no compiled guest conformance is asserted.",
+  "rule": "Unary &/unary * are forbidden address-of/deref; binary & is integer bitwise AND and binary * is multiplication. rt/bang pointer forms are equivalent checked operations.",
+  "nominal_type": {
+    "name": "Pointer<T>",
+    "builtin": true,
+    "invariant": true,
+    "non_forgeable": true,
+    "shadowable": false,
+    "separate_from": "CheckedRef<Class>",
+    "authority_states": [
+      "BorrowedLocal<T>",
+      "OwnedRegion<T>"
+    ]
+  },
+  "implicit_traits": {
+    "Copy": false,
+    "Clone": false,
+    "Sendable": false,
+    "Serializable": false,
+    "Shareable": false
+  },
+  "transport": "No raw pointer cross tenant, actor, isolate, worker or network. Explicit checked same-domain capability transfer requires separate proof and admission.",
+  "cases": [
+    {
+      "id": "PTO-001",
+      "kind": "EXECUTE",
+      "source": "fixtures/pointer-source-operators-v1/pass/multiplication.atto",
+      "exit": 42,
+      "why": "binary star remains arithmetic",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "PTO-002",
+      "kind": "EXECUTE",
+      "source": "fixtures/pointer-source-operators-v1/pass/bitwise-and.atto",
+      "exit": 42,
+      "why": "binary ampersand remains int bitwise AND",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "PTO-003",
+      "kind": "REJECT_NO_ARTIFACT",
+      "source": "fixtures/pointer-ref-local-v1/fail/raw-address-of.atto",
+      "error_category": "E_POINTER_SYNTAX",
+      "why": "unary ampersand cannot forge pointer",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "PTO-004",
+      "kind": "REJECT_NO_ARTIFACT",
+      "source": "fixtures/pointer-ref-local-v1/fail/raw-star.atto",
+      "error_category": "E_POINTER_SYNTAX",
+      "why": "unary star cannot dereference pointer",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "PTO-005",
+      "kind": "REJECT_NO_ARTIFACT",
+      "source": "fixtures/pointer-ref-local-v1/fail/copy-operator.atto",
+      "error_category": "E_POINTER_ALIAS",
+      "why": "copy! cannot duplicate a linear pointer handle",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "PTO-006",
+      "kind": "REJECT_NO_ARTIFACT",
+      "source": "fixtures/pointer-ref-local-v1/fail/share-operator.atto",
+      "error_category": "E_POINTER_ALIAS",
+      "why": "share! cannot publish local pointer",
+      "status": "NOT_EXECUTED"
+    }
+  ],
+  "backends": {
+    "atto-source.atto": {
+      "operator_boundary": "NOT_EXECUTED",
+      "pointer_traits": "NOT_EXECUTED",
+      "compiled_guest": "NOT_EXECUTED",
+      "exact_head_receipt": null
+    },
+    "atto-source.cranelift": {
+      "operator_boundary": "NOT_EXECUTED",
+      "pointer_traits": "NOT_EXECUTED",
+      "compiled_guest": "NOT_EXECUTED",
+      "exact_head_receipt": null
+    },
+    "atto-source.forge": {
+      "operator_boundary": "NOT_EXECUTED",
+      "pointer_traits": "NOT_EXECUTED",
+      "compiled_guest": "NOT_EXECUTED",
+      "exact_head_receipt": null
+    },
+    "atto-source.hdl": {
+      "operator_boundary": "NOT_EXECUTED",
+      "pointer_traits": "NOT_EXECUTED",
+      "compiled_guest": "NOT_EXECUTED",
+      "exact_head_receipt": null
+    },
+    "atto-source.java": {
+      "operator_boundary": "NOT_EXECUTED",
+      "pointer_traits": "NOT_EXECUTED",
+      "compiled_guest": "NOT_EXECUTED",
+      "exact_head_receipt": null
+    },
+    "atto-source.js": {
+      "operator_boundary": "NOT_EXECUTED",
+      "pointer_traits": "NOT_EXECUTED",
+      "compiled_guest": "NOT_EXECUTED",
+      "exact_head_receipt": null
+    },
+    "atto-source.llvm": {
+      "operator_boundary": "NOT_EXECUTED",
+      "pointer_traits": "NOT_EXECUTED",
+      "compiled_guest": "NOT_EXECUTED",
+      "exact_head_receipt": null
+    },
+    "atto-source.net": {
+      "operator_boundary": "NOT_EXECUTED",
+      "pointer_traits": "NOT_EXECUTED",
+      "compiled_guest": "NOT_EXECUTED",
+      "exact_head_receipt": null
+    },
+    "atto-source.realtime": {
+      "operator_boundary": "NOT_EXECUTED",
+      "pointer_traits": "NOT_EXECUTED",
+      "compiled_guest": "NOT_EXECUTED",
+      "exact_head_receipt": null
+    },
+    "atto-source.rs": {
+      "operator_boundary": "NOT_EXECUTED",
+      "pointer_traits": "NOT_EXECUTED",
+      "compiled_guest": "NOT_EXECUTED",
+      "exact_head_receipt": null
+    },
+    "atto-source.wasm": {
+      "operator_boundary": "NOT_EXECUTED",
+      "pointer_traits": "NOT_EXECUTED",
+      "compiled_guest": "NOT_EXECUTED",
+      "exact_head_receipt": null
+    }
+  }
+}
