@@ -38,6 +38,7 @@ test('all seven guest targets are distinct and have declared outcomes', () => {
     assert.match(source,/pub fnc main\(\): int(?: throws Error)? \{/);
     assert.match(source,/import module [a-z]+ from pkg "(?:core|alloc|std)\.[a-z_]+";/);
   }
+  assert.match(read(c.cases[2].source),/val mut bytes = region\\.ByteRegion\\.allocate_zeroed\\(4\\);/);
   assert.match(read(c.cases[3].source),/val bytes = region\.ByteRegion\.allocate_zeroed\(2\);/);
   assert.match(read(c.cases[3].source),/bytes\.write_byte\(0, 1\);/);
   assert.match(read(c.cases[4].source),/bytes\.read_byte\(2\)/);
