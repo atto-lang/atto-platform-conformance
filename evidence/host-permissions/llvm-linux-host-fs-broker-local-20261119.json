@@ -3,15 +3,16 @@
   "classification": "HOST_ONLY_LOCAL_EXECUTION_NOT_GUEST_CONFORMANCE",
   "source_repo": "atto-lang/atto-source.llvm",
   "source_pr": "https://github.com/atto-lang/atto-source.llvm/pull/62",
-  "source_head_sha": "ef1956983b0821cd84331a334b3e6260fdd06f7e",
+  "source_head_sha": "4195367eed3950da3babe35a261675194a1fbb96",
   "source_git_blobs": {
-    "native/include/atto/host_fs_broker.h": "61e82579ecb04adb1a8ed79acbfa78d6eb0d8cef",
-    "native/src/host_fs_broker.c": "ccc5da91cb4073190b490574337d4059efdb6953",
+    "native/include/atto/host_fs_broker.h": "2cf57fc353ffb0a8a422e5004c117235d4659258",
+    "native/src/host_fs_broker.c": "75b6b3db38dfd6644e510c16c82fc1f808bac321",
     "native/tests/host_fs_broker_test.c": "6ffd147d7d462a1c80bcf45339049ffb4cdd4195",
     "native/CMakeLists.txt": "64de3201653ee01226941832b5a548d13ff2a9b2",
-    "native/include/atto/host_fs_guest_bridge.h": "b08b525b2695d08bb0fdafc997ad1a01be45a5e4",
-    "native/src/host_fs_guest_bridge.c": "7680556f684bbdd8dd306d24b5c96ea5a226042f",
-    "native/tests/host_fs_guest_bridge_test.c": "6f1fc83d8de72cf8db73470b0315462d05f355e4"
+    "native/include/atto/host_fs_guest_bridge.h": "d42a428b6e7d1d8ae0b2389f282765a9f4587829",
+    "native/src/host_fs_guest_bridge.c": "441af427efcb324a5e20861eeb2e36788307b95a",
+    "native/tests/host_fs_guest_bridge_test.c": "d2875451907a82ee5206a67d80281be048b4c061",
+    ".github/workflows/native-host-fs-broker.yml": "96ad20369e9d324c44d9af6b54635ff643d7d27c"
   },
   "local_verification": {
     "executor": "local isolated tool container; not source-owned GitHub Actions",
@@ -69,14 +70,27 @@
       "cage_offset_overflow_rejection",
       "embedded_nul_and_traversal_guest_path_rejection",
       "denied_guest_cage_output_unchanged",
-      "fake_tenant_and_stale_generation_guest_frame_rejection"
+      "fake_tenant_and_stale_generation_guest_frame_rejection",
+      "ACTOR_REGION_ISOLATION_INSIDE_SHARED_TENANT_CAGE",
+      "REVOKE_READ_GUEST_COPY_ATOMIC_COMMIT",
+      "REQUIRE_ALL_SIX_LAYER_GRANTS",
+      "ALL_LAYER_DENIES_OVERRIDE",
+      "DELEGATION_DENY_PERSISTS",
+      "REJECT_SINGLE_LAYER_BROKER_AT_GUEST_BRIDGE",
+      "24_PER_LAYER_MISSING_GRANT_OR_EXPLICIT_DENY_CASES",
+      "POLICY_SNAPSHOT_IMMUTABLE_AFTER_CONSTRUCTION"
     ],
-    "verified_bytes": "Exact Git blob SHA of all four source/test/CMake files equals independently compiled local files",
+    "verified_bytes": "Exact Git blob SHA of all six C header/source/test files and CMake equals locally compiled/tested bytes; GitHub workflow audited separately",
     "test_markers": [
       "ATTO_HOST_FS_BROKER_HOST_ONLY_TEST_PASS",
       "ATTO_HOST_FS_GUEST_OFFSET_BRIDGE_HOST_ONLY_TEST_PASS"
     ],
-    "host_executables": 2
+    "host_executables": 2,
+    "optimizations": [
+      "O1",
+      "O2"
+    ],
+    "successful_local_test_executions": 8
   },
   "source_ci": {
     "run_id": 44658895112,
@@ -93,7 +107,9 @@
     "tenant_isolation_proven": false,
     "backend_status": "NOT_EXECUTED",
     "guest_offset_frame_test": true,
-    "guest_offset_frame_test_scope": "SIMULATED_HOST_OWNED_CAGE_ONLY"
+    "guest_offset_frame_test_scope": "SIMULATED_HOST_OWNED_CAGE_ONLY",
+    "artifact_ceiling_signature_verified": false,
+    "actor_frame_authenticated_in_real_scheduler": false
   },
   "known_limitations": [
     "Trusted scheduler must authenticate tenant/generation; IDs alone can be spoofed",
@@ -101,6 +117,9 @@
     "Host-managed root and directory tree must not be movable by attacker OS principals",
     "Signed artifact ceiling, async I/O, cancellation and live compiled Atto guest missing",
     "CMake/CTest at exact checked-in head is not yet observed via an admitted runner",
-    "Host-only bridge uses a synthetic cage, not compiler-generated .atto nor authenticated guest turn"
+    "Host-only bridge uses a synthetic cage, not compiler-generated .atto nor authenticated guest turn",
+    "Six-layer host policy is a snapshot supplied by a trusted caller, not proof that its artifact layer was cryptographically verified",
+    "Actor-region bounds are proven with synthetic host-owned frame; real TenantVm runtime derivation and immutable actor memory remain pending",
+    "No stepful source-org GH Actions admitted on this latest head; local GCC/Clang executions are not CI"
   ]
 }
