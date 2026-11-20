@@ -1120,6 +1120,44 @@
       "kind": "reject",
       "expected_diagnostic": "E_PATTERN_SOURCE",
       "guest_artifact": false
+    },
+    {
+      "path": "fixtures/typed-pattern-fragments/list-pattern-guard-once-0.atto",
+      "blob_sha": "cdaf912597d63c9cf5e6e8127d0ecb5ac2e42958",
+      "kind": "positive",
+      "expected_exit_code": 0,
+      "assertion": "first witness guard false; no re-search"
+    },
+    {
+      "path": "fixtures/typed-pattern-fragments/list-pattern-infix-30.atto",
+      "blob_sha": "99249635fb38a60a85ade0756b8dd655fdb44fb1",
+      "kind": "positive",
+      "expected_exit_code": 30,
+      "assertion": "find first literal 20 then bind next int"
+    },
+    {
+      "path": "fixtures/typed-pattern-fragments/list-pattern-anchored-no-match-7.atto",
+      "blob_sha": "02d1ed663d6cfec0691097dbb0f22ec8a70cd39c",
+      "kind": "positive",
+      "expected_exit_code": 7,
+      "assertion": "prefix mismatch falls to wildcard default"
+    },
+    {
+      "path": "fixtures/typed-pattern-fragments/list-pattern-overflow-panic.atto",
+      "blob_sha": "51ffb97b826b1f5a713764223b30ebad903a4cd4",
+      "kind": "trap",
+      "expected_panic_code": 1,
+      "assertion": "matched arm checked i64 arithmetic must trap"
     }
-  ]
+  ],
+  "implementation_candidates": {
+    "rust_wasm": {
+      "repo": "atto-lang/atto-source.rs",
+      "pr": 415,
+      "head": "f72c8bca13f94edb69e482f18bdfe1a0354fcec0",
+      "scope": "fixed-local-List<int>-native-rest-only",
+      "guest_status": "NOT_EXECUTED",
+      "caveat": "source compiler code authored but zero-step CI runner admission, no actual compiler/guest receipt"
+    }
+  }
 }
