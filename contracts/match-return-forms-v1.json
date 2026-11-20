@@ -183,7 +183,7 @@
           "native-caret-scalar.atto"
         ],
         "expected_exit": 4,
-        "status": "PASS_PREVIOUS_EXACT_HEAD_ONLY",
+        "status": "PASS_COMPILED_CORECLR_AND_NATIVEAOT_EXACT_HEAD",
         "note": "not equivalent to original printing fixtures",
         "evidence": {
           "run_id": 44660359500,
@@ -192,11 +192,30 @@
           "baseline": "PASS",
           "overall": "FAILED",
           "failure": "E_LEX instead of E_RETURN on canonical braced-fallthrough fixture"
-        }
+        },
+        "executed_guest_cases": [
+          {
+            "id": "scalar-return",
+            "coreclr_exit": 4,
+            "nativeaot_exit": 4,
+            "verified": true
+          },
+          {
+            "id": "scalar-caret",
+            "coreclr_exit": 4,
+            "nativeaot_exit": 4,
+            "verified": true
+          }
+        ]
       },
       "exact_user_printing_programs": {
         "status": "UNSUPPORTED",
-        "reason": "direct CIL subset does not lex/lower stdio.println"
+        "reason": "restricted direct-CIL frontend does not lex/lower stdio.println",
+        "observed_rejection": {
+          "return_fixture": "E_LEX",
+          "caret_fixture": "E_LEX",
+          "no_guest_artifacts": true
+        }
       },
       "source_org_ci": {
         "run_id": 44659872311,
@@ -211,13 +230,49 @@
         "full_tree_sha_verified": true,
         "source_blobs_verified": 38,
         "run_id": 44660814076,
-        "status": "IN_PROGRESS"
+        "status": "SUCCESS_EXECUTED_NATIVE_CORECLR_AND_AOT_SCALAR",
+        "conclusion": "SUCCESS",
+        "linux_job_id": 136038317374,
+        "artifact_id": 14595981111,
+        "artifact_sha256": "7476033ff7412f6996428fbb52c0b6d05290ef9677dccc3812dd66301bf46509",
+        "source_head": "a6394852ed15352e81b02c68da0985fbfe52f9d4",
+        "link": "https://github.com/usa-acc/atto-ci/actions/runs/44660814076",
+        "baseline": {
+          "compiled_coreclr_and_nativeaot_exit42": true,
+          "negative_passed": 12
+        }
       },
       "retry": {
         "description": "Lexer admits '=' as a token but rejects assignment semantics, allowing invalid braced arm to be diagnosed E_RETURN; assignment-expression negative added",
         "source_head": "a6394852ed15352e81b02c68da0985fbfe52f9d4",
         "run_id": 44660814076,
-        "status": "IN_PROGRESS"
+        "status": "PASS"
+      },
+      "canonical_negative_cases": [
+        {
+          "id": "nonexhaustive-guard",
+          "status": "PASS_REJECTED_NO_ARTIFACT",
+          "diagnostic": "E_MATCH"
+        },
+        {
+          "id": "fallthrough-block",
+          "status": "PASS_REJECTED_NO_ARTIFACT",
+          "diagnostic": "E_RETURN"
+        }
+      ],
+      "additional_negative_cases": {
+        "passed": 7,
+        "failed": 0,
+        "codes": [
+          "E_TYPE",
+          "E_MATCH",
+          "E_MATCH",
+          "E_SYMBOL",
+          "E_TYPE",
+          "E_MATCH",
+          "E_PARSE"
+        ],
+        "no_artifact": true
       }
     }
   },
