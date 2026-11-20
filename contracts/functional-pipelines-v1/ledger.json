@@ -852,21 +852,22 @@
     "mirror_verification": {
       "schema": "atto.token-free-carrier-mirror-verification.evidence.v1",
       "tool_path": "tools/verify-token-free-carrier-mirror.mjs",
-      "tool_blob_sha": "7d9e884d96092cb1ff2c865e10cb1947006def2b",
+      "tool_blob_sha": "e83424cfc0f8b2403a130d0198a668b8bdb9e1e3",
       "test_path": "tests/token-free-carrier-mirror.test.mjs",
-      "test_blob_sha": "f227e2f6dd166e807ef580bff232e28a686ac893",
+      "test_blob_sha": "714b0b15ad89c71c73daf35e0043a6e762b41127",
       "local_test_result": {
         "execution_status": "executed_locally_not_ci_admitted",
         "runtime": "Node.js v22.16.0 + git in local Linux container",
-        "tests_total": 13,
-        "tests_passed": 13,
+        "tests_total": 15,
+        "tests_passed": 15,
         "tests_failed": 0,
         "positive_subcases": 1,
-        "negative_subcases": 11,
+        "negative_subcases": 13,
         "fixture": "Temporary synthetic Git tree including text Atto source, executable, binary bytes and symlink; rejected manifest corruption, source/mode/file/symlink tampering and symlink escape",
         "source_verified_by_git_blob_sha": true
       },
       "identity_requirements": [
+        "separately pinned immutable source commit SHA distinct from carrier commit",
         "independently trusted source tree SHA",
         "complete tree entries with file mode",
         "literal Git blob SHA of all binary and text files",
@@ -879,7 +880,7 @@
       "carrier_runner_admitted": false,
       "github_actions_execution_status": "not_executed",
       "receipt": null,
-      "scope": "Only verification tool and synthetic Git fixtures ran locally; no real private source tree was copied to any org and no GH Actions test steps executed."
+      "scope": "The exact committed verification tool and test blobs passed 15 local Node tests on a synthetic Git repository. No private Atto source was mirrored and no Actions runner executed steps."
     }
   },
   "head_audit": {
