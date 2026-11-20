@@ -7,17 +7,18 @@
   "source": {
     "repo": "atto-lang/atto-source.java",
     "pr": 59,
-    "head_sha": "fd90a137b9cfc59bb23f3cd8945ea7d3fb86e3da",
+    "head_sha": "751ac8cc70edaceb240bd4f425c4bf9ee3fb8e38",
     "source_blobs": {
-      "src/compiler/asyncv1/AttoAsyncV1Compiler.java": "847ec4559a87c3a64e2b9bc2e845f538eef1da2f",
-      "tests/compiler/AttoAsyncV1CompilerProbe.java": "092ce08993b32dc9af0ba73b82f42d17608c2392",
+      "src/compiler/asyncv1/AttoAsyncV1Compiler.java": "f6fc5a677dbcf65273540dc78587cf3617a3ae7d",
+      "tests/compiler/AttoAsyncV1CompilerProbe.java": "b78622bbe9a25d01796f237041d14cd15fa0e68d",
       "tests/compiler/AttoAsyncV1GeneratedIdentifierProbe.java": "3d73792dbeb346412652600496124f49d0d673c1",
       "fixtures/async_v1/completed_future.atto": "b2c23fcf15bebda5449032f41e3096dae68302c0",
       "fixtures/async_v1/completed_future_typed.atto": "240fc8e0ad724722b13f8e0034b30bc69db76925",
-      "fixtures/async_v1/sync_inline_int.atto": "88e3a4071da05d8c6947d3a4d413ac1eb6c2d64e",
+      "ci/async/verify-compiled-completed-future.sh": "d27ef89964f36c21e1250174e67a279d4723a75b",
+      "ci/admission/exact-tree.sh": "3a52135b8ea8986b38e877bbc291823f52bca947",
+      "fixtures/async_v1/sync_inline_int.atto": "b2d53bc49d9ed1e7e7da479fd528f926e09620d9",
       "fixtures/async_v1/sync_inline_empty.atto": "82e885f6ec2d8fa731da65e26e2c53db1b9a9ec0",
-      "ci/async/verify-compiled-completed-future.sh": "5e0ecea3e695a80de74e0ddfa60fe6de5eaf6d36",
-      "ci/admission/exact-tree.sh": "3a52135b8ea8986b38e877bbc291823f52bca947"
+      "fixtures/async_v1/sync_inline_do_nonvoid.atto": "e612895b2067c52fd38d1e66c8f6a551e1aa2762"
     }
   },
   "alternate_runner": {
@@ -25,25 +26,25 @@
     "private": true,
     "no_source_token": true,
     "cross_org_checkout": false,
-    "exact_source_blob_count": 9,
+    "exact_source_blob_count": 10,
     "source_scope": "SHA_VERIFIED_TEST_DEPENDENCY_CLOSURE_ONLY_NOT_FULL_SOURCE_TREE",
-    "carrier_commit_sha": "5a8329425a2e1d3e4c4d0b7cfb085dac3ee7ac80",
-    "carrier_tree_sha": "b8ad18443e74248419915e9d5466ef1793e515b3",
-    "workflow_run_id": 44793145432,
-    "workflow_url": "https://github.com/r2g-test/atto-ci/actions/runs/44793145432",
-    "job_id": 136485742647,
+    "carrier_commit_sha": "bce6e403e3f58c89c5381776abf56830034988c1",
+    "carrier_tree_sha": "9e5043cf6716b15150e2c394c9a7330fadc8fcb2",
+    "workflow_run_id": 44795596059,
+    "workflow_url": "https://github.com/r2g-test/atto-ci/actions/runs/44795596059",
+    "job_id": 136494184667,
     "workflow_conclusion": "success",
     "job_conclusion": "success",
     "exact_tree_gate": "PASS",
-    "source_blob_pin_gate": "9/9",
+    "source_blob_pin_gate": "10/10",
     "runner": "ubuntu-24.04",
     "jdk": "GraalVM JDK 25",
     "native_image": "GraalVM Native Image 25 --no-fallback --gc=epsilon"
   },
   "execution": {
     "compiler_admission_checks": {
-      "passed": 81,
-      "total": 81
+      "passed": 95,
+      "total": 95
     },
     "generated_identifier_checks": {
       "java_compiled": 19,
@@ -58,16 +59,28 @@
     "pure_inline_sync_task": {
       "accepted_forms": [
         "sync task {}",
-        "do sync task<void> {}",
         "sync task<int> { return N; }",
-        "do sync task<int> { return N; }"
+        "do sync task {}",
+        "do sync task<void> {}",
+        "do sync task<void> { return; }"
       ],
       "non_susp_standalone_main": true,
       "empty_inline_guest_jvm_exit": 42,
       "typed_inline_guest_jvm_exit": 42,
       "typed_inline_guest_native_image_exit": 42,
       "generated_source_forbids_future_and_join": true,
-      "marker": "ATTO_ASYNC_V1_PURE_INLINE_JVM_NATIVE=PASS"
+      "marker": "ATTO_ASYNC_V1_PURE_INLINE_JVM_NATIVE=PASS",
+      "rejected_forms": [
+        "do sync task<int> {}",
+        "do sync task<int> { return N; }",
+        "do sync task { return N; }",
+        "do sync task<void> { return N; }",
+        "do sync task<Future<int>> {}"
+      ],
+      "do_sync_payload_type": "void only (explicit or inferred)",
+      "do_sync_invalid_diagnostic": "E_TASK_RETURN_TYPE",
+      "do_sync_invalid_no_generated_artifact": true,
+      "negative_cli_marker": "ATTO_DO_SYNC_VOID_ONLY_NO_ARTIFACT=PASS"
     }
   },
   "boundaries": {
@@ -81,5 +94,14 @@
     "no_tenantvm_runtime_proof": true,
     "no_full_source_tree_ci": true,
     "pr_remains_draft": true
+  },
+  "superseded_evidence": {
+    "source_head": "fd90a137b9cfc59bb23f3cd8945ea7d3fb86e3da",
+    "run_url": "https://github.com/r2g-test/atto-ci/actions/runs/44793145432",
+    "admission": {
+      "passed": 81,
+      "total": 81
+    },
+    "note": "Historical prior profile admitted do sync task<int>, which is invalid in current normative spec; superseded by the exact-head void-only run."
   }
 }
