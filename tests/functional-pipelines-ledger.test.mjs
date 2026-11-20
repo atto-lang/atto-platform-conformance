@@ -145,6 +145,17 @@ test('every backend must carry independent genuine execution evidence', () => {
   }
   assert.equal(ledger.formatter.verification_status, 'not_executed');
   assert.equal(ledger.formatter.receipt, null);
+  assert.match(ledger.formatter.proposed_head_sha, sha);
+  const fmt = ledger.formatter.local_v8_smoke;
+  assert.match(fmt.source_blob_sha, sha);
+  assert.match(fmt.test_blob_sha, sha);
+  assert.equal(fmt.executed_cases, 31);
+  assert.equal(fmt.failed_cases, 0);
+  assert.equal(fmt.idempotent, true);
+  assert.equal(fmt.multiarg_grouped_reverse_preserved, true);
+  assert.match(fmt.scope, /GitHub Actions not executed/);
+  // Formatter function execution proves normalization, not guest execution,
+  // and must never upgrade the backend/formatter CI admission status.
   assert.ok(ledger.exclusions.includes('zero-step Actions runs'));
 });
 
