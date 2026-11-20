@@ -1,0 +1,12 @@
+// TARGET only: source-only hosted FS fixture; not a compiled-guest receipt.
+// Invoke with --allow-read=./data --allow-write=./out (or narrower),
+// then verify ./out/copy.txt has the exact UTF-8 bytes of ./data/input.txt.
+// Repeat the same binary with --deny-read=./data or --deny-write=./out:
+// expect a typed permission denial before read/open or output truncation.
+import * as fs from pkg "std.fs";
+
+pub susp fnc main(): int {
+  val content = await fs.read_text("./data/input.txt");
+  await fs.write_text("./out/copy.txt", content);
+  return 0;
+}
