@@ -1,0 +1,122 @@
+{
+  "schema": "atto.option-type-suffix.native-scalar.v1",
+  "status": "AUTHORED_ONLY_NOT_EXECUTED",
+  "semantic_rule": "T? in a type position denotes required Option<T>. A trailing ? after a parameter name denotes a separate omittable parameter. There is no implicit T-to-Some conversion.",
+  "scope": "portable parser contract with bounded native LLVM scalar Option<int> execution oracle",
+  "references": [
+    "https://github.com/atto-lang/atto-source.llvm/pull/76",
+    "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/3157",
+    "contracts/v1/option-question-ergonomics/option-question-ergonomics-v1.json"
+  ],
+  "cases": [
+    {
+      "id": "positive-explicit",
+      "source": "fixtures/option-type-suffix-v1/positive-explicit.atto",
+      "git_blob_sha1": "f8723374eebd0c24a0913efdfc9a6a8ba67adb3d",
+      "kind": "positive",
+      "expected_exit": 42,
+      "expected_guest_stdout": "",
+      "expected_native_compiler": "accept"
+    },
+    {
+      "id": "positive-none",
+      "source": "fixtures/option-type-suffix-v1/positive-none.atto",
+      "git_blob_sha1": "d9ef29d47f769fabd419ae8aeec5924c529175aa",
+      "kind": "positive",
+      "expected_exit": 42,
+      "expected_guest_stdout": "",
+      "expected_native_compiler": "accept"
+    },
+    {
+      "id": "positive-some",
+      "source": "fixtures/option-type-suffix-v1/positive-some.atto",
+      "git_blob_sha1": "b223eb3a8ad4943bc8317d92863a2c59d1df6d03",
+      "kind": "positive",
+      "expected_exit": 42,
+      "expected_guest_stdout": "",
+      "expected_native_compiler": "accept"
+    },
+    {
+      "id": "reject-duplicate",
+      "source": "fixtures/option-type-suffix-v1/reject-duplicate.atto",
+      "git_blob_sha1": "a17413fc8e9fa97b5a12c9e6f02601e6adc95257",
+      "kind": "invalid_source",
+      "expected_exit": null,
+      "expected_guest_stdout": null,
+      "expected_native_compiler": "reject_no_ir"
+    },
+    {
+      "id": "reject-nested",
+      "source": "fixtures/option-type-suffix-v1/reject-nested.atto",
+      "git_blob_sha1": "a2c1d262af527cf38385f175a40040a6846bb8a8",
+      "kind": "native_unsupported",
+      "expected_exit": null,
+      "expected_guest_stdout": null,
+      "expected_native_compiler": "reject_no_ir"
+    },
+    {
+      "id": "reject-nested-result",
+      "source": "fixtures/option-type-suffix-v1/reject-nested-result.atto",
+      "git_blob_sha1": "944cb22a8f62ae000dbef99e0a4a7e84f917ca11",
+      "kind": "native_unsupported",
+      "expected_exit": null,
+      "expected_guest_stdout": null,
+      "expected_native_compiler": "reject_no_ir"
+    },
+    {
+      "id": "reject-omittable-formal",
+      "source": "fixtures/option-type-suffix-v1/reject-omittable-formal.atto",
+      "git_blob_sha1": "d7e43feda42f1178631f296a932e288a8fec225c",
+      "kind": "invalid_source",
+      "expected_exit": null,
+      "expected_guest_stdout": null,
+      "expected_native_compiler": "reject_no_ir"
+    },
+    {
+      "id": "reject-unknown-class",
+      "source": "fixtures/option-type-suffix-v1/reject-unknown-class.atto",
+      "git_blob_sha1": "388796c51088dea217d382cbe49a6b7ad88f18a8",
+      "kind": "invalid_source",
+      "expected_exit": null,
+      "expected_guest_stdout": null,
+      "expected_native_compiler": "reject_no_ir"
+    },
+    {
+      "id": "reject-unsupported-alias",
+      "source": "fixtures/option-type-suffix-v1/reject-unsupported-alias.atto",
+      "git_blob_sha1": "8d8b8a42ccc936b644d0d95d9d8c9702c0a71800",
+      "kind": "native_unsupported",
+      "expected_exit": null,
+      "expected_guest_stdout": null,
+      "expected_native_compiler": "reject_no_ir"
+    },
+    {
+      "id": "reject-void",
+      "source": "fixtures/option-type-suffix-v1/reject-void.atto",
+      "git_blob_sha1": "4d4181301e7d5d590b06f9be2798b0de7cd2213a",
+      "kind": "invalid_source",
+      "expected_exit": null,
+      "expected_guest_stdout": null,
+      "expected_native_compiler": "reject_no_ir"
+    }
+  ],
+  "backend_results": {
+    "java-graalvm": "NOT_EXECUTED",
+    "llvm-cpp-native": "NOT_EXECUTED",
+    "llvm-rust-native": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "rs": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED"
+  },
+  "required_evidence": [
+    "exact Git commit SHA and tree SHA, plus exact binary/toolchain versions",
+    "valid source accepted, IR generated, linked and executed with expected result",
+    "invalid source and unimplemented target capability explicitly distinguished",
+    "negative compilation yields diagnostic, nonzero status and no emitted artifact",
+    "no cross-actor or cross-tenant unproven Option payload ownership",
+    "nonzero GitHub Actions job steps and independently verified receipts"
+  ]
+}
