@@ -98,3 +98,22 @@ source via its real compiler with distinct artifact identity and
 positive/negative guest/diagnostic/no-artifact receipts. The standalone
 source-only conformance CI and host oracle cannot promote any cell.
 See [parity tracker #20](https://github.com/atto-lang/atto-compilers-parity-testing/issues/20).
+
+
+### Canonical exceptional keyword migration handoff
+
+The companion [Atto spec draft #146](https://github.com/atto-lang/atto-spec/pull/146)
+now specifies the user-selected canonical `trap!`, `throw!`, `raise!`,
+`panic!` tokens for new Atto code. All eleven backend repositories already
+have distinct draft syntax PRs. The 21 fixtures pinned in this PR intentionally
+retain their existing bare `trap` spelling as migration-compatible **historical
+source**, not as a recommendation for new code.
+
+[JS #38](https://github.com/atto-lang/atto-source.js/pull/38) and
+[JS integration #71](https://github.com/atto-lang/atto-source.js/pull/71)
+now implement a narrow canonical `trap!` identity for **already-Result**
+operands, with positive and fail-closed negative generated-JS test definitions.
+This is not general ordinary `throw!` capture or authenticated actor panic
+handling. New bang fixtures must be versioned and SHA-pinned independently
+rather than changing these 21 immutable inputs. The spec proposal has
+18 source-only lexical vectors × 11 backend targets, not compiler/guest passes.
