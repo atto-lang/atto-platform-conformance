@@ -7,7 +7,7 @@ const read = p => readFileSync(new URL('../' + p, import.meta.url), 'utf8');
 const c = JSON.parse(read('contracts/core-alloc-std-v1.json'));
 const ids = ['java','llvm','wasm','rs','net','forge','cranelift','js','atto','hdl'];
 const expected = ['EXIT_1','EXIT_1','EXIT_1','COMPILE_IMMUTABLE',
-                  'THROWS_BUFFER_BOUNDS','EXIT_1','EXIT_1'];
+                  'THROWS_BUFFER_BOUNDS','EXIT_1','EXIT_1','COMPILE_SEALED_ALLOC'];
 
 test('register all backends without inventing guest evidence', () => {
   assert.equal(c.schema, 'atto.core-alloc-std.v1');
@@ -20,11 +20,11 @@ test('register all backends without inventing guest evidence', () => {
     assert.equal(b.execution, 'NOT_EXECUTED');
     assert.equal(b.receipt, null);
   }
-  assert.equal(c.required_guest_gates.length, 9);
+  assert.equal(c.required_guest_gates.length, 10);
 });
 
-test('all seven guest targets are distinct and have declared outcomes', () => {
-  assert.equal(c.cases.length, 7);
+test('all eight guest targets are distinct and have declared outcomes', () => {
+  assert.equal(c.cases.length, 8);
   const paths = new Set();
   for(let i=0;i<c.cases.length;i++){
     const entry=c.cases[i];
@@ -36,7 +36,12 @@ test('all seven guest targets are distinct and have declared outcomes', () => {
     const source=read(entry.source);
     assert.ok(source.endsWith('\n') && !source.includes('\r') && !source.startsWith('\uFEFF'));
     assert.match(source,/pub fnc main\(\): int(?: throws Error)? \{/);
-    assert.match(source,/import module [a-z]+ from pkg "(?:core|alloc|std)\.[a-z_]+";/);
+    if(i < 7) {
+      assert.match(source,/import module [a-z]+ from pkg "(?:core|alloc|std)\.[a-z_]+";/);
+    } else {
+      assert.doesNotMatch(source,/^import module /m);
+      assert.match(source,/OwnedBytes\.allocate_zeroed\(1\)/);
+    }
   }
   assert.match(read(c.cases[2].source),/val mut bytes = region\\.ByteRegion\\.allocate_zeroed\\(4\\);/);
   assert.match(read(c.cases[3].source),/val bytes = region\.ByteRegion\.allocate_zeroed\(2\);/);
