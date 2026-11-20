@@ -1,0 +1,8 @@
+pub fnc main(): int {
+  let value: int = 42;
+  val Pointer<int> ptr = rt ref value;
+  value = 43;
+  val answer = rt deref ptr;
+  rt unref ptr;
+  return answer;
+}

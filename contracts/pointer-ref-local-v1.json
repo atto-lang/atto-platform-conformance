@@ -1,0 +1,157 @@
+{
+  "schema": "atto.pointer-ref-local.v1",
+  "status": "TARGET_ONLY_NOT_EXECUTED",
+  "normative_source": "atto-lang/atto-spec#18",
+  "candidate_prototype": "atto-lang/atto-source.rs#264 (class handles only, NOT Pointer<int>)",
+  "description": "Exact user rt/mixed-bang pointer-local samples plus compile-negative safety gates; no parser-only proof may promote a backend.",
+  "typing": {
+    "rt ref local": "Pointer<T> compiler-minted nonallocating local-place checked capability",
+    "deref! ptr / rt deref ptr": "copy T when T is Copy, otherwise scoped immutable loan",
+    "unref! ptr / rt unref ptr": "consume unique Pointer<T> handle, release loan, leave existing referent owned and copied answer live",
+    "class handle separation": "CheckedRef<Class> can have owning-restoration semantics and is not Pointer<T>"
+  },
+  "backend_status": {
+    "atto-source.atto": {
+      "status": "NOT_EXECUTED",
+      "compiler_commit": null,
+      "guest_artifact": null,
+      "runner": null
+    },
+    "atto-source.cranelift": {
+      "status": "NOT_EXECUTED",
+      "compiler_commit": null,
+      "guest_artifact": null,
+      "runner": null
+    },
+    "atto-source.forge": {
+      "status": "NOT_EXECUTED",
+      "compiler_commit": null,
+      "guest_artifact": null,
+      "runner": null
+    },
+    "atto-source.hdl": {
+      "status": "NOT_EXECUTED",
+      "compiler_commit": null,
+      "guest_artifact": null,
+      "runner": null
+    },
+    "atto-source.java": {
+      "status": "NOT_EXECUTED",
+      "compiler_commit": null,
+      "guest_artifact": null,
+      "runner": null
+    },
+    "atto-source.js": {
+      "status": "NOT_EXECUTED",
+      "compiler_commit": null,
+      "guest_artifact": null,
+      "runner": null
+    },
+    "atto-source.llvm": {
+      "status": "NOT_EXECUTED",
+      "compiler_commit": null,
+      "guest_artifact": null,
+      "runner": null
+    },
+    "atto-source.net": {
+      "status": "NOT_EXECUTED",
+      "compiler_commit": null,
+      "guest_artifact": null,
+      "runner": null
+    },
+    "atto-source.realtime": {
+      "status": "NOT_EXECUTED",
+      "compiler_commit": null,
+      "guest_artifact": null,
+      "runner": null
+    },
+    "atto-source.rs": {
+      "status": "NOT_EXECUTED",
+      "compiler_commit": null,
+      "guest_artifact": null,
+      "runner": null
+    },
+    "atto-source.wasm": {
+      "status": "NOT_EXECUTED",
+      "compiler_commit": null,
+      "guest_artifact": null,
+      "runner": null
+    }
+  },
+  "proof_requirements": [
+    "Compile the exact source with a pinned compiler source tree and compiler binary hash",
+    "Actually execute compiled guest: exit code 42 for both positives",
+    "Typed IR equality of rt/bang op semantics and equivalent runtime behavior",
+    "Reject each invalid program with no emitted guest module, executable, or IR",
+    "Confirm handle generation/provenance, bounds and actor/tenant isolation",
+    "Run backend-specific native AOT or Wasm executable, not host-only syntax checks",
+    "Record ASan/UBSan where native and all-path cleanup evidence",
+    "Neither backend status nor case status may become PASS without immutable run receipts"
+  ],
+  "cases": [
+    {
+      "id": "PRL-001",
+      "path": "fixtures/pointer-ref-local-v1/pass/rt-all.atto",
+      "result": "PASS",
+      "exit": 42,
+      "why": "all rt spellings",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "PRL-002",
+      "path": "fixtures/pointer-ref-local-v1/pass/mixed-bang.atto",
+      "result": "PASS",
+      "exit": 42,
+      "why": "rt ref with canonical bang deref and unref",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "PRL-003",
+      "path": "fixtures/pointer-ref-local-v1/fail/double-unref.atto",
+      "result": "REJECT_NO_ARTIFACT",
+      "error_category": "E_POINTER_LIFETIME",
+      "why": "double release",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "PRL-004",
+      "path": "fixtures/pointer-ref-local-v1/fail/use-after-unref.atto",
+      "result": "REJECT_NO_ARTIFACT",
+      "error_category": "E_POINTER_LIFETIME",
+      "why": "dereference of released handle",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "PRL-005",
+      "path": "fixtures/pointer-ref-local-v1/fail/escape.atto",
+      "result": "REJECT_NO_ARTIFACT",
+      "error_category": "E_POINTER_ESCAPE",
+      "why": "escaping pointer to stack-local referent",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "PRL-006",
+      "path": "fixtures/pointer-ref-local-v1/fail/forged.atto",
+      "result": "REJECT_NO_ARTIFACT",
+      "error_category": "E_POINTER_FORGED",
+      "why": "integer-to-pointer capability forgery",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "PRL-007",
+      "path": "fixtures/pointer-ref-local-v1/fail/write-while-live.atto",
+      "result": "REJECT_NO_ARTIFACT",
+      "error_category": "E_POINTER_ALIAS",
+      "why": "referent write invalidates outstanding readonly pointer",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "PRL-008",
+      "path": "fixtures/pointer-ref-local-v1/fail/missing-unref.atto",
+      "result": "REJECT_NO_ARTIFACT",
+      "error_category": "E_POINTER_LIFETIME",
+      "why": "no certified all-exits cleanup for live handle",
+      "status": "NOT_EXECUTED"
+    }
+  ]
+}
