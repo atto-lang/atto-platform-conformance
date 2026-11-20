@@ -22,27 +22,37 @@
       "fixtures/async_v1/sync_inline_do_nonvoid.atto": "e612895b2067c52fd38d1e66c8f6a551e1aa2762",
       "fixtures/async_v1/sync_inline_bare_without_do.atto": "82e885f6ec2d8fa731da65e26e2c53db1b9a9ec0",
       "fixtures/async_v1/sync_inline_bare_typed_void.atto": "94d39c4c94a8a1641b3337f7252d68a54e7f73c7"
-    }
+    },
+    "git_tree_sha": "044a36c1dbbb93dfae966a8f06c5dfee6357b497",
+    "git_tree_blobs": 107
   },
   "alternate_runner": {
     "repo": "r2g-test/atto-ci",
     "private": true,
     "no_source_token": true,
     "cross_org_checkout": false,
-    "exact_source_blob_count": 13,
-    "source_scope": "SHA_VERIFIED_TEST_DEPENDENCY_CLOSURE_ONLY_NOT_FULL_SOURCE_TREE",
-    "carrier_commit_sha": "40e3e0de2cae8c779426fa4b972935966aa057a4",
-    "carrier_tree_sha": "fcd0fd9b7faae3a6b56c9ccef8b14af51d88f678",
-    "workflow_run_id": 44800166180,
-    "workflow_url": "https://github.com/r2g-test/atto-ci/actions/runs/44800166180",
-    "job_id": 136509927771,
+    "exact_source_blob_count": 107,
+    "source_scope": "EXACT_FULL_SOURCE_GIT_TREE_IN_PRIVATE_CARRIER_PARENT; only carrier workflow added in descendant commit",
+    "carrier_commit_sha": "836d1dffe617e5758abd59b3cf0f8c5c758f7440",
+    "carrier_tree_sha": "c6e2a1dcb31b2d589e2df8d8820ee26283ce0a1f",
+    "workflow_run_id": 44800774597,
+    "workflow_url": "https://github.com/r2g-test/atto-ci/actions/runs/44800774597",
+    "job_id": 136512030621,
     "workflow_conclusion": "success",
     "job_conclusion": "success",
-    "exact_tree_gate": "PASS",
-    "source_blob_pin_gate": "13/13",
+    "exact_tree_gate": "PASS (mirror source tree SHA + carrier HEAD admission)",
+    "source_blob_pin_gate": "107/107 exact Git tree objects and modes",
     "runner": "ubuntu-24.04",
     "jdk": "GraalVM JDK 25",
-    "native_image": "GraalVM Native Image 25 --no-fallback --gc=epsilon"
+    "native_image": "GraalVM Native Image 25 --no-fallback --gc=epsilon",
+    "prior_dependency_closure": {
+      "scope": "SHA_VERIFIED_TEST_DEPENDENCY_CLOSURE_ONLY_NOT_FULL_SOURCE_TREE",
+      "exact_source_blobs": 13,
+      "run_url": "https://github.com/r2g-test/atto-ci/actions/runs/44800166180",
+      "carrier_commit_sha": "40e3e0de2cae8c779426fa4b972935966aa057a4"
+    },
+    "carrier_mirror_commit_sha": "d1c17abea78441eb1d51c0fe917cbe73340f3cf3",
+    "carrier_mirror_tree_sha": "044a36c1dbbb93dfae966a8f06c5dfee6357b497"
   },
   "execution": {
     "compiler_admission_checks": {
@@ -93,6 +103,31 @@
       "passed": 10,
       "total": 10,
       "marker": "ATTO_ASYNC_V1_CLI_SECURITY_PASS checks=10"
+    },
+    "full_tree_evidence": {
+      "source_tree_match": "PASS",
+      "source_tree_sha": "044a36c1dbbb93dfae966a8f06c5dfee6357b497",
+      "all_107_git_blobs_and_modes_identical": true,
+      "current_carrier_exact_tree_gate": "PASS",
+      "cpu_jvm_exit_codes": [
+        42,
+        42,
+        42,
+        42
+      ],
+      "native_image_exit_codes": [
+        42,
+        42,
+        42
+      ],
+      "negative_no_artifact_gates": [
+        "ATTO_DO_SYNC_VOID_ONLY_NO_ARTIFACT=PASS",
+        "ATTO_SYNC_STANDALONE_REQUIRES_DO_NO_ARTIFACT=PASS"
+      ],
+      "source_cli_security_marker": "ATTO_ASYNC_V1_CLI_SECURITY_PASS checks=10",
+      "source_admission_marker": "ATTO_ASYNC_V1_ADMISSION_PASS checks=97",
+      "initial_carrier_run": "https://github.com/r2g-test/atto-ci/actions/runs/44800597700",
+      "initial_carrier_failure": "Shallow checkout failed to resolve parent Git tree; fixed by explicit mirror-ancestor fetch before successful rerun"
     }
   },
   "boundaries": {
@@ -104,8 +139,10 @@
     "no_scoped_borrow_checker": true,
     "no_guest_cancellation": true,
     "no_tenantvm_runtime_proof": true,
-    "no_full_source_tree_ci": true,
-    "pr_remains_draft": true
+    "no_full_source_tree_ci": false,
+    "pr_remains_draft": true,
+    "source_org_exact_head_actions_not_verified": true,
+    "full_source_tree_private_carrier_verified": true
   },
   "superseded_evidence": {
     "source_head": "fd90a137b9cfc59bb23f3cd8945ea7d3fb86e3da",

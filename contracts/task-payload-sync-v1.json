@@ -587,11 +587,14 @@
       "status": "EXECUTED_LIMITED_PROFILE",
       "full_task_backend_status": "NOT_EXECUTED",
       "source_head": "be4a6e6cccacfc7c956457398130c7808e4e6915",
-      "carrier_run": "https://github.com/r2g-test/atto-ci/actions/runs/44800166180",
+      "carrier_run": "https://github.com/r2g-test/atto-ci/actions/runs/44800774597",
       "do_sync_requires_void": true,
-      "exact_source_blob_count": 13,
+      "exact_source_blob_count": 107,
       "cli_security_checks": 10,
-      "standalone_sync_requires_do": true
+      "standalone_sync_requires_do": true,
+      "full_source_tree_sha": "044a36c1dbbb93dfae966a8f06c5dfee6357b497",
+      "carrier_mirror_commit_sha": "d1c17abea78441eb1d51c0fe917cbe73340f3cf3",
+      "scope": "LIMITED_PURE_INLINE_JAVA_EXECUTION_WITH_FULL_SOURCE_TREE_IDENTITY_VERIFIED"
     }
   },
   "cancellation_model": "owned Future<T>.cancel(): void requests nonblocking idempotent cancellation; TaskCancelled terminal distinct from success/failure; scope cascades and physically retires all children; receipt witnesses mandatory",
