@@ -10,7 +10,7 @@ const data = JSON.parse(readFileSync(
 const read = path => readFileSync(new URL(path, base), 'utf8');
 const gitBlob = s => {
     const bytes = Buffer.from(s, 'utf8');
-    return createHash('sha1').update('blob ' + bytes.length + '\\0').update(bytes).digest('hex');
+    return createHash('sha1').update('blob ' + bytes.length + '\0').update(bytes).digest('hex');
 };
 
 test('aliases retain one direction, one graceful stop and no backend PASS claims', () => {
