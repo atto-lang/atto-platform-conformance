@@ -30,6 +30,11 @@ test('mutex fixture sources are present, unique and declare exact outcomes', () 
       assert.match(src, /define struct Point/, 'value struct must be declared');
       assert.match(src, /Point\\(x=1, y=2\\)/, 'struct call without new must remain valid');
       assert.doesNotMatch(src, /new Point\\(/);
+    } else if (c.feature === 'constructor') {
+      assert.match(src,/Mutex\s*</, 'constructor negative must name Mutex<T>');
+      assert.match(src,/Mutex\s*<[^;]+\(/, 'constructor negative must invoke a bare class');
+      assert.doesNotMatch(src,/\bnew\s+Mutex\s*</,
+        'bare-constructor negative must not accidentally use canonical new');
     } else if (c.feature !== 'await') {
       assert.match(src,/Mutex<int>/, 'mutex fixture must reference typed Mutex');
       assert.match(src,/lock_async\(\)/, 'mutex fixture must acquire asynchronously');
@@ -62,7 +67,7 @@ test('two sequential acquisitions and overflowing guard are explicit unexecuted 
   assert.equal(get('two-sequential-ready').expected_releases,2);
   assert.equal(get('reject-guard-overflow').expected_diagnostic,'E_OVERFLOW');
   assert.equal(get('reject-guard-overflow').guest_artifact,false);
-  assert.ok(contract.cases.length >= 21);
+  assert.ok(contract.cases.length >= 23);
   assert.equal(contract.backend_evidence['atto-source.rs'].status,'NOT_EXECUTED',
     'source-only fixtures never promote actual compiler/guest parity');
 });
@@ -74,6 +79,16 @@ test('Mutex is an opaque resource class with explicit new, unlike value structs'
   const negative=contract.cases.find(x=>x.id==='reject-bare-mutex-class-call');
   assert.equal(negative.expected_diagnostic,'E_NEW_REQUIRED');
   assert.equal(negative.guest_artifact,false);
+  for (const id of [
+    'reject-bare-mutex-class-call',
+    'reject-bare-mutex-without-lock-call',
+    'reject-bare-nested-generic-mutex',
+  ]) {
+    const entry=contract.cases.find(x=>x.id===id);
+    assert.equal(entry.expected_diagnostic,'E_NEW_REQUIRED');
+    assert.equal(entry.guest_artifact,false);
+  }
+  assert.equal(contract.constructor_contract.nested_bare_mutex_constructor_rejected,true);
   const value=contract.cases.find(x=>x.id==='allow-bare-value-struct-constructor');
   assert.equal(value.expected_exit,3);
   for(const evidence of Object.values(contract.backend_evidence))
