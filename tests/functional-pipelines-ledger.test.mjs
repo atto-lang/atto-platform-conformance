@@ -21,8 +21,10 @@ test('source identity and nonvacuous dual-direction fixtures', () => {
     assert.match(c.blob_sha, sha);
   }
   const positives = ledger.cases.filter(c => c.kind === 'positive');
-  assert.deepEqual(positives.map(c => c.expected_exit), [83, 83, 42, 42]);
-  assert.ok(positives.every(c => c.expected_stdout === ''));
+  assert.deepEqual(positives.map(c => c.expected_main_value), [83, 83, 42, 42]);
+  assert.deepEqual(ledger.acceptance.positive_main_values, [83, 83, 42, 42]);
+  assert.deepEqual(ledger.acceptance.guest_result_profiles,
+    ['os_exit_code','stdout_line_i64','wasm_export_i64']);
   const negatives = ledger.cases.filter(c => c.kind === 'negative');
   assert.equal(negatives.length, 4);
   assert.ok(negatives.every(c => ['type','syntax'].includes(c.expected_rejection)
@@ -38,6 +40,10 @@ test('every backend must carry independent genuine execution evidence', () => {
     assert.ok(statuses.has(row.execution_status), name);
     if (row.proposed_head_sha != null) assert.match(row.proposed_head_sha, sha, name);
     if (row.implementation === 'code_authored') assert.ok(row.implementation_pr, name);
+    assert.ok(row.result_profile === null ||
+      ledger.acceptance.guest_result_profiles.includes(row.result_profile), name);
+    if (name === 'forge' || name === 'cranelift')
+      assert.equal(row.result_profile, 'stdout_line_i64');
     if (row.execution_status === 'passed') {
       const receipt = row.receipt;
       assert.ok(receipt && typeof receipt === 'object', name);
@@ -48,6 +54,10 @@ test('every backend must carry independent genuine execution evidence', () => {
       assert.match(receipt.ci_run_url, /^https:\/\/github\.com\/[^/]+\/[^/]+\/actions\/runs\/[0-9]+$/);
       assert.ok(receipt.command && typeof receipt.command === 'string', name);
       assert.ok(receipt.toolchain && typeof receipt.toolchain === 'string', name);
+      assert.ok(ledger.acceptance.guest_result_profiles.includes(receipt.result_profile),
+        name + ': missing actual guest ABI proof');
+      if (row.result_profile !== null)
+        assert.equal(receipt.result_profile, row.result_profile, name);
       assert.equal(receipt.case_results?.length, ledger.cases.length, name);
       const results = new Map(receipt.case_results.map(c => [c.file, c]));
       assert.equal(results.size, ledger.cases.length, name);
@@ -57,9 +67,21 @@ test('every backend must carry independent genuine execution evidence', () => {
         assert.equal(evidence.source_fixture_blob_sha, sourceCase.blob_sha);
         if (sourceCase.kind === 'positive') {
           assert.equal(evidence.guest_executed, true);
-          assert.match(evidence.guest_artifact_sha256, /^[a-f0-9]{64}$/);
-          assert.equal(evidence.observed_exit, sourceCase.expected_exit);
-          assert.equal(evidence.observed_stdout, sourceCase.expected_stdout);
+          assert.match(evidence.guest_emission_sha256, /^[a-f0-9]{64}$/);
+          assert.ok(['native_binary', 'wasm_binary', 'jit_ir', 'cxx_source',
+            'clr_assembly'].includes(evidence.emission_kind));
+          assert.equal(evidence.observed_main_value, sourceCase.expected_main_value);
+          if (receipt.result_profile === 'os_exit_code') {
+            assert.equal(evidence.observed_process_exit, sourceCase.expected_main_value);
+            assert.equal(evidence.observed_stdout, '');
+          } else if (receipt.result_profile === 'stdout_line_i64') {
+            assert.equal(evidence.observed_process_exit, 0);
+            assert.equal(evidence.observed_stdout, sourceCase.expected_main_value + '\n');
+          } else {
+            assert.equal(receipt.result_profile, 'wasm_export_i64');
+            assert.equal(evidence.observed_export_return, sourceCase.expected_main_value);
+            assert.equal(evidence.observed_stdout, '');
+          }
         } else {
           assert.equal(evidence.observed_rejection, sourceCase.expected_rejection);
           assert.equal(evidence.artifact_exists, false);
