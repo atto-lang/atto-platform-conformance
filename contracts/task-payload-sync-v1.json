@@ -657,6 +657,33 @@
         "NO_PARENT_STORAGE_REUSE_BEFORE_DESCENDANTS_RETIRED"
       ],
       "evidence_required": true
+    },
+    {
+      "id": "lexical_guard_scope_exit_while_task_continues",
+      "given": [
+        "task_A_claimed_mutex",
+        "task_B_waiting_for_same_mutex",
+        "task_A_exits_lexical_using_block_but_continues_running"
+      ],
+      "action": "trusted_guard_scope_exit_by_scheduler",
+      "required_order": [
+        "A_CLAIM",
+        "B_WAIT",
+        "A_GUARD_SCOPE_EXIT",
+        "A_RELEASE",
+        "B_CLAIM",
+        "A_TERMINAL"
+      ],
+      "assertions": [
+        "NO_TASK_RETIRE_NEEDED_BEFORE_GUARD_RELEASE",
+        "RELEASE_ONLY_AFTER_PROTECTED_REGION_ENDED",
+        "NO_SUSPENSION_WITHIN_CRITICAL_LEASE",
+        "A_CANCELLATION_AFTER_RELEASE_DOES_NOT_DOUBLE_UNLOCK",
+        "LIFO_SCOPED_RELEASE",
+        "WRONG_ORDER_LEASE_EXIT_DENIED",
+        "GUEST_CANNOT_FORGE_GUARD_RELEASE"
+      ],
+      "evidence_required": true
     }
   ]
 }
