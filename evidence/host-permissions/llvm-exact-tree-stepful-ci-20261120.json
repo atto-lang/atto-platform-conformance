@@ -1,0 +1,97 @@
+{
+  "schema": "atto.host_fs_security.stepful_ci.v1",
+  "date_utc": "2026-11-20",
+  "source": {
+    "repository": "atto-lang/atto-source.llvm",
+    "pull_request": 62,
+    "head_commit": "6dd7d96759bef2e595d373fc503ca00c6cec9a7f",
+    "root_tree_sha": "bfb3105c5b29f0b3080db3ec5f4ff3f1e0c39f4f",
+    "git_blobs": 235,
+    "total_tree_entries": 280
+  },
+  "carrier": {
+    "repository": "opto-sync/atto-ci",
+    "visibility": "private",
+    "snapshot_commit": "477d1e080fa26b4c88cc0b76059d98f1d32020b0",
+    "snapshot_root_tree_sha": "bfb3105c5b29f0b3080db3ec5f4ff3f1e0c39f4f",
+    "harness_commit": "018eeeb64b5c6bdfdc443e0f41d9f7fbaf8778ed",
+    "branch": "ci/fs-security-llvm-6dd7d967-20261120",
+    "source_checkout_credentials_used": false,
+    "token_free_cross_org_checkout": true,
+    "harness_checks_parent_tree_sha": true,
+    "source_parent_tree_verified": true
+  },
+  "host_security_workflow": {
+    "url": "https://github.com/opto-sync/atto-ci/actions/runs/44768652791",
+    "run_id": 44768652791,
+    "job_id": 136400059377,
+    "conclusion": "success",
+    "steps_executed": true,
+    "step_results": {
+      "checkout_and_parent_tree": "success",
+      "gcc_clang_o1_o2_asan_ubsan_host": "success",
+      "async_worker_and_real_broker_and_v5_layout": "success",
+      "signed_broker_admission_four_compiler_opt_pairs": "success",
+      "native_cmake_ctest": "success",
+      "sealed_image_signed_loader_host_ctest": "success"
+    },
+    "native_ctest": {
+      "passed": 8,
+      "failed": 0,
+      "tests": [
+        "linux_scoped_host_fs_broker",
+        "linux_guest_offset_host_fs_bridge",
+        "linux_signed_host_fs_ceiling",
+        "linux_async_host_fs_real_broker",
+        "linux_async_host_fs_queue_mock",
+        "linux_async_host_fs_contention_mock",
+        "linux_host_fs_io_v5_layout",
+        "linux_signed_host_fs_real_broker_admission"
+      ]
+    },
+    "signed_loader_ctest": {
+      "passed": 1,
+      "failed": 0,
+      "test": "tenant_vm_signed_fs_loader_host_only"
+    }
+  },
+  "process_isolation_workflow": {
+    "url": "https://github.com/opto-sync/atto-ci/actions/runs/44768652746",
+    "run_id": 44768652746,
+    "conclusion": "success",
+    "jobs_passed": 4,
+    "job_matrix": [
+      "gcc Debug",
+      "gcc Release",
+      "clang Debug",
+      "clang Release"
+    ],
+    "native_ctest_includes_process_fault_test": true
+  },
+  "fixed_in_source_pr": [
+    {
+      "kind": "test_api_regression",
+      "detail": "Async contention test now supplies authenticated actor incarnation at service creation"
+    },
+    {
+      "kind": "actor_isolation",
+      "detail": "Poll and cancel reject foreign or restarted actors before ticket existence or service-lock pressure can be exposed"
+    },
+    {
+      "kind": "test_state_regression",
+      "detail": "Async real-broker copy test preserves read result length before a stale-ticket poll clears its output length"
+    }
+  ],
+  "evidence_scope": "HOST_ONLY_EXECUTED",
+  "guest_conformance": {
+    "status": "NOT_EXECUTED",
+    "compiled_atto_fs_guest": false,
+    "abi_v5_admitted_in_live_runtime": false,
+    "scheduler_authenticated_host_turn": false,
+    "production_key_trust_store_verified": false,
+    "whole_dependency_closure_verified": false,
+    "native_untrusted_guest_syscall_memory_confinement_verified": false,
+    "other_backends_status": "NOT_EXECUTED"
+  },
+  "release_gate": "KEEP_DRAFT_DO_NOT_CLAIM_GUEST_PARITY_OR_MERGE_BASED_SOLELY_ON_HOST_TESTS"
+}
