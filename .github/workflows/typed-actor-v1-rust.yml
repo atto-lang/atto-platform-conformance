@@ -4,6 +4,9 @@ on:
   push:
     paths:
       - 'tools/typed_actor_v1.rs'
+      - 'tools/typed_actor_string_targets.rs'
+      - 'contracts/typed-actor-string-v1.tsv'
+      - 'fixtures/typed-actor-string-v1/**'
       - 'tools/typed_actor_fixture_identity.rs'
       - 'tools/typed_actor_backend_inventory.rs'
       - 'contracts/atto-source-backend-typed-actor-v1.tsv'
@@ -13,6 +16,9 @@ on:
   pull_request:
     paths:
       - 'tools/typed_actor_v1.rs'
+      - 'tools/typed_actor_string_targets.rs'
+      - 'contracts/typed-actor-string-v1.tsv'
+      - 'fixtures/typed-actor-string-v1/**'
       - 'tools/typed_actor_fixture_identity.rs'
       - 'tools/typed_actor_backend_inventory.rs'
       - 'contracts/atto-source-backend-typed-actor-v1.tsv'
@@ -60,6 +66,10 @@ jobs:
           "$RUNNER_TEMP/typed_actor_tests"
           rustc --edition=2021 tools/typed_actor_v1.rs -o "$RUNNER_TEMP/typed_actor_oracle"
           "$RUNNER_TEMP/typed_actor_oracle"
+          rustc --edition=2021 --test -D warnings tools/typed_actor_string_targets.rs -o "$RUNNER_TEMP/actor_string_target_tests"
+          "$RUNNER_TEMP/actor_string_target_tests"
+          rustc --edition=2021 -D warnings tools/typed_actor_string_targets.rs -o "$RUNNER_TEMP/actor_string_targets"
+          "$RUNNER_TEMP/actor_string_targets"
       - name: Explicitly prohibit reference-model promotion to compiler parity
         run: |
           echo 'ATTO_TYPED_ACTOR_V1_SOURCE_ONLY=PASS'
