@@ -176,13 +176,20 @@ test('experimental Rust checked PipeHandle preview cannot masquerade as backend 
   assert.match(preview.error_semantics,/without trap or DATA publication/);
   assert.equal(preview.checked_setup_compiler,'NOT_EXECUTED');
   assert.equal(preview.checked_setup_guest,'NOT_EXECUTED');
-  assert.equal(preview.pipe_handle_methods,'NOT_IMPLEMENTED');
+  assert.equal(preview.pipe_handle_methods,'NOT_IMPLEMENTED_FAIL_CLOSED');
   assert.equal(preview.cancellation_and_guards,'NOT_IMPLEMENTED');
   assert.equal(preview.tenant_generation_proof,'NOT_EXECUTED');
   assert.equal(preview.binding_spec_status,'NON_NORMATIVE_EXPERIMENTAL');
-  assert.equal(new Set(preview.new_guest_fixture_ids).size,3);
+  assert.equal(preview.error_code_accessor,'PipeSetupError.code()');
+  assert.deepEqual(preview.error_codes_v2_preview,{
+    invalid_alias:1,invalid_capacity:2,closed_or_stopped:3,
+    source_occupied:4,sink_occupied:5,channel_occupied:6,sink_has_downstream:7,
+  });
+  assert.equal(preview.allocation_rule,
+    'success_result_and_guest_bridge_allocated_before_atomic_DATA_publication');
+  assert.equal(new Set(preview.new_guest_fixture_ids).size,4);
   for (const id of preview.new_guest_fixture_ids) {
-    assert.match(id,/^2[12][019]-v2-checked-/);
+    assert.match(id,/^2(?:19|20|21|22)-v2-checked-/);
   }
   const row=contract.backend_evidence.find(x=>x.repo===preview.repo);
   assert.ok(row);
