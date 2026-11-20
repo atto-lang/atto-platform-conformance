@@ -1,0 +1,22 @@
+name: Functional pipeline execution evidence admission (host only)
+on:
+  pull_request:
+    paths:
+      - 'contracts/functional-pipelines-v1/**'
+      - 'tests/functional-pipelines-ledger.test.mjs'
+      - '.github/workflows/functional-pipelines-evidence.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  manifest-integrity:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Verify SHA-pinned conformance matrix without asserting guest PASS
+        run: |
+          node --version
+          node --test tests/functional-pipelines-ledger.test.mjs
