@@ -65,8 +65,9 @@
       "host_ticket_ci": {
         "source_head_sha": "e7dbc3f9f584f16c872af8858335767986ea9be8",
         "ci_url": "https://github.com/bait-bikes-test/atto-ci/actions/runs/44653461640",
-        "source_proof": "11_SCOPED_GIT_BLOBS_MATCHED",
-        "executed_ci_steps": 9
+        "source_proof": "SCOPED_GIT_BLOBS_MATCHED",
+        "executed_ci_steps": 9,
+        "verified_blob_count": 11
       }
     },
     {
