@@ -236,3 +236,22 @@ test('experimental Rust checked PipeHandle preview cannot masquerade as backend 
   assert.ok(row);
   assert.equal(row.status,'NOT_EXECUTED');
 });
+
+
+test('all eight private CI carrier probes are recorded as zero-step failures, not compiler evidence', ()=>{
+  const probe=contract.alternate_ci_runner_probe_2026_11_20;
+  assert.equal(probe.observed_status,'NO_RUNNER_STEPS_EXECUTED');
+  assert.equal(probe.guest_compiler_test,'NOT_EXECUTED');
+  assert.equal(probe.available_budget,'NOT_PROVEN');
+  assert.equal(probe.reason_for_failure,'UNKNOWN_FROM_ZERO_STEP_STATUS');
+  assert.equal(probe.outcomes.length,8);
+  assert.equal(new Set(probe.outcomes.map(x=>x.org)).size,8);
+  for(const outcome of probe.outcomes){
+    assert.equal(outcome.conclusion,'failure');
+    assert.equal(outcome.job,'capacity');
+    assert.equal(outcome.executed_steps,0);
+    assert.equal(outcome.run_url,
+      'https://github.com/'+outcome.org+'/atto-ci/actions/runs/'+outcome.run_id);
+  }
+  assert.match(probe.temporary_probe_prs,/closed unmerged/);
+});
