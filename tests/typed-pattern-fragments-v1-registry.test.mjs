@@ -1,7 +1,8 @@
 // HOST-ONLY registry integrity; no compiler, guest, formatter or runtime execution.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
+import {readFileSync, lstatSync} from 'node:fs';
+import {createHash} from 'node:crypto';
 const registry=JSON.parse(readFileSync(new URL('../contracts/typed-pattern-fragments-v1.json',import.meta.url),'utf8'));
 const backends=['rust-wasm','java','llvm','net','forge','wasm-host','cranelift','js','atto-selfhost','hdl','realtime'];
 test('canonical spec pointer, exact source blob and honest unexecuted evidence',()=>{
@@ -55,4 +56,39 @@ test('coverage includes runtime/constexpr split, type boundaries, captures, guar
   const guarded=registry.cases.find(x=>x.name==='guard-not-retried');
   assert.equal(guarded.expected.guard_evaluations,1);
   assert.equal(guarded.expected.fallback_result,0);
+});
+
+test('portable guest input fixtures are exact Git blobs, never fake pass receipts',()=>{
+  const fixtures=registry.portable_guest_fixtures;
+  assert.equal(fixtures.length,7);
+  const paths=new Set();
+  let positives=0,negative=0;
+  for(const f of fixtures) {
+    assert.match(f.path,/^fixtures\/typed-pattern-fragments\/[a-z0-9_]+\.atto$/);
+    assert.ok(!paths.has(f.path),f.path);
+    paths.add(f.path);
+    const file=new URL('../'+f.path,import.meta.url);
+    assert.equal(lstatSync(file).isSymbolicLink(),false);
+    const source=readFileSync(file);
+    assert.ok(source.length>64&&source.length<8192);
+    const blob=createHash('sha1').update('blob '+source.length+'\0')
+      .update(source).digest('hex');
+    assert.equal(blob,f.blob_sha,f.path);
+    assert.ok(source.toString('utf8').includes('return match<int>'));
+    if(f.kind==='positive') {
+      positives++;
+      assert.equal(f.expected_exit_code,60);
+      assert.equal(typeof f.paired_with,'string');
+    }else{
+      negative++;
+      assert.match(f.expected_diagnostic,/^E_PATTERN_[A-Z]+$/);
+      assert.equal(f.guest_artifact,false);
+    }
+  }
+  assert.equal(positives,2);
+  assert.equal(negative,5);
+  for(const f of fixtures.filter(f=>f.kind==='positive'))assert.ok(paths.has(f.paired_with));
+  for(const c of registry.cases)for(const backend of registry.backends){
+    assert.equal(c.execution[backend],'NOT_EXECUTED');
+  }
 });
