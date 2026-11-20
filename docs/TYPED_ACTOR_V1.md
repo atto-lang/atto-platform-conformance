@@ -55,3 +55,41 @@ result, native/Wasm **guest execution** as applicable, and authenticated
 supervisor CONTROL-vs-DATA evidence for runtime tests. Compiler frontends,
 host reference models, generated JavaScript host modules, and zero-step jobs
 must be reported independently, not as interchangeable guest parity.
+
+
+## Implementation integration snapshot — 2026-11-19 (not a pass receipt)
+
+The canonical `receives T sends U` syntax is now being implemented in distinct
+**draft** compiler branches. No row in the 15-case fixture registry is
+promoted to PASSED by these source changes, and the pinned source-inventory
+snapshots above are historical rather than current HEAD evidence.
+
+- [atto-source.rs #406](https://github.com/atto-lang/atto-source.rs/pull/406):
+  parser/AST and typed-IR upper-bound checks across statically resolved
+  calls; `susp` headers in the restricted non-suspending profile.
+  Scalar `ActorMail<int>`/ `ActorMail<bool>` supported by the existing
+  backend path; `ActorMail<string>` must fail closed before guest emission.
+  Tests added; no independently verified exact-head guest run.
+- [atto-source.llvm #46](https://github.com/atto-lang/atto-source.llvm/pull/46):
+  same bounded `sends` admission and `susp` header subset in the
+  Rust-hosted compiler frontend under the LLVM repository. **This is not
+  native C++ LLVM code generation**, verified host execution or AOT parity.
+- [atto-source.js #31](https://github.com/atto-lang/atto-source.js/pull/31):
+  trusted-host i64 actor subset admits scalar `sends` bounds only because
+  accepted handlers have **zero outbound application sends**; no general
+  effect inference, string wire, fan-out or guest supervisor runtime.
+- Overlap: [atto-source.rs #297](https://github.com/atto-lang/atto-source.rs/pull/297)
+  changes the attached receiver grammar; reconcile and retest before merging
+  the Rust compiler work.
+
+**Requested string fixture:** `define actor Router receives string sends int as`
+with `susp receive(ActorMail<string> mail): void` and
+`pub susp fnc main(): int` must ultimately compile and execute a
+length-delimited, bounded, ownership-safe UTF-8 cross-worker mailbox.
+Current scalar-only browser and JS compiler implementations explicitly
+**do not** satisfy that gate. Do not conflate successful `sends` parsing or
+a source-only Rust oracle with string DATA delivery.
+
+On the observed draft heads, GitHub Actions failed before providing
+usable executed job steps; exact-head positive compile, negative rejection,
+guest execution and CONTROL isolation evidence remain NOT_EXECUTED.
