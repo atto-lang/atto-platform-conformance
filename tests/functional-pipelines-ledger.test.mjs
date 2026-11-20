@@ -466,17 +466,18 @@ test('synthetic private-tree verifier proof cannot be mistaken for a carrier or 
   assert.match(mirror.test_blob_sha,sha);
   const local=mirror.local_test_result;
   assert.equal(local.execution_status,'executed_locally_not_ci_admitted');
-  assert.equal(local.tests_total,13);
-  assert.equal(local.tests_passed,13);
+  assert.equal(local.tests_total,15);
+  assert.equal(local.tests_passed,15);
   assert.equal(local.tests_failed,0);
   assert.equal(local.positive_subcases,1);
-  assert.equal(local.negative_subcases,11);
+  assert.equal(local.negative_subcases,13);
   assert.equal(local.source_verified_by_git_blob_sha,true);
+  assert.ok(mirror.identity_requirements.some(x=>/source commit SHA/.test(x)));
   assert.equal(mirror.actual_private_source_tree_mirrored,false);
   assert.equal(mirror.carrier_runner_admitted,false);
   assert.equal(mirror.github_actions_execution_status,'not_executed');
   assert.equal(mirror.receipt,null);
-  assert.match(mirror.scope,/no real private source tree was copied/);
+  assert.match(mirror.scope,/No private Atto source was mirrored/);
   assert.ok(mirror.identity_requirements.some(x=>/binary/.test(x)));
   assert.ok(mirror.identity_requirements.some(x=>/symlink/.test(x)));
   assert.ok(ledger.edge_contract.runner_admission_observation.fresh_canary_runs
