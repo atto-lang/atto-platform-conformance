@@ -1,0 +1,223 @@
+{
+  "schema_version": 1,
+  "contract": "atto-record-static-bracket-write-v1",
+  "source_repo": "atto-lang/atto-source.rs",
+  "source_commit": "5e66288945ebcf328f21b18e77a38776a9b836d4",
+  "source_root_tree": "68a71a6a73d4fea2e09d38efe41f39b1ebee297f",
+  "source_subset": {
+    "source_blobs_verified": 38,
+    "source_blobs_total": 728,
+    "full_tree_mirror": false,
+    "all_selected_sha_exact": true
+  },
+  "carrier_repo": "embedded-alerts-test/atto-ci",
+  "carrier_commit": "008c650c72c88d8722bc19149ae380b8ef3555cc",
+  "ci_run_id": 44652104618,
+  "ci_job_id": 136009255384,
+  "ci_run_url": "https://github.com/embedded-alerts-test/atto-ci/actions/runs/44652104618",
+  "runner_commit": "847ac891ffcc667cd12e9bd556809cb6ead45dd6",
+  "outcomes": {
+    "schema_version": 1,
+    "contract": "atto-record-static-bracket-write-v1",
+    "backend": "rust_browser_wasm",
+    "source_commit": "5e66288945ebcf328f21b18e77a38776a9b836d4",
+    "compiler": "native_attoc_and_browser_compiler_wasm",
+    "guest": "node_webassembly",
+    "browser_compiler_sha": "5e66288945ebcf328f21b18e77a38776a9b836d4",
+    "verified_compiler_byte_parity": true,
+    "summary": {
+      "passed": 20
+    },
+    "cases": [
+      {
+        "id": "record-write-identifier",
+        "expect": "accept",
+        "status": "passed",
+        "diagnostic": null,
+        "wasm_executed": true,
+        "reason": "native_and_browser_compilers_guests_equal",
+        "browser_guest_executed": true,
+        "byte_identical": true
+      },
+      {
+        "id": "record-write-hyphen",
+        "expect": "accept",
+        "status": "passed",
+        "diagnostic": null,
+        "wasm_executed": true,
+        "reason": "native_and_browser_compilers_guests_equal",
+        "browser_guest_executed": true,
+        "byte_identical": true
+      },
+      {
+        "id": "record-dot-bracket-same-field",
+        "expect": "accept",
+        "status": "passed",
+        "diagnostic": null,
+        "wasm_executed": true,
+        "reason": "native_and_browser_compilers_guests_equal",
+        "browser_guest_executed": true,
+        "byte_identical": true
+      },
+      {
+        "id": "record-write-empty-key",
+        "expect": "accept",
+        "status": "passed",
+        "diagnostic": null,
+        "wasm_executed": true,
+        "reason": "native_and_browser_compilers_guests_equal",
+        "browser_guest_executed": true,
+        "byte_identical": true
+      },
+      {
+        "id": "record-write-unicode",
+        "expect": "accept",
+        "status": "passed",
+        "diagnostic": null,
+        "wasm_executed": true,
+        "reason": "native_and_browser_compilers_guests_equal",
+        "browser_guest_executed": true,
+        "byte_identical": true
+      },
+      {
+        "id": "record-write-val-mut",
+        "expect": "accept",
+        "status": "passed",
+        "diagnostic": null,
+        "wasm_executed": true,
+        "reason": "native_and_browser_compilers_guests_equal",
+        "browser_guest_executed": true,
+        "byte_identical": true
+      },
+      {
+        "id": "record-write-other-fields-preserved",
+        "expect": "accept",
+        "status": "passed",
+        "diagnostic": null,
+        "wasm_executed": true,
+        "reason": "native_and_browser_compilers_guests_equal",
+        "browser_guest_executed": true,
+        "byte_identical": true
+      },
+      {
+        "id": "record-write-nfc-nfd-distinct",
+        "expect": "accept",
+        "status": "passed",
+        "diagnostic": null,
+        "wasm_executed": true,
+        "reason": "native_and_browser_compilers_guests_equal",
+        "browser_guest_executed": true,
+        "byte_identical": true
+      },
+      {
+        "id": "record-immutable-val",
+        "expect": "reject",
+        "status": "passed",
+        "diagnostic": "E_IMMUTABLE",
+        "wasm_executed": false,
+        "reason": "native_browser_expected_diagnostic_no_guest",
+        "browser_rejected": true
+      },
+      {
+        "id": "record-immutable-let",
+        "expect": "reject",
+        "status": "passed",
+        "diagnostic": "E_IMMUTABLE",
+        "wasm_executed": false,
+        "reason": "native_browser_expected_diagnostic_no_guest",
+        "browser_rejected": true
+      },
+      {
+        "id": "record-missing-field",
+        "expect": "reject",
+        "status": "passed",
+        "diagnostic": "E_NO_FIELD",
+        "wasm_executed": false,
+        "reason": "native_browser_expected_diagnostic_no_guest",
+        "browser_rejected": true
+      },
+      {
+        "id": "record-wrong-field-type",
+        "expect": "reject",
+        "status": "passed",
+        "diagnostic": "E_TYPE",
+        "wasm_executed": false,
+        "reason": "native_browser_expected_diagnostic_no_guest",
+        "browser_rejected": true
+      },
+      {
+        "id": "record-computed-index",
+        "expect": "reject",
+        "status": "passed",
+        "diagnostic": "E_UNSUPPORTED",
+        "wasm_executed": false,
+        "reason": "native_browser_expected_diagnostic_no_guest",
+        "browser_rejected": true
+      },
+      {
+        "id": "record-expression-index",
+        "expect": "reject",
+        "status": "passed",
+        "diagnostic": "E_UNSUPPORTED",
+        "wasm_executed": false,
+        "reason": "native_browser_expected_diagnostic_no_guest",
+        "browser_rejected": true
+      },
+      {
+        "id": "record-numeric-index",
+        "expect": "reject",
+        "status": "passed",
+        "diagnostic": "E_UNSUPPORTED",
+        "wasm_executed": false,
+        "reason": "native_browser_expected_diagnostic_no_guest",
+        "browser_rejected": true
+      },
+      {
+        "id": "struct-bracket-read",
+        "expect": "reject",
+        "status": "passed",
+        "diagnostic": "E_UNSUPPORTED",
+        "wasm_executed": false,
+        "reason": "native_browser_expected_diagnostic_no_guest",
+        "browser_rejected": true
+      },
+      {
+        "id": "struct-bracket-write",
+        "expect": "reject",
+        "status": "passed",
+        "diagnostic": "E_UNSUPPORTED",
+        "wasm_executed": false,
+        "reason": "native_browser_expected_diagnostic_no_guest",
+        "browser_rejected": true
+      },
+      {
+        "id": "record-shadowed-scalar",
+        "expect": "reject",
+        "status": "passed",
+        "diagnostic": "E_UNSUPPORTED",
+        "wasm_executed": false,
+        "reason": "native_browser_expected_diagnostic_no_guest",
+        "browser_rejected": true
+      },
+      {
+        "id": "record-after-take",
+        "expect": "reject",
+        "status": "passed",
+        "diagnostic": "E_MOVED",
+        "wasm_executed": false,
+        "reason": "native_browser_expected_diagnostic_no_guest",
+        "browser_rejected": true
+      },
+      {
+        "id": "record-shared-loan-conflict",
+        "expect": "reject",
+        "status": "passed",
+        "diagnostic": "E_BORROW",
+        "wasm_executed": false,
+        "reason": "native_browser_expected_diagnostic_no_guest",
+        "browser_rejected": true
+      }
+    ]
+  },
+  "restrictions": "One Rust native and wasm32 compiler implementation with native/browser compiler byte parity; independent LLVM, Java, .NET, Forge, cranelift, native etc not executed; no full source tree parity."
+}
