@@ -1,0 +1,10 @@
+pub susp fnc main(): int {
+  val Future<void> worker = task<void> {
+    loop {
+      await task<void> { return; };
+    }
+  };
+  val Future<int> sibling = task<int> { return 42; };
+  worker.cancel();
+  return await sibling;
+}
