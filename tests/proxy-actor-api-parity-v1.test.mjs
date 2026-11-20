@@ -46,6 +46,20 @@ test('proxy actor API registry remains canonical and cross-backend complete', ()
       assert.equal(b.host_ticket_ci, null,
         b.id + ': unexecuted ticket code cannot carry PASS evidence');
     }
+    if (b.gateway_integration) {
+      const gateway = b.gateway_integration;
+      assert.equal(gateway.source_head_sha, b.host_ticket_pr_head_sha,
+        b.id + ': integrated runtime source SHA differs from declared PR head');
+      assert.ok(['NOT_EXECUTED_CURRENT_HEAD','SOURCE_EXACT_TESTED']
+        .includes(gateway.status), b.id + ': invalid gateway execution status');
+      assert.ok(Array.isArray(gateway.blocked_attempts));
+      if (gateway.status === 'NOT_EXECUTED_CURRENT_HEAD') {
+        assert.equal(b.host_ticket_status, 'CURRENT_HEAD_NOT_EXECUTED');
+        assert.equal(b.host_ticket_ci, null);
+        assert.ok(gateway.blocked_attempts.every(url =>
+          /^https:\/\/github\.com\//.test(url)));
+      }
+    }
     if (b.compiled_guest_ipc_status === 'PASSED') {
       assert.ok(b.guest_evidence && /^[0-9a-f]{40}$/.test(b.guest_evidence.source_sha),
         b.id + ': PASS without immutable exact SHA');
