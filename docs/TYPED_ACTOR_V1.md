@@ -197,3 +197,11 @@ rustc --edition=2021 -D warnings tools/actor_isolation_types_v1.rs -o /tmp/atto_
 ```
 
 The existing exact-head typed-actor workflow invokes both commands and explicitly labels the result SOURCE_ONLY. Until it executes nonzero build/test steps on a pinned head, Rust test status is **NOT_EXECUTED**. A separate compiler/backend harness must turn these policy rows into complete positive and negative `.atto` fixtures, type-check no-emission rejection and execute real guest mailbox/recipient traces with independently verified artifact hashes before any backend case becomes PASS.
+
+### Exact two-blob private-carrier Rust execution receipt (2026-11-20 UTC)
+
+Source organization GitHub Actions for this draft failed with `steps=[]`; these are **zero-step admission failures**, not source-code test results. Two private candidate carriers also returned no executable job steps. The **third private carrier** ran: [usa-acc/atto-ci run 44662076919](https://github.com/usa-acc/atto-ci/actions/runs/44662076919), job `136042448898`, pinned carrier commit `afd236dfea732613e1bcc60befba6259ef34bb19` and tree `7714c69d4836b31155b2282eb82cc2dd20697844`.
+
+Its executed checkout and SHA gate verified **only two identical source Git blobs**, Rust `2ed736970b5f7da1d2291b4396f1b2df66e73a59` and TSV `298b4d23e526951394aa7fa7eefb1ecbc423cfe4`, from the conformance branch at export head `f217d0084993ee41565875546487cf03706c2372`. On `rustc 1.100.0`, **12/12 Rust unit tests passed** and the standalone binary validated **36/36 SOURCE_ONLY rows**. Both test and executable steps succeeded. Machine-readable receipt: `evidence/actor-isolation-types-v1-source-only-20261119.json`.
+
+**Strict interpretation:** This is a two-file **reference-model-only** successful CI receipt, not a complete source-tree mirror, required source-org CI, compiled `.atto` evidence, runtime TenantVM confinement, real socket broker check, or one backend's guest parity. All 36 per-backend registry statuses remain `NOT_EXECUTED`. No draft promotion or merge is justified by this limited pass.
