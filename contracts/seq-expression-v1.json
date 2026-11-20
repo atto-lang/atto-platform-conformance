@@ -978,15 +978,15 @@
     },
     "forge": {
       "pull_request": "https://github.com/atto-lang/atto-source.forge/pull/42",
-      "head_sha": "996be3e243c0f2fcb49ab5906ae03dc10e0623e3",
-      "source_tree": "2b98acbe7ed64f947b0608d335682fc0b03880b2",
+      "head_sha": "e4a44eb724c666c44135ec4cdb5575c9ed54cca5",
+      "source_tree": "5c34dbc2d9ade7b542052530d49fc9401fcde515",
       "scope": "Independent C++20 stage-0 bounded i64 seq with ordered checked prefix traps; integrated with #44 fail-closed two-character I/O direction lexer; 16-element cap and generated native guest fixtures",
       "verification_status": "not_executed"
     },
     "net": {
       "pull_request": "https://github.com/atto-lang/atto-source.net/pull/20",
-      "head_sha": "dc7137b6681c72e9ddbdc6ab130ec9cf45df3752",
-      "source_tree": "76ebe030c7c9c0c430817ad45b98682338411546",
+      "head_sha": "c1a08f31c9e7777232f92884929d56a65f2d111f",
+      "source_tree": "2f261c3df74db8620fbd48cf6e78feeda934d533",
       "scope": "Direct ECMA-335 CIL bounded i64 seq integrated with #16 checked |> / <| pipelines, inline arrow bodies and immutable locals; CoreCLR/NativeAOT guests require real CI; 16-element cap",
       "verification_status": "not_executed"
     }
