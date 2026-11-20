@@ -28,7 +28,8 @@ fn verify() -> Result<(), String> {
             return Err("wrong registry arity/length".into());
         }
         let (id, boundary, result, evidence) = CASES[i];
-        if cols != [id, boundary, result, "NOT_EXECUTED", evidence] {
+        if cols[0] != id || cols[1] != boundary || cols[2] != result ||
+            cols[3] != "NOT_EXECUTED" || cols[4] != evidence {
             return Err(format!("case {} mutated or falsely promoted", i + 1));
         }
         if !ids.insert(id) {
