@@ -49,6 +49,18 @@ test('candidate ledger keeps actual source commits distinct from executed eviden
       });
       assert.equal(c.execution_status,'NOT_EXECUTED');
       assert.equal(c.executed_step_count,0);
+      const carrier=c.token_free_carrier;
+      assert.equal(carrier.repository,'gha-indie-worker/atto-ci');
+      assert.equal(carrier.source_commit,c.source_head);
+      assert.equal(carrier.source_git_tree,'2d95af6aa96776553cee0d0fa5cc4163618a1a24');
+      assert.equal(carrier.carrier_mirror_git_tree,carrier.source_git_tree);
+      assert.equal(carrier.exact_mirror_source_blob_count,80);
+      assert.equal(carrier.mirror_verified,true);
+      assert.equal(carrier.cross_organization_checkout_token_used,false);
+      assert.deepEqual(carrier.job_executed_steps,[0,0]);
+      assert.equal(carrier.status,'FAILED_BEFORE_JOB_STEPS');
+      assert.equal(carrier.full_CTest_executed,false);
+      assert.equal(carrier.artifact_sha256,null);
       const local=c.local_compiled_guest_subset;
       assert.equal(local.status,'PASS_LOCAL_SUBSET_NOT_FULL_CONFORMANCE');
       assert.equal(local.tested_source_commit,c.source_head);

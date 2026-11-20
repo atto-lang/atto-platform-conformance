@@ -1,3 +1,27 @@
+### Full-tree token-free Forge PR #50 CI mirror (GCC and Clang)
+
+Current Forge source SHA `bdbd253abc71c3631cf0d5b3e5922a5b58155936`
+was mirrored via the GitHub connector to the private
+[gha-indie-worker/atto-ci carrier](https://github.com/gha-indie-worker/atto-ci/tree/ci/forge-pr50-safe-output-exact-20261120)
+at commit `cada4a437d284bbe048b3f78c5b7c9054da7153a`.
+**All 80 source blobs were independently copied and SHA-matched**;
+the carrier mirror's Git-tree SHA **exactly equals the source's complete
+tree** `2d95af6aa96776553cee0d0fa5cc4163618a1a24`.
+No token or secret from the source organization was used in checkout;
+the workflow uses only its own private carrier checkout token, without
+persisting credentials.
+
+The new workflow requests the **full CMake/CTest suite under GCC and
+Clang with ASan/UBSan**. [Carrier run #44684432723](https://github.com/gha-indie-worker/atto-ci/actions/runs/44684432723)
+failed with **0 steps executed on BOTH jobs**. This is
+runner admission, not a compiler failure or a passing full suite.
+Current source Actions #44683428229 likewise failed with zero steps.
+Org-level minutes/billing are inaccessible via the connector; the
+selected carrier has an older successful run but no *proven current*
+runner admission. Full CTest and full cross-backend conformance remain
+`NOT_EXECUTED`; Forge's separately recorded local subset remains
+a PASS only for that tested subset.
+
 ### Forge local execution reverified after caller-owned output safety correction
 
 At current [Forge PR #50](https://github.com/atto-lang/atto-source.forge/pull/50)

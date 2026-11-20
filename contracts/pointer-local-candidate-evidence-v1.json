@@ -268,6 +268,30 @@
         "github_actions_artifact_certification": false,
         "full_process_result_abi_parity": false,
         "public_evidence_pr_comment": "https://github.com/atto-lang/atto-source.forge/pull/50#issuecomment-7031453507"
+      },
+      "token_free_carrier": {
+        "repository": "gha-indie-worker/atto-ci",
+        "branch": "ci/forge-pr50-safe-output-exact-20261120",
+        "carrier_commit": "cada4a437d284bbe048b3f78c5b7c9054da7153a",
+        "source_commit": "bdbd253abc71c3631cf0d5b3e5922a5b58155936",
+        "source_git_tree": "2d95af6aa96776553cee0d0fa5cc4163618a1a24",
+        "carrier_mirror_git_tree": "2d95af6aa96776553cee0d0fa5cc4163618a1a24",
+        "exact_mirror_source_blob_count": 80,
+        "mirror_verified": true,
+        "cross_organization_checkout_token_used": false,
+        "workflow_path": ".github/workflows/atto-forge-pr50-full-ctest.yml",
+        "run_url": "https://github.com/gha-indie-worker/atto-ci/actions/runs/44684432723",
+        "attempted_jobs": [
+          "forge-full-ctest (g++)",
+          "forge-full-ctest (clang++)"
+        ],
+        "job_executed_steps": [
+          0,
+          0
+        ],
+        "status": "FAILED_BEFORE_JOB_STEPS",
+        "full_CTest_executed": false,
+        "artifact_sha256": null
       }
     }
   ]
