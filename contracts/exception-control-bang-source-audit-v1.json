@@ -1,0 +1,163 @@
+{
+  "schema": "atto.exception-control-bang-source-audit.v1",
+  "status": "PROPOSED_SOURCE_DIFFS_NO_BACKEND_EXECUTION_CERTIFIED",
+  "canonical_spec": {
+    "repo": "atto-lang/atto-spec",
+    "pr": 146,
+    "head_sha": "a5e08d47100778159a21ace627cd98ed0b537c3d",
+    "path": "contracts/exception-control-bang/v1/cases.json",
+    "blob_sha": "51f33f52eb2a05add7819c181afe38550313c353",
+    "lexical_vectors": 18,
+    "scope": "SPELLING_AND_LEXICAL_IDENTITY_ONLY"
+  },
+  "backend_count": 11,
+  "backends": [
+    {
+      "repo": "atto-lang/atto-source.atto",
+      "existing_pr": 13,
+      "candidate_head_sha": "42cbf0608e118d514f0872ca9914d68a4ef0ca02",
+      "candidate_branch": "draft/bang-exception-keywords-20261120",
+      "profile": "SEED_REPOSITORY_NO_COMPILER_ON_MAIN",
+      "has_frontend_in_this_repository": false,
+      "direct_guest_execution": "NOT_EXECUTED",
+      "compiler_ci_exact_head": "NOT_VERIFIED",
+      "semantic_exception_effect_parity": "NOT_VERIFIED",
+      "independent_compiler_certification": false
+    },
+    {
+      "repo": "atto-lang/atto-source.cranelift",
+      "existing_pr": 73,
+      "candidate_head_sha": "9372f9632bbb7c18d882dbf64dbeb981a5e79e27",
+      "candidate_branch": "draft/bang-exception-keywords-20261120",
+      "profile": "NATIVE_CRANELIFT_RESTRICTED_FRONTEND",
+      "has_frontend_in_this_repository": true,
+      "direct_guest_execution": "NOT_EXECUTED",
+      "compiler_ci_exact_head": "NOT_VERIFIED",
+      "semantic_exception_effect_parity": "NOT_VERIFIED",
+      "independent_compiler_certification": false
+    },
+    {
+      "repo": "atto-lang/atto-source.forge",
+      "existing_pr": 106,
+      "candidate_head_sha": "e48e7f50877fe99e4ffd41ad64ef94277786d719",
+      "candidate_branch": "draft/bang-exception-keywords-20261120",
+      "profile": "NATIVE_FORGE_RESTRICTED_FRONTEND",
+      "has_frontend_in_this_repository": true,
+      "direct_guest_execution": "NOT_EXECUTED",
+      "compiler_ci_exact_head": "NOT_VERIFIED",
+      "semantic_exception_effect_parity": "NOT_VERIFIED",
+      "independent_compiler_certification": false
+    },
+    {
+      "repo": "atto-lang/atto-source.hdl",
+      "existing_pr": 21,
+      "candidate_head_sha": "dcdf9a292930a53e0d25a9450817b00da0ee9c4d",
+      "candidate_branch": "draft/bang-exception-keywords-20261120",
+      "profile": "RTL_RESTRICTED_SOURCE_FRONTEND",
+      "has_frontend_in_this_repository": true,
+      "direct_guest_execution": "NOT_EXECUTED",
+      "compiler_ci_exact_head": "NOT_VERIFIED",
+      "semantic_exception_effect_parity": "NOT_VERIFIED",
+      "independent_compiler_certification": false
+    },
+    {
+      "repo": "atto-lang/atto-source.java",
+      "existing_pr": 194,
+      "candidate_head_sha": "b3354116c8605a95f87871110a365f5fc623ca55",
+      "candidate_branch": "draft/bang-exception-keywords-20261120",
+      "profile": "JAVA_GRAALVM_FRONTEND",
+      "has_frontend_in_this_repository": true,
+      "direct_guest_execution": "NOT_EXECUTED",
+      "compiler_ci_exact_head": "NOT_VERIFIED",
+      "semantic_exception_effect_parity": "NOT_VERIFIED",
+      "independent_compiler_certification": false
+    },
+    {
+      "repo": "atto-lang/atto-source.js",
+      "existing_pr": 73,
+      "candidate_head_sha": "d94ab3cd0b738125b0a68f24682baff43f8c7987",
+      "candidate_branch": "draft/bang-exception-keywords-20261120",
+      "profile": "JS_SCALAR_AND_PROGRAM_V2_FRONTENDS",
+      "has_frontend_in_this_repository": true,
+      "direct_guest_execution": "NOT_EXECUTED",
+      "compiler_ci_exact_head": "NOT_VERIFIED",
+      "semantic_exception_effect_parity": "NOT_VERIFIED",
+      "independent_compiler_certification": false
+    },
+    {
+      "repo": "atto-lang/atto-source.llvm",
+      "existing_pr": 293,
+      "candidate_head_sha": "0948ad0a9736d36d29dc0aa47d5914f2940e1932",
+      "candidate_branch": "draft/bang-exception-keywords-20261120",
+      "profile": "LLVM_RUST_AND_CPP_FRONTENDS",
+      "has_frontend_in_this_repository": true,
+      "direct_guest_execution": "NOT_EXECUTED",
+      "compiler_ci_exact_head": "NOT_VERIFIED",
+      "semantic_exception_effect_parity": "NOT_VERIFIED",
+      "independent_compiler_certification": false
+    },
+    {
+      "repo": "atto-lang/atto-source.net",
+      "existing_pr": 119,
+      "candidate_head_sha": "b39c4b3030285b785d5a0ea493bb9be37f2d2fd8",
+      "candidate_branch": "draft/bang-exception-keywords-20261120",
+      "profile": "NET_NATIVEAOT_RESTRICTED_FRONTEND",
+      "has_frontend_in_this_repository": true,
+      "direct_guest_execution": "NOT_EXECUTED",
+      "compiler_ci_exact_head": "NOT_VERIFIED",
+      "semantic_exception_effect_parity": "NOT_VERIFIED",
+      "independent_compiler_certification": false
+    },
+    {
+      "repo": "atto-lang/atto-source.realtime",
+      "existing_pr": 6,
+      "candidate_head_sha": "a20bd85aefad85cef8bb830a05aaf7091d9ddfe5",
+      "candidate_branch": "draft/bang-exception-keywords-20261120",
+      "profile": "REALTIME_REPOSITORY_NO_COMPILER_ON_MAIN",
+      "has_frontend_in_this_repository": false,
+      "direct_guest_execution": "NOT_EXECUTED",
+      "compiler_ci_exact_head": "NOT_VERIFIED",
+      "semantic_exception_effect_parity": "NOT_VERIFIED",
+      "independent_compiler_certification": false
+    },
+    {
+      "repo": "atto-lang/atto-source.rs",
+      "existing_pr": 449,
+      "candidate_head_sha": "0957cf6d9fda6ed5e5002578a83618ef08025d5c",
+      "candidate_branch": "draft/bang-exception-keywords-20261120",
+      "profile": "RUST_NATIVE_AND_BROWSER_FRONTEND",
+      "has_frontend_in_this_repository": true,
+      "direct_guest_execution": "NOT_EXECUTED",
+      "compiler_ci_exact_head": "NOT_VERIFIED",
+      "semantic_exception_effect_parity": "NOT_VERIFIED",
+      "independent_compiler_certification": false
+    },
+    {
+      "repo": "atto-lang/atto-source.wasm",
+      "existing_pr": 119,
+      "candidate_head_sha": "42cd8b0a69c8d5385d3fcb7a48203b0489130f7b",
+      "candidate_branch": "draft/bang-exception-keywords-20261120",
+      "profile": "WASM_DELEGATES_SOURCE_COMPILATION_TO_RUST",
+      "has_frontend_in_this_repository": false,
+      "direct_guest_execution": "NOT_EXECUTED",
+      "compiler_ci_exact_head": "NOT_VERIFIED",
+      "semantic_exception_effect_parity": "NOT_VERIFIED",
+      "independent_compiler_certification": false
+    }
+  ],
+  "provenance_notes": {
+    "wasm": "The actual source-to-Wasm compiler lives in atto-source.rs. Host/runtime gateway tests cannot count as a second compiler.",
+    "atto,realtime": "Only AGENTS.md and README.md exist on main; their source repositories cannot be counted as working compilers.",
+    "java,llvm,rs": "Drafts cover lexical spelling; typed Error/Result, complete unwind and panic CONTROL routing require executed guest tests.",
+    "net,forge,js,hdl,cranelift": "Drafts guard unsupported guest-effect admission; reject-with-diagnostic is not positive semantic feature implementation."
+  },
+  "host_scanner_checks": "Focused source-extracted JS scalar, JS program-v2 and HDL lexical checks exercised 18/18 boundary inputs each in an isolated V8 harness; NOT a CI or guest pass.",
+  "full_parity_certified": false,
+  "merge_gates": [
+    "genuine_source_exact_head_stepful_CI",
+    "spec_formatter_diffs_reviewed",
+    "authentic_review_and_no_hold",
+    "overlap_including_legacy_sources_triaged",
+    "actual_compiler_or_guest_execution_receipts_and_rejections"
+  ]
+}
