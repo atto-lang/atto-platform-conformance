@@ -87,7 +87,7 @@ test("portable standalone multi-function typed and checked-call contracts are so
     "standalone-nested-direct"]) {
     const x = byId.get(name);
     assert.equal(x.expect, "PASS");
-    assert.equal(x.expect_stdout, "42\\n");
+    assert.equal(x.expect_stdout, "42\n");
   }
   const overflow = await checked_bytes("src/standalone-overflow-callee.atto");
   const ignored = await checked_bytes("src/standalone-discarded-argument.atto");
