@@ -6,7 +6,7 @@ export class ActorReadyPipeOracle {
     this.actors.set(a.id,a); return a;
   }
   live(a) { return !!a && this.actors.get(a.id) === a && a.state !== 'DONE'; }
-  get_ready(a) { return this.live(a) ? a.ready : {ok:false,error:'STALE'}; }
+  get_ready(a) { return this.live(a) || (a && this.actors.get(a.id)===a) ? a.ready : {ok:false,error:'STALE'}; }
   get_done(a) { return this.live(a) || (a && this.actors.get(a.id)===a) ? a.done : {ok:false,error:'STALE'}; }
   connect(source,sink,{capacity=2}={}) {
     // First validate every participant; no publication or credit acquisition until all checks succeed.
