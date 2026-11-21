@@ -36,6 +36,9 @@ function assertSourceAudit(x){
   }
   const llvm=x.backends.find(r=>r.repo==='atto-lang/atto-source.llvm');
   assert.equal(llvm.canonical_throw_error_guard,'SOURCE_PATCHED_NOT_EXECUTED');
+  assert.equal(llvm.candidate_head_sha,'63507daa881a9d863be28be6d1d1e152cc5bee5f');
+  assert.equal(llvm.native_cpp_canonical_result_and_error_diagnostic_guard,'SOURCE_PATCHED_NOT_EXECUTED');
+  assert.equal(llvm.native_compiler_negative_gate,'8_REJECT_1_POSITIVE_AUTHORED_NOT_EXECUTED');
   const rust=x.backends.find(r=>r.repo==='atto-lang/atto-source.rs');
   assert.equal(rust.canonical_typed_throw_raise_guest_suite,'AUTHORED_NOT_EXECUTED');
   const wasm=x.backends.find(r=>r.repo==='atto-lang/atto-source.wasm');
@@ -83,4 +86,17 @@ test('exact git identity and capability boundaries are pinned',()=>{
   mutated.backends[4].candidate_head_sha=contract.backends[4].candidate_head_sha;
   mutated.backends[10].has_frontend_in_this_repository=true;
   assert.throws(()=>assertSourceAudit(mutated));
+});
+
+test('LLVM native Result-vs-Option and typed-Error diagnostics cannot masquerade as guest execution',()=>{
+  for(const mutate of [
+    x=>x.backends[6].candidate_head_sha='95a82ea3857ed9f2a57fb2ade3594defd673c454',
+    x=>x.backends[6].native_cpp_canonical_result_and_error_diagnostic_guard='GUEST_PASS',
+    x=>x.backends[6].native_compiler_negative_gate='8_REJECT_1_POSITIVE_PASS',
+    x=>x.backends[6].native_compiler_negative_gate='',
+    x=>x.backends[6].direct_guest_execution='PASSED'
+  ]){
+    const altered=clone(contract);mutate(altered);
+    assert.throws(()=>assertSourceAudit(altered));
+  }
 });
