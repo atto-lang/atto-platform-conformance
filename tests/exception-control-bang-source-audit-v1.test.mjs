@@ -49,6 +49,9 @@ function assertSourceAudit(x){
   assert.equal(wasm.guest_child_execution_timeout_ms,5000);
   assert.equal(wasm.guest_child_stdout_limit_bytes,4096);
   assert.equal(wasm.compiled_guest_from_approved_rust_compiler,'NOT_EXECUTED');
+  assert.equal(wasm.isolated_child_runner_git_blob,'c49323829058328e6a262babc6a4ce78ee5fd400');
+  assert.equal(wasm.synthetic_guest_host_test_git_blob,'d2adf1b25920006d995d64c05b68806707f4c6c2');
+  assert.equal(wasm.synthetic_guest_host_test_provenance,'LOCAL_NODE22_EXECUTED_7_OF_7_EXACT_GIT_BLOBS');
   assert.equal(x.full_parity_certified,false);
   assert.ok(x.merge_gates.includes('actual_compiler_or_guest_execution_receipts_and_rejections'));
 }
@@ -113,6 +116,9 @@ test('seven locally executed synthetic Wasm host guards do not certify a compile
     x=>x.backends[10].guest_child_execution_timeout_ms=0,
     x=>x.backends[10].guest_child_stdout_limit_bytes=1048576,
     x=>x.backends[10].compiled_guest_from_approved_rust_compiler='PASSED',
+    x=>x.backends[10].isolated_child_runner_git_blob='0'.repeat(40),
+    x=>x.backends[10].synthetic_guest_host_test_git_blob='0'.repeat(40),
+    x=>x.backends[10].synthetic_guest_host_test_provenance='COMPILER_GUEST_PASSED',
     x=>x.backends[10].independent_compiler_certification=true,
   ]){
     const altered=clone(contract);mutate(altered);
