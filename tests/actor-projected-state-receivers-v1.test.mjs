@@ -40,7 +40,7 @@ test('canonical projection has explicit fields and negative safety coverage', ()
 });
 
 test('named receiver is alpha-equivalent and safe across the target matrix', () => {
-  assert.equal(contract.cases.length, 43);
+  assert.equal(contract.cases.length, 51);
   assert.match(contract.semantics.receiverBinding, /self is conventional/);
   assert.match(contract.semantics.alphaEquivalence, /write-set identity/);
   const byId = new Map(contract.cases.map(c => [c.id, c]));
@@ -71,6 +71,14 @@ test('nested actor control arguments cannot conceal sealed state or escapes', ()
     critical_read_prefix_mutation: 'E_READONLY',
     critical_read_split_compound_mutation: 'E_READONLY',
     critical_write_prefix_outside_projection: 'E_MUTABILITY',
+    critical_read_bitwise_and_compound: 'E_READONLY',
+    critical_read_bitwise_or_compound: 'E_READONLY',
+    critical_read_bitwise_xor_compound: 'E_READONLY',
+    critical_read_left_shift_compound: 'E_READONLY',
+    critical_read_right_shift_compound: 'E_READONLY',
+    critical_read_unsigned_shift_compound: 'E_READONLY',
+    critical_write_bitwise_outside_projection: 'E_MUTABILITY',
+    critical_write_shift_outside_projection: 'E_MUTABILITY',
   };
   for (const [id, code] of Object.entries(expected)) {
     assert.equal(byId.get(id)?.diagnosticClass, code, id);
@@ -79,4 +87,16 @@ test('nested actor control arguments cannot conceal sealed state or escapes', ()
   assert.equal(byId.get('nested_control_calls_safe_syntax')?.expect, 'accept_ast_only');
   assert.match(contract.semantics.nestedArgumentGate, /recursively inspected/);
   assert.match(contract.semantics.artifactGate, /no \.wasm output/);
+});
+
+test('all bitwise and shift mutations are rejected without typed actor proofs', () => {
+  const cases = contract.cases.filter(c => /^(critical_read_(?:bitwise|.*shift)_.*compound|critical_write_(?:bitwise|shift)_outside_projection)$/.test(c.id));
+  assert.equal(cases.length, 8);
+  for (const item of cases) {
+    assert.equal(item.stage, 'target_parser', item.id);
+    assert.equal(item.expect, 'reject', item.id);
+    assert.equal(item.evidence, 'NOT_EXECUTED', item.id);
+    assert.match(item.sourceUnits['src/worker.atto'], /handle_state\(critical-(read|write)/);
+    assert.match(item.sourceUnits['src/worker.atto'], /\s(?:&|\||\^|<<|>>|>>>)= 1;/);
+  }
 });
