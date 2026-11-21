@@ -799,6 +799,38 @@
         "hdl": "NOT_EXECUTED",
         "realtime": "NOT_EXECUTED"
       }
+    },
+    {
+      "id": "P19_nominal_error_trap_bypass",
+      "path": "fixtures/return-first-separators-v1/P19-nominal-error-trap-bypass.atto",
+      "git_blob_sha": "76b844ba6d93f1da0fe8c57c05761c30b6c8ead0",
+      "kind": "positive",
+      "expect": "exit",
+      "value": 42,
+      "negative_no_artifact": false,
+      "identity_receipt_required": {
+        "nominal_type": "Foo",
+        "capture_at": [
+          "raise_site",
+          "recover_handler"
+        ],
+        "same_runtime_type_id": true,
+        "reject_message_string_inference": true,
+        "scalar_exit_alone_is_insufficient": true
+      },
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
     }
   ],
   "backends": {
