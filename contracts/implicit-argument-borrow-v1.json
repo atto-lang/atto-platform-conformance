@@ -16,7 +16,9 @@
     "returned_borrow": "Borrow<T> distinguishes borrowed result; infer result lifetime only when all returns originate from one provable borrowed parameter or self",
     "named_lifetimes": "lt! a binder (lifetime! a alias), lt=a named generic lifetime; multiple candidate return sources need explicit checked relationships",
     "nll": "lifetime last-use expiry closes loan interval but never grants the borrowed alias drop/move ownership",
-    "escape": "no returned local/temporary, unproved await, actor crossing or captured escaping reference"
+    "escape": "no returned local/temporary, unproved await, actor crossing or captured escaping reference",
+    "same_call_aliasing": "multiple ordinary readonly arguments to one owner create overlapping verified shared loans; no copy, move, refcount or Pointer<T> required",
+    "same_call_order": "a borrow then take! of one owner in later arguments conflicts with the live loan; take! then borrow is use-after-move; diagnose before any guest output"
   },
   "required_cases": [
     {
@@ -200,6 +202,27 @@
       "path": "fixtures/implicit-borrow/fail/implicit_borrow_returned_as_owned.atto",
       "expected_error": "E_BORROW",
       "proof": "must reject before code emission with owner/alias provenance and lifetime diagnostic"
+    },
+    {
+      "id": "IB_P_11",
+      "kind": "pass",
+      "path": "fixtures/implicit-borrow/pass/two_readonly_arguments_same_owner.atto",
+      "expected_exit": 42,
+      "proof": "compiled guest must accept two simultaneous immutable argument loans to one class owner without an implicit copy or move"
+    },
+    {
+      "id": "IB_F_17",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/read_then_take_same_call.atto",
+      "expected_error": "E_BORROW",
+      "proof": "reject second-argument take! because first argument's implicit readonly loan remains live through argument evaluation; emit no guest"
+    },
+    {
+      "id": "IB_F_18",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/take_then_read_same_call.atto",
+      "expected_error": "E_MOVED",
+      "proof": "reject second-argument implicit borrow after first-argument take! invalidates the owner; emit no guest"
     }
   ],
   "backend_status": {
