@@ -41,6 +41,29 @@ function inspect(x) {
     private_carrier_executed_steps: 0,
     private_source_transfer_authorized: false
   });
+  assert.deepEqual(x.private_carrier_canary, {
+    status: 'PRIVATE_SOURCE_FREE_STEPFUL_RUN_CONFIRMED_EXPORT_DENIED',
+    destination_repo: 'StreemPilot/streempilot-e2e',
+    destination_repo_id: 1318678075,
+    destination_private: true,
+    canary_head_sha: '37921471cc8c5d595f3b77149ec44617e54890c0',
+    canary_workflow_blob_sha: '74652cdc49dad69c627f6df652956b17597024bd',
+    canary_run_id: 44959517105,
+    actual_executed_steps: 3,
+    step_conclusion: 'success',
+    tested_toolchains: ['gcc', 'clang'],
+    native_code_source: 'synthetic_source_free_only',
+    llvm_source_head_sha: '5ca234e3637dd3c3c00093c8c78c63f898d470c9',
+    llvm_source_tree_sha: '0876a80e4702529583ff7d919202a5ed766da5eb',
+    source_main_protected: false,
+    destination_main_protected: false,
+    source_pr742_specific_approval: false,
+    independent_security_review_complete: false,
+    private_source_blobs_exported: 0,
+    full_tree_mirror_verified: false,
+    compiled_atto_actor_guest: 'NOT_EXECUTED',
+    authorization_review_pr: 'https://github.com/atto-lang/atto-source.llvm/pull/842'
+  });
   const sources = x.backends.filter(y => y.control_plane_source_status === 'SOURCE_COMMITTED_NOT_TESTED');
   const native = x.backends.filter(y => y.control_plane_source_status === 'SOURCE_COMMITTED_NATIVE_HOST_TESTED_LOCAL');
   const codecs = x.backends.filter(y =>
@@ -416,4 +439,24 @@ test('canonical .atto actor fixture and randomized native host checks cannot for
   fake.backends.find(row => row.repo.endsWith('.llvm')).native_host_local_test
     .randomized_lifetime_model.actual_compiled_atto_guest = 'PASSED';
   assert.throws(() => inspect(fake));
+});
+
+test('private runner can execute synthetic C without authorizing private compiler export', () => {
+  const changes = [
+    ['status', 'COMPILER_GUEST_VERIFIED'],
+    ['actual_executed_steps', 0],
+    ['source_main_protected', true],
+    ['destination_main_protected', true],
+    ['source_pr742_specific_approval', true],
+    ['independent_security_review_complete', true],
+    ['private_source_blobs_exported', 1824],
+    ['full_tree_mirror_verified', true],
+    ['compiled_atto_actor_guest', 'PASS'],
+    ['native_code_source', 'copied_private_compiler']
+  ];
+  for (const [key, value] of changes) {
+    const forged = structuredClone(baseline);
+    forged.private_carrier_canary[key] = value;
+    assert.throws(() => inspect(forged), 'forged carrier evidence: ' + key);
+  }
 });
