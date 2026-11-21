@@ -1,0 +1,116 @@
+{
+  "schema": "atto.sev-snp-vcek-endorsement.v1",
+  "status": "SOURCE_FREE_REFERENCE_NO_VENDOR_EVIDENCE",
+  "preflight_legacy_measurement_only": true,
+  "trusted_input_rule": "Product-pinned AMD ARK SHA256 must originate from authenticated operator policy, never report, guest, quote, certificate bundle or network lookup",
+  "offline_verifier": {
+    "scope": "VCEK Family19h structVersion=0 offline certificate/quote check",
+    "root_pin": "SHA256(canonical AMD ARK DER), independent approved value",
+    "certificates": "ARK trust anchor -> ASK intermediate -> VCEK leaf",
+    "crl": "Require current issuer CRL; unavailable/expired/revoked fails closed. Additional revocation coverage and CRL provenance must be reviewed before production admission",
+    "extensions": {
+      "structVersion": "1.3.6.1.4.1.3704.1.1 = 0",
+      "blSPL": "1.3.6.1.4.1.3704.1.3.1 = REPORT[0x180]",
+      "teeSPL": "1.3.6.1.4.1.3704.1.3.2 = REPORT[0x181]",
+      "snpSPL": "1.3.6.1.4.1.3704.1.3.3 = REPORT[0x186]",
+      "ucodeSPL": "1.3.6.1.4.1.3704.1.3.8 = REPORT[0x187]",
+      "hwID": "1.3.6.1.4.1.3704.1.4 = REPORT[0x1a0..0x1df] (64-byte Family19h)"
+    },
+    "signature": "SHA384/P384 verifying report[0..0x29f] against vetted VCEK leaf public key",
+    "report_data_binding": "SHA512 domain-separated 32-byte verifier nonce, 32-byte deployment identity, ephemeral transport SPKI",
+    "returns_crypto_valid_not_hardware_attested": true,
+    "may_authorize_tenant": false,
+    "may_release_secrets": false
+  },
+  "unsupported": [
+    "VLEK",
+    "Turin structVersion1",
+    "unverified AMD product root",
+    "unavailable CRL",
+    "unsupported revocation chain",
+    "missing fresh hardware report",
+    "unbound authenticated TLS channel"
+  ],
+  "negative_cases": [
+    {
+      "id": "missing-pinned-root",
+      "outcome": "UNTRUSTED_ROOT"
+    },
+    {
+      "id": "guest-supplied-root-fingerprint-mismatch",
+      "outcome": "UNTRUSTED_ROOT"
+    },
+    {
+      "id": "invalid-pinned-root-der",
+      "outcome": "INVALID_CERTIFICATES"
+    },
+    {
+      "id": "empty-or-malformed-leaf",
+      "outcome": "INVALID_CERTIFICATES"
+    },
+    {
+      "id": "missing-issuer-crl",
+      "outcome": "MISSING_REVOCATION_EVIDENCE"
+    },
+    {
+      "id": "expired-issuer-crl",
+      "outcome": "MISSING_REVOCATION_EVIDENCE"
+    },
+    {
+      "id": "revoked-vcek",
+      "outcome": "CERTIFICATE_CHAIN_REJECTED"
+    },
+    {
+      "id": "untrusted-ask",
+      "outcome": "CERTIFICATE_CHAIN_REJECTED"
+    },
+    {
+      "id": "vlek-in-vcek-only-path",
+      "outcome": "UNSUPPORTED_SIGNER"
+    },
+    {
+      "id": "structversion-mismatch",
+      "outcome": "TCB_MISMATCH"
+    },
+    {
+      "id": "bootloader-tee-snp-microcode-extension-mismatch",
+      "outcome": "TCB_MISMATCH"
+    },
+    {
+      "id": "chip-id-mismatch",
+      "outcome": "CHIP_ID_MISMATCH"
+    },
+    {
+      "id": "wrong-signature",
+      "outcome": "REPORT_SIGNATURE_REJECTED"
+    },
+    {
+      "id": "unsigned-report-policy-mismatch",
+      "outcome": "REPORT_POLICY_REJECTED"
+    },
+    {
+      "id": "future-transcript-replay",
+      "outcome": "NOT_IMPLEMENTED_REQUIRES_BROKER"
+    },
+    {
+      "id": "cross-tenant-key-replay",
+      "outcome": "NOT_IMPLEMENTED_REQUIRES_BROKER"
+    }
+  ],
+  "evidence": {
+    "local_negative_only": "NOT_EXECUTED_EXACT_HEAD",
+    "hardware_positive": "NOT_EXECUTED",
+    "endorsement_positive": "NOT_EXECUTED",
+    "secret_release": "NOT_IMPLEMENTED"
+  },
+  "security_review_requirements": [
+    "AMD published root pin provenance",
+    "CRL source and complete chain revocation semantics",
+    "additional hardware SNP product layouts",
+    "VLEK cloud deployments",
+    "real quote collection",
+    "ephemeral TLS private-key possession",
+    "per-tenant generation anti-replay",
+    "adversarial guest isolation"
+  ]
+}
