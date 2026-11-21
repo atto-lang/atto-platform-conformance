@@ -39,7 +39,7 @@ if a source-only inventory is relabeled an executable guest certificate.
 
 The registry now includes **14 explicit feature families × 11 backends =
 154 required feature/backend applicability-and-evidence decisions**.
-Every one begins `NOT_VERIFIED` in this snapshot. These decisions cover
+Every one of the **154 explicit `feature_backend_cells` entries** begins `NOT_VERIFIED` in this snapshot; the machine-checkable table rejects omitted backends, invented unsupported claims, forged passes and dropped feature families. These decisions cover
 lambda delimiters, dual-form exceptions, `maybe`/Option/Result, ownership,
 sealed actor state, typed pubsub, scalar syntax, Ref32 actor memory,
 Theater/Director/Ensemble/Runtime, immutable collections, checked arithmetic,
