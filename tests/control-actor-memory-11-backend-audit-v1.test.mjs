@@ -51,6 +51,20 @@ function inspect(x) {
       'control-plane quota must account for backend native alignment');
     assert.equal(row.runtime_integration_executed_steps, 0,
       'unadmitted source workflows provide no executed runtime steps');
+    const pinnedRootSource = row.repo === 'atto-lang/atto-source.java' ? {
+      'src/main/java/dev/oreslang/runtime/ActorRuntime.java': '689857fa80eceb672b64fc095edd3f0304ac4062',
+      'src/main/java/dev/oreslang/runtime/ControlPlaneArena32.java': '7380d8309d84b767b8802f0190ec3e53b7d11307',
+      'src/test/java/dev/oreslang/runtime/ActorRuntimeNativeControlCountersTest.java': '3e9808754f05ff56f0cf5085db94423d0aa66f61',
+      '.github/workflows/control-plane-ref32-ffm.yml': '78f5f8e410a3ebe7df6de14bb87932a614eeef58'
+    } : row.repo === 'atto-lang/atto-source.net' ? {
+      'runtime/Ores.Net.Runtime/ActorRuntime.cs': '6e1639fda258c1a14cf14f58e33226735146038b',
+      'runtime/Ores.Net.Runtime/ControlPlaneArena32.cs': 'f7f7e25ac5c9e4f8079e055a1ac12365c955614a',
+      'verification/Ores.Net.Tests/ActorControlDirectoryIntegrationSelfTest.cs': '5c745f4205a1ee065724c76a30f6054541f6cc24',
+      'verification/Ores.Net.ControlRuntimeProbe/ControlRuntimeProbe.csproj': '691589168e8d02d58a462a9f25aa7a8303920d25',
+      '.github/workflows/control-plane-ref32-nativeaot.yml': '3c417fffede8668c7130ee306160d3b013c19ed6'
+    } : null;
+    assert.deepEqual(row.runtime_native_root_source_blobs, pinnedRootSource,
+      'source-only runtime integration evidence must retain exact immutable Git blob identities');
     assert.equal(row.managed_hotpath_allocation_measurement, 'NOT_EXECUTED');
     assert.equal(row.deterministic_stop_quiescence_integration, 'NOT_EXECUTED');
     assert.equal(row.guest_zero_tracing_gc, 'NOT_VERIFIED');
@@ -209,4 +223,14 @@ test('Rust control codec SHA pin and unexecuted test status cannot be forged', (
   const swapped = structuredClone(baseline);
   swapped.backends[5].host_control_codec_test.source_blobs['src/control_ref32.rs'] = '1'.repeat(40);
   assert.throws(() => inspect(swapped));
+});
+
+test('native root source blob mismatch or foreign backend source claim is rejected', () => {
+  const changed = structuredClone(baseline);
+  changed.backends.find(x => x.repo.endsWith('.net')).runtime_native_root_source_blobs[
+    'runtime/Ores.Net.Runtime/ControlPlaneArena32.cs'] = '0'.repeat(40);
+  assert.throws(() => inspect(changed));
+  const invented = structuredClone(baseline);
+  invented.backends.find(x => x.repo.endsWith('.llvm')).runtime_native_root_source_blobs = {};
+  assert.throws(() => inspect(invented));
 });
