@@ -61,6 +61,25 @@ test('all eleven mainline pubsub evidence gaps are pinned to actual repository i
   assert.equal(auditParityIndex(index,contract).status,'not-certified');
 });
 
+test('private CI fallback runbook requires approval before any cross-org source transfer',()=>{
+  const runbook=fs.readFileSync(
+    path.resolve(dir,'../docs/CI_FALLBACK_PRIVATE_ACTOR_BRANCHES.md'),'utf8');
+  for(const required of [
+    'NOT_EXECUTED',
+    'runner_id: 0',
+    'exact owner/repo and immutable numeric repo ID',
+    'STOP BEFORE SOURCE FETCH/CROSS-ORG WRITE',
+    'Git blob SHA',
+    'tree SHA',
+    'temporary branch',
+    'GITHUB_TOKEN',
+    'NOT_GUEST_CI',
+    'cross-organization private-source incident hold'
+  ]) assert.ok(runbook.includes(required),required);
+  assert.ok(runbook.indexOf('STOP BEFORE SOURCE FETCH/CROSS-ORG WRITE')
+    < runbook.indexOf('Token-free exact-tree mirror'));
+});
+
 test('empty index reports all backends not-executed and never certified',()=>{
   const x=auditParityIndex(index,contract);
   assert.equal(x.status,'not-certified');

@@ -10,6 +10,7 @@ on:
       - 'verification/atto-theater-v1.receipts.json'
       - 'verification/atto-ensemble-pubsub-main-audit.json'
       - 'docs/ATTO_THEATER_PARITY_V1.md'
+      - 'docs/CI_FALLBACK_PRIVATE_ACTOR_BRANCHES.md'
       - '.github/workflows/atto-theater-v1-contract.yml'
   workflow_dispatch:
 permissions:
