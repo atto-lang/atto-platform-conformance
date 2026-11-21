@@ -46,8 +46,8 @@ function makeGeometry(schema, layout, capacity, width, groups) {
     }};
   }
   if (layout === 'aosoa') {
-    if (!Number.isSafeInteger(width) || width < 2 || width > 64 || (width & (width - 1)) !== 0)
-      throw new RangeError('AoSoA width must be a power of two in [2,64]');
+    if (!Number.isSafeInteger(width) || width < 1 || width > 1024 || (width & (width - 1)) !== 0)
+      throw new RangeError('AoSoA width must be a power of two in [1,1024]');
     let stride = 0, alignment = 1;
     for (const field of schema) {
       const type = TYPES[field.type];
