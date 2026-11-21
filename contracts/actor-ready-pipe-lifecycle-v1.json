@@ -68,7 +68,8 @@
     "stop_gracefully_fences_new_data",
     "actor_done_waits_physical_quiescence",
     "pipeline_done_distinct_from_actor_done",
-    "generation_fence_and_tenant_capability"
+    "generation_fence_and_tenant_capability",
+    "worker_ready_reply_done_fenced_by_incarnation"
   ],
   "backend_evidence": [
     {
@@ -232,6 +233,46 @@
         "steps_executed": 0,
         "test_status": "NOT_EXECUTED"
       }
+    },
+    {
+      "repository": "atto-lang/atto-source.js",
+      "source_head_sha": "ade7df2cd901e6a3e1a6acdac2e1db72bcead635",
+      "status": "STAGED_UNVERIFIED",
+      "scope": "strict compiler explicit unsupported diagnostics for actor.get_ready()/get_done(), pipe!/rpipe!, stop!, property-alias rejection",
+      "excludes": [
+        "compiled actor READY/DONE Future",
+        "continuous pipe!/rpipe! transport",
+        "guest graceful stop",
+        "eleven-backend executable parity"
+      ],
+      "tests": [
+        "tests/actor-lifecycle-source-gate.test.mjs"
+      ],
+      "evidence": "ISOLATED_V8_SOURCE_TEST_6_OF_6_NOT_NODE_CI",
+      "github_actions_run": "https://github.com/atto-lang/atto-source.js/actions/runs/44857559588",
+      "steps_executed": 0,
+      "runner_allocated": false
+    }
+  ],
+  "host_protocol_candidates": [
+    {
+      "repository": "atto-lang/atto-source.rs",
+      "source_head_sha": "0deb14a2e5b58b3b65f2b91d17e2e07b1b0130bd",
+      "scope": "browser actor host incarnation-bound initialization, DATA reply, DONE",
+      "session_tests": {
+        "passed": 15,
+        "method": "ISOLATED_V8",
+        "guest_execution": false
+      },
+      "worker_protocol_tests": {
+        "passed": 6,
+        "method": "ISOLATED_V8",
+        "guest_execution": false
+      },
+      "property": "monotonic actor incarnation checked on inbound READY/reply/DONE and outbound DATA/close; not a cryptographic cross-tenant capability",
+      "status": "HOST_PROTOCOL_TESTED_NOT_COMPILER_GUEST_PROVEN",
+      "github_actions_run": "https://github.com/atto-lang/atto-source.rs/actions/runs/44857458316",
+      "steps_executed": 0
     }
   ]
 }
