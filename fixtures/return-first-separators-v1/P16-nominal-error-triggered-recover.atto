@@ -15,7 +15,8 @@ end
 
 pub fnc main(): int raises Foo ::
   recover |err, cursor| -> {
-    return 42;
+    if err.is_type(Foo) then return 42; fi
+    return 17;
   };
   return double_answer(4);
 end
