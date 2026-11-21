@@ -209,3 +209,33 @@ test('experimental v2 guest checked-bang source never counts as proved backend p
     assert.equal(b.frontend_contract_status,'NOT_VERIFIED',b.repo);
   }
 });
+
+
+test('source-free successful runner and explicit mainline integration are NOT guest parity',()=>{
+  const c=data.mainline_optin_candidate;
+  assert.equal(c.repository,'atto-lang/atto-source.rs');
+  assert.match(c.pull_request,/\/pull\/483$/);
+  assert.equal(c.base_branch,'main');
+  assert.match(c.source_head_sha,/^[a-f0-9]{40}$/);
+  assert.equal(c.status,'STAGED_NO_EXECUTED_COMPILER_GUEST');
+  assert.equal(c.experimental_entrypoint,'attoc --experimental-v2 file.atto [-o guest.wasm]');
+  assert.equal(c.public_default_compiler_fallback,false);
+  assert.equal(c.package_implicit_fallback,false);
+  assert.equal(c.browser_compiler_abi_promoted,false);
+  assert.equal(c.mainline_preserved_file_blob_count,7);
+  assert.equal(c.source_linkage_checks_passed,13);
+  assert.equal(c.ci_steps_executed,0);
+  assert.equal(c.ci_exact_head_guest_status,'NOT_EXECUTED');
+  assert.equal(c.private_source_export_allowlist_empty,true);
+  assert.equal(c.source_free_probe.carrier_repository_id,1459040433);
+  assert.equal(c.source_free_probe.carrier_private,true);
+  assert.equal(c.source_free_probe.compiler_source_blobs_transferred,0);
+  assert.equal(c.source_free_probe.compiler_tests_executed,false);
+  assert.equal(c.source_free_probe.independent_source_export_approval,false);
+  assert.equal(c.source_free_probe.result,'SUCCESS');
+  assert.equal(c.fixtures.length,5);
+  for(const b of data.backend_evidence){
+    assert.equal(b.guest_result,'NOT_EXECUTED',b.repo);
+    assert.equal(b.frontend_contract_status,'NOT_VERIFIED',b.repo);
+  }
+});
