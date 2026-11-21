@@ -200,7 +200,7 @@ test('growth charges full old+new peak and failure is accounting/data neutral', 
   const h = a.allocate(8n);
   a.write(h, 42);
   assert.equal(a.relocate_to(26n), false); // 8 old + 26 new > 32
-  assert.equal(a.relocate_to(30n, {injected_failure: true}), false);
+  assert.equal(a.relocate_to(20n, {injected_failure: true}), false); // would fit budget; injected allocation fails
   assert.equal(a.read(h), 42);
   assert.equal(a.committed, 8n);
   assert.equal(budget.used, 8n);
