@@ -65,7 +65,7 @@
       "repo": "atto-lang/atto-source.net",
       "candidate_stage": "UNMANAGED_CONTROL_HOST_SOURCE",
       "existing_pr": "https://github.com/atto-lang/atto-source.net/pull/173",
-      "observed_candidate_pr_head_sha": "be2e383e7ee055b323422bcde8f7215e2bea212e",
+      "observed_candidate_pr_head_sha": "1d2008cdb9a5c51c373cdb2e388a0ee5f7a3f6c2",
       "actor_reference_abi_candidate": "generation16_slot16",
       "control_reference_abi_candidate": "control_generation12_slot20_v1",
       "control_plane_source_status": "SOURCE_COMMITTED_NOT_TESTED",
@@ -82,7 +82,7 @@
       "runtime_integration_executed_steps": 0,
       "runtime_native_root_source_blobs": {
         "runtime/Ores.Net.Runtime/ActorRuntime.cs": "fc923e24874d87e879722992f3b4e889e9f1979f",
-        "runtime/Ores.Net.Runtime/ControlPlaneArena32.cs": "bb6eb079d4fe251a1173397b991c6304aaf8dfb7",
+        "runtime/Ores.Net.Runtime/ControlPlaneArena32.cs": "20606d616475a28f86e8dc947387fd608876a144",
         "verification/Ores.Net.Tests/ActorControlDirectoryIntegrationSelfTest.cs": "76c6022efc12545a1b07fdab817db3c8706344b0",
         "verification/Ores.Net.ControlRuntimeProbe/ControlRuntimeProbe.csproj": "691589168e8d02d58a462a9f25aa7a8303920d25",
         ".github/workflows/control-plane-ref32-nativeaot.yml": "d95b0c1ca86def972f1e837fdd5f049860bd9f49"
@@ -93,7 +93,7 @@
         "little_endian_low_64_hex": "0123456789abcdef",
         "little_endian_high_64_hex": "fedcba9876543210",
         "coherent_under_concurrent_host_access": true,
-        "source_test_blob": "c3298863706151887e001c6d13429e69c5cea110",
+        "source_test_blob": "09b65ee99c79a39c9b97265483adeb1efc6cff25",
         "host_gc_zero_bytes_on_warm_snapshot": "NOT_EXECUTED",
         "host_i128_test_executed": false
       }
