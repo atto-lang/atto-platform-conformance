@@ -44,14 +44,15 @@ function assertSourceAudit(x){
   const wasm=x.backends.find(r=>r.repo==='atto-lang/atto-source.wasm');
   assert.equal(wasm.has_frontend_in_this_repository,false);
   assert.equal(wasm.delegated_wasm_compiler_artifact_gate,'AUTHORED_NOT_EXECUTED');
-  assert.equal(wasm.candidate_head_sha,'79dc0a23ded65b5f1ddd799eff8499662e1f0473');
-  assert.equal(wasm.isolated_guest_host_security_gate,'SYNTHETIC_WASM_LOCAL_NODE22_7_OF_7_NOT_COMPILER');
+  assert.equal(wasm.candidate_head_sha,'f590f9165abd6e9e696ae6ed6a171ed7e510950d');
+  assert.equal(wasm.isolated_guest_host_security_gate,'SYNTHETIC_WASM_LOCAL_NODE22_8_OF_8_NOT_COMPILER');
   assert.equal(wasm.guest_child_execution_timeout_ms,5000);
   assert.equal(wasm.guest_child_stdout_limit_bytes,4096);
   assert.equal(wasm.compiled_guest_from_approved_rust_compiler,'NOT_EXECUTED');
-  assert.equal(wasm.isolated_child_runner_git_blob,'c49323829058328e6a262babc6a4ce78ee5fd400');
-  assert.equal(wasm.synthetic_guest_host_test_git_blob,'d2adf1b25920006d995d64c05b68806707f4c6c2');
-  assert.equal(wasm.synthetic_guest_host_test_provenance,'LOCAL_NODE22_EXECUTED_7_OF_7_EXACT_GIT_BLOBS');
+  assert.equal(wasm.compiled_guest_panic_code_zero_gate,'HOST_GUARD_PATCHED_COMPILER_GUEST_NOT_EXECUTED');
+  assert.equal(wasm.isolated_child_runner_git_blob,'44db7d31c86d4d7744c96aab95b70d87e4dc2392');
+  assert.equal(wasm.synthetic_guest_host_test_git_blob,'d0225e31dcf1519f458ff35f8d5d3f298f29c0bd');
+  assert.equal(wasm.synthetic_guest_host_test_provenance,'LOCAL_NODE22_EXECUTED_8_OF_8_EXACT_GIT_BLOBS');
   assert.equal(x.full_parity_certified,false);
   assert.ok(x.merge_gates.includes('actual_compiler_or_guest_execution_receipts_and_rejections'));
 }
@@ -116,6 +117,7 @@ test('seven locally executed synthetic Wasm host guards do not certify a compile
     x=>x.backends[10].guest_child_execution_timeout_ms=0,
     x=>x.backends[10].guest_child_stdout_limit_bytes=1048576,
     x=>x.backends[10].compiled_guest_from_approved_rust_compiler='PASSED',
+    x=>x.backends[10].compiled_guest_panic_code_zero_gate='GUEST_PASSED',
     x=>x.backends[10].isolated_child_runner_git_blob='0'.repeat(40),
     x=>x.backends[10].synthetic_guest_host_test_git_blob='0'.repeat(40),
     x=>x.backends[10].synthetic_guest_host_test_provenance='COMPILER_GUEST_PASSED',
