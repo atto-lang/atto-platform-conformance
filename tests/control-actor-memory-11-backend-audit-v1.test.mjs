@@ -38,6 +38,17 @@ function inspect(x) {
   for (const row of x.backends) {
     assert(abiOptions.has(row.actor_reference_abi_candidate), 'unrecognized actor ref encoding');
     assert.equal(row.control_plane_compiled_atto_guest, 'NOT_EXECUTED');
+    const integration = row.repo === 'atto-lang/atto-source.java'
+      ? ['JAVA_JVM_SPAWN_STOP_NATIVE_COUNTERS_SOURCE_AUTHORED_NOT_EXECUTED', 44]
+      : row.repo === 'atto-lang/atto-source.net'
+      ? ['NET_CLR_AND_NATIVEAOT_SPAWN_DISPATCH_STOP_NATIVE_COUNTERS_SOURCE_AUTHORED_NOT_EXECUTED', 48]
+      : ['NO_EXECUTED_RUNTIME_NATIVE_ROOT_INTEGRATION_IN_THIS_AUDIT', null];
+    assert.equal(row.runtime_native_root_integration, integration[0],
+      'host runtime integration must not be mistaken for guest parity');
+    assert.equal(row.runtime_root_native_reserved_bytes, integration[1],
+      'control-plane quota must account for backend native alignment');
+    assert.equal(row.runtime_integration_executed_steps, 0,
+      'unadmitted source workflows provide no executed runtime steps');
     assert.equal(row.managed_hotpath_allocation_measurement, 'NOT_EXECUTED');
     assert.equal(row.deterministic_stop_quiescence_integration, 'NOT_EXECUTED');
     assert.equal(row.guest_zero_tracing_gc, 'NOT_VERIFIED');
@@ -158,5 +169,20 @@ test('new control codec receipts cannot promote guest parity or forge source blo
     const keys = Object.keys(blob.backends[backendIndex].host_control_codec_test.source_blobs);
     blob.backends[backendIndex].host_control_codec_test.source_blobs[keys[0]] = 'f'.repeat(40);
     assert.throws(() => inspect(blob));
+  }
+});
+
+test('cannot forge java or dotnet runtime native-root execution or quota', () => {
+  for (const repo of ['atto-lang/atto-source.java', 'atto-lang/atto-source.net']) {
+    const forged = structuredClone(baseline);
+    const row = forged.backends.find(x => x.repo === repo);
+    row.runtime_native_root_integration = 'PASSED_COMPILED_ATTO_GUEST';
+    assert.throws(() => inspect(forged));
+    const fakeSteps = structuredClone(baseline);
+    fakeSteps.backends.find(x => x.repo === repo).runtime_integration_executed_steps = 7;
+    assert.throws(() => inspect(fakeSteps));
+    const invalidQuota = structuredClone(baseline);
+    invalidQuota.backends.find(x => x.repo === repo).runtime_root_native_reserved_bytes = 0;
+    assert.throws(() => inspect(invalidQuota));
   }
 });
