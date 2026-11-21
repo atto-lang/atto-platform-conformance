@@ -107,3 +107,39 @@ Never infer passing guest parity from the canonical fixture's Git SHA or
 this source-only contract. On implemented targets the legitimate typed
 `Result<PublishReceipt, PublishError>` form should eventually compile and run,
 and on unsupported targets the compiler must reject it with a typed diagnostic.
+
+
+### Unsigned-u64 publishing, exhaustion and Full precedence (2026-11-21)
+
+The portable `Topic<T>.try_publish(share! event)` receipt has a **nonwrapping
+unsigned 64-bit topic sequence**. The first admitted publication has sequence
+1; zero is reserved for a refused/uncommitted receipt. The wire receipt uses
+**unsigned decimal text** so values 2^63 through 2^64-1 are not interpreted
+as negative Java `long` values. At committed sequence 2^64-1, every further
+publication **hard-fails exhaustion before transient queue Full**, even if a
+subscriber queue is also full. A Full refusal must not consume any sequence
+or pending-writer credit, partially deliver, or create a phantom receipt.
+
+This semantic gate is pinned by explicit `ensemblePublication` fields in
+`contracts/atto-theater-v1.json`; the source-only validator and downgrade
+regression test reject a signed-only or wrapping interpretation.
+
+- Java draft [#1458](https://github.com/atto-lang/atto-source.java/pull/1458)
+  now checks exhaustion under the delivery lock before queue reservations,
+  while still committing a sequence only after atomic RELIABLE preflight.
+  The JUnit test creates a real one-slot subscriber and checks signed-boundary
+  admission, Full rollback, zero phantom delivery, next contiguous sequence,
+  and the simultaneous exhausted+Full case. The exact-head script runs
+  `mvn clean test` and checks method names in new Surefire reports.
+- LLVM child draft [#590](https://github.com/atto-lang/atto-source.llvm/pull/590)
+  already uses checked `uint64_t` native sequences. Its compiler-negative
+  admission script now snapshots each source in a private workspace and fails
+  if a purported diagnostic also writes IR or another file, or mutates input.
+  A five-case source-free checker self-test is registered in CTest and
+  required by the exact-head workflow.
+
+Only the source-free checker and contract-validator adversarial tests have
+been exercised outside source CI. No Java JUnit/GraalVM guest or LLVM compiler
+build/CTest has run on the amended exact heads. **0/11 Theater guest-certified**;
+zero-step GitHub Actions remains a runner-admission blocker, and private
+cross-org mirror is denied absent independent source security approval.
