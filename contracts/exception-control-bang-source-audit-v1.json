@@ -63,14 +63,15 @@
     {
       "repo": "atto-lang/atto-source.java",
       "existing_pr": 194,
-      "candidate_head_sha": "b3354116c8605a95f87871110a365f5fc623ca55",
+      "candidate_head_sha": "3220afcaa420c38769647dc7f1a1dc8eca1ff049",
       "candidate_branch": "draft/bang-exception-keywords-20261120",
       "profile": "JAVA_GRAALVM_FRONTEND",
       "has_frontend_in_this_repository": true,
       "direct_guest_execution": "NOT_EXECUTED",
       "compiler_ci_exact_head": "NOT_VERIFIED",
       "semantic_exception_effect_parity": "NOT_VERIFIED",
-      "independent_compiler_certification": false
+      "independent_compiler_certification": false,
+      "canonical_trap_result_guard": "SOURCE_PATCHED_NOT_EXECUTED"
     },
     {
       "repo": "atto-lang/atto-source.js",
@@ -87,14 +88,15 @@
     {
       "repo": "atto-lang/atto-source.llvm",
       "existing_pr": 293,
-      "candidate_head_sha": "7e74b654264c2f492a087baed57262642d881303",
+      "candidate_head_sha": "3b1eaa24b1016cc9a81dd75dc42b5e3cc77a5b77",
       "candidate_branch": "draft/bang-exception-keywords-20261120",
       "profile": "LLVM_RUST_AND_CPP_FRONTENDS",
       "has_frontend_in_this_repository": true,
       "direct_guest_execution": "NOT_EXECUTED",
       "compiler_ci_exact_head": "NOT_VERIFIED",
       "semantic_exception_effect_parity": "NOT_VERIFIED",
-      "independent_compiler_certification": false
+      "independent_compiler_certification": false,
+      "canonical_trap_result_guard": "SOURCE_PATCHED_NOT_EXECUTED"
     },
     {
       "repo": "atto-lang/atto-source.net",
@@ -123,14 +125,15 @@
     {
       "repo": "atto-lang/atto-source.rs",
       "existing_pr": 449,
-      "candidate_head_sha": "0957cf6d9fda6ed5e5002578a83618ef08025d5c",
+      "candidate_head_sha": "6f862a7016fbe023247b17f4fd2a659e974c2268",
       "candidate_branch": "draft/bang-exception-keywords-20261120",
       "profile": "RUST_NATIVE_AND_BROWSER_FRONTEND",
       "has_frontend_in_this_repository": true,
       "direct_guest_execution": "NOT_EXECUTED",
       "compiler_ci_exact_head": "NOT_VERIFIED",
       "semantic_exception_effect_parity": "NOT_VERIFIED",
-      "independent_compiler_certification": false
+      "independent_compiler_certification": false,
+      "canonical_trap_result_guard": "SOURCE_PATCHED_NOT_EXECUTED"
     },
     {
       "repo": "atto-lang/atto-source.wasm",
@@ -159,5 +162,6 @@
     "authentic_review_and_no_hold",
     "overlap_including_legacy_sources_triaged",
     "actual_compiler_or_guest_execution_receipts_and_rejections"
-  ]
+  ],
+  "semantic_safety_disposition": "Java, Rust and LLVM Rust frontends now distinguish canonical trap! Result contract from legacy Option trap and fail closed before unsupported guest semantics. The C++ LLVM trap! guard denies unverified native exceptional control; 0 positive canonical trap! runtime receipts."
 }
