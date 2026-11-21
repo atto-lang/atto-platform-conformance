@@ -80,6 +80,13 @@ test('private CI fallback runbook requires approval before any cross-org source 
     < runbook.indexOf('Token-free exact-tree mirror'));
 });
 
+test('Ensemble Full is immediate, atomic and does not consume u64 sequence',()=>{
+  const required=contract.cases.find(c=>c.id==='ensemble-try-publish-full-rollback');
+  assert.equal(required?.kind,'negative');
+  assert.match(required.assertion,/immediately free queue capacity/);
+  assert.match(required.assertion,/without enqueuing a pending writer/);
+  assert.match(required.assertion,/unsigned u64 topic sequence/);
+});
 test('empty index reports all backends not-executed and never certified',()=>{
   const x=auditParityIndex(index,contract);
   assert.equal(x.status,'not-certified');
