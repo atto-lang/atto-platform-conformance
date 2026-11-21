@@ -48,13 +48,14 @@
       "host_control_codec_test": null,
       "runtime_native_root_integration": "NO_EXECUTED_RUNTIME_NATIVE_ROOT_INTEGRATION_IN_THIS_AUDIT",
       "runtime_root_native_reserved_bytes": null,
-      "runtime_integration_executed_steps": 0
+      "runtime_integration_executed_steps": 0,
+      "runtime_native_root_source_blobs": null
     },
     {
       "repo": "atto-lang/atto-source.net",
       "candidate_stage": "UNMANAGED_CONTROL_HOST_SOURCE",
       "existing_pr": "https://github.com/atto-lang/atto-source.net/pull/173",
-      "observed_candidate_pr_head_sha": "e485c85ce819d668869792dae4c438c0f25d5d91",
+      "observed_candidate_pr_head_sha": "8969e586b9267434db4471c9ae5591cc602b3ee8",
       "actor_reference_abi_candidate": "generation16_slot16",
       "control_reference_abi_candidate": "control_generation12_slot20_v1",
       "control_plane_source_status": "SOURCE_COMMITTED_NOT_TESTED",
@@ -68,7 +69,14 @@
       "host_control_codec_test": null,
       "runtime_native_root_integration": "NET_CLR_AND_NATIVEAOT_SPAWN_DISPATCH_STOP_NATIVE_COUNTERS_SOURCE_AUTHORED_NOT_EXECUTED",
       "runtime_root_native_reserved_bytes": 48,
-      "runtime_integration_executed_steps": 0
+      "runtime_integration_executed_steps": 0,
+      "runtime_native_root_source_blobs": {
+        "runtime/Ores.Net.Runtime/ActorRuntime.cs": "6e1639fda258c1a14cf14f58e33226735146038b",
+        "runtime/Ores.Net.Runtime/ControlPlaneArena32.cs": "f7f7e25ac5c9e4f8079e055a1ac12365c955614a",
+        "verification/Ores.Net.Tests/ActorControlDirectoryIntegrationSelfTest.cs": "5c745f4205a1ee065724c76a30f6054541f6cc24",
+        "verification/Ores.Net.ControlRuntimeProbe/ControlRuntimeProbe.csproj": "691589168e8d02d58a462a9f25aa7a8303920d25",
+        ".github/workflows/control-plane-ref32-nativeaot.yml": "3c417fffede8668c7130ee306160d3b013c19ed6"
+      }
     },
     {
       "repo": "atto-lang/atto-source.hdl",
@@ -88,13 +96,14 @@
       "host_control_codec_test": null,
       "runtime_native_root_integration": "NO_EXECUTED_RUNTIME_NATIVE_ROOT_INTEGRATION_IN_THIS_AUDIT",
       "runtime_root_native_reserved_bytes": null,
-      "runtime_integration_executed_steps": 0
+      "runtime_integration_executed_steps": 0,
+      "runtime_native_root_source_blobs": null
     },
     {
       "repo": "atto-lang/atto-source.java",
       "candidate_stage": "UNMANAGED_CONTROL_HOST_SOURCE",
       "existing_pr": "https://github.com/atto-lang/atto-source.java/pull/1273",
-      "observed_candidate_pr_head_sha": "870d051907bed5313e0f27c72377ec481da3e425",
+      "observed_candidate_pr_head_sha": "9f37ec9000326e67b46451d4d6542460e37a2e97",
       "actor_reference_abi_candidate": "generation20_slot12",
       "control_reference_abi_candidate": "control_generation12_slot20_v1",
       "control_plane_source_status": "SOURCE_COMMITTED_NOT_TESTED",
@@ -108,7 +117,13 @@
       "host_control_codec_test": null,
       "runtime_native_root_integration": "JAVA_JVM_SPAWN_STOP_NATIVE_COUNTERS_SOURCE_AUTHORED_NOT_EXECUTED",
       "runtime_root_native_reserved_bytes": 44,
-      "runtime_integration_executed_steps": 0
+      "runtime_integration_executed_steps": 0,
+      "runtime_native_root_source_blobs": {
+        "src/main/java/dev/oreslang/runtime/ActorRuntime.java": "689857fa80eceb672b64fc095edd3f0304ac4062",
+        "src/main/java/dev/oreslang/runtime/ControlPlaneArena32.java": "7380d8309d84b767b8802f0190ec3e53b7d11307",
+        "src/test/java/dev/oreslang/runtime/ActorRuntimeNativeControlCountersTest.java": "3e9808754f05ff56f0cf5085db94423d0aa66f61",
+        ".github/workflows/control-plane-ref32-ffm.yml": "78f5f8e410a3ebe7df6de14bb87932a614eeef58"
+      }
     },
     {
       "repo": "atto-lang/atto-source.realtime",
@@ -128,7 +143,8 @@
       "host_control_codec_test": null,
       "runtime_native_root_integration": "NO_EXECUTED_RUNTIME_NATIVE_ROOT_INTEGRATION_IN_THIS_AUDIT",
       "runtime_root_native_reserved_bytes": null,
-      "runtime_integration_executed_steps": 0
+      "runtime_integration_executed_steps": 0,
+      "runtime_native_root_source_blobs": null
     },
     {
       "repo": "atto-lang/atto-source.rs",
@@ -156,7 +172,8 @@
       },
       "runtime_native_root_integration": "NO_EXECUTED_RUNTIME_NATIVE_ROOT_INTEGRATION_IN_THIS_AUDIT",
       "runtime_root_native_reserved_bytes": null,
-      "runtime_integration_executed_steps": 0
+      "runtime_integration_executed_steps": 0,
+      "runtime_native_root_source_blobs": null
     },
     {
       "repo": "atto-lang/atto-source.llvm",
@@ -191,7 +208,8 @@
       "host_control_codec_test": null,
       "runtime_native_root_integration": "NO_EXECUTED_RUNTIME_NATIVE_ROOT_INTEGRATION_IN_THIS_AUDIT",
       "runtime_root_native_reserved_bytes": null,
-      "runtime_integration_executed_steps": 0
+      "runtime_integration_executed_steps": 0,
+      "runtime_native_root_source_blobs": null
     },
     {
       "repo": "atto-lang/atto-source.js",
@@ -220,7 +238,8 @@
       },
       "runtime_native_root_integration": "NO_EXECUTED_RUNTIME_NATIVE_ROOT_INTEGRATION_IN_THIS_AUDIT",
       "runtime_root_native_reserved_bytes": null,
-      "runtime_integration_executed_steps": 0
+      "runtime_integration_executed_steps": 0,
+      "runtime_native_root_source_blobs": null
     },
     {
       "repo": "atto-lang/atto-source.forge",
@@ -253,7 +272,8 @@
       },
       "runtime_native_root_integration": "NO_EXECUTED_RUNTIME_NATIVE_ROOT_INTEGRATION_IN_THIS_AUDIT",
       "runtime_root_native_reserved_bytes": null,
-      "runtime_integration_executed_steps": 0
+      "runtime_integration_executed_steps": 0,
+      "runtime_native_root_source_blobs": null
     },
     {
       "repo": "atto-lang/atto-source.wasm",
@@ -282,7 +302,8 @@
       },
       "runtime_native_root_integration": "NO_EXECUTED_RUNTIME_NATIVE_ROOT_INTEGRATION_IN_THIS_AUDIT",
       "runtime_root_native_reserved_bytes": null,
-      "runtime_integration_executed_steps": 0
+      "runtime_integration_executed_steps": 0,
+      "runtime_native_root_source_blobs": null
     },
     {
       "repo": "atto-lang/atto-source.cranelift",
@@ -302,7 +323,8 @@
       "host_control_codec_test": null,
       "runtime_native_root_integration": "NO_EXECUTED_RUNTIME_NATIVE_ROOT_INTEGRATION_IN_THIS_AUDIT",
       "runtime_root_native_reserved_bytes": null,
-      "runtime_integration_executed_steps": 0
+      "runtime_integration_executed_steps": 0,
+      "runtime_native_root_source_blobs": null
     }
   ]
 }
