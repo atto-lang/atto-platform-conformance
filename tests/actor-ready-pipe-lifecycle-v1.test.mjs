@@ -82,3 +82,27 @@ test('STOP before READY never invents initialization success',() => {
  assert.equal(v.retire(p).error,'STOPPED_BEFORE_READY');
  assert.strictEqual(v.get_ready(p),p.ready);
 });
+
+
+test('all eleven compiler frontends have independent recognition gates and tracking', () => {
+  const contract=data.compiler_frontend_contract;
+  assert.equal(contract.runnable_preview_status,'NOT_EXECUTED');
+  assert.match(contract.public_preview,/atto-lang\.github\.io\/pull\/196$/);
+  assert.ok(contract.grammar.includes('actor_ref.get_ready()'));
+  assert.ok(contract.grammar.includes('actor_ref.get_done()'));
+  assert.ok(contract.grammar.includes('source pipe! sink'));
+  assert.ok(contract.grammar.includes('sink rpipe! source'));
+  assert.ok(contract.type_rules.includes('get_ready_get_done_are_methods_not_fields'));
+  assert.match(contract.unsupported_policy,/before any guest artifact/);
+  const expected=['java','llvm','rs','wasm','net','forge','cranelift','js','atto','hdl','realtime'];
+  assert.deepEqual(data.backend_evidence.map(b=>b.repo),
+    expected.map(s=>'atto-lang/atto-source.'+s));
+  for (const backend of data.backend_evidence) {
+    assert.equal(backend.frontend_contract_status,'NOT_VERIFIED',backend.repo);
+    assert.equal(backend.lifecycle_runtime_status,'NOT_EXECUTED',backend.repo);
+    assert.match(backend.tracking_url,
+      /^https:\/\/github\.com\/atto-lang\/atto-source\.[a-z]+\/(?:issues|pull)\/\d+$/);
+    assert.ok(backend.tracking_url.includes('/'+backend.repo.split('/').at(-1)+'/'),
+      backend.repo+': wrong tracking repository');
+  }
+});
