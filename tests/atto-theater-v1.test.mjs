@@ -200,3 +200,17 @@ test('canonical Ensemble Topic.try_publish share! negative fixture identity is p
   // A negative source fixture never certifies a functioning Topic<T> guest.
   assert.equal(auditParityIndex(index,contract).status,'not-certified');
 });
+
+test('identical Java guest to LLVM negative: typed try_publish is the same Atto source',()=>{
+  const bytes=fs.readFileSync(path.resolve(dir,
+    '../fixtures/atto-ensemble-v1/typed-try-publish-v1.atto'));
+  const oid=createHash('sha1')
+    .update('blob '+bytes.length+String.fromCharCode(0))
+    .update(bytes).digest('hex');
+  assert.equal(oid,'41fda4efc19823807b56545a31230b6182de0ee1',
+    'Java typed-positive and LLVM unsupported-negative source must match exactly');
+  const s=bytes.toString('utf8');
+  assert.match(s,/val Result<PublishReceipt, PublishError> receipt = topic\.try_publish\(share! event\);/);
+  // Source equality does not mean equivalent executable feature support.
+  assert.equal(auditParityIndex(index,contract).status,'not-certified');
+});
