@@ -38,6 +38,9 @@ function assertSourceAudit(x){
   assert.equal(llvm.canonical_throw_error_guard,'SOURCE_PATCHED_NOT_EXECUTED');
   const rust=x.backends.find(r=>r.repo==='atto-lang/atto-source.rs');
   assert.equal(rust.canonical_typed_throw_raise_guest_suite,'AUTHORED_NOT_EXECUTED');
+  const wasm=x.backends.find(r=>r.repo==='atto-lang/atto-source.wasm');
+  assert.equal(wasm.has_frontend_in_this_repository,false);
+  assert.equal(wasm.delegated_wasm_compiler_artifact_gate,'AUTHORED_NOT_EXECUTED');
   assert.equal(x.full_parity_certified,false);
   assert.ok(x.merge_gates.includes('actual_compiler_or_guest_execution_receipts_and_rejections'));
 }
@@ -67,6 +70,7 @@ test('compiler-source guards cannot be upgraded to unverified guest success',()=
     x=>x.backends[4].canonical_trap_result_guard='PASS',
     x=>x.backends[6].canonical_throw_error_guard='PASS',
     x=>x.backends[9].canonical_typed_throw_raise_guest_suite='PASS',
+    x=>x.backends[10].delegated_wasm_compiler_artifact_gate='PASS',
   ]){
     const altered=clone(contract);mutation(altered);
     assert.throws(()=>assertSourceAudit(altered));
