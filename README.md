@@ -14,7 +14,7 @@ Execute portable language fixtures and record target-specific results.
 
 ## Proposed implicit argument borrowing
 
-[Target registry](contracts/implicit-argument-borrow-v1.json): `python3 bin/validate_implicit_argument_borrow.py` validates fixture integrity only. Now includes inferred borrowed-return and named lt! lifetime cases. Each compiler and guest must be independently tested; all new backend states begin `NOT_EXECUTED`.
+[Target registry](contracts/implicit-argument-borrow-v1.json): `python3 bin/validate_implicit_argument_borrow.py` validates the 29 source-only fixture expectations and registry paths, including same-call borrow/move exclusions, inferred borrowed-return and named `lt!` lifetime cases. Run `python3 -O tests/implicit_argument_borrow_validator_smoke.py` to confirm invalid manifests fail closed even with assertions disabled. Neither command compiles or executes AttoLang guests. Each compiler/backend needs independent exact-head guest and no-artifact evidence; backend states remain `NOT_EXECUTED`.
 
 ## Ownership-bang interpretation for implicit-call fixtures
 
