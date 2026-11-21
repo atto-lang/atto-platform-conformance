@@ -65,7 +65,7 @@
       "repo": "atto-lang/atto-source.net",
       "candidate_stage": "UNMANAGED_CONTROL_HOST_SOURCE",
       "existing_pr": "https://github.com/atto-lang/atto-source.net/pull/173",
-      "observed_candidate_pr_head_sha": "fdd47d2fe1303895a7ced07dcce52e1e479a99e9",
+      "observed_candidate_pr_head_sha": "3ccd62a8077df2c9c2a7300510124362743cf70f",
       "actor_reference_abi_candidate": "generation16_slot16",
       "control_reference_abi_candidate": "control_generation12_slot20_v1",
       "control_plane_source_status": "SOURCE_COMMITTED_NOT_TESTED",
@@ -82,7 +82,7 @@
       "runtime_integration_executed_steps": 0,
       "runtime_native_root_source_blobs": {
         "runtime/Ores.Net.Runtime/ActorRuntime.cs": "fc923e24874d87e879722992f3b4e889e9f1979f",
-        "runtime/Ores.Net.Runtime/ControlPlaneArena32.cs": "bce34f6abecaef3008ecf27bd972ab47c4da8872",
+        "runtime/Ores.Net.Runtime/ControlPlaneArena32.cs": "acd64fe2106b0f44cdc1b2ebbc28097a229e601a",
         "verification/Ores.Net.Tests/ActorControlDirectoryIntegrationSelfTest.cs": "76c6022efc12545a1b07fdab817db3c8706344b0",
         "verification/Ores.Net.ControlRuntimeProbe/ControlRuntimeProbe.csproj": "691589168e8d02d58a462a9f25aa7a8303920d25",
         ".github/workflows/control-plane-ref32-nativeaot.yml": "d95b0c1ca86def972f1e837fdd5f049860bd9f49"
@@ -93,7 +93,7 @@
         "little_endian_low_64_hex": "0123456789abcdef",
         "little_endian_high_64_hex": "fedcba9876543210",
         "coherent_under_concurrent_host_access": true,
-        "source_test_blob": "09b65ee99c79a39c9b97265483adeb1efc6cff25",
+        "source_test_blob": "90f52001ebca0fbc6055d55c0edde013c9da8f2c",
         "host_gc_zero_bytes_on_warm_snapshot": "NOT_EXECUTED",
         "host_i128_test_executed": false
       },
@@ -106,6 +106,17 @@
           "full_dispose_padded_metadata"
         ],
         "native_aot_test": "NOT_EXECUTED"
+      },
+      "issuer_saturation_receipt": {
+        "status": "SOURCE_AUTHORED_NOT_EXECUTED",
+        "sequence": "MONOTONE_SATURATING_CAS_U32",
+        "test_cases": [
+          "first_issuer",
+          "last_issuer",
+          "exhausted_uint32",
+          "signed_overflow"
+        ],
+        "compiled_guest": "NOT_EXECUTED"
       }
     },
     {
@@ -143,7 +154,7 @@
       "repo": "atto-lang/atto-source.java",
       "candidate_stage": "UNMANAGED_CONTROL_HOST_SOURCE",
       "existing_pr": "https://github.com/atto-lang/atto-source.java/pull/1273",
-      "observed_candidate_pr_head_sha": "96764a77e3335214369f0326b9aeb7a659eefd39",
+      "observed_candidate_pr_head_sha": "d15bec9a75eaf0d8de06ea9a18ea9e14e3e73b7b",
       "actor_reference_abi_candidate": "generation20_slot12",
       "control_reference_abi_candidate": "control_generation12_slot20_v1",
       "control_plane_source_status": "SOURCE_COMMITTED_NOT_TESTED",
@@ -160,7 +171,7 @@
       "runtime_integration_executed_steps": 0,
       "runtime_native_root_source_blobs": {
         "src/main/java/dev/oreslang/runtime/ActorRuntime.java": "4706147ed5a801d98f4361eec12396577bf93753",
-        "src/main/java/dev/oreslang/runtime/ControlPlaneArena32.java": "e62ba18c4f62ff0429b217d838545598e93945ae",
+        "src/main/java/dev/oreslang/runtime/ControlPlaneArena32.java": "c533d5170c663988dc5205cc092265c731c47df9",
         "src/test/java/dev/oreslang/runtime/ActorRuntimeNativeControlCountersTest.java": "66fd8de6c4dc05d892ce949e26d27fa693eba63a",
         ".github/workflows/control-plane-ref32-ffm.yml": "2b19400d68a87ffcee17ab642448ac26d001d058"
       },
@@ -170,9 +181,20 @@
         "little_endian_low_64_hex": "0123456789abcdef",
         "little_endian_high_64_hex": "fedcba9876543210",
         "coherent_under_concurrent_host_access": true,
-        "source_test_blob": "5b0756b21c9a812f4b5aeefb583a19bca6060a3c",
+        "source_test_blob": "198c87ca8b6ab63afe112535c398b0a07ba2cfd1",
         "host_gc_zero_bytes_on_warm_snapshot": "NOT_EXECUTED",
         "host_i128_test_executed": false
+      },
+      "issuer_saturation_receipt": {
+        "status": "SOURCE_AUTHORED_NOT_EXECUTED",
+        "sequence": "MONOTONE_SATURATING_CAS_U32",
+        "test_cases": [
+          "first_issuer",
+          "last_issuer",
+          "exhausted_uint32",
+          "signed_overflow"
+        ],
+        "compiled_guest": "NOT_EXECUTED"
       }
     },
     {
