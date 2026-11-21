@@ -5,12 +5,14 @@ on:
       - 'contracts/value-classes-v1.json'
       - 'fixtures/value-classes/**'
       - 'tests/test_value_classes_contract.py'
+      - 'README.md'
       - '.github/workflows/value-classes-v1.yml'
   push:
     paths:
       - 'contracts/value-classes-v1.json'
       - 'fixtures/value-classes/**'
       - 'tests/test_value_classes_contract.py'
+      - 'README.md'
       - '.github/workflows/value-classes-v1.yml'
   workflow_dispatch:
 permissions:
