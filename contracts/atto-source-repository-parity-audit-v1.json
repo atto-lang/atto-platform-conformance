@@ -14,7 +14,11 @@
       "capability_profile": "UNASSESSED",
       "guest_receipt_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
       "source_required_ci_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
-      "verified_guest_receipts": []
+      "verified_guest_receipts": [],
+      "observed_main_tree_sha": "5b9a274490a4567ed9d1088fd1ff304dbe383357",
+      "observed_main_file_count": 2,
+      "implementation_surface": "BOOTSTRAP_DOCUMENTATION_ONLY",
+      "executable_guest_qualified": false
     },
     {
       "repo": "atto-lang/atto-source.net",
@@ -24,7 +28,11 @@
       "capability_profile": "UNASSESSED",
       "guest_receipt_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
       "source_required_ci_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
-      "verified_guest_receipts": []
+      "verified_guest_receipts": [],
+      "observed_main_tree_sha": "5ed2444f3526b8b6685c7be0b038bbb8e6bc6f51",
+      "observed_main_file_count": 1075,
+      "implementation_surface": "NONEMPTY_SOURCE_TREE_NOT_GUEST_VERIFIED",
+      "executable_guest_qualified": false
     },
     {
       "repo": "atto-lang/atto-source.hdl",
@@ -34,7 +42,11 @@
       "capability_profile": "UNASSESSED",
       "guest_receipt_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
       "source_required_ci_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
-      "verified_guest_receipts": []
+      "verified_guest_receipts": [],
+      "observed_main_tree_sha": "023455e496bb9cfbdd157ccc94bb69f31eec44ea",
+      "observed_main_file_count": 57,
+      "implementation_surface": "NONEMPTY_SOURCE_TREE_NOT_GUEST_VERIFIED",
+      "executable_guest_qualified": false
     },
     {
       "repo": "atto-lang/atto-source.java",
@@ -44,7 +56,11 @@
       "capability_profile": "UNASSESSED",
       "guest_receipt_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
       "source_required_ci_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
-      "verified_guest_receipts": []
+      "verified_guest_receipts": [],
+      "observed_main_tree_sha": "12ded133d89dafb21f48391e9aa3d5a7fb7f80f6",
+      "observed_main_file_count": 2882,
+      "implementation_surface": "NONEMPTY_SOURCE_TREE_NOT_GUEST_VERIFIED",
+      "executable_guest_qualified": false
     },
     {
       "repo": "atto-lang/atto-source.realtime",
@@ -54,7 +70,11 @@
       "capability_profile": "UNASSESSED",
       "guest_receipt_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
       "source_required_ci_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
-      "verified_guest_receipts": []
+      "verified_guest_receipts": [],
+      "observed_main_tree_sha": "4f6449470ab075cdad17884c7a1aee2a6e2ab54c",
+      "observed_main_file_count": 2,
+      "implementation_surface": "BOOTSTRAP_DOCUMENTATION_ONLY",
+      "executable_guest_qualified": false
     },
     {
       "repo": "atto-lang/atto-source.rs",
@@ -64,7 +84,11 @@
       "capability_profile": "UNASSESSED",
       "guest_receipt_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
       "source_required_ci_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
-      "verified_guest_receipts": []
+      "verified_guest_receipts": [],
+      "observed_main_tree_sha": "7f893323f761e4a71e4b2e199daf75845d8f1912",
+      "observed_main_file_count": 1169,
+      "implementation_surface": "NONEMPTY_SOURCE_TREE_NOT_GUEST_VERIFIED",
+      "executable_guest_qualified": false
     },
     {
       "repo": "atto-lang/atto-source.llvm",
@@ -74,7 +98,11 @@
       "capability_profile": "UNASSESSED",
       "guest_receipt_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
       "source_required_ci_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
-      "verified_guest_receipts": []
+      "verified_guest_receipts": [],
+      "observed_main_tree_sha": "fe4f253b5932f8f00ab4a20f9b9bc2019d17553b",
+      "observed_main_file_count": 3063,
+      "implementation_surface": "NONEMPTY_SOURCE_TREE_NOT_GUEST_VERIFIED",
+      "executable_guest_qualified": false
     },
     {
       "repo": "atto-lang/atto-source.js",
@@ -84,7 +112,11 @@
       "capability_profile": "UNASSESSED",
       "guest_receipt_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
       "source_required_ci_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
-      "verified_guest_receipts": []
+      "verified_guest_receipts": [],
+      "observed_main_tree_sha": "b8e48b19c33b61e5faa4628bf03bddf2823f403d",
+      "observed_main_file_count": 378,
+      "implementation_surface": "NONEMPTY_SOURCE_TREE_NOT_GUEST_VERIFIED",
+      "executable_guest_qualified": false
     },
     {
       "repo": "atto-lang/atto-source.forge",
@@ -94,7 +126,11 @@
       "capability_profile": "UNASSESSED",
       "guest_receipt_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
       "source_required_ci_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
-      "verified_guest_receipts": []
+      "verified_guest_receipts": [],
+      "observed_main_tree_sha": "f5dd299c277376cabe9e536edbbb4e662a267ad4",
+      "observed_main_file_count": 332,
+      "implementation_surface": "NONEMPTY_SOURCE_TREE_NOT_GUEST_VERIFIED",
+      "executable_guest_qualified": false
     },
     {
       "repo": "atto-lang/atto-source.wasm",
@@ -104,7 +140,11 @@
       "capability_profile": "UNASSESSED",
       "guest_receipt_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
       "source_required_ci_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
-      "verified_guest_receipts": []
+      "verified_guest_receipts": [],
+      "observed_main_tree_sha": "16ba74ab9f9959cc15d21dcb6e54a18e1c325fef",
+      "observed_main_file_count": 699,
+      "implementation_surface": "NONEMPTY_SOURCE_TREE_NOT_GUEST_VERIFIED",
+      "executable_guest_qualified": false
     },
     {
       "repo": "atto-lang/atto-source.cranelift",
@@ -114,7 +154,11 @@
       "capability_profile": "UNASSESSED",
       "guest_receipt_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
       "source_required_ci_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
-      "verified_guest_receipts": []
+      "verified_guest_receipts": [],
+      "observed_main_tree_sha": "e867c0a5cf8b94f98ce9b1212d2c735b76bc4120",
+      "observed_main_file_count": 221,
+      "implementation_surface": "NONEMPTY_SOURCE_TREE_NOT_GUEST_VERIFIED",
+      "executable_guest_qualified": false
     }
   ],
   "feature_families": [
@@ -175,8 +219,11 @@
     "canonical_positive_and_negative_fixtures_with_phase_correct_diagnostics",
     "runtime_output_artifact_hashes_and_independent_run_validation",
     "explicit_unsupported_profile_compile_rejection_when_relevant",
-    "resolved_cross_repo_overlaps_and_git_protections"
+    "resolved_cross_repo_overlaps_and_git_protections",
+    "explicit_backend_bootstrap_or_compiler_stage_and_profile_qualification",
+    "verified_source_root_git_tree_and_no_truncated_tree_inventory"
   ],
   "certified_feature_backend_pairs": [],
-  "full_parity_certified": false
+  "full_parity_certified": false,
+  "observed_tree_role": "historical-git-tree-inventory-not-live-compiler-or-guest-evidence"
 }
