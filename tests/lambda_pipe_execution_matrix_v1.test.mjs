@@ -23,14 +23,15 @@ test('all Atto backends are represented without invented execution evidence', ()
 
 test('bounded canonical lambda fixtures enforce arity, typed forms and fail-closed lowering', () => {
   const cases = matrix.cases;
-  assert.equal(cases.length, 12);
+  assert.equal(cases.length, 14);
   assert.equal(new Set(cases.map(c => c.id)).size, cases.length);
   assert.equal(cases.filter(c => c.kind === 'run').length, 6);
-  assert.equal(cases.filter(c => c.kind === 'reject').length, 6);
+  assert.equal(cases.filter(c => c.kind === 'reject').length, 8);
   assert.deepEqual(cases.filter(c => c.kind === 'run').map(c => c.exit_code),
     [5, 5, 5, 42, 42, 5]);
   assert.deepEqual(cases.filter(c => c.kind === 'reject').map(c => c.error_family),
-    ['E_SYNTAX','E_SYNTAX','E_ARITY','E_ARITY','E_INFER','E_CONST']);
+    ['E_SYNTAX','E_SYNTAX','E_ARITY','E_ARITY','E_INFER','E_CONST',
+     'E_SYNTAX','E_SYNTAX']);
 
   for (const c of cases) {
     assert.ok(/^[a-z0-9-]+$/.test(c.id), c.id);
@@ -52,5 +53,7 @@ test('bounded canonical lambda fixtures enforce arity, typed forms and fail-clos
   assert.match(byId['local-name-first'].source, /\|x: int\| : int -> x \+ 1/);
   assert.match(byId['module-typed-discard'].source, /^const fnc v = \|int _\|/);
   assert.match(byId['missing-pipes-discard'].source, /const fnc v = _ : int -> 5/);
-  assert.match(byId['module-abi-untyped'].source, /^const fnc v = \|_\|/);
+  assert.match(byId['module-abi-untyped'].source, /^const fnc v = \\|_\\|/);
+  assert.match(byId['anonymous-fnc-unpiped'].source, /val v = fnc\\(int x\\) -> x \\+ 1/);
+  assert.match(byId['parenthesized-lambda-unpiped'].source, /val v = \\(int x\\) -> x \\+ 1/);
 });
