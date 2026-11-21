@@ -101,5 +101,20 @@
     "FORMATTER_STYLE_ROUNDTRIP",
     "INDEPENDENT_REVIEW"
   ],
-  "receipts": []
+  "receipts": [],
+  "implementation_prs": {
+    "java": "https://github.com/atto-lang/atto-source.java/pull/1730",
+    "llvm": "https://github.com/atto-lang/atto-source.llvm/pull/841",
+    "rs": "https://github.com/atto-lang/atto-source.rs/pull/504",
+    "js": "https://github.com/atto-lang/atto-source.js/pull/120",
+    "net": "https://github.com/atto-lang/atto-source.net/pull/202"
+  },
+  "remaining_gaps": {
+    "wasm": "https://github.com/atto-lang/atto-source.wasm/issues/267",
+    "forge": "https://github.com/atto-lang/atto-source.forge/issues/218",
+    "cranelift": "https://github.com/atto-lang/atto-source.cranelift/issues/83",
+    "hdl": "https://github.com/atto-lang/atto-source.hdl/issues/52",
+    "net_shipping_scalar": "https://github.com/atto-lang/atto-source.net/issues/5"
+  },
+  "notes": "Implementation PRs are drafts/authored-only. Every backend remains NOT_EXECUTED until separately source-pinned real compilation and guest execution succeeds. .NET draft is structured experimental mode only; shipping scalar source remains fail closed."
 }
