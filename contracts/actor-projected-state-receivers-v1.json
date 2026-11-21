@@ -202,13 +202,16 @@
     },
     {
       "id": "overlapping_write_loans",
-      "stage": "loan_checker",
+      "stage": "typed_loan_oracle",
       "expect": "reject",
       "diagnosticClass": "E_BORROW_CONFLICT",
-      "sourceUnits": {
-        "src/worker.atto": "declare actor Foo;\ndefine state on actor Foo as { let int counter: 0; let int xyz: 0; }\nmtd (Foo mut self.state.counter) inc(): void {\n self.handle_state(critical-write |s| -> { s.counter += 1; });\n}\nmtd (Foo mut self.state.{counter, xyz}) bump(): void {\n self.handle_state(critical-write |s| -> { s.counter += 1; s.xyz += 1; });\n}\n"
-      },
-      "evidence": "NOT_EXECUTED"
+      "evidence": "NOT_EXECUTED",
+      "irSequence": [
+        "Acquire mut loan on canonical place actor.state.counter as loan_a",
+        "Before EndLoan(loan_a), acquire mut loan on actor.state.{counter,xyz} as loan_b",
+        "Reject second loan because actor.state.counter overlaps"
+      ],
+      "note": "Defining two methods with overlapping potential write sets is legal; the conflict only exists when incompatible loans are simultaneously live."
     }
   ]
 }
