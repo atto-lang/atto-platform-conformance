@@ -23,8 +23,8 @@ function inspect(x) {
     'abi_tags_must_match_explicitly', 'actor_backend_abi_is_not_control_abi', 'host_test_does_not_prove_guest'])
     assert.equal(x.scope[key], true, 'mandatory explicit scope: ' + key);
   assert.deepEqual(x.scope.attributed_control_host_code,
-    ['atto-lang/atto-source.net', 'atto-lang/atto-source.java', 'atto-lang/atto-source.llvm',
-      'atto-lang/atto-source.js', 'atto-lang/atto-source.forge', 'atto-lang/atto-source.wasm']);
+    ['atto-lang/atto-source.net', 'atto-lang/atto-source.java', 'atto-lang/atto-source.rs',
+      'atto-lang/atto-source.llvm', 'atto-lang/atto-source.js', 'atto-lang/atto-source.forge', 'atto-lang/atto-source.wasm']);
   const sources = x.backends.filter(y => y.control_plane_source_status === 'SOURCE_COMMITTED_NOT_TESTED');
   const native = x.backends.filter(y => y.control_plane_source_status === 'SOURCE_COMMITTED_NATIVE_HOST_TESTED_LOCAL');
   const codecs = x.backends.filter(y =>
@@ -32,8 +32,10 @@ function inspect(x) {
     y.control_plane_source_status === 'SOURCE_COMMITTED_CODEC_LOCAL_NATIVE_ONLY');
   assert.deepEqual(sources.map(y => y.repo), ['atto-lang/atto-source.net', 'atto-lang/atto-source.java']);
   assert.deepEqual(native.map(y => y.repo), ['atto-lang/atto-source.llvm']);
+  const rust = x.backends.filter(y => y.control_plane_source_status === 'SOURCE_COMMITTED_CODEC_UNTESTED_RUST');
+  assert.deepEqual(rust.map(y => y.repo), ['atto-lang/atto-source.rs']);
   assert.deepEqual(codecs.map(y => y.repo), ['atto-lang/atto-source.js','atto-lang/atto-source.forge','atto-lang/atto-source.wasm']);
-  assert.deepEqual([...sources, ...native, ...codecs].map(y => y.repo).sort(),
+  assert.deepEqual([...sources, ...rust, ...native, ...codecs].map(y => y.repo).sort(),
     [...x.scope.attributed_control_host_code].sort());
   for (const row of x.backends) {
     assert(abiOptions.has(row.actor_reference_abi_candidate), 'unrecognized actor ref encoding');
@@ -82,6 +84,19 @@ function inspect(x) {
       assert.match(receipt.clang_sanitized_binary_sha256, /^[0-9a-f]{64}$/);
       assert.match(receipt.positive_host_pass_marker, /NO compiled Atto guest or zero-GC proof/);
       assert.equal(row.host_control_codec_test, null);
+    } else if (rust.includes(row)) {
+      assert.equal(row.control_reference_abi_candidate, 'control_generation12_slot20_v1');
+      assert.equal(row.candidate_stage, 'ACTOR_REF32_LAYOUT_SOURCE');
+      assert.equal(row.native_host_local_test, null);
+      assert.deepEqual(row.host_control_codec_test, {
+        source_blobs: {
+          'src/control_ref32.rs':'aef0b2f1e23fc9080ac67f53297b0abcdd5201bb',
+          'src/lib.rs':'fcdb3f6da35dd79aa0fd0111ce233687d6b606c0'
+        },
+        local_execution: 'NOT_EXECUTED',
+        rust_tests_authored: 3,
+        actual_compiled_atto_guest: 'NOT_EXECUTED'
+      });
     } else if (codecs.includes(row)) {
       assert.equal(row.control_reference_abi_candidate, 'control_generation12_slot20_v1');
       assert.equal(row.native_host_local_test, null);
@@ -185,4 +200,13 @@ test('cannot forge java or dotnet runtime native-root execution or quota', () =>
     invalidQuota.backends.find(x => x.repo === repo).runtime_root_native_reserved_bytes = 0;
     assert.throws(() => inspect(invalidQuota));
   }
+});
+
+test('Rust control codec SHA pin and unexecuted test status cannot be forged', () => {
+  const claim = structuredClone(baseline);
+  claim.backends[5].host_control_codec_test.local_execution = 'PASSED';
+  assert.throws(() => inspect(claim));
+  const swapped = structuredClone(baseline);
+  swapped.backends[5].host_control_codec_test.source_blobs['src/control_ref32.rs'] = '1'.repeat(40);
+  assert.throws(() => inspect(swapped));
 });
