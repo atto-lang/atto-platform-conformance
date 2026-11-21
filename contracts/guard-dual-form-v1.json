@@ -172,5 +172,32 @@
     ],
     "type_rule": "return expression statically checked against enclosing function return type; void uses return",
     "evidence": "no compiler or guest parity certified without exact-head executed stepful receipts"
+  },
+  "authored_execution_gates": {
+    "rs": {
+      "pr": "https://github.com/atto-lang/atto-source.rs/pull/504",
+      "path": "tests/guard_dual_form_guest.mjs",
+      "workflow": ".github/workflows/ci.yml",
+      "expected_real_wasm_guest_cases": 8,
+      "expected_no_artifact_reject_cases": 8,
+      "result": "NOT_EXECUTED"
+    },
+    "llvm": {
+      "pr": "https://github.com/atto-lang/atto-source.llvm/pull/841",
+      "path": "ci/test_guard_dual_form_native.sh",
+      "caller": "ci/test_native_aot.sh",
+      "workflow": ".github/workflows/native-aot.yml",
+      "expected_real_native_elf_guest_cases": 9,
+      "expected_no_artifact_reject_cases": 9,
+      "result": "NOT_EXECUTED"
+    }
+  },
+  "ci_recovery_blockers": {
+    "checked_at_utc_date": "2026-11-21",
+    "source_org": "FAILED_BEFORE_STEPS",
+    "private_carrier_probes": "SAMPLED_CARRIER_RUNS_ALL_ZERO_STEPS",
+    "authorized_export_status": "RS_AND_JAVA_NO_APPROVED_EXTERNAL_REPOS; LLVM_APPROVED_STREEMPILOT_CARRIER_PROBE_ZERO_STEPS",
+    "private_source_export_performed": false,
+    "semantic_receipts_available": false
   }
 }
