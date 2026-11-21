@@ -189,10 +189,10 @@
       "assertion": "Inside an eligible Result-returning actor callable, postfix ? propagates the original PublishError from try_publish, performs defer/finally cleanup exactly once and preserves typed success receipt"
     },
     {
-      "id": "ensemble-unsupported-guest-denial",
+      "id": "ensemble-unsupported-profile-denial",
       "subsystem": "ensemble",
       "kind": "negative",
-      "assertion": "Unsupported backend rejects exact canonical .atto syntax or policy before guest artifact emission; a parser-only or host-only pass is never equivalent to executable feature parity"
+      "assertion": "Unsupported publication policies, topic payload profiles or effects fail at source admission before executable artifact emission; implemented RELIABLE core remains accepted and unimplemented core is never certified"
     }
   ],
   "requiredEvidence": [

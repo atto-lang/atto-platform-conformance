@@ -20,7 +20,7 @@ export const CASE_IDS = Object.freeze([
   'ensemble-try-publish-authentication',
   'ensemble-dedicated-subscription-order',
   'ensemble-result-question-cleanup',
-  'ensemble-unsupported-guest-denial'
+  'ensemble-unsupported-profile-denial'
 ]);
 const NEGATIVE_CASES = new Set([
   'director-intensity-quarantine','director-panic-control-only','director-startup-rollback',
@@ -32,7 +32,7 @@ const NEGATIVE_CASES = new Set([
   'ensemble-share-bang-reject',
   'ensemble-try-publish-full-rollback',
   'ensemble-try-publish-authentication',
-  'ensemble-unsupported-guest-denial'
+  'ensemble-unsupported-profile-denial'
 ]);
 const REQUIRED_EVIDENCE = [
   'exact-compiler-head-and-tree','same-source-guest-fixtures',

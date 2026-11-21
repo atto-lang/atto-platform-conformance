@@ -122,7 +122,7 @@ test('mandatory ensemble share! and typed try_publish cases cannot be deleted or
     'ensemble-share-bang-checked','ensemble-share-bang-reject',
     'ensemble-try-publish-typed-receipt','ensemble-try-publish-full-rollback',
     'ensemble-try-publish-authentication','ensemble-dedicated-subscription-order',
-    'ensemble-result-question-cleanup','ensemble-unsupported-guest-denial'
+    'ensemble-result-question-cleanup','ensemble-unsupported-profile-denial'
   ]) assert.ok(CASE_IDS.includes(id),id);
   const erased=structuredClone(contract);erased.cases.pop();
   assert.ok(validateTheaterContract(erased).length>0);
