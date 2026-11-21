@@ -7,7 +7,7 @@
     "scope": "VCEK Family19h structVersion=0 offline certificate/quote check",
     "root_pin": "SHA256(canonical AMD ARK DER), independent approved value",
     "certificates": "ARK trust anchor -> ASK intermediate -> VCEK leaf",
-    "crl": "Require current issuer CRL; unavailable/expired/revoked fails closed. Additional revocation coverage and CRL provenance must be reviewed before production admission",
+    "crl": "Require current, independently sourced issuer CRLs for BOTH VCEK and ASK; with X509_CRL_CHECK_ALL / PKIX chain revocation checks. Missing, invalid, expired, or unavailable CRLs fail closed. CRL provenance and AMD product validation still need independent production review.",
     "extensions": {
       "structVersion": "1.3.6.1.4.1.3704.1.1 = 0",
       "blSPL": "1.3.6.1.4.1.3704.1.3.1 = REPORT[0x180]",
@@ -53,7 +53,15 @@
       "outcome": "MISSING_REVOCATION_EVIDENCE"
     },
     {
+      "id": "missing-ask-revocation-crl",
+      "outcome": "MISSING_REVOCATION_EVIDENCE"
+    },
+    {
       "id": "expired-issuer-crl",
+      "outcome": "MISSING_REVOCATION_EVIDENCE"
+    },
+    {
+      "id": "expired-ask-revocation-crl",
       "outcome": "MISSING_REVOCATION_EVIDENCE"
     },
     {
@@ -111,6 +119,7 @@
     "real quote collection",
     "ephemeral TLS private-key possession",
     "per-tenant generation anti-replay",
-    "adversarial guest isolation"
+    "adversarial guest isolation",
+    "Fetch/authenticate freshness and coverage of both issuer CRLs; do not disable full-chain revocation when AK/ASK root-issued CRL unavailable"
   ]
 }
