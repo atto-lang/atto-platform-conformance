@@ -40,7 +40,7 @@ test('canonical projection has explicit fields and negative safety coverage', ()
 });
 
 test('named receiver is alpha-equivalent and safe across the target matrix', () => {
-  assert.equal(contract.cases.length, 51);
+  assert.equal(contract.cases.length, 55);
   assert.match(contract.semantics.receiverBinding, /self is conventional/);
   assert.match(contract.semantics.alphaEquivalence, /write-set identity/);
   const byId = new Map(contract.cases.map(c => [c.id, c]));
@@ -98,5 +98,25 @@ test('all bitwise and shift mutations are rejected without typed actor proofs', 
     assert.equal(item.evidence, 'NOT_EXECUTED', item.id);
     assert.match(item.sourceUnits['src/worker.atto'], /handle_state\(critical-(read|write)/);
     assert.match(item.sourceUnits['src/worker.atto'], /\s(?:&|\||\^|<<|>>|>>>)= 1;/);
+  }
+});
+
+test('concrete parsed actor state schemas are fail-closed without guest promotion', () => {
+  assert.match(contract.semantics.parsedSchema, /not authenticated transitive/);
+  const cases = new Map(contract.cases.map(item => [item.id, item]));
+  const expected = {
+    concrete_schema_known_guarded_fields: ['accept_ast_only', undefined],
+    concrete_schema_unknown_receiver_field: ['reject', 'E_STATE_FIELD_UNKNOWN'],
+    concrete_schema_readonly_projected_field: ['reject', 'E_MUTABILITY'],
+    concrete_schema_unknown_critical_read_field: ['reject', 'E_STATE_FIELD_UNKNOWN'],
+  };
+  for (const [id, [expect, diagnostic]] of Object.entries(expected)) {
+    const item = cases.get(id);
+    assert.ok(item, id);
+    assert.equal(item.stage, 'parsed_schema_preflight');
+    assert.equal(item.expect, expect);
+    assert.equal(item.diagnosticClass, diagnostic);
+    assert.equal(item.evidence, 'NOT_EXECUTED');
+    assert.match(item.sourceUnits['src/worker.atto'], /define actor Foo/);
   }
 });

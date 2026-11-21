@@ -19,7 +19,8 @@
     "receiverScope": "The guard binder must be distinct from receiver name; receiver name cannot collide with formals or be shadowed; mistaken self references are unbound after renaming.",
     "nestedArgumentGate": "Member-call argument expressions are recursively inspected at source preflight: send(receiver.state.x) cannot hide a direct state access.",
     "mutationGate": "Critical state writes detect direct, prefix ++/--, and split compound assignments. Nested/indexed fields and unknown field calls fail closed pending typed effect proofs.",
-    "artifactGate": "Rust native attoc negative compilation must produce the expected diagnostic with nonzero exit and no .wasm output; compiled actor guest parity is still NOT_EXECUTED."
+    "artifactGate": "Rust native attoc negative compilation must produce the expected diagnostic with nonzero exit and no .wasm output; compiled actor guest parity is still NOT_EXECUTED.",
+    "parsedSchema": "Concrete ActorDecl.fields and guarded direct field sites are checked by the Rust source preflight, not authenticated transitive typed effects or guest execution"
   },
   "targets": [
     "rs",
@@ -550,6 +551,46 @@
       "diagnosticClass": "E_MUTABILITY",
       "sourceUnits": {
         "src/worker.atto": "declare actor Foo;\nmtd (Foo mut this.state.counter) f(): void { this.handle_state(critical-write |s| -> { s.other <<= 1; }); }\n"
+      },
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "concrete_schema_known_guarded_fields",
+      "stage": "parsed_schema_preflight",
+      "expect": "accept_ast_only",
+      "sourceUnits": {
+        "src/worker.atto": "declare actor Foo;\ndefine actor Foo as let int counter = 0; let int xyz = 0; end\nmtd (Foo mut this.state.counter) inc(): void {\n  this.handle_state(critical-write |s| -> { s.counter += 1; s.xyz; });\n}\n"
+      },
+      "evidence": "NOT_EXECUTED",
+      "note": "Compiler parses and resolves direct observed state-field sites only; no complete typed effect or guest proof"
+    },
+    {
+      "id": "concrete_schema_unknown_receiver_field",
+      "stage": "parsed_schema_preflight",
+      "expect": "reject",
+      "diagnosticClass": "E_STATE_FIELD_UNKNOWN",
+      "sourceUnits": {
+        "src/worker.atto": "declare actor Foo;\ndefine actor Foo as let int counter = 0; end\nmtd (Foo mut this.state.missing) inc(): void {}\n"
+      },
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "concrete_schema_readonly_projected_field",
+      "stage": "parsed_schema_preflight",
+      "expect": "reject",
+      "diagnosticClass": "E_MUTABILITY",
+      "sourceUnits": {
+        "src/worker.atto": "declare actor Foo;\ndefine actor Foo as val int counter = 0; end\nmtd (Foo mut this.state.counter) inc(): void {}\n"
+      },
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "concrete_schema_unknown_critical_read_field",
+      "stage": "parsed_schema_preflight",
+      "expect": "reject",
+      "diagnosticClass": "E_STATE_FIELD_UNKNOWN",
+      "sourceUnits": {
+        "src/worker.atto": "declare actor Foo;\ndefine actor Foo as let int counter = 0; end\nmtd (Foo this) inspect(): void {\n  this.handle_state(critical-read |s| -> { s.missing; });\n}\n"
       },
       "evidence": "NOT_EXECUTED"
     }
