@@ -88,7 +88,7 @@
     {
       "repo": "atto-lang/atto-source.llvm",
       "existing_pr": 293,
-      "candidate_head_sha": "95a82ea3857ed9f2a57fb2ade3594defd673c454",
+      "candidate_head_sha": "63507daa881a9d863be28be6d1d1e152cc5bee5f",
       "candidate_branch": "draft/bang-exception-keywords-20261120",
       "profile": "LLVM_RUST_AND_CPP_FRONTENDS",
       "has_frontend_in_this_repository": true,
@@ -97,7 +97,9 @@
       "semantic_exception_effect_parity": "NOT_VERIFIED",
       "independent_compiler_certification": false,
       "canonical_trap_result_guard": "SOURCE_PATCHED_NOT_EXECUTED",
-      "canonical_throw_error_guard": "SOURCE_PATCHED_NOT_EXECUTED"
+      "canonical_throw_error_guard": "SOURCE_PATCHED_NOT_EXECUTED",
+      "native_cpp_canonical_result_and_error_diagnostic_guard": "SOURCE_PATCHED_NOT_EXECUTED",
+      "native_compiler_negative_gate": "8_REJECT_1_POSITIVE_AUTHORED_NOT_EXECUTED"
     },
     {
       "repo": "atto-lang/atto-source.net",
@@ -156,7 +158,8 @@
     "atto,realtime": "Only AGENTS.md and README.md exist on main; their source repositories cannot be counted as working compilers.",
     "java,llvm,rs": "Drafts cover lexical spelling; typed Error/Result, complete unwind and panic CONTROL routing require executed guest tests.",
     "net,forge,js,hdl,cranelift": "Drafts guard unsupported guest-effect admission; reject-with-diagnostic is not positive semantic feature implementation.",
-    "rs_throw_raise": "Rust source compiler now includes typed Error throw!/raise! positive Wasm binary compilation tests and expected two exact runtime stdout/value traces. None has executed in source CI, no positive guest PASS."
+    "rs_throw_raise": "Rust source compiler now includes typed Error throw!/raise! positive Wasm binary compilation tests and expected two exact runtime stdout/value traces. None has executed in source CI, no positive guest PASS.",
+    "llvm_diagnostic_fix": "LLVM native C++ parser's throw! diagnostic no longer passes through generic exceptional-control fail(); canonical trap! emits E_TRAP_BANG_RESULT_UNVERIFIED separately from legacy trap Option. CMake 8-negative/1-positive case gate now requires the exact trap!/throw! diagnostics, rejects all unsupported cases and forbids LLVM IR on rejection. Source code patched; native compiler CMake tests NOT_EXECUTED."
   },
   "host_scanner_checks": "Focused source-extracted JS scalar, JS program-v2 and HDL lexical checks exercised 18/18 boundary inputs each in an isolated V8 harness; NOT a CI or guest pass.",
   "full_parity_certified": false,
@@ -167,5 +170,5 @@
     "overlap_including_legacy_sources_triaged",
     "actual_compiler_or_guest_execution_receipts_and_rejections"
   ],
-  "semantic_safety_disposition": "Java/Rust/LLVM Rust canonical trap! Result separated from historical Option and rejected before unverified lowering; LLVM C++ native throw! nominal-Error guard with new 8-case negative gate; Rust typed throw!/raise! positive compiled guest and exact-run traces AUTHORED but NOT_EXECUTED. No guest success receipts."
+  "semantic_safety_disposition": "Java/Rust/LLVM Rust canonical trap! Result separated from historical Option and rejected before unverified lowering; LLVM C++ native canonical throw! typed Error and trap! Result diagnostics preserved with 8-negative/1-positive actual compiler gate AUTHORED_NOT_EXECUTED; Rust typed throw!/raise! compiled guest and exact-run trace tests AUTHORED_NOT_EXECUTED. No guest success receipts."
 }
