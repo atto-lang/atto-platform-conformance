@@ -119,12 +119,12 @@ test('Rust terminal READY candidate does not silently promote any backend to PAS
   assert.ok(candidate.excludes.includes('typed pipe!/rpipe! transport'));
   assert.ok(candidate.tests.includes('tests/actor_ready_source_gate.rs'));
   assert.ok(candidate.tests.includes('tests/browser/actor-worker.mjs'));
-  assert.equal(candidate.private_mirror.source_blob_matches,17);
+  assert.equal(candidate.private_mirror.source_blob_matches,18);
   assert.equal(candidate.private_mirror.source_blob_mismatches,0);
   assert.equal(candidate.private_mirror.runner_allocated,false);
   assert.equal(candidate.private_mirror.steps_executed,0);
   assert.equal(candidate.private_mirror.test_status,'NOT_EXECUTED');
-  assert.match(candidate.private_mirror.github_actions_run,/\/actions\/runs\/44857005128$/);
+  assert.match(candidate.private_mirror.github_actions_run,/\/actions\/runs\/44857759549$/);
   for (const backend of data.backend_evidence) {
     assert.equal(backend.guest_result,'NOT_EXECUTED',backend.repo);
     assert.equal(backend.frontend_contract_status,'NOT_VERIFIED',backend.repo);
@@ -153,4 +153,25 @@ test('JS actor compiler is explicit fail-closed, and incarnation tests do not co
   assert.match(host.source_head_sha,/^[a-f0-9]{40}$/);
   for(const b of data.backend_evidence)
     assert.equal(b.guest_result,'NOT_EXECUTED',b.repo);
+});
+
+test('stale worker acknowledgments cannot resolve another incarnation',()=>{
+  const cases=data.adversarial_incarnation_cases;
+  assert.equal(cases.length,5);
+  assert.deepEqual(cases.map(x=>x.id),[
+    'stale-ready','stale-data-reply','stale-done',
+    'invalid-incarnation-init','cross-tenant-replayed-ack'
+  ]);
+  for(const c of cases){
+    assert.ok(c.expected.startsWith('E_'));
+    assert.ok(c.forbid);
+    if(c.id==='cross-tenant-replayed-ack')assert.equal(c.execution,'NOT_EXECUTED');
+    else assert.equal(c.execution,'HOST_V8_ONLY');
+  }
+  const candidate=data.candidate_subsets.find(x=>x.repository==='atto-lang/atto-source.rs');
+  assert.match(candidate.source_head_sha,/^[a-f0-9]{40}$/);
+  assert.equal(candidate.private_mirror.source_blob_matches,18);
+  assert.equal(candidate.private_mirror.steps_executed,0);
+  assert.equal(candidate.private_mirror.test_status,'NOT_EXECUTED');
+  assert.ok(data.requirements.includes('worker_ready_reply_done_fenced_by_incarnation'));
 });
