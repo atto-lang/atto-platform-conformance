@@ -78,7 +78,7 @@
       "repo": "atto-lang/atto-source.java",
       "candidate_stage": "UNMANAGED_CONTROL_HOST_SOURCE",
       "existing_pr": "https://github.com/atto-lang/atto-source.java/pull/1273",
-      "observed_candidate_pr_head_sha": "7b8ff6975db825a1a85f6f2bcf2265aacf272b37",
+      "observed_candidate_pr_head_sha": "07095571abba702bc4842a4055c3bdbbb11fba73",
       "actor_reference_abi_candidate": "generation20_slot12",
       "control_reference_abi_candidate": "control_generation12_slot20_v1",
       "control_plane_source_status": "SOURCE_COMMITTED_NOT_TESTED",
@@ -126,7 +126,7 @@
       "repo": "atto-lang/atto-source.llvm",
       "candidate_stage": "ACTOR_NATIVE_ARENA_HOST_SOURCE",
       "existing_pr": "https://github.com/atto-lang/atto-source.llvm/pull/742",
-      "observed_candidate_pr_head_sha": "0b5da6c48604656e5d3ce7ad2a499866d6acc867",
+      "observed_candidate_pr_head_sha": "9d3155483912c5d44124a65a12bd0557d982e649",
       "actor_reference_abi_candidate": "offset8_plus_one",
       "control_reference_abi_candidate": "control_generation12_slot20_v1",
       "control_plane_source_status": "SOURCE_COMMITTED_NATIVE_HOST_TESTED_LOCAL",
@@ -144,10 +144,10 @@
         "source_blobs": {
           "ControlPlaneArena32.h": "ae2188f51a1659426dbd8c7e94bc6e672525dfde",
           "ControlPlaneArena32.c": "ff66f2be47a50373e88b7d4e66b4d35f396bc0c5",
-          "control_plane_arena32_test.c": "6e7a074fa131c186b939d5c6d74af61cd19ff9b9"
+          "control_plane_arena32_test.c": "195ad863104d48aaaf1a57d648760ca85e73887e"
         },
-        "gcc_binary_sha256": "b99fd4f423b93741ab53d266fe187e560069c79e818711314f18bbc4dc1020a2",
-        "clang_sanitized_binary_sha256": "0ad49992ae7ccda3b6eaecdb82817f85d8ad32b01c1b416a04330b4d2609a884",
+        "gcc_binary_sha256": "6bdd6af746f3537deaac5de829f4c35b3a3f2cee444a641fbc131d51aacf3f17",
+        "clang_sanitized_binary_sha256": "611b06df2dda0e8aeee00631aacc8ab97c6c94e7b5e3ba86a3b9f5202a4e6520",
         "positive_host_pass_marker": "PASS control-plane-ref32 llvm C11 native host 12 guarded scenarios; NO compiled Atto guest or zero-GC proof",
         "ci_on_current_head": "NOT_EXECUTED",
         "compiled_atto_guest": "NOT_EXECUTED"
