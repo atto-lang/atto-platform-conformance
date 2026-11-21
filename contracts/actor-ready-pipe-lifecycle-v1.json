@@ -1,0 +1,142 @@
+{
+  "schema_version": 1,
+  "feature": "actor-ready-pipe-lifecycle-v1",
+  "status": "SOURCE_ONLY_NOT_EXECUTED",
+  "spec_authority": "https://github.com/atto-lang/atto-spec/pull/148",
+  "parent_conformance": "https://github.com/atto-lang/atto-platform-conformance/pull/237",
+  "fixture_type": "compiler_target_source_not_guest_receipt",
+  "cases": [
+    {
+      "id": "connect-before-ready",
+      "path": "fixtures/actor-ready-pipe-v1/connect-before-ready.atto",
+      "source_git_blob_sha": "7b49dfb126e04f4d1d95ebb7fbb6f878c03caf9a",
+      "expected": "compile_accept_runtime_check",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "explicit-get-ready",
+      "path": "fixtures/actor-ready-pipe-v1/explicit-get-ready.atto",
+      "source_git_blob_sha": "63d1be84f220184f1dd1045312f700cdc97bd9a9",
+      "expected": "compile_accept_runtime_check",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "await-spawn",
+      "path": "fixtures/actor-ready-pipe-v1/await-spawn.atto",
+      "source_git_blob_sha": "dcd09ad6e9a733c153f9c5822490ccdaed7f0b57",
+      "expected": "compile_accept_runtime_check",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "property-ready-reject",
+      "path": "fixtures/actor-ready-pipe-v1/property-ready-reject.atto",
+      "source_git_blob_sha": "2ac398c286351d50a1b6b6e4701957c1ff8cc9f1",
+      "expected": "compile_reject_property_alias",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "duplicate-direction-reject",
+      "path": "fixtures/actor-ready-pipe-v1/duplicate-direction-reject.atto",
+      "source_git_blob_sha": "f7b28c1629a3e02945147a2c0aa64c5a68371dcb",
+      "expected": "reject_second_unicast_attachment_no_partial_edge",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "stop-then-get-done",
+      "path": "fixtures/actor-ready-pipe-v1/stop-then-get-done.atto",
+      "source_git_blob_sha": "bd1cddc740c5ed1025a9fa08ddbae06e147ec34c",
+      "expected": "compile_accept_runtime_check",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "property-done-reject",
+      "path": "fixtures/actor-ready-pipe-v1/property-done-reject.atto",
+      "source_git_blob_sha": "f83af59652dff7de81a0233134f962df8e52f1f5",
+      "expected": "compile_reject_property_alias",
+      "evidence": "NOT_EXECUTED"
+    }
+  ],
+  "requirements": [
+    "get_ready_method_not_property",
+    "get_done_method_not_property",
+    "spawn_returns_registered_ref_without_startup_wait",
+    "await_spawn_waits_ready_not_done",
+    "pipe_admission_never_waits_ready",
+    "typed_atomic_port_admission_and_rollback",
+    "bounded_backpressure_and_no_delivery_pre_ready",
+    "startup_failure_propagates_without_fabricated_ready",
+    "stop_gracefully_fences_new_data",
+    "actor_done_waits_physical_quiescence",
+    "pipeline_done_distinct_from_actor_done",
+    "generation_fence_and_tenant_capability"
+  ],
+  "backend_evidence": [
+    {
+      "repo": "atto-lang/atto-source.java",
+      "guest_result": "NOT_EXECUTED",
+      "artifact_identity": null,
+      "runner_receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.llvm",
+      "guest_result": "NOT_EXECUTED",
+      "artifact_identity": null,
+      "runner_receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.rs",
+      "guest_result": "NOT_EXECUTED",
+      "artifact_identity": null,
+      "runner_receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.wasm",
+      "guest_result": "NOT_EXECUTED",
+      "artifact_identity": null,
+      "runner_receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.net",
+      "guest_result": "NOT_EXECUTED",
+      "artifact_identity": null,
+      "runner_receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.forge",
+      "guest_result": "NOT_EXECUTED",
+      "artifact_identity": null,
+      "runner_receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.cranelift",
+      "guest_result": "NOT_EXECUTED",
+      "artifact_identity": null,
+      "runner_receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.js",
+      "guest_result": "NOT_EXECUTED",
+      "artifact_identity": null,
+      "runner_receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.atto",
+      "guest_result": "NOT_EXECUTED",
+      "artifact_identity": null,
+      "runner_receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.hdl",
+      "guest_result": "NOT_EXECUTED",
+      "artifact_identity": null,
+      "runner_receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.realtime",
+      "guest_result": "NOT_EXECUTED",
+      "artifact_identity": null,
+      "runner_receipt": null
+    }
+  ],
+  "no_claim_of_cross_backend_parity": true
+}
