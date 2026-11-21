@@ -76,6 +76,24 @@ function inspect(x){
     assert.equal(f.applicability,'MUST_BE_ESTABLISHED_PER_BACKEND');
     assert.deepEqual(f.certified_backends,[]);
   }
+  assert.equal(x.feature_backend_count,11*expectedFeatureIds.length);
+  assert.equal(x.feature_backend_cell_status_scope,
+    'initial-audit-only-does-not-assert-no-historical-test-ever-ran');
+  assert.equal(typeof x.feature_backend_cells,'object');
+  assert.ok(x.feature_backend_cells!==null&&!Array.isArray(x.feature_backend_cells));
+  assert.deepEqual(Object.keys(x.feature_backend_cells),expectedFeatureIds,
+    'each required feature must have its own eleven-backend evidence row');
+  for(const id of expectedFeatureIds){
+    const row=x.feature_backend_cells[id];
+    assert.equal(typeof row,'object');
+    assert.ok(row!==null&&!Array.isArray(row));
+    assert.deepEqual(Object.keys(row),expected,
+      'no backend evidence slot may be missing or introduced without review');
+    for(const backend of expected){
+      assert.equal(row[backend],'NOT_VERIFIED',
+        'inventory cannot promote a pair without independently authenticated guest evidence');
+    }
+  }
   assert.deepEqual(x.certified_feature_backend_pairs,[]);
   assert.equal(x.full_parity_certified,false);
   assert.equal(x.observed_tree_role,'historical-git-tree-inventory-not-live-compiler-or-guest-evidence');
@@ -166,4 +184,31 @@ test('a missing, extra, or renamed feature family cannot silently reduce parity 
   const renamed=structuredClone(registry);
   renamed.feature_families[1].id='try-only';
   assert.throws(()=>inspect(renamed));
+});
+
+test('the explicit 154-cell matrix rejects missing or extra backend slots',()=>{
+  const x=structuredClone(registry);
+  delete x.feature_backend_cells['explicit-lambda-delimiters']['atto-lang/atto-source.atto'];
+  assert.throws(()=>inspect(x));
+  const y=structuredClone(registry);
+  y.feature_backend_cells['explicit-lambda-delimiters']['not-real/atto-source.fake']='NOT_VERIFIED';
+  assert.throws(()=>inspect(y));
+});
+test('the parity matrix refuses forged PASSED, UNSUPPORTED or added feature keys',()=>{
+  for(const status of ['PASSED','UNSUPPORTED','ZERO_STEP_PASSED']){
+    const x=structuredClone(registry);
+    x.feature_backend_cells['checked-i64-and-bitshift-arithmetic']['atto-lang/atto-source.rs']=status;
+    assert.throws(()=>inspect(x));
+  }
+  const y=structuredClone(registry);
+  y.feature_backend_cells['invented-contract']={};
+  assert.throws(()=>inspect(y));
+});
+test('the matrix cannot be reduced to a smaller or overstated cell count',()=>{
+  const x=structuredClone(registry);
+  x.feature_backend_count=153;
+  assert.throws(()=>inspect(x));
+  const y=structuredClone(registry);
+  y.feature_backend_cell_status_scope='all-targets-passed';
+  assert.throws(()=>inspect(y));
 });
