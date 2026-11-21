@@ -22,7 +22,7 @@ node --test tests/lambda_mandatory_pipes_v1.test.mjs
 ## Executable parity target — separate from parser admission
 
 [`execution-matrix.json`](execution-matrix.json) adds **six positive** and
-**six negative** exact-source programs for all eleven Atto compiler/runtime
+**eight negative** exact-source programs for all eleven Atto compiler/runtime
 targets: Java, LLVM, Rust, WASM, .NET, Forge, JS, Cranelift, Atto bootstrap,
 HDL and realtime. It records no invented backend outcomes.
 
@@ -31,7 +31,8 @@ direct calls, include both `|int x|` and `|x: int|`, and distinguish a
 **local** `const fnc` with call-site input inference from a **module-level**
 `const fnc` whose signature requires an explicit input type. The negative
 profiles require compiler rejection and no published artifact for missing
-pipes, arity mismatch, untyped module ABI and illegal runtime capture.
+pipes, legacy anonymous `fnc(...)`/`(args) ->` expression heads, arity
+mismatch, untyped module ABI and illegal runtime capture.
 Unsupported backend subsets must report `UNSUPPORTED`, not claim to execute
 the program via a host-side imitation or silent fallback.
 
