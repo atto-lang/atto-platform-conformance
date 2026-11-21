@@ -10,17 +10,17 @@ const expected=Object.freeze([
   'forge','wasm','cranelift'].map(x=>'atto-lang/atto-source.'+x));
 const sha40=/^[0-9a-f]{40}$/;
 const snapshots=new Map([
-  ['atto',['5b9a274490a4567ed9d1088fd1ff304dbe383357',2]],
-  ['net',['5ed2444f3526b8b6685c7be0b038bbb8e6bc6f51',1075]],
-  ['hdl',['023455e496bb9cfbdd157ccc94bb69f31eec44ea',57]],
-  ['java',['12ded133d89dafb21f48391e9aa3d5a7fb7f80f6',2882]],
-  ['realtime',['4f6449470ab075cdad17884c7a1aee2a6e2ab54c',2]],
-  ['rs',['7f893323f761e4a71e4b2e199daf75845d8f1912',1169]],
-  ['llvm',['fe4f253b5932f8f00ab4a20f9b9bc2019d17553b',3063]],
-  ['js',['b8e48b19c33b61e5faa4628bf03bddf2823f403d',378]],
-  ['forge',['f5dd299c277376cabe9e536edbbb4e662a267ad4',332]],
-  ['wasm',['16ba74ab9f9959cc15d21dcb6e54a18e1c325fef',699]],
-  ['cranelift',['e867c0a5cf8b94f98ce9b1212d2c735b76bc4120',221]],
+  ['atto',['7a732a5679ab98b723a23f5b0f2fe6a0cd58260e',2]],
+  ['net',['4dd3f5daa5ed88c454ee02076722a0ab02798ecf',1075]],
+  ['hdl',['271f3a99177fcd1f2d306a503e272c9d87c132da',57]],
+  ['java',['4e077154967954602266aeae1294e3b0b45c4892',2882]],
+  ['realtime',['20a219f24ea86b5d7e11a8164940b5e51d225c44',2]],
+  ['rs',['284d3fb4ebbb4b48659384722fb7ef1900c8a205',1169]],
+  ['llvm',['2e66a51ce3d8b8c4ed952c9bcdc389036eca7e9e',3063]],
+  ['js',['0a249dcfde92d4b6a77bf3ac0da156a7c7ce87a3',378]],
+  ['forge',['64b4f425a556f0066cd580e23f8176464c86107b',332]],
+  ['wasm',['9da8bab4b3b1d71a5594a4bab65d9dd204034b8a',699]],
+  ['cranelift',['7eaa77255a7187802b89209fe7e286a3d99421ca',221]],
 ]);
 const bootstrap=new Set(['atto','realtime']);
 
@@ -40,6 +40,8 @@ function inspect(x){
     const snapshot=snapshots.get(backend);
     assert.ok(snapshot,'all backend inventory rows must have a known historical snapshot');
     assert.match(r.observed_main_tree_sha,sha40,'root tree SHA must be exact hex SHA-1');
+    assert.notEqual(r.observed_main_tree_sha,r.observed_main_commit_sha,
+      'a commit SHA is not the Git root tree OID; never confuse them');
     assert.equal(r.observed_main_tree_sha,snapshot[0],
       'the historical root tree cannot silently change or claim a new head');
     assert.equal(r.observed_main_file_count,snapshot[1],
@@ -135,4 +137,10 @@ test('removing or misclassifying an 11th backend is rejected',()=>{
   const y=structuredClone(registry);
   y.source_repositories.find(r=>r.repo.endsWith('.atto')).implementation_surface='NONEMPTY_SOURCE_TREE_NOT_GUEST_VERIFIED';
   assert.throws(()=>inspect(y));
+});
+
+test('a branch commit SHA used as root tree must fail closed',()=>{
+  const x=structuredClone(registry);
+  x.source_repositories[0].observed_main_tree_sha=x.source_repositories[0].observed_main_commit_sha;
+  assert.throws(()=>inspect(x));
 });
