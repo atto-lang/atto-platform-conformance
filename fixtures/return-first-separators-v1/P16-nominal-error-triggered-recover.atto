@@ -1,0 +1,19 @@
+// EXPECTED: main returns 42 by recovering a truly raised Foo object.
+// DESIGN INTENT: subtype-preserving Wasm exception payload not yet implemented.
+define class Foo extends Error as
+end
+
+fnc int <- double_answer(int value)
+raises Foo ::
+  if value > 3 then
+    raise! new Foo();
+  fi
+  return value * 2;
+end
+
+pub fnc main(): int raises Foo ::
+  recover |err, cursor| -> {
+    return 42;
+  };
+  return double_answer(4);
+end
