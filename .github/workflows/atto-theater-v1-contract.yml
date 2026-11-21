@@ -6,6 +6,7 @@ on:
       - 'bin/verify-atto-theater-v1.mjs'
       - 'tests/atto-theater-v1.test.mjs'
       - 'fixtures/atto-theater-v1/**'
+      - 'fixtures/atto-ensemble-v1/**'
       - 'verification/atto-theater-v1.receipts.json'
       - 'verification/atto-ensemble-pubsub-main-audit.json'
       - 'docs/ATTO_THEATER_PARITY_V1.md'
