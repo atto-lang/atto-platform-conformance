@@ -114,16 +114,16 @@
     {
       "backend": "net",
       "pr": "https://github.com/atto-lang/atto-source.net/pull/200",
-      "head": "fb9ea53954f0c8c2d69ab68a2d90717d39deda6d",
-      "scope": "fail-closed unlowered .try_publish member source gate; NOT guest parity",
+      "head": "6b59c6c1449c6045de60d0d06ef38f877100afe2",
+      "scope": "fail-closed unlowered .try_publish member and generic/method-value tests; NOT guest parity",
       "verification": "NOT_EXECUTED_DOTNET"
     },
     {
       "backend": "wasm",
       "pr": "https://github.com/atto-lang/atto-source.wasm/pull/265",
-      "head": "cdff1cad41c22d10e0955614a2b104d6a1ff0f52",
+      "head": "b6a255a59f599787f27e0161aeee27482aac54b1",
       "scope": "fail-closed unlowered .try_publish member source gate; NOT guest parity",
-      "verification": "SOURCE_ONLY_V8_ASCII_SCANNER_9_CASES; NOT_EXECUTED_NODE_OR_WASM"
+      "verification": "SOURCE_ONLY_V8_ASCII_SCANNER_10_CASES (6 negative, 4 inert); NOT_EXECUTED_NODE_OR_WASM"
     },
     {
       "backend": "llvm",
