@@ -1,0 +1,29 @@
+{
+  "schema": "atto.control-ref32-bit-vectors.v1",
+  "status": "HOST_MODEL_ONLY_NO_COMPILED_GUEST",
+  "control_abi": "control_generation12_slot20_v1",
+  "storage_bits": 32,
+  "slot_bits": 20,
+  "generation_bits": 12,
+  "slot_plus_one_limit": 1048575,
+  "maximum_generation": 4095,
+  "null_word": "0",
+  "numeric_words_are_not_authority": true,
+  "actor_abi_nonaliases": ["offset8_plus_one", "generation20_slot12", "generation16_slot16", "control_generation20_slot12_v1"],
+  "positive": [
+    {"slot_index": 0, "generation": 1, "word": "1048577"},
+    {"slot_index": 1, "generation": 1, "word": "1048578"},
+    {"slot_index": 0, "generation": 2048, "word": "2147483649"},
+    {"slot_index": 1048574, "generation": 4095, "word": "4294967295"},
+    {"slot_index": 1048574, "generation": 1, "word": "2097151"},
+    {"slot_index": 0, "generation": 4095, "word": "4293918721"}
+  ],
+  "invalid_words": ["1", "1048576", "2147483648", "4294967296", "-1", "1.5"],
+  "invalid_fields": [
+    {"slot_index": 1048575, "generation": 1},
+    {"slot_index": -1, "generation": 1},
+    {"slot_index": 0, "generation": 0},
+    {"slot_index": 0, "generation": 4096}
+  ],
+  "backends_not_compiled_guest_verified": ["atto", "net", "hdl", "java", "realtime", "rs", "llvm", "js", "forge", "wasm", "cranelift"]
+}
