@@ -22,9 +22,9 @@ const reject=(label,modify)=>test(`reject ${label}`,()=>{
   const r=candidate();modify(r);const x=validateGuestReceipt(r,contract);
   assert.equal(x.status,'rejected');assert.ok(x.errors.length>0);
 });
-test('contract fixes all 11 repositories and 20 safety cases',()=>{
+test('contract fixes all 11 repositories and 28 safety cases',()=>{
   assert.deepEqual(validateTheaterContract(contract),[]);
-  assert.equal(BACKENDS.length,11);assert.equal(CASE_IDS.length,20);
+  assert.equal(BACKENDS.length,11);assert.equal(CASE_IDS.length,28);
   assert.ok(contract.cases.some(c=>c.id==='ensemble-membership-is-not-subscription'));
   assert.ok(contract.cases.some(c=>c.id==='director-panic-control-only'));
 });
@@ -94,6 +94,32 @@ test('contract cannot remove mandatory evidence requirements',()=>{
   assert.ok(validateTheaterContract(bad).length>0);
   assert.equal(validateGuestReceipt(candidate(),bad).status,'rejected');
 });
+test('mandatory ensemble share! and typed try_publish cases cannot be deleted or downgraded',()=>{
+  assert.equal(contract.cases.length,28);
+  assert.equal(contract.ensemblePublication.source,'val receipt = topic.try_publish(share! event)?');
+  assert.equal(contract.ensemblePublication.legacyOperand,'rt share event');
+  assert.equal(contract.ensemblePublication.targetStatus,'NOT_EXECUTED');
+  for(const id of [
+    'ensemble-share-bang-checked','ensemble-share-bang-reject',
+    'ensemble-try-publish-typed-receipt','ensemble-try-publish-full-rollback',
+    'ensemble-try-publish-authentication','ensemble-dedicated-subscription-order',
+    'ensemble-result-question-cleanup','ensemble-unsupported-guest-denial'
+  ]) assert.ok(CASE_IDS.includes(id),id);
+  const erased=structuredClone(contract);erased.cases.pop();
+  assert.ok(validateTheaterContract(erased).length>0);
+  const downgraded=structuredClone(contract);downgraded.cases[23].kind='positive';
+  assert.ok(validateTheaterContract(downgraded).length>0);
+  const aliasChanged=structuredClone(contract);
+  aliasChanged.ensemblePublication.source='val receipt = topic.publish(rt share event)';
+  assert.ok(validateTheaterContract(aliasChanged).length>0);
+});
+test('existing guest receipt candidates cannot pass with only the earlier twenty cases',()=>{
+  const oldCaseReceipt=candidate();
+  oldCaseReceipt.guest.cases=oldCaseReceipt.guest.cases.slice(0,20);
+  assert.equal(validateGuestReceipt(oldCaseReceipt,contract).status,'rejected');
+  assert.equal(auditParityIndex({schema:index.schema,receipts:[oldCaseReceipt]},contract).status,'invalid-evidence');
+});
+
 test('completely malformed contract fails closed instead of throwing',()=>{
   assert.deepEqual(validateGuestReceipt(candidate(),null),
     {status:'rejected',errors:['invalid contract identity']});

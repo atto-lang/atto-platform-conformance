@@ -12,7 +12,15 @@ export const CASE_IDS = Object.freeze([
   'ensemble-cross-group-isolation','ensemble-bounded-backpressure',
   'ensemble-revoke-unsubscribe','ensemble-group-retirement',
   'ensemble-teardown-no-reentrant-lock','runtime-mailbox-admission',
-  'runtime-control-data-separation','theater-app-lifecycle','theater-no-leaked-tickets'
+  'runtime-control-data-separation','theater-app-lifecycle','theater-no-leaked-tickets',
+  'ensemble-share-bang-checked',
+  'ensemble-share-bang-reject',
+  'ensemble-try-publish-typed-receipt',
+  'ensemble-try-publish-full-rollback',
+  'ensemble-try-publish-authentication',
+  'ensemble-dedicated-subscription-order',
+  'ensemble-result-question-cleanup',
+  'ensemble-unsupported-guest-denial'
 ]);
 const NEGATIVE_CASES = new Set([
   'director-intensity-quarantine','director-panic-control-only','director-startup-rollback',
@@ -20,17 +28,23 @@ const NEGATIVE_CASES = new Set([
   'ensemble-cross-group-isolation','ensemble-bounded-backpressure',
   'ensemble-revoke-unsubscribe','ensemble-group-retirement',
   'ensemble-teardown-no-reentrant-lock','runtime-control-data-separation',
-  'theater-no-leaked-tickets'
+  'theater-no-leaked-tickets',
+  'ensemble-share-bang-reject',
+  'ensemble-try-publish-full-rollback',
+  'ensemble-try-publish-authentication',
+  'ensemble-unsupported-guest-denial'
 ]);
 const REQUIRED_EVIDENCE = [
   'exact-compiler-head-and-tree','same-source-guest-fixtures',
   'successful-nonzero-step-job','compiler-generated-guest-artifact',
   'actual-guest-execution','positive-and-negative-case-assertions',
-  'independent-provenance-validation'
+  'independent-provenance-validation',
+  'portable-ensemble-share-bang-try-publish-guest-fixtures'
 ];
 const DISALLOWED_EVIDENCE = [
   'host-model-only','parser-only','interpreter-image-standing-in-for-guest-AOT',
-  'zero-step-actions','self-attested-pass-without-verified-GitHub-job'
+  'zero-step-actions','self-attested-pass-without-verified-GitHub-job',
+  'legacy-async-publish-substituted-for-try-publish'
 ];
 const sha40 = /^[0-9a-f]{40}$/;
 const sha64 = /^[0-9a-f]{64}$/;
@@ -40,17 +54,29 @@ const isPositive = n => Number.isSafeInteger(n) && n > 0;
 
 export function validateTheaterContract(c) {
   const errors=[];
-  if (!isPlainObject(c) || c.schema !== 'atto.theater-contract/1' || c.revision !== 1) return ['invalid contract identity'];
+  if (!isPlainObject(c) || c.schema !== 'atto.theater-contract/1' || c.revision !== 2) return ['invalid contract identity'];
   if (!isPlainObject(c.backends) || Object.keys(c.backends).length !== BACKENDS.length ||
       BACKENDS.some(b=>c.backends[b] !== `atto-lang/atto-source.${b}`)) errors.push('backend registry mismatch');
   if (!Array.isArray(c.cases) || c.cases.length !== CASE_IDS.length ||
       c.cases.some((x,i)=>!isPlainObject(x) || x.id !== CASE_IDS[i] ||
-      x.subsystem !== (i<8?'director':i<16?'ensemble':i<18?'runtime':'theater') ||
+      x.subsystem !== (i<8?'director':i<16||i>=20?'ensemble':i<18?'runtime':'theater') ||
       x.kind !== (NEGATIVE_CASES.has(x.id)?'negative':'positive') ||
       typeof x.assertion !== 'string' || x.assertion.length < 10))
     errors.push('canonical case registry mismatch or downgrade');
   if (!Array.isArray(c.bootstrapOnlyAtStart) || c.bootstrapOnlyAtStart.join(',') !== 'atto,realtime')
     errors.push('bootstrap scope mismatch');
+  if (!isPlainObject(c.ensemblePublication) ||
+      c.ensemblePublication.source !== 'val receipt = topic.try_publish(share! event)?' ||
+      c.ensemblePublication.legacyOperand !== 'rt share event' ||
+      c.ensemblePublication.typing !== 'Result<PublishReceipt, PublishError>' ||
+      c.ensemblePublication.resultQuestionScope !==
+        'Result-returning callable within authenticated actor turn; no automatic ? in void callbacks' ||
+      c.ensemblePublication.receiptVersion !== 'atto.theater-guest-receipt/1' ||
+      c.ensemblePublication.targetStatus !== 'NOT_EXECUTED' ||
+      typeof c.ensemblePublication.ownership !== 'string' ||
+      typeof c.ensemblePublication.queue !== 'string' ||
+      typeof c.ensemblePublication.semantics !== 'string')
+    errors.push('canonical share! try_publish contract missing or weakened');
   if (c.evidence !== 'compiled-atto-guest-required' || !isPlainObject(c.platform) ||
       ['theater','director','ensemble','runtime'].some(k=>typeof c.platform[k] !== 'string' || c.platform[k].length < 5))
     errors.push('platform layer identity mismatch');

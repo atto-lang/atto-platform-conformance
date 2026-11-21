@@ -31,7 +31,7 @@ All eleven repositories are included in the normative contract; **none is declar
 
 ## Executable gate
 
-Run `node --test tests/atto-theater-v1.test.mjs` and `node bin/verify-atto-theater-v1.mjs`. They verify the registry, all twenty required positive/negative semantic cases, and negative evidence admission. This is **source-free validator coverage only**, not a target guest test. `--require-certified` deliberately exits nonzero until an independent authenticated verifier has validated exact GitHub run metadata and artifacts.
+Run `node --test tests/atto-theater-v1.test.mjs` and `node bin/verify-atto-theater-v1.mjs`. They verify the registry, all twenty-eight required positive/negative semantic cases, and negative evidence admission. This is **source-free validator coverage only**, not a target guest test. `--require-certified` deliberately exits nonzero until an independent authenticated verifier has validated exact GitHub run metadata and artifacts.
 
 Each backend must independently compile the same versioned `.atto` fixtures, execute the generated guest artifacts on the declared target, record source HEAD/tree SHA, compiler binary digest, fixture blob/source digests, target mode and actual nonzero-step CI run. All required cases must execute and assert. Record `passed`, `failed`, `unsupported`, or `not-executed` distinctly. An unsupported profile requires a typed compile-time rejection with a negative test; an empty job, host reference model, parser-only test or interpreter AOT substitute never constitutes a pass. **No self-submitted receipt certifies parity**, even if it matches the schema; independent verifier queries must authenticate the GitHub workflow run and job, compare source and artifact digests, and inspect the executed steps and guest output.
 
@@ -46,3 +46,18 @@ Each backend must independently compile the same versioned `.atto` fixtures, exe
 ## Known limitations of this first change
 
 The new manifest is a denial-oriented admission schema, not a compiler implementation or proof of parity. `candidate-only` means *structurally eligible for independent review*, not passed. This repository cannot establish trusted external workflow provenance from a PR-controlled JSON file. No implementation or backend status is promoted by CI on this change.
+
+## Ensemble typed publication and canonical ownership extension (revision 2)
+
+The parity gate now requires **eight additional** compiled-source guest cases for every backend, not an optional interpretation of the earlier generic fan-out cases:
+
+- Canonical `val receipt = topic.try_publish(share! event)?` in a Result-returning, actor-authorized callable, with actual guest execution of success and original `PublishError` early exit.
+- `rt share event` is a backwards-compatible **checked** ownership alias; `share !event` is rejected. The operand evaluates once. Borrowed/move-only/mutable or forged authority does not become shared.
+- Full RELIABLE publication rejects **atomically** across all subscribers with no partial enqueue, sequence increment, leaked quota, or consumed ownership. A receipt reports admission, not processing acknowledgment.
+- `Subscription.next()` / `try_read()` read a dedicated bounded subscription queue, **not** the actor DATA mailbox.
+- Stale group membership, mismatched topic types, and cross-group authority fail before publishing.
+- Unsupported targets must reject the exact `.atto` fixture before producing an executable artifact. An explicit unsupported diagnosis is **not** an implemented feature and is never counted as a positive guest case.
+
+The source surface is aspirational until backend implementations exist. In particular, `?` must not be interpreted as a magically allowed operator in a void-returning actor `receive`; the canonical positive requires a genuinely `Result<PublishReceipt, PublishError>`-returning callable executing on an authenticated actor turn. Existing Java [pubsub #1458](https://github.com/atto-lang/atto-source.java/pull/1458) and [postfix question #735](https://github.com/atto-lang/atto-source.java/pull/735) have separate incomplete integration work. LLVM [pubsub #575](https://github.com/atto-lang/atto-source.llvm/pull/575) has a native substrate but not compiled guest parity. No backend status is promoted in this change.
+
+All eleven `atto-source.*` compilers must fulfill the 28-case compiled guest matrix before this version can be certified. A syntactically valid self-attested receipt can at best be `candidate-only`, requiring independent GitHub job/artifact authentication.

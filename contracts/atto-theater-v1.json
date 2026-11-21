@@ -1,6 +1,6 @@
 {
   "schema": "atto.theater-contract/1",
-  "revision": 1,
+  "revision": 2,
   "evidence": "compiled-atto-guest-required",
   "platform": {
     "theater": "OTP-style application framework",
@@ -21,28 +21,179 @@
     "atto": "atto-lang/atto-source.atto",
     "realtime": "atto-lang/atto-source.realtime"
   },
-  "bootstrapOnlyAtStart": ["atto", "realtime"],
+  "bootstrapOnlyAtStart": [
+    "atto",
+    "realtime"
+  ],
   "cases": [
-    {"id":"director-one-for-one-restart","subsystem":"director","kind":"positive","assertion":"Failed child restarts without replacing unrelated children"},
-    {"id":"director-one-for-all-restart","subsystem":"director","kind":"positive","assertion":"All child incarnations restart in deterministic order"},
-    {"id":"director-rest-for-one-restart","subsystem":"director","kind":"positive","assertion":"Failed child and later siblings restart, earlier siblings survive"},
-    {"id":"director-intensity-quarantine","subsystem":"director","kind":"negative","assertion":"Bounded restart budget fences crash loops and escalates"},
-    {"id":"director-panic-control-only","subsystem":"director","kind":"negative","assertion":"A panicking actor cannot intercept or forge its supervisor CONTROL notice"},
-    {"id":"director-nested-supervision","subsystem":"director","kind":"positive","assertion":"Nested supervisor failure propagates with stable identities and bounded cleanup"},
-    {"id":"director-startup-rollback","subsystem":"director","kind":"negative","assertion":"Partial child-start failure rolls back and releases resources"},
-    {"id":"director-generation-fence","subsystem":"director","kind":"negative","assertion":"Stale actor incarnation and restart acknowledgments are denied"},
-    {"id":"ensemble-multi-group-membership","subsystem":"ensemble","kind":"positive","assertion":"One actor may join two authorized groups independently"},
-    {"id":"ensemble-membership-is-not-subscription","subsystem":"ensemble","kind":"negative","assertion":"Group membership alone never delivers topic DATA"},
-    {"id":"ensemble-typed-fanout","subsystem":"ensemble","kind":"positive","assertion":"An explicitly subscribed actor receives matching typed DATA once"},
-    {"id":"ensemble-cross-group-isolation","subsystem":"ensemble","kind":"negative","assertion":"Unprivileged cross-group publish and subscribe fail closed"},
-    {"id":"ensemble-bounded-backpressure","subsystem":"ensemble","kind":"negative","assertion":"Full recipient mailbox denies RELIABLE admission atomically with no partial fanout"},
-    {"id":"ensemble-revoke-unsubscribe","subsystem":"ensemble","kind":"negative","assertion":"Revocation and unsubscribe prevent future delivery and quiesce in-flight delivery"},
-    {"id":"ensemble-group-retirement","subsystem":"ensemble","kind":"negative","assertion":"Group retirement and reincarnation invalidate stale grants"},
-    {"id":"ensemble-teardown-no-reentrant-lock","subsystem":"ensemble","kind":"negative","assertion":"Group/channel cleanup and callbacks do not run under registry/topic locks"},
-    {"id":"runtime-mailbox-admission","subsystem":"runtime","kind":"positive","assertion":"Actor message admission and completion honor bounded mailbox limits"},
-    {"id":"runtime-control-data-separation","subsystem":"runtime","kind":"negative","assertion":"User DATA cannot impersonate priority supervisor CONTROL"},
-    {"id":"theater-app-lifecycle","subsystem":"theater","kind":"positive","assertion":"Application starts supervised children and shuts down in deterministic order"},
-    {"id":"theater-no-leaked-tickets","subsystem":"theater","kind":"negative","assertion":"Cancellation, crash and shutdown release every lifecycle and message ticket"}
+    {
+      "id": "director-one-for-one-restart",
+      "subsystem": "director",
+      "kind": "positive",
+      "assertion": "Failed child restarts without replacing unrelated children"
+    },
+    {
+      "id": "director-one-for-all-restart",
+      "subsystem": "director",
+      "kind": "positive",
+      "assertion": "All child incarnations restart in deterministic order"
+    },
+    {
+      "id": "director-rest-for-one-restart",
+      "subsystem": "director",
+      "kind": "positive",
+      "assertion": "Failed child and later siblings restart, earlier siblings survive"
+    },
+    {
+      "id": "director-intensity-quarantine",
+      "subsystem": "director",
+      "kind": "negative",
+      "assertion": "Bounded restart budget fences crash loops and escalates"
+    },
+    {
+      "id": "director-panic-control-only",
+      "subsystem": "director",
+      "kind": "negative",
+      "assertion": "A panicking actor cannot intercept or forge its supervisor CONTROL notice"
+    },
+    {
+      "id": "director-nested-supervision",
+      "subsystem": "director",
+      "kind": "positive",
+      "assertion": "Nested supervisor failure propagates with stable identities and bounded cleanup"
+    },
+    {
+      "id": "director-startup-rollback",
+      "subsystem": "director",
+      "kind": "negative",
+      "assertion": "Partial child-start failure rolls back and releases resources"
+    },
+    {
+      "id": "director-generation-fence",
+      "subsystem": "director",
+      "kind": "negative",
+      "assertion": "Stale actor incarnation and restart acknowledgments are denied"
+    },
+    {
+      "id": "ensemble-multi-group-membership",
+      "subsystem": "ensemble",
+      "kind": "positive",
+      "assertion": "One actor may join two authorized groups independently"
+    },
+    {
+      "id": "ensemble-membership-is-not-subscription",
+      "subsystem": "ensemble",
+      "kind": "negative",
+      "assertion": "Group membership alone never delivers topic DATA"
+    },
+    {
+      "id": "ensemble-typed-fanout",
+      "subsystem": "ensemble",
+      "kind": "positive",
+      "assertion": "An explicitly subscribed actor receives matching typed DATA once"
+    },
+    {
+      "id": "ensemble-cross-group-isolation",
+      "subsystem": "ensemble",
+      "kind": "negative",
+      "assertion": "Unprivileged cross-group publish and subscribe fail closed"
+    },
+    {
+      "id": "ensemble-bounded-backpressure",
+      "subsystem": "ensemble",
+      "kind": "negative",
+      "assertion": "Full recipient mailbox denies RELIABLE admission atomically with no partial fanout"
+    },
+    {
+      "id": "ensemble-revoke-unsubscribe",
+      "subsystem": "ensemble",
+      "kind": "negative",
+      "assertion": "Revocation and unsubscribe prevent future delivery and quiesce in-flight delivery"
+    },
+    {
+      "id": "ensemble-group-retirement",
+      "subsystem": "ensemble",
+      "kind": "negative",
+      "assertion": "Group retirement and reincarnation invalidate stale grants"
+    },
+    {
+      "id": "ensemble-teardown-no-reentrant-lock",
+      "subsystem": "ensemble",
+      "kind": "negative",
+      "assertion": "Group/channel cleanup and callbacks do not run under registry/topic locks"
+    },
+    {
+      "id": "runtime-mailbox-admission",
+      "subsystem": "runtime",
+      "kind": "positive",
+      "assertion": "Actor message admission and completion honor bounded mailbox limits"
+    },
+    {
+      "id": "runtime-control-data-separation",
+      "subsystem": "runtime",
+      "kind": "negative",
+      "assertion": "User DATA cannot impersonate priority supervisor CONTROL"
+    },
+    {
+      "id": "theater-app-lifecycle",
+      "subsystem": "theater",
+      "kind": "positive",
+      "assertion": "Application starts supervised children and shuts down in deterministic order"
+    },
+    {
+      "id": "theater-no-leaked-tickets",
+      "subsystem": "theater",
+      "kind": "negative",
+      "assertion": "Cancellation, crash and shutdown release every lifecycle and message ticket"
+    },
+    {
+      "id": "ensemble-share-bang-checked",
+      "subsystem": "ensemble",
+      "kind": "positive",
+      "assertion": "Actual .atto actor publisher compiles share! event and rt share event through the same checked immutable Share proof, evaluating payload once"
+    },
+    {
+      "id": "ensemble-share-bang-reject",
+      "subsystem": "ensemble",
+      "kind": "negative",
+      "assertion": "Reject whitespace-split share !event, borrowed or mutable nonshareable payloads, forged ownership, and post-share use-after-move"
+    },
+    {
+      "id": "ensemble-try-publish-typed-receipt",
+      "subsystem": "ensemble",
+      "kind": "positive",
+      "assertion": "An authorized RELIABLE publisher compiles and executes Topic<T>.try_publish(share! event) and observes typed Result<PublishReceipt,PublishError> with correct per-topic sequence and admission counts, never processing ack"
+    },
+    {
+      "id": "ensemble-try-publish-full-rollback",
+      "subsystem": "ensemble",
+      "kind": "negative",
+      "assertion": "One full recipient rejects publication atomically without partial recipient enqueue, publisher ownership consumption, leaked reservations or skipped per-topic sequence"
+    },
+    {
+      "id": "ensemble-try-publish-authentication",
+      "subsystem": "ensemble",
+      "kind": "negative",
+      "assertion": "Reject stale incarnation, revoked membership, forged group/topic/publisher grant, cross-group publication and incompatible payload type before delivery"
+    },
+    {
+      "id": "ensemble-dedicated-subscription-order",
+      "subsystem": "ensemble",
+      "kind": "positive",
+      "assertion": "Subscription.next and try_read use dedicated bounded queues ordered by topic sequence; publication cannot silently inject ordinary actor DATA"
+    },
+    {
+      "id": "ensemble-result-question-cleanup",
+      "subsystem": "ensemble",
+      "kind": "positive",
+      "assertion": "Inside an eligible Result-returning actor callable, postfix ? propagates the original PublishError from try_publish, performs defer/finally cleanup exactly once and preserves typed success receipt"
+    },
+    {
+      "id": "ensemble-unsupported-guest-denial",
+      "subsystem": "ensemble",
+      "kind": "negative",
+      "assertion": "Unsupported backend rejects exact canonical .atto syntax or policy before guest artifact emission; a parser-only or host-only pass is never equivalent to executable feature parity"
+    }
   ],
   "requiredEvidence": [
     "exact-compiler-head-and-tree",
@@ -51,13 +202,26 @@
     "compiler-generated-guest-artifact",
     "actual-guest-execution",
     "positive-and-negative-case-assertions",
-    "independent-provenance-validation"
+    "independent-provenance-validation",
+    "portable-ensemble-share-bang-try-publish-guest-fixtures"
   ],
   "disallowedEvidence": [
     "host-model-only",
     "parser-only",
     "interpreter-image-standing-in-for-guest-AOT",
     "zero-step-actions",
-    "self-attested-pass-without-verified-GitHub-job"
-  ]
+    "self-attested-pass-without-verified-GitHub-job",
+    "legacy-async-publish-substituted-for-try-publish"
+  ],
+  "ensemblePublication": {
+    "source": "val receipt = topic.try_publish(share! event)?",
+    "legacyOperand": "rt share event",
+    "semantics": "RELIABLE atomic bounded per-subscriber reserve; receipt is admission, not processing",
+    "typing": "Result<PublishReceipt, PublishError>",
+    "resultQuestionScope": "Result-returning callable within authenticated actor turn; no automatic ? in void callbacks",
+    "ownership": "Once-only operand evaluation; copyable immutable Share proof; no false move, credit or sequence consumption on rejected admission",
+    "queue": "Dedicated Subscription<T>.next()/try_read(), never implicit DATA injection",
+    "receiptVersion": "atto.theater-guest-receipt/1",
+    "targetStatus": "NOT_EXECUTED"
+  }
 }
