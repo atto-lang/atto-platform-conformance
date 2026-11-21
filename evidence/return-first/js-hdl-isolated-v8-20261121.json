@@ -1,0 +1,87 @@
+{
+  "schema": "atto.return-first.source-isolated-evidence.v1",
+  "recorded_on": "2026-11-21",
+  "conformance": {
+    "repo": "atto-lang/atto-platform-conformance",
+    "fixture_head_sha": "01d9934cea558842e3d269dff45ddab61b7663c3",
+    "contract": "contracts/return-first-callables-v1.json"
+  },
+  "javascript": {
+    "repo": "atto-lang/atto-source.js",
+    "head_sha": "4516f9f5ed0477a08971d6e02c29d4b397438f38",
+    "root_tree_sha": "c635a8cd9c915e342b8f8377d39a42f29fbe1955",
+    "program_v2_blob_sha": "53b94be038a54677d1a2230a2ac41f4f9573854c",
+    "program_ir_v2_blob_sha": "4958ed0bfe19b1eaa87773af5627cb0a986ded9a",
+    "test_blob_sha": "1543a6a1ddaf65cbc212d6b9a7e495d96313d9fd",
+    "scope": "ISOLATED_V8_REAL_COMPILER_GENERATED_ESM_EXECUTION_NOT_NODE_CI",
+    "regression_test_groups_passed": 16,
+    "regression_test_groups_failed": 0,
+    "canonical_guest_cases_passed": 24,
+    "canonical_pass_case_ids": [
+      "int_name_arrow_brace",
+      "int_name_colon_brace",
+      "int_name_colon_arrow_brace",
+      "int_fnc_return_first_brace",
+      "int_bare_return_first_brace",
+      "int_bare_return_first_end",
+      "int_bare_return_first_begin",
+      "int_fnc_return_first_begin",
+      "infer_name_arrow_brace",
+      "infer_name_colon_brace",
+      "infer_name_colon_arrow_brace",
+      "infer_fnc_return_first_brace",
+      "infer_bare_return_first_brace",
+      "infer_bare_return_first_end",
+      "infer_bare_return_first_begin",
+      "infer_fnc_return_first_begin",
+      "void_name_arrow_brace",
+      "void_name_colon_brace",
+      "void_name_colon_arrow_brace",
+      "void_fnc_return_first_brace",
+      "void_bare_return_first_brace",
+      "void_bare_return_first_end",
+      "void_bare_return_first_begin",
+      "void_fnc_return_first_begin"
+    ],
+    "canonical_negative_rejected_ids": [
+      "duplicate_return_type",
+      "split_left_arrow",
+      "missing_end",
+      "nonvoid_empty_begin",
+      "nonvoid_empty_bare_end",
+      "duplicate_spelling"
+    ],
+    "canonical_unsupported_ids": [
+      "mtd_return_first_brace",
+      "mtd_return_first_begin",
+      "mtd_return_first_bare_end"
+    ],
+    "limitations": [
+      "Canonical backend-specific E_* diagnostic parity remains unverified; all six negative cases were rejected without artifact.",
+      "Actual compiler source and generated ESM ran inside adapted V8 harness; ES module imports and exports were bound for invocation, with compatible UTF-8 byte-count shim; full Node.js CI was not run.",
+      "No native actor/mtd/effect certification or 11-backend parity claim."
+    ]
+  },
+  "hdl": {
+    "repo": "atto-lang/atto-source.hdl",
+    "head_sha": "6987bc59df4d2cd67af53ae7d472d1e4c4bdad6c",
+    "root_tree_sha": "57a5230c18281f04f1a0678ab76779537ebb0e33",
+    "compiler_blob_sha": "5b87d20ab20488ce52ff255c057cbfbce8226527",
+    "test_blob_sha": "b8c20e5342afbee352de4d8a3de95264ce435c0f",
+    "scope": "ISOLATED_V8_ACTUAL_COMPILER_AST_RTL_REFERENCE_EVALUATOR_NOT_RTL_SIMULATION",
+    "regression_test_groups_passed": 5,
+    "regression_test_groups_failed": 0,
+    "limitations": [
+      "Only bounded unsigned u1..u64 hardware subset; not a general Atto runtime.",
+      "No SystemVerilog simulator, synthesis, or full Node/GitHub Actions execution."
+    ]
+  },
+  "ci": {
+    "js": "NOT_EXECUTED_ZERO_STEP",
+    "hdl": "NOT_EXECUTED_ZERO_STEP",
+    "alternate_public_source_canary": "STEPFUL_RUN_44952055501_SOURCE_FREE_ONLY",
+    "private_source_mirror": "DENIED_PENDING_INDEPENDENT_EXACT_SOURCE_CARRIER_APPROVAL",
+    "approval_issue": "https://github.com/atto-lang/atto-platform-conformance/issues/548"
+  },
+  "certification": "SOURCE_ISOLATED_SUPPLEMENT_ONLY_NOT_RELEASE_OR_COMPILER_PARITY"
+}
