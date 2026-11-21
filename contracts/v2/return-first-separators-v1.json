@@ -307,6 +307,182 @@
         "hdl": "NOT_EXECUTED",
         "realtime": "NOT_EXECUTED"
       }
+    },
+    {
+      "id": "P07_bare_no_begin",
+      "path": "fixtures/return-first-separators-v1/P07-bare-no-begin.atto",
+      "git_blob_sha": "49ddc01427d3f74b2d1f4b252d0289b9c30a4d54",
+      "kind": "positive",
+      "expect": "exit",
+      "value": 42,
+      "negative_no_artifact": false,
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "P08_coloncolon_no_effects",
+      "path": "fixtures/return-first-separators-v1/P08-coloncolon-no-effects.atto",
+      "git_blob_sha": "83ac6f68c60f1807d856c7afc9a898c2a842c2a1",
+      "kind": "positive",
+      "expect": "exit",
+      "value": 42,
+      "negative_no_artifact": false,
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "P09_raises_begin",
+      "path": "fixtures/return-first-separators-v1/P09-raises-begin.atto",
+      "git_blob_sha": "5e9f9ac5146510a9a61ed7268079017a30439973",
+      "kind": "positive",
+      "expect": "exit",
+      "value": 42,
+      "negative_no_artifact": false,
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "P10_raises_coloncolon",
+      "path": "fixtures/return-first-separators-v1/P10-raises-coloncolon.atto",
+      "git_blob_sha": "33cef0c20e033ac29895588aeb766129ee4cf0bd",
+      "kind": "positive",
+      "expect": "exit",
+      "value": 42,
+      "negative_no_artifact": false,
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "N08_raises_no_boundary",
+      "path": "fixtures/return-first-separators-v1/N08-raises-no-boundary.atto",
+      "git_blob_sha": "54f9770383fd4fdb53d99f8f5707bc20bccfa77d",
+      "kind": "negative",
+      "expect": "diagnostic",
+      "value": "E_SYNTAX",
+      "negative_no_artifact": true,
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "N09_duplicate_boundary",
+      "path": "fixtures/return-first-separators-v1/N09-duplicate-boundary.atto",
+      "git_blob_sha": "4cf71c9613f95407327330268f5533d699476320",
+      "kind": "negative",
+      "expect": "diagnostic",
+      "value": "E_SYNTAX",
+      "negative_no_artifact": true,
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "N10_effect_after_boundary",
+      "path": "fixtures/return-first-separators-v1/N10-effects-after-boundary.atto",
+      "git_blob_sha": "87e0f10c9520446f454e3d1e5e97888e1cb26d2a",
+      "kind": "negative",
+      "expect": "diagnostic",
+      "value": "E_SYNTAX",
+      "negative_no_artifact": true,
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "N11_coloncolon_missing_end",
+      "path": "fixtures/return-first-separators-v1/N11-coloncolon-missing-end.atto",
+      "git_blob_sha": "e0118ca406d30980ace1b024ebecaaf3f1cf600f",
+      "kind": "negative",
+      "expect": "diagnostic",
+      "value": "E_SYNTAX",
+      "negative_no_artifact": true,
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
     }
   ],
   "backends": {
@@ -377,5 +553,7 @@
       "release_qualified": false
     }
   },
-  "execution_policy": "POSITIVE: compile Atto guest and execute return value; NEGATIVE: deterministic diagnostic with NO guest artifact. Exact fixture Git blob, compiler head/tree, runner, output and guest provenance required. Host-only integrity tests must never upgrade backend status."
+  "execution_policy": "POSITIVE: compile Atto guest and execute return value; NEGATIVE: deterministic diagnostic with NO guest artifact. Exact fixture Git blob, compiler head/tree, runner, output and guest provenance required. Host-only integrity tests must never upgrade backend status.",
+  "body_boundary_contract": "return-first ordinary statement/end bodies accept an implicit physical-newline boundary without effects; exact :: may end the header, including after final raises/throws clause; effectful return-before-effects requires begin, braces or ::; never infer a tail return.",
+  "exception_spellings": "raise! is the proposed canonical exceptional-control spelling; bare raise remains a migration alias. Effectful source is NOT executable backend evidence."
 }
