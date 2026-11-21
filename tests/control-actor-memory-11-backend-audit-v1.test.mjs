@@ -46,9 +46,9 @@ function inspect(x) {
     assert.equal(scalar.little_endian_low_64_hex, '0123456789abcdef');
     assert.equal(scalar.little_endian_high_64_hex, 'fedcba9876543210');
     const expectedI128 = row.repo.endsWith('.java')
-      ? ['SOURCE_AUTHORED_JDK25_NOT_EXECUTED', '5b0756b21c9a812f4b5aeefb583a19bca6060a3c', false]
+      ? ['SOURCE_AUTHORED_JDK25_NOT_EXECUTED', '198c87ca8b6ab63afe112535c398b0a07ba2cfd1', false]
       : row.repo.endsWith('.net')
-      ? ['SOURCE_AUTHORED_CLR_NATIVEAOT_NOT_EXECUTED', '09b65ee99c79a39c9b97265483adeb1efc6cff25', false]
+      ? ['SOURCE_AUTHORED_CLR_NATIVEAOT_NOT_EXECUTED', '90f52001ebca0fbc6055d55c0edde013c9da8f2c', false]
       : row.repo.endsWith('.llvm')
       ? ['PASS_LOCAL_GCC_CLANG_HOST_ONLY', '3afe81a79d6ecd8ef2a5a0ae1e00a3e4a4167d5d', true]
       : ['NOT_IMPLEMENTED_OR_UNVERIFIED', null, false];
@@ -72,12 +72,12 @@ function inspect(x) {
       'unadmitted source workflows provide no executed runtime steps');
     const pinnedRootSource = row.repo === 'atto-lang/atto-source.java' ? {
       'src/main/java/dev/oreslang/runtime/ActorRuntime.java': '4706147ed5a801d98f4361eec12396577bf93753',
-      'src/main/java/dev/oreslang/runtime/ControlPlaneArena32.java': 'e62ba18c4f62ff0429b217d838545598e93945ae',
+      'src/main/java/dev/oreslang/runtime/ControlPlaneArena32.java': 'c533d5170c663988dc5205cc092265c731c47df9',
       'src/test/java/dev/oreslang/runtime/ActorRuntimeNativeControlCountersTest.java': '66fd8de6c4dc05d892ce949e26d27fa693eba63a',
       '.github/workflows/control-plane-ref32-ffm.yml': '2b19400d68a87ffcee17ab642448ac26d001d058'
     } : row.repo === 'atto-lang/atto-source.net' ? {
       'runtime/Ores.Net.Runtime/ActorRuntime.cs': 'fc923e24874d87e879722992f3b4e889e9f1979f',
-      'runtime/Ores.Net.Runtime/ControlPlaneArena32.cs': 'bce34f6abecaef3008ecf27bd972ab47c4da8872',
+      'runtime/Ores.Net.Runtime/ControlPlaneArena32.cs': 'acd64fe2106b0f44cdc1b2ebbc28097a229e601a',
       'verification/Ores.Net.Tests/ActorControlDirectoryIntegrationSelfTest.cs': '76c6022efc12545a1b07fdab817db3c8706344b0',
       'verification/Ores.Net.ControlRuntimeProbe/ControlRuntimeProbe.csproj': '691589168e8d02d58a462a9f25aa7a8303920d25',
       '.github/workflows/control-plane-ref32-nativeaot.yml': 'd95b0c1ca86def972f1e837fdd5f049860bd9f49'
@@ -90,6 +90,16 @@ function inspect(x) {
     assert.equal(row.host_managed_allocation_probe,
       sources.includes(row) ? 'SOURCE_AUTHORED_NOT_EXECUTED' : 'NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT');
     assert.equal(row.full_process_zero_gc_claim, false);
+    if (row.repo.endsWith('.java') || row.repo.endsWith('.net')) {
+      assert.deepEqual(row.issuer_saturation_receipt, {
+        status: 'SOURCE_AUTHORED_NOT_EXECUTED',
+        sequence: 'MONOTONE_SATURATING_CAS_U32',
+        test_cases: ['first_issuer', 'last_issuer', 'exhausted_uint32', 'signed_overflow'],
+        compiled_guest: 'NOT_EXECUTED'
+      });
+    } else {
+      assert.equal(row.issuer_saturation_receipt, undefined);
+    }
     if (row.repo.endsWith('.net')) {
       assert.deepEqual(row.native_scrub_receipt, {
         status: 'SOURCE_AUTHORED_NOT_EXECUTED',
@@ -315,4 +325,19 @@ test('issuer exhaustion and native scrub evidence cannot be forged', () => {
   const drop = structuredClone(baseline);
   drop.backends.find(row => row.repo.endsWith('.net')).native_scrub_receipt.scopes.pop();
   assert.throws(() => inspect(drop));
+});
+
+test('cannot forge Java or NET issuer saturation or compiled guest receipts', () => {
+  for (const backend of ['.java','.net']) {
+    const index = baseline.backends.findIndex(x => x.repo.endsWith(backend));
+    const promoted = structuredClone(baseline);
+    promoted.backends[index].issuer_saturation_receipt.compiled_guest = 'PASSED';
+    assert.throws(() => inspect(promoted));
+    const backward = structuredClone(baseline);
+    backward.backends[index].issuer_saturation_receipt.sequence = 'WRAPPING';
+    assert.throws(() => inspect(backward));
+    const dropped = structuredClone(baseline);
+    dropped.backends[index].issuer_saturation_receipt.test_cases.pop();
+    assert.throws(() => inspect(dropped));
+  }
 });
