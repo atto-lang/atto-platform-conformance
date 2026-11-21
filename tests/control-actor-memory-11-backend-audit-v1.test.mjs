@@ -23,12 +23,17 @@ function inspect(x) {
     'abi_tags_must_match_explicitly', 'actor_backend_abi_is_not_control_abi', 'host_test_does_not_prove_guest'])
     assert.equal(x.scope[key], true, 'mandatory explicit scope: ' + key);
   assert.deepEqual(x.scope.attributed_control_host_code,
-    ['atto-lang/atto-source.net', 'atto-lang/atto-source.java', 'atto-lang/atto-source.llvm']);
+    ['atto-lang/atto-source.net', 'atto-lang/atto-source.java', 'atto-lang/atto-source.llvm',
+      'atto-lang/atto-source.js', 'atto-lang/atto-source.forge', 'atto-lang/atto-source.wasm']);
   const sources = x.backends.filter(y => y.control_plane_source_status === 'SOURCE_COMMITTED_NOT_TESTED');
   const native = x.backends.filter(y => y.control_plane_source_status === 'SOURCE_COMMITTED_NATIVE_HOST_TESTED_LOCAL');
+  const codecs = x.backends.filter(y =>
+    y.control_plane_source_status === 'SOURCE_COMMITTED_CODEC_LOCAL_NODE_ONLY' ||
+    y.control_plane_source_status === 'SOURCE_COMMITTED_CODEC_LOCAL_NATIVE_ONLY');
   assert.deepEqual(sources.map(y => y.repo), ['atto-lang/atto-source.net', 'atto-lang/atto-source.java']);
   assert.deepEqual(native.map(y => y.repo), ['atto-lang/atto-source.llvm']);
-  assert.deepEqual([...sources, ...native].map(y => y.repo).sort(),
+  assert.deepEqual(codecs.map(y => y.repo), ['atto-lang/atto-source.js','atto-lang/atto-source.forge','atto-lang/atto-source.wasm']);
+  assert.deepEqual([...sources, ...native, ...codecs].map(y => y.repo).sort(),
     [...x.scope.attributed_control_host_code].sort());
   for (const row of x.backends) {
     assert(abiOptions.has(row.actor_reference_abi_candidate), 'unrecognized actor ref encoding');
@@ -48,6 +53,7 @@ function inspect(x) {
       assert.equal(row.control_reference_abi_candidate, 'control_generation12_slot20_v1');
       assert.equal(row.candidate_stage, 'UNMANAGED_CONTROL_HOST_SOURCE');
       assert.equal(row.native_host_local_test, null);
+      assert.equal(row.host_control_codec_test, null);
     } else if (native.includes(row)) {
       assert.equal(row.control_reference_abi_candidate, 'control_generation12_slot20_v1');
       assert.equal(row.candidate_stage, 'ACTOR_NATIVE_ARENA_HOST_SOURCE');
@@ -64,10 +70,38 @@ function inspect(x) {
       assert.match(receipt.gcc_binary_sha256, /^[0-9a-f]{64}$/);
       assert.match(receipt.clang_sanitized_binary_sha256, /^[0-9a-f]{64}$/);
       assert.match(receipt.positive_host_pass_marker, /NO compiled Atto guest or zero-GC proof/);
+      assert.equal(row.host_control_codec_test, null);
+    } else if (codecs.includes(row)) {
+      assert.equal(row.control_reference_abi_candidate, 'control_generation12_slot20_v1');
+      assert.equal(row.native_host_local_test, null);
+      const receipt = row.host_control_codec_test;
+      assert.equal(receipt.actual_compiled_atto_guest, 'NOT_EXECUTED');
+      if (row.repo.endsWith('.forge')) {
+        assert.equal(row.control_plane_source_status, 'SOURCE_COMMITTED_CODEC_LOCAL_NATIVE_ONLY');
+        assert.equal(receipt.local_execution, 'PASS_LOCAL_NATIVE_HOST_ONLY');
+        assert.equal(receipt.tests_passed, 2);
+        assert.deepEqual(receipt.source_blobs, {
+          'runtime/ControlRef32CodecV1.hpp': '6c6e32aed6540233be306114dbb9abfddcee10c3',
+          'tests/control_ref32_codec_v1_test.cpp': 'b351175cdc7e9e8d052eb889ad2c9f1978bb1115',
+          'CMakeLists.txt': 'a0daf3f529ae5bad5d3f5811d754324cf70bd35e'
+        });
+        assert.deepEqual(receipt.toolchains,
+          ['GCC 14.2.0 C++20 -O2 -Werror', 'Clang 17 C++20 -O1 ASan/UBSan']);
+      } else {
+        assert.equal(row.control_plane_source_status, 'SOURCE_COMMITTED_CODEC_LOCAL_NODE_ONLY');
+        assert.equal(receipt.local_execution, 'PASS_LOCAL_NODE_HOST_ONLY');
+        assert.equal(receipt.runtime, 'Node 22.16.0');
+        assert.equal(receipt.tests_passed, 4);
+        assert.deepEqual(receipt.source_blobs, {
+          'src/control-ref32-v1.mjs': 'd9e7a30217b2fe5c17d6794aa40a7b26f7f4a311',
+          'tests/control-ref32-v1.test.mjs': '474f5d7b4f0fc8142f497f0acdd4d050c17306b5'
+        });
+      }
     } else {
       assert.equal(row.control_reference_abi_candidate, null);
       assert.equal(row.control_plane_source_status, 'NO_CONTROL_GUEST_PROOF_IN_THIS_AUDIT');
       assert.equal(row.native_host_local_test, null);
+      assert.equal(row.host_control_codec_test, null);
     }
   }
 }
@@ -113,4 +147,16 @@ test('reject obsolete reversed bit-count control ABI identifier', () => {
   const invalid = structuredClone(baseline);
   invalid.references.control_plane_v1='control_generation20_slot12_v1';
   assert.throws(() => inspect(invalid));
+});
+
+test('new control codec receipts cannot promote guest parity or forge source blobs', () => {
+  for (const backendIndex of [7,8,9]) {
+    const wrong = structuredClone(baseline);
+    wrong.backends[backendIndex].host_control_codec_test.actual_compiled_atto_guest = 'PASSED';
+    assert.throws(() => inspect(wrong));
+    const blob = structuredClone(baseline);
+    const keys = Object.keys(blob.backends[backendIndex].host_control_codec_test.source_blobs);
+    blob.backends[backendIndex].host_control_codec_test.source_blobs[keys[0]] = 'f'.repeat(40);
+    assert.throws(() => inspect(blob));
+  }
 });
