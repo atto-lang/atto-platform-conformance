@@ -1,0 +1,105 @@
+{
+  "schema": "attolang.guard.dual-form.v1",
+  "spec": "atto-lang/atto-spec#200",
+  "status": "SOURCE_CONTRACT_NOT_BACKEND_EXECUTION",
+  "scope": "Target equivalence of braced and else/end early-exit guard blocks; add-on to immutable guard-v1 SHA-pins.",
+  "backends": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "rs": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "hdl": "NOT_EXECUTED"
+  },
+  "fixtures": [
+    {
+      "id": "brace-continue",
+      "path": "fixtures/guard-dual-form-v1/brace-continue.atto",
+      "git_blob": "fa9dd0394a3ef08f0ecb4ff010e94cc72a859126",
+      "kind": "NATIVE_GUEST_RETURN",
+      "style": "brace",
+      "expected_integer": 42
+    },
+    {
+      "id": "keyword-continue",
+      "path": "fixtures/guard-dual-form-v1/keyword-continue.atto",
+      "git_blob": "82a2afa93e827f387407d0530febf328254599dc",
+      "kind": "NATIVE_GUEST_RETURN",
+      "style": "keyword",
+      "expected_integer": 42
+    },
+    {
+      "id": "brace-failure",
+      "path": "fixtures/guard-dual-form-v1/brace-failure.atto",
+      "git_blob": "f4cdcada6b147c77a1f0f6ae6469a31ee44f2603",
+      "kind": "NATIVE_GUEST_RETURN",
+      "style": "brace",
+      "expected_integer": 0
+    },
+    {
+      "id": "keyword-failure",
+      "path": "fixtures/guard-dual-form-v1/keyword-failure.atto",
+      "git_blob": "13f41e961534f8b93895c224b04df77feb286793",
+      "kind": "NATIVE_GUEST_RETURN",
+      "style": "keyword",
+      "expected_integer": 0
+    },
+    {
+      "id": "option-brace",
+      "path": "fixtures/guard-dual-form-v1/option-brace.atto",
+      "git_blob": "250ef6c1552c3c3338f9028546bd96b9c039ffb8",
+      "kind": "TYPECHECK_ACCEPT",
+      "style": "brace"
+    },
+    {
+      "id": "option-keyword",
+      "path": "fixtures/guard-dual-form-v1/option-keyword.atto",
+      "git_blob": "952de6320ca571a9a885fa7e4c02ebcc96f33697",
+      "kind": "TYPECHECK_ACCEPT",
+      "style": "keyword"
+    },
+    {
+      "id": "keyword-nested-outer-else",
+      "path": "fixtures/guard-dual-form-v1/keyword-nested-outer-else.atto",
+      "git_blob": "5103709c149e5719b8125762c2add475a19c8e44",
+      "kind": "NATIVE_GUEST_RETURN",
+      "style": "keyword",
+      "expected_integer": 42
+    },
+    {
+      "id": "reject-keyword-fallthrough",
+      "path": "fixtures/guard-dual-form-v1/reject-keyword-fallthrough.atto",
+      "git_blob": "9c411688352f3be8261e72ee88580a1b9308ae83",
+      "kind": "COMPILE_REJECT_NO_IR",
+      "style": "keyword"
+    },
+    {
+      "id": "reject-mixed-delimiters",
+      "path": "fixtures/guard-dual-form-v1/reject-mixed-delimiters.atto",
+      "git_blob": "e65ba4add6607c54c1ae69919bbbf48e7ad351ad",
+      "kind": "COMPILE_REJECT_NO_IR",
+      "style": "mixed"
+    },
+    {
+      "id": "reject-missing-end",
+      "path": "fixtures/guard-dual-form-v1/reject-missing-end.atto",
+      "git_blob": "6d36b02d3c606234836b635a313549cb4b944493",
+      "kind": "COMPILE_REJECT_NO_IR",
+      "style": "keyword"
+    }
+  ],
+  "required_observations": [
+    "EXACT_FRONTEND_COMMIT_TREE",
+    "EXACT_INPUT_GIT_BLOBS",
+    "ASSIGNED_RUNNER_EXECUTED_STEPS",
+    "REAL_ATTO_COMPILER_ACCEPT_OR_REJECT",
+    "LINKED_GUEST_SEMANTICS_ON_POSITIVES",
+    "NO_IR_OR_EXECUTABLE_ON_NEGATIVES",
+    "FORMATTER_STYLE_ROUNDTRIP",
+    "INDEPENDENT_REVIEW"
+  ],
+  "receipts": []
+}
