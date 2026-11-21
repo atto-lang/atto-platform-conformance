@@ -394,7 +394,7 @@
     "expected_stdout": "40\n2\n",
     "expected_result": 42,
     "ci_exact_head_guest_status": "NOT_EXECUTED",
-    "ci_head_run": "https://github.com/atto-lang/atto-source.rs/actions/runs/44860736691",
+    "ci_head_run": "https://github.com/atto-lang/atto-source.rs/actions/runs/44860963671",
     "ci_steps_executed": 0,
     "private_source_export_allowlist_empty": true,
     "source_free_probe": {
