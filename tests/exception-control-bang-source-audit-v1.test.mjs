@@ -29,6 +29,15 @@ function assertSourceAudit(x){
     assert.equal(typeof row.has_frontend_in_this_repository,'boolean');
   }
   assert.equal(x.backends.filter(r=>r.has_frontend_in_this_repository).length,8);
+  // These are staged compiler-source guards, NOT passed guest receipts.
+  for(const suffix of ['java','llvm','rs']){
+    const row=x.backends.find(r=>r.repo==='atto-lang/atto-source.'+suffix);
+    assert.equal(row.canonical_trap_result_guard,'SOURCE_PATCHED_NOT_EXECUTED');
+  }
+  const llvm=x.backends.find(r=>r.repo==='atto-lang/atto-source.llvm');
+  assert.equal(llvm.canonical_throw_error_guard,'SOURCE_PATCHED_NOT_EXECUTED');
+  const rust=x.backends.find(r=>r.repo==='atto-lang/atto-source.rs');
+  assert.equal(rust.canonical_typed_throw_raise_guest_suite,'AUTHORED_NOT_EXECUTED');
   assert.equal(x.full_parity_certified,false);
   assert.ok(x.merge_gates.includes('actual_compiler_or_guest_execution_receipts_and_rejections'));
 }
@@ -51,6 +60,16 @@ test('source-only profiles and delegated Wasm cannot be marked as guest passes',
   ]){
     const mutated=clone(contract);patch(mutated);
     assert.throws(()=>assertSourceAudit(mutated));
+  }
+});
+test('compiler-source guards cannot be upgraded to unverified guest success',()=>{
+  for(const mutation of [
+    x=>x.backends[4].canonical_trap_result_guard='PASS',
+    x=>x.backends[6].canonical_throw_error_guard='PASS',
+    x=>x.backends[9].canonical_typed_throw_raise_guest_suite='PASS',
+  ]){
+    const altered=clone(contract);mutation(altered);
+    assert.throws(()=>assertSourceAudit(altered));
   }
 });
 test('exact git identity and capability boundaries are pinned',()=>{
