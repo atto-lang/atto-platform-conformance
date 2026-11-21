@@ -7,6 +7,8 @@ on:
       - 'tests/git-replace-integrity-v1.test.mjs'
       - 'tests/exception-control-bang-source-audit-v1.test.mjs'
       - 'contracts/exception-control-bang-source-audit-v1.json'
+      - 'contracts/ci-recovery-evidence-20261121-v1.json'
+      - 'tests/ci-recovery-evidence-20261121-v1.test.mjs'
       - 'contracts/control-actor-memory-11-backend-audit-v1.json'
       - 'contracts/control-ref32-bit-vectors-v1.json'
       - 'tests/control-ref32-bit-vectors-v1.test.mjs'
@@ -21,6 +23,8 @@ on:
       - 'tests/git-replace-integrity-v1.test.mjs'
       - 'tests/exception-control-bang-source-audit-v1.test.mjs'
       - 'contracts/exception-control-bang-source-audit-v1.json'
+      - 'contracts/ci-recovery-evidence-20261121-v1.json'
+      - 'tests/ci-recovery-evidence-20261121-v1.test.mjs'
       - 'contracts/control-actor-memory-11-backend-audit-v1.json'
       - 'contracts/control-ref32-bit-vectors-v1.json'
       - 'tests/control-ref32-bit-vectors-v1.test.mjs'
@@ -60,4 +64,4 @@ jobs:
           set -euo pipefail
           node --version
           node -e "if (+process.versions.node.split('.')[0] < 20) process.exit(2)"
-          node --test tests/atto-source-repository-parity-audit-v1.test.mjs tests/exception-control-bang-source-audit-v1.test.mjs tests/control-actor-memory-11-backend-audit-v1.test.mjs tests/control-ref32-bit-vectors-v1.test.mjs tests/git-replace-integrity-v1.test.mjs
+          node --test tests/atto-source-repository-parity-audit-v1.test.mjs tests/exception-control-bang-source-audit-v1.test.mjs tests/ci-recovery-evidence-20261121-v1.test.mjs tests/control-actor-memory-11-backend-audit-v1.test.mjs tests/control-ref32-bit-vectors-v1.test.mjs tests/git-replace-integrity-v1.test.mjs
