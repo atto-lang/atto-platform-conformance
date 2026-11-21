@@ -168,7 +168,7 @@
       "id": "ensemble-try-publish-full-rollback",
       "subsystem": "ensemble",
       "kind": "negative",
-      "assertion": "One full recipient rejects publication atomically without partial recipient enqueue, publisher ownership consumption, leaked reservations or skipped per-topic sequence"
+      "assertion": "When any RELIABLE subscriber has no immediately free queue capacity, Topic<T>.try_publish returns typed Full without enqueuing a pending writer, consuming another actor's admission credit, partially delivering to other subscribers, or advancing the unsigned u64 topic sequence"
     },
     {
       "id": "ensemble-try-publish-authentication",
