@@ -50,7 +50,7 @@ function inspect(x) {
       : row.repo.endsWith('.net')
       ? ['SOURCE_AUTHORED_CLR_NATIVEAOT_NOT_EXECUTED', '09b65ee99c79a39c9b97265483adeb1efc6cff25', false]
       : row.repo.endsWith('.llvm')
-      ? ['PASS_LOCAL_GCC_CLANG_HOST_ONLY', 'aaf3582c2252c68bd456a6d66acbab06b73b0599', true]
+      ? ['PASS_LOCAL_GCC_CLANG_HOST_ONLY', '3afe81a79d6ecd8ef2a5a0ae1e00a3e4a4167d5d', true]
       : ['NOT_IMPLEMENTED_OR_UNVERIFIED', null, false];
     assert.equal(scalar.status, expectedI128[0]);
     assert.equal(scalar.source_test_blob, expectedI128[1]);
@@ -77,7 +77,7 @@ function inspect(x) {
       '.github/workflows/control-plane-ref32-ffm.yml': '2b19400d68a87ffcee17ab642448ac26d001d058'
     } : row.repo === 'atto-lang/atto-source.net' ? {
       'runtime/Ores.Net.Runtime/ActorRuntime.cs': 'fc923e24874d87e879722992f3b4e889e9f1979f',
-      'runtime/Ores.Net.Runtime/ControlPlaneArena32.cs': '20606d616475a28f86e8dc947387fd608876a144',
+      'runtime/Ores.Net.Runtime/ControlPlaneArena32.cs': 'bce34f6abecaef3008ecf27bd972ab47c4da8872',
       'verification/Ores.Net.Tests/ActorControlDirectoryIntegrationSelfTest.cs': '76c6022efc12545a1b07fdab817db3c8706344b0',
       'verification/Ores.Net.ControlRuntimeProbe/ControlRuntimeProbe.csproj': '691589168e8d02d58a462a9f25aa7a8303920d25',
       '.github/workflows/control-plane-ref32-nativeaot.yml': 'd95b0c1ca86def972f1e837fdd5f049860bd9f49'
@@ -90,6 +90,16 @@ function inspect(x) {
     assert.equal(row.host_managed_allocation_probe,
       sources.includes(row) ? 'SOURCE_AUTHORED_NOT_EXECUTED' : 'NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT');
     assert.equal(row.full_process_zero_gc_claim, false);
+    if (row.repo.endsWith('.net')) {
+      assert.deepEqual(row.native_scrub_receipt, {
+        status: 'SOURCE_AUTHORED_NOT_EXECUTED',
+        api: 'System.Security.Cryptography.CryptographicOperations.ZeroMemory',
+        scopes: ['dropped_record', 'full_dispose_records', 'full_dispose_padded_metadata'],
+        native_aot_test: 'NOT_EXECUTED'
+      });
+    } else {
+      assert.equal(row.native_scrub_receipt, undefined);
+    }
     if (row.existing_pr === null) assert.equal(row.observed_candidate_pr_head_sha, null);
     else {
       assert.equal(row.existing_pr.startsWith('https://github.com/'+row.repo+'/pull/'), true);
@@ -109,9 +119,9 @@ function inspect(x) {
       assert.equal(receipt.ci_on_current_head, 'NOT_EXECUTED');
       assert.equal(receipt.os_target, 'linux-x86_64');
       assert.deepEqual(receipt.source_blobs, {
-        'ControlPlaneArena32.h': '3cef257d752b28c8031ca2b9a205b2b85222513a',
-        'ControlPlaneArena32.c': '1383ed7ab4607d62a3f7ad0a12761e61bc735dcd',
-        'control_plane_arena32_test.c': 'aaf3582c2252c68bd456a6d66acbab06b73b0599'
+        'ControlPlaneArena32.h': 'c2cd3e1331ff8d328c024995efa2bae673122187',
+        'ControlPlaneArena32.c': '7f0fe65ac32f207db88f2af0043553e74f23f37f',
+        'control_plane_arena32_test.c': '3afe81a79d6ecd8ef2a5a0ae1e00a3e4a4167d5d'
       });
       assert.match(receipt.gcc_binary_sha256, /^[0-9a-f]{64}$/);
       assert.match(receipt.clang_sanitized_binary_sha256, /^[0-9a-f]{64}$/);
@@ -120,6 +130,14 @@ function inspect(x) {
         writer_iterations: 32768, reader_iterations: 32768,
         compiler_runs: { gcc_optimized: 1, clang_asan_ubsan: 1 },
         verdict: 'PASS_LOCAL_HOST_ONLY', live_guest_compiled: false
+      });
+      assert.deepEqual(receipt.issuer_saturation_receipt, {
+        verdict: 'PASS_LOCAL_NATIVE_HOST_ONLY',
+        boundary_cases: ['initial_issuer_zero', 'one_below_UINT32_MAX', 'at_UINT32_MAX',
+          'UINT64_MAX_minus_one', 'UINT64_MAX', 'null_output'],
+        non_reused_after_overflow: true,
+        compiler_runs: { gcc_optimized: 5, clang_asan_ubsan: 5 },
+        source_compiled_atto_guest: 'NOT_EXECUTED'
       });
       assert.deepEqual(receipt.concurrent_carrier_test, {
         threads: 4, iterations_per_thread: 1024,
@@ -280,4 +298,21 @@ test('cannot promote host i128 writes, fabricate zero CLR allocation, or forge 1
     fakeGc.backends[idx].control_i128.host_gc_zero_bytes_on_warm_snapshot = 'PASS';
     assert.throws(() => inspect(fakeGc));
   }
+});
+
+test('issuer exhaustion and native scrub evidence cannot be forged', () => {
+  const promote = structuredClone(baseline);
+  promote.backends.find(row => row.repo.endsWith('.llvm'))
+    .native_host_local_test.issuer_saturation_receipt.source_compiled_atto_guest = 'PASSED';
+  assert.throws(() => inspect(promote));
+  const rewind = structuredClone(baseline);
+  rewind.backends.find(row => row.repo.endsWith('.llvm'))
+    .native_host_local_test.issuer_saturation_receipt.non_reused_after_overflow = false;
+  assert.throws(() => inspect(rewind));
+  const claim = structuredClone(baseline);
+  claim.backends.find(row => row.repo.endsWith('.net')).native_scrub_receipt.native_aot_test = 'PASSED';
+  assert.throws(() => inspect(claim));
+  const drop = structuredClone(baseline);
+  drop.backends.find(row => row.repo.endsWith('.net')).native_scrub_receipt.scopes.pop();
+  assert.throws(() => inspect(drop));
 });
