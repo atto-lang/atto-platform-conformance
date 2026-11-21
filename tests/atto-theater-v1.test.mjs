@@ -58,9 +58,9 @@ test('all eleven mainline pubsub evidence gaps are pinned to actual repository i
     assert.ok(entry.observedPaths.every(p=>typeof p==='string' && !p.startsWith('/') && !p.includes('..')));
   }
   const admission=snapshot.sourceAdmissionWork;
-  assert.equal(admission.length,6);
+  assert.equal(admission.length,7);
   assert.deepEqual(admission.map(x=>x.backend).sort(),
-    ['forge','hdl','js','llvm','net','wasm']);
+    ['cranelift','forge','hdl','js','llvm','net','wasm']);
   for(const entry of admission) {
     assert.match(entry.head,/^[0-9a-f]{40}$/);
     assert.match(entry.pr,/^https:\/\/github\.com\/atto-lang\/atto-source\.[a-z]+\/pull\/[0-9]+$/);

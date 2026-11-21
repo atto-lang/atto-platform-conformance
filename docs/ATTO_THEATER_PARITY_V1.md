@@ -93,14 +93,17 @@ declaration patterns would silently miss it.
 - Git blob **`c562ad380bb283da9ffa26160653c1186ab63462`**; path in this
   repository: `fixtures/atto-ensemble-v1/canonical-unlowered-try-publish.atto`.
 - Identical blobs in .NET PR #200, Wasm PR #265, JavaScript PR #119, HDL PR #54,
-  Forge PR #219 and LLVM PR #575. Source identity tests are pinned into the
-  corresponding compiler branches. No private source has been exported to another organization.
+  Forge PR #219, Cranelift PR #84 and LLVM PR #575. Source identity tests
+  are pinned into the corresponding compiler branches. No private source has
+  been exported to another organization.
 - JavaScript and HDL now explicitly deny aliased `.try_publish` **before**
   generated JS or SystemVerilog emission; .NET and Wasm reuse their already
   existing actor-pubsub source-admission gates. Forge #219 now adds a C++20
   scanner at all three native source entry points, but its source-only GCC/Clang
   sanitizer runs used stub frontends; full Forge CTest is still NOT_EXECUTED.
-  String/comment-only mentions must not be mistaken for a capability call.
+  Cranelift #84 reuses its existing nested-comment/quoted-source actor scanner
+  to deny aliases before scalar CLIF/JIT; Rust cargo and compiled guests are
+  NOT_EXECUTED. String/comment-only mentions must remain inert.
 - These are compiler-negative/fail-closed **partial parity improvements**, not
   functioning topic publication, RELIABLE fanout, supervised actor execution,
   28-case guest conformance, or evidence of a stepful GitHub Actions job.
