@@ -59,7 +59,8 @@
         "source_test_blob": null,
         "host_gc_zero_bytes_on_warm_snapshot": "NOT_EXECUTED",
         "host_i128_test_executed": false
-      }
+      },
+      "canonical_two_actor_source_guest": null
     },
     {
       "repo": "atto-lang/atto-source.net",
@@ -117,7 +118,8 @@
           "signed_overflow"
         ],
         "compiled_guest": "NOT_EXECUTED"
-      }
+      },
+      "canonical_two_actor_source_guest": null
     },
     {
       "repo": "atto-lang/atto-source.hdl",
@@ -148,7 +150,8 @@
         "source_test_blob": null,
         "host_gc_zero_bytes_on_warm_snapshot": "NOT_EXECUTED",
         "host_i128_test_executed": false
-      }
+      },
+      "canonical_two_actor_source_guest": null
     },
     {
       "repo": "atto-lang/atto-source.java",
@@ -195,7 +198,8 @@
           "signed_overflow"
         ],
         "compiled_guest": "NOT_EXECUTED"
-      }
+      },
+      "canonical_two_actor_source_guest": null
     },
     {
       "repo": "atto-lang/atto-source.realtime",
@@ -226,7 +230,8 @@
         "source_test_blob": null,
         "host_gc_zero_bytes_on_warm_snapshot": "NOT_EXECUTED",
         "host_i128_test_executed": false
-      }
+      },
+      "canonical_two_actor_source_guest": null
     },
     {
       "repo": "atto-lang/atto-source.rs",
@@ -265,13 +270,14 @@
         "source_test_blob": null,
         "host_gc_zero_bytes_on_warm_snapshot": "NOT_EXECUTED",
         "host_i128_test_executed": false
-      }
+      },
+      "canonical_two_actor_source_guest": null
     },
     {
       "repo": "atto-lang/atto-source.llvm",
       "candidate_stage": "ACTOR_NATIVE_ARENA_HOST_SOURCE",
       "existing_pr": "https://github.com/atto-lang/atto-source.llvm/pull/742",
-      "observed_candidate_pr_head_sha": "59483909a3f2c0839296d87d06f0af51b99fb20b",
+      "observed_candidate_pr_head_sha": "5ca234e3637dd3c3c00093c8c78c63f898d470c9",
       "actor_reference_abi_candidate": "offset8_plus_one",
       "control_reference_abi_candidate": "control_generation12_slot20_v1",
       "control_plane_source_status": "SOURCE_COMMITTED_NATIVE_HOST_TESTED_LOCAL",
@@ -289,10 +295,10 @@
         "source_blobs": {
           "ControlPlaneArena32.h": "c2cd3e1331ff8d328c024995efa2bae673122187",
           "ControlPlaneArena32.c": "7f0fe65ac32f207db88f2af0043553e74f23f37f",
-          "control_plane_arena32_test.c": "3afe81a79d6ecd8ef2a5a0ae1e00a3e4a4167d5d"
+          "control_plane_arena32_test.c": "1fd941af03831b621b83cdd36d948766cfe2770e"
         },
-        "gcc_binary_sha256": "895761a7733bb491038434d335cebfa0bcd762263e184997bd5ada032f898b90",
-        "clang_sanitized_binary_sha256": "a507b0c1ff0528849047ade69c47065c17dd2ca71e5ede8c319e39874257c772",
+        "gcc_binary_sha256": "548087766554732b110ff6f34dc49fa1443bb667ddebabaed51ce81ff7431a85",
+        "clang_sanitized_binary_sha256": "6e5539d7eb4433c57e8a5951d5c62410b34a8626434726f31bcc8ca392a8a3c4",
         "positive_host_pass_marker": "PASS control-plane-ref32 llvm C11 native host 12 guarded scenarios; NO compiled Atto guest or zero-GC proof",
         "ci_on_current_head": "NOT_EXECUTED",
         "compiled_atto_guest": "NOT_EXECUTED",
@@ -328,6 +334,18 @@
             "clang_asan_ubsan": 5
           },
           "source_compiled_atto_guest": "NOT_EXECUTED"
+        },
+        "randomized_lifetime_model": {
+          "status": "PASS_LOCAL_NATIVE_HOST_ONLY",
+          "model_operations": 50000,
+          "concurrency_pair_writer_iterations": 32768,
+          "concurrency_pair_reader_iterations": 32768,
+          "test_runs": {
+            "gcc_optimized": 13,
+            "clang_asan_ubsan": 13
+          },
+          "source_blob_sha": "1fd941af03831b621b83cdd36d948766cfe2770e",
+          "actual_compiled_atto_guest": "NOT_EXECUTED"
         }
       },
       "host_control_codec_test": null,
@@ -341,9 +359,21 @@
         "little_endian_low_64_hex": "0123456789abcdef",
         "little_endian_high_64_hex": "fedcba9876543210",
         "coherent_under_concurrent_host_access": true,
-        "source_test_blob": "3afe81a79d6ecd8ef2a5a0ae1e00a3e4a4167d5d",
+        "source_test_blob": "1fd941af03831b621b83cdd36d948766cfe2770e",
         "host_gc_zero_bytes_on_warm_snapshot": "NOT_APPLICABLE_NATIVE_HOST",
         "host_i128_test_executed": true
+      },
+      "canonical_two_actor_source_guest": {
+        "status": "SOURCE_AUTHORED_NOT_EXECUTED_ON_CURRENT_HEAD",
+        "canonical_extension": ".atto",
+        "source_blob_sha": "cce7728c1682bbf2600af65d6ceda9071fe7aa0a",
+        "legacy_source_blob_sha": "cce7728c1682bbf2600af65d6ceda9071fe7aa0a",
+        "harness_blob_sha": "3dba99f2743e9e0a3b25f02e4290535f43a9b20e",
+        "workflow_blob_sha": "3392e57d0022dd8ab509f15f877db72976b14531",
+        "expected_compiled_actor_count": 2,
+        "actual_guest_executed_step_count": 0,
+        "guest_heap_target": "ActorOwnedI64Heap",
+        "control_plane_i128_guest_lowering": "NOT_IMPLEMENTED_OR_UNVERIFIED"
       }
     },
     {
@@ -384,7 +414,8 @@
         "source_test_blob": null,
         "host_gc_zero_bytes_on_warm_snapshot": "NOT_EXECUTED",
         "host_i128_test_executed": false
-      }
+      },
+      "canonical_two_actor_source_guest": null
     },
     {
       "repo": "atto-lang/atto-source.forge",
@@ -428,7 +459,8 @@
         "source_test_blob": null,
         "host_gc_zero_bytes_on_warm_snapshot": "NOT_EXECUTED",
         "host_i128_test_executed": false
-      }
+      },
+      "canonical_two_actor_source_guest": null
     },
     {
       "repo": "atto-lang/atto-source.wasm",
@@ -468,7 +500,8 @@
         "source_test_blob": null,
         "host_gc_zero_bytes_on_warm_snapshot": "NOT_EXECUTED",
         "host_i128_test_executed": false
-      }
+      },
+      "canonical_two_actor_source_guest": null
     },
     {
       "repo": "atto-lang/atto-source.cranelift",
@@ -499,7 +532,27 @@
         "source_test_blob": null,
         "host_gc_zero_bytes_on_warm_snapshot": "NOT_EXECUTED",
         "host_i128_test_executed": false
-      }
+      },
+      "canonical_two_actor_source_guest": null
     }
-  ]
+  ],
+  "alternate_carrier_admission": {
+    "status": "SOURCE_FREE_PUBLIC_CARRIER_CAPABLE_ONLY",
+    "organization": "gha-indie-worker",
+    "carrier_repo": "gha-indie-worker/gha-indie-worker-e2e",
+    "carrier_commit": "81532e9f905ebefecd00bccbdffc7147af8e2365",
+    "run_id": 44957101583,
+    "executed_steps": 3,
+    "source_private_blobs_copied": 0,
+    "full_tree_mirror_verified": false,
+    "native_toolchains_executed": [
+      "gcc",
+      "clang"
+    ],
+    "compiled_atto_guest": "NOT_EXECUTED",
+    "private_carrier_repo": "gha-indie-worker/atto-ci",
+    "private_carrier_run_id": 44957202225,
+    "private_carrier_executed_steps": 0,
+    "private_source_transfer_authorized": false
+  }
 }
