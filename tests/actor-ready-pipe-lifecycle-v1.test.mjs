@@ -195,7 +195,7 @@ test('experimental v2 guest checked-bang source never counts as proved backend p
   assert.equal(c.verified_browser_guest_execution,false);
   assert.equal(c.verified_native_compiler_execution,false);
   assert.equal(c.external_private_source_mirror_authorized,false);
-  assert.match(c.source_policy,/private-ci-approved-repositories\\.txt$/);
+  assert.ok(c.source_policy.endsWith('/private-ci-approved-repositories.txt'));
   assert.ok(c.known_gaps.includes('source_private_ci_allowlist_empty_no_cross_org_export'));
   assert.ok(c.known_gaps.includes('current_draft_PR_has_unmerged_conflicts'));
   assert.equal(c.expected_guest_result,42);
