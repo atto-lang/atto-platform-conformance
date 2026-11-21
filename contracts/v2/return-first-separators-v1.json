@@ -619,7 +619,7 @@
     {
       "id": "P16_nominal_error_triggered_recover",
       "path": "fixtures/return-first-separators-v1/P16-nominal-error-triggered-recover.atto",
-      "git_blob_sha": "f94b0669ffa49592ec8efa90d9eaaaa61a6da413",
+      "git_blob_sha": "cc2947fbc8f371d90c7fe3c81289c6a98c382117",
       "kind": "positive",
       "expect": "exit",
       "value": 42,
@@ -636,6 +636,16 @@
         "atto": "NOT_EXECUTED",
         "hdl": "NOT_EXECUTED",
         "realtime": "NOT_EXECUTED"
+      },
+      "identity_receipt_required": {
+        "nominal_type": "Foo",
+        "capture_at": [
+          "raise_site",
+          "recover_handler"
+        ],
+        "same_runtime_type_id": true,
+        "reject_message_string_inference": true,
+        "scalar_exit_alone_is_insufficient": true
       }
     },
     {
