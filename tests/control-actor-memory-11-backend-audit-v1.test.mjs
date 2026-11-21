@@ -32,6 +32,8 @@ function inspect(x) {
     assert.equal(row.managed_hotpath_allocation_measurement, 'NOT_EXECUTED');
     assert.equal(row.deterministic_stop_quiescence_integration, 'NOT_EXECUTED');
     assert.equal(row.guest_zero_tracing_gc, 'NOT_VERIFIED');
+    assert.equal(row.host_managed_allocation_probe,
+      sources.includes(row) ? 'SOURCE_AUTHORED_NOT_EXECUTED' : 'NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT');
     assert.equal(row.full_process_zero_gc_claim, false);
     if (row.existing_pr === null) assert.equal(row.observed_candidate_pr_head_sha, null);
     else {
