@@ -173,3 +173,29 @@ test("contextual maybe identifier stays legal and return-maybe is not return-mat
   assert.match(valued,/\n\s+Ok\(balance\)\s*\n\s+else/);
   assert.notEqual(divergent,valued);
 });
+
+test("v1 design resolution is conservative and compiler evidence remains unexecuted", () => {
+  assert.equal(contract.design_resolution.mandatory_else_v1, true);
+  assert.equal(contract.design_resolution.maybe_keyword, "contextual");
+  assert.deepEqual(contract.design_resolution.admitted_forms, ["do maybe", "return maybe"]);
+  assert.deepEqual(contract.design_resolution.cleanup_order, [
+    "exit-maybe-body-LIFO", "dispatch-first-failed-value-else",
+    "exit-handler-LIFO", "exit-function-defers-LIFO", "outer-try-finally",
+  ]);
+  assert.ok(Object.values(contract.backend_evidence).every(value => value === "NOT_EXECUTED"));
+});
+test("keyword try owns separate end from nested maybe in candidate guest fixtures", () => {
+  const doSource = readFileSync(resolve(root, "fixtures/maybe-result-defer-v1/try-keyword-do-maybe.atto"), "utf8");
+  const returnSource = readFileSync(resolve(root, "fixtures/maybe-result-defer-v1/try-keyword-return-maybe.atto"), "utf8");
+  const noElse = readFileSync(resolve(root, "fixtures/maybe-result-defer-v1/negative-missing-else-in-try.atto"), "utf8");
+  assert.match(doSource, /try\s+do maybe/);
+  assert.match(doSource, /\bend\s+catch \(Error e\)/);
+  assert.match(doSource, /\bfinally\s+log\("outer-finally"\);\s+end/);
+  assert.match(returnSource, /try\s+return maybe/);
+  assert.match(returnSource, /\bend;\s+catch \(Error e\)/);
+  assert.match(noElse, /do maybe\s+Ok\(value\) \?=/);
+  assert.doesNotMatch(noElse, /\belse\s+Err\(/);
+  for (const id of ["keyword-try-do-maybe-nested-end", "keyword-try-return-maybe-once-finally", "reject-missing-else-with-outer-try"]) {
+    assert.ok(contract.cases.some(item => item.id === id && item.outcome === "NOT_EXECUTED"));
+  }
+});
