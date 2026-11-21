@@ -16,7 +16,7 @@ function inspect(x) {
     actor_offset: 'offset8_plus_one',
     java_actor_host_slot: 'generation20_slot12',
     net_actor_guest_slot: 'generation16_slot16',
-    control_plane_v1: 'control_generation20_slot12_v1'
+    control_plane_v1: 'control_generation12_slot20_v1'
   });
   for (const key of ['language_object_heap_is_not_JVM_or_CLR_heap', 'host_jvm_clr_gc_may_remain',
     'same_numeric_words_across_domains_are_not_authority', 'cross_repo_source_transfer_requires_effective_approval',
@@ -45,11 +45,11 @@ function inspect(x) {
       assert.match(row.observed_candidate_pr_head_sha, sha);
     }
     if (sources.includes(row)) {
-      assert.equal(row.control_reference_abi_candidate, 'control_generation20_slot12_v1');
+      assert.equal(row.control_reference_abi_candidate, 'control_generation12_slot20_v1');
       assert.equal(row.candidate_stage, 'UNMANAGED_CONTROL_HOST_SOURCE');
       assert.equal(row.native_host_local_test, null);
     } else if (native.includes(row)) {
-      assert.equal(row.control_reference_abi_candidate, 'control_generation20_slot12_v1');
+      assert.equal(row.control_reference_abi_candidate, 'control_generation12_slot20_v1');
       assert.equal(row.candidate_stage, 'ACTOR_NATIVE_ARENA_HOST_SOURCE');
       const receipt = row.native_host_local_test;
       assert.equal(receipt.status, 'PASS_LOCAL_NATIVE_HOST_ONLY');
@@ -57,9 +57,9 @@ function inspect(x) {
       assert.equal(receipt.ci_on_current_head, 'NOT_EXECUTED');
       assert.equal(receipt.os_target, 'linux-x86_64');
       assert.deepEqual(receipt.source_blobs, {
-        'ControlPlaneArena32.h': '64eabc65b9ce917d5f3085a42e8e2c9f3f2213c6',
+        'ControlPlaneArena32.h': 'ae2188f51a1659426dbd8c7e94bc6e672525dfde',
         'ControlPlaneArena32.c': 'ff66f2be47a50373e88b7d4e66b4d35f396bc0c5',
-        'control_plane_arena32_test.c': '598591e49a5665fef25e01366af20d35ac35f649'
+        'control_plane_arena32_test.c': '6e7a074fa131c186b939d5c6d74af61cd19ff9b9'
       });
       assert.match(receipt.gcc_binary_sha256, /^[0-9a-f]{64}$/);
       assert.match(receipt.clang_sanitized_binary_sha256, /^[0-9a-f]{64}$/);
@@ -107,4 +107,10 @@ test('LLVM source-pinned local native host sanitizer receipts do not promote gue
   const mislabel = structuredClone(baseline);
   mislabel.backends[6].native_host_local_test.compiled_atto_guest='PASSED';
   assert.throws(() => inspect(mislabel));
+});
+
+test('reject obsolete reversed bit-count control ABI identifier', () => {
+  const invalid = structuredClone(baseline);
+  invalid.references.control_plane_v1='control_generation20_slot12_v1';
+  assert.throws(() => inspect(invalid));
 });
