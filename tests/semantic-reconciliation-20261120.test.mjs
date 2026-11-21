@@ -9,7 +9,7 @@ const gitBlob = b => createHash('sha1').update('blob '+b.length+String.fromCharC
 test('return-first bullet and arrow fixtures are immutable exact Git blobs', () => {
  const reg=json('contracts/v2/return-first-separators-v1.json');
  assert.equal(reg.status,'SOURCE_ONLY_NOT_EXECUTED');
- assert.equal(reg.cases.length,26);
+ assert.equal(reg.cases.length,30);
  assert.deepEqual(reg.accepted_separators.map(x=>x.spelling),['<-','•']);
  assert.match(reg.body_boundary_contract, /raises\/throws clause/);
  assert.match(reg.exception_spellings, /raise!/);
@@ -65,6 +65,11 @@ test('return-first :: and effect-bearing begin variants remain cross-backend tar
  assert.match(corpus.P14_triggered_builtin_error_bypasses_trap, /trap maybe_escalate\(4\)/);
  assert.match(corpus.P14_triggered_builtin_error_bypasses_trap, /reason\.is_raise/);
  assert.match(corpus.P14_triggered_builtin_error_bypasses_trap, /raise! Error\("trap cannot intercept raised fault"\)/);
+ assert.match(corpus.P15_nominal_error_declaration_order, /raises Foo ::[\s\S]*define class Foo extends Error/);
+ assert.match(corpus.P16_nominal_error_triggered_recover, /raise! new Foo\(\)/);
+ assert.match(corpus.P16_nominal_error_triggered_recover, /recover \|err, cursor\|/);
+ assert.match(corpus.N13_nonerror_class_effect, /define class Plain as[\s\S]*raises Plain ::/);
+ assert.match(corpus.N14_subtype_declared_base_error_raised, /raises Foo ::[\s\S]*raise! Error\("not a Foo"\)/);
  assert.match(corpus.N08_raises_no_boundary, /raises Foo\n  return/);
  assert.match(corpus.N09_duplicate_boundary, /::\n  ::/);
  assert.match(corpus.N10_effect_after_boundary, /::\nraises Foo/);
