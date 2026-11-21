@@ -40,7 +40,10 @@ function verify(c) {
       'atto-lang/atto-source.cranelift']);
   for(const o of c.observations) {
     assert.match(o.candidate_head,sha40);
-    assert.match(o.source_blob,sha40);
+    if(o.repo.endsWith('.js')) {
+      assert.equal(o.source_blobs?.length,2);
+      o.source_blobs.forEach(blob=>assert.match(blob,sha40));
+    } else assert.match(o.source_blob,sha40);
     assert.equal(o.execution_scope.includes('GUEST'),false);
   }
   const [hdl,js,cr]=c.observations;
