@@ -205,7 +205,7 @@
   "candidate_subsets": [
     {
       "repository": "atto-lang/atto-source.rs",
-      "source_head_sha": "894156e686316a931f5eada4bf02b2529f538fc7",
+      "source_head_sha": "0deb14a2e5b58b3b65f2b91d17e2e07b1b0130bd",
       "status": "STAGED_UNVERIFIED",
       "scope": "terminal-only await actor.get_ready() in void main; distinct actor_ready Wasm guest import; browser host waits real child READY",
       "excludes": [
@@ -224,11 +224,11 @@
       "private_mirror": {
         "repository": "benefactor-cc/atto-ci",
         "branch": "ci/atto-actor-ready-terminal-3658660c-20261120",
-        "mirror_commit_sha": "322ee557e3dddb8bcb7128c2d6fed06c61946c10",
-        "mirror_tree_sha": "6ff63feda42127ac68612a263ba458c2a70b6c00",
-        "source_blob_matches": 17,
+        "mirror_commit_sha": "16def59145d62d6ce94b5c843301d3f3fdbe43d3",
+        "mirror_tree_sha": "b21d45867f1bd56040e9b8aed8b7cf3bf3b1dd32",
+        "source_blob_matches": 18,
         "source_blob_mismatches": 0,
-        "github_actions_run": "https://github.com/benefactor-cc/atto-ci/actions/runs/44857005128",
+        "github_actions_run": "https://github.com/benefactor-cc/atto-ci/actions/runs/44857759549",
         "runner_allocated": false,
         "steps_executed": 0,
         "test_status": "NOT_EXECUTED"
@@ -273,6 +273,43 @@
       "status": "HOST_PROTOCOL_TESTED_NOT_COMPILER_GUEST_PROVEN",
       "github_actions_run": "https://github.com/atto-lang/atto-source.rs/actions/runs/44857458316",
       "steps_executed": 0
+    }
+  ],
+  "adversarial_incarnation_cases": [
+    {
+      "id": "stale-ready",
+      "kind": "host-protocol",
+      "expected": "E_ACTOR_INCAR_MISMATCH",
+      "forbid": "ready_future_success",
+      "execution": "HOST_V8_ONLY"
+    },
+    {
+      "id": "stale-data-reply",
+      "kind": "host-protocol",
+      "expected": "E_ACTOR_INCAR_MISMATCH",
+      "forbid": "delivery_receipt_success",
+      "execution": "HOST_V8_ONLY"
+    },
+    {
+      "id": "stale-done",
+      "kind": "host-protocol",
+      "expected": "E_ACTOR_INCAR_MISMATCH",
+      "forbid": "done_future_success",
+      "execution": "HOST_V8_ONLY"
+    },
+    {
+      "id": "invalid-incarnation-init",
+      "kind": "host-protocol",
+      "expected": "E_ACTOR_INCAR_INVALID",
+      "forbid": "ready_ack",
+      "execution": "HOST_V8_ONLY"
+    },
+    {
+      "id": "cross-tenant-replayed-ack",
+      "kind": "guest-runtime-target",
+      "expected": "E_TENANT_DENIED_OR_INCAR_MISMATCH",
+      "forbid": "cross_tenant_lifecycle_settlement",
+      "execution": "NOT_EXECUTED"
     }
   ]
 }
