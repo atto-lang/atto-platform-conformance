@@ -154,7 +154,10 @@
       "isolated_guest_host_security_gate": "SYNTHETIC_WASM_LOCAL_NODE22_7_OF_7_NOT_COMPILER",
       "guest_child_execution_timeout_ms": 5000,
       "guest_child_stdout_limit_bytes": 4096,
-      "compiled_guest_from_approved_rust_compiler": "NOT_EXECUTED"
+      "compiled_guest_from_approved_rust_compiler": "NOT_EXECUTED",
+      "isolated_child_runner_git_blob": "c49323829058328e6a262babc6a4ce78ee5fd400",
+      "synthetic_guest_host_test_git_blob": "d2adf1b25920006d995d64c05b68806707f4c6c2",
+      "synthetic_guest_host_test_provenance": "LOCAL_NODE22_EXECUTED_7_OF_7_EXACT_GIT_BLOBS"
     }
   ],
   "provenance_notes": {
