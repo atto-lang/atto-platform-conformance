@@ -76,5 +76,27 @@ class ValueClassContractAudit(unittest.TestCase):
             "E_VALUE_CONSTRUCTOR", "E_TYPE"
         }.issubset(codes))
 
+
+    def test_case_registry_matches_fixture_tree_and_readme(self):
+        """Detect unregistered fixtures and stale human-facing case totals."""
+        cases = self.data["required_cases"]
+        root = ROOT / "fixtures" / "value-classes"
+        files = list(root.rglob("*.atto"))
+        for path in files:
+            self.assertFalse(path.is_symlink(), str(path))
+        registered = {c["path"] for c in cases}
+        discovered = {p.relative_to(ROOT).as_posix() for p in files}
+        self.assertEqual(registered, discovered)
+        for case in cases:
+            self.assertEqual(case["path"].split("/")[2], case["kind"])
+
+        positive = sum(c["kind"] == "pass" for c in cases)
+        negative = sum(c["kind"] == "fail" for c in cases)
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        self.assertIn(
+            f"contains {positive} positive and {negative} negative `.atto` fixtures.",
+            readme,
+        )
+
 if __name__ == "__main__":
     unittest.main()
