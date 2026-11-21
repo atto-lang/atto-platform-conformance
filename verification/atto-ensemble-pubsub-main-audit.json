@@ -124,6 +124,13 @@
       "head": "cdff1cad41c22d10e0955614a2b104d6a1ff0f52",
       "scope": "fail-closed unlowered .try_publish member source gate; NOT guest parity",
       "verification": "SOURCE_ONLY_V8_ASCII_SCANNER_9_CASES; NOT_EXECUTED_NODE_OR_WASM"
+    },
+    {
+      "backend": "llvm",
+      "pr": "https://github.com/atto-lang/atto-source.llvm/pull/575",
+      "head": "a4135b9fabccd6866b3d52171411e2dcc777cb09",
+      "scope": "fail-closed native parser rejection of unlowered .try_publish with SHA-pinned .atto negative; native PubSub substrate remains separate",
+      "verification": "NOT_EXECUTED_LLVM_COMPILER_CTEST_ASAN_UBSAN"
     }
   ]
 }
