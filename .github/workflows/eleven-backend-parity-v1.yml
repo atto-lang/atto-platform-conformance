@@ -6,6 +6,7 @@ on:
       - 'lib/eleven-backend-parity-v1.mjs'
       - 'tests/eleven-backend-parity-v1.test.mjs'
       - '.github/workflows/eleven-backend-parity-v1.yml'
+      - 'docs/ELEVEN_BACKEND_PARITY_PROGRAM_V1.md'
   workflow_dispatch:
 permissions:
   contents: read
@@ -32,7 +33,7 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
-      - name: Run source-only 11-backend 110-cell integrity and adversarial tests
+      - name: Run source-only 11-backend 121-cell integrity and adversarial tests
         run: node --test tests/eleven-backend-parity-v1.test.mjs
       - name: Declare scope, never guest parity
         run: |
