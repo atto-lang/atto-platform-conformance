@@ -155,9 +155,9 @@
     {
       "backend": "forge",
       "pr": "https://github.com/atto-lang/atto-source.forge/pull/219",
-      "head": "f54943be3f1055c8b7c54eae20b88367f92534fb",
+      "head": "9fc9f6929424de0514835bf3468cbd4581163e5e",
       "scope": "all three native Forge scalar/runtime/callable source entry points deny aliased Topic publication; no full native compiler proof",
-      "verification": "SOURCE_ONLY_GCC_CLANG_SANITIZED_STUB_HARNESS; NOT_EXECUTED_FORGE_CTEST"
+      "verification": "SOURCE_ONLY_GCC_CLANG_SANITIZED_STUB_HARNESS_12000_RANDOMIZED_CASES; NOT_EXECUTED_FORGE_CTEST"
     }
   ]
 }
