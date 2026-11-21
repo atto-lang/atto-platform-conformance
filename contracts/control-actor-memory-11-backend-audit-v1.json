@@ -49,13 +49,23 @@
       "runtime_native_root_integration": "NO_EXECUTED_RUNTIME_NATIVE_ROOT_INTEGRATION_IN_THIS_AUDIT",
       "runtime_root_native_reserved_bytes": null,
       "runtime_integration_executed_steps": 0,
-      "runtime_native_root_source_blobs": null
+      "runtime_native_root_source_blobs": null,
+      "control_i128": {
+        "status": "NOT_IMPLEMENTED_OR_UNVERIFIED",
+        "compiled_atto_guest": "NOT_EXECUTED",
+        "little_endian_low_64_hex": "0123456789abcdef",
+        "little_endian_high_64_hex": "fedcba9876543210",
+        "coherent_under_concurrent_host_access": null,
+        "source_test_blob": null,
+        "host_gc_zero_bytes_on_warm_snapshot": "NOT_EXECUTED",
+        "host_i128_test_executed": false
+      }
     },
     {
       "repo": "atto-lang/atto-source.net",
       "candidate_stage": "UNMANAGED_CONTROL_HOST_SOURCE",
       "existing_pr": "https://github.com/atto-lang/atto-source.net/pull/173",
-      "observed_candidate_pr_head_sha": "74e86e16bc7325782ca6a3235ee1b1dabb180321",
+      "observed_candidate_pr_head_sha": "be2e383e7ee055b323422bcde8f7215e2bea212e",
       "actor_reference_abi_candidate": "generation16_slot16",
       "control_reference_abi_candidate": "control_generation12_slot20_v1",
       "control_plane_source_status": "SOURCE_COMMITTED_NOT_TESTED",
@@ -71,11 +81,21 @@
       "runtime_root_native_reserved_bytes": 48,
       "runtime_integration_executed_steps": 0,
       "runtime_native_root_source_blobs": {
-        "runtime/Ores.Net.Runtime/ActorRuntime.cs": "6e1639fda258c1a14cf14f58e33226735146038b",
-        "runtime/Ores.Net.Runtime/ControlPlaneArena32.cs": "f7f7e25ac5c9e4f8079e055a1ac12365c955614a",
-        "verification/Ores.Net.Tests/ActorControlDirectoryIntegrationSelfTest.cs": "5c745f4205a1ee065724c76a30f6054541f6cc24",
+        "runtime/Ores.Net.Runtime/ActorRuntime.cs": "fc923e24874d87e879722992f3b4e889e9f1979f",
+        "runtime/Ores.Net.Runtime/ControlPlaneArena32.cs": "bb6eb079d4fe251a1173397b991c6304aaf8dfb7",
+        "verification/Ores.Net.Tests/ActorControlDirectoryIntegrationSelfTest.cs": "76c6022efc12545a1b07fdab817db3c8706344b0",
         "verification/Ores.Net.ControlRuntimeProbe/ControlRuntimeProbe.csproj": "691589168e8d02d58a462a9f25aa7a8303920d25",
-        ".github/workflows/control-plane-ref32-nativeaot.yml": "3c417fffede8668c7130ee306160d3b013c19ed6"
+        ".github/workflows/control-plane-ref32-nativeaot.yml": "d95b0c1ca86def972f1e837fdd5f049860bd9f49"
+      },
+      "control_i128": {
+        "status": "SOURCE_AUTHORED_CLR_NATIVEAOT_NOT_EXECUTED",
+        "compiled_atto_guest": "NOT_EXECUTED",
+        "little_endian_low_64_hex": "0123456789abcdef",
+        "little_endian_high_64_hex": "fedcba9876543210",
+        "coherent_under_concurrent_host_access": true,
+        "source_test_blob": "c3298863706151887e001c6d13429e69c5cea110",
+        "host_gc_zero_bytes_on_warm_snapshot": "NOT_EXECUTED",
+        "host_i128_test_executed": false
       }
     },
     {
@@ -97,13 +117,23 @@
       "runtime_native_root_integration": "NO_EXECUTED_RUNTIME_NATIVE_ROOT_INTEGRATION_IN_THIS_AUDIT",
       "runtime_root_native_reserved_bytes": null,
       "runtime_integration_executed_steps": 0,
-      "runtime_native_root_source_blobs": null
+      "runtime_native_root_source_blobs": null,
+      "control_i128": {
+        "status": "NOT_IMPLEMENTED_OR_UNVERIFIED",
+        "compiled_atto_guest": "NOT_EXECUTED",
+        "little_endian_low_64_hex": "0123456789abcdef",
+        "little_endian_high_64_hex": "fedcba9876543210",
+        "coherent_under_concurrent_host_access": null,
+        "source_test_blob": null,
+        "host_gc_zero_bytes_on_warm_snapshot": "NOT_EXECUTED",
+        "host_i128_test_executed": false
+      }
     },
     {
       "repo": "atto-lang/atto-source.java",
       "candidate_stage": "UNMANAGED_CONTROL_HOST_SOURCE",
       "existing_pr": "https://github.com/atto-lang/atto-source.java/pull/1273",
-      "observed_candidate_pr_head_sha": "f85d16713d3c5e59880d51d54ce9ee460048c62b",
+      "observed_candidate_pr_head_sha": "96764a77e3335214369f0326b9aeb7a659eefd39",
       "actor_reference_abi_candidate": "generation20_slot12",
       "control_reference_abi_candidate": "control_generation12_slot20_v1",
       "control_plane_source_status": "SOURCE_COMMITTED_NOT_TESTED",
@@ -119,10 +149,20 @@
       "runtime_root_native_reserved_bytes": 44,
       "runtime_integration_executed_steps": 0,
       "runtime_native_root_source_blobs": {
-        "src/main/java/dev/oreslang/runtime/ActorRuntime.java": "689857fa80eceb672b64fc095edd3f0304ac4062",
-        "src/main/java/dev/oreslang/runtime/ControlPlaneArena32.java": "7380d8309d84b767b8802f0190ec3e53b7d11307",
-        "src/test/java/dev/oreslang/runtime/ActorRuntimeNativeControlCountersTest.java": "3e9808754f05ff56f0cf5085db94423d0aa66f61",
-        ".github/workflows/control-plane-ref32-ffm.yml": "78f5f8e410a3ebe7df6de14bb87932a614eeef58"
+        "src/main/java/dev/oreslang/runtime/ActorRuntime.java": "4706147ed5a801d98f4361eec12396577bf93753",
+        "src/main/java/dev/oreslang/runtime/ControlPlaneArena32.java": "e62ba18c4f62ff0429b217d838545598e93945ae",
+        "src/test/java/dev/oreslang/runtime/ActorRuntimeNativeControlCountersTest.java": "66fd8de6c4dc05d892ce949e26d27fa693eba63a",
+        ".github/workflows/control-plane-ref32-ffm.yml": "2b19400d68a87ffcee17ab642448ac26d001d058"
+      },
+      "control_i128": {
+        "status": "SOURCE_AUTHORED_JDK25_NOT_EXECUTED",
+        "compiled_atto_guest": "NOT_EXECUTED",
+        "little_endian_low_64_hex": "0123456789abcdef",
+        "little_endian_high_64_hex": "fedcba9876543210",
+        "coherent_under_concurrent_host_access": true,
+        "source_test_blob": "5b0756b21c9a812f4b5aeefb583a19bca6060a3c",
+        "host_gc_zero_bytes_on_warm_snapshot": "NOT_EXECUTED",
+        "host_i128_test_executed": false
       }
     },
     {
@@ -144,7 +184,17 @@
       "runtime_native_root_integration": "NO_EXECUTED_RUNTIME_NATIVE_ROOT_INTEGRATION_IN_THIS_AUDIT",
       "runtime_root_native_reserved_bytes": null,
       "runtime_integration_executed_steps": 0,
-      "runtime_native_root_source_blobs": null
+      "runtime_native_root_source_blobs": null,
+      "control_i128": {
+        "status": "NOT_IMPLEMENTED_OR_UNVERIFIED",
+        "compiled_atto_guest": "NOT_EXECUTED",
+        "little_endian_low_64_hex": "0123456789abcdef",
+        "little_endian_high_64_hex": "fedcba9876543210",
+        "coherent_under_concurrent_host_access": null,
+        "source_test_blob": null,
+        "host_gc_zero_bytes_on_warm_snapshot": "NOT_EXECUTED",
+        "host_i128_test_executed": false
+      }
     },
     {
       "repo": "atto-lang/atto-source.rs",
@@ -173,13 +223,23 @@
       "runtime_native_root_integration": "NO_EXECUTED_RUNTIME_NATIVE_ROOT_INTEGRATION_IN_THIS_AUDIT",
       "runtime_root_native_reserved_bytes": null,
       "runtime_integration_executed_steps": 0,
-      "runtime_native_root_source_blobs": null
+      "runtime_native_root_source_blobs": null,
+      "control_i128": {
+        "status": "NOT_IMPLEMENTED_OR_UNVERIFIED",
+        "compiled_atto_guest": "NOT_EXECUTED",
+        "little_endian_low_64_hex": "0123456789abcdef",
+        "little_endian_high_64_hex": "fedcba9876543210",
+        "coherent_under_concurrent_host_access": null,
+        "source_test_blob": null,
+        "host_gc_zero_bytes_on_warm_snapshot": "NOT_EXECUTED",
+        "host_i128_test_executed": false
+      }
     },
     {
       "repo": "atto-lang/atto-source.llvm",
       "candidate_stage": "ACTOR_NATIVE_ARENA_HOST_SOURCE",
       "existing_pr": "https://github.com/atto-lang/atto-source.llvm/pull/742",
-      "observed_candidate_pr_head_sha": "139b2737ca266078a6b55a7da9b8cecaaee0f83f",
+      "observed_candidate_pr_head_sha": "4997241bfc5fa300e67b420da0ac0b306e608399",
       "actor_reference_abi_candidate": "offset8_plus_one",
       "control_reference_abi_candidate": "control_generation12_slot20_v1",
       "control_plane_source_status": "SOURCE_COMMITTED_NATIVE_HOST_TESTED_LOCAL",
@@ -195,12 +255,12 @@
         "gcc": "14.2.0 -std=c11 -O2 -Wall -Wextra -Werror -pedantic -pthread",
         "clang": "17.0.0 -std=c11 -O1 -g -fsanitize=address,undefined -pthread",
         "source_blobs": {
-          "ControlPlaneArena32.h": "ae2188f51a1659426dbd8c7e94bc6e672525dfde",
-          "ControlPlaneArena32.c": "ff66f2be47a50373e88b7d4e66b4d35f396bc0c5",
-          "control_plane_arena32_test.c": "e3dafa102cb0b3f08611c02111680ff1e66dcb24"
+          "ControlPlaneArena32.h": "3cef257d752b28c8031ca2b9a205b2b85222513a",
+          "ControlPlaneArena32.c": "1383ed7ab4607d62a3f7ad0a12761e61bc735dcd",
+          "control_plane_arena32_test.c": "aaf3582c2252c68bd456a6d66acbab06b73b0599"
         },
-        "gcc_binary_sha256": "42a4c594e2cd283e57cc557fa5403159fad4e541b6617ca29f347babf66e5d19",
-        "clang_sanitized_binary_sha256": "15ddee4d43c1a9ca5f3f541d82dc5d908d0cdcd986a728ed053d2a88fac51d8b",
+        "gcc_binary_sha256": "86a3ace444a0d2a560acd993923f942e82f8de3461eea3f70b0d5897c2107759",
+        "clang_sanitized_binary_sha256": "27b7585b8c9384bc683829a7922a5bf16a53b76dafc8f317c90a14a9687cd6a9",
         "positive_host_pass_marker": "PASS control-plane-ref32 llvm C11 native host 12 guarded scenarios; NO compiled Atto guest or zero-GC proof",
         "ci_on_current_head": "NOT_EXECUTED",
         "compiled_atto_guest": "NOT_EXECUTED",
@@ -209,13 +269,33 @@
           "iterations_per_thread": 1024,
           "passed": "PASS_LOCAL_HOST_SANITIZERS_ONLY",
           "source_guest_compilation": "NOT_EXECUTED"
+        },
+        "concurrent_i128_pair_test": {
+          "writer_iterations": 32768,
+          "reader_iterations": 32768,
+          "compiler_runs": {
+            "gcc_optimized": 1,
+            "clang_asan_ubsan": 1
+          },
+          "verdict": "PASS_LOCAL_HOST_ONLY",
+          "live_guest_compiled": false
         }
       },
       "host_control_codec_test": null,
       "runtime_native_root_integration": "NO_EXECUTED_RUNTIME_NATIVE_ROOT_INTEGRATION_IN_THIS_AUDIT",
       "runtime_root_native_reserved_bytes": null,
       "runtime_integration_executed_steps": 0,
-      "runtime_native_root_source_blobs": null
+      "runtime_native_root_source_blobs": null,
+      "control_i128": {
+        "status": "PASS_LOCAL_GCC_CLANG_HOST_ONLY",
+        "compiled_atto_guest": "NOT_EXECUTED",
+        "little_endian_low_64_hex": "0123456789abcdef",
+        "little_endian_high_64_hex": "fedcba9876543210",
+        "coherent_under_concurrent_host_access": true,
+        "source_test_blob": "aaf3582c2252c68bd456a6d66acbab06b73b0599",
+        "host_gc_zero_bytes_on_warm_snapshot": "NOT_APPLICABLE_NATIVE_HOST",
+        "host_i128_test_executed": true
+      }
     },
     {
       "repo": "atto-lang/atto-source.js",
@@ -245,7 +325,17 @@
       "runtime_native_root_integration": "NO_EXECUTED_RUNTIME_NATIVE_ROOT_INTEGRATION_IN_THIS_AUDIT",
       "runtime_root_native_reserved_bytes": null,
       "runtime_integration_executed_steps": 0,
-      "runtime_native_root_source_blobs": null
+      "runtime_native_root_source_blobs": null,
+      "control_i128": {
+        "status": "NOT_IMPLEMENTED_OR_UNVERIFIED",
+        "compiled_atto_guest": "NOT_EXECUTED",
+        "little_endian_low_64_hex": "0123456789abcdef",
+        "little_endian_high_64_hex": "fedcba9876543210",
+        "coherent_under_concurrent_host_access": null,
+        "source_test_blob": null,
+        "host_gc_zero_bytes_on_warm_snapshot": "NOT_EXECUTED",
+        "host_i128_test_executed": false
+      }
     },
     {
       "repo": "atto-lang/atto-source.forge",
@@ -279,7 +369,17 @@
       "runtime_native_root_integration": "NO_EXECUTED_RUNTIME_NATIVE_ROOT_INTEGRATION_IN_THIS_AUDIT",
       "runtime_root_native_reserved_bytes": null,
       "runtime_integration_executed_steps": 0,
-      "runtime_native_root_source_blobs": null
+      "runtime_native_root_source_blobs": null,
+      "control_i128": {
+        "status": "NOT_IMPLEMENTED_OR_UNVERIFIED",
+        "compiled_atto_guest": "NOT_EXECUTED",
+        "little_endian_low_64_hex": "0123456789abcdef",
+        "little_endian_high_64_hex": "fedcba9876543210",
+        "coherent_under_concurrent_host_access": null,
+        "source_test_blob": null,
+        "host_gc_zero_bytes_on_warm_snapshot": "NOT_EXECUTED",
+        "host_i128_test_executed": false
+      }
     },
     {
       "repo": "atto-lang/atto-source.wasm",
@@ -309,7 +409,17 @@
       "runtime_native_root_integration": "NO_EXECUTED_RUNTIME_NATIVE_ROOT_INTEGRATION_IN_THIS_AUDIT",
       "runtime_root_native_reserved_bytes": null,
       "runtime_integration_executed_steps": 0,
-      "runtime_native_root_source_blobs": null
+      "runtime_native_root_source_blobs": null,
+      "control_i128": {
+        "status": "NOT_IMPLEMENTED_OR_UNVERIFIED",
+        "compiled_atto_guest": "NOT_EXECUTED",
+        "little_endian_low_64_hex": "0123456789abcdef",
+        "little_endian_high_64_hex": "fedcba9876543210",
+        "coherent_under_concurrent_host_access": null,
+        "source_test_blob": null,
+        "host_gc_zero_bytes_on_warm_snapshot": "NOT_EXECUTED",
+        "host_i128_test_executed": false
+      }
     },
     {
       "repo": "atto-lang/atto-source.cranelift",
@@ -330,7 +440,17 @@
       "runtime_native_root_integration": "NO_EXECUTED_RUNTIME_NATIVE_ROOT_INTEGRATION_IN_THIS_AUDIT",
       "runtime_root_native_reserved_bytes": null,
       "runtime_integration_executed_steps": 0,
-      "runtime_native_root_source_blobs": null
+      "runtime_native_root_source_blobs": null,
+      "control_i128": {
+        "status": "NOT_IMPLEMENTED_OR_UNVERIFIED",
+        "compiled_atto_guest": "NOT_EXECUTED",
+        "little_endian_low_64_hex": "0123456789abcdef",
+        "little_endian_high_64_hex": "fedcba9876543210",
+        "coherent_under_concurrent_host_access": null,
+        "source_test_blob": null,
+        "host_gc_zero_bytes_on_warm_snapshot": "NOT_EXECUTED",
+        "host_i128_test_executed": false
+      }
     }
   ]
 }
