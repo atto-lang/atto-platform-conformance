@@ -191,6 +191,10 @@ test('experimental v2 guest checked-bang source never counts as proved backend p
     assert.ok(c.guest_fixtures.some(f=>f.includes('/'+id+'-v2-')));
   assert.equal(c.compiler_tests.length,2);
   assert.equal(c.guest_runner,'tests/node-v2-pipe-guest.mjs');
+  assert.equal(c.browser_runner,'tests/browser-e2e.mjs');
+  assert.equal(c.verified_browser_guest_execution,false);
+  assert.equal(c.verified_native_compiler_execution,false);
+  assert.ok(c.known_gaps.includes('current_draft_PR_has_unmerged_conflicts'));
   assert.equal(c.expected_guest_result,42);
   assert.equal(c.expected_guest_stdout,'40\n2\n');
   assert.ok(c.implementation.includes('pipe_bang_direct_two_actor_checked_Result'));
