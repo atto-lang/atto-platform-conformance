@@ -10,17 +10,18 @@
   "llvm": {
     "source_repo": "atto-lang/atto-source.llvm",
     "numeric_repo_id": 1448700962,
-    "head_sha": "1aad9e07303559b52fa00d103428531b8e2654ce",
-    "root_tree_sha": "b0fb1f0977b6cb7a521b23da24c644fb0d7966da",
+    "head_sha": "0afcc38cf6596bd3d0042475b143deda99ef40db",
+    "root_tree_sha": "3442696d0010e4ab038147fffc8a71f25379f256",
     "parser_blob_sha": "1cd0609027a92cb815269ade85c0dbba05073750",
-    "shell_contract_blob_sha": "ee525d3706249611b9bbb04eb7fdec6baa3db380",
-    "cmake_blob_sha": "4645272a4a5dc9c3ae60a88fbf98b4a842780ec1",
+    "shell_contract_blob_sha": "690e515c32bf14c45a91937255cc512a9162efda",
+    "cmake_blob_sha": "65fa5548805a05bbfb7d5a0b925a78a78d671c68",
     "changes": [
       "Return-first brace bodies route through the full native brace parser",
       "Inline and multiline begin/end plus bare return/end are admitted",
       "Nonvoid return-first compact bodies must contain explicit return",
       "Return-first headers do not consume a second :: body marker",
-      "Expanded CTest matrix checks class method admission and negative no-IR artifacts"
+      "Expanded CTest matrix checks class method admission and negative no-IR artifacts",
+      "Void-return host wrapper ABI asserted across 12 source spellings and four optimized forms; malformed void-value returns reject before IR emission"
     ],
     "declared_native_ctest_matrix": {
       "source_headers": 4,
@@ -30,7 +31,7 @@
       "class_method_separators": 2,
       "class_method_body_forms": 3,
       "class_method_check_cases": 18,
-      "negative_no_ir_cases": 8
+      "negative_no_ir_cases": 12
     },
     "executed_local_gate_checks": {
       "exact_git_blob_oid_verified": true,
@@ -41,53 +42,68 @@
         "empty_success",
         "always_failure"
       ],
-      "matrix_shape_static_review_pass": true
+      "matrix_shape_static_review_pass": true,
+      "negative_no_ir_matrix_size": 12
     },
     "not_executed": [
       "C++ Parser.cpp native compilation",
       "real oreslang-llvmc parser and wasm32 IR generation",
       "18 real compiler method checks",
-      "8 real compiler negative cases",
+      "12 real compiler negative cases",
       "llvm-as/opt verification",
       "generated .atto guest execution on LLVM or wasm32",
       "GCC/Clang and ASan/UBSan variant builds",
-      "Production oreslang-llvmc -> Clang -> native OS process at -O0/-O2"
+      "Production oreslang-llvmc -> Clang -> native OS process at -O0/-O2",
+      "12 real void guest executions at -O0 and four -O2"
     ],
     "certification": "SOURCE_FREE_HARNESS_EXECUTION_AND_SYNTAX_PASS_ONLY_REAL_NATIVE_COMPILER_NOT_EXECUTED",
-    "native_guest_script_blob_sha": "76f1a9374dfa5bd2055052a54b13513cf46493c7",
+    "native_guest_script_blob_sha": "fbf6d1f3239f280894f92b92fbdab6fecb6053d0",
     "native_guest_ctest_name": "native_return_first_host_guest_execution",
     "native_guest_ctest_scope": "Linux only, full LLVM build with CMake-discovered Clang, real source compiler required",
     "native_guest_declared_cases": {
       "return_first_marker_variants": 4,
-      "body_forms": 6,
+      "int_body_forms": 6,
       "expected_host_executable_exit_42": 24,
       "optimized_o2_executable_exit_42": 4,
+      "void_body_forms": 3,
+      "expected_host_void_executable_exit_0": 12,
+      "optimized_void_o2_executable_exit_0": 4,
       "source_mutation_executable_exit_43": 1
     },
     "native_guest_gate_executed_locally": {
       "kind": "SOURCE_FREE_STUB_COMPILER_PLUS_REAL_CLANG_17",
-      "script_verified_exact_git_blob": "76f1a9374dfa5bd2055052a54b13513cf46493c7",
+      "script_verified_exact_git_blob": "fbf6d1f3239f280894f92b92fbdab6fecb6053d0",
+      "parser_contract_verified_exact_git_blob": "690e515c32bf14c45a91937255cc512a9162efda",
       "posix_sh_syntax": "PASS",
       "bash_syntax": "PASS",
-      "working_stub": {
-        "actual_clang_linked_executable_runs": 29,
-        "expected_exit_42": 24,
-        "expected_optimized_exit_42": 4,
+      "working_mock": {
+        "actual_clang_linked_executable_runs": 45,
+        "int_expected_exit_42": 24,
+        "int_optimized_o2_exit_42": 4,
+        "void_expected_exit_0": 12,
+        "void_optimized_o2_exit_0": 4,
         "mutation_exit_43": 1,
+        "parser_positive_admissions": 24,
+        "parser_methods_checked": 18,
+        "parser_malformed_rejections_without_ir": 12,
         "verdict": "PASS"
       },
-      "malicious_stub_cases_correctly_rejected": [
-        "constant_42_ignores_source_mutation",
+      "malicious_mock_cases_correctly_rejected": [
+        "constant_42_ignores_void_contract",
         "wrong_main_symbol",
         "empty_success_ir",
-        "always_compiler_failure"
+        "always_compiler_failure",
+        "incorrect_void_status_7",
+        "parser_always_success_ir",
+        "parser_empty_success_ir",
+        "parser_always_failure"
       ],
       "real_oreslang_llvmc_compilation": "NOT_EXECUTED",
-      "reason": "Container has Clang 17 and CMake but no llvm-config or LLVM C++ developer headers; source CI current HEAD failed zero-step"
+      "reason": "Clang 17 present, but llvm-config and LLVM C++ development headers missing in local container; source Actions at other recent PR heads have zero-step failures. No authorized stepful private-source CI at exact head."
     }
   },
   "ci": {
-    "source_org": "Exact PR #818 HEAD Actions run 44959227638 and related jobs failed with 0 steps, runner_id=null, NOT_EXECUTED",
+    "source_org": "Current exact HEAD has no confirmed stepful workflow runs; recent source-org workflows fail before runner allocation (zero steps); cause unverified",
     "allowlist": {
       "source_file": ".github/private-ci-approved-repositories.txt",
       "blob_sha": "f8d40ccf870eb37c1ff4c22f6788c67cfc1b0dd8",
@@ -109,5 +125,5 @@
     "secrets_or_cross_org_checkout": "NONE",
     "security_review_issue": "https://github.com/atto-lang/atto-platform-conformance/issues/548"
   },
-  "assessment": "Full LLVM compiler + native guest gate is now checked in and its Clang exit-value/mutation harness is locally source-free tested, but source private CI and real compiler tests remain NOT_EXECUTED. Source-to-carrier export approval outstanding."
+  "assessment": "Expanded source-free parser/guest test gate proved with real Clang and a synthetic compiler only; actual production LLVM compiler, native/void guest tests and full CI remain NOT_EXECUTED. Private-source mirror requires independent approval and source allowlist change."
 }
