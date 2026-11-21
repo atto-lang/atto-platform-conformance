@@ -1,0 +1,182 @@
+{
+  "schema": "atto.source-repository-parity-audit.v1",
+  "captured_date_utc": "2026-11-21",
+  "status": "AUDIT_BASELINE_NO_GUEST_CERTIFICATION",
+  "purpose": "Enumerate all eleven canonical atto-lang/atto-source.* repositories; this is not an implementation, CI or guest parity assertion.",
+  "canonical_organization": "atto-lang",
+  "repository_count": 11,
+  "source_repositories": [
+    {
+      "repo": "atto-lang/atto-source.atto",
+      "branch": "main",
+      "observed_main_commit_sha": "5b9a274490a4567ed9d1088fd1ff304dbe383357",
+      "observed_sha_role": "historical-discovery-baseline-not-automatically-current",
+      "capability_profile": "UNASSESSED",
+      "guest_receipt_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
+      "source_required_ci_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
+      "verified_guest_receipts": []
+    },
+    {
+      "repo": "atto-lang/atto-source.net",
+      "branch": "main",
+      "observed_main_commit_sha": "5ed2444f3526b8b6685c7be0b038bbb8e6bc6f51",
+      "observed_sha_role": "historical-discovery-baseline-not-automatically-current",
+      "capability_profile": "UNASSESSED",
+      "guest_receipt_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
+      "source_required_ci_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
+      "verified_guest_receipts": []
+    },
+    {
+      "repo": "atto-lang/atto-source.hdl",
+      "branch": "main",
+      "observed_main_commit_sha": "023455e496bb9cfbdd157ccc94bb69f31eec44ea",
+      "observed_sha_role": "historical-discovery-baseline-not-automatically-current",
+      "capability_profile": "UNASSESSED",
+      "guest_receipt_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
+      "source_required_ci_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
+      "verified_guest_receipts": []
+    },
+    {
+      "repo": "atto-lang/atto-source.java",
+      "branch": "main",
+      "observed_main_commit_sha": "12ded133d89dafb21f48391e9aa3d5a7fb7f80f6",
+      "observed_sha_role": "historical-discovery-baseline-not-automatically-current",
+      "capability_profile": "UNASSESSED",
+      "guest_receipt_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
+      "source_required_ci_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
+      "verified_guest_receipts": []
+    },
+    {
+      "repo": "atto-lang/atto-source.realtime",
+      "branch": "main",
+      "observed_main_commit_sha": "4f6449470ab075cdad17884c7a1aee2a6e2ab54c",
+      "observed_sha_role": "historical-discovery-baseline-not-automatically-current",
+      "capability_profile": "UNASSESSED",
+      "guest_receipt_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
+      "source_required_ci_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
+      "verified_guest_receipts": []
+    },
+    {
+      "repo": "atto-lang/atto-source.rs",
+      "branch": "main",
+      "observed_main_commit_sha": "7f893323f761e4a71e4b2e199daf75845d8f1912",
+      "observed_sha_role": "historical-discovery-baseline-not-automatically-current",
+      "capability_profile": "UNASSESSED",
+      "guest_receipt_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
+      "source_required_ci_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
+      "verified_guest_receipts": []
+    },
+    {
+      "repo": "atto-lang/atto-source.llvm",
+      "branch": "main",
+      "observed_main_commit_sha": "fe4f253b5932f8f00ab4a20f9b9bc2019d17553b",
+      "observed_sha_role": "historical-discovery-baseline-not-automatically-current",
+      "capability_profile": "UNASSESSED",
+      "guest_receipt_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
+      "source_required_ci_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
+      "verified_guest_receipts": []
+    },
+    {
+      "repo": "atto-lang/atto-source.js",
+      "branch": "main",
+      "observed_main_commit_sha": "b8e48b19c33b61e5faa4628bf03bddf2823f403d",
+      "observed_sha_role": "historical-discovery-baseline-not-automatically-current",
+      "capability_profile": "UNASSESSED",
+      "guest_receipt_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
+      "source_required_ci_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
+      "verified_guest_receipts": []
+    },
+    {
+      "repo": "atto-lang/atto-source.forge",
+      "branch": "main",
+      "observed_main_commit_sha": "f5dd299c277376cabe9e536edbbb4e662a267ad4",
+      "observed_sha_role": "historical-discovery-baseline-not-automatically-current",
+      "capability_profile": "UNASSESSED",
+      "guest_receipt_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
+      "source_required_ci_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
+      "verified_guest_receipts": []
+    },
+    {
+      "repo": "atto-lang/atto-source.wasm",
+      "branch": "main",
+      "observed_main_commit_sha": "16ba74ab9f9959cc15d21dcb6e54a18e1c325fef",
+      "observed_sha_role": "historical-discovery-baseline-not-automatically-current",
+      "capability_profile": "UNASSESSED",
+      "guest_receipt_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
+      "source_required_ci_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
+      "verified_guest_receipts": []
+    },
+    {
+      "repo": "atto-lang/atto-source.cranelift",
+      "branch": "main",
+      "observed_main_commit_sha": "e867c0a5cf8b94f98ce9b1212d2c735b76bc4120",
+      "observed_sha_role": "historical-discovery-baseline-not-automatically-current",
+      "capability_profile": "UNASSESSED",
+      "guest_receipt_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
+      "source_required_ci_status": "NOT_VERIFIED_IN_THIS_REGISTRY",
+      "verified_guest_receipts": []
+    }
+  ],
+  "feature_families": [
+    {
+      "id": "explicit-lambda-delimiters",
+      "cross_backend_parity": "NOT_VERIFIED",
+      "applicability": "MUST_BE_ESTABLISHED_PER_BACKEND",
+      "certified_backends": []
+    },
+    {
+      "id": "try-catch-finally-dual-syntax",
+      "cross_backend_parity": "NOT_VERIFIED",
+      "applicability": "MUST_BE_ESTABLISHED_PER_BACKEND",
+      "certified_backends": []
+    },
+    {
+      "id": "maybe-option-result-control-flow",
+      "cross_backend_parity": "NOT_VERIFIED",
+      "applicability": "MUST_BE_ESTABLISHED_PER_BACKEND",
+      "certified_backends": []
+    },
+    {
+      "id": "ownership-bang-and-borrow-checking",
+      "cross_backend_parity": "NOT_VERIFIED",
+      "applicability": "MUST_BE_ESTABLISHED_PER_BACKEND",
+      "certified_backends": []
+    },
+    {
+      "id": "sealed-actor-state-and-critical-projections",
+      "cross_backend_parity": "NOT_VERIFIED",
+      "applicability": "MUST_BE_ESTABLISHED_PER_BACKEND",
+      "certified_backends": []
+    },
+    {
+      "id": "actor-groups-and-typed-pubsub",
+      "cross_backend_parity": "NOT_VERIFIED",
+      "applicability": "MUST_BE_ESTABLISHED_PER_BACKEND",
+      "certified_backends": []
+    },
+    {
+      "id": "scalar-value-blocks-ternary-ranges",
+      "cross_backend_parity": "NOT_VERIFIED",
+      "applicability": "MUST_BE_ESTABLISHED_PER_BACKEND",
+      "certified_backends": []
+    },
+    {
+      "id": "ref32-memory-and-generation-fencing",
+      "cross_backend_parity": "NOT_VERIFIED",
+      "applicability": "MUST_BE_ESTABLISHED_PER_BACKEND",
+      "certified_backends": []
+    }
+  ],
+  "legacy_source_evidence": "Separate legacy oreslang-source.* pins are historical; they do not certify atto-source.* current HEADs.",
+  "required_evidence_for_parity": [
+    "authenticated_exact_current_atto_source_head_and_tree",
+    "independent_source_or_merge_group_required_checks",
+    "genuinely_executed_compiler_or_aot_and_guest_steps",
+    "canonical_positive_and_negative_fixtures_with_phase_correct_diagnostics",
+    "runtime_output_artifact_hashes_and_independent_run_validation",
+    "explicit_unsupported_profile_compile_rejection_when_relevant",
+    "resolved_cross_repo_overlaps_and_git_protections"
+  ],
+  "certified_feature_backend_pairs": [],
+  "full_parity_certified": false
+}
