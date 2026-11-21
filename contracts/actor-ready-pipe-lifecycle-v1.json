@@ -75,68 +75,130 @@
       "repo": "atto-lang/atto-source.java",
       "guest_result": "NOT_EXECUTED",
       "artifact_identity": null,
-      "runner_receipt": null
+      "runner_receipt": null,
+      "frontend_contract_status": "NOT_VERIFIED",
+      "lifecycle_runtime_status": "NOT_EXECUTED",
+      "tracking_url": "https://github.com/atto-lang/atto-source.java/pull/402"
     },
     {
       "repo": "atto-lang/atto-source.llvm",
       "guest_result": "NOT_EXECUTED",
       "artifact_identity": null,
-      "runner_receipt": null
+      "runner_receipt": null,
+      "frontend_contract_status": "NOT_VERIFIED",
+      "lifecycle_runtime_status": "NOT_EXECUTED",
+      "tracking_url": "https://github.com/atto-lang/atto-source.llvm/pull/295"
     },
     {
       "repo": "atto-lang/atto-source.rs",
       "guest_result": "NOT_EXECUTED",
       "artifact_identity": null,
-      "runner_receipt": null
+      "runner_receipt": null,
+      "frontend_contract_status": "NOT_VERIFIED",
+      "lifecycle_runtime_status": "NOT_EXECUTED",
+      "tracking_url": "https://github.com/atto-lang/atto-source.rs/pull/25"
     },
     {
       "repo": "atto-lang/atto-source.wasm",
       "guest_result": "NOT_EXECUTED",
       "artifact_identity": null,
-      "runner_receipt": null
+      "runner_receipt": null,
+      "frontend_contract_status": "NOT_VERIFIED",
+      "lifecycle_runtime_status": "NOT_EXECUTED",
+      "tracking_url": "https://github.com/atto-lang/atto-source.wasm/pull/120"
     },
     {
       "repo": "atto-lang/atto-source.net",
       "guest_result": "NOT_EXECUTED",
       "artifact_identity": null,
-      "runner_receipt": null
+      "runner_receipt": null,
+      "frontend_contract_status": "NOT_VERIFIED",
+      "lifecycle_runtime_status": "NOT_EXECUTED",
+      "tracking_url": "https://github.com/atto-lang/atto-source.net/pull/25"
     },
     {
       "repo": "atto-lang/atto-source.forge",
       "guest_result": "NOT_EXECUTED",
       "artifact_identity": null,
-      "runner_receipt": null
+      "runner_receipt": null,
+      "frontend_contract_status": "NOT_VERIFIED",
+      "lifecycle_runtime_status": "NOT_EXECUTED",
+      "tracking_url": "https://github.com/atto-lang/atto-source.forge/pull/171"
     },
     {
       "repo": "atto-lang/atto-source.cranelift",
       "guest_result": "NOT_EXECUTED",
       "artifact_identity": null,
-      "runner_receipt": null
+      "runner_receipt": null,
+      "frontend_contract_status": "NOT_VERIFIED",
+      "lifecycle_runtime_status": "NOT_EXECUTED",
+      "tracking_url": "https://github.com/atto-lang/atto-source.cranelift/issues/62"
     },
     {
       "repo": "atto-lang/atto-source.js",
       "guest_result": "NOT_EXECUTED",
       "artifact_identity": null,
-      "runner_receipt": null
+      "runner_receipt": null,
+      "frontend_contract_status": "NOT_VERIFIED",
+      "lifecycle_runtime_status": "NOT_EXECUTED",
+      "tracking_url": "https://github.com/atto-lang/atto-source.js/pull/31"
     },
     {
       "repo": "atto-lang/atto-source.atto",
       "guest_result": "NOT_EXECUTED",
       "artifact_identity": null,
-      "runner_receipt": null
+      "runner_receipt": null,
+      "frontend_contract_status": "NOT_VERIFIED",
+      "lifecycle_runtime_status": "NOT_EXECUTED",
+      "tracking_url": "https://github.com/atto-lang/atto-source.atto/issues/3"
     },
     {
       "repo": "atto-lang/atto-source.hdl",
       "guest_result": "NOT_EXECUTED",
       "artifact_identity": null,
-      "runner_receipt": null
+      "runner_receipt": null,
+      "frontend_contract_status": "NOT_VERIFIED",
+      "lifecycle_runtime_status": "NOT_EXECUTED",
+      "tracking_url": "https://github.com/atto-lang/atto-source.hdl/issues/15"
     },
     {
       "repo": "atto-lang/atto-source.realtime",
       "guest_result": "NOT_EXECUTED",
       "artifact_identity": null,
-      "runner_receipt": null
+      "runner_receipt": null,
+      "frontend_contract_status": "NOT_VERIFIED",
+      "lifecycle_runtime_status": "NOT_EXECUTED",
+      "tracking_url": "https://github.com/atto-lang/atto-source.realtime/issues/8"
     }
   ],
-  "no_claim_of_cross_backend_parity": true
+  "no_claim_of_cross_backend_parity": true,
+  "compiler_frontend_contract": {
+    "grammar": [
+      "actor_ref.get_ready()",
+      "actor_ref.get_done()",
+      "await actor_ref.get_ready()",
+      "await actor_ref.get_done()",
+      "source pipe! sink",
+      "sink rpipe! source",
+      "stop! actor_ref"
+    ],
+    "type_rules": [
+      "get_ready_get_done_are_methods_not_fields",
+      "get_ready_returns_non_cancelling_future_void",
+      "get_done_returns_quiescent_future_void",
+      "no_synthesized_implicit_ready_wait_for_pipes",
+      "pipe_aliases_contextual_not_global_identifier_renames"
+    ],
+    "unsupported_policy": "stable typed diagnostic before any guest artifact, never a successful no-op",
+    "promotion_requires": [
+      "real_parser_and_typecheck",
+      "source_to_guest_emission",
+      "guest_runtime_execution",
+      "negative_no_artifact",
+      "exact_head_git_tree_and_blobs",
+      "nonzero_ci_steps"
+    ],
+    "public_preview": "https://github.com/atto-lang/atto-lang.github.io/pull/196",
+    "runnable_preview_status": "NOT_EXECUTED"
+  }
 }
