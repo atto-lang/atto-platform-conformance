@@ -16,7 +16,10 @@
     "canonicalize": "Singleton braced field group normalizes to self.state.field; no square-bracket variant",
     "receiverBinding": "Any legal named receiver binds its actor instance; self is conventional, not a mandatory alias. Renaming all bound body references preserves dispatch ABI and state write footprint.",
     "alphaEquivalence": "Foo mut self.state.{counter,xyz} and Foo mut this.state.{counter,xyz} have equal typed write-set identity; receiver naming alone cannot overload a method.",
-    "receiverScope": "The guard binder must be distinct from receiver name; receiver name cannot collide with formals or be shadowed; mistaken self references are unbound after renaming."
+    "receiverScope": "The guard binder must be distinct from receiver name; receiver name cannot collide with formals or be shadowed; mistaken self references are unbound after renaming.",
+    "nestedArgumentGate": "Member-call argument expressions are recursively inspected at source preflight: send(receiver.state.x) cannot hide a direct state access.",
+    "mutationGate": "Critical state writes detect direct, prefix ++/--, and split compound assignments. Nested/indexed fields and unknown field calls fail closed pending typed effect proofs.",
+    "artifactGate": "Rust native attoc negative compilation must produce the expected diagnostic with nonzero exit and no .wasm output; compiled actor guest parity is still NOT_EXECUTED."
   },
   "targets": [
     "rs",
@@ -338,6 +341,135 @@
       "diagnosticClass": "E_SYNTAX",
       "sourceUnits": {
         "src/worker.atto": "declare actor Foo;\nmtd (Foo actor) f(): void {}\n"
+      },
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "nested_send_direct_state",
+      "stage": "target_parser",
+      "expect": "reject",
+      "diagnosticClass": "E_SEALED",
+      "sourceUnits": {
+        "src/worker.atto": "declare actor Foo;\nmtd (Foo this) f(): void { this.send(this.state.counter); }\n"
+      },
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "nested_send_unknown_method",
+      "stage": "target_parser",
+      "expect": "reject",
+      "diagnosticClass": "E_UNBOUND",
+      "sourceUnits": {
+        "src/worker.atto": "declare actor Foo;\nmtd (Foo this) f(): void { this.send(this.missing()); }\n"
+      },
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "nested_send_receiver_escape",
+      "stage": "target_parser",
+      "expect": "reject",
+      "diagnosticClass": "E_ESCAPE",
+      "sourceUnits": {
+        "src/worker.atto": "declare actor Foo;\nmtd (Foo this) f(): void { this.send(this); }\n"
+      },
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "return_receiver_escape",
+      "stage": "target_parser",
+      "expect": "reject",
+      "diagnosticClass": "E_ESCAPE",
+      "sourceUnits": {
+        "src/worker.atto": "declare actor Foo;\nmtd (Foo this) f(): Foo { return this; }\n"
+      },
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "nested_send_guard_exceeds_write_set",
+      "stage": "target_parser",
+      "expect": "reject",
+      "diagnosticClass": "E_MUTABILITY",
+      "sourceUnits": {
+        "src/worker.atto": "declare actor Foo;\nmtd (Foo mut this.state.counter) f(): void { this.send(this.handle_state(critical-write |s| -> { s.other = 1; })); }\n"
+      },
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "critical_write_nested_field",
+      "stage": "target_parser",
+      "expect": "reject",
+      "diagnosticClass": "E_UNSUPPORTED",
+      "sourceUnits": {
+        "src/worker.atto": "declare actor Foo;\nmtd (Foo mut this.state.counter) f(): void { this.handle_state(critical-write |s| -> { s.other.inner = 1; }); }\n"
+      },
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "critical_write_indexed_field",
+      "stage": "target_parser",
+      "expect": "reject",
+      "diagnosticClass": "E_UNSUPPORTED",
+      "sourceUnits": {
+        "src/worker.atto": "declare actor Foo;\nmtd (Foo mut this.state.counter) f(): void { this.handle_state(critical-write |s| -> { s.other[0] = 1; }); }\n"
+      },
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "critical_write_field_call",
+      "stage": "target_parser",
+      "expect": "reject",
+      "diagnosticClass": "E_UNSUPPORTED",
+      "sourceUnits": {
+        "src/worker.atto": "declare actor Foo;\nmtd (Foo mut this.state.counter) f(): void { this.handle_state(critical-write |s| -> { s.other.method(); }); }\n"
+      },
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "discarded_receiver_use",
+      "stage": "target_parser",
+      "expect": "reject",
+      "diagnosticClass": "E_UNBOUND",
+      "sourceUnits": {
+        "src/worker.atto": "declare actor Foo;\nmtd (Foo _) f(): void { _.send(42); }\n"
+      },
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "critical_read_prefix_mutation",
+      "stage": "target_parser",
+      "expect": "reject",
+      "diagnosticClass": "E_READONLY",
+      "sourceUnits": {
+        "src/worker.atto": "declare actor Foo;\nmtd (Foo this) f(): void { this.handle_state(critical-read |s| -> { ++s.counter; }); }\n"
+      },
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "critical_read_split_compound_mutation",
+      "stage": "target_parser",
+      "expect": "reject",
+      "diagnosticClass": "E_READONLY",
+      "sourceUnits": {
+        "src/worker.atto": "declare actor Foo;\nmtd (Foo this) f(): void { this.handle_state(critical-read |s| -> { s.counter -= 1; }); }\n"
+      },
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "critical_write_prefix_outside_projection",
+      "stage": "target_parser",
+      "expect": "reject",
+      "diagnosticClass": "E_MUTABILITY",
+      "sourceUnits": {
+        "src/worker.atto": "declare actor Foo;\nmtd (Foo mut this.state.counter) f(): void { this.handle_state(critical-write |s| -> { ++s.other; }); }\n"
+      },
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "nested_control_calls_safe_syntax",
+      "stage": "target_parser",
+      "expect": "accept_ast_only",
+      "sourceUnits": {
+        "src/worker.atto": "declare actor Foo;\nmtd (Foo this) foo(): int { return 41; }\nmtd (Foo this) bar(): void { this.send(this.foo()); this.send(this.send(42)); }\n"
       },
       "evidence": "NOT_EXECUTED"
     }
