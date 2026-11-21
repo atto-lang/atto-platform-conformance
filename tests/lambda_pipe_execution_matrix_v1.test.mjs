@@ -53,7 +53,7 @@ test('bounded canonical lambda fixtures enforce arity, typed forms and fail-clos
   assert.match(byId['local-name-first'].source, /\|x: int\| : int -> x \+ 1/);
   assert.match(byId['module-typed-discard'].source, /^const fnc v = \|int _\|/);
   assert.match(byId['missing-pipes-discard'].source, /const fnc v = _ : int -> 5/);
-  assert.match(byId['module-abi-untyped'].source, /^const fnc v = \\|_\\|/);
-  assert.match(byId['anonymous-fnc-unpiped'].source, /val v = fnc\\(int x\\) -> x \\+ 1/);
-  assert.match(byId['parenthesized-lambda-unpiped'].source, /val v = \\(int x\\) -> x \\+ 1/);
+  assert.match(byId['module-abi-untyped'].source, /^const fnc v = \|_\|/);
+  assert.match(byId['anonymous-fnc-unpiped'].source, /val v = fnc\(int x\) -> x \+ 1/);
+  assert.match(byId['parenthesized-lambda-unpiped'].source, /val v = \(int x\) -> x \+ 1/);
 });
