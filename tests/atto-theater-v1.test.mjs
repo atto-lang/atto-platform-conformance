@@ -130,6 +130,10 @@ test('contract cannot remove mandatory evidence requirements',()=>{
 test('mandatory ensemble share! and typed try_publish cases cannot be deleted or downgraded',()=>{
   assert.equal(contract.cases.length,28);
   assert.equal(contract.ensemblePublication.source,'val receipt = topic.try_publish(share! event)?');
+  assert.equal(contract.ensemblePublication.aliasedReceiverSource,
+    'val receipt = local_topic.try_publish(share! event)?');
+  assert.equal(contract.ensemblePublication.unsupportedAliasDisposition,
+    'reject-before-guest-artifact-until-typed-receiver-ownership-and-result-lowering');
   assert.equal(contract.ensemblePublication.legacyOperand,'rt share event');
   assert.equal(contract.ensemblePublication.targetStatus,'NOT_EXECUTED');
   for(const id of [
@@ -145,6 +149,12 @@ test('mandatory ensemble share! and typed try_publish cases cannot be deleted or
   const aliasChanged=structuredClone(contract);
   aliasChanged.ensemblePublication.source='val receipt = topic.publish(rt share event)';
   assert.ok(validateTheaterContract(aliasChanged).length>0);
+  const aliasBypass=structuredClone(contract);
+  aliasBypass.ensemblePublication.aliasedReceiverSource='val receipt = topic_alias.publish(event)';
+  assert.ok(validateTheaterContract(aliasBypass).length>0);
+  const forgedSupport=structuredClone(contract);
+  forgedSupport.ensemblePublication.unsupportedAliasDisposition='allow-host-fallback';
+  assert.ok(validateTheaterContract(forgedSupport).length>0);
 });
 test('existing guest receipt candidates cannot pass with only the earlier twenty cases',()=>{
   const oldCaseReceipt=candidate();

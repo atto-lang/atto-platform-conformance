@@ -222,6 +222,8 @@
     "ownership": "Once-only operand evaluation; copyable immutable Share proof; no false move, credit or sequence consumption on rejected admission",
     "queue": "Dedicated Subscription<T>.next()/try_read(), never implicit DATA injection",
     "receiptVersion": "atto.theater-guest-receipt/1",
-    "targetStatus": "NOT_EXECUTED"
+    "targetStatus": "NOT_EXECUTED",
+    "aliasedReceiverSource": "val receipt = local_topic.try_publish(share! event)?",
+    "unsupportedAliasDisposition": "reject-before-guest-artifact-until-typed-receiver-ownership-and-result-lowering"
   }
 }

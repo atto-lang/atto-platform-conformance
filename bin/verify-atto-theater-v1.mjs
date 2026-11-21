@@ -67,6 +67,10 @@ export function validateTheaterContract(c) {
     errors.push('bootstrap scope mismatch');
   if (!isPlainObject(c.ensemblePublication) ||
       c.ensemblePublication.source !== 'val receipt = topic.try_publish(share! event)?' ||
+      c.ensemblePublication.aliasedReceiverSource !==
+        'val receipt = local_topic.try_publish(share! event)?' ||
+      c.ensemblePublication.unsupportedAliasDisposition !==
+        'reject-before-guest-artifact-until-typed-receiver-ownership-and-result-lowering' ||
       c.ensemblePublication.legacyOperand !== 'rt share event' ||
       c.ensemblePublication.typing !== 'Result<PublishReceipt, PublishError>' ||
       c.ensemblePublication.resultQuestionScope !==
