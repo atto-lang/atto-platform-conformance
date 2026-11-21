@@ -200,5 +200,38 @@
     ],
     "public_preview": "https://github.com/atto-lang/atto-lang.github.io/pull/196",
     "runnable_preview_status": "NOT_EXECUTED"
-  }
+  },
+  "candidate_subsets": [
+    {
+      "repository": "atto-lang/atto-source.rs",
+      "source_head_sha": "894156e686316a931f5eada4bf02b2529f538fc7",
+      "status": "STAGED_UNVERIFIED",
+      "scope": "terminal-only await actor.get_ready() in void main; distinct actor_ready Wasm guest import; browser host waits real child READY",
+      "excludes": [
+        "nonterminal async frames",
+        "await spawn",
+        "typed pipe!/rpipe! transport",
+        "general Future expressions",
+        "all-backend parity"
+      ],
+      "tests": [
+        "tests/actor_ready_source_gate.rs",
+        "tests/browser-e2e.mjs",
+        "tests/browser/actor-lifecycle.mjs",
+        "tests/browser/actor-worker.mjs"
+      ],
+      "private_mirror": {
+        "repository": "benefactor-cc/atto-ci",
+        "branch": "ci/atto-actor-ready-terminal-3658660c-20261120",
+        "mirror_commit_sha": "322ee557e3dddb8bcb7128c2d6fed06c61946c10",
+        "mirror_tree_sha": "6ff63feda42127ac68612a263ba458c2a70b6c00",
+        "source_blob_matches": 17,
+        "source_blob_mismatches": 0,
+        "github_actions_run": "https://github.com/benefactor-cc/atto-ci/actions/runs/44857005128",
+        "runner_allocated": false,
+        "steps_executed": 0,
+        "test_status": "NOT_EXECUTED"
+      }
+    }
+  ]
 }
