@@ -505,6 +505,72 @@
         "hdl": "NOT_EXECUTED",
         "realtime": "NOT_EXECUTED"
       }
+    },
+    {
+      "id": "P12_triggered_builtin_error_recover",
+      "path": "fixtures/return-first-separators-v1/P12-builtin-error-recover-triggered.atto",
+      "git_blob_sha": "6b20ee69eb6c36277d0d6e483158552cab39f3e5",
+      "kind": "positive",
+      "expect": "exit",
+      "value": 42,
+      "negative_no_artifact": false,
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "P13_triggered_builtin_error_bypasses_catch",
+      "path": "fixtures/return-first-separators-v1/P13-builtin-error-bypasses-catch.atto",
+      "git_blob_sha": "bb263656373e5600f1be4d580d6558202fea1679",
+      "kind": "positive",
+      "expect": "exit",
+      "value": 42,
+      "negative_no_artifact": false,
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "N12_raise_not_covered_by_throws",
+      "path": "fixtures/return-first-separators-v1/N12-raise-not-covered-by-throws.atto",
+      "git_blob_sha": "15e624731d2f3fdbcd99dd6476a0032e2abcdcbf",
+      "kind": "negative",
+      "expect": "diagnostic",
+      "value": "E_EFFECT",
+      "negative_no_artifact": true,
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
     }
   ],
   "backends": {
