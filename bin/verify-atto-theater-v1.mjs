@@ -14,6 +14,24 @@ export const CASE_IDS = Object.freeze([
   'ensemble-teardown-no-reentrant-lock','runtime-mailbox-admission',
   'runtime-control-data-separation','theater-app-lifecycle','theater-no-leaked-tickets'
 ]);
+const NEGATIVE_CASES = new Set([
+  'director-intensity-quarantine','director-panic-control-only','director-startup-rollback',
+  'director-generation-fence','ensemble-membership-is-not-subscription',
+  'ensemble-cross-group-isolation','ensemble-bounded-backpressure',
+  'ensemble-revoke-unsubscribe','ensemble-group-retirement',
+  'ensemble-teardown-no-reentrant-lock','runtime-control-data-separation',
+  'theater-no-leaked-tickets'
+]);
+const REQUIRED_EVIDENCE = [
+  'exact-compiler-head-and-tree','same-source-guest-fixtures',
+  'successful-nonzero-step-job','compiler-generated-guest-artifact',
+  'actual-guest-execution','positive-and-negative-case-assertions',
+  'independent-provenance-validation'
+];
+const DISALLOWED_EVIDENCE = [
+  'host-model-only','parser-only','interpreter-image-standing-in-for-guest-AOT',
+  'zero-step-actions','self-attested-pass-without-verified-GitHub-job'
+];
 const sha40 = /^[0-9a-f]{40}$/;
 const sha64 = /^[0-9a-f]{64}$/;
 const isPlainObject = x => x !== null && typeof x === 'object' && !Array.isArray(x) &&
@@ -27,16 +45,17 @@ export function validateTheaterContract(c) {
       BACKENDS.some(b=>c.backends[b] !== `atto-lang/atto-source.${b}`)) errors.push('backend registry mismatch');
   if (!Array.isArray(c.cases) || c.cases.length !== CASE_IDS.length ||
       c.cases.some((x,i)=>!isPlainObject(x) || x.id !== CASE_IDS[i] ||
-      !['director','ensemble','runtime','theater'].includes(x.subsystem) ||
-      !['positive','negative'].includes(x.kind) || typeof x.assertion !== 'string' || x.assertion.length < 10))
+      x.subsystem !== (i<8?'director':i<16?'ensemble':i<18?'runtime':'theater') ||
+      x.kind !== (NEGATIVE_CASES.has(x.id)?'negative':'positive') ||
+      typeof x.assertion !== 'string' || x.assertion.length < 10))
     errors.push('canonical case registry mismatch or downgrade');
   if (!Array.isArray(c.bootstrapOnlyAtStart) || c.bootstrapOnlyAtStart.join(',') !== 'atto,realtime')
     errors.push('bootstrap scope mismatch');
   if (c.evidence !== 'compiled-atto-guest-required' || !isPlainObject(c.platform) ||
       ['theater','director','ensemble','runtime'].some(k=>typeof c.platform[k] !== 'string' || c.platform[k].length < 5))
     errors.push('platform layer identity mismatch');
-  if (!Array.isArray(c.requiredEvidence) || !c.requiredEvidence.includes('independent-provenance-validation') ||
-      !Array.isArray(c.disallowedEvidence) || !c.disallowedEvidence.includes('self-attested-pass-without-verified-GitHub-job'))
+  if (!Array.isArray(c.requiredEvidence) || c.requiredEvidence.join(',') !== REQUIRED_EVIDENCE.join(',') ||
+      !Array.isArray(c.disallowedEvidence) || c.disallowedEvidence.join(',') !== DISALLOWED_EVIDENCE.join(','))
     errors.push('evidence gate weakened');
   return errors;
 }
@@ -45,6 +64,7 @@ export function validateTheaterContract(c) {
 // Caller must independently fetch GitHub Actions job/run, source blobs and target output.
 export function validateGuestReceipt(receipt, contract) {
   const errors=validateTheaterContract(contract);
+  if (errors.length) return {status:'rejected',errors};
   const fail=(condition,reason)=>{if(!condition)errors.push(reason);};
   if (!isPlainObject(receipt)) return {status:'rejected',errors:[...errors,'receipt must be a plain object']};
   fail(receipt.schema==='atto.theater-guest-receipt/1','receipt schema invalid');
