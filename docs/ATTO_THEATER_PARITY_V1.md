@@ -81,3 +81,29 @@ Do not silently classify any of these eleven as `PASS`, `IMPLEMENTED`, or `CERTI
 - [Atto pubsub spec #198](https://github.com/atto-lang/atto-spec/pull/198) now enumerates all eleven backends rather than six. None has been promoted to backend-verified.
 
 These changes reduce accidental unsupported guest acceptance, **not** implement `Topic<T>.try_publish` on .NET or Wasm. Their source heads are recorded in the inventory snapshot; the `mainSha` fields remain unchanged because the changes are in draft PRs.
+
+### 2026-11-21 canonical Ensemble alias-only source identity
+
+A single **byte-identical** negative .atto fixture now exercises the alias-only
+`imported_topic.try_publish(share! event)?` path across compiler drafts.
+The source originated in LLVM pub/sub PR #575; it deliberately omits
+`actor.group(...)` and `Topic<T>` declarations, so only recognizing those
+declaration patterns would silently miss it.
+
+- Git blob **`c562ad380bb283da9ffa26160653c1186ab63462`**; path in this
+  repository: `fixtures/atto-ensemble-v1/canonical-unlowered-try-publish.atto`.
+- Identical blobs in .NET PR #200, Wasm PR #265, JavaScript PR #31, HDL PR #20,
+  and LLVM PR #575. Source identity tests are pinned into the corresponding
+  draft test suites. No private source has been exported to another organization.
+- JavaScript and HDL now explicitly deny aliased `.try_publish` **before**
+  generated JS or SystemVerilog emission; .NET and Wasm reuse their already
+  existing actor-pubsub source-admission gates. String/comment-only mentions
+  must not be mistaken for a capability call.
+- These are compiler-negative/fail-closed **partial parity improvements**, not
+  functioning topic publication, RELIABLE fanout, supervised actor execution,
+  28-case guest conformance, or evidence of a stepful GitHub Actions job.
+
+Never infer passing guest parity from the canonical fixture's Git SHA or
+this source-only contract. On implemented targets the legitimate typed
+`Result<PublishReceipt, PublishError>` form should eventually compile and run,
+and on unsupported targets the compiler must reject it with a typed diagnostic.
