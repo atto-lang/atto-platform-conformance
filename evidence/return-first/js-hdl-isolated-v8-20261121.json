@@ -8,13 +8,13 @@
   },
   "javascript": {
     "repo": "atto-lang/atto-source.js",
-    "head_sha": "4516f9f5ed0477a08971d6e02c29d4b397438f38",
-    "root_tree_sha": "c635a8cd9c915e342b8f8377d39a42f29fbe1955",
-    "program_v2_blob_sha": "53b94be038a54677d1a2230a2ac41f4f9573854c",
-    "program_ir_v2_blob_sha": "4958ed0bfe19b1eaa87773af5627cb0a986ded9a",
-    "test_blob_sha": "1543a6a1ddaf65cbc212d6b9a7e495d96313d9fd",
+    "head_sha": "a80b241a975a2d8d7e2da55eaa1c388d37f90690",
+    "root_tree_sha": "634bcb6d9c6a1ac7f2dacc4a66fcdba8750a8b11",
+    "program_v2_blob_sha": "a531a6b8f40537116e04521fdd273e7995462c44",
+    "program_ir_v2_blob_sha": "10f152458e72cb6065936022a24e0f7b1ff97798",
+    "test_blob_sha": "011280d85d36012be8cc2607c490e2d34d1f202b",
     "scope": "ISOLATED_V8_REAL_COMPILER_GENERATED_ESM_EXECUTION_NOT_NODE_CI",
-    "regression_test_groups_passed": 16,
+    "regression_test_groups_passed": 17,
     "regression_test_groups_failed": 0,
     "canonical_guest_cases_passed": 24,
     "canonical_pass_case_ids": [
@@ -57,9 +57,36 @@
       "mtd_return_first_bare_end"
     ],
     "limitations": [
-      "Canonical backend-specific E_* diagnostic parity remains unverified; all six negative cases were rejected without artifact.",
       "Actual compiler source and generated ESM ran inside adapted V8 harness; ES module imports and exports were bound for invocation, with compatible UTF-8 byte-count shim; full Node.js CI was not run.",
-      "No native actor/mtd/effect certification or 11-backend parity claim."
+      "No native actor/mtd/effect certification or 11-backend parity claim.",
+      "All six canonical negative fixtures expose exact E_* codes in this JS backend; other backends have not been certified at this revision."
+    ],
+    "canonical_negative_code_verified_count": 6,
+    "canonical_negative_errors": [
+      {
+        "id": "duplicate_return_type",
+        "code": "E_RETURN_ANNOTATION"
+      },
+      {
+        "id": "split_left_arrow",
+        "code": "E_TOPLEVEL"
+      },
+      {
+        "id": "missing_end",
+        "code": "E_EOF"
+      },
+      {
+        "id": "nonvoid_empty_begin",
+        "code": "E_RETURN"
+      },
+      {
+        "id": "nonvoid_empty_bare_end",
+        "code": "E_RETURN"
+      },
+      {
+        "id": "duplicate_spelling",
+        "code": "E_DUPLICATE"
+      }
     ]
   },
   "hdl": {
@@ -81,7 +108,13 @@
     "hdl": "NOT_EXECUTED_ZERO_STEP",
     "alternate_public_source_canary": "STEPFUL_RUN_44952055501_SOURCE_FREE_ONLY",
     "private_source_mirror": "DENIED_PENDING_INDEPENDENT_EXACT_SOURCE_CARRIER_APPROVAL",
-    "approval_issue": "https://github.com/atto-lang/atto-platform-conformance/issues/548"
+    "approval_issue": "https://github.com/atto-lang/atto-platform-conformance/issues/548",
+    "javascript_zero_step_runs": [
+      44954635987,
+      44954636015,
+      44954635977
+    ],
+    "source_org_billing_root_cause": "UNDETERMINED_ZERO_RUNNER_STEPS"
   },
   "certification": "SOURCE_ISOLATED_SUPPLEMENT_ONLY_NOT_RELEASE_OR_COMPILER_PARITY"
 }
