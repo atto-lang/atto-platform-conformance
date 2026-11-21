@@ -199,3 +199,94 @@ test("keyword try owns separate end from nested maybe in candidate guest fixture
     assert.ok(contract.cases.some(item => item.id === id && item.outcome === "NOT_EXECUTED"));
   }
 });
+
+test("first failed match preserves exact failure object and skips unreached defer", () => {
+  const failure = Err({ code: 17 }, "DomainError");
+  let later = 0;
+  const r = runReference({
+    steps: [
+      {
+        successTags: ["Ok"], failureTags: ["Err"],
+        run(trace, registerBody) {
+          trace.push("first");
+          registerBody("reached-defer");
+          return failure;
+        },
+      },
+      {
+        successTags: ["Ok"], failureTags: ["Err"],
+        run(trace, registerBody) {
+          later += 1;
+          registerBody("UNREACHED-defer");
+          trace.push("UNREACHED-step");
+          return Ok(1);
+        },
+      },
+    ],
+    handlers: ["Err"],
+    onSuccess: () => { throw Error("unexpected success"); },
+    onFailure: value => value,
+  });
+  assert.equal(r.result, failure);
+  assert.equal(later, 0);
+  assert.deepEqual(r.trace, ["first", "reached-defer", "else:Err"]);
+});
+test("successful body unwinds body-local defer before function cleanup", () => {
+  const r = runReference({
+    steps: [{
+      successTags: ["Ok"], failureTags: ["Err"],
+      run(trace, registerBody) {
+        registerBody("body:first");
+        registerBody("body:second");
+        trace.push("run");
+        return Ok(7);
+      },
+    }],
+    handlers: ["Err"],
+    register: ["function:first", "function:second"],
+    onSuccess: trace => { trace.push("value-ready"); return Ok(7); },
+    onFailure: () => { throw Error("else must not run"); },
+  });
+  assert.deepEqual(r.trace, [
+    "run", "bind:Ok", "value-ready",
+    "body:second", "body:first", "function:second", "function:first",
+  ]);
+});
+test("throw from failure handler still runs handler defer then function defer", () => {
+  const trace = [];
+  assert.throws(() => runReference({
+    trace,
+    steps: [{
+      successTags: ["Ok"], failureTags: ["Err"],
+      run(trace, registerBody) {
+        registerBody("body");
+        trace.push("run");
+        return Err("failed");
+      },
+    }],
+    handlers: ["Err"],
+    register: ["function"],
+    onSuccess: () => { throw Error("must fail"); },
+    onFailure: (_failure, trace, registerHandler) => {
+      trace.push("handler");
+      registerHandler("handler-defer");
+      throw new TypeError("handler throw");
+    },
+  }), TypeError);
+  assert.deepEqual(trace, [
+    "run", "body", "else:Err", "handler", "handler-defer", "function",
+  ]);
+});
+test("missing failure handler rejects before evaluation or registering cleanup", () => {
+  let invoked = 0;
+  const subject = [{
+    successTags: ["Some"], failureTags: ["None"],
+    run() { invoked += 1; return None(); },
+  }];
+  assert.throws(() => runReference({
+    steps: subject, handlers: ["Err"],
+    register: ["function"],
+    onSuccess: () => Some(1), onFailure: value => value,
+  }), /nonexhaustive/);
+  assert.equal(invoked, 0);
+});
