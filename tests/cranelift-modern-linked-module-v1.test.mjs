@@ -47,21 +47,22 @@ test("modern linked-module corpus is strictly source-only", () => {
   assert.equal(corpus.backend_evidence.cranelift, "NOT_EXECUTED_UNSUPPORTED_ON_MAIN");
   for (const value of Object.values(corpus.backend_evidence))
     assert.ok(value.startsWith("NOT_EXECUTED"), "fake backend PASS");
-  assert.equal(corpus.cases.length, 8);
-  assert.equal(new Set(corpus.cases.map(c => c.id)).size, 8);
-  assert.equal(corpus.cases.filter(c => c.expect === "PASS").length, 3);
-  assert.equal(corpus.cases.filter(c => c.expect === "REJECT").length, 5);
+  assert.equal(corpus.cases.length, 17);
+  assert.equal(new Set(corpus.cases.map(c => c.id)).size, 17);
+  assert.equal(corpus.cases.filter(c => c.expect === "PASS").length, 6);
+  assert.equal(corpus.cases.filter(c => c.expect === "REJECT").length, 8);
+  assert.equal(corpus.cases.filter(c => c.expect === "PANIC").length, 3);
   for (const c of corpus.cases) {
     assert.equal(c.status, "NOT_EXECUTED");
     assert.equal(c.git_blob_sha, corpus.source_blobs[c.entry]);
-    assert.ok(["PASS", "REJECT"].includes(c.expect));
+    assert.ok(["PASS", "REJECT", "PANIC"].includes(c.expect));
     if (c.expect === "PASS") assert.equal(c.expect_stdout, "42\n");
     else assert.equal(c.expect_stdout, null);
   }
 });
 
 test("every exact Git blob is accounted for and rooted under the project", async () => {
-  assert.equal(Object.keys(corpus.source_blobs).length, 10);
+  assert.equal(Object.keys(corpus.source_blobs).length, 19);
   for (const name of Object.keys(corpus.source_blobs)) {
     assert.match(corpus.source_blobs[name], /^[0-9a-f]{40}$/u);
     await checked_bytes(name);
@@ -72,6 +73,38 @@ test("every exact Git blob is accounted for and rooted under the project", async
     new Set(Object.keys(corpus.source_blobs)),
     new Set([".ores.pkg.toml", "src/lib/helpers.atto", ...entries])
   );
+});
+
+test("portable standalone multi-function typed and checked-call contracts are source-pinned", async () => {
+  const byId = new Map(corpus.cases.map(c => [c.id, c]));
+  const typed = await checked_bytes("src/standalone-type-first.atto");
+  const named = await checked_bytes("src/standalone-name-first.atto");
+  const nested = await checked_bytes("src/standalone-nested-call.atto");
+  assert.match(typed, /fnc twice\(int value\): int/u);
+  assert.match(named, /fnc twice\(value: int\): int/u);
+  assert.match(nested, /return twice\(plus_one\(20\)\);/u);
+  for (const name of ["standalone-type-first-direct", "standalone-name-first-direct",
+    "standalone-nested-direct"]) {
+    const x = byId.get(name);
+    assert.equal(x.expect, "PASS");
+    assert.equal(x.expect_stdout, "42\\n");
+  }
+  const overflow = await checked_bytes("src/standalone-overflow-callee.atto");
+  const ignored = await checked_bytes("src/standalone-discarded-argument.atto");
+  const unused = await checked_bytes("src/standalone-unused-local.atto");
+  assert.match(overflow, /9223372036854775807/u);
+  assert.match(ignored, /first\(42, 9223372036854775807 \+ 1\)/u);
+  assert.match(unused, /val unused = value \+ 1;/u);
+  assert.equal(corpus.cases.filter(c => c.expect === "PANIC").length, 3);
+  for (const name of ["invalid-standalone-unbound.atto", "invalid-standalone-arity.atto",
+    "invalid-standalone-untyped.atto"]) {
+    const source = await checked_bytes("src/" + name);
+    assert.match(source, /pub fnc main\(\): int/u);
+  }
+  for (const c of corpus.cases) assert.equal(c.status, "NOT_EXECUTED");
+  for (const value of Object.values(corpus.backend_evidence))
+    assert.match(value, /^NOT_EXECUTED/u);
+  assert.match(corpus.syntax_profiles.package_import, /pkg/u);
 });
 
 test("canonical +, relative import, and nonlinear scalar call witnesses stay distinct", async () => {

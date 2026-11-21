@@ -1,10 +1,12 @@
 {
   "schema": "atto.cranelift-modern-linked-module.v1",
   "status": "SOURCE_CORPUS_ONLY_NOT_EXECUTED",
-  "scope": "Independent Java versus Cranelift and other Atto backend guest linking parity; the target profile is not a current-Cranelift support claim",
+  "scope": "Verified-source import graphs and independent closed-world scalar interprocedural execution targets across all Atto backends, including the Rust/Wasm playground",
   "spec_refs": [
     "atto-lang/atto-spec/language/unified-static-imports-v1.md",
-    "atto-lang/atto-platform-conformance/fixtures/import-v1/README.md"
+    "atto-lang/atto-platform-conformance/fixtures/import-v1/README.md",
+    "atto-lang/atto-spec/language/callable-body-styles-v1.md",
+    "atto-lang/atto-spec/language/explicit-callable-return-types-v1.md"
   ],
   "implementation_tracker": "https://github.com/atto-lang/atto-source.cranelift/issues/71",
   "historical_v1": "Existing fixtures/import-v1 uses retired +/ spelling; retain it as history, never rewrite its Git blobs",
@@ -17,7 +19,10 @@
     "forge": "NOT_EXECUTED",
     "net": "NOT_EXECUTED",
     "rs": "NOT_EXECUTED",
-    "js": "NOT_EXECUTED"
+    "js": "NOT_EXECUTED",
+    "hdl": "NOT_EXECUTED_BACKEND_TARGET_PROFILE_UNDECIDED",
+    "atto": "NOT_EXECUTED_BACKEND_TARGET_PROFILE_UNDECIDED",
+    "realtime": "NOT_EXECUTED_BACKEND_TARGET_PROFILE_UNDECIDED"
   },
   "compiler_sha": null,
   "runner_receipt": null,
@@ -32,7 +37,16 @@
     "src/invalid-retired-root.atto": "9ef72e84d5d14f71a3aa375d239dfcfcb5989370",
     "src/invalid-root-traversal.atto": "bbd6c062051fe61288d7329616ce37b8a60ba500",
     "src/invalid-missing-export.atto": "b08ddf2747bb2b2b60bebd75fd0d70429acb4383",
-    "src/invalid-duplicate-binding.atto": "b0bb62daee8c091b9b1d76874318b979d1bf64ae"
+    "src/invalid-duplicate-binding.atto": "b0bb62daee8c091b9b1d76874318b979d1bf64ae",
+    "src/standalone-type-first.atto": "daa5eb499b0831202f2fbae70027f9788cfb3bd8",
+    "src/standalone-name-first.atto": "d0468a84696914afdaa5b0670df5bc79184bc063",
+    "src/standalone-nested-call.atto": "dfc7e70970c859e0129e54c72bf79176e8ba886e",
+    "src/standalone-overflow-callee.atto": "43e345aa59c627811c2993d3ac4776e532220050",
+    "src/standalone-discarded-argument.atto": "8627ce40aa4d206981e8762e5377c17d68945693",
+    "src/standalone-unused-local.atto": "20f60c7edca537f789b343813587885e17f75a2d",
+    "src/invalid-standalone-unbound.atto": "e6efae6477671fe4706ec1447a4f0e6371483adc",
+    "src/invalid-standalone-arity.atto": "1aaff33f689036890e051377f6a0572a9d21c031",
+    "src/invalid-standalone-untyped.atto": "888aa43ed390c1891e68f2cb048744329feb074c"
   },
   "cases": [
     {
@@ -154,6 +168,146 @@
         "public export resolution",
         "no forbidden codegen on rejection"
       ]
+    },
+    {
+      "id": "standalone-type-first-direct",
+      "entry": "src/standalone-type-first.atto",
+      "expect": "PASS",
+      "expect_stdout": "42\n",
+      "expected_reason": "TYPED_DIRECT_CALL_RESULT_42",
+      "git_blob_sha": "daa5eb499b0831202f2fbae70027f9788cfb3bd8",
+      "status": "NOT_EXECUTED",
+      "requires": [
+        "real compiled native/wasm function calls",
+        "typed static arity",
+        "left-to-right exactly-once argument evaluation",
+        "signed-i64 checked arithmetic"
+      ]
+    },
+    {
+      "id": "standalone-name-first-direct",
+      "entry": "src/standalone-name-first.atto",
+      "expect": "PASS",
+      "expect_stdout": "42\n",
+      "expected_reason": "NAME_FIRST_TYPED_CALL_RESULT_42",
+      "git_blob_sha": "d0468a84696914afdaa5b0670df5bc79184bc063",
+      "status": "NOT_EXECUTED",
+      "requires": [
+        "real compiled native/wasm function calls",
+        "typed static arity",
+        "left-to-right exactly-once argument evaluation",
+        "signed-i64 checked arithmetic"
+      ]
+    },
+    {
+      "id": "standalone-nested-direct",
+      "entry": "src/standalone-nested-call.atto",
+      "expect": "PASS",
+      "expect_stdout": "42\n",
+      "expected_reason": "NESTED_TYPED_CALL_RESULT_42",
+      "git_blob_sha": "dfc7e70970c859e0129e54c72bf79176e8ba886e",
+      "status": "NOT_EXECUTED",
+      "requires": [
+        "real compiled native/wasm function calls",
+        "typed static arity",
+        "left-to-right exactly-once argument evaluation",
+        "signed-i64 checked arithmetic"
+      ]
+    },
+    {
+      "id": "standalone-overflow-in-callee",
+      "entry": "src/standalone-overflow-callee.atto",
+      "expect": "PANIC",
+      "expect_stdout": null,
+      "expected_reason": "SIGNED_I64_OVERFLOW_CALLEE",
+      "git_blob_sha": "43e345aa59c627811c2993d3ac4776e532220050",
+      "status": "NOT_EXECUTED",
+      "requires": [
+        "actual guest error status/panic, not an accepted value",
+        "zero guest stdout on this negative",
+        "eager checked evaluation of all arguments and local initializers"
+      ]
+    },
+    {
+      "id": "standalone-eager-discarded-argument",
+      "entry": "src/standalone-discarded-argument.atto",
+      "expect": "PANIC",
+      "expect_stdout": null,
+      "expected_reason": "SIGNED_I64_OVERFLOW_DISCARDED_ARG",
+      "git_blob_sha": "8627ce40aa4d206981e8762e5377c17d68945693",
+      "status": "NOT_EXECUTED",
+      "requires": [
+        "actual guest error status/panic, not an accepted value",
+        "zero guest stdout on this negative",
+        "eager checked evaluation of all arguments and local initializers"
+      ]
+    },
+    {
+      "id": "standalone-eager-unused-local",
+      "entry": "src/standalone-unused-local.atto",
+      "expect": "PANIC",
+      "expect_stdout": null,
+      "expected_reason": "SIGNED_I64_OVERFLOW_UNUSED_LOCAL",
+      "git_blob_sha": "20f60c7edca537f789b343813587885e17f75a2d",
+      "status": "NOT_EXECUTED",
+      "requires": [
+        "actual guest error status/panic, not an accepted value",
+        "zero guest stdout on this negative",
+        "eager checked evaluation of all arguments and local initializers"
+      ]
+    },
+    {
+      "id": "standalone-reject-unbound-callee",
+      "entry": "src/invalid-standalone-unbound.atto",
+      "expect": "REJECT",
+      "expect_stdout": null,
+      "expected_reason": "E_UNBOUND_CALLEE",
+      "git_blob_sha": "e6efae6477671fe4706ec1447a4f0e6371483adc",
+      "status": "NOT_EXECUTED",
+      "requires": [
+        "static type/arity/name resolution",
+        "no generated executable guest artifact or IR"
+      ]
+    },
+    {
+      "id": "standalone-reject-wrong-arity",
+      "entry": "src/invalid-standalone-arity.atto",
+      "expect": "REJECT",
+      "expect_stdout": null,
+      "expected_reason": "E_CALL_ARITY",
+      "git_blob_sha": "1aaff33f689036890e051377f6a0572a9d21c031",
+      "status": "NOT_EXECUTED",
+      "requires": [
+        "static type/arity/name resolution",
+        "no generated executable guest artifact or IR"
+      ]
+    },
+    {
+      "id": "standalone-reject-omitted-formal-type",
+      "entry": "src/invalid-standalone-untyped.atto",
+      "expect": "REJECT",
+      "expect_stdout": null,
+      "expected_reason": "E_FORMAL_TYPE_REQUIRED",
+      "git_blob_sha": "888aa43ed390c1891e68f2cb048744329feb074c",
+      "status": "NOT_EXECUTED",
+      "requires": [
+        "static type/arity/name resolution",
+        "no generated executable guest artifact or IR"
+      ]
     }
-  ]
+  ],
+  "syntax_profiles": {
+    "standalone": "Multi-function single-file .atto programs; both int x and x: int typed formals; no package resolver needed",
+    "source_file_import": "Cranelift candidate +src/... or ./... with manifest authority; older historical +/src/... remains a scoped negative only",
+    "package_import": "atto-spec/unified-static-imports-v1.md separately allows +/... when explicitly preceded by pkg; do not conflate source-file vs package selectors",
+    "browser": "Browser playground has a single-source compile API; import-bearing source needs an authenticated virtual source graph before promotion"
+  },
+  "cross_backend_acceptance": {
+    "expect_guest_return_i64_for_pass": "42",
+    "expected_guest_stdout_for_standalone_pass": "",
+    "expected_cranelift_cli_stdout_for_standalone_pass": "42\n",
+    "runtime_failures": "Classified signed-i64 overflow before any succeeding output; no erased eager arg or unused val initializer",
+    "static_failures": "Fail before guest executable artifact or IR; reason category may use backend-specific stable diagnostic",
+    "proof": "Actual compiled guest execution on exact backend source/tree SHA, not host regex/test or parser-only check"
+  }
 }

@@ -44,3 +44,33 @@ Do not rewrite the old import-v1 corpus or claim execution from a successful
 fixture-integrity test. New implementation work belongs in
 `atto-lang/atto-source.cranelift`, and portable normative semantics in
 `atto-lang/atto-spec`.
+
+## Shared standalone function-call and checked-effect corpus (source-only)
+
+Nine additional `.atto` sources intentionally require **no imports**:
+three successful helper-call programs return 42 (including both `int value`
+and `value: int`, and nested calls), three runtime **PANIC** cases preserve
+checked i64 overflow in a called function, an eager but discarded argument
+and an unused eagerly initialized `val`, and three compilation rejections
+cover unbound callee, wrong arity and an omitted formal parameter type.
+
+For native Cranelift `run`, the expected positive CLI output is `42\\n`.
+For the browser Rust/Wasm guest ABI, the expected result value is `42`
+with *no stdout* unless the source explicitly prints. Backends must not
+conflate a host CLI printing the returned value with a guest `stdio.println`.
+
+The cross-backend registry keeps `NOT_EXECUTED` for every target until
+separate immutable source/tree-pinned compiler **and guest-execution**
+receipts exist. A source-Git-blob validation only establishes fixture
+integrity, never guest semantics.
+
+### Root-selector language-spec discrepancy requiring disposition
+
+This corpus's `+src/lib/helpers.atto` and rejected `+/src/...` forms
+are **source-file imports in the narrow Cranelift candidate profile**.
+The proposed [unified import specification](https://github.com/atto-lang/atto-spec/blob/main/language/unified-static-imports-v1.md)
+separately allows a `+/...` package selector after `from pkg`.
+Do not apply the source-file rejection to package imports, or advertise
+Cranelift's restricted source resolver as full normative package parity.
+The compiler and formatter must agree on the distinct selector grammar
+before any cross-backend package-import certification.

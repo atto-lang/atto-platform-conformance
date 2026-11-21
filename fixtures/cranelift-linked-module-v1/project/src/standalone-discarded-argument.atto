@@ -1,0 +1,2 @@
+fnc first(int a, int b): int { return a; }
+pub fnc main(): int { return first(42, 9223372036854775807 + 1); }
