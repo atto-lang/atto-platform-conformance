@@ -12,8 +12,9 @@
   },
   "scope": {
     "attributed_control_host_code": [
+      "atto-lang/atto-source.net",
       "atto-lang/atto-source.java",
-      "atto-lang/atto-source.net"
+      "atto-lang/atto-source.llvm"
     ],
     "language_object_heap_is_not_JVM_or_CLR_heap": true,
     "host_jvm_clr_gc_may_remain": true,
@@ -38,7 +39,8 @@
       "deterministic_stop_quiescence_integration": "NOT_EXECUTED",
       "guest_zero_tracing_gc": "NOT_VERIFIED",
       "full_process_zero_gc_claim": false,
-      "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT"
+      "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT",
+      "native_host_local_test": null
     },
     {
       "repo": "atto-lang/atto-source.net",
@@ -53,7 +55,8 @@
       "deterministic_stop_quiescence_integration": "NOT_EXECUTED",
       "guest_zero_tracing_gc": "NOT_VERIFIED",
       "full_process_zero_gc_claim": false,
-      "host_managed_allocation_probe": "SOURCE_AUTHORED_NOT_EXECUTED"
+      "host_managed_allocation_probe": "SOURCE_AUTHORED_NOT_EXECUTED",
+      "native_host_local_test": null
     },
     {
       "repo": "atto-lang/atto-source.hdl",
@@ -68,7 +71,8 @@
       "deterministic_stop_quiescence_integration": "NOT_EXECUTED",
       "guest_zero_tracing_gc": "NOT_VERIFIED",
       "full_process_zero_gc_claim": false,
-      "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT"
+      "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT",
+      "native_host_local_test": null
     },
     {
       "repo": "atto-lang/atto-source.java",
@@ -83,7 +87,8 @@
       "deterministic_stop_quiescence_integration": "NOT_EXECUTED",
       "guest_zero_tracing_gc": "NOT_VERIFIED",
       "full_process_zero_gc_claim": false,
-      "host_managed_allocation_probe": "SOURCE_AUTHORED_NOT_EXECUTED"
+      "host_managed_allocation_probe": "SOURCE_AUTHORED_NOT_EXECUTED",
+      "native_host_local_test": null
     },
     {
       "repo": "atto-lang/atto-source.realtime",
@@ -98,7 +103,8 @@
       "deterministic_stop_quiescence_integration": "NOT_EXECUTED",
       "guest_zero_tracing_gc": "NOT_VERIFIED",
       "full_process_zero_gc_claim": false,
-      "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT"
+      "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT",
+      "native_host_local_test": null
     },
     {
       "repo": "atto-lang/atto-source.rs",
@@ -113,22 +119,39 @@
       "deterministic_stop_quiescence_integration": "NOT_EXECUTED",
       "guest_zero_tracing_gc": "NOT_VERIFIED",
       "full_process_zero_gc_claim": false,
-      "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT"
+      "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT",
+      "native_host_local_test": null
     },
     {
       "repo": "atto-lang/atto-source.llvm",
       "candidate_stage": "ACTOR_NATIVE_ARENA_HOST_SOURCE",
       "existing_pr": "https://github.com/atto-lang/atto-source.llvm/pull/742",
-      "observed_candidate_pr_head_sha": "7e7f542a4532a70e4ff13d5b8655f9a06143c9a7",
+      "observed_candidate_pr_head_sha": "5798f00312279044408bfd6b596cfc251fa82cea",
       "actor_reference_abi_candidate": "offset8_plus_one",
-      "control_reference_abi_candidate": null,
-      "control_plane_source_status": "NO_CONTROL_GUEST_PROOF_IN_THIS_AUDIT",
+      "control_reference_abi_candidate": "control_generation20_slot12_v1",
+      "control_plane_source_status": "SOURCE_COMMITTED_NATIVE_HOST_TESTED_LOCAL",
       "control_plane_compiled_atto_guest": "NOT_EXECUTED",
       "managed_hotpath_allocation_measurement": "NOT_EXECUTED",
       "deterministic_stop_quiescence_integration": "NOT_EXECUTED",
       "guest_zero_tracing_gc": "NOT_VERIFIED",
       "full_process_zero_gc_claim": false,
-      "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT"
+      "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT",
+      "native_host_local_test": {
+        "status": "PASS_LOCAL_NATIVE_HOST_ONLY",
+        "os_target": "linux-x86_64",
+        "gcc": "14.2.0 -std=c11 -O2 -Wall -Wextra -Werror -pedantic -pthread",
+        "clang": "17.0.0 -std=c11 -O1 -g -fsanitize=address,undefined -pthread",
+        "source_blobs": {
+          "ControlPlaneArena32.h": "64eabc65b9ce917d5f3085a42e8e2c9f3f2213c6",
+          "ControlPlaneArena32.c": "d4e99998d545c634279d1620f67fc57bfbb3e5de",
+          "control_plane_arena32_test.c": "598591e49a5665fef25e01366af20d35ac35f649"
+        },
+        "gcc_binary_sha256": "8ff63c63c6ab3042838144318d2fd990f84419848067892f84689e27d730e75f",
+        "clang_sanitized_binary_sha256": "9813076d8390143880158d4bb9d52bf9870f313d12408779a292572e8310df47",
+        "positive_host_pass_marker": "PASS control-plane-ref32 llvm C11 native host 12 guarded scenarios; NO compiled Atto guest or zero-GC proof",
+        "ci_on_current_head": "NOT_EXECUTED",
+        "compiled_atto_guest": "NOT_EXECUTED"
+      }
     },
     {
       "repo": "atto-lang/atto-source.js",
@@ -143,7 +166,8 @@
       "deterministic_stop_quiescence_integration": "NOT_EXECUTED",
       "guest_zero_tracing_gc": "NOT_VERIFIED",
       "full_process_zero_gc_claim": false,
-      "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT"
+      "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT",
+      "native_host_local_test": null
     },
     {
       "repo": "atto-lang/atto-source.forge",
@@ -158,7 +182,8 @@
       "deterministic_stop_quiescence_integration": "NOT_EXECUTED",
       "guest_zero_tracing_gc": "NOT_VERIFIED",
       "full_process_zero_gc_claim": false,
-      "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT"
+      "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT",
+      "native_host_local_test": null
     },
     {
       "repo": "atto-lang/atto-source.wasm",
@@ -173,7 +198,8 @@
       "deterministic_stop_quiescence_integration": "NOT_EXECUTED",
       "guest_zero_tracing_gc": "NOT_VERIFIED",
       "full_process_zero_gc_claim": false,
-      "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT"
+      "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT",
+      "native_host_local_test": null
     },
     {
       "repo": "atto-lang/atto-source.cranelift",
@@ -188,7 +214,8 @@
       "deterministic_stop_quiescence_integration": "NOT_EXECUTED",
       "guest_zero_tracing_gc": "NOT_VERIFIED",
       "full_process_zero_gc_claim": false,
-      "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT"
+      "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT",
+      "native_host_local_test": null
     }
   ]
 }
