@@ -1,0 +1,146 @@
+{
+  "schema_version": 1,
+  "contract": "atto.hybrid-actor-memory.v1",
+  "classification": "HOST_ONLY_EXECUTED",
+  "reported_date": "2026-11-21",
+  "provenance": {
+    "carrier_repo": "ores-data-platform/atto-ci",
+    "run_id": 44946676034,
+    "run_url": "https://github.com/ores-data-platform/atto-ci/actions/runs/44946676034",
+    "job_id": 136975401654,
+    "conclusion": "success",
+    "steps_nonempty": true,
+    "token_free_mirror": true,
+    "exact_blob_checked": true,
+    "compiler_guest_executed": false
+  },
+  "source_branches": {
+    "llvm": {
+      "repo": "atto-lang/atto-source.llvm",
+      "pr": 742,
+      "head": "7e7f542a4532a70e4ff13d5b8655f9a06143c9a7",
+      "checked_blobs": {
+        "src/main/cpp/oreslang/runtime/ActorElasticNativeArenaV1.c": "6f40630e342a06fb47cb7e63defe907bf788fc32",
+        "src/main/cpp/oreslang/runtime/ActorElasticNativeArenaV1.h": "2ef5861c40591d3095269a925cd5453115e58ef5",
+        "tests/actor_elastic_native_arena_v1_test.c": "ed454ed7342da59e0a28bff33afb54427c96abd4"
+      }
+    },
+    "java": {
+      "repo": "atto-lang/atto-source.java",
+      "pr": 1153,
+      "head": "935afc2b16beaaa40558bd0e096cbc0821d0a2de",
+      "checked_blobs": {
+        "src/main/java/dev/oreslang/runtime/ActorRef32CodecV1.java": "e6c5ada2884127a9529e406295fd51260abf78b9",
+        "src/test/java/dev/oreslang/runtime/ActorRef32CodecV1Test.java": "44cd1655db6662880ce66cd702ae41d818dddc65"
+      }
+    },
+    "forge": {
+      "repo": "atto-lang/atto-source.forge",
+      "pr": 166,
+      "head": "9ed566a6f7ad52fa27166cee16c6e1bcd14a6832",
+      "checked_blobs": {
+        "runtime/ActorRef32CodecV1.hpp": "7bb704bb36fc88d5fde40241d663519560046804",
+        "tests/actor_ref32_codec_v1_test.cpp": "5fd8c0a0049cd06fb86c979291f259328dcec158"
+      }
+    },
+    "wasm": {
+      "repo": "atto-lang/atto-source.wasm",
+      "pr": 221,
+      "head": "1ffc1478268af5eb06018a17761a588d53d7bbf0",
+      "checked_blobs": {
+        "src/elastic-actor-heap-v1.mjs": "fe725589ce440a646538bfcd1b9081fe169a6fc3",
+        "tests/elastic-actor-heap-v1.test.mjs": "e879427aecc3ab95b34278b1c960b9b18f14dc97"
+      }
+    },
+    "rs": {
+      "repo": "atto-lang/atto-source.rs",
+      "pr": 502,
+      "head": "c35a9927746ac6b5050ff370bedce61270bb0853",
+      "checked_blobs": {
+        "src/ref_layout.rs": "d7b34cf3cf0d3f314bcd4c5eea688c29f92100e0",
+        "src/lib.rs": "33adc87f66df844935c68322d15ede04c1710ba4"
+      }
+    },
+    "net": {
+      "repo": "atto-lang/atto-source.net",
+      "pr": 173,
+      "head": "8dacc5db37d6471f16f2c10f1c11108d468d7369",
+      "checked_blobs": {
+        "runtime/Ores.Net.Runtime/ActorGuestRefEncodingV1.cs": "bd87938e7c9d2ef0cc84a6b55db1ae7904f2f25c",
+        "verification/Ores.Net.Tests/ActorGuestRefEncodingV1SelfTest.cs": "63e3bb8069b99a797092a5ed649fc88a44211ccc"
+      }
+    }
+  },
+  "contract_blobs": {
+    "atto-platform-conformance/contracts/hybrid-actor-memory-v1.json": "70dda5db22ad16754cc354aafd4f51ca77fdbb55",
+    "atto-target-profiles/profiles/hybrid-actor-memory-v1.json": "c722bcc4169905efa263bfa1db1ca5c0e9fb342b",
+    "atto-target-profiles/tests/hybrid-actor-memory-v1.test.mjs": "21995f115ec16307333417bfd2c4947049cf06e6"
+  },
+  "host_results": {
+    "llvm_c11": {
+      "status": "passed",
+      "matrix": [
+        "gcc-O1-asan-ubsan",
+        "gcc-O2-asan-ubsan",
+        "clang-O1-asan-ubsan",
+        "clang-O2-asan-ubsan"
+      ],
+      "guest": false
+    },
+    "forge_cpp20": {
+      "status": "passed",
+      "matrix": [
+        "g++-O1-asan-ubsan",
+        "g++-O2-asan-ubsan",
+        "clang++-O1-asan-ubsan",
+        "clang++-O2-asan-ubsan"
+      ],
+      "guest": false
+    },
+    "wasm_node_host": {
+      "status": "passed",
+      "tests": 11,
+      "guest": false
+    },
+    "java_javac_codec": {
+      "status": "passed",
+      "guest": false
+    },
+    "rust_ref_layout_standalone": {
+      "status": "passed",
+      "tests": 8,
+      "guest": false
+    },
+    "net10_standalone_codec": {
+      "status": "passed",
+      "guest": false,
+      "full_actor_runtime_compiled": false,
+      "nativeaot_guest_executed": false
+    },
+    "node_reference_and_profile": {
+      "status": "passed",
+      "tests": 13,
+      "guest": false
+    },
+    "registry_alignment": {
+      "status": "passed",
+      "backends": 11,
+      "features": 20,
+      "guest": false
+    }
+  },
+  "compiled_guest_status": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "rs": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
+    "atto": "NOT_EXECUTED",
+    "hdl": "NOT_EXECUTED",
+    "realtime": "NOT_EXECUTED"
+  },
+  "scope_warning": "Host native code, standalone ABI codecs and source-free models cannot certify compiler-generated AttoLang actor object graphs, guest heap GC properties, security isolation, NativeAOT or per-backend semantic parity."
+}
