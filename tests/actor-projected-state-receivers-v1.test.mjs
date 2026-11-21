@@ -38,3 +38,20 @@ test('canonical projection has explicit fields and negative safety coverage', ()
     'overlapping_write_loans',
   ]) assert.ok(ids.has(id), id);
 });
+
+test('named receiver is alpha-equivalent and safe across the target matrix', () => {
+  assert.equal(contract.cases.length, 30);
+  assert.match(contract.semantics.receiverBinding, /self is conventional/);
+  assert.match(contract.semantics.alphaEquivalence, /write-set identity/);
+  const byId = new Map(contract.cases.map(c => [c.id, c]));
+  for (const id of [
+    'named_this_receiver_control', 'named_typed_alias',
+    'named_field_write', 'named_group_write', 'named_whole_state',
+    'named_unguarded_state_write', 'named_guard_unauthorized_write',
+    'named_receiver_missing_self_alias', 'named_receiver_callback_binder_collision',
+    'named_receiver_param_collision', 'named_receiver_local_shadow',
+    'named_receiver_not_overload', 'reserved_actor_is_not_receiver_identifier',
+  ]) assert.ok(byId.has(id), id);
+  assert.equal(byId.get('named_receiver_missing_self_alias').diagnosticClass, 'E_UNBOUND');
+  assert.equal(byId.get('named_receiver_not_overload').diagnosticClass, 'E_DUPLICATE');
+});
