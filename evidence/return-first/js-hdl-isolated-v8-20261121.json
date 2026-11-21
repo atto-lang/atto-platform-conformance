@@ -8,13 +8,13 @@
   },
   "javascript": {
     "repo": "atto-lang/atto-source.js",
-    "head_sha": "a80b241a975a2d8d7e2da55eaa1c388d37f90690",
-    "root_tree_sha": "634bcb6d9c6a1ac7f2dacc4a66fcdba8750a8b11",
-    "program_v2_blob_sha": "a531a6b8f40537116e04521fdd273e7995462c44",
+    "head_sha": "185b54884b87c6a04c4226fac34fd44073a61d5b",
+    "root_tree_sha": "1e046fa835969dac6da7e2894eaa6a29a2e40ea6",
+    "program_v2_blob_sha": "79c6afb766e9e04ad4572c1d59a22c56195f9012",
     "program_ir_v2_blob_sha": "10f152458e72cb6065936022a24e0f7b1ff97798",
-    "test_blob_sha": "011280d85d36012be8cc2607c490e2d34d1f202b",
+    "test_blob_sha": "2b8b6fc5c34d221771ca57ecc3bf99d008ab6213",
     "scope": "ISOLATED_V8_REAL_COMPILER_GENERATED_ESM_EXECUTION_NOT_NODE_CI",
-    "regression_test_groups_passed": 17,
+    "regression_test_groups_passed": 20,
     "regression_test_groups_failed": 0,
     "canonical_guest_cases_passed": 24,
     "canonical_pass_case_ids": [
@@ -87,7 +87,23 @@
         "id": "duplicate_spelling",
         "code": "E_DUPLICATE"
       }
-    ]
+    ],
+    "hardening_addendum": {
+      "type": "INFER_AFTER_CHECKED_PURE_VOID_SEQUENCE",
+      "result": "EXECUTED_IN_ISOLATED_V8",
+      "positive_source_tests": [
+        "inferred int return after single direct pure-void call",
+        "inferred int return after two void calls",
+        "named argument pure-void call preceding inferred int",
+        "conditional void call executed exactly once on matching branch"
+      ],
+      "negative_source_tests": [
+        "nonvoid discard remains rejected",
+        "void return value cannot justify integer inference",
+        "unproven bool inference rejected",
+        "missing explicit return rejected"
+      ]
+    }
   },
   "hdl": {
     "repo": "atto-lang/atto-source.hdl",
@@ -110,11 +126,11 @@
     "private_source_mirror": "DENIED_PENDING_INDEPENDENT_EXACT_SOURCE_CARRIER_APPROVAL",
     "approval_issue": "https://github.com/atto-lang/atto-platform-conformance/issues/548",
     "javascript_zero_step_runs": [
-      44954635987,
-      44954636015,
-      44954635977
+      44955725587,
+      44955725582
     ],
-    "source_org_billing_root_cause": "UNDETERMINED_ZERO_RUNNER_STEPS"
+    "source_org_billing_root_cause": "UNKNOWN_RUNNER_ADMISSION",
+    "alternate_latest_stepful_candidate": "memebank/atto-ci#44953770628 5 jobs 62 steps (previously observed capacity only)"
   },
   "certification": "SOURCE_ISOLATED_SUPPLEMENT_ONLY_NOT_RELEASE_OR_COMPILER_PARITY"
 }
