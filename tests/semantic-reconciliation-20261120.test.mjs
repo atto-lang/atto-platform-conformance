@@ -9,8 +9,12 @@ const gitBlob = b => createHash('sha1').update('blob '+b.length+String.fromCharC
 test('return-first bullet and arrow fixtures are immutable exact Git blobs', () => {
  const reg=json('contracts/v2/return-first-separators-v1.json');
  assert.equal(reg.status,'SOURCE_ONLY_NOT_EXECUTED');
- assert.equal(reg.cases.length,13);
+ assert.equal(reg.cases.length,21);
  assert.deepEqual(reg.accepted_separators.map(x=>x.spelling),['<-','•']);
+ assert.match(reg.body_boundary_contract, /raises\/throws clause/);
+ assert.match(reg.exception_spellings, /raise!/);
+ for(const id of ['P07_bare_no_begin','P08_coloncolon_no_effects','P09_raises_begin','P10_raises_coloncolon','N08_raises_no_boundary','N09_duplicate_boundary','N10_effect_after_boundary','N11_coloncolon_missing_end'])
+   assert.ok(reg.cases.some(c=>c.id===id),id);
  for(const c of reg.cases){
   const bytes=read(c.path);
   assert.equal(gitBlob(bytes),c.git_blob_sha,c.id);
@@ -38,4 +42,24 @@ test('shared-process isolation must be independently enforced',()=>{
  assert.ok(actor.assertion.includes('verified per-tenant TenantVM'));
  assert.ok(actor.inadequateBoundaries.includes('thread-only'));
  assert.equal(json('contracts/v2/owner-semantic-reconciliation-v1.json').status,'DRAFT_SOURCE_ONLY_NO_GUEST_PARITY');
+});
+
+test('return-first :: and effect-bearing begin variants remain cross-backend targets only', () => {
+ const reg = json('contracts/v2/return-first-separators-v1.json');
+ const corpus = Object.fromEntries(reg.cases.map(c => [c.id, read(c.path).toString('utf8')]));
+ assert.match(corpus.P07_bare_no_begin, /double_answer\(int value\)\n  return value \* 2;/);
+ assert.match(corpus.P08_coloncolon_no_effects, /double_answer\(int value\) ::\n/);
+ for(const id of ['P09_raises_begin','P10_raises_coloncolon']) {
+   assert.match(corpus[id], /raises Foo/);
+   assert.match(corpus[id], /raise! new Foo\(\);/);
+ }
+ assert.match(corpus.P09_raises_begin, /raises Foo\nbegin/);
+ assert.match(corpus.P10_raises_coloncolon, /raises Foo ::\n/);
+ assert.match(corpus.N08_raises_no_boundary, /raises Foo\n  return/);
+ assert.match(corpus.N09_duplicate_boundary, /::\n  ::/);
+ assert.match(corpus.N10_effect_after_boundary, /::\nraises Foo/);
+ for(const c of reg.cases.slice(13)) {
+   assert.ok(Object.values(c.backend_status).every(status=>status==='NOT_EXECUTED'));
+   assert.equal(c.negative_no_artifact,c.kind==='negative');
+ }
 });
