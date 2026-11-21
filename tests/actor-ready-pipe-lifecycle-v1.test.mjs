@@ -175,3 +175,30 @@ test('stale worker acknowledgments cannot resolve another incarnation',()=>{
   assert.equal(candidate.private_mirror.test_status,'NOT_EXECUTED');
   assert.ok(data.requirements.includes('worker_ready_reply_done_fenced_by_incarnation'));
 });
+
+
+test('experimental v2 guest checked-bang source never counts as proved backend parity', () => {
+  const c=data.v2_guest_candidate;
+  assert.equal(c.repository,'atto-lang/atto-source.rs');
+  assert.match(c.pull_request,/\/pull\/262$/);
+  assert.match(c.source_head_sha,/^[0-9a-f]{40}$/);
+  assert.equal(c.mergeability,'CONFLICTING_WITH_MAIN');
+  assert.equal(c.profile,'EXPERIMENTAL_SINGLE_GUEST_MEMORY_V2');
+  assert.equal(c.status,'STAGED_GUEST_EXECUTION_NOT_VERIFIED');
+  assert.equal(c.test_execution,'NOT_EXECUTED');
+  assert.equal(c.guest_fixtures.length,5);
+  for(const id of [230,231,232,233,234])
+    assert.ok(c.guest_fixtures.some(f=>f.includes('/'+id+'-v2-')));
+  assert.equal(c.compiler_tests.length,2);
+  assert.equal(c.guest_runner,'tests/node-v2-pipe-guest.mjs');
+  assert.equal(c.expected_guest_result,42);
+  assert.equal(c.expected_guest_stdout,'40\n2\n');
+  assert.ok(c.implementation.includes('pipe_bang_direct_two_actor_checked_Result'));
+  assert.ok(c.implementation.includes('stop_bang_graceful_input_close_not_physical_completion'));
+  assert.ok(c.implementation.includes('nonterminal_await_continuation_by_v2_scheduler'));
+  assert.ok(c.known_gaps.includes('no_authenticated_cross_TenantVM_capabilities'));
+  for(const b of data.backend_evidence) {
+    assert.equal(b.guest_result,'NOT_EXECUTED',b.repo);
+    assert.equal(b.frontend_contract_status,'NOT_VERIFIED',b.repo);
+  }
+});
