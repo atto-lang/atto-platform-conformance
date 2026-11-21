@@ -70,13 +70,13 @@ def validate_manifest(data: dict, root: Path) -> int:
             require(type(expected) is int and 0 <= expected <= 255,
                     f"{ident}: expected_exit must be a byte-sized integer")
             require("expected_error" not in case, f"{ident}: mixed pass/fail expectations")
-            prefix = f"// expect-exit: {expected}\\n"
+            prefix = f"// expect-exit: {expected}\n"
         else:
             expected = case.get("expected_error")
             require(isinstance(expected, str) and ERROR_ID.fullmatch(expected) is not None,
                     f"{ident}: invalid diagnostic expectation")
             require("expected_exit" not in case, f"{ident}: mixed pass/fail expectations")
-            prefix = f"// expect-error: {expected}\\n"
+            prefix = f"// expect-error: {expected}\n"
         require(source.startswith(prefix), f"{ident}: fixture expectation mismatch")
         require(isinstance(case.get("proof"), str) and bool(case["proof"].strip()),
                 f"{ident}: missing proof obligation")
