@@ -76,6 +76,13 @@
       "meaning": "module ABI fixed by explicit parameter type"
     },
     {
+      "id": "local-two-ignored-parameters",
+      "kind": "run",
+      "source": "pub fnc main(): int { const fnc v = |_, _| : int -> 5; return v(41, false); }\n",
+      "exit_code": 5,
+      "meaning": "two independent discarded parameter slots accept distinct scalar arguments without binding or reading underscore"
+    },
+    {
       "id": "missing-pipes-discard",
       "kind": "reject",
       "source": "pub fnc main(): int { const fnc v = _ : int -> 5; return v(41); }\n",
