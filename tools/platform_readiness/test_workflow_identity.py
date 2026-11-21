@@ -99,8 +99,8 @@ class WorkflowRepositoryIdentityTests(unittest.TestCase):
     def test_source_local_canary_still_has_no_checkout_or_permissions(self):
         text = CANARY.read_text(encoding="utf-8")
         self.assertIn("permissions: {}", text)
-        self.assertIn("test \"\u0024{GITHUB_REPOSITORY}\" = '" + EXPECTED_REPO + "'", text)
-        self.assertIn('test -n "\u0024{RUNNER_NAME:-}"', text)
+        self.assertIn("test \"${GITHUB_REPOSITORY}\" = '" + EXPECTED_REPO + "'", text)
+        self.assertIn('test -n "${RUNNER_NAME:-}"', text)
         self.assertNotIn("actions/checkout@", text)
         self.assertNotIn("ores-truffle-oreslang/oreslang-platform-conformance", text)
 
