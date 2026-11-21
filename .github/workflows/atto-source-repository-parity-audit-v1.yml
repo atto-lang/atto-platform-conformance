@@ -6,6 +6,8 @@ on:
       - 'tests/atto-source-repository-parity-audit-v1.test.mjs'
       - 'tests/exception-control-bang-source-audit-v1.test.mjs'
       - 'contracts/exception-control-bang-source-audit-v1.json'
+      - 'contracts/control-actor-memory-11-backend-audit-v1.json'
+      - 'tests/control-actor-memory-11-backend-audit-v1.test.mjs'
       - 'docs/ATTO_SOURCE_11_REPOSITORY_PARITY.md'
       - '.github/workflows/atto-source-repository-parity-audit-v1.yml'
   push:
@@ -15,6 +17,8 @@ on:
       - 'tests/atto-source-repository-parity-audit-v1.test.mjs'
       - 'tests/exception-control-bang-source-audit-v1.test.mjs'
       - 'contracts/exception-control-bang-source-audit-v1.json'
+      - 'contracts/control-actor-memory-11-backend-audit-v1.json'
+      - 'tests/control-actor-memory-11-backend-audit-v1.test.mjs'
       - 'docs/ATTO_SOURCE_11_REPOSITORY_PARITY.md'
       - '.github/workflows/atto-source-repository-parity-audit-v1.yml'
   workflow_dispatch:
@@ -44,4 +48,4 @@ jobs:
           set -euo pipefail
           node --version
           node -e "if (+process.versions.node.split('.')[0] < 20) process.exit(2)"
-          node --test tests/atto-source-repository-parity-audit-v1.test.mjs tests/exception-control-bang-source-audit-v1.test.mjs
+          node --test tests/atto-source-repository-parity-audit-v1.test.mjs tests/exception-control-bang-source-audit-v1.test.mjs tests/control-actor-memory-11-backend-audit-v1.test.mjs
