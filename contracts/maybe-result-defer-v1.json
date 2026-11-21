@@ -67,6 +67,27 @@
       "path": "fixtures/maybe-result-defer-v1/negative-async-defer.atto",
       "expect": "reject",
       "diagnostic": "suspend in ordinary defer"
+    },
+    {
+      "id": "keyword-try-do-maybe-nested-end",
+      "path": "fixtures/maybe-result-defer-v1/try-keyword-do-maybe.atto",
+      "expect": "accept",
+      "mode": "try-maybe-nesting",
+      "outcome": "NOT_EXECUTED"
+    },
+    {
+      "id": "keyword-try-return-maybe-once-finally",
+      "path": "fixtures/maybe-result-defer-v1/try-keyword-return-maybe.atto",
+      "expect": "accept",
+      "mode": "try-return-maybe-nesting",
+      "outcome": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-missing-else-with-outer-try",
+      "path": "fixtures/maybe-result-defer-v1/negative-missing-else-in-try.atto",
+      "expect": "reject",
+      "diagnostic": "mandatory else v1",
+      "outcome": "NOT_EXECUTED"
     }
   ],
   "required_behaviors": [
@@ -79,6 +100,33 @@
     "contextual-maybe-identifier",
     "static-pattern-exhaustiveness",
     "ownership-no-escape",
-    "aot-no-reflection"
-  ]
+    "aot-no-reflection",
+    "maybe-body-cleanup-before-else",
+    "handler-cleanup-before-function-cleanup",
+    "try-finally-once-after-function-return",
+    "throw-bypasses-value-else",
+    "mandatory-else-v1",
+    "keyword-try-maybe-end-nesting"
+  ],
+  "design_resolution": {
+    "date": "2026-11-21",
+    "status": "CANDIDATE_NOT_ADMITTED",
+    "canonical_spec_pr": "atto-lang/atto-spec#22",
+    "mandatory_else_v1": true,
+    "maybe_keyword": "contextual",
+    "admitted_forms": [
+      "do maybe",
+      "return maybe"
+    ],
+    "conditional_match_operator": "?=",
+    "cleanup_order": [
+      "exit-maybe-body-LIFO",
+      "dispatch-first-failed-value-else",
+      "exit-handler-LIFO",
+      "exit-function-defers-LIFO",
+      "outer-try-finally"
+    ],
+    "exception_policy": "throw/raise/panic never converted to maybe value failure",
+    "cross_try_integration": "CANDIDATE_NOT_EXECUTED"
+  }
 }
