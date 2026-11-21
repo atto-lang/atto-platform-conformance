@@ -44,13 +44,16 @@
       "full_process_zero_gc_claim": false,
       "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT",
       "native_host_local_test": null,
-      "host_control_codec_test": null
+      "host_control_codec_test": null,
+      "runtime_native_root_integration": "NO_EXECUTED_RUNTIME_NATIVE_ROOT_INTEGRATION_IN_THIS_AUDIT",
+      "runtime_root_native_reserved_bytes": null,
+      "runtime_integration_executed_steps": 0
     },
     {
       "repo": "atto-lang/atto-source.net",
       "candidate_stage": "UNMANAGED_CONTROL_HOST_SOURCE",
       "existing_pr": "https://github.com/atto-lang/atto-source.net/pull/173",
-      "observed_candidate_pr_head_sha": "62eb02a6dfc9984fd3fc28ae06ef534037414417",
+      "observed_candidate_pr_head_sha": "5541be4ec099383ce8d6f52a9583577a1ff6763c",
       "actor_reference_abi_candidate": "generation16_slot16",
       "control_reference_abi_candidate": "control_generation12_slot20_v1",
       "control_plane_source_status": "SOURCE_COMMITTED_NOT_TESTED",
@@ -61,7 +64,10 @@
       "full_process_zero_gc_claim": false,
       "host_managed_allocation_probe": "SOURCE_AUTHORED_NOT_EXECUTED",
       "native_host_local_test": null,
-      "host_control_codec_test": null
+      "host_control_codec_test": null,
+      "runtime_native_root_integration": "NET_CLR_AND_NATIVEAOT_SPAWN_DISPATCH_STOP_NATIVE_COUNTERS_SOURCE_AUTHORED_NOT_EXECUTED",
+      "runtime_root_native_reserved_bytes": 48,
+      "runtime_integration_executed_steps": 0
     },
     {
       "repo": "atto-lang/atto-source.hdl",
@@ -78,13 +84,16 @@
       "full_process_zero_gc_claim": false,
       "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT",
       "native_host_local_test": null,
-      "host_control_codec_test": null
+      "host_control_codec_test": null,
+      "runtime_native_root_integration": "NO_EXECUTED_RUNTIME_NATIVE_ROOT_INTEGRATION_IN_THIS_AUDIT",
+      "runtime_root_native_reserved_bytes": null,
+      "runtime_integration_executed_steps": 0
     },
     {
       "repo": "atto-lang/atto-source.java",
       "candidate_stage": "UNMANAGED_CONTROL_HOST_SOURCE",
       "existing_pr": "https://github.com/atto-lang/atto-source.java/pull/1273",
-      "observed_candidate_pr_head_sha": "07095571abba702bc4842a4055c3bdbbb11fba73",
+      "observed_candidate_pr_head_sha": "870d051907bed5313e0f27c72377ec481da3e425",
       "actor_reference_abi_candidate": "generation20_slot12",
       "control_reference_abi_candidate": "control_generation12_slot20_v1",
       "control_plane_source_status": "SOURCE_COMMITTED_NOT_TESTED",
@@ -95,7 +104,10 @@
       "full_process_zero_gc_claim": false,
       "host_managed_allocation_probe": "SOURCE_AUTHORED_NOT_EXECUTED",
       "native_host_local_test": null,
-      "host_control_codec_test": null
+      "host_control_codec_test": null,
+      "runtime_native_root_integration": "JAVA_JVM_SPAWN_STOP_NATIVE_COUNTERS_SOURCE_AUTHORED_NOT_EXECUTED",
+      "runtime_root_native_reserved_bytes": 44,
+      "runtime_integration_executed_steps": 0
     },
     {
       "repo": "atto-lang/atto-source.realtime",
@@ -112,7 +124,10 @@
       "full_process_zero_gc_claim": false,
       "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT",
       "native_host_local_test": null,
-      "host_control_codec_test": null
+      "host_control_codec_test": null,
+      "runtime_native_root_integration": "NO_EXECUTED_RUNTIME_NATIVE_ROOT_INTEGRATION_IN_THIS_AUDIT",
+      "runtime_root_native_reserved_bytes": null,
+      "runtime_integration_executed_steps": 0
     },
     {
       "repo": "atto-lang/atto-source.rs",
@@ -129,7 +144,10 @@
       "full_process_zero_gc_claim": false,
       "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT",
       "native_host_local_test": null,
-      "host_control_codec_test": null
+      "host_control_codec_test": null,
+      "runtime_native_root_integration": "NO_EXECUTED_RUNTIME_NATIVE_ROOT_INTEGRATION_IN_THIS_AUDIT",
+      "runtime_root_native_reserved_bytes": null,
+      "runtime_integration_executed_steps": 0
     },
     {
       "repo": "atto-lang/atto-source.llvm",
@@ -161,7 +179,10 @@
         "ci_on_current_head": "NOT_EXECUTED",
         "compiled_atto_guest": "NOT_EXECUTED"
       },
-      "host_control_codec_test": null
+      "host_control_codec_test": null,
+      "runtime_native_root_integration": "NO_EXECUTED_RUNTIME_NATIVE_ROOT_INTEGRATION_IN_THIS_AUDIT",
+      "runtime_root_native_reserved_bytes": null,
+      "runtime_integration_executed_steps": 0
     },
     {
       "repo": "atto-lang/atto-source.js",
@@ -187,7 +208,10 @@
         "runtime": "Node 22.16.0",
         "tests_passed": 4,
         "actual_compiled_atto_guest": "NOT_EXECUTED"
-      }
+      },
+      "runtime_native_root_integration": "NO_EXECUTED_RUNTIME_NATIVE_ROOT_INTEGRATION_IN_THIS_AUDIT",
+      "runtime_root_native_reserved_bytes": null,
+      "runtime_integration_executed_steps": 0
     },
     {
       "repo": "atto-lang/atto-source.forge",
@@ -217,7 +241,10 @@
         ],
         "tests_passed": 2,
         "actual_compiled_atto_guest": "NOT_EXECUTED"
-      }
+      },
+      "runtime_native_root_integration": "NO_EXECUTED_RUNTIME_NATIVE_ROOT_INTEGRATION_IN_THIS_AUDIT",
+      "runtime_root_native_reserved_bytes": null,
+      "runtime_integration_executed_steps": 0
     },
     {
       "repo": "atto-lang/atto-source.wasm",
@@ -243,7 +270,10 @@
         "runtime": "Node 22.16.0",
         "tests_passed": 4,
         "actual_compiled_atto_guest": "NOT_EXECUTED"
-      }
+      },
+      "runtime_native_root_integration": "NO_EXECUTED_RUNTIME_NATIVE_ROOT_INTEGRATION_IN_THIS_AUDIT",
+      "runtime_root_native_reserved_bytes": null,
+      "runtime_integration_executed_steps": 0
     },
     {
       "repo": "atto-lang/atto-source.cranelift",
@@ -260,7 +290,10 @@
       "full_process_zero_gc_claim": false,
       "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT",
       "native_host_local_test": null,
-      "host_control_codec_test": null
+      "host_control_codec_test": null,
+      "runtime_native_root_integration": "NO_EXECUTED_RUNTIME_NATIVE_ROOT_INTEGRATION_IN_THIS_AUDIT",
+      "runtime_root_native_reserved_bytes": null,
+      "runtime_integration_executed_steps": 0
     }
   ]
 }
