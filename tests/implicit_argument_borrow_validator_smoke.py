@@ -23,9 +23,9 @@ def fixtures(root: Path) -> dict:
             path = f"fixtures/implicit-borrow/{kind}/case{number:02}.atto"
             target = root / path
             target.parent.mkdir(parents=True, exist_ok=True)
-            header = (f"// expect-exit: {expected}\\n" if kind == "pass"
-                      else f"// expect-error: {expected}\\n")
-            target.write_text(header + "pub fnc main(): int { return 42; }\\n",
+            header = (f"// expect-exit: {expected}\n" if kind == "pass"
+                      else f"// expect-error: {expected}\n")
+            target.write_text(header + "pub fnc main(): int { return 42; }\n",
                               encoding="utf-8")
             case = {
                 "id": f"IB_{mark}_{number:02}",
