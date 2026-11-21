@@ -40,6 +40,25 @@ function inspect(x) {
   for (const row of x.backends) {
     assert(abiOptions.has(row.actor_reference_abi_candidate), 'unrecognized actor ref encoding');
     assert.equal(row.control_plane_compiled_atto_guest, 'NOT_EXECUTED');
+    // A host scalar or runtime-root snapshot is never compiled .atto i128.
+    const scalar = row.control_i128;
+    assert.equal(scalar.compiled_atto_guest, 'NOT_EXECUTED');
+    assert.equal(scalar.little_endian_low_64_hex, '0123456789abcdef');
+    assert.equal(scalar.little_endian_high_64_hex, 'fedcba9876543210');
+    const expectedI128 = row.repo.endsWith('.java')
+      ? ['SOURCE_AUTHORED_JDK25_NOT_EXECUTED', '5b0756b21c9a812f4b5aeefb583a19bca6060a3c', false]
+      : row.repo.endsWith('.net')
+      ? ['SOURCE_AUTHORED_CLR_NATIVEAOT_NOT_EXECUTED', 'c3298863706151887e001c6d13429e69c5cea110', false]
+      : row.repo.endsWith('.llvm')
+      ? ['PASS_LOCAL_GCC_CLANG_HOST_ONLY', 'aaf3582c2252c68bd456a6d66acbab06b73b0599', true]
+      : ['NOT_IMPLEMENTED_OR_UNVERIFIED', null, false];
+    assert.equal(scalar.status, expectedI128[0]);
+    assert.equal(scalar.source_test_blob, expectedI128[1]);
+    assert.equal(scalar.host_i128_test_executed, expectedI128[2]);
+    assert.equal(scalar.coherent_under_concurrent_host_access,
+      expectedI128[1] === null ? null : true);
+    assert.equal(scalar.host_gc_zero_bytes_on_warm_snapshot,
+      row.repo.endsWith('.llvm') ? 'NOT_APPLICABLE_NATIVE_HOST' : 'NOT_EXECUTED');
     const integration = row.repo === 'atto-lang/atto-source.java'
       ? ['JAVA_JVM_SPAWN_STOP_NATIVE_COUNTERS_SOURCE_AUTHORED_NOT_EXECUTED', 44]
       : row.repo === 'atto-lang/atto-source.net'
@@ -52,16 +71,16 @@ function inspect(x) {
     assert.equal(row.runtime_integration_executed_steps, 0,
       'unadmitted source workflows provide no executed runtime steps');
     const pinnedRootSource = row.repo === 'atto-lang/atto-source.java' ? {
-      'src/main/java/dev/oreslang/runtime/ActorRuntime.java': '689857fa80eceb672b64fc095edd3f0304ac4062',
-      'src/main/java/dev/oreslang/runtime/ControlPlaneArena32.java': '7380d8309d84b767b8802f0190ec3e53b7d11307',
-      'src/test/java/dev/oreslang/runtime/ActorRuntimeNativeControlCountersTest.java': '3e9808754f05ff56f0cf5085db94423d0aa66f61',
-      '.github/workflows/control-plane-ref32-ffm.yml': '78f5f8e410a3ebe7df6de14bb87932a614eeef58'
+      'src/main/java/dev/oreslang/runtime/ActorRuntime.java': '4706147ed5a801d98f4361eec12396577bf93753',
+      'src/main/java/dev/oreslang/runtime/ControlPlaneArena32.java': 'e62ba18c4f62ff0429b217d838545598e93945ae',
+      'src/test/java/dev/oreslang/runtime/ActorRuntimeNativeControlCountersTest.java': '66fd8de6c4dc05d892ce949e26d27fa693eba63a',
+      '.github/workflows/control-plane-ref32-ffm.yml': '2b19400d68a87ffcee17ab642448ac26d001d058'
     } : row.repo === 'atto-lang/atto-source.net' ? {
-      'runtime/Ores.Net.Runtime/ActorRuntime.cs': '6e1639fda258c1a14cf14f58e33226735146038b',
-      'runtime/Ores.Net.Runtime/ControlPlaneArena32.cs': 'f7f7e25ac5c9e4f8079e055a1ac12365c955614a',
-      'verification/Ores.Net.Tests/ActorControlDirectoryIntegrationSelfTest.cs': '5c745f4205a1ee065724c76a30f6054541f6cc24',
+      'runtime/Ores.Net.Runtime/ActorRuntime.cs': 'fc923e24874d87e879722992f3b4e889e9f1979f',
+      'runtime/Ores.Net.Runtime/ControlPlaneArena32.cs': 'bb6eb079d4fe251a1173397b991c6304aaf8dfb7',
+      'verification/Ores.Net.Tests/ActorControlDirectoryIntegrationSelfTest.cs': '76c6022efc12545a1b07fdab817db3c8706344b0',
       'verification/Ores.Net.ControlRuntimeProbe/ControlRuntimeProbe.csproj': '691589168e8d02d58a462a9f25aa7a8303920d25',
-      '.github/workflows/control-plane-ref32-nativeaot.yml': '3c417fffede8668c7130ee306160d3b013c19ed6'
+      '.github/workflows/control-plane-ref32-nativeaot.yml': 'd95b0c1ca86def972f1e837fdd5f049860bd9f49'
     } : null;
     assert.deepEqual(row.runtime_native_root_source_blobs, pinnedRootSource,
       'source-only runtime integration evidence must retain exact immutable Git blob identities');
@@ -90,13 +109,18 @@ function inspect(x) {
       assert.equal(receipt.ci_on_current_head, 'NOT_EXECUTED');
       assert.equal(receipt.os_target, 'linux-x86_64');
       assert.deepEqual(receipt.source_blobs, {
-        'ControlPlaneArena32.h': 'ae2188f51a1659426dbd8c7e94bc6e672525dfde',
-        'ControlPlaneArena32.c': 'ff66f2be47a50373e88b7d4e66b4d35f396bc0c5',
-        'control_plane_arena32_test.c': 'e3dafa102cb0b3f08611c02111680ff1e66dcb24'
+        'ControlPlaneArena32.h': '3cef257d752b28c8031ca2b9a205b2b85222513a',
+        'ControlPlaneArena32.c': '1383ed7ab4607d62a3f7ad0a12761e61bc735dcd',
+        'control_plane_arena32_test.c': 'aaf3582c2252c68bd456a6d66acbab06b73b0599'
       });
       assert.match(receipt.gcc_binary_sha256, /^[0-9a-f]{64}$/);
       assert.match(receipt.clang_sanitized_binary_sha256, /^[0-9a-f]{64}$/);
       assert.match(receipt.positive_host_pass_marker, /NO compiled Atto guest or zero-GC proof/);
+      assert.deepEqual(receipt.concurrent_i128_pair_test, {
+        writer_iterations: 32768, reader_iterations: 32768,
+        compiler_runs: { gcc_optimized: 1, clang_asan_ubsan: 1 },
+        verdict: 'PASS_LOCAL_HOST_ONLY', live_guest_compiled: false
+      });
       assert.deepEqual(receipt.concurrent_carrier_test, {
         threads: 4, iterations_per_thread: 1024,
         passed: 'PASS_LOCAL_HOST_SANITIZERS_ONLY',
@@ -238,4 +262,22 @@ test('native root source blob mismatch or foreign backend source claim is reject
   const invented = structuredClone(baseline);
   invented.backends.find(x => x.repo.endsWith('.llvm')).runtime_native_root_source_blobs = {};
   assert.throws(() => inspect(invented));
+});
+
+test('cannot promote host i128 writes, fabricate zero CLR allocation, or forge 128-bit fixture SHA', () => {
+  for (const suffix of ['.java', '.net', '.llvm']) {
+    const idx = baseline.backends.findIndex(row => row.repo.endsWith(suffix));
+    const fakeGuest = structuredClone(baseline);
+    fakeGuest.backends[idx].control_i128.compiled_atto_guest = 'PASS';
+    assert.throws(() => inspect(fakeGuest));
+    const fakeExec = structuredClone(baseline);
+    fakeExec.backends[idx].control_i128.host_i128_test_executed = suffix === '.llvm' ? false : true;
+    assert.throws(() => inspect(fakeExec));
+    const fakeSha = structuredClone(baseline);
+    fakeSha.backends[idx].control_i128.source_test_blob = 'f'.repeat(40);
+    assert.throws(() => inspect(fakeSha));
+    const fakeGc = structuredClone(baseline);
+    fakeGc.backends[idx].control_i128.host_gc_zero_bytes_on_warm_snapshot = 'PASS';
+    assert.throws(() => inspect(fakeGc));
+  }
 });
