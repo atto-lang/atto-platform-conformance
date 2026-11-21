@@ -3,6 +3,37 @@
 **Status: SPECIFICATION + SOURCE-FREE REFERENCE MODEL ONLY (2026-11-10).**
 No Java/GraalVM, LLVM, .NET NativeAOT, Wasm or Forge guest compiler acceptance or execution is claimed. All five compiler-backed lanes are **NOT_EXECUTED** until their own exact-head guest runs, typechecker failures and native artifacts are supplied. The source candidates below are not accepted compiler fixtures yet.
 
+## Converged cross-repository v1 decision (2026-11-21)
+
+This candidate is now aligned with
+[atto-spec draft #22](https://github.com/atto-lang/atto-spec/pull/22).
+The chosen **v1 acceptance contract** is:
+
+1. `maybe` remains contextual; explicit `do maybe` / `return maybe`
+   select the new construct, while an unrelated identifier named `maybe`
+   remains legal. Bare expression-position `maybe` is a later extension.
+2. `else` is **required**, all `Err` / `None` failure variants must be
+   covered, and omitted `else` does *not* automatically propagate.
+3. On failed `?=`, a body-local `defer` unwinds **before** the chosen
+   `else` arm; handler-local defers unwind after that handler; function
+   defers run at enclosing-function exit; outer `finally` remains
+   exactly-once for eligible structured exits.
+4. The `on` marker on failure patterns is accepted for old source
+   compatibility, but new examples omit it. `?=` is an atomic operator,
+   legal only as a top-level `maybe` body item.
+5. `try` is an independent exception construct. The new
+   `try ... catch ... finally ... end` and braced spellings have
+   identical semantics. Inner `maybe ... end` cannot close outer `try`.
+   A failed value match goes to `else` (not `catch`); a real throw
+   goes through eligible defers to `catch` (not value `else`).
+
+The `source-free` JavaScript model now tracks body/handler/function
+cleanup scopes separately. Its tests are **not** proof of compiler
+support. New `try-keyword-*.atto` and `negative-missing-else-in-try.atto`
+fixtures are candidate *not-executed* source for compiler integration.
+All backend evidence remains `NOT_EXECUTED`; no silent conformance
+promotion is permitted.
+
 ## Syntax and return authority
 
 ```atto
