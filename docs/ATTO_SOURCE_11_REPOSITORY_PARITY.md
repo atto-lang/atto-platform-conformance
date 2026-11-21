@@ -94,6 +94,17 @@ Other active actor-memory branches remain independent: [LLVM #742](https://githu
 
 The feature's executable target is [Atto spec #91](https://github.com/atto-lang/atto-spec/pull/91) and [hybrid heap conformance #461](https://github.com/atto-lang/atto-platform-conformance/pull/461); neither bypasses exact-current-head compiled guest/NativeAOT, safety, GC/RSS instrumentation and STOP/cancellation tests. The control-ledger Node test only asserts metadata integrity and rejection of forged completion.
 
+## Runtime CONTROL root integration — Java and .NET source-authored (2026-11-21)
+
+The **existing** [Java actor-native integration PR #1273](https://github.com/atto-lang/atto-source.java/pull/1273) and [.NET guest-heap PR #173](https://github.com/atto-lang/atto-source.net/pull/173) now contain opt-in, **actual host ActorRuntime** control-root lifecycle wiring; they are not merely standalone allocators. They do **not** replace the runtime-managed actor registries, mailbox byte arrays, scheduling delegates, or per-turn host objects.
+
+- **Java/GraalVM:** supervisor opt-in `enableNativeControlCounters()`; FFM 32-byte record plus 12-byte native metadata, 44 explicitly charged aggregate bytes; atomic actor reservation, admission rollback, physical deregistration and quiescent shutdown publish a bounded native i64 summary. JDK25 JUnit spawn/STOP test and workflow authored, not executed.
+- **.NET NativeAOT:** opt-in `UseNativeControlCounters`; 32-byte record plus padded 16-byte metadata, 48 actual native bytes subtracted from actor budget at construction; native live-actor and monotonic completed-message summaries updated on real Spawn/dispatch/FinalizeCell paths. CLR test plus Linux NativeAOT runtime-host publish/run workflow authored, not executed.
+- **Security:** distinct issuer-qualified root capability, separate actor/control ABI, no actor-guest access to raw control words, no root memory free before observed actor/carrier quiescence, no late-update use-after-free after shutdown admission sealing. These are source implementation intents pending executable race, cleanup, error-injection and sanitizer evidence.
+- **No parity promotion:** the eleven-source ledger still marks Java and .NET guest control-memory execution and measured scheduler-wide zero managed allocations `NOT_EXECUTED`; LLVM's existing GCC/Clang runs remain host-native-only, while the existing JS/Forge/Wasm codec receipts are scoped separately. The two bootstrap-only sources and remaining engines are not treated as implicit implementations.
+
+**CI security:** Java and .NET private-source destination allowlists currently have no effective approved cross-organization CI carrier. Their code must not be mirrored to a different private org without separately approved destination authorization. A zero-step failed source Action is `NOT_EXECUTED`, never a compiler failure or a PASS. Preserve the current source PR heads and exact Git blob identity when testing.
+
 ## Required completion per feature and backend
 
 1. Confirm if the feature is supported by the backend's **defined capability profile**. For unsupported hardware/realtime/restricted profiles, require a real exact-head compiler rejection with the required diagnostic and no output artifact; a skipped job is not success.
