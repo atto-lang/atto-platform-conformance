@@ -61,3 +61,15 @@ The parity gate now requires **eight additional** compiled-source guest cases fo
 The source surface is aspirational until backend implementations exist. In particular, `?` must not be interpreted as a magically allowed operator in a void-returning actor `receive`; the canonical positive requires a genuinely `Result<PublishReceipt, PublishError>`-returning callable executing on an authenticated actor turn. Existing Java [pubsub #1458](https://github.com/atto-lang/atto-source.java/pull/1458) and [postfix question #735](https://github.com/atto-lang/atto-source.java/pull/735) have separate incomplete integration work. LLVM [pubsub #575](https://github.com/atto-lang/atto-source.llvm/pull/575) has a native substrate but not compiled guest parity. No backend status is promoted in this change.
 
 All eleven `atto-source.*` compilers must fulfill the 28-case compiled guest matrix before this version can be certified. A syntactically valid self-attested receipt can at best be `candidate-only`, requiring independent GitHub job/artifact authentication.
+
+## 2026-11-21 exact-HEAD source inventory
+
+The separate [mainline audit snapshot](../verification/atto-ensemble-pubsub-main-audit.json) pins the eleven observed `main` commits and concrete pub/sub-related filename evidence. It is an inventory, **not a guest test** and not evidence that missing filenames mean a missing implementation. In particular:
+
+- Java `main`: actor pub/sub source/runtime and an intentionally rejected source `try_publish` fixture; [Java integration #1458](https://github.com/atto-lang/atto-source.java/pull/1458) is separate and still unverified.
+- LLVM `main`: actor-group runtime/source foundations. Native pub/sub is on [LLVM #575](https://github.com/atto-lang/atto-source.llvm/pull/575) and stacked UTF-8/receipt ABI hardening on [#590](https://github.com/atto-lang/atto-source.llvm/pull/590), not proven compiled guest parity.
+- .NET and Wasm `main`: pub/sub host runtime and explicit source-admission or source-gate files; no independent executable `try_publish(share! event)?` evidence was inspected.
+- Cranelift `main`: a copied portable pub/sub contract, not executable guest proof.
+- Forge, Rust, JavaScript, HDL, Atto self-hosted, real-time: no pub/sub-named files matched the recursive `main` tree path scan. **Unknown implementation coverage, NOT_VERIFIED**; static filename scanning cannot prove absence.
+
+Do not silently classify any of these eleven as `PASS`, `IMPLEMENTED`, or `CERTIFIED` from the filename scan. Every one must prove the 28-case guest matrix or remain an explicit unsupported profile. The source-side cross-organization private export hold applies to testing; do not mirror private source without independent security authorization.

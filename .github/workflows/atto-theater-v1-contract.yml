@@ -6,6 +6,7 @@ on:
       - 'bin/verify-atto-theater-v1.mjs'
       - 'tests/atto-theater-v1.test.mjs'
       - 'verification/atto-theater-v1.receipts.json'
+      - 'verification/atto-ensemble-pubsub-main-audit.json'
       - 'docs/ATTO_THEATER_PARITY_V1.md'
       - '.github/workflows/atto-theater-v1-contract.yml'
   workflow_dispatch:

@@ -8,6 +8,8 @@ import {BACKENDS,CASE_IDS,validateTheaterContract,validateGuestReceipt,auditPari
 const dir=path.dirname(fileURLToPath(import.meta.url));
 const contract=JSON.parse(fs.readFileSync(path.resolve(dir,'../contracts/atto-theater-v1.json'),'utf8'));
 const index=JSON.parse(fs.readFileSync(path.resolve(dir,'../verification/atto-theater-v1.receipts.json'),'utf8'));
+const snapshot=JSON.parse(fs.readFileSync(path.resolve(dir,'../verification/atto-ensemble-pubsub-main-audit.json'),'utf8'));
+
 const sha40='a'.repeat(40),sha64='b'.repeat(64);
 const candidate=(backend='java')=>({
   schema:'atto.theater-guest-receipt/1',backend,repository:`atto-lang/atto-source.${backend}`,
@@ -28,6 +30,23 @@ test('contract fixes all 11 repositories and 28 safety cases',()=>{
   assert.ok(contract.cases.some(c=>c.id==='ensemble-membership-is-not-subscription'));
   assert.ok(contract.cases.some(c=>c.id==='director-panic-control-only'));
 });
+test('all eleven mainline pubsub evidence gaps are pinned to actual repository identities',()=>{
+  assert.equal(snapshot.schema,'atto.ensemble-pubsub-main-audit/1');
+  assert.equal(snapshot.status,'NOT_VERIFIED');
+  assert.deepEqual(Object.keys(snapshot.backends).sort(),[...BACKENDS].sort());
+  for(const backend of BACKENDS){
+    const entry=snapshot.backends[backend];
+    assert.equal(entry.repository,contract.backends[backend]);
+    assert.match(entry.mainSha,/^[0-9a-f]{40}$/);
+    assert.equal(entry.status,'NOT_VERIFIED');
+    assert.ok(Array.isArray(entry.observedPaths));
+    assert.ok(Array.isArray(entry.existingPRs));
+    assert.ok(entry.observedPaths.every(p=>typeof p==='string' && !p.startsWith('/') && !p.includes('..')));
+  }
+  // An audit snapshot can never authenticate a compiled guest receipt.
+  assert.equal(auditParityIndex(index,contract).status,'not-certified');
+});
+
 test('empty index reports all backends not-executed and never certified',()=>{
   const x=auditParityIndex(index,contract);
   assert.equal(x.status,'not-certified');

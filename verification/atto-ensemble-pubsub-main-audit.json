@@ -1,0 +1,109 @@
+{
+  "schema": "atto.ensemble-pubsub-main-audit/1",
+  "observedDate": "2026-11-21",
+  "status": "NOT_VERIFIED",
+  "source": "GitHub branch-main HEADs and recursive Git trees, not compiled guest output or a semantic proof of absence",
+  "warning": "observedPaths lists matching repository filenames only; empty lists are not proof the backend has no related implementation",
+  "backends": {
+    "java": {
+      "repository": "atto-lang/atto-source.java",
+      "mainSha": "12ded133d89dafb21f48391e9aa3d5a7fb7f80f6",
+      "status": "NOT_VERIFIED",
+      "observedPaths": [
+        "src/main/java/dev/oreslang/runtime/ActorEventBus.java",
+        "contracts/v1/actor-pubsub-v1.json",
+        "contracts/v1/fixtures/actor-pubsub-reject-unlowered-try-publish.atto"
+      ],
+      "existingPRs": [
+        1458
+      ]
+    },
+    "llvm": {
+      "repository": "atto-lang/atto-source.llvm",
+      "mainSha": "fe4f253b5932f8f00ab4a20f9b9bc2019d17553b",
+      "status": "NOT_VERIFIED",
+      "observedPaths": [
+        "src/main/cpp/oreslang/runtime/ActorGroupLifecycle.hpp",
+        "docs/ACTOR_GROUP_SOURCE_API.md"
+      ],
+      "existingPRs": [
+        575,
+        590
+      ]
+    },
+    "net": {
+      "repository": "atto-lang/atto-source.net",
+      "mainSha": "5ed2444f3526b8b6685c7be0b038bbb8e6bc6f51",
+      "status": "NOT_VERIFIED",
+      "observedPaths": [
+        "compiler/Ores.Net.Compiler.Core/ActorPubSubSourceAdmission.cs",
+        "runtime/Ores.Net.Runtime/ActorPubSub.cs",
+        "contracts/v1/actor-pubsub-v1.json"
+      ],
+      "existingPRs": []
+    },
+    "wasm": {
+      "repository": "atto-lang/atto-source.wasm",
+      "mainSha": "16ba74ab9f9959cc15d21dcb6e54a18e1c325fef",
+      "status": "NOT_VERIFIED",
+      "observedPaths": [
+        "src/actor-pubsub.mjs",
+        "tests/actor-pubsub-source-gate.test.mjs",
+        "contracts/v1/actor-pubsub-v1.json"
+      ],
+      "existingPRs": []
+    },
+    "forge": {
+      "repository": "atto-lang/atto-source.forge",
+      "mainSha": "f5dd299c277376cabe9e536edbbb4e662a267ad4",
+      "status": "NOT_VERIFIED",
+      "observedPaths": [],
+      "existingPRs": []
+    },
+    "cranelift": {
+      "repository": "atto-lang/atto-source.cranelift",
+      "mainSha": "e867c0a5cf8b94f98ce9b1212d2c735b76bc4120",
+      "status": "NOT_VERIFIED",
+      "observedPaths": [
+        "contracts/v1/actor-pubsub-v1.json",
+        "docs/ACTOR_PUBSUB_V1.md"
+      ],
+      "existingPRs": []
+    },
+    "rs": {
+      "repository": "atto-lang/atto-source.rs",
+      "mainSha": "7f893323f761e4a71e4b2e199daf75845d8f1912",
+      "status": "NOT_VERIFIED",
+      "observedPaths": [],
+      "existingPRs": []
+    },
+    "js": {
+      "repository": "atto-lang/atto-source.js",
+      "mainSha": "b8e48b19c33b61e5faa4628bf03bddf2823f403d",
+      "status": "NOT_VERIFIED",
+      "observedPaths": [],
+      "existingPRs": []
+    },
+    "hdl": {
+      "repository": "atto-lang/atto-source.hdl",
+      "mainSha": "023455e496bb9cfbdd157ccc94bb69f31eec44ea",
+      "status": "NOT_VERIFIED",
+      "observedPaths": [],
+      "existingPRs": []
+    },
+    "atto": {
+      "repository": "atto-lang/atto-source.atto",
+      "mainSha": "5b9a274490a4567ed9d1088fd1ff304dbe383357",
+      "status": "NOT_VERIFIED",
+      "observedPaths": [],
+      "existingPRs": []
+    },
+    "realtime": {
+      "repository": "atto-lang/atto-source.realtime",
+      "mainSha": "4f6449470ab075cdad17884c7a1aee2a6e2ab54c",
+      "status": "NOT_VERIFIED",
+      "observedPaths": [],
+      "existingPRs": []
+    }
+  }
+}
