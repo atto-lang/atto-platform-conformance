@@ -5,7 +5,7 @@
   "conformance_authority": "atto-lang/atto-platform-conformance",
   "evidence_gate": "source_inventory_only",
   "release_qualified": false,
-  "notes": "Main SHAs are observed GitHub snapshots, not tested compiler heads. Candidate PR links are work pointers, not compiled-guest evidence. This registry cannot graduate any cell to passed until a reviewed authenticating verifier and exact-head guest receipts are integrated. Floating int/int division is tracked independently: Java #66 and .NET #191 are unexecuted implementation candidates; all other backends remain not_executed rather than implicitly supported.",
+  "notes": "Main SHAs are observed GitHub snapshots, not tested compiler heads. Candidate PR links are work pointers, not compiled-guest evidence. This registry cannot graduate any cell to passed until a reviewed authenticating verifier and exact-head guest receipts are integrated. Floating int/int division is tracked independently: Java #66 and .NET #191 are unexecuted implementation candidates; all other backends remain not_executed rather than implicitly supported. Rust #411 now proposes typed float division and checked shifts in the actual Rust-to-Wasm frontend; JS #46 proposes checked shift-count guest lowering. Both remain unexecuted, and JS #71 integration must refresh its pinned #46 head.",
   "workstreams": [
     {
       "id": "operator_caret_xor",
@@ -576,7 +576,9 @@
         "float_int_division": {
           "state": "not_executed",
           "evidence": null,
-          "candidate_prs": []
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.rs/pull/411"
+          ]
         },
         "inline_sync_task": {
           "state": "not_executed",
@@ -641,7 +643,8 @@
           "state": "not_executed",
           "evidence": null,
           "candidate_prs": [
-            "https://github.com/atto-lang/atto-source.js/pull/71"
+            "https://github.com/atto-lang/atto-source.js/pull/71",
+            "https://github.com/atto-lang/atto-source.js/pull/46"
           ]
         },
         "checked_i64": {
