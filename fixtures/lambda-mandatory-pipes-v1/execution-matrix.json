@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "id": "lambda-executable-parity-v1",
+  "normative_specs": [
+    "atto-lang/atto-spec#192",
+    "atto-lang/atto-spec#149"
+  ],
+  "related_implementations": [
+    "atto-lang/atto-source.rs#300",
+    "atto-lang/atto-source.rs#448",
+    "atto-lang/atto-source.java#477",
+    "atto-lang/atto-source.js#76"
+  ],
+  "status": "TARGET_NOT_EXECUTED",
+  "scope": "Executable target suite, not parser-only evidence. A backend may report UNSUPPORTED with structured diagnostic until it implements this profile, but must not report execution parity.",
+  "backend_status": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "rs": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "atto": "NOT_EXECUTED",
+    "hdl": "NOT_EXECUTED",
+    "realtime": "NOT_EXECUTED"
+  },
+  "requirements": {
+    "run": "Compile actual source with exact-head backend and execute isolated guest. Assert main exit_code, no imported host privileges and deterministic artifact bytes.",
+    "reject": "Reject exact source in compiler admission/type check without creating executable artifact, with stable diagnostic family.",
+    "unavailable": "Report UNSUPPORTED, never a PASS or an opaque fallback; no host-side JavaScript interpretation may substitute for guest execution.",
+    "provenance": "Record backend commit SHA, source fixture Git blob SHA, compiler artifact SHA-256, actual executed job steps, stdout/stderr, exit status and runtime environment."
+  },
+  "cases": [
+    {
+      "id": "local-const-discard-i64",
+      "kind": "run",
+      "source": "pub fnc main(): int { const fnc v = |_| : int -> 5; return v(41); }\n",
+      "exit_code": 5,
+      "meaning": "one ignored parameter inferred from an actual checked direct call"
+    },
+    {
+      "id": "local-const-discard-bool",
+      "kind": "run",
+      "source": "pub fnc main(): int { const fnc v = |_| : int -> 5; return v(true); }\n",
+      "exit_code": 5,
+      "meaning": "ignored parameter still has a checked argument type"
+    },
+    {
+      "id": "local-const-zero",
+      "kind": "run",
+      "source": "pub fnc main(): int { const fnc v = || : int -> 5; return v(); }\n",
+      "exit_code": 5,
+      "meaning": "zero arguments, not an arity-polymorphic placeholder"
+    },
+    {
+      "id": "local-type-first",
+      "kind": "run",
+      "source": "pub fnc main(): int { const fnc v = |int x| : int -> x + 1; return v(41); }\n",
+      "exit_code": 42,
+      "meaning": "type-first annotation and checked scalar direct call"
+    },
+    {
+      "id": "local-name-first",
+      "kind": "run",
+      "source": "pub fnc main(): int { const fnc v = |x: int| : int -> x + 1; return v(41); }\n",
+      "exit_code": 42,
+      "meaning": "name-first annotation is semantically equivalent"
+    },
+    {
+      "id": "module-typed-discard",
+      "kind": "run",
+      "source": "const fnc v = |int _| : int -> 5;\npub fnc main(): int { return v(41); }\n",
+      "exit_code": 5,
+      "meaning": "module ABI fixed by explicit parameter type"
+    },
+    {
+      "id": "missing-pipes-discard",
+      "kind": "reject",
+      "source": "pub fnc main(): int { const fnc v = _ : int -> 5; return v(41); }\n",
+      "error_family": "E_SYNTAX",
+      "meaning": "bare underscore must never be interpreted as lambda"
+    },
+    {
+      "id": "missing-pipes-named",
+      "kind": "reject",
+      "source": "pub fnc main(): int { const fnc v = x : int -> x + 1; return v(41); }\n",
+      "error_family": "E_SYNTAX",
+      "meaning": "bare named parameter head must never be accepted"
+    },
+    {
+      "id": "zero-arity-extra-arg",
+      "kind": "reject",
+      "source": "pub fnc main(): int { const fnc v = || : int -> 5; return v(41); }\n",
+      "error_family": "E_ARITY",
+      "meaning": "a zero-parameter lambda rejects one argument"
+    },
+    {
+      "id": "discard-arity-missing",
+      "kind": "reject",
+      "source": "pub fnc main(): int { const fnc v = |_| : int -> 5; return v(); }\n",
+      "error_family": "E_ARITY",
+      "meaning": "ignored argument still counts toward arity"
+    },
+    {
+      "id": "module-abi-untyped",
+      "kind": "reject",
+      "source": "const fnc v = |_| : int -> 5;\npub fnc main(): int { return v(41); }\n",
+      "error_family": "E_INFER",
+      "meaning": "parses with pipes but module-scope parameter needs an explicit ABI type"
+    },
+    {
+      "id": "escaped-capture-unchecked",
+      "kind": "reject",
+      "source": "pub fnc main(): int { val runtime = 41; const fnc v = |_| : int -> runtime; return v(41); }\n",
+      "error_family": "E_CONST",
+      "meaning": "const direct callable must not capture runtime variables"
+    }
+  ]
+}
