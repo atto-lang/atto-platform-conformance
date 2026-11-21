@@ -8,9 +8,9 @@ const denied = (mutate, name) => test(name, () => {
   mutate(item);
   assert.throws(() => validateParityIndex(item), /ELEVEN_BACKEND_PARITY_DENIED/);
 });
-test('all eleven immutable backend identities and ten cross-contract gates are present', () => {
+test('all eleven immutable backend identities and eleven cross-contract gates are present', () => {
   const result = validateParityIndex(base);
-  assert.deepEqual(result, {backends: 11, workstreams: 10, cells: 110, guest_passes: 0});
+  assert.deepEqual(result, {backends: 11, workstreams: 11, cells: 121, guest_passes: 0});
   assert.deepEqual(new Set(base.backends.map(b => b.id)), new Set(Object.keys(REQUIRED_BACKENDS)));
   assert.deepEqual(new Set(base.workstreams.map(w => w.id)), new Set(REQUIRED_WORKSTREAMS));
 });
@@ -30,6 +30,11 @@ denied(x => x.workstreams.pop(), 'missing normative workstream is rejected');
 denied(x => x.workstreams[0].approval_state = 'ratified', 'unapproved spec promotion is rejected');
 denied(x => x.workstreams[0].reference = 'https://untrusted.example/spec', 'off-host spec reference is rejected');
 denied(x => x.backends[0].features.checked_i64.skip = true, 'unknown feature escape hatch is rejected');
+denied(x => delete x.backends[0].features.float_int_division, 'missing canonical floating division cell is rejected');
+denied(x => x.backends[0].features.float_int_division.state = 'passed', 'invented floating division guest pass is rejected');
+denied(x => x.backends[0].features.float_int_division.evidence = {host_checked:true}, 'host-only floating division is not a guest receipt');
+denied(x => x.backends[0].features.float_int_division.candidate_prs.push('https://github.com/atto-lang/atto-source.net/pull/191'), 'cross-backend floating division candidate is rejected');
+
 test('historical scope contains no self-attested success', () => {
   for (const b of base.backends) for (const cell of Object.values(b.features)) {
     assert.equal(cell.state, 'not_executed');
