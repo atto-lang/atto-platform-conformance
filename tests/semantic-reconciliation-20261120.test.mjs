@@ -68,6 +68,13 @@ test('return-first :: and effect-bearing begin variants remain cross-backend tar
  assert.match(corpus.P15_nominal_error_declaration_order, /raises Foo ::[\s\S]*define class Foo extends Error/);
  assert.match(corpus.P16_nominal_error_triggered_recover, /raise! new Foo\(\)/);
  assert.match(corpus.P16_nominal_error_triggered_recover, /recover \|err, cursor\|/);
+ const typed = reg.cases.find(c => c.id==='P16_nominal_error_triggered_recover');
+ assert.equal(typed.identity_receipt_required.nominal_type,'Foo');
+ assert.deepEqual(typed.identity_receipt_required.capture_at,['raise_site','recover_handler']);
+ assert.equal(typed.identity_receipt_required.same_runtime_type_id,true);
+ assert.equal(typed.identity_receipt_required.reject_message_string_inference,true);
+ assert.equal(typed.identity_receipt_required.scalar_exit_alone_is_insufficient,true);
+ assert.match(corpus.P16_nominal_error_triggered_recover, /scalar exit 42 alone is NOT proof/);
  assert.match(corpus.N13_nonerror_class_effect, /define class Plain as[\s\S]*raises Plain ::/);
  assert.match(corpus.N14_subtype_declared_base_error_raised, /raises Foo ::[\s\S]*raise! Error\("not a Foo"\)/);
  assert.match(corpus.N08_raises_no_boundary, /raises Foo\n  return/);
