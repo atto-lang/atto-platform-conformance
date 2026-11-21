@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import {createHash} from 'node:crypto';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {BACKENDS,CASE_IDS,validateTheaterContract,validateGuestReceipt,auditParityIndex}
@@ -9,6 +10,19 @@ const dir=path.dirname(fileURLToPath(import.meta.url));
 const contract=JSON.parse(fs.readFileSync(path.resolve(dir,'../contracts/atto-theater-v1.json'),'utf8'));
 const index=JSON.parse(fs.readFileSync(path.resolve(dir,'../verification/atto-theater-v1.receipts.json'),'utf8'));
 const snapshot=JSON.parse(fs.readFileSync(path.resolve(dir,'../verification/atto-ensemble-pubsub-main-audit.json'),'utf8'));
+
+const theaterGuestSource=fs.readFileSync(path.resolve(dir,'../fixtures/atto-theater-v1/checked-i64-terminal.atto'));
+test('shared canonical actor fixture is the exact cross-compiler Git blob',()=>{
+  const blob=createHash('sha1')
+    .update('blob '+theaterGuestSource.byteLength+String.fromCharCode(0))
+    .update(theaterGuestSource).digest('hex');
+  assert.equal(blob,'8a981a3545e0307387af83b0fc306c012d52f831');
+  const s=theaterGuestSource.toString('utf8');
+  assert.match(s,/define actor Counter receives int as/);
+  assert.match(s,/receive\(ActorMail<int> mail\)/);
+  // Source identity is not an executed guest, even though a target may compile it.
+  assert.equal(auditParityIndex(index,contract).status,'not-certified');
+});
 
 const sha40='a'.repeat(40),sha64='b'.repeat(64);
 const candidate=(backend='java')=>({
