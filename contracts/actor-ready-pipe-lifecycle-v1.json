@@ -367,5 +367,47 @@
     "verified_native_compiler_execution": false,
     "external_private_source_mirror_authorized": false,
     "source_policy": "https://github.com/atto-lang/atto-source.rs/blob/main/.github/private-ci-approved-repositories.txt"
+  },
+  "mainline_optin_candidate": {
+    "repository": "atto-lang/atto-source.rs",
+    "pull_request": "https://github.com/atto-lang/atto-source.rs/pull/483",
+    "source_head_sha": "a1a46ca4e2d9ac9bf48b62262ae5f404d1c6335d",
+    "base_branch": "main",
+    "branch": "chatgpt/v2-ready-checked-bang-mainline-sidecar-20261120",
+    "status": "STAGED_NO_EXECUTED_COMPILER_GUEST",
+    "experimental_entrypoint": "attoc --experimental-v2 file.atto [-o guest.wasm]",
+    "public_default_compiler_fallback": false,
+    "package_implicit_fallback": false,
+    "browser_compiler_abi_promoted": false,
+    "mainline_preserved_file_blob_count": 7,
+    "source_linkage_checks_passed": 13,
+    "source_linkage_checks_executed": "ISOLATED_V8_ONLY",
+    "real_wasm_node_runner": "tests/node-v2-ready-bang-guest.mjs",
+    "fixtures": [
+      "230",
+      "231",
+      "232",
+      "233",
+      "234"
+    ],
+    "native_test_command": "cargo test --locked --test v2_mainline_admission --test v2_actor_ready_guest --test v2_actor_bang_guest",
+    "expected_stdout": "40\n2\n",
+    "expected_result": 42,
+    "ci_exact_head_guest_status": "NOT_EXECUTED",
+    "ci_head_run": "https://github.com/atto-lang/atto-source.rs/actions/runs/44860736691",
+    "ci_steps_executed": 0,
+    "private_source_export_allowlist_empty": true,
+    "source_free_probe": {
+      "carrier": "22-factor-apps/atto-ci",
+      "carrier_repository_id": 1459040433,
+      "carrier_private": true,
+      "run_url": "https://github.com/22-factor-apps/atto-ci/actions/runs/44860823730",
+      "run_head": "b314ac3f9b30ec6a4f28d4d9df5ca57e47117412",
+      "result": "SUCCESS",
+      "compiler_source_blobs_transferred": 0,
+      "compiler_tests_executed": false,
+      "independent_source_export_approval": false
+    },
+    "precedence": "mainline_integration_candidate_does_not_replace_old_v2_feature_pr_262_or_browser_actor_host_pr_25"
   }
 }
