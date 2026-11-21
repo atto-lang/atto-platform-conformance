@@ -37,6 +37,18 @@ and expected nontruncated blob counts, explicitly records
 `BOOTSTRAP_DOCUMENTATION_ONLY` for `.atto` and `.realtime`, and fails closed
 if a source-only inventory is relabeled an executable guest certificate.
 
+The registry now includes **14 explicit feature families × 11 backends =
+154 required feature/backend applicability-and-evidence decisions**.
+Every one begins `NOT_VERIFIED` in this snapshot. These decisions cover
+lambda delimiters, dual-form exceptions, `maybe`/Option/Result, ownership,
+sealed actor state, typed pubsub, scalar syntax, Ref32 actor memory,
+Theater/Director/Ensemble/Runtime, immutable collections, checked arithmetic,
+static ascription/generic inference, Unicode/control-byte admission, and
+package/import/AOT profiles. **A source-tree inventory is not one of the 154
+guest-pass proofs**; code-source presence and baseline CI never certify guest
+semantics. A bootstrap-only backend requires completed implementation or an
+explicitly justified, compiled negative unsupported-profile rejection.
+
 **Scope priority:** use the existing source PRs and shared conformance before
 opening overlapping implementation branches. The planned Theater/Director/Ensemble
 guest contract is [conformance #551](https://github.com/atto-lang/atto-platform-conformance/pull/551);
