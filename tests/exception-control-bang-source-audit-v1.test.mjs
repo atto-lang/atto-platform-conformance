@@ -44,6 +44,11 @@ function assertSourceAudit(x){
   const wasm=x.backends.find(r=>r.repo==='atto-lang/atto-source.wasm');
   assert.equal(wasm.has_frontend_in_this_repository,false);
   assert.equal(wasm.delegated_wasm_compiler_artifact_gate,'AUTHORED_NOT_EXECUTED');
+  assert.equal(wasm.candidate_head_sha,'79dc0a23ded65b5f1ddd799eff8499662e1f0473');
+  assert.equal(wasm.isolated_guest_host_security_gate,'SYNTHETIC_WASM_LOCAL_NODE22_7_OF_7_NOT_COMPILER');
+  assert.equal(wasm.guest_child_execution_timeout_ms,5000);
+  assert.equal(wasm.guest_child_stdout_limit_bytes,4096);
+  assert.equal(wasm.compiled_guest_from_approved_rust_compiler,'NOT_EXECUTED');
   assert.equal(x.full_parity_certified,false);
   assert.ok(x.merge_gates.includes('actual_compiler_or_guest_execution_receipts_and_rejections'));
 }
@@ -95,6 +100,20 @@ test('LLVM native Result-vs-Option and typed-Error diagnostics cannot masquerade
     x=>x.backends[6].native_compiler_negative_gate='8_REJECT_1_POSITIVE_PASS',
     x=>x.backends[6].native_compiler_negative_gate='',
     x=>x.backends[6].direct_guest_execution='PASSED'
+  ]){
+    const altered=clone(contract);mutate(altered);
+    assert.throws(()=>assertSourceAudit(altered));
+  }
+});
+
+test('seven locally executed synthetic Wasm host guards do not certify a compiled Atto guest',()=>{
+  for(const mutate of [
+    x=>x.backends[10].candidate_head_sha='8c87726ae46d667b1a9a175e8fb605b110f7fc2d',
+    x=>x.backends[10].isolated_guest_host_security_gate='GUEST_PARITY_PASSED',
+    x=>x.backends[10].guest_child_execution_timeout_ms=0,
+    x=>x.backends[10].guest_child_stdout_limit_bytes=1048576,
+    x=>x.backends[10].compiled_guest_from_approved_rust_compiler='PASSED',
+    x=>x.backends[10].independent_compiler_certification=true,
   ]){
     const altered=clone(contract);mutate(altered);
     assert.throws(()=>assertSourceAudit(altered));
