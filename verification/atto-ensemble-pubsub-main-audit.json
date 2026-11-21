@@ -40,7 +40,9 @@
         "runtime/Ores.Net.Runtime/ActorPubSub.cs",
         "contracts/v1/actor-pubsub-v1.json"
       ],
-      "existingPRs": []
+      "existingPRs": [
+        200
+      ]
     },
     "wasm": {
       "repository": "atto-lang/atto-source.wasm",
@@ -51,7 +53,9 @@
         "tests/actor-pubsub-source-gate.test.mjs",
         "contracts/v1/actor-pubsub-v1.json"
       ],
-      "existingPRs": []
+      "existingPRs": [
+        265
+      ]
     },
     "forge": {
       "repository": "atto-lang/atto-source.forge",
@@ -105,5 +109,21 @@
       "observedPaths": [],
       "existingPRs": []
     }
-  }
+  },
+  "sourceAdmissionWork": [
+    {
+      "backend": "net",
+      "pr": "https://github.com/atto-lang/atto-source.net/pull/200",
+      "head": "fb9ea53954f0c8c2d69ab68a2d90717d39deda6d",
+      "scope": "fail-closed unlowered .try_publish member source gate; NOT guest parity",
+      "verification": "NOT_EXECUTED_DOTNET"
+    },
+    {
+      "backend": "wasm",
+      "pr": "https://github.com/atto-lang/atto-source.wasm/pull/265",
+      "head": "cdff1cad41c22d10e0955614a2b104d6a1ff0f52",
+      "scope": "fail-closed unlowered .try_publish member source gate; NOT guest parity",
+      "verification": "SOURCE_ONLY_V8_ASCII_SCANNER_9_CASES; NOT_EXECUTED_NODE_OR_WASM"
+    }
+  ]
 }
