@@ -37,13 +37,14 @@
       "managed_hotpath_allocation_measurement": "NOT_EXECUTED",
       "deterministic_stop_quiescence_integration": "NOT_EXECUTED",
       "guest_zero_tracing_gc": "NOT_VERIFIED",
-      "full_process_zero_gc_claim": false
+      "full_process_zero_gc_claim": false,
+      "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT"
     },
     {
       "repo": "atto-lang/atto-source.net",
       "candidate_stage": "UNMANAGED_CONTROL_HOST_SOURCE",
       "existing_pr": "https://github.com/atto-lang/atto-source.net/pull/173",
-      "observed_candidate_pr_head_sha": "b95a6d1d02a57bf19a9b8899fa590615777ed83d",
+      "observed_candidate_pr_head_sha": "89fe2bcbb6c11cd17bff78968a2f2e50d6afc1ce",
       "actor_reference_abi_candidate": "generation16_slot16",
       "control_reference_abi_candidate": "control_generation20_slot12_v1",
       "control_plane_source_status": "SOURCE_COMMITTED_NOT_TESTED",
@@ -51,7 +52,8 @@
       "managed_hotpath_allocation_measurement": "NOT_EXECUTED",
       "deterministic_stop_quiescence_integration": "NOT_EXECUTED",
       "guest_zero_tracing_gc": "NOT_VERIFIED",
-      "full_process_zero_gc_claim": false
+      "full_process_zero_gc_claim": false,
+      "host_managed_allocation_probe": "SOURCE_AUTHORED_NOT_EXECUTED"
     },
     {
       "repo": "atto-lang/atto-source.hdl",
@@ -65,13 +67,14 @@
       "managed_hotpath_allocation_measurement": "NOT_EXECUTED",
       "deterministic_stop_quiescence_integration": "NOT_EXECUTED",
       "guest_zero_tracing_gc": "NOT_VERIFIED",
-      "full_process_zero_gc_claim": false
+      "full_process_zero_gc_claim": false,
+      "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT"
     },
     {
       "repo": "atto-lang/atto-source.java",
       "candidate_stage": "UNMANAGED_CONTROL_HOST_SOURCE",
       "existing_pr": "https://github.com/atto-lang/atto-source.java/pull/1273",
-      "observed_candidate_pr_head_sha": "7fd352d11bb587bf2cef8672a5add4fd6d19f0aa",
+      "observed_candidate_pr_head_sha": "5838f528eaf5619ed90eae9422d283fabd2fe5e1",
       "actor_reference_abi_candidate": "generation20_slot12",
       "control_reference_abi_candidate": "control_generation20_slot12_v1",
       "control_plane_source_status": "SOURCE_COMMITTED_NOT_TESTED",
@@ -79,7 +82,8 @@
       "managed_hotpath_allocation_measurement": "NOT_EXECUTED",
       "deterministic_stop_quiescence_integration": "NOT_EXECUTED",
       "guest_zero_tracing_gc": "NOT_VERIFIED",
-      "full_process_zero_gc_claim": false
+      "full_process_zero_gc_claim": false,
+      "host_managed_allocation_probe": "SOURCE_AUTHORED_NOT_EXECUTED"
     },
     {
       "repo": "atto-lang/atto-source.realtime",
@@ -93,7 +97,8 @@
       "managed_hotpath_allocation_measurement": "NOT_EXECUTED",
       "deterministic_stop_quiescence_integration": "NOT_EXECUTED",
       "guest_zero_tracing_gc": "NOT_VERIFIED",
-      "full_process_zero_gc_claim": false
+      "full_process_zero_gc_claim": false,
+      "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT"
     },
     {
       "repo": "atto-lang/atto-source.rs",
@@ -107,7 +112,8 @@
       "managed_hotpath_allocation_measurement": "NOT_EXECUTED",
       "deterministic_stop_quiescence_integration": "NOT_EXECUTED",
       "guest_zero_tracing_gc": "NOT_VERIFIED",
-      "full_process_zero_gc_claim": false
+      "full_process_zero_gc_claim": false,
+      "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT"
     },
     {
       "repo": "atto-lang/atto-source.llvm",
@@ -121,7 +127,8 @@
       "managed_hotpath_allocation_measurement": "NOT_EXECUTED",
       "deterministic_stop_quiescence_integration": "NOT_EXECUTED",
       "guest_zero_tracing_gc": "NOT_VERIFIED",
-      "full_process_zero_gc_claim": false
+      "full_process_zero_gc_claim": false,
+      "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT"
     },
     {
       "repo": "atto-lang/atto-source.js",
@@ -135,7 +142,8 @@
       "managed_hotpath_allocation_measurement": "NOT_EXECUTED",
       "deterministic_stop_quiescence_integration": "NOT_EXECUTED",
       "guest_zero_tracing_gc": "NOT_VERIFIED",
-      "full_process_zero_gc_claim": false
+      "full_process_zero_gc_claim": false,
+      "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT"
     },
     {
       "repo": "atto-lang/atto-source.forge",
@@ -149,7 +157,8 @@
       "managed_hotpath_allocation_measurement": "NOT_EXECUTED",
       "deterministic_stop_quiescence_integration": "NOT_EXECUTED",
       "guest_zero_tracing_gc": "NOT_VERIFIED",
-      "full_process_zero_gc_claim": false
+      "full_process_zero_gc_claim": false,
+      "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT"
     },
     {
       "repo": "atto-lang/atto-source.wasm",
@@ -163,7 +172,8 @@
       "managed_hotpath_allocation_measurement": "NOT_EXECUTED",
       "deterministic_stop_quiescence_integration": "NOT_EXECUTED",
       "guest_zero_tracing_gc": "NOT_VERIFIED",
-      "full_process_zero_gc_claim": false
+      "full_process_zero_gc_claim": false,
+      "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT"
     },
     {
       "repo": "atto-lang/atto-source.cranelift",
@@ -177,7 +187,8 @@
       "managed_hotpath_allocation_measurement": "NOT_EXECUTED",
       "deterministic_stop_quiescence_integration": "NOT_EXECUTED",
       "guest_zero_tracing_gc": "NOT_VERIFIED",
-      "full_process_zero_gc_claim": false
+      "full_process_zero_gc_claim": false,
+      "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT"
     }
   ]
 }
