@@ -75,6 +75,12 @@ export function validateTheaterContract(c) {
       c.ensemblePublication.typing !== 'Result<PublishReceipt, PublishError>' ||
       c.ensemblePublication.resultQuestionScope !==
         'Result-returning callable within authenticated actor turn; no automatic ? in void callbacks' ||
+      c.ensemblePublication.topicSequenceWidth !== 'unsigned-u64' ||
+      c.ensemblePublication.topicSequenceFirst !== '1' ||
+      c.ensemblePublication.topicSequenceRefusalSentinel !== '0' ||
+      c.ensemblePublication.topicSequenceWire !== 'unsigned-decimal' ||
+      c.ensemblePublication.topicSequenceExhaustion !==
+        'hard-error-before-Full-at-uint64-max; never wrap, reuse zero, or reserve pending credit' ||
       c.ensemblePublication.receiptVersion !== 'atto.theater-guest-receipt/1' ||
       c.ensemblePublication.targetStatus !== 'NOT_EXECUTED' ||
       typeof c.ensemblePublication.ownership !== 'string' ||
