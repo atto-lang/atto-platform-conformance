@@ -10,11 +10,11 @@
   "llvm": {
     "source_repo": "atto-lang/atto-source.llvm",
     "numeric_repo_id": 1448700962,
-    "head_sha": "bd8e0253cb37d33db7546d49431ce8b55ccc6ec2",
-    "root_tree_sha": "cf48cf5193daddf23f77374b9fe82da89654f4bf",
+    "head_sha": "1aad9e07303559b52fa00d103428531b8e2654ce",
+    "root_tree_sha": "b0fb1f0977b6cb7a521b23da24c644fb0d7966da",
     "parser_blob_sha": "1cd0609027a92cb815269ade85c0dbba05073750",
     "shell_contract_blob_sha": "ee525d3706249611b9bbb04eb7fdec6baa3db380",
-    "cmake_blob_sha": "1098085627e2731c0f525dc087b1efbb727ea44a",
+    "cmake_blob_sha": "4645272a4a5dc9c3ae60a88fbf98b4a842780ec1",
     "changes": [
       "Return-first brace bodies route through the full native brace parser",
       "Inline and multiline begin/end plus bare return/end are admitted",
@@ -50,12 +50,44 @@
       "8 real compiler negative cases",
       "llvm-as/opt verification",
       "generated .atto guest execution on LLVM or wasm32",
-      "GCC/Clang and ASan/UBSan variant builds"
+      "GCC/Clang and ASan/UBSan variant builds",
+      "Production oreslang-llvmc -> Clang -> native OS process at -O0/-O2"
     ],
-    "certification": "HARNESS_SYNTAX_AND_ADVERSARIAL_GATES_ONLY_NO_REAL_NATIVE_COMPILER_PASS"
+    "certification": "SOURCE_FREE_HARNESS_EXECUTION_AND_SYNTAX_PASS_ONLY_REAL_NATIVE_COMPILER_NOT_EXECUTED",
+    "native_guest_script_blob_sha": "76f1a9374dfa5bd2055052a54b13513cf46493c7",
+    "native_guest_ctest_name": "native_return_first_host_guest_execution",
+    "native_guest_ctest_scope": "Linux only, full LLVM build with CMake-discovered Clang, real source compiler required",
+    "native_guest_declared_cases": {
+      "return_first_marker_variants": 4,
+      "body_forms": 6,
+      "expected_host_executable_exit_42": 24,
+      "optimized_o2_executable_exit_42": 4,
+      "source_mutation_executable_exit_43": 1
+    },
+    "native_guest_gate_executed_locally": {
+      "kind": "SOURCE_FREE_STUB_COMPILER_PLUS_REAL_CLANG_17",
+      "script_verified_exact_git_blob": "76f1a9374dfa5bd2055052a54b13513cf46493c7",
+      "posix_sh_syntax": "PASS",
+      "bash_syntax": "PASS",
+      "working_stub": {
+        "actual_clang_linked_executable_runs": 29,
+        "expected_exit_42": 24,
+        "expected_optimized_exit_42": 4,
+        "mutation_exit_43": 1,
+        "verdict": "PASS"
+      },
+      "malicious_stub_cases_correctly_rejected": [
+        "constant_42_ignores_source_mutation",
+        "wrong_main_symbol",
+        "empty_success_ir",
+        "always_compiler_failure"
+      ],
+      "real_oreslang_llvmc_compilation": "NOT_EXECUTED",
+      "reason": "Container has Clang 17 and CMake but no llvm-config or LLVM C++ developer headers; source CI current HEAD failed zero-step"
+    }
   },
   "ci": {
-    "source_org": "zero-step runner-admission failures on other recent PR source workflows; exact PR #818 has no confirmed stepful run at this head",
+    "source_org": "Exact PR #818 HEAD Actions run 44959227638 and related jobs failed with 0 steps, runner_id=null, NOT_EXECUTED",
     "allowlist": {
       "source_file": ".github/private-ci-approved-repositories.txt",
       "blob_sha": "f8d40ccf870eb37c1ff4c22f6788c67cfc1b0dd8",
@@ -69,13 +101,13 @@
     "working_capacity_candidate": {
       "repo": "memebank/atto-ci",
       "numeric_repo_id": 1458315477,
-      "source_free_run_id": 44955875279,
-      "steps": 6,
+      "source_free_run_id": 44957695205,
+      "success_matrix_steps": 62,
       "authorized_for_this_source": false
     },
     "private_source_cross_org_mirror": "NOT_PERFORMED",
     "secrets_or_cross_org_checkout": "NONE",
     "security_review_issue": "https://github.com/atto-lang/atto-platform-conformance/issues/548"
   },
-  "assessment": "New LLVM implementation is a draft parity candidate; actual backend guest and required CI evidence must remain NOT_EXECUTED until authorized runner admission"
+  "assessment": "Full LLVM compiler + native guest gate is now checked in and its Clang exit-value/mutation harness is locally source-free tested, but source private CI and real compiler tests remain NOT_EXECUTED. Source-to-carrier export approval outstanding."
 }
