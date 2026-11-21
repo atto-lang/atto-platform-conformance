@@ -106,3 +106,26 @@ test('all eleven compiler frontends have independent recognition gates and track
       backend.repo+': wrong tracking repository');
   }
 });
+
+
+test('Rust terminal READY candidate does not silently promote any backend to PASS', () => {
+  assert.equal(data.candidate_subsets.length,1);
+  const [candidate]=data.candidate_subsets;
+  assert.equal(candidate.repository,'atto-lang/atto-source.rs');
+  assert.match(candidate.source_head_sha,/^[a-f0-9]{40}$/);
+  assert.equal(candidate.status,'STAGED_UNVERIFIED');
+  assert.match(candidate.scope,/terminal-only await actor\.get_ready\(\)/);
+  assert.ok(candidate.excludes.includes('typed pipe!/rpipe! transport'));
+  assert.ok(candidate.tests.includes('tests/actor_ready_source_gate.rs'));
+  assert.ok(candidate.tests.includes('tests/browser/actor-worker.mjs'));
+  assert.equal(candidate.private_mirror.source_blob_matches,17);
+  assert.equal(candidate.private_mirror.source_blob_mismatches,0);
+  assert.equal(candidate.private_mirror.runner_allocated,false);
+  assert.equal(candidate.private_mirror.steps_executed,0);
+  assert.equal(candidate.private_mirror.test_status,'NOT_EXECUTED');
+  assert.match(candidate.private_mirror.github_actions_run,/\/actions\/runs\/44857005128$/);
+  for (const backend of data.backend_evidence) {
+    assert.equal(backend.guest_result,'NOT_EXECUTED',backend.repo);
+    assert.equal(backend.frontend_contract_status,'NOT_VERIFIED',backend.repo);
+  }
+});
