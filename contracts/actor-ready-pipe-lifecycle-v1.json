@@ -315,7 +315,7 @@
   "v2_guest_candidate": {
     "repository": "atto-lang/atto-source.rs",
     "pull_request": "https://github.com/atto-lang/atto-source.rs/pull/262",
-    "source_head_sha": "ae173aefadcd6752f39a26b5f0072ad2636fbc74",
+    "source_head_sha": "b51261026158856f08efb7dd65b18cf31aef4851",
     "mergeability": "CONFLICTING_WITH_MAIN",
     "profile": "EXPERIMENTAL_SINGLE_GUEST_MEMORY_V2",
     "status": "STAGED_GUEST_EXECUTION_NOT_VERIFIED",
@@ -359,10 +359,13 @@
       "no_production_PipeHandle_cleanup_or_cancellation",
       "no_verified_browser_compiler_release",
       "other_backend_guest_parity_NOT_EXECUTED",
-      "current_draft_PR_has_unmerged_conflicts"
+      "current_draft_PR_has_unmerged_conflicts",
+      "source_private_ci_allowlist_empty_no_cross_org_export"
     ],
     "browser_runner": "tests/browser-e2e.mjs",
     "verified_browser_guest_execution": false,
-    "verified_native_compiler_execution": false
+    "verified_native_compiler_execution": false,
+    "external_private_source_mirror_authorized": false,
+    "source_policy": "https://github.com/atto-lang/atto-source.rs/blob/main/.github/private-ci-approved-repositories.txt"
   }
 }
