@@ -138,11 +138,17 @@
     }
   ],
   "evidence": {
+    "atto": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "hdl": "NOT_EXECUTED",
     "java": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
     "llvm": "NOT_EXECUTED",
     "net": "NOT_EXECUTED",
-    "wasm": "NOT_EXECUTED",
-    "forge": "NOT_EXECUTED"
+    "realtime": "NOT_EXECUTED",
+    "rs": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED"
   },
   "freestanding": {
     "target": "thumbv7m-none-eabi",
@@ -196,6 +202,18 @@
       "file": "fixtures/atto-library-profiles/v1/reject-core-to-alloc.atto",
       "expected": "REJECT_BEFORE_IR",
       "profile": "core"
+    },
+    {
+      "id": "alloc-to-std",
+      "file": "fixtures/atto-library-profiles/v1/reject-alloc-to-std.atto",
+      "expected": "REJECT_BEFORE_IR",
+      "profile": "alloc"
+    },
+    {
+      "id": "std-to-actor",
+      "file": "fixtures/atto-library-profiles/v1/reject-std-to-actor.atto",
+      "expected": "REJECT_BEFORE_IR",
+      "profile": "std"
     }
   ]
 }
