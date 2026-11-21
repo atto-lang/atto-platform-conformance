@@ -66,6 +66,18 @@ this private conformance repository or private compiler trees to a carrier
 requires a *separate effective source-to-destination security authorization*.
 No valid authorization means no cross-org private tree copy.
 
+## First concrete feature lane: exceptional bang control
+
+The [canonical 18-vector source-only spec](https://github.com/atto-lang/atto-spec/pull/146) specifies the contiguous `trap!`, `throw!`, `raise!`, `panic!` spellings and lexical collision boundaries. The pinned 11-row [implementation ledger](../contracts/exception-control-bang-source-audit-v1.json) references the existing draft PR in **every** `atto-source.*` repository.
+
+Eight repos contain actual lexers/parsers and now have expanded source-level regression tests: `.java` #194, `.llvm` #293, `.rs` #449, `.net` #119, `.js` #73, `.forge` #106, `.cranelift` #73, `.hdl` #21. Java and Rust/LLVM Rust admit lexical spellings; other restricted engines deliberately reject unlowered exceptional effects instead of executing host errors or generating invalid guest artifacts. LLVM's C++ exceptional-control guard now also recognizes `trap!` as an unsupported checked effect. This is **partial lexical/admission alignment**, not typed Result/throw/raise/panic runtime parity.
+
+`.wasm` #119 is a **delegated compiler**: source-to-Wasm goes through `.rs`, not an independent second source compiler in its host repository. `.atto` #13 and `.realtime` #6 contain draft source-only documentation but **no compiler implementation on main** at the captured baseline. Do not invent a native guest PASS for these profiles.
+
+Executed limited host-side checks in an isolated V8 harness against the actual fetched source functions: JS scalar lexer 18/18, JS program-v2 tokenizer 18/18, HDL lexer 18/18 and full HDL parsing/RTL generation boundary 18/18; both complete JS source compilers also denied four unsupported effects and compiled a comment-only scalar smoke source (10/10 focused cases). These are **not** compiler Actions, Rust/Java/.NET/C++ build passes, Wasm32/RTL simulator proof, or runtime supervisor semantics. The exact-head source GitHub Actions workflows failed before executing any steps (runner-admission cause not yet independently established), and this ledger records all eleven as NOT_EXECUTED.
+
+The first substantive completion sequence is: reconcile spec/formatter #146, validate executable compiler behavior on exact source SHA, implement typed Result and Error payload/unwind/actor CONTROL semantics where supported, require a diagnostic/no-artifact witness for unsupported target profiles, independently verify execution receipts, and only then promote evidence per backend.
+
 ## Required completion per feature and backend
 
 1. Confirm if the feature is supported by the backend's **defined capability profile**. For unsupported hardware/realtime/restricted profiles, require a real exact-head compiler rejection with the required diagnostic and no output artifact; a skipped job is not success.
