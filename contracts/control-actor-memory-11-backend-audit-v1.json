@@ -126,7 +126,7 @@
       "repo": "atto-lang/atto-source.llvm",
       "candidate_stage": "ACTOR_NATIVE_ARENA_HOST_SOURCE",
       "existing_pr": "https://github.com/atto-lang/atto-source.llvm/pull/742",
-      "observed_candidate_pr_head_sha": "5798f00312279044408bfd6b596cfc251fa82cea",
+      "observed_candidate_pr_head_sha": "e343dd5d1c1214b4104394ec8f549d9903bc480e",
       "actor_reference_abi_candidate": "offset8_plus_one",
       "control_reference_abi_candidate": "control_generation20_slot12_v1",
       "control_plane_source_status": "SOURCE_COMMITTED_NATIVE_HOST_TESTED_LOCAL",
@@ -143,11 +143,11 @@
         "clang": "17.0.0 -std=c11 -O1 -g -fsanitize=address,undefined -pthread",
         "source_blobs": {
           "ControlPlaneArena32.h": "64eabc65b9ce917d5f3085a42e8e2c9f3f2213c6",
-          "ControlPlaneArena32.c": "d4e99998d545c634279d1620f67fc57bfbb3e5de",
+          "ControlPlaneArena32.c": "ff66f2be47a50373e88b7d4e66b4d35f396bc0c5",
           "control_plane_arena32_test.c": "598591e49a5665fef25e01366af20d35ac35f649"
         },
-        "gcc_binary_sha256": "8ff63c63c6ab3042838144318d2fd990f84419848067892f84689e27d730e75f",
-        "clang_sanitized_binary_sha256": "9813076d8390143880158d4bb9d52bf9870f313d12408779a292572e8310df47",
+        "gcc_binary_sha256": "b99fd4f423b93741ab53d266fe187e560069c79e818711314f18bbc4dc1020a2",
+        "clang_sanitized_binary_sha256": "a127dbd393d1d9c3e9bea21b0ed573714b6ee56cbfe7e2315ad738a4db220fb8",
         "positive_host_pass_marker": "PASS control-plane-ref32 llvm C11 native host 12 guarded scenarios; NO compiled Atto guest or zero-GC proof",
         "ci_on_current_head": "NOT_EXECUTED",
         "compiled_atto_guest": "NOT_EXECUTED"
