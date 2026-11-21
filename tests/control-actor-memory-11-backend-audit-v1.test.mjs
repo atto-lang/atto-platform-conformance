@@ -92,11 +92,16 @@ function inspect(x) {
       assert.deepEqual(receipt.source_blobs, {
         'ControlPlaneArena32.h': 'ae2188f51a1659426dbd8c7e94bc6e672525dfde',
         'ControlPlaneArena32.c': 'ff66f2be47a50373e88b7d4e66b4d35f396bc0c5',
-        'control_plane_arena32_test.c': '195ad863104d48aaaf1a57d648760ca85e73887e'
+        'control_plane_arena32_test.c': 'e3dafa102cb0b3f08611c02111680ff1e66dcb24'
       });
       assert.match(receipt.gcc_binary_sha256, /^[0-9a-f]{64}$/);
       assert.match(receipt.clang_sanitized_binary_sha256, /^[0-9a-f]{64}$/);
       assert.match(receipt.positive_host_pass_marker, /NO compiled Atto guest or zero-GC proof/);
+      assert.deepEqual(receipt.concurrent_carrier_test, {
+        threads: 4, iterations_per_thread: 1024,
+        passed: 'PASS_LOCAL_HOST_SANITIZERS_ONLY',
+        source_guest_compilation: 'NOT_EXECUTED'
+      });
       assert.equal(row.host_control_codec_test, null);
     } else if (rust.includes(row)) {
       assert.equal(row.control_reference_abi_candidate, 'control_generation12_slot20_v1');
