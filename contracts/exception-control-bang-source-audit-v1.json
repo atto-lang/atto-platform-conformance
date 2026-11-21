@@ -87,7 +87,7 @@
     {
       "repo": "atto-lang/atto-source.llvm",
       "existing_pr": 293,
-      "candidate_head_sha": "0948ad0a9736d36d29dc0aa47d5914f2940e1932",
+      "candidate_head_sha": "7e74b654264c2f492a087baed57262642d881303",
       "candidate_branch": "draft/bang-exception-keywords-20261120",
       "profile": "LLVM_RUST_AND_CPP_FRONTENDS",
       "has_frontend_in_this_repository": true,
@@ -99,7 +99,7 @@
     {
       "repo": "atto-lang/atto-source.net",
       "existing_pr": 119,
-      "candidate_head_sha": "b39c4b3030285b785d5a0ea493bb9be37f2d2fd8",
+      "candidate_head_sha": "4befa87de1648e8fc5b7df0557bd73de178cf14e",
       "candidate_branch": "draft/bang-exception-keywords-20261120",
       "profile": "NET_NATIVEAOT_RESTRICTED_FRONTEND",
       "has_frontend_in_this_repository": true,
