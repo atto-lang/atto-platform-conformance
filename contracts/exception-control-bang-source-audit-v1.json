@@ -63,7 +63,7 @@
     {
       "repo": "atto-lang/atto-source.java",
       "existing_pr": 194,
-      "candidate_head_sha": "3220afcaa420c38769647dc7f1a1dc8eca1ff049",
+      "candidate_head_sha": "8cf9054c35c29f28ae12324f593144a2c51d97c4",
       "candidate_branch": "draft/bang-exception-keywords-20261120",
       "profile": "JAVA_GRAALVM_FRONTEND",
       "has_frontend_in_this_repository": true,
@@ -71,7 +71,8 @@
       "compiler_ci_exact_head": "NOT_VERIFIED",
       "semantic_exception_effect_parity": "NOT_VERIFIED",
       "independent_compiler_certification": false,
-      "canonical_trap_result_guard": "SOURCE_PATCHED_NOT_EXECUTED"
+      "canonical_trap_result_guard": "SOURCE_PATCHED_NOT_EXECUTED",
+      "canonical_throw_raise_panic_rejection": "SOURCE_TEST_AUTHORED_NOT_EXECUTED"
     },
     {
       "repo": "atto-lang/atto-source.js",
@@ -128,7 +129,7 @@
     {
       "repo": "atto-lang/atto-source.rs",
       "existing_pr": 449,
-      "candidate_head_sha": "c8ed3191b39fd08d2ed1307c58262cac0291be5c",
+      "candidate_head_sha": "9ff2cd9470cc6e94a808cd49b2e208ae3a6d9fd3",
       "candidate_branch": "draft/bang-exception-keywords-20261120",
       "profile": "RUST_NATIVE_AND_BROWSER_FRONTEND",
       "has_frontend_in_this_repository": true,
@@ -137,7 +138,8 @@
       "semantic_exception_effect_parity": "NOT_VERIFIED",
       "independent_compiler_certification": false,
       "canonical_trap_result_guard": "SOURCE_PATCHED_NOT_EXECUTED",
-      "canonical_typed_throw_raise_guest_suite": "AUTHORED_NOT_EXECUTED"
+      "canonical_typed_throw_raise_guest_suite": "AUTHORED_NOT_EXECUTED",
+      "canonical_panic_supervisor_guard": "SOURCE_TEST_AUTHORED_NOT_EXECUTED"
     },
     {
       "repo": "atto-lang/atto-source.wasm",
@@ -167,7 +169,9 @@
     "java,llvm,rs": "Drafts cover lexical spelling; typed Error/Result, complete unwind and panic CONTROL routing require executed guest tests.",
     "net,forge,js,hdl,cranelift": "Drafts guard unsupported guest-effect admission; reject-with-diagnostic is not positive semantic feature implementation.",
     "rs_throw_raise": "Rust source compiler now includes typed Error throw!/raise! positive Wasm binary compilation tests and expected two exact runtime stdout/value traces. None has executed in source CI, no positive guest PASS.",
-    "llvm_diagnostic_fix": "Current LLVM #293 exact head adds native C++ trap! Result-vs-Option and typed throw! diagnostic checks and ten negative compiler-based cases (two extra raise!/panic!), one positive scalar compiler control. All are AUTHORED_NOT_EXECUTED under zero-step source Actions. Source C++ parser preserve exact E_TRAP_BANG_RESULT_UNVERIFIED / E_THROW_BANG_ERROR_TYPE_UNVERIFIED diagnostics."
+    "llvm_diagnostic_fix": "Current LLVM #293 exact head adds native C++ trap! Result-vs-Option and typed throw! diagnostic checks and ten negative compiler-based cases (two extra raise!/panic!), one positive scalar compiler control. All are AUTHORED_NOT_EXECUTED under zero-step source Actions. Source C++ parser preserve exact E_TRAP_BANG_RESULT_UNVERIFIED / E_THROW_BANG_ERROR_TYPE_UNVERIFIED diagnostics.",
+    "java_exception_rejection": "Java parser rejects typed exceptional throw!/raise!/panic! statements before unsupported guest lowering; latest source Java JUnit tests additionally assert typed effect diagnostic. Source Actions remain zero-step; authored but not executed.",
+    "rs_panic_rejection": "Rust compiler unit integration tests now explicitly reject panic! Error(...) with E_UNSUPPORTED because supervisor CONTROL semantics have not been lowered. Test authored on current head; not executed in source Actions."
   },
   "host_scanner_checks": "Focused source-extracted JS scalar, JS program-v2 and HDL lexical checks exercised 18/18 boundary inputs each in an isolated V8 harness; NOT a CI or guest pass.",
   "full_parity_certified": false,
