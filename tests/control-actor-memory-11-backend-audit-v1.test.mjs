@@ -25,6 +25,22 @@ function inspect(x) {
   assert.deepEqual(x.scope.attributed_control_host_code,
     ['atto-lang/atto-source.net', 'atto-lang/atto-source.java', 'atto-lang/atto-source.rs',
       'atto-lang/atto-source.llvm', 'atto-lang/atto-source.js', 'atto-lang/atto-source.forge', 'atto-lang/atto-source.wasm']);
+  assert.deepEqual(x.alternate_carrier_admission, {
+    status: 'SOURCE_FREE_PUBLIC_CARRIER_CAPABLE_ONLY',
+    organization: 'gha-indie-worker',
+    carrier_repo: 'gha-indie-worker/gha-indie-worker-e2e',
+    carrier_commit: '81532e9f905ebefecd00bccbdffc7147af8e2365',
+    run_id: 44957101583,
+    executed_steps: 3,
+    source_private_blobs_copied: 0,
+    full_tree_mirror_verified: false,
+    native_toolchains_executed: ['gcc', 'clang'],
+    compiled_atto_guest: 'NOT_EXECUTED',
+    private_carrier_repo: 'gha-indie-worker/atto-ci',
+    private_carrier_run_id: 44957202225,
+    private_carrier_executed_steps: 0,
+    private_source_transfer_authorized: false
+  });
   const sources = x.backends.filter(y => y.control_plane_source_status === 'SOURCE_COMMITTED_NOT_TESTED');
   const native = x.backends.filter(y => y.control_plane_source_status === 'SOURCE_COMMITTED_NATIVE_HOST_TESTED_LOCAL');
   const codecs = x.backends.filter(y =>
@@ -50,7 +66,7 @@ function inspect(x) {
       : row.repo.endsWith('.net')
       ? ['SOURCE_AUTHORED_CLR_NATIVEAOT_NOT_EXECUTED', '90f52001ebca0fbc6055d55c0edde013c9da8f2c', false]
       : row.repo.endsWith('.llvm')
-      ? ['PASS_LOCAL_GCC_CLANG_HOST_ONLY', '3afe81a79d6ecd8ef2a5a0ae1e00a3e4a4167d5d', true]
+      ? ['PASS_LOCAL_GCC_CLANG_HOST_ONLY', '1fd941af03831b621b83cdd36d948766cfe2770e', true]
       : ['NOT_IMPLEMENTED_OR_UNVERIFIED', null, false];
     assert.equal(scalar.status, expectedI128[0]);
     assert.equal(scalar.source_test_blob, expectedI128[1]);
@@ -90,6 +106,22 @@ function inspect(x) {
     assert.equal(row.host_managed_allocation_probe,
       sources.includes(row) ? 'SOURCE_AUTHORED_NOT_EXECUTED' : 'NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT');
     assert.equal(row.full_process_zero_gc_claim, false);
+    if (row.repo.endsWith('.llvm')) {
+      assert.deepEqual(row.canonical_two_actor_source_guest, {
+        status: 'SOURCE_AUTHORED_NOT_EXECUTED_ON_CURRENT_HEAD',
+        canonical_extension: '.atto',
+        source_blob_sha: 'cce7728c1682bbf2600af65d6ceda9071fe7aa0a',
+        legacy_source_blob_sha: 'cce7728c1682bbf2600af65d6ceda9071fe7aa0a',
+        harness_blob_sha: '3dba99f2743e9e0a3b25f02e4290535f43a9b20e',
+        workflow_blob_sha: '3392e57d0022dd8ab509f15f877db72976b14531',
+        expected_compiled_actor_count: 2,
+        actual_guest_executed_step_count: 0,
+        guest_heap_target: 'ActorOwnedI64Heap',
+        control_plane_i128_guest_lowering: 'NOT_IMPLEMENTED_OR_UNVERIFIED'
+      });
+    } else {
+      assert.equal(row.canonical_two_actor_source_guest, null);
+    }
     if (row.repo.endsWith('.java') || row.repo.endsWith('.net')) {
       assert.deepEqual(row.issuer_saturation_receipt, {
         status: 'SOURCE_AUTHORED_NOT_EXECUTED',
@@ -131,11 +163,20 @@ function inspect(x) {
       assert.deepEqual(receipt.source_blobs, {
         'ControlPlaneArena32.h': 'c2cd3e1331ff8d328c024995efa2bae673122187',
         'ControlPlaneArena32.c': '7f0fe65ac32f207db88f2af0043553e74f23f37f',
-        'control_plane_arena32_test.c': '3afe81a79d6ecd8ef2a5a0ae1e00a3e4a4167d5d'
+        'control_plane_arena32_test.c': '1fd941af03831b621b83cdd36d948766cfe2770e'
       });
       assert.match(receipt.gcc_binary_sha256, /^[0-9a-f]{64}$/);
       assert.match(receipt.clang_sanitized_binary_sha256, /^[0-9a-f]{64}$/);
       assert.match(receipt.positive_host_pass_marker, /NO compiled Atto guest or zero-GC proof/);
+      assert.deepEqual(receipt.randomized_lifetime_model, {
+        status: 'PASS_LOCAL_NATIVE_HOST_ONLY',
+        model_operations: 50000,
+        concurrency_pair_writer_iterations: 32768,
+        concurrency_pair_reader_iterations: 32768,
+        test_runs: { gcc_optimized: 13, clang_asan_ubsan: 13 },
+        source_blob_sha: '1fd941af03831b621b83cdd36d948766cfe2770e',
+        actual_compiled_atto_guest: 'NOT_EXECUTED'
+      });
       assert.deepEqual(receipt.concurrent_i128_pair_test, {
         writer_iterations: 32768, reader_iterations: 32768,
         compiler_runs: { gcc_optimized: 1, clang_asan_ubsan: 1 },
@@ -340,4 +381,39 @@ test('cannot forge Java or NET issuer saturation or compiled guest receipts', ()
     dropped.backends[index].issuer_saturation_receipt.test_cases.pop();
     assert.throws(() => inspect(dropped));
   }
+});
+
+test('cannot promote public-source-free C canary to private compiler authorization', () => {
+  for (const [field, forged] of [
+    ['status', 'FULL_PRIVATE_COMPILER_PASS'],
+    ['source_private_blobs_copied', 1823],
+    ['full_tree_mirror_verified', true],
+    ['compiled_atto_guest', 'PASS'],
+    ['private_carrier_executed_steps', 3],
+    ['private_source_transfer_authorized', true]
+  ]) {
+    const modified = structuredClone(baseline);
+    modified.alternate_carrier_admission[field] = forged;
+    assert.throws(() => inspect(modified));
+  }
+});
+test('canonical .atto actor fixture and randomized native host checks cannot forge guest parity', () => {
+  for (const [backend, field, value] of [
+    ['.llvm', 'actual_guest_executed_step_count', 1],
+    ['.llvm', 'status', 'PASSED'],
+    ['.llvm', 'canonical_extension', '.ores'],
+    ['.llvm', 'control_plane_i128_guest_lowering', 'PASSED']
+  ]) {
+    const forged = structuredClone(baseline);
+    forged.backends.find(row => row.repo.endsWith(backend)).canonical_two_actor_source_guest[field] = value;
+    assert.throws(() => inspect(forged));
+  }
+  const swapped = structuredClone(baseline);
+  swapped.backends.find(row => row.repo.endsWith('.llvm')).native_host_local_test
+    .randomized_lifetime_model.source_blob_sha = 'f'.repeat(40);
+  assert.throws(() => inspect(swapped));
+  const fake = structuredClone(baseline);
+  fake.backends.find(row => row.repo.endsWith('.llvm')).native_host_local_test
+    .randomized_lifetime_model.actual_compiled_atto_guest = 'PASSED';
+  assert.throws(() => inspect(fake));
 });
