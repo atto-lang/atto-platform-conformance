@@ -1,0 +1,31 @@
+name: Atto eleven-source parity registry integrity (source-free)
+on:
+  pull_request:
+    paths:
+      - 'contracts/atto-source-repository-parity-audit-v1.json'
+      - 'tests/atto-source-repository-parity-audit-v1.test.mjs'
+      - 'docs/ATTO_SOURCE_11_REPOSITORY_PARITY.md'
+      - '.github/workflows/atto-source-repository-parity-audit-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'contracts/atto-source-repository-parity-audit-v1.json'
+      - 'tests/atto-source-repository-parity-audit-v1.test.mjs'
+      - 'docs/ATTO_SOURCE_11_REPOSITORY_PARITY.md'
+      - '.github/workflows/atto-source-repository-parity-audit-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-free-parity-registry:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check all eleven source repositories (SOURCE-FREE ONLY)
+        run: node --test tests/atto-source-repository-parity-audit-v1.test.mjs
