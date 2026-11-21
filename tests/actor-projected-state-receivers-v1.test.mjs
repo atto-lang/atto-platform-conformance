@@ -40,7 +40,7 @@ test('canonical projection has explicit fields and negative safety coverage', ()
 });
 
 test('named receiver is alpha-equivalent and safe across the target matrix', () => {
-  assert.equal(contract.cases.length, 30);
+  assert.equal(contract.cases.length, 43);
   assert.match(contract.semantics.receiverBinding, /self is conventional/);
   assert.match(contract.semantics.alphaEquivalence, /write-set identity/);
   const byId = new Map(contract.cases.map(c => [c.id, c]));
@@ -54,4 +54,29 @@ test('named receiver is alpha-equivalent and safe across the target matrix', () 
   ]) assert.ok(byId.has(id), id);
   assert.equal(byId.get('named_receiver_missing_self_alias').diagnosticClass, 'E_UNBOUND');
   assert.equal(byId.get('named_receiver_not_overload').diagnosticClass, 'E_DUPLICATE');
+});
+
+test('nested actor control arguments cannot conceal sealed state or escapes', () => {
+  const byId = new Map(contract.cases.map(c => [c.id, c]));
+  const expected = {
+    nested_send_direct_state: 'E_SEALED',
+    nested_send_unknown_method: 'E_UNBOUND',
+    nested_send_receiver_escape: 'E_ESCAPE',
+    return_receiver_escape: 'E_ESCAPE',
+    nested_send_guard_exceeds_write_set: 'E_MUTABILITY',
+    critical_write_nested_field: 'E_UNSUPPORTED',
+    critical_write_indexed_field: 'E_UNSUPPORTED',
+    critical_write_field_call: 'E_UNSUPPORTED',
+    discarded_receiver_use: 'E_UNBOUND',
+    critical_read_prefix_mutation: 'E_READONLY',
+    critical_read_split_compound_mutation: 'E_READONLY',
+    critical_write_prefix_outside_projection: 'E_MUTABILITY',
+  };
+  for (const [id, code] of Object.entries(expected)) {
+    assert.equal(byId.get(id)?.diagnosticClass, code, id);
+    assert.equal(byId.get(id)?.evidence, 'NOT_EXECUTED', id);
+  }
+  assert.equal(byId.get('nested_control_calls_safe_syntax')?.expect, 'accept_ast_only');
+  assert.match(contract.semantics.nestedArgumentGate, /recursively inspected/);
+  assert.match(contract.semantics.artifactGate, /no \.wasm output/);
 });
