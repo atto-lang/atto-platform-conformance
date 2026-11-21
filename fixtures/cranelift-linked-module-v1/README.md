@@ -100,3 +100,10 @@ head, toolchain, source-tree and actual nonzero executed steps.
 Only a reviewed native Cranelift binary may be used; no compiler source
 checkout, secret, external runner, cross-repo token or JIT sandbox
 assumption is introduced by this optional adapter.
+
+The source-only Node suite also executes adversarial fake-binary probes:
+a globally successful shell stub, a globally rejecting stub, and a
+symlink masquerading as the compiler. All three must exit nonzero
+with `certified:false` and an explicit failure classification.
+These prove adapter fail-closed behavior only; no fabricated stub
+establishes native JIT compiler coverage.

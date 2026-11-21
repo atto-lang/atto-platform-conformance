@@ -149,3 +149,83 @@ test("native candidate adapter denies accidental green on missing binary", async
   assert.deepEqual(receipt.case_results, []);
   assert.match(receipt.reason, /ATTO_CRANELIFT_BIN/);
 });
+
+test("native candidate adapter rejects a fabricated Cranelift guest success", async () => {
+  const { spawnSync } = await import("node:child_process");
+  const { mkdtemp, writeFile, chmod, rm } = await import("node:fs/promises");
+  const { tmpdir } = await import("node:os");
+  const dir = await mkdtemp(join(tmpdir(), "atto-cranelift-fake-"));
+  try {
+    const fake = join(dir, "fake-orescranelift");
+    await writeFile(fake, "#!/bin/sh\n# Fabricated CLI acceptance must not count as a guest.\nexit 0\n");
+    await chmod(fake, 0o700);
+    const script = resolve(here, "../bin/run-cranelift-modern-linked-module-v1.mjs");
+    const processResult = spawnSync(process.execPath, [script], {
+      encoding: "utf8",
+      env: { PATH: process.env.PATH ?? "", ATTO_CRANELIFT_BIN: fake },
+      timeout: 15000
+    });
+    assert.equal(processResult.error, undefined);
+    assert.equal(processResult.status, 1, "fabricated success became green");
+    const receipt = JSON.parse(processResult.stdout);
+    assert.equal(receipt.classification, "GUEST_EXECUTION_FAILED");
+    assert.equal(receipt.certified, false);
+    assert.deepEqual(receipt.case_results, []);
+    assert.match(receipt.reason, /linked function|CLIF|checked IR|guest/u);
+    assert.match(receipt.compiler_sha256, /^[0-9a-f]{64}$/u);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test("native candidate adapter rejects a fabricated Cranelift global rejection", async () => {
+  const { spawnSync } = await import("node:child_process");
+  const { mkdtemp, writeFile, chmod, rm } = await import("node:fs/promises");
+  const { tmpdir } = await import("node:os");
+  const dir = await mkdtemp(join(tmpdir(), "atto-cranelift-fail-"));
+  try {
+    const fake = join(dir, "fake-orescranelift");
+    await writeFile(fake, "#!/bin/sh\necho 'E_FAKE' >&2\nexit 1\n");
+    await chmod(fake, 0o700);
+    const script = resolve(here, "../bin/run-cranelift-modern-linked-module-v1.mjs");
+    const processResult = spawnSync(process.execPath, [script], {
+      encoding: "utf8",
+      env: { PATH: process.env.PATH ?? "", ATTO_CRANELIFT_BIN: fake },
+      timeout: 15000
+    });
+    assert.equal(processResult.error, undefined);
+    assert.equal(processResult.status, 1, "fabricated rejection became green");
+    const receipt = JSON.parse(processResult.stdout);
+    assert.equal(receipt.classification, "GUEST_EXECUTION_FAILED");
+    assert.equal(receipt.certified, false);
+    assert.deepEqual(receipt.case_results, []);
+    assert.match(receipt.reason, /checked guest rejected|unexpected acceptance/u);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test("native candidate adapter never follows a symlink compiler binary", async () => {
+  const { spawnSync } = await import("node:child_process");
+  const { mkdtemp, symlink, rm } = await import("node:fs/promises");
+  const { tmpdir } = await import("node:os");
+  const dir = await mkdtemp(join(tmpdir(), "atto-cranelift-link-"));
+  try {
+    const fake = join(dir, "link-orescranelift");
+    await symlink(process.execPath, fake);
+    const script = resolve(here, "../bin/run-cranelift-modern-linked-module-v1.mjs");
+    const processResult = spawnSync(process.execPath, [script], {
+      encoding: "utf8",
+      env: { PATH: process.env.PATH ?? "", ATTO_CRANELIFT_BIN: fake },
+      timeout: 15000
+    });
+    assert.equal(processResult.error, undefined);
+    assert.equal(processResult.status, 1, "symlink compiler accepted");
+    const receipt = JSON.parse(processResult.stdout);
+    assert.equal(receipt.classification, "GUEST_EXECUTION_FAILED");
+    assert.equal(receipt.certified, false);
+    assert.match(receipt.reason, /non-symlink regular file/u);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
