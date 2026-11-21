@@ -18,28 +18,46 @@ function checkFailureCoverage(steps, handlers) {
     if (!handlers.includes(tag)) throw new TypeError("nonexhaustive failure dispatch: " + tag);
   }
 }
-function runReference({ steps, handlers, onSuccess, onFailure, register = [], enter = [] }) {
+// Model three lexical cleanup scopes separately: a body defer must run
+// BEFORE selecting else, and function cleanup runs AFTER its handler.
+function runReference({ steps, handlers, onSuccess, onFailure, register = [], enter = [], trace = [] }) {
   checkFailureCoverage(steps, handlers);
-  const trace = [], cleanups = [];
-  const registerDefer = (label) => cleanups.push(() => trace.push(label));
-  let result;
-  for (const name of register) registerDefer(name);
+  const functionCleanups = [], bodyCleanups = [];
+  const registerIn = (stack, label) => stack.push(() => trace.push(label));
+  const unwind = stack => { while (stack.length) stack.pop()(); };
+  for (const label of register) registerIn(functionCleanups, label);
+  let result, failure = null;
   try {
-    for (const item of steps) {
-      const output = item.run(trace, registerDefer);
-      if (!item.successTags.includes(output.tag)) {
-        if (!handlers.includes(output.tag)) throw new Error("coverage check bypass");
-        trace.push("else:" + output.tag);
-        result = onFailure(output, trace);
-        return { result, trace };
+    try {
+      for (const [index, item] of steps.entries()) {
+        // A step may register a defer before returning or throwing.
+        const output = item.run(trace, label => registerIn(bodyCleanups, label));
+        if (!item.successTags.includes(output.tag)) {
+          failure = output;
+          break;
+        }
+        trace.push("bind:" + output.tag);
+        enter[index]?.(label => registerIn(bodyCleanups, label));
       }
-      trace.push("bind:" + output.tag);
-      if (enter.length) enter.shift()?.(registerDefer);
+      if (failure === null) result = onSuccess(trace);
+    } finally {
+      // Whether by ?= failure, return or a real exception, unwind the
+      // scope that owns the bindings before outer dispatch.
+      unwind(bodyCleanups);
     }
-    result = onSuccess(trace);
+    if (failure !== null) {
+      if (!handlers.includes(failure.tag)) throw new Error("coverage check bypass");
+      trace.push("else:" + failure.tag);
+      const handlerCleanups = [];
+      try {
+        result = onFailure(failure, trace, label => registerIn(handlerCleanups, label));
+      } finally {
+        unwind(handlerCleanups);
+      }
+    }
     return { result, trace };
   } finally {
-    while (cleanups.length) cleanups.pop()();
+    unwind(functionCleanups);
   }
 }
 const step = (name, result, successTags = ["Ok"], failureTags = ["Err"]) =>
@@ -78,17 +96,63 @@ test("Option None requires its own handler and does not alias Err", () => {
   assert.deepEqual(r.result,None());
   assert.equal(r.trace.filter(x=>x==="else:None").length,1);
 });
-test("defer scoped to maybe exits before else; function defer executes after", () => {
-  const trace=[], inner=[];
-  const maybeScope = () => {
-    try {trace.push("maybe-body"); return Err("failed");}
-    finally {inner.push("inner-B","inner-A"); trace.push(...inner);}
-  };
+test("body local defer runs LIFO before else; handler defer before function defer", () => {
+  const r = runReference({
+    steps: [
+      step("user", Ok(7)),
+      {
+        successTags: ["Ok"], failureTags: ["Err"],
+        run(trace, registerBody) {
+          trace.push("call:account");
+          registerBody("body-defer:B");
+          return Err("account failed");
+        },
+      },
+      step("unreachable", Ok(99)),
+    ],
+    handlers: ["Err"], register: ["function-defer"],
+    enter: [registerBody => registerBody("body-defer:A")],
+    onSuccess: () => { throw Error("must not succeed"); },
+    onFailure: (failure, trace, registerHandler) => {
+      registerHandler("handler-defer");
+      trace.push("handler:" + failure.tag);
+      return failure;
+    },
+  });
+  assert.deepEqual(r.result, Err("account failed"));
+  assert.deepEqual(r.trace, [
+    "call:user", "bind:Ok", "call:account",
+    "body-defer:B", "body-defer:A", "else:Err", "handler:Err",
+    "handler-defer", "function-defer",
+  ]);
+});
+test("throw bypasses value else, unwinds inner then function defer, enters catch then finally", () => {
+  const trace = [];
   try {
-    const result=maybeScope();
-    if(result.tag==="Err") trace.push("else");
-  } finally {trace.push("outer");}
-  assert.deepEqual(trace,["maybe-body","inner-B","inner-A","else","outer"]);
+    runReference({
+      trace,
+      steps: [{
+        successTags: ["Ok"], failureTags: ["Err"],
+        run(t, registerBody) {
+          registerBody("body-defer");
+          t.push("throw");
+          throw new TypeError("ordinary guest throw model");
+        },
+      }],
+      handlers: ["Err"],
+      register: ["function-defer"],
+      onSuccess: () => { throw Error("must not succeed"); },
+      onFailure: () => { trace.push("WRONG:else"); return Err("wrong"); },
+    });
+  } catch (error) {
+    assert.ok(error instanceof TypeError);
+    trace.push("outer-catch");
+  } finally {
+    trace.push("outer-finally");
+  }
+  assert.deepEqual(trace, [
+    "throw", "body-defer", "function-defer", "outer-catch", "outer-finally",
+  ]);
 });
 test("host throw is not reclassified as typed Err; cleanup still unwinds", () => {
   const trace=[];
