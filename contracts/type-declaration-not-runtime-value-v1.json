@@ -114,7 +114,8 @@
     "net",
     "forge",
     "cranelift",
-    "js"
+    "js",
+    "hdl"
   ],
   "execution": {
     "java": "NOT_EXECUTED",
@@ -124,7 +125,8 @@
     "net": "NOT_EXECUTED",
     "forge": "NOT_EXECUTED",
     "cranelift": "NOT_EXECUTED",
-    "js": "NOT_EXECUTED"
+    "js": "NOT_EXECUTED",
+    "hdl": "NOT_EXECUTED"
   },
   "proof_requirements": {
     "same_source_positive_and_negative_vectors": true,
@@ -133,6 +135,8 @@
     "exact_head_sha": true,
     "verified_runner_steps_nonzero": true,
     "source_free_oracle_does_not_count_as_compiler_parity": true,
-    "explicitly_authorized_private_ci_carrier_required": true
-  }
+    "explicitly_authorized_private_ci_carrier_required": true,
+    "explicit_unsupported_target_profile_is_not_positive_parity": true
+  },
+  "profile_scope": "Backends lacking class/trait guest execution (including experimental HDL profiles) must prove an explicit compile-time unsupported result without artifacts. This is a separate outcome, not a passing positive runtime case."
 }
