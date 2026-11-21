@@ -58,7 +58,7 @@ function inspect(x) {
       assert.equal(receipt.os_target, 'linux-x86_64');
       assert.deepEqual(receipt.source_blobs, {
         'ControlPlaneArena32.h': '64eabc65b9ce917d5f3085a42e8e2c9f3f2213c6',
-        'ControlPlaneArena32.c': 'd4e99998d545c634279d1620f67fc57bfbb3e5de',
+        'ControlPlaneArena32.c': 'ff66f2be47a50373e88b7d4e66b4d35f396bc0c5',
         'control_plane_arena32_test.c': '598591e49a5665fef25e01366af20d35ac35f649'
       });
       assert.match(receipt.gcc_binary_sha256, /^[0-9a-f]{64}$/);
