@@ -56,7 +56,7 @@ Relevant implementation work already in progress, not duplicate proposals:
 - Wasm: [#185](https://github.com/atto-lang/atto-source.wasm/pull/185) (explicit core-only LLVM bridge); this cannot independently prove native compiler or guest evidence.
 - Rust: [#465](https://github.com/atto-lang/atto-source.rs/pull/465) (fail-closed compiler-owned Atto library imports and local shadow denial) plus [#417](https://github.com/atto-lang/atto-source.rs/pull/417) (std.buffer exact-byte admission candidate, not linked guest support).
 - HDL: [#50](https://github.com/atto-lang/atto-source.hdl/pull/50) (explicit compiler-side library-profile rejection in fixed-width RTL subset, not full `core`/allocator/std support).
-- Cranelift, .NET, self-hosted and realtime: named evidence slots remain `NOT_EXECUTED` until a profile-capable frontend and actual guest tests are integrated.
+- Cranelift: [#82](https://github.com/atto-lang/atto-source.cranelift/pull/82) adds deliberate pre-IR/native-JIT denial for unlinked libraries; this is not compiler-owned Core linking. .NET, self-hosted and realtime: named evidence slots remain `NOT_EXECUTED` until a profile-capable frontend and actual guest tests are integrated.
 
 The policy model now adds negative fixture candidates for `alloc -> std` and `std -> actor`, in addition to the existing `core -> alloc/std` checks. No unsupported import should silently fall back to a local guest file or host module. For each backend, a passing claim requires its own **actual** current-head compiler, profile selection, real guest execution, forbidden-import negative before IR/no artifact, and independently verifiable toolchain/run/artifact provenance. Host-only structural tests stay `NOT_EXECUTED` here.
 
