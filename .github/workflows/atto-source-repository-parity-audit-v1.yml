@@ -21,11 +21,23 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 8
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout exact submitted source head without persisting token
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      - name: Check all eleven source repositories (SOURCE-FREE ONLY)
-        run: node --test tests/atto-source-repository-parity-audit-v1.test.mjs
+      - name: Verify exact source revision before source-free inventory tests
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          echo "SOURCE_HEAD=$EXPECTED_SHA"
+          echo "SOURCE_TREE=$(git rev-parse HEAD^{tree})"
+          echo "NO_COMPILER_OR_GUEST_CLAIM=TRUE"
+      - name: Check historical 11-repository source inventory and negative mutations
+        run: |
+          set -euo pipefail
+          node --version
+          node -e "if (+process.versions.node.split('.')[0] < 20) process.exit(2)"
+          node --test tests/atto-source-repository-parity-audit-v1.test.mjs
