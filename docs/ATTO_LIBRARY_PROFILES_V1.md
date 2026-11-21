@@ -54,5 +54,12 @@ Relevant implementation work already in progress, not duplicate proposals:
 - Forge: [#162](https://github.com/atto-lang/atto-source.forge/pull/162) (compiler frontend/guest scalar and closed import boundary).
 - JS: [#78](https://github.com/atto-lang/atto-source.js/pull/78) (pure integer `core` static linker; new canonical `atto.core/numeric` and `.atto` suffix aliases remain a narrow subset).
 - Wasm: [#185](https://github.com/atto-lang/atto-source.wasm/pull/185) (explicit core-only LLVM bridge); this cannot independently prove native compiler or guest evidence.
+- Rust: [#465](https://github.com/atto-lang/atto-source.rs/pull/465) (fail-closed compiler-owned Atto library imports and local shadow denial) plus [#417](https://github.com/atto-lang/atto-source.rs/pull/417) (std.buffer exact-byte admission candidate, not linked guest support).
+- HDL: [#50](https://github.com/atto-lang/atto-source.hdl/pull/50) (explicit compiler-side library-profile rejection in fixed-width RTL subset, not full `core`/allocator/std support).
+- Cranelift, .NET, self-hosted and realtime: named evidence slots remain `NOT_EXECUTED` until a profile-capable frontend and actual guest tests are integrated.
 
 The policy model now adds negative fixture candidates for `alloc -> std` and `std -> actor`, in addition to the existing `core -> alloc/std` checks. No unsupported import should silently fall back to a local guest file or host module. For each backend, a passing claim requires its own **actual** current-head compiler, profile selection, real guest execution, forbidden-import negative before IR/no artifact, and independently verifiable toolchain/run/artifact provenance. Host-only structural tests stay `NOT_EXECUTED` here.
+
+### Local test checkpoint
+
+The checked-in manifest and policy checker were fetched from this branch and exercised in-process using V8: **19/19** positive/negative cases passed (including eleven forged-PASS denials). This **is not** source-owned Node CI. Conformance workflow run [#44947412464](https://github.com/atto-lang/atto-platform-conformance/actions/runs/44947412464) failed before any steps were exposed (`steps=null`); classify as `NOT_EXECUTED` / runner-admission failure rather than code-test failure.
