@@ -209,6 +209,42 @@
       "cross_backend_parity": "NOT_VERIFIED",
       "applicability": "MUST_BE_ESTABLISHED_PER_BACKEND",
       "certified_backends": []
+    },
+    {
+      "id": "theater-director-ensemble-runtime",
+      "cross_backend_parity": "NOT_VERIFIED",
+      "applicability": "MUST_BE_ESTABLISHED_PER_BACKEND",
+      "certified_backends": []
+    },
+    {
+      "id": "immutable-collections-and-copy-on-write",
+      "cross_backend_parity": "NOT_VERIFIED",
+      "applicability": "MUST_BE_ESTABLISHED_PER_BACKEND",
+      "certified_backends": []
+    },
+    {
+      "id": "checked-i64-and-bitshift-arithmetic",
+      "cross_backend_parity": "NOT_VERIFIED",
+      "applicability": "MUST_BE_ESTABLISHED_PER_BACKEND",
+      "certified_backends": []
+    },
+    {
+      "id": "type-ascription-conversion-and-generic-inference",
+      "cross_backend_parity": "NOT_VERIFIED",
+      "applicability": "MUST_BE_ESTABLISHED_PER_BACKEND",
+      "certified_backends": []
+    },
+    {
+      "id": "source-utf8-control-admission",
+      "cross_backend_parity": "NOT_VERIFIED",
+      "applicability": "MUST_BE_ESTABLISHED_PER_BACKEND",
+      "certified_backends": []
+    },
+    {
+      "id": "package-root-import-and-aot-profile",
+      "cross_backend_parity": "NOT_VERIFIED",
+      "applicability": "MUST_BE_ESTABLISHED_PER_BACKEND",
+      "certified_backends": []
     }
   ],
   "legacy_source_evidence": "Separate legacy oreslang-source.* pins are historical; they do not certify atto-source.* current HEADs.",
