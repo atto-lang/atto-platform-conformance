@@ -181,6 +181,18 @@ test('mandatory ensemble share! and typed try_publish cases cannot be deleted or
   const forgedSupport=structuredClone(contract);
   forgedSupport.ensemblePublication.unsupportedAliasDisposition='allow-host-fallback';
   assert.ok(validateTheaterContract(forgedSupport).length>0);
+  for (const [field,spoofed] of [
+    ['topicSequenceWidth','signed-i64'],
+    ['topicSequenceFirst','0'],
+    ['topicSequenceRefusalSentinel','18446744073709551615'],
+    ['topicSequenceWire','signed-decimal'],
+    ['topicSequenceExhaustion','return Full and wrap on retry'],
+  ]) {
+    const changed=structuredClone(contract);
+    changed.ensemblePublication[field]=spoofed;
+    assert.ok(validateTheaterContract(changed).length>0,
+      field+' must not be downgraded without executable parity evidence');
+  }
 });
 test('existing guest receipt candidates cannot pass with only the earlier twenty cases',()=>{
   const oldCaseReceipt=candidate();
