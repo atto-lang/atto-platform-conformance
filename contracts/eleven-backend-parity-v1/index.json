@@ -5,7 +5,7 @@
   "conformance_authority": "atto-lang/atto-platform-conformance",
   "evidence_gate": "source_inventory_only",
   "release_qualified": false,
-  "notes": "Main SHAs are observed GitHub snapshots, not tested compiler heads. Candidate PR links are work pointers, not compiled-guest evidence. This registry cannot graduate any cell to passed until a reviewed authenticating verifier and exact-head guest receipts are integrated.",
+  "notes": "Main SHAs are observed GitHub snapshots, not tested compiler heads. Candidate PR links are work pointers, not compiled-guest evidence. This registry cannot graduate any cell to passed until a reviewed authenticating verifier and exact-head guest receipts are integrated. Floating int/int division is tracked independently: Java #66 and .NET #191 are unexecuted implementation candidates; all other backends remain not_executed rather than implicitly supported.",
   "workstreams": [
     {
       "id": "operator_caret_xor",
@@ -18,6 +18,13 @@
       "id": "checked_i64",
       "title": "Canonical checked signed-i64 arithmetic and constant overflow",
       "reference": "https://github.com/atto-lang/atto-platform-conformance/pull/235",
+      "approval_state": "candidate_or_tracking",
+      "support_claim": "none"
+    },
+    {
+      "id": "float_int_division",
+      "title": "Canonical int / int yields float; never silently truncate signed integer division",
+      "reference": "https://github.com/atto-lang/atto-spec/pull/151",
       "approval_state": "candidate_or_tracking",
       "support_claim": "none"
     },
@@ -102,6 +109,13 @@
             "https://github.com/atto-lang/atto-source.java/pull/66"
           ]
         },
+        "float_int_division": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.java/pull/66"
+          ]
+        },
         "inline_sync_task": {
           "state": "not_executed",
           "evidence": null,
@@ -167,6 +181,11 @@
           ]
         },
         "checked_i64": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "float_int_division": {
           "state": "not_executed",
           "evidence": null,
           "candidate_prs": []
@@ -244,6 +263,11 @@
           "evidence": null,
           "candidate_prs": []
         },
+        "float_int_division": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
         "inline_sync_task": {
           "state": "not_executed",
           "evidence": null,
@@ -312,6 +336,13 @@
           "state": "not_executed",
           "evidence": null,
           "candidate_prs": []
+        },
+        "float_int_division": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.net/pull/191"
+          ]
         },
         "inline_sync_task": {
           "state": "not_executed",
@@ -382,6 +413,11 @@
           ]
         },
         "checked_i64": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "float_int_division": {
           "state": "not_executed",
           "evidence": null,
           "candidate_prs": []
@@ -459,6 +495,11 @@
           "evidence": null,
           "candidate_prs": []
         },
+        "float_int_division": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
         "inline_sync_task": {
           "state": "not_executed",
           "evidence": null,
@@ -531,6 +572,11 @@
           "candidate_prs": [
             "https://github.com/atto-lang/atto-source.rs/pull/439"
           ]
+        },
+        "float_int_division": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
         },
         "inline_sync_task": {
           "state": "not_executed",
@@ -605,6 +651,11 @@
             "https://github.com/atto-lang/atto-source.js/pull/69"
           ]
         },
+        "float_int_division": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
         "inline_sync_task": {
           "state": "not_executed",
           "evidence": null,
@@ -674,6 +725,11 @@
           "evidence": null,
           "candidate_prs": []
         },
+        "float_int_division": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
         "inline_sync_task": {
           "state": "not_executed",
           "evidence": null,
@@ -735,6 +791,11 @@
           "evidence": null,
           "candidate_prs": []
         },
+        "float_int_division": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
         "inline_sync_task": {
           "state": "not_executed",
           "evidence": null,
@@ -792,6 +853,11 @@
           "candidate_prs": []
         },
         "checked_i64": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "float_int_division": {
           "state": "not_executed",
           "evidence": null,
           "candidate_prs": []
