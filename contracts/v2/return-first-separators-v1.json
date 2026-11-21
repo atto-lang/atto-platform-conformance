@@ -619,7 +619,7 @@
     {
       "id": "P16_nominal_error_triggered_recover",
       "path": "fixtures/return-first-separators-v1/P16-nominal-error-triggered-recover.atto",
-      "git_blob_sha": "680793e994f56a61970088ac9d714978801ee4b2",
+      "git_blob_sha": "3b07f24601124d1c190e27fd54e89c94f96caf85",
       "kind": "positive",
       "expect": "exit",
       "value": 42,
