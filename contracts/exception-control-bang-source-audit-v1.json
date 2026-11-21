@@ -142,7 +142,7 @@
     {
       "repo": "atto-lang/atto-source.wasm",
       "existing_pr": 119,
-      "candidate_head_sha": "8c87726ae46d667b1a9a175e8fb605b110f7fc2d",
+      "candidate_head_sha": "79dc0a23ded65b5f1ddd799eff8499662e1f0473",
       "candidate_branch": "draft/bang-exception-keywords-20261120",
       "profile": "WASM_DELEGATES_SOURCE_COMPILATION_TO_RUST",
       "has_frontend_in_this_repository": false,
@@ -150,11 +150,15 @@
       "compiler_ci_exact_head": "NOT_VERIFIED",
       "semantic_exception_effect_parity": "NOT_VERIFIED",
       "independent_compiler_certification": false,
-      "delegated_wasm_compiler_artifact_gate": "AUTHORED_NOT_EXECUTED"
+      "delegated_wasm_compiler_artifact_gate": "AUTHORED_NOT_EXECUTED",
+      "isolated_guest_host_security_gate": "SYNTHETIC_WASM_LOCAL_NODE22_7_OF_7_NOT_COMPILER",
+      "guest_child_execution_timeout_ms": 5000,
+      "guest_child_stdout_limit_bytes": 4096,
+      "compiled_guest_from_approved_rust_compiler": "NOT_EXECUTED"
     }
   ],
   "provenance_notes": {
-    "wasm": "The actual Rust-compiled source-to-Wasm compiler is in atto-source.rs; atto-source.wasm #119 now has a SHA256/ABI-bound delegated guest execution harness with two positive throw!/raise! traces and three negative no-artifact checks, plus source-only malformed-artifact unit tests. The executable gate has NOT run on an approved compiler artifact.",
+    "wasm": "Wasm host-only draft #119 now includes an independently SHA256/ABI-bound delegated Rust compiler Wasm gate, plus subprocess-bounded guest execution (5-second kill timeout, restricted imports, 4KiB stdout). Seven synthetic WebAssembly child-process security tests PASSED in local Node 22 with exact committed Git blob identities. This is HOST_TESTED_SYNTHETIC_ONLY. No authorized compiler artifact, no compiled Atto guest trace, no independent compiler parity.",
     "atto,realtime": "Only AGENTS.md and README.md exist on main; their source repositories cannot be counted as working compilers.",
     "java,llvm,rs": "Drafts cover lexical spelling; typed Error/Result, complete unwind and panic CONTROL routing require executed guest tests.",
     "net,forge,js,hdl,cranelift": "Drafts guard unsupported guest-effect admission; reject-with-diagnostic is not positive semantic feature implementation.",
