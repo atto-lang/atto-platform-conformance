@@ -1,0 +1,12 @@
+// expect-exit: 42
+// Target: no clone, reference count, move or Pointer<T> is needed for
+// two simultaneous read-only arguments rooted in one class owner.
+define class Parcel as pub let int value = 21; end
+fnc sum_two(Parcel first, Parcel second): int {
+  return first.value + second.value;
+}
+pub fnc main(): int {
+  let parcel = new Parcel();
+  val total = sum_two(parcel, parcel);
+  return total;
+}
