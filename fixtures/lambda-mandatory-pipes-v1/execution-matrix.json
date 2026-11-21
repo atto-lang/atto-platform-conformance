@@ -116,6 +116,20 @@
       "source": "pub fnc main(): int { val runtime = 41; const fnc v = |_| : int -> runtime; return v(41); }\n",
       "error_family": "E_CONST",
       "meaning": "const direct callable must not capture runtime variables"
+    },
+    {
+      "id": "anonymous-fnc-unpiped",
+      "kind": "reject",
+      "source": "pub fnc main(): int { val v = fnc(int x) -> x + 1; return 0; }\n",
+      "error_family": "E_SYNTAX",
+      "meaning": "anonymous fnc(...) function expression must have explicit |...| delimiters; named fnc declarations remain distinct"
+    },
+    {
+      "id": "parenthesized-lambda-unpiped",
+      "kind": "reject",
+      "source": "pub fnc main(): int { val v = (int x) -> x + 1; return 0; }\n",
+      "error_family": "E_SYNTAX",
+      "meaning": "legacy parenthesized lambda parameter head is not canonical Atto syntax and must be version-gated"
     }
   ]
 }
