@@ -109,8 +109,9 @@ test('all eleven compiler frontends have independent recognition gates and track
 
 
 test('Rust terminal READY candidate does not silently promote any backend to PASS', () => {
-  assert.equal(data.candidate_subsets.length,1);
-  const [candidate]=data.candidate_subsets;
+  assert.equal(data.candidate_subsets.length,2);
+  const candidate=data.candidate_subsets.find(x=>x.repository==='atto-lang/atto-source.rs');
+  assert.ok(candidate);
   assert.equal(candidate.repository,'atto-lang/atto-source.rs');
   assert.match(candidate.source_head_sha,/^[a-f0-9]{40}$/);
   assert.equal(candidate.status,'STAGED_UNVERIFIED');
@@ -128,4 +129,28 @@ test('Rust terminal READY candidate does not silently promote any backend to PAS
     assert.equal(backend.guest_result,'NOT_EXECUTED',backend.repo);
     assert.equal(backend.frontend_contract_status,'NOT_VERIFIED',backend.repo);
   }
+});
+
+test('JS actor compiler is explicit fail-closed, and incarnation tests do not count as guest parity',()=>{
+  assert.ok(data.requirements.includes('worker_ready_reply_done_fenced_by_incarnation'));
+  const js=data.candidate_subsets.find(x=>x.repository==='atto-lang/atto-source.js');
+  assert.ok(js);
+  assert.equal(js.status,'STAGED_UNVERIFIED');
+  assert.equal(js.evidence,'ISOLATED_V8_SOURCE_TEST_6_OF_6_NOT_NODE_CI');
+  assert.equal(js.steps_executed,0);
+  assert.equal(js.runner_allocated,false);
+  assert.ok(js.tests.includes('tests/actor-lifecycle-source-gate.test.mjs'));
+  assert.ok(js.excludes.includes('continuous pipe!/rpipe! transport'));
+  assert.match(js.source_head_sha,/^[a-f0-9]{40}$/);
+  const [host]=data.host_protocol_candidates;
+  assert.equal(data.host_protocol_candidates.length,1);
+  assert.equal(host.status,'HOST_PROTOCOL_TESTED_NOT_COMPILER_GUEST_PROVEN');
+  assert.equal(host.session_tests.passed,15);
+  assert.equal(host.worker_protocol_tests.passed,6);
+  assert.equal(host.session_tests.guest_execution,false);
+  assert.equal(host.worker_protocol_tests.guest_execution,false);
+  assert.equal(host.steps_executed,0);
+  assert.match(host.source_head_sha,/^[a-f0-9]{40}$/);
+  for(const b of data.backend_evidence)
+    assert.equal(b.guest_result,'NOT_EXECUTED',b.repo);
 });
