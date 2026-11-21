@@ -73,3 +73,11 @@ The separate [mainline audit snapshot](../verification/atto-ensemble-pubsub-main
 - Forge, Rust, JavaScript, HDL, Atto self-hosted, real-time: no pub/sub-named files matched the recursive `main` tree path scan. **Unknown implementation coverage, NOT_VERIFIED**; static filename scanning cannot prove absence.
 
 Do not silently classify any of these eleven as `PASS`, `IMPLEMENTED`, or `CERTIFIED` from the filename scan. Every one must prove the 28-case guest matrix or remain an explicit unsupported profile. The source-side cross-organization private export hold applies to testing; do not mirror private source without independent security authorization.
+
+### Newly authored defensive source gates (not semantic parity)
+
+- [.NET source admission #200](https://github.com/atto-lang/atto-source.net/pull/200): rejects unlowered `.try_publish(share! event)?` and its compatibility argument spellings *before* CIL/NativeAOT. Authored C# tests; no stepful `dotnet` execution.
+- [Wasm source admission #265](https://github.com/atto-lang/atto-source.wasm/pull/265): same fail-closed predicate before the native LLVM/Wasm bridge, while preserving inert strings/comments and unrelated free functions. Exact tokenizer/source-gate functions exercised in V8 with an ASCII decoder shim: 5/5 denials and 4/4 inert controls, **not** full Node or Wasm guest execution.
+- [Atto pubsub spec #198](https://github.com/atto-lang/atto-spec/pull/198) now enumerates all eleven backends rather than six. None has been promoted to backend-verified.
+
+These changes reduce accidental unsupported guest acceptance, **not** implement `Topic<T>.try_publish` on .NET or Wasm. Their source heads are recorded in the inventory snapshot; the `mainSha` fields remain unchanged because the changes are in draft PRs.
