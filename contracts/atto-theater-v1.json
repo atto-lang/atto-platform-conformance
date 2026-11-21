@@ -1,0 +1,63 @@
+{
+  "schema": "atto.theater-contract/1",
+  "revision": 1,
+  "evidence": "compiled-atto-guest-required",
+  "platform": {
+    "theater": "OTP-style application framework",
+    "director": "supervision and lifecycle policies",
+    "ensemble": "actor groups and typed topics with explicit subscriptions",
+    "runtime": "scheduler, actor identity, mailbox admission and authenticated CONTROL"
+  },
+  "backends": {
+    "java": "atto-lang/atto-source.java",
+    "llvm": "atto-lang/atto-source.llvm",
+    "net": "atto-lang/atto-source.net",
+    "wasm": "atto-lang/atto-source.wasm",
+    "forge": "atto-lang/atto-source.forge",
+    "cranelift": "atto-lang/atto-source.cranelift",
+    "rs": "atto-lang/atto-source.rs",
+    "js": "atto-lang/atto-source.js",
+    "hdl": "atto-lang/atto-source.hdl",
+    "atto": "atto-lang/atto-source.atto",
+    "realtime": "atto-lang/atto-source.realtime"
+  },
+  "bootstrapOnlyAtStart": ["atto", "realtime"],
+  "cases": [
+    {"id":"director-one-for-one-restart","subsystem":"director","kind":"positive","assertion":"Failed child restarts without replacing unrelated children"},
+    {"id":"director-one-for-all-restart","subsystem":"director","kind":"positive","assertion":"All child incarnations restart in deterministic order"},
+    {"id":"director-rest-for-one-restart","subsystem":"director","kind":"positive","assertion":"Failed child and later siblings restart, earlier siblings survive"},
+    {"id":"director-intensity-quarantine","subsystem":"director","kind":"negative","assertion":"Bounded restart budget fences crash loops and escalates"},
+    {"id":"director-panic-control-only","subsystem":"director","kind":"negative","assertion":"A panicking actor cannot intercept or forge its supervisor CONTROL notice"},
+    {"id":"director-nested-supervision","subsystem":"director","kind":"positive","assertion":"Nested supervisor failure propagates with stable identities and bounded cleanup"},
+    {"id":"director-startup-rollback","subsystem":"director","kind":"negative","assertion":"Partial child-start failure rolls back and releases resources"},
+    {"id":"director-generation-fence","subsystem":"director","kind":"negative","assertion":"Stale actor incarnation and restart acknowledgments are denied"},
+    {"id":"ensemble-multi-group-membership","subsystem":"ensemble","kind":"positive","assertion":"One actor may join two authorized groups independently"},
+    {"id":"ensemble-membership-is-not-subscription","subsystem":"ensemble","kind":"negative","assertion":"Group membership alone never delivers topic DATA"},
+    {"id":"ensemble-typed-fanout","subsystem":"ensemble","kind":"positive","assertion":"An explicitly subscribed actor receives matching typed DATA once"},
+    {"id":"ensemble-cross-group-isolation","subsystem":"ensemble","kind":"negative","assertion":"Unprivileged cross-group publish and subscribe fail closed"},
+    {"id":"ensemble-bounded-backpressure","subsystem":"ensemble","kind":"negative","assertion":"Full recipient mailbox denies RELIABLE admission atomically with no partial fanout"},
+    {"id":"ensemble-revoke-unsubscribe","subsystem":"ensemble","kind":"negative","assertion":"Revocation and unsubscribe prevent future delivery and quiesce in-flight delivery"},
+    {"id":"ensemble-group-retirement","subsystem":"ensemble","kind":"negative","assertion":"Group retirement and reincarnation invalidate stale grants"},
+    {"id":"ensemble-teardown-no-reentrant-lock","subsystem":"ensemble","kind":"negative","assertion":"Group/channel cleanup and callbacks do not run under registry/topic locks"},
+    {"id":"runtime-mailbox-admission","subsystem":"runtime","kind":"positive","assertion":"Actor message admission and completion honor bounded mailbox limits"},
+    {"id":"runtime-control-data-separation","subsystem":"runtime","kind":"negative","assertion":"User DATA cannot impersonate priority supervisor CONTROL"},
+    {"id":"theater-app-lifecycle","subsystem":"theater","kind":"positive","assertion":"Application starts supervised children and shuts down in deterministic order"},
+    {"id":"theater-no-leaked-tickets","subsystem":"theater","kind":"negative","assertion":"Cancellation, crash and shutdown release every lifecycle and message ticket"}
+  ],
+  "requiredEvidence": [
+    "exact-compiler-head-and-tree",
+    "same-source-guest-fixtures",
+    "successful-nonzero-step-job",
+    "compiler-generated-guest-artifact",
+    "actual-guest-execution",
+    "positive-and-negative-case-assertions",
+    "independent-provenance-validation"
+  ],
+  "disallowedEvidence": [
+    "host-model-only",
+    "parser-only",
+    "interpreter-image-standing-in-for-guest-AOT",
+    "zero-step-actions",
+    "self-attested-pass-without-verified-GitHub-job"
+  ]
+}
