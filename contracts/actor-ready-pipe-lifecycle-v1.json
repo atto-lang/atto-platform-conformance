@@ -311,5 +311,54 @@
       "forbid": "cross_tenant_lifecycle_settlement",
       "execution": "NOT_EXECUTED"
     }
-  ]
+  ],
+  "v2_guest_candidate": {
+    "repository": "atto-lang/atto-source.rs",
+    "pull_request": "https://github.com/atto-lang/atto-source.rs/pull/262",
+    "source_head_sha": "8efdde8459f637e121db139297c61f61cb1d8e33",
+    "mergeability": "CONFLICTING_WITH_MAIN",
+    "profile": "EXPERIMENTAL_SINGLE_GUEST_MEMORY_V2",
+    "status": "STAGED_GUEST_EXECUTION_NOT_VERIFIED",
+    "implementation": [
+      "actor_get_ready_returns_independent_Future_void",
+      "await_spawn_resolves_ready_and_returns_actor_ref",
+      "pipe_bang_direct_two_actor_checked_Result",
+      "rpipe_bang_reverse_written_same_DATA_edge",
+      "pipe_bang_actor_bounded_channel_actor_checked_Result",
+      "stop_bang_graceful_input_close_not_physical_completion",
+      "no_double_attach_for_reverse_alias",
+      "nonterminal_await_continuation_by_v2_scheduler"
+    ],
+    "guest_fixtures": [
+      "tests/fixtures/pass/230-v2-actor-ready-future-pipe.atto",
+      "tests/fixtures/pass/231-v2-await-spawn-ready-pipe.atto",
+      "tests/fixtures/pass/232-v2-direct-actor-pipe-bang.atto",
+      "tests/fixtures/pass/233-v2-direct-actor-rpipe-bang.atto",
+      "tests/fixtures/pass/234-v2-direct-actor-bang-duplicate-denied.atto"
+    ],
+    "compiler_tests": [
+      "tests/v2_actor_ready_guest.rs",
+      "tests/v2_actor_bang_guest.rs"
+    ],
+    "guest_runner": "tests/node-v2-pipe-guest.mjs",
+    "expected_guest_result": 42,
+    "expected_guest_stdout": "40\n2\n",
+    "expected_guest_imports_only": [
+      "print_i64",
+      "print_bool",
+      "print_str",
+      "print_newline",
+      "print_f64"
+    ],
+    "test_execution": "NOT_EXECUTED",
+    "known_gaps": [
+      "no_real_runner_allocation_confirmation",
+      "separate_stage3_host_actor_session_profile",
+      "no_authenticated_cross_TenantVM_capabilities",
+      "no_async_user_startup_hooks",
+      "no_production_PipeHandle_cleanup_or_cancellation",
+      "no_verified_browser_compiler_release",
+      "other_backend_guest_parity_NOT_EXECUTED"
+    ]
+  }
 }
