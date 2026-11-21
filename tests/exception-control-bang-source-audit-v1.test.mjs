@@ -34,6 +34,9 @@ function assertSourceAudit(x){
     const row=x.backends.find(r=>r.repo==='atto-lang/atto-source.'+suffix);
     assert.equal(row.canonical_trap_result_guard,'SOURCE_PATCHED_NOT_EXECUTED');
   }
+  const java=x.backends.find(r=>r.repo==='atto-lang/atto-source.java');
+  assert.equal(java.candidate_head_sha,'8cf9054c35c29f28ae12324f593144a2c51d97c4');
+  assert.equal(java.canonical_throw_raise_panic_rejection,'SOURCE_TEST_AUTHORED_NOT_EXECUTED');
   const llvm=x.backends.find(r=>r.repo==='atto-lang/atto-source.llvm');
   assert.equal(llvm.canonical_throw_error_guard,'SOURCE_PATCHED_NOT_EXECUTED');
   assert.equal(llvm.candidate_head_sha,'06e15f496155f5162a79311b3fc22bb1c63d108d');
@@ -41,6 +44,8 @@ function assertSourceAudit(x){
   assert.equal(llvm.native_compiler_negative_gate,'10_REJECT_1_POSITIVE_AUTHORED_NOT_EXECUTED');
   const rust=x.backends.find(r=>r.repo==='atto-lang/atto-source.rs');
   assert.equal(rust.canonical_typed_throw_raise_guest_suite,'AUTHORED_NOT_EXECUTED');
+  assert.equal(rust.candidate_head_sha,'9ff2cd9470cc6e94a808cd49b2e208ae3a6d9fd3');
+  assert.equal(rust.canonical_panic_supervisor_guard,'SOURCE_TEST_AUTHORED_NOT_EXECUTED');
   const wasm=x.backends.find(r=>r.repo==='atto-lang/atto-source.wasm');
   assert.equal(wasm.has_frontend_in_this_repository,false);
   assert.equal(wasm.delegated_wasm_compiler_artifact_gate,'AUTHORED_NOT_EXECUTED');
@@ -122,6 +127,18 @@ test('seven locally executed synthetic Wasm host guards do not certify a compile
     x=>x.backends[10].synthetic_guest_host_test_git_blob='0'.repeat(40),
     x=>x.backends[10].synthetic_guest_host_test_provenance='COMPILER_GUEST_PASSED',
     x=>x.backends[10].independent_compiler_certification=true,
+  ]){
+    const altered=clone(contract);mutate(altered);
+    assert.throws(()=>assertSourceAudit(altered));
+  }
+});
+
+test('latest Java and Rust typed error and panic source-only guards cannot claim guest execution',()=>{
+  for(const mutate of [
+    x=>x.backends[4].candidate_head_sha='3220afcaa420c38769647dc7f1a1dc8eca1ff049',
+    x=>x.backends[4].canonical_throw_raise_panic_rejection='GUEST_PASSED',
+    x=>x.backends[9].candidate_head_sha='c8ed3191b39fd08d2ed1307c58262cac0291be5c',
+    x=>x.backends[9].canonical_panic_supervisor_guard='GUEST_PASSED',
   ]){
     const altered=clone(contract);mutate(altered);
     assert.throws(()=>assertSourceAudit(altered));
