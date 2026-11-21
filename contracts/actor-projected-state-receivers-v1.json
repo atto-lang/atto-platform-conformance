@@ -13,7 +13,10 @@
     "scheduling": "Disjoint write effects do not split a whole-state critical-write lock",
     "effects": "Verified transitive reads/writes/escape/suspend effects required; unknown effects fail closed",
     "failClosed": "No compiler guest admission until layouts, provenance, state-guard and effect proofs are authenticated",
-    "canonicalize": "Singleton braced field group normalizes to self.state.field; no square-bracket variant"
+    "canonicalize": "Singleton braced field group normalizes to self.state.field; no square-bracket variant",
+    "receiverBinding": "Any legal named receiver binds its actor instance; self is conventional, not a mandatory alias. Renaming all bound body references preserves dispatch ABI and state write footprint.",
+    "alphaEquivalence": "Foo mut self.state.{counter,xyz} and Foo mut this.state.{counter,xyz} have equal typed write-set identity; receiver naming alone cannot overload a method.",
+    "receiverScope": "The guard binder must be distinct from receiver name; receiver name cannot collide with formals or be shadowed; mistaken self references are unbound after renaming."
   },
   "targets": [
     "rs",
@@ -212,6 +215,131 @@
         "Reject second loan because actor.state.counter overlaps"
       ],
       "note": "Defining two methods with overlapping potential write sets is legal; the conflict only exists when incompatible loans are simultaneously live."
+    },
+    {
+      "id": "named_this_receiver_control",
+      "stage": "target_parser",
+      "expect": "accept_ast_only",
+      "sourceUnits": {
+        "src/worker.atto": "declare actor Foo;\nmtd (Foo this) receive(): void { this.send(42); this.end(); }\n"
+      },
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "named_typed_alias",
+      "stage": "target_parser",
+      "expect": "accept_ast_only",
+      "sourceUnits": {
+        "src/worker.atto": "declare actor Foo;\nmtd (this: Foo) read(): int { this.send(5); return 5; }\n"
+      },
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "named_field_write",
+      "stage": "target_parser",
+      "expect": "accept_ast_only",
+      "sourceUnits": {
+        "src/worker.atto": "declare actor Foo;\nmtd (Foo mut this.state.counter) increment(): void {\n this.handle_state(critical-write |s| -> { s.counter += 1; });\n}\n"
+      },
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "named_group_write",
+      "stage": "target_parser",
+      "expect": "accept_ast_only",
+      "sourceUnits": {
+        "src/worker.atto": "declare actor Foo;\nmtd (Foo mut node.state.{counter, xyz}) update(): void {\n node.handle_state(critical-write |s| -> { s.counter += 1; s.xyz += 1; });\n}\n"
+      },
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "named_whole_state",
+      "stage": "target_parser",
+      "expect": "accept_ast_only",
+      "sourceUnits": {
+        "src/worker.atto": "declare actor Foo;\nmtd (Foo mut this.state) reset(): void {\n this.handle_state(critical-write |s| -> { s.counter = 0; });\n}\n"
+      },
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "named_unguarded_state_write",
+      "stage": "target_parser",
+      "expect": "reject",
+      "diagnosticClass": "E_SEALED",
+      "sourceUnits": {
+        "src/worker.atto": "declare actor Foo;\nmtd (Foo mut this.state.counter) bad(): void { this.state.counter = 9; }\n"
+      },
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "named_guard_unauthorized_write",
+      "stage": "target_parser",
+      "expect": "reject",
+      "diagnosticClass": "E_MUTABILITY",
+      "sourceUnits": {
+        "src/worker.atto": "declare actor Foo;\nmtd (Foo mut this.state.counter) bad(): void {\n this.handle_state(critical-write |s| -> { s.xyz = 9; });\n}\n"
+      },
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "named_receiver_missing_self_alias",
+      "stage": "target_parser",
+      "expect": "reject",
+      "diagnosticClass": "E_UNBOUND",
+      "sourceUnits": {
+        "src/worker.atto": "declare actor Foo;\nmtd (Foo mut this.state.counter) bad(): void {\n self.handle_state(critical-write |s| -> { s.counter = 1; });\n}\n"
+      },
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "named_receiver_callback_binder_collision",
+      "stage": "target_parser",
+      "expect": "reject",
+      "diagnosticClass": "E_SEALED",
+      "sourceUnits": {
+        "src/worker.atto": "declare actor Foo;\nmtd (Foo mut this.state.counter) bad(): void {\n this.handle_state(critical-write |this| -> { this.counter = 1; });\n}\n"
+      },
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "named_receiver_param_collision",
+      "stage": "target_parser",
+      "expect": "reject",
+      "diagnosticClass": "E_DUPLICATE",
+      "sourceUnits": {
+        "src/worker.atto": "declare actor Foo;\nmtd (Foo this) f(int this): void {}\n"
+      },
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "named_receiver_local_shadow",
+      "stage": "target_parser",
+      "expect": "reject",
+      "diagnosticClass": "E_DUPLICATE",
+      "sourceUnits": {
+        "src/worker.atto": "declare actor Foo;\nmtd (Foo this) f(): void { let int this = 1; }\n"
+      },
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "named_receiver_not_overload",
+      "stage": "target_parser",
+      "expect": "reject",
+      "diagnosticClass": "E_DUPLICATE",
+      "sourceUnits": {
+        "src/worker.atto": "declare actor Foo;\nmtd (Foo self) f(): void {}\nmtd (Foo this) f(): void {}\n"
+      },
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "reserved_actor_is_not_receiver_identifier",
+      "stage": "target_parser",
+      "expect": "reject",
+      "diagnosticClass": "E_SYNTAX",
+      "sourceUnits": {
+        "src/worker.atto": "declare actor Foo;\nmtd (Foo actor) f(): void {}\n"
+      },
+      "evidence": "NOT_EXECUTED"
     }
   ]
 }
