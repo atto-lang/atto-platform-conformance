@@ -50,9 +50,44 @@ test("transitive capability closure and forbidden upward dependencies reject",()
  for(const [profile,modules] of bad)assert.throws(()=>check(profile,modules),profile);
 });
 
+test("every atto-source compiler has a closed unverified evidence slot",()=>{
+ const backends=["atto","cranelift","forge","hdl","java","js","llvm","net","realtime","rs","wasm"];
+ assert.deepEqual(Object.keys(manifest.evidence),backends);
+ assert.ok(backends.every(name=>manifest.evidence[name]==="NOT_EXECUTED"));
+ for(const name of backends){
+   const copy=structuredClone(manifest);
+   copy.evidence[name]="PASS";
+   assert.throws(()=>validateManifest(copy),"forged proof for "+name);
+ }
+ for(const name of backends){
+   const copy=structuredClone(manifest);
+   delete copy.evidence[name];
+   assert.throws(()=>validateManifest(copy),"missing backend "+name);
+ }
+ const extra=structuredClone(manifest);
+ extra.evidence.other="NOT_EXECUTED";
+ assert.throws(()=>validateManifest(extra),"unexpected backend slot");
+});
+
+test("all three tiers reject illegal direct and transitive imports before IR",()=>{
+ const cases=[
+   ["core",[app("buffer"),mod("buffer","alloc",["allocator"])]],
+   ["core",[app("base"),mod("base","core",[],["buffer"]),mod("buffer","alloc",["allocator"])]],
+   ["alloc",[app("region"),mod("region","alloc",["allocator"],["fs"]),mod("fs","std",["os_io"])]],
+   ["std",[app("api"),mod("api","std",[],["actor"]),mod("actor","actor",["executor","mailbox","supervision"])]],
+   ["std",[app("api"),mod("api","std",[],["helper"]),mod("helper","core",[],["actor"]),mod("actor","actor",["executor","mailbox","supervision"])]]
+ ];
+ for(const [profile,modules] of cases)
+   assert.throws(()=>check(profile,modules),"forbidden import under "+profile);
+ assert.equal(check("alloc",[app("region"),mod("region","alloc",["allocator"],["bounds"]),mod("bounds","core")]).status,"CONTRACT_GRAPH_ONLY");
+ assert.equal(check("std",[app("fs"),mod("fs","std",["os_io"],["region"]),mod("region","alloc",["allocator"])]).status,"CONTRACT_GRAPH_ONLY");
+});
+
 test("mutations cannot promote fabricated backend or weaken the profile split",()=>{
  const mutate=(f)=>{const copy=structuredClone(manifest);f(copy);assert.throws(()=>validateManifest(copy))};
  mutate(m=>m.evidence.llvm="PASS");
+ mutate(m=>m.evidence.js="PASS");
+ mutate(m=>{delete m.evidence.cranelift;});
  mutate(m=>m.status="VERIFIED");
  mutate(m=>m.tiers.core.dependencies.push("std"));
  mutate(m=>m.profiles[0].capabilities.push("os_io"));
