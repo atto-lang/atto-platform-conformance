@@ -7,7 +7,7 @@ import {createHash} from "node:crypto";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const manifest = JSON.parse(readFileSync(join(root, "contracts/guard-dual-form-v1.json"), "utf8"));
-const gitBlob = bytes => createHash("sha1").update(Buffer.from("blob " + bytes.length + "\\0")).update(bytes).digest("hex");
+const gitBlob = bytes => createHash("sha1").update(Buffer.from("blob " + bytes.length + "\0")).update(bytes).digest("hex");
 const pin = /^[a-f0-9]{40}$/;
 const validKinds = new Set(["NATIVE_GUEST_RETURN", "TYPECHECK_ACCEPT", "COMPILE_REJECT_NO_IR"]);
 const knownIds = new Set([
@@ -30,7 +30,7 @@ function assertManifest(m) {
     ids.add(f.id);
     assert.ok(validKinds.has(f.kind));
     assert.match(f.git_blob, pin);
-    assert.match(f.path, /^fixtures\\/guard-dual-form-v1\\/[a-z0-9-]+\\.atto$/);
+    assert.match(f.path, /^fixtures\/guard-dual-form-v1\/[a-z0-9-]+\.atto$/);
     const abs = resolve(root, f.path);
     assert.ok(abs.startsWith(root + sep) && !lstatSync(abs).isSymbolicLink());
     assert.equal(realpathSync(abs), abs, "no symlinked path");
@@ -62,14 +62,14 @@ test("brace and keyword forms pin matching true/false outcomes and Option signat
     assert.equal(byId[keyword].expected_integer, expected);
     const a=readFileSync(join(root,byId[brace].path),"utf8");
     const b=readFileSync(join(root,byId[keyword].path),"utf8");
-    assert.match(a,/guard (true|false) \\{ return 0; \\}/);
-    assert.match(b,/guard (true|false) else[\\s\\S]*?return 0;[\\s\\S]*?end/);
+    assert.match(a,/guard (true|false) \{ return 0; \}/);
+    assert.match(b,/guard (true|false) else[\s\S]*?return 0;[\s\S]*?end/);
   }
   for (const id of ["option-brace","option-keyword"]) {
     const s=readFileSync(join(root,byId[id].path),"utf8");
-    assert.match(s,/fnc optional_port\\(bool present\\): Option<int>/);
+    assert.match(s,/fnc optional_port\(bool present\): Option<int>/);
     assert.match(s,/return None;/);
-    assert.match(s,/return Some\\(8080\\);/);
+    assert.match(s,/return Some\(8080\);/);
   }
 });
 
@@ -78,5 +78,5 @@ test("keyword parse-boundary negative fixtures remain compile-reject targets", (
   for (const id of ["reject-keyword-fallthrough","reject-mixed-delimiters","reject-missing-end"])
     assert.equal(byId[id].kind,"COMPILE_REJECT_NO_IR");
   const nested=readFileSync(join(root,byId["keyword-nested-outer-else"].path),"utf8");
-  assert.match(nested,/guard true else[\\s\\S]*?end[\\s\\S]*?else[\\s\\S]*?fi/);
+  assert.match(nested,/guard true else[\s\S]*?end[\s\S]*?else[\s\S]*?fi/);
 });
