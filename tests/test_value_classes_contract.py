@@ -81,10 +81,17 @@ class ValueClassContractAudit(unittest.TestCase):
         """Detect unregistered fixtures and stale human-facing case totals."""
         cases = self.data["required_cases"]
         root = ROOT / "fixtures" / "value-classes"
+        self.assertTrue(root.is_dir(), str(root))
+        self.assertFalse(root.is_symlink(), str(root))
+        # Reject symlinked directories too: globbing *.atto alone may not
+        # descend through links, leaving a hidden alias outside the inventory.
+        for entry in root.rglob("*"):
+            self.assertFalse(entry.is_symlink(), str(entry))
         files = list(root.rglob("*.atto"))
-        for path in files:
-            self.assertFalse(path.is_symlink(), str(path))
-        registered = {c["path"] for c in cases}
+        registered_paths = [c["path"] for c in cases]
+        self.assertEqual(len(registered_paths), len(set(registered_paths)),
+                         "duplicate registry fixture path")
+        registered = set(registered_paths)
         discovered = {p.relative_to(ROOT).as_posix() for p in files}
         self.assertEqual(registered, discovered)
         for case in cases:
