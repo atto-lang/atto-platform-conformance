@@ -23,9 +23,13 @@ function inspect(x) {
     'abi_tags_must_match_explicitly', 'actor_backend_abi_is_not_control_abi', 'host_test_does_not_prove_guest'])
     assert.equal(x.scope[key], true, 'mandatory explicit scope: ' + key);
   assert.deepEqual(x.scope.attributed_control_host_code,
-    ['atto-lang/atto-source.java', 'atto-lang/atto-source.net']);
+    ['atto-lang/atto-source.net', 'atto-lang/atto-source.java', 'atto-lang/atto-source.llvm']);
   const sources = x.backends.filter(y => y.control_plane_source_status === 'SOURCE_COMMITTED_NOT_TESTED');
-  assert.deepEqual(sources.map(y => y.repo), x.scope.attributed_control_host_code);
+  const native = x.backends.filter(y => y.control_plane_source_status === 'SOURCE_COMMITTED_NATIVE_HOST_TESTED_LOCAL');
+  assert.deepEqual(sources.map(y => y.repo), ['atto-lang/atto-source.net', 'atto-lang/atto-source.java']);
+  assert.deepEqual(native.map(y => y.repo), ['atto-lang/atto-source.llvm']);
+  assert.deepEqual([...sources, ...native].map(y => y.repo).sort(),
+    [...x.scope.attributed_control_host_code].sort());
   for (const row of x.backends) {
     assert(abiOptions.has(row.actor_reference_abi_candidate), 'unrecognized actor ref encoding');
     assert.equal(row.control_plane_compiled_atto_guest, 'NOT_EXECUTED');
@@ -43,9 +47,27 @@ function inspect(x) {
     if (sources.includes(row)) {
       assert.equal(row.control_reference_abi_candidate, 'control_generation20_slot12_v1');
       assert.equal(row.candidate_stage, 'UNMANAGED_CONTROL_HOST_SOURCE');
+      assert.equal(row.native_host_local_test, null);
+    } else if (native.includes(row)) {
+      assert.equal(row.control_reference_abi_candidate, 'control_generation20_slot12_v1');
+      assert.equal(row.candidate_stage, 'ACTOR_NATIVE_ARENA_HOST_SOURCE');
+      const receipt = row.native_host_local_test;
+      assert.equal(receipt.status, 'PASS_LOCAL_NATIVE_HOST_ONLY');
+      assert.equal(receipt.compiled_atto_guest, 'NOT_EXECUTED');
+      assert.equal(receipt.ci_on_current_head, 'NOT_EXECUTED');
+      assert.equal(receipt.os_target, 'linux-x86_64');
+      assert.deepEqual(receipt.source_blobs, {
+        'ControlPlaneArena32.h': '64eabc65b9ce917d5f3085a42e8e2c9f3f2213c6',
+        'ControlPlaneArena32.c': 'd4e99998d545c634279d1620f67fc57bfbb3e5de',
+        'control_plane_arena32_test.c': '598591e49a5665fef25e01366af20d35ac35f649'
+      });
+      assert.match(receipt.gcc_binary_sha256, /^[0-9a-f]{64}$/);
+      assert.match(receipt.clang_sanitized_binary_sha256, /^[0-9a-f]{64}$/);
+      assert.match(receipt.positive_host_pass_marker, /NO compiled Atto guest or zero-GC proof/);
     } else {
       assert.equal(row.control_reference_abi_candidate, null);
       assert.equal(row.control_plane_source_status, 'NO_CONTROL_GUEST_PROOF_IN_THIS_AUDIT');
+      assert.equal(row.native_host_local_test, null);
     }
   }
 }
@@ -76,4 +98,13 @@ test('cannot forge a source head or classify unproved code as guest implementati
   assert.throws(() => inspect(x));
   const y = structuredClone(baseline); y.backends[6].control_plane_source_status = 'SOURCE_COMMITTED_NOT_TESTED';
   assert.throws(() => inspect(y));
+});
+
+test('LLVM source-pinned local native host sanitizer receipts do not promote guests', () => {
+  const changed = structuredClone(baseline);
+  changed.backends[6].native_host_local_test.source_blobs['ControlPlaneArena32.c']='0'.repeat(40);
+  assert.throws(() => inspect(changed));
+  const mislabel = structuredClone(baseline);
+  mislabel.backends[6].native_host_local_test.compiled_atto_guest='PASSED';
+  assert.throws(() => inspect(mislabel));
 });
