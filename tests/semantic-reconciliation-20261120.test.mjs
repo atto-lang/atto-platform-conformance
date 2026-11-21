@@ -9,7 +9,7 @@ const gitBlob = b => createHash('sha1').update('blob '+b.length+String.fromCharC
 test('return-first bullet and arrow fixtures are immutable exact Git blobs', () => {
  const reg=json('contracts/v2/return-first-separators-v1.json');
  assert.equal(reg.status,'SOURCE_ONLY_NOT_EXECUTED');
- assert.equal(reg.cases.length,30);
+ assert.equal(reg.cases.length,34);
  assert.deepEqual(reg.accepted_separators.map(x=>x.spelling),['<-','•']);
  assert.match(reg.body_boundary_contract, /raises\/throws clause/);
  assert.match(reg.exception_spellings, /raise!/);
@@ -79,6 +79,17 @@ test('return-first :: and effect-bearing begin variants remain cross-backend tar
  assert.match(corpus.P16_nominal_error_triggered_recover, /scalar exit 42 alone is NOT proof/);
  assert.match(corpus.N13_nonerror_class_effect, /define class Plain as[\s\S]*raises Plain ::/);
  assert.match(corpus.N14_subtype_declared_base_error_raised, /raises Foo ::[\s\S]*raise! Error\("not a Foo"\)/);
+ assert.match(corpus.P17_nominal_distinct_error_tags, /err\.is_type\(Foo\)/);
+ assert.match(corpus.P17_nominal_distinct_error_tags, /err\.is_type\(Bar\)/);
+ assert.match(corpus.P18_nominal_recover_delegation, /cursor\.next\(\)/);
+ assert.match(corpus.P18_nominal_recover_delegation, /err\.is_type\(Foo\)/);
+ assert.match(corpus.N15_mismatched_nominal_raise, /raises Foo ::[\s\S]*raise! new Bar\(\)/);
+ assert.match(corpus.N16_nonerror_errorview_probe, /err\.is_type\(Plain\)/);
+ for(const id of ['P17_nominal_distinct_error_tags','P18_nominal_recover_delegation']){
+   const receipt=reg.cases.find(c=>c.id===id).identity_receipt_required;
+   assert.deepEqual(receipt.capture_at,['raise_site','recover_handler']);
+   assert.equal(receipt.scalar_exit_alone_is_insufficient,true);
+ }
  assert.match(corpus.N08_raises_no_boundary, /raises Foo\n  return/);
  assert.match(corpus.N09_duplicate_boundary, /::\n  ::/);
  assert.match(corpus.N10_effect_after_boundary, /::\nraises Foo/);
