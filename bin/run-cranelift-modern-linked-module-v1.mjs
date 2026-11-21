@@ -113,7 +113,8 @@ if (!binary || !isAbsolute(binary)) {
           assert.equal(outcome.stdout, "", spec.id + ": check emitted guest output");
         } else if (mode === "ir") {
           assert.equal(outcome.status, 0, spec.id + ": checked IR rejected");
-          assert.match(outcome.stdout, /; linked function main/u, spec.id);
+          assert.match(outcome.stdout, /; linked function main/u,
+            spec.id + ": missing real linked function main CLIF");
           assert.match(outcome.stdout, /\bcall\s+/u,
             spec.id + ": no actual native helper call in CLIF");
         } else if (spec.expect === "PASS") {
