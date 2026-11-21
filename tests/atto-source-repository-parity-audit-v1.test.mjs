@@ -23,6 +23,15 @@ const snapshots=new Map([
   ['cranelift',['7eaa77255a7187802b89209fe7e286a3d99421ca',221]],
 ]);
 const bootstrap=new Set(['atto','realtime']);
+const expectedFeatureIds=Object.freeze([
+  'explicit-lambda-delimiters','try-catch-finally-dual-syntax',
+  'maybe-option-result-control-flow','ownership-bang-and-borrow-checking',
+  'sealed-actor-state-and-critical-projections','actor-groups-and-typed-pubsub',
+  'scalar-value-blocks-ternary-ranges','ref32-memory-and-generation-fencing',
+  'theater-director-ensemble-runtime','immutable-collections-and-copy-on-write',
+  'checked-i64-and-bitshift-arithmetic','type-ascription-conversion-and-generic-inference',
+  'source-utf8-control-admission','package-root-import-and-aot-profile',
+]);
 
 function inspect(x){
   assert.equal(x.schema,'atto.source-repository-parity-audit.v1');
@@ -56,7 +65,9 @@ function inspect(x){
     assert.deepEqual(r.verified_guest_receipts,[]);
   }
   const features=x.feature_families;
-  assert.ok(Array.isArray(features)&&features.length>=8);
+  assert.ok(Array.isArray(features));
+  assert.deepEqual(features.map(f=>f.id),expectedFeatureIds,
+    'all fourteen canonical semantics must remain represented in the matrix');
   assert.equal(new Set(features.map(f=>f.id)).size,features.length,
     'duplicate feature family');
   for(const f of features){
@@ -143,4 +154,16 @@ test('a branch commit SHA used as root tree must fail closed',()=>{
   const x=structuredClone(registry);
   x.source_repositories[0].observed_main_tree_sha=x.source_repositories[0].observed_main_commit_sha;
   assert.throws(()=>inspect(x));
+});
+
+test('a missing, extra, or renamed feature family cannot silently reduce parity scope',()=>{
+  const reduced=structuredClone(registry);
+  reduced.feature_families.splice(8,1);
+  assert.throws(()=>inspect(reduced));
+  const added=structuredClone(registry);
+  added.feature_families.push({...added.feature_families[0],id:'unreviewed-feature'});
+  assert.throws(()=>inspect(added));
+  const renamed=structuredClone(registry);
+  renamed.feature_families[1].id='try-only';
+  assert.throws(()=>inspect(renamed));
 });
