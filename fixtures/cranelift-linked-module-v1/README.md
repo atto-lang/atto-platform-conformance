@@ -74,3 +74,29 @@ Do not apply the source-file rejection to package imports, or advertise
 Cranelift's restricted source resolver as full normative package parity.
 The compiler and formatter must agree on the distinct selector grammar
 before any cross-backend package-import certification.
+
+## Optional real Cranelift CLI execution adapter
+
+This corpus includes `bin/run-cranelift-modern-linked-module-v1.mjs` to
+exercise **all 17** exact Git-blob-pinned fixture cases against a caller-
+supplied *actual* Cranelift compiler binary. It invokes `check`, `ir`,
+and `run` on each source, requires native CLIF `call` instructions
+for positives and runtime overflow, and rejects unwanted IR/artifacts
+or stdout on negative cases.
+
+```sh
+ATTO_CRANELIFT_BIN=/absolute/path/to/orescranelift \
+  node bin/run-cranelift-modern-linked-module-v1.mjs
+```
+
+A missing/nonabsolute binary exits with status **125** and classification
+`NOT_EXECUTED`; it does not skip green. An executed local binary
+success reports `LOCAL_GUEST_CANDIDATE_UNATTESTED`, **not** a compiler
+release or backend parity PASS, because a supplied binary SHA-256 alone
+cannot prove which immutable compiler HEAD/tree produced it. External
+evidence admission still requires authorized CI, verified compiler source
+head, toolchain, source-tree and actual nonzero executed steps.
+
+Only a reviewed native Cranelift binary may be used; no compiler source
+checkout, secret, external runner, cross-repo token or JIT sandbox
+assumption is introduced by this optional adapter.

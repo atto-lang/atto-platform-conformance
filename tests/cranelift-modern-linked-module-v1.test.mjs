@@ -134,3 +134,18 @@ test("unsupported and authority-violating imports have distinct compile-negative
     assert.match(source, witness, "negative fixture mutated: " + name);
   }
 });
+
+test("native candidate adapter denies accidental green on missing binary", async () => {
+  const { spawnSync } = await import("node:child_process");
+  const script = resolve(here, "../bin/run-cranelift-modern-linked-module-v1.mjs");
+  const result = spawnSync(process.execPath, [script], {
+    encoding: "utf8", env: { PATH: process.env.PATH ?? "" }, timeout: 10000
+  });
+  assert.equal(result.error, undefined);
+  assert.equal(result.status, 125, "missing native compiler must be NOT_EXECUTED");
+  const receipt = JSON.parse(result.stdout);
+  assert.equal(receipt.classification, "NOT_EXECUTED");
+  assert.equal(receipt.certified, false);
+  assert.deepEqual(receipt.case_results, []);
+  assert.match(receipt.reason, /ATTO_CRANELIFT_BIN/);
+});
