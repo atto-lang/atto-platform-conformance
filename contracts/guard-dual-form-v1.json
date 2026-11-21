@@ -2,7 +2,7 @@
   "schema": "attolang.guard.dual-form.v1",
   "spec": "atto-lang/atto-spec#200",
   "status": "SOURCE_CONTRACT_NOT_BACKEND_EXECUTION",
-  "scope": "Target equivalence of braced and else/end early-exit guard blocks; add-on to immutable guard-v1 SHA-pins.",
+  "scope": "Both forms invert the condition and require an explicit function return on every failure path; throw/break/continue are not valid substitutes. Additive to immutable guard-v1 pins.",
   "backends": {
     "java": "NOT_EXECUTED",
     "llvm": "NOT_EXECUTED",
@@ -89,6 +89,48 @@
       "git_blob": "6d36b02d3c606234836b635a313549cb4b944493",
       "kind": "COMPILE_REJECT_NO_IR",
       "style": "keyword"
+    },
+    {
+      "id": "reject-brace-break",
+      "path": "fixtures/guard-dual-form-v1/reject-brace-break.atto",
+      "git_blob": "f122472cc4c4af7804936a1de10133802b508d83",
+      "style": "brace",
+      "kind": "COMPILE_REJECT_NO_IR"
+    },
+    {
+      "id": "reject-keyword-break",
+      "path": "fixtures/guard-dual-form-v1/reject-keyword-break.atto",
+      "git_blob": "fdffaee388568ef22a445c67418ad1d442fa9849",
+      "style": "keyword",
+      "kind": "COMPILE_REJECT_NO_IR"
+    },
+    {
+      "id": "reject-brace-continue",
+      "path": "fixtures/guard-dual-form-v1/reject-brace-continue.atto",
+      "git_blob": "31493316d55cf6725be34c8c697f529db6b17874",
+      "style": "brace",
+      "kind": "COMPILE_REJECT_NO_IR"
+    },
+    {
+      "id": "reject-keyword-continue",
+      "path": "fixtures/guard-dual-form-v1/reject-keyword-continue.atto",
+      "git_blob": "0cba902628fe172a26391ddb24d3c1051ab329aa",
+      "style": "keyword",
+      "kind": "COMPILE_REJECT_NO_IR"
+    },
+    {
+      "id": "reject-brace-throw",
+      "path": "fixtures/guard-dual-form-v1/reject-brace-throw.atto",
+      "git_blob": "9cf581dee1641dcdd81f7d61e4f81628f2146fcf",
+      "style": "brace",
+      "kind": "COMPILE_REJECT_NO_IR"
+    },
+    {
+      "id": "reject-keyword-throw",
+      "path": "fixtures/guard-dual-form-v1/reject-keyword-throw.atto",
+      "git_blob": "bcf9af5ba0b2f57121f11a7d792b692aee4bc289",
+      "style": "keyword",
+      "kind": "COMPILE_REJECT_NO_IR"
     }
   ],
   "required_observations": [
@@ -116,5 +158,19 @@
     "hdl": "https://github.com/atto-lang/atto-source.hdl/issues/52",
     "net_shipping_scalar": "https://github.com/atto-lang/atto-source.net/issues/5"
   },
-  "notes": "Implementation PRs are drafts/authored-only. Every backend remains NOT_EXECUTED until separately source-pinned real compilation and guest execution succeeds. .NET draft is structured experimental mode only; shipping scalar source remains fail closed."
+  "notes": "Implementation PRs are drafts/authored-only. Every backend remains NOT_EXECUTED until separately source-pinned real compilation and guest execution succeeds. .NET draft is structured experimental mode only; shipping scalar source remains fail closed.",
+  "return_contract": {
+    "condition": "strict bool; short circuit left to right; evaluated once per test",
+    "true_path": "continue after guard",
+    "false_path": "execute failure block; every path must explicitly return from enclosing function",
+    "disallowed_substitutes": [
+      "throw",
+      "raise",
+      "panic",
+      "break",
+      "continue"
+    ],
+    "type_rule": "return expression statically checked against enclosing function return type; void uses return",
+    "evidence": "no compiler or guest parity certified without exact-head executed stepful receipts"
+  }
 }
