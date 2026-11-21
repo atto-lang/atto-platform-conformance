@@ -21,12 +21,12 @@ node --test tests/lambda_mandatory_pipes_v1.test.mjs
 
 ## Executable parity target — separate from parser admission
 
-[`execution-matrix.json`](execution-matrix.json) adds **six positive** and
+[`execution-matrix.json`](execution-matrix.json) adds **seven positive** and
 **eight negative** exact-source programs for all eleven Atto compiler/runtime
 targets: Java, LLVM, Rust, WASM, .NET, Forge, JS, Cranelift, Atto bootstrap,
 HDL and realtime. It records no invented backend outcomes.
 
-The positive profiles distinguish `||` from `|_|`, require checked scalar
+The positive profiles distinguish `||`, `|_|` and `|_, _|`, require checked scalar
 direct calls, include both `|int x|` and `|x: int|`, and distinguish a
 **local** `const fnc` with call-site input inference from a **module-level**
 `const fnc` whose signature requires an explicit input type. The negative
