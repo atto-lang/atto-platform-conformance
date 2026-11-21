@@ -65,7 +65,7 @@
       "repo": "atto-lang/atto-source.net",
       "candidate_stage": "UNMANAGED_CONTROL_HOST_SOURCE",
       "existing_pr": "https://github.com/atto-lang/atto-source.net/pull/173",
-      "observed_candidate_pr_head_sha": "1d2008cdb9a5c51c373cdb2e388a0ee5f7a3f6c2",
+      "observed_candidate_pr_head_sha": "fdd47d2fe1303895a7ced07dcce52e1e479a99e9",
       "actor_reference_abi_candidate": "generation16_slot16",
       "control_reference_abi_candidate": "control_generation12_slot20_v1",
       "control_plane_source_status": "SOURCE_COMMITTED_NOT_TESTED",
@@ -82,7 +82,7 @@
       "runtime_integration_executed_steps": 0,
       "runtime_native_root_source_blobs": {
         "runtime/Ores.Net.Runtime/ActorRuntime.cs": "fc923e24874d87e879722992f3b4e889e9f1979f",
-        "runtime/Ores.Net.Runtime/ControlPlaneArena32.cs": "20606d616475a28f86e8dc947387fd608876a144",
+        "runtime/Ores.Net.Runtime/ControlPlaneArena32.cs": "bce34f6abecaef3008ecf27bd972ab47c4da8872",
         "verification/Ores.Net.Tests/ActorControlDirectoryIntegrationSelfTest.cs": "76c6022efc12545a1b07fdab817db3c8706344b0",
         "verification/Ores.Net.ControlRuntimeProbe/ControlRuntimeProbe.csproj": "691589168e8d02d58a462a9f25aa7a8303920d25",
         ".github/workflows/control-plane-ref32-nativeaot.yml": "d95b0c1ca86def972f1e837fdd5f049860bd9f49"
@@ -96,6 +96,16 @@
         "source_test_blob": "09b65ee99c79a39c9b97265483adeb1efc6cff25",
         "host_gc_zero_bytes_on_warm_snapshot": "NOT_EXECUTED",
         "host_i128_test_executed": false
+      },
+      "native_scrub_receipt": {
+        "status": "SOURCE_AUTHORED_NOT_EXECUTED",
+        "api": "System.Security.Cryptography.CryptographicOperations.ZeroMemory",
+        "scopes": [
+          "dropped_record",
+          "full_dispose_records",
+          "full_dispose_padded_metadata"
+        ],
+        "native_aot_test": "NOT_EXECUTED"
       }
     },
     {
@@ -239,7 +249,7 @@
       "repo": "atto-lang/atto-source.llvm",
       "candidate_stage": "ACTOR_NATIVE_ARENA_HOST_SOURCE",
       "existing_pr": "https://github.com/atto-lang/atto-source.llvm/pull/742",
-      "observed_candidate_pr_head_sha": "4997241bfc5fa300e67b420da0ac0b306e608399",
+      "observed_candidate_pr_head_sha": "59483909a3f2c0839296d87d06f0af51b99fb20b",
       "actor_reference_abi_candidate": "offset8_plus_one",
       "control_reference_abi_candidate": "control_generation12_slot20_v1",
       "control_plane_source_status": "SOURCE_COMMITTED_NATIVE_HOST_TESTED_LOCAL",
@@ -252,15 +262,15 @@
       "native_host_local_test": {
         "status": "PASS_LOCAL_NATIVE_HOST_ONLY",
         "os_target": "linux-x86_64",
-        "gcc": "14.2.0 -std=c11 -O2 -Wall -Wextra -Werror -pedantic -pthread",
-        "clang": "17.0.0 -std=c11 -O1 -g -fsanitize=address,undefined -pthread",
+        "gcc": "14.2.0 -std=c11 -O2 -DATTO_CONTROL32_TESTING=1 -Wall -Wextra -Werror -pedantic -pthread",
+        "clang": "17.0.0 -std=c11 -O1 -g -DATTO_CONTROL32_TESTING=1 -fsanitize=address,undefined -pthread",
         "source_blobs": {
-          "ControlPlaneArena32.h": "3cef257d752b28c8031ca2b9a205b2b85222513a",
-          "ControlPlaneArena32.c": "1383ed7ab4607d62a3f7ad0a12761e61bc735dcd",
-          "control_plane_arena32_test.c": "aaf3582c2252c68bd456a6d66acbab06b73b0599"
+          "ControlPlaneArena32.h": "c2cd3e1331ff8d328c024995efa2bae673122187",
+          "ControlPlaneArena32.c": "7f0fe65ac32f207db88f2af0043553e74f23f37f",
+          "control_plane_arena32_test.c": "3afe81a79d6ecd8ef2a5a0ae1e00a3e4a4167d5d"
         },
-        "gcc_binary_sha256": "86a3ace444a0d2a560acd993923f942e82f8de3461eea3f70b0d5897c2107759",
-        "clang_sanitized_binary_sha256": "27b7585b8c9384bc683829a7922a5bf16a53b76dafc8f317c90a14a9687cd6a9",
+        "gcc_binary_sha256": "895761a7733bb491038434d335cebfa0bcd762263e184997bd5ada032f898b90",
+        "clang_sanitized_binary_sha256": "a507b0c1ff0528849047ade69c47065c17dd2ca71e5ede8c319e39874257c772",
         "positive_host_pass_marker": "PASS control-plane-ref32 llvm C11 native host 12 guarded scenarios; NO compiled Atto guest or zero-GC proof",
         "ci_on_current_head": "NOT_EXECUTED",
         "compiled_atto_guest": "NOT_EXECUTED",
@@ -279,6 +289,23 @@
           },
           "verdict": "PASS_LOCAL_HOST_ONLY",
           "live_guest_compiled": false
+        },
+        "issuer_saturation_receipt": {
+          "verdict": "PASS_LOCAL_NATIVE_HOST_ONLY",
+          "boundary_cases": [
+            "initial_issuer_zero",
+            "one_below_UINT32_MAX",
+            "at_UINT32_MAX",
+            "UINT64_MAX_minus_one",
+            "UINT64_MAX",
+            "null_output"
+          ],
+          "non_reused_after_overflow": true,
+          "compiler_runs": {
+            "gcc_optimized": 5,
+            "clang_asan_ubsan": 5
+          },
+          "source_compiled_atto_guest": "NOT_EXECUTED"
         }
       },
       "host_control_codec_test": null,
@@ -292,7 +319,7 @@
         "little_endian_low_64_hex": "0123456789abcdef",
         "little_endian_high_64_hex": "fedcba9876543210",
         "coherent_under_concurrent_host_access": true,
-        "source_test_blob": "aaf3582c2252c68bd456a6d66acbab06b73b0599",
+        "source_test_blob": "3afe81a79d6ecd8ef2a5a0ae1e00a3e4a4167d5d",
         "host_gc_zero_bytes_on_warm_snapshot": "NOT_APPLICABLE_NATIVE_HOST",
         "host_i128_test_executed": true
       }
