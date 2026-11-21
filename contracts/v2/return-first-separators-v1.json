@@ -593,6 +593,94 @@
         "hdl": "NOT_EXECUTED",
         "realtime": "NOT_EXECUTED"
       }
+    },
+    {
+      "id": "P15_nominal_error_declaration_order",
+      "path": "fixtures/return-first-separators-v1/P15-nominal-error-declaration-order.atto",
+      "git_blob_sha": "4d33a1acd2c97481c4d0997d0cabcc768fec2993",
+      "kind": "positive",
+      "expect": "exit",
+      "value": 42,
+      "negative_no_artifact": false,
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "P16_nominal_error_triggered_recover",
+      "path": "fixtures/return-first-separators-v1/P16-nominal-error-triggered-recover.atto",
+      "git_blob_sha": "f94b0669ffa49592ec8efa90d9eaaaa61a6da413",
+      "kind": "positive",
+      "expect": "exit",
+      "value": 42,
+      "negative_no_artifact": false,
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "N13_nonerror_class_effect",
+      "path": "fixtures/return-first-separators-v1/N13-nonerror-class-as-effect.atto",
+      "git_blob_sha": "fe56287b6d04c4d1af1dd0e7557669e1599b68e5",
+      "kind": "negative",
+      "expect": "diagnostic",
+      "value": "E_TYPE",
+      "negative_no_artifact": true,
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "N14_subtype_declared_base_error_raised",
+      "path": "fixtures/return-first-separators-v1/N14-error-parent-narrow-effect.atto",
+      "git_blob_sha": "6803916a51ee6f7c115bab9c702604abf75b33a3",
+      "kind": "negative",
+      "expect": "diagnostic",
+      "value": "E_EFFECT",
+      "negative_no_artifact": true,
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
     }
   ],
   "backends": {
