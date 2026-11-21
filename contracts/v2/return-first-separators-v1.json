@@ -483,6 +483,28 @@
         "hdl": "NOT_EXECUTED",
         "realtime": "NOT_EXECUTED"
       }
+    },
+    {
+      "id": "P11_builtin_error_raises_coloncolon",
+      "path": "fixtures/return-first-separators-v1/P11-builtin-error-raises-coloncolon.atto",
+      "git_blob_sha": "27e461a0101709c501fa011aeb390402a4958727",
+      "kind": "positive",
+      "expect": "exit",
+      "value": 42,
+      "negative_no_artifact": false,
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
     }
   ],
   "backends": {
