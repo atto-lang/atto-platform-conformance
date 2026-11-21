@@ -82,3 +82,19 @@ test('malformed/unknown backend index is invalid',()=>{
     {schema:index.schema,receipts:[{...candidate(),backend:'unknown'}]}])
     assert.notEqual(auditParityIndex(input,contract).status,'not-certified');
 });
+
+test('contract cannot downgrade negative safety cases or swap subsystem ownership',()=>{
+  const bad=structuredClone(contract);bad.cases[4].kind='positive';
+  assert.ok(validateTheaterContract(bad).length>0);
+  const shifted=structuredClone(contract);shifted.cases[4].subsystem='ensemble';
+  assert.ok(validateTheaterContract(shifted).length>0);
+});
+test('contract cannot remove mandatory evidence requirements',()=>{
+  const bad=structuredClone(contract);bad.requiredEvidence.splice(4,1);
+  assert.ok(validateTheaterContract(bad).length>0);
+  assert.equal(validateGuestReceipt(candidate(),bad).status,'rejected');
+});
+test('completely malformed contract fails closed instead of throwing',()=>{
+  assert.deepEqual(validateGuestReceipt(candidate(),null),
+    {status:'rejected',errors:['invalid contract identity']});
+});
