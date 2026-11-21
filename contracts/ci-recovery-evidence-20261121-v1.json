@@ -1,0 +1,89 @@
+{
+  "schema": "atto.ci-recovery-evidence.v1",
+  "observed_at_utc": "2026-11-21",
+  "scope": "CARRIER_ONLY_NOT_COMPILER_OR_GUEST_PARITY",
+  "source_org": "atto-lang",
+  "authorized_private_compiler_export": false,
+  "source_policy": {
+    "repo": "atto-lang/atto-source.hdl",
+    "protected_main_policy_blob": "e861197f825e7f4c3587dd377d099f3eb3c862fe",
+    "protected_main_active_allowlist_entries": 0,
+    "proposed_policy_pr": 53,
+    "proposed_policy_candidate_head": "68630fd96102b949a468a395f23e194316e87191",
+    "proposed_recipient": "ores-rate-limit-test/atto-ci",
+    "proposed_recipient_numeric_id": "1460083010",
+    "required_independent_reviewer": "ORESoftware",
+    "approved_and_merged": false
+  },
+  "synthetic_source": {
+    "repo": "sonus-auris-test/atto-ci",
+    "head": "5aba488d684280b0a6034556bc8be950687aab9e",
+    "root_tree": "d98fcd0434345fc957d5b93f5797a06590e8f8b6",
+    "blob_count": 4,
+    "private_atto_compiler_code_included": false
+  },
+  "verified_runs": [
+    {
+      "repo": "sonus-auris-test/atto-ci",
+      "run_id": 44954059125,
+      "claim": "CAPACITY_PROBE_ONLY",
+      "success_steps": 7,
+      "synthetic_unit_tests_passed": 4
+    },
+    {
+      "repo": "sonus-auris-test/atto-ci",
+      "run_id": 44954208471,
+      "claim": "SOURCE_SYNTHETIC_TREE_ONLY",
+      "success_steps": 6,
+      "synthetic_unit_tests_passed": 4
+    },
+    {
+      "repo": "ores-rate-limit-test/atto-ci",
+      "run_id": 44954299083,
+      "claim": "CROSS_ORG_FULL_SYNTHETIC_TREE_ONLY",
+      "success_steps": 6,
+      "synthetic_unit_tests_passed": 4
+    },
+    {
+      "repo": "ores-rate-limit-test/atto-ci",
+      "run_id": 44954478181,
+      "claim": "DESTINATION_OWNED_SUBTREE_ONLY",
+      "success_steps": 6,
+      "synthetic_unit_tests_passed": 4
+    },
+    {
+      "repo": "ores-rate-limit-test/atto-ci",
+      "run_id": 44954684950,
+      "claim": "SYNTHETIC_IVERILOG_YOSYS_SAT_ONLY",
+      "success_steps": 9,
+      "synthetic_unit_tests_passed": null,
+      "simulation_vectors": 65536,
+      "icarus_version": "12.0",
+      "yosys_version": "0.33",
+      "positive_sat": true,
+      "mutant_sat_rejected": true
+    },
+    {
+      "repo": "ores-rate-limit-test/atto-ci",
+      "run_id": 44955877706,
+      "claim": "SYNTHETIC_BINARY_GIT_INVENTORY_ONLY",
+      "success_steps": 8,
+      "synthetic_unit_tests_passed": 8,
+      "verified_git_blobs": 4
+    }
+  ],
+  "synthetic_destination": {
+    "repo": "ores-rate-limit-test/atto-ci",
+    "synthetic_full_tree_mirror_commit": "78f9a609b3ca5544d6c286744af7597d9753f06a",
+    "synthetic_subtree_verifier_commit": "ecbf26dd7e554af41ee857ac88e927e0fc76049d",
+    "synthetic_manifest_verifier_commit": "f3a793decd5a82cd51a909c6d84e1fc6b1e86257",
+    "subtree_sha": "d98fcd0434345fc957d5b93f5797a06590e8f8b6"
+  },
+  "not_promoted": {
+    "private_source_transfer": "NOT_AUTHORIZED_NOT_PERFORMED",
+    "atto_guest_compiler_execution": "NOT_EXECUTED",
+    "atto_backend_semantic_parity": "NOT_VERIFIED",
+    "source_required_checks": "NOT_SATISFIED",
+    "protected_merge": "NOT_PERFORMED"
+  }
+}
