@@ -1,5 +1,7 @@
 // EXPECTED: main returns 42 by recovering a truly raised Foo object.
 // DESIGN INTENT: subtype-preserving Wasm exception payload not yet implemented.
+// A scalar exit 42 alone is NOT proof: require an independent typed raise/recover
+// receipt showing exact nominal Foo identity before marking any backend PASS.
 define class Foo extends Error as
 end
 
