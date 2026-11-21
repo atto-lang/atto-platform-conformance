@@ -39,9 +39,15 @@ jobs:
           EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          # No Git replace-ref may rewrite a claimed exact source commit/tree.
+          export GIT_NO_REPLACE_OBJECTS=1
+          test "$(git --no-replace-objects rev-parse --verify HEAD)" = "$EXPECTED_SHA"
+          test "$(git --no-replace-objects cat-file -t "$EXPECTED_SHA")" = commit
+          TREE="$(git --no-replace-objects rev-parse --verify 'HEAD^{tree}')"
+          test "$(git --no-replace-objects cat-file -t "$TREE")" = tree
+          test -z "$(git status --porcelain --untracked-files=all)"
           echo "SOURCE_HEAD=$EXPECTED_SHA"
-          echo "SOURCE_TREE=$(git rev-parse HEAD^{tree})"
+          echo "SOURCE_TREE=$TREE"
           echo "NO_COMPILER_OR_GUEST_CLAIM=TRUE"
       - name: Check historical 11-repository source inventory and negative mutations
         run: |
