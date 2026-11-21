@@ -14,7 +14,10 @@
     "attributed_control_host_code": [
       "atto-lang/atto-source.net",
       "atto-lang/atto-source.java",
-      "atto-lang/atto-source.llvm"
+      "atto-lang/atto-source.llvm",
+      "atto-lang/atto-source.js",
+      "atto-lang/atto-source.forge",
+      "atto-lang/atto-source.wasm"
     ],
     "language_object_heap_is_not_JVM_or_CLR_heap": true,
     "host_jvm_clr_gc_may_remain": true,
@@ -40,7 +43,8 @@
       "guest_zero_tracing_gc": "NOT_VERIFIED",
       "full_process_zero_gc_claim": false,
       "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT",
-      "native_host_local_test": null
+      "native_host_local_test": null,
+      "host_control_codec_test": null
     },
     {
       "repo": "atto-lang/atto-source.net",
@@ -56,7 +60,8 @@
       "guest_zero_tracing_gc": "NOT_VERIFIED",
       "full_process_zero_gc_claim": false,
       "host_managed_allocation_probe": "SOURCE_AUTHORED_NOT_EXECUTED",
-      "native_host_local_test": null
+      "native_host_local_test": null,
+      "host_control_codec_test": null
     },
     {
       "repo": "atto-lang/atto-source.hdl",
@@ -72,7 +77,8 @@
       "guest_zero_tracing_gc": "NOT_VERIFIED",
       "full_process_zero_gc_claim": false,
       "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT",
-      "native_host_local_test": null
+      "native_host_local_test": null,
+      "host_control_codec_test": null
     },
     {
       "repo": "atto-lang/atto-source.java",
@@ -88,7 +94,8 @@
       "guest_zero_tracing_gc": "NOT_VERIFIED",
       "full_process_zero_gc_claim": false,
       "host_managed_allocation_probe": "SOURCE_AUTHORED_NOT_EXECUTED",
-      "native_host_local_test": null
+      "native_host_local_test": null,
+      "host_control_codec_test": null
     },
     {
       "repo": "atto-lang/atto-source.realtime",
@@ -104,7 +111,8 @@
       "guest_zero_tracing_gc": "NOT_VERIFIED",
       "full_process_zero_gc_claim": false,
       "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT",
-      "native_host_local_test": null
+      "native_host_local_test": null,
+      "host_control_codec_test": null
     },
     {
       "repo": "atto-lang/atto-source.rs",
@@ -120,7 +128,8 @@
       "guest_zero_tracing_gc": "NOT_VERIFIED",
       "full_process_zero_gc_claim": false,
       "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT",
-      "native_host_local_test": null
+      "native_host_local_test": null,
+      "host_control_codec_test": null
     },
     {
       "repo": "atto-lang/atto-source.llvm",
@@ -151,55 +160,90 @@
         "positive_host_pass_marker": "PASS control-plane-ref32 llvm C11 native host 12 guarded scenarios; NO compiled Atto guest or zero-GC proof",
         "ci_on_current_head": "NOT_EXECUTED",
         "compiled_atto_guest": "NOT_EXECUTED"
-      }
+      },
+      "host_control_codec_test": null
     },
     {
       "repo": "atto-lang/atto-source.js",
       "candidate_stage": "ACTOR_HEAP_GUEST_FAIL_CLOSED",
       "existing_pr": "https://github.com/atto-lang/atto-source.js/pull/117",
-      "observed_candidate_pr_head_sha": "215ace4e6e61114def0b0fd10b52634eb3a3611f",
+      "observed_candidate_pr_head_sha": "697347ec08f9524bc5db4c6a8f20b5666e35ad55",
       "actor_reference_abi_candidate": "offset8_plus_one",
-      "control_reference_abi_candidate": null,
-      "control_plane_source_status": "NO_CONTROL_GUEST_PROOF_IN_THIS_AUDIT",
+      "control_reference_abi_candidate": "control_generation12_slot20_v1",
+      "control_plane_source_status": "SOURCE_COMMITTED_CODEC_LOCAL_NODE_ONLY",
       "control_plane_compiled_atto_guest": "NOT_EXECUTED",
       "managed_hotpath_allocation_measurement": "NOT_EXECUTED",
       "deterministic_stop_quiescence_integration": "NOT_EXECUTED",
       "guest_zero_tracing_gc": "NOT_VERIFIED",
       "full_process_zero_gc_claim": false,
       "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT",
-      "native_host_local_test": null
+      "native_host_local_test": null,
+      "host_control_codec_test": {
+        "source_blobs": {
+          "src/control-ref32-v1.mjs": "d9e7a30217b2fe5c17d6794aa40a7b26f7f4a311",
+          "tests/control-ref32-v1.test.mjs": "474f5d7b4f0fc8142f497f0acdd4d050c17306b5"
+        },
+        "local_execution": "PASS_LOCAL_NODE_HOST_ONLY",
+        "runtime": "Node 22.16.0",
+        "tests_passed": 4,
+        "actual_compiled_atto_guest": "NOT_EXECUTED"
+      }
     },
     {
       "repo": "atto-lang/atto-source.forge",
       "candidate_stage": "ACTOR_HEAP_FRAME_HOST_SOURCE",
       "existing_pr": "https://github.com/atto-lang/atto-source.forge/pull/166",
-      "observed_candidate_pr_head_sha": "9ed566a6f7ad52fa27166cee16c6e1bcd14a6832",
+      "observed_candidate_pr_head_sha": "c4d3722a6aed8fd35d991f85977cd3c223a617bf",
       "actor_reference_abi_candidate": null,
-      "control_reference_abi_candidate": null,
-      "control_plane_source_status": "NO_CONTROL_GUEST_PROOF_IN_THIS_AUDIT",
+      "control_reference_abi_candidate": "control_generation12_slot20_v1",
+      "control_plane_source_status": "SOURCE_COMMITTED_CODEC_LOCAL_NATIVE_ONLY",
       "control_plane_compiled_atto_guest": "NOT_EXECUTED",
       "managed_hotpath_allocation_measurement": "NOT_EXECUTED",
       "deterministic_stop_quiescence_integration": "NOT_EXECUTED",
       "guest_zero_tracing_gc": "NOT_VERIFIED",
       "full_process_zero_gc_claim": false,
       "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT",
-      "native_host_local_test": null
+      "native_host_local_test": null,
+      "host_control_codec_test": {
+        "source_blobs": {
+          "runtime/ControlRef32CodecV1.hpp": "6c6e32aed6540233be306114dbb9abfddcee10c3",
+          "tests/control_ref32_codec_v1_test.cpp": "b351175cdc7e9e8d052eb889ad2c9f1978bb1115",
+          "CMakeLists.txt": "a0daf3f529ae5bad5d3f5811d754324cf70bd35e"
+        },
+        "local_execution": "PASS_LOCAL_NATIVE_HOST_ONLY",
+        "toolchains": [
+          "GCC 14.2.0 C++20 -O2 -Werror",
+          "Clang 17 C++20 -O1 ASan/UBSan"
+        ],
+        "tests_passed": 2,
+        "actual_compiled_atto_guest": "NOT_EXECUTED"
+      }
     },
     {
       "repo": "atto-lang/atto-source.wasm",
       "candidate_stage": "ACTOR_WASM_MEMORY_HOST_SOURCE",
       "existing_pr": "https://github.com/atto-lang/atto-source.wasm/pull/221",
-      "observed_candidate_pr_head_sha": "1ffc1478268af5eb06018a17761a588d53d7bbf0",
+      "observed_candidate_pr_head_sha": "2ff962026174cceea3bc3b9068b5513c951c95cc",
       "actor_reference_abi_candidate": "offset8_plus_one",
-      "control_reference_abi_candidate": null,
-      "control_plane_source_status": "NO_CONTROL_GUEST_PROOF_IN_THIS_AUDIT",
+      "control_reference_abi_candidate": "control_generation12_slot20_v1",
+      "control_plane_source_status": "SOURCE_COMMITTED_CODEC_LOCAL_NODE_ONLY",
       "control_plane_compiled_atto_guest": "NOT_EXECUTED",
       "managed_hotpath_allocation_measurement": "NOT_EXECUTED",
       "deterministic_stop_quiescence_integration": "NOT_EXECUTED",
       "guest_zero_tracing_gc": "NOT_VERIFIED",
       "full_process_zero_gc_claim": false,
       "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT",
-      "native_host_local_test": null
+      "native_host_local_test": null,
+      "host_control_codec_test": {
+        "source_blobs": {
+          "src/control-ref32-v1.mjs": "d9e7a30217b2fe5c17d6794aa40a7b26f7f4a311",
+          "tests/control-ref32-v1.test.mjs": "474f5d7b4f0fc8142f497f0acdd4d050c17306b5"
+        },
+        "local_execution": "PASS_LOCAL_NODE_HOST_ONLY",
+        "runtime": "Node 22.16.0",
+        "tests_passed": 4,
+        "actual_compiled_atto_guest": "NOT_EXECUTED"
+      }
     },
     {
       "repo": "atto-lang/atto-source.cranelift",
@@ -215,7 +259,8 @@
       "guest_zero_tracing_gc": "NOT_VERIFIED",
       "full_process_zero_gc_claim": false,
       "host_managed_allocation_probe": "NO_HOST_PROBE_VERIFIED_IN_THIS_AUDIT",
-      "native_host_local_test": null
+      "native_host_local_test": null,
+      "host_control_codec_test": null
     }
   ]
 }
