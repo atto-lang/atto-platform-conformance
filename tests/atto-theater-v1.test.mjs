@@ -167,3 +167,17 @@ test('completely malformed contract fails closed instead of throwing',()=>{
   assert.deepEqual(validateGuestReceipt(candidate(),null),
     {status:'rejected',errors:['invalid contract identity']});
 });
+
+test('canonical Ensemble Topic.try_publish share! negative fixture identity is pinned',()=>{
+  const bytes=fs.readFileSync(path.resolve(dir,
+    '../fixtures/atto-ensemble-v1/canonical-unlowered-try-publish.atto'));
+  const oid=createHash('sha1')
+    .update('blob '+bytes.length+String.fromCharCode(0))
+    .update(bytes).digest('hex');
+  assert.equal(oid,'c562ad380bb283da9ffa26160653c1186ab63462',
+    'exact LLVM/.NET/Wasm/JS/HDL/central fixture identity');
+  assert.match(bytes.toString('utf8'),
+    /imported_topic\.try_publish\(share! event\)\?/);
+  // A negative source fixture never certifies a functioning Topic<T> guest.
+  assert.equal(auditParityIndex(index,contract).status,'not-certified');
+});
