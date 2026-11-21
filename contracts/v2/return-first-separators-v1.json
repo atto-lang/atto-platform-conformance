@@ -571,6 +571,28 @@
         "hdl": "NOT_EXECUTED",
         "realtime": "NOT_EXECUTED"
       }
+    },
+    {
+      "id": "P14_triggered_builtin_error_bypasses_trap",
+      "path": "fixtures/return-first-separators-v1/P14-builtin-error-bypasses-trap.atto",
+      "git_blob_sha": "80a69a18fcf5ebf5fa10b479ec12fbbb8973ad43",
+      "kind": "positive",
+      "expect": "exit",
+      "value": 42,
+      "negative_no_artifact": false,
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
     }
   ],
   "backends": {
