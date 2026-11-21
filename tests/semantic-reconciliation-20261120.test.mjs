@@ -68,6 +68,8 @@ test('return-first :: and effect-bearing begin variants remain cross-backend tar
  assert.match(corpus.P15_nominal_error_declaration_order, /raises Foo ::[\s\S]*define class Foo extends Error/);
  assert.match(corpus.P16_nominal_error_triggered_recover, /raise! new Foo\(\)/);
  assert.match(corpus.P16_nominal_error_triggered_recover, /recover \|err, cursor\|/);
+ assert.match(corpus.P16_nominal_error_triggered_recover, /err\.is_type\(Foo\)/);
+ assert.match(corpus.P16_nominal_error_triggered_recover, /return 17;/);
  const typed = reg.cases.find(c => c.id==='P16_nominal_error_triggered_recover');
  assert.equal(typed.identity_receipt_required.nominal_type,'Foo');
  assert.deepEqual(typed.identity_receipt_required.capture_at,['raise_site','recover_handler']);
