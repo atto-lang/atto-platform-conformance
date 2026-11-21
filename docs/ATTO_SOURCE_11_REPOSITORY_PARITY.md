@@ -10,8 +10,12 @@ The previously authored [value blocks/ranges inventory #501](https://github.com/
 
 ## Audited source-tree boundary (2026-11-21 historical snapshot)
 
-Each Git tree SHA and blob count was read from the canonical `main` Git tree,
-with a nontruncated recursive listing. These are **historical source inventory
+Each real **root Git tree SHA** was read from the authenticated
+`branches/main` commit object's `commit.tree.sha`, then verified using
+`git/trees/{root-tree-sha}?recursive=1` with `truncated=false` and an
+exact count of blob entries. **Do not use `git/trees/main`'s returned `sha`
+as the root tree OID**: the branch-ref alias can appear as the commit SHA.
+These are **historical source inventory
 facts**, not compiler parity tests; the source head can change after capture.
 
 | Backend | Main Git blob files observed | Implementation-stage evidence |
