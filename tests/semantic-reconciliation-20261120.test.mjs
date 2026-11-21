@@ -9,7 +9,7 @@ const gitBlob = b => createHash('sha1').update('blob '+b.length+String.fromCharC
 test('return-first bullet and arrow fixtures are immutable exact Git blobs', () => {
  const reg=json('contracts/v2/return-first-separators-v1.json');
  assert.equal(reg.status,'SOURCE_ONLY_NOT_EXECUTED');
- assert.equal(reg.cases.length,35);
+ assert.equal(reg.cases.length,36);
  assert.deepEqual(reg.accepted_separators.map(x=>x.spelling),['<-','•']);
  assert.match(reg.body_boundary_contract, /raises\/throws clause/);
  assert.match(reg.exception_spellings, /raise!/);
@@ -87,6 +87,9 @@ test('return-first :: and effect-bearing begin variants remain cross-backend tar
  assert.match(corpus.N16_nonerror_errorview_probe, /err\.is_type\(Plain\)/);
  assert.match(corpus.P19_nominal_error_trap_bypass, /trap risky\(4\)/);
  assert.match(corpus.P19_nominal_error_trap_bypass, /err\.is_type\(Foo\)/);
+ assert.match(corpus.P20_nominal_transitive_checked_effect, /raises Foo ::[\s\S]*return risky\(value\)/);
+ assert.match(corpus.P20_nominal_transitive_checked_effect, /return middle\(4\)/);
+ assert.match(corpus.P20_nominal_transitive_checked_effect, /err\.is_type\(Foo\)/);
  assert.equal(reg.cases.find(c=>c.id==='P19_nominal_error_trap_bypass').identity_receipt_required.nominal_type,'Foo');
  for(const id of ['P17_nominal_distinct_error_tags','P18_nominal_recover_delegation']){
    const receipt=reg.cases.find(c=>c.id===id).identity_receipt_required;
