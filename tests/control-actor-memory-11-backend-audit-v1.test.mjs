@@ -48,7 +48,7 @@ function inspect(x) {
     const expectedI128 = row.repo.endsWith('.java')
       ? ['SOURCE_AUTHORED_JDK25_NOT_EXECUTED', '5b0756b21c9a812f4b5aeefb583a19bca6060a3c', false]
       : row.repo.endsWith('.net')
-      ? ['SOURCE_AUTHORED_CLR_NATIVEAOT_NOT_EXECUTED', 'c3298863706151887e001c6d13429e69c5cea110', false]
+      ? ['SOURCE_AUTHORED_CLR_NATIVEAOT_NOT_EXECUTED', '09b65ee99c79a39c9b97265483adeb1efc6cff25', false]
       : row.repo.endsWith('.llvm')
       ? ['PASS_LOCAL_GCC_CLANG_HOST_ONLY', 'aaf3582c2252c68bd456a6d66acbab06b73b0599', true]
       : ['NOT_IMPLEMENTED_OR_UNVERIFIED', null, false];
@@ -77,7 +77,7 @@ function inspect(x) {
       '.github/workflows/control-plane-ref32-ffm.yml': '2b19400d68a87ffcee17ab642448ac26d001d058'
     } : row.repo === 'atto-lang/atto-source.net' ? {
       'runtime/Ores.Net.Runtime/ActorRuntime.cs': 'fc923e24874d87e879722992f3b4e889e9f1979f',
-      'runtime/Ores.Net.Runtime/ControlPlaneArena32.cs': 'bb6eb079d4fe251a1173397b991c6304aaf8dfb7',
+      'runtime/Ores.Net.Runtime/ControlPlaneArena32.cs': '20606d616475a28f86e8dc947387fd608876a144',
       'verification/Ores.Net.Tests/ActorControlDirectoryIntegrationSelfTest.cs': '76c6022efc12545a1b07fdab817db3c8706344b0',
       'verification/Ores.Net.ControlRuntimeProbe/ControlRuntimeProbe.csproj': '691589168e8d02d58a462a9f25aa7a8303920d25',
       '.github/workflows/control-plane-ref32-nativeaot.yml': 'd95b0c1ca86def972f1e837fdd5f049860bd9f49'
