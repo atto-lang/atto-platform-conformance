@@ -57,6 +57,17 @@ test('all eleven mainline pubsub evidence gaps are pinned to actual repository i
     assert.ok(Array.isArray(entry.existingPRs));
     assert.ok(entry.observedPaths.every(p=>typeof p==='string' && !p.startsWith('/') && !p.includes('..')));
   }
+  const admission=snapshot.sourceAdmissionWork;
+  assert.equal(admission.length,6);
+  assert.deepEqual(admission.map(x=>x.backend).sort(),
+    ['forge','hdl','js','llvm','net','wasm']);
+  for(const entry of admission) {
+    assert.match(entry.head,/^[0-9a-f]{40}$/);
+    assert.match(entry.pr,/^https:\/\/github\.com\/atto-lang\/atto-source\.[a-z]+\/pull\/[0-9]+$/);
+    assert.match(entry.verification,/NOT_EXECUTED/);
+    assert.doesNotMatch(entry.verification,/GUEST_(?:PASSED|CERTIFIED)|FULL_PARITY/);
+    assert.equal(snapshot.backends[entry.backend].status,'NOT_VERIFIED');
+  }
   // An audit snapshot can never authenticate a compiled guest receipt.
   assert.equal(auditParityIndex(index,contract).status,'not-certified');
 });
@@ -213,7 +224,7 @@ test('canonical Ensemble Topic.try_publish share! negative fixture identity is p
     .update('blob '+bytes.length+String.fromCharCode(0))
     .update(bytes).digest('hex');
   assert.equal(oid,'c562ad380bb283da9ffa26160653c1186ab63462',
-    'exact LLVM/.NET/Wasm/JS/HDL/central fixture identity');
+    'exact LLVM/.NET/Wasm/JS/HDL/Forge/central fixture identity');
   assert.match(bytes.toString('utf8'),
     /imported_topic\.try_publish\(share! event\)\?/);
   // A negative source fixture never certifies a functioning Topic<T> guest.

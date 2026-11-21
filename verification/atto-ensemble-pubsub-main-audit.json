@@ -62,7 +62,9 @@
       "mainSha": "f5dd299c277376cabe9e536edbbb4e662a267ad4",
       "status": "NOT_VERIFIED",
       "observedPaths": [],
-      "existingPRs": []
+      "existingPRs": [
+        219
+      ]
     },
     "cranelift": {
       "repository": "atto-lang/atto-source.cranelift",
@@ -86,14 +88,18 @@
       "mainSha": "b8e48b19c33b61e5faa4628bf03bddf2823f403d",
       "status": "NOT_VERIFIED",
       "observedPaths": [],
-      "existingPRs": []
+      "existingPRs": [
+        119
+      ]
     },
     "hdl": {
       "repository": "atto-lang/atto-source.hdl",
       "mainSha": "023455e496bb9cfbdd157ccc94bb69f31eec44ea",
       "status": "NOT_VERIFIED",
       "observedPaths": [],
-      "existingPRs": []
+      "existingPRs": [
+        54
+      ]
     },
     "atto": {
       "repository": "atto-lang/atto-source.atto",
@@ -114,23 +120,44 @@
     {
       "backend": "net",
       "pr": "https://github.com/atto-lang/atto-source.net/pull/200",
-      "head": "6b59c6c1449c6045de60d0d06ef38f877100afe2",
-      "scope": "fail-closed unlowered .try_publish member and generic/method-value tests; NOT guest parity",
+      "head": "e4a1e725172b49d2deca6718ca53dcfc03fe1ed8",
+      "scope": "fail-closed unlowered .try_publish alias admission; C# tests cover comments/member aliases; no NativeAOT proof",
       "verification": "NOT_EXECUTED_DOTNET"
     },
     {
       "backend": "wasm",
       "pr": "https://github.com/atto-lang/atto-source.wasm/pull/265",
-      "head": "b6a255a59f599787f27e0161aeee27482aac54b1",
-      "scope": "fail-closed unlowered .try_publish member source gate; NOT guest parity",
-      "verification": "SOURCE_ONLY_V8_ASCII_SCANNER_10_CASES (6 negative, 4 inert); NOT_EXECUTED_NODE_OR_WASM"
+      "head": "efd8a492404126c94e04a2402b2af6bd17dcbfd4",
+      "scope": "fail-closed source member admission with canonical .atto SHA; no Wasm guest proof",
+      "verification": "SOURCE_ONLY_V8_SCANNER; NOT_EXECUTED_WASM_GUEST"
     },
     {
       "backend": "llvm",
       "pr": "https://github.com/atto-lang/atto-source.llvm/pull/575",
       "head": "a4135b9fabccd6866b3d52171411e2dcc777cb09",
-      "scope": "fail-closed native parser rejection of unlowered .try_publish with SHA-pinned .atto negative; native PubSub substrate remains separate",
+      "scope": "native source parser denial; runtime pubsub substrate separate; unverified compiler guest",
       "verification": "NOT_EXECUTED_LLVM_COMPILER_CTEST_ASAN_UBSAN"
+    },
+    {
+      "backend": "js",
+      "pr": "https://github.com/atto-lang/atto-source.js/pull/119",
+      "head": "c72d0993df06ee091b4f11db54d7977218cdd9c0",
+      "scope": "aliased member rejection in JS compiler lex() and canonical .atto negative fixture; no emitted guest proof",
+      "verification": "SOURCE_ONLY_REAL_LEXER_5_CASES; NOT_EXECUTED_JS_COMPILER_CI"
+    },
+    {
+      "backend": "hdl",
+      "pr": "https://github.com/atto-lang/atto-source.hdl/pull/54",
+      "head": "ceb850e6154dca8ef7a1129cfe0d5c868c5d5836",
+      "scope": "explicit HDL_ACTOR_PUBSUB_UNSUPPORTED before RTL emission and canonical fixture; no RTL simulator proof",
+      "verification": "SOURCE_ONLY_HDL_MODULE_HARNESS; NOT_EXECUTED_RTL_GUEST"
+    },
+    {
+      "backend": "forge",
+      "pr": "https://github.com/atto-lang/atto-source.forge/pull/219",
+      "head": "f54943be3f1055c8b7c54eae20b88367f92534fb",
+      "scope": "all three native Forge scalar/runtime/callable source entry points deny aliased Topic publication; no full native compiler proof",
+      "verification": "SOURCE_ONLY_GCC_CLANG_SANITIZED_STUB_HARNESS; NOT_EXECUTED_FORGE_CTEST"
     }
   ]
 }
