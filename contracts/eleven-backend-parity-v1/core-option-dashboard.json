@@ -109,7 +109,7 @@
       "profile": "Rust host / compiled Wasm guest",
       "candidate": {
         "pr_url": "https://github.com/atto-lang/atto-source.rs/pull/533",
-        "head_sha": "9ebccaf3297ee08998a616ac1ab624a8ca13f207"
+        "head_sha": "92a2a1a4a5694d1626ee4c319f449333dbc1d4e8"
       },
       "source_state": "candidate",
       "checks": {
