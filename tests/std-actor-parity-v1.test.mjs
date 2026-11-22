@@ -69,3 +69,16 @@ test('standalone pure namespaced functions require actual guest main 42',()=>{
   assert.equal(contract.guestTests.namespacePositive.expectedMain,42);
   assert.equal(contract.guestTests.namespacePositive.noImplicitImports,true);
 });
+
+rejected('delete native compiled mutant execution evidence',m=>m.verificationRequired.splice(m.verificationRequired.indexOf('compiled_guest_mutation_execution'),1));
+rejected('silently omit middle guard mutation',m=>m.guestTests.mutationControls.failCodeBoundaries.splice(1,1));
+rejected('replace real compiler with host-side policy emulator',m=>m.guestTests.mutationControls.requiredCompiler='javascript_policy_emulator');
+rejected('allow mutated guest to report 42',m=>m.guestTests.mutationControls.mustNotReturnSuccess42=false);
+rejected('ignore host imports in mutant',m=>m.guestTests.mutationControls.rejectUnexpectedHostImports=false);
+test('real compiler mutation controls must observe all six distinct failure codes',()=>{
+  const m=contract.guestTests.mutationControls;
+  assert.deepEqual(m.failCodeSmoke,[1,18,34]);
+  assert.deepEqual(m.failCodeBoundaries,[100,166,232]);
+  assert.equal(m.mustCompileAndExecute,true);
+  assert.equal(m.requiredCompiler,'production_backend_compiler');
+});

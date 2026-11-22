@@ -21,6 +21,8 @@ Cancellation is only a request, with a separately authenticated winner in the te
 
 `atto` (self-hosting bootstrap) and `realtime` (real-time bootstrap) are marked `NOT_IMPLEMENTED`, because their current repositories are scaffold-only. The other nine contain draft `std.actor` source candidates and remain `NOT_EXECUTED` for **this contract**. This does not downgrade or assert their unrelated production features.
 
+In addition, require **six compiled negative-control mutants**: the first/middle/last guard in each policy guest must be deliberately forced true and the real compiled guest must return 1/18/34 and 100/166/232 respectively, with no unexpected host imports. This prevents reporting parity solely from constant-42 success artifacts. The backend's real compiler and target must execute each mutation; a host-side emulator does not qualify.
+
 The candidate native guest corpus includes a standalone namespace-only pure-function `main()` that must execute as 42 with no imports; 34 ordinary and 133 adversarial boundary assertions, three additional **compiler-negative namespace/import fixtures** (expected `E_UNBOUND`, `E_DUPLICATE`, `E_SYNTAX` and no emitted artifact), and separate one-shot Future ownership positive/negative fixtures. Execute them with **each compiler's actual source importer, type checker, target codegen, and guest runtime**, with exact source/tree/blob, toolchain, target and independently reviewed results. A clean `node --test` on this policy schema is **not** language execution.
 
 ## CI admission and private export
