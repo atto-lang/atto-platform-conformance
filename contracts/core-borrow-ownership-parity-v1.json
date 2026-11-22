@@ -175,18 +175,19 @@
     "exact_source_tree_required": true
   },
   "java_source_candidates": {
-    "head": "ed70297dcdbe197ea1daf59b2a7abaf7dbb3990f",
-    "root_tree": "85c61cc99800cc649742700b60d242db5ab312f9",
+    "head": "0c2f9f3f2cfa5c421374116faee95e37878e8175",
+    "root_tree": "d5a855eb7fedf7952456ceb1e2a8529aa8a69684",
     "pr": 1754,
     "status": "NOT_EXECUTED",
-    "junit_methods_staged": 3,
+    "junit_methods_staged": 4,
     "guest_fixtures_staged": 3,
     "blob_shas": {
       "src/test/java/dev/oreslang/runtime/NativeAttoHttpCoreBorrowBoundaryTest.java": "4ae6d101577922d2babe267cd0b1caff5270fb26",
       "src/test/resources/stdlib-parity/http-core-borrow-positive.atto": "db51329274f9f8f8d523b5b61ddb4676008016dd",
       "src/test/resources/stdlib-parity/http-core-borrow-negative.atto": "94f26cfd4148a24725dd027a95dbe0604b4c6fdf",
       "src/test/resources/stdlib-parity/http-core-noncopy-argument-negative.atto": "e30e5a9a6cf71a47f69787b5796452963b652ac9",
-      ".github/workflows/atto-http-core-borrow-guest.yml": "d28c6c57f5f995f7ae23b39c0980e467c886d256"
+      ".github/workflows/atto-http-core-borrow-guest.yml": "0c2f9f3f2cfa5c421374116faee95e37878e8175",
+      "src/test/java/dev/oreslang/compiler/ImportedClassBorrowOwnershipTest.java": "b7b51af4e8e58d16a68c55298a36f665008efd6e"
     },
     "evidence": "SOURCE_ONLY"
   }
