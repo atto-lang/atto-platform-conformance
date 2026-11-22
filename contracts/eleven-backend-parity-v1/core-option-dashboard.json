@@ -5,7 +5,7 @@
   "authority": "atto-lang/atto-platform-conformance",
   "evidence_policy": "SOURCE_ONLY_NO_GUEST_PROMOTION",
   "release_qualified": false,
-  "notes": "Observed main SHAs and candidate PR heads are GitHub snapshots, not executed compiler proof. v1 never admits self-attested pass or unsupported claims; an independently authenticated evidence verifier is required for any promotion. Backend-owned .atto implementations may differ.",
+  "notes": "Observed main SHAs and candidate PR heads are GitHub snapshots, not executed compiler proof. v1 never admits self-attested pass or unsupported claims; an independently authenticated evidence verifier is required for any promotion. Backend-owned .atto implementations may differ. Java PR #1767 now adds compiler-linked affine borrow extraction negative regressions, not an executed test receipt.",
   "backends": [
     {
       "id": "java",
@@ -15,7 +15,7 @@
       "profile": "Graal/JVM + Native Image",
       "candidate": {
         "pr_url": "https://github.com/atto-lang/atto-source.java/pull/1767",
-        "head_sha": "2314988a9ade22f5d0a3284f69b142b7e1800914"
+        "head_sha": "92adc7212f7ff43c78ae4d2af4729be72d6a1dd0"
       },
       "source_state": "candidate",
       "checks": {
@@ -522,8 +522,8 @@
   "java_reference": {
     "repository": "atto-lang/atto-source.java",
     "pr_url": "https://github.com/atto-lang/atto-source.java/pull/1767",
-    "head_sha": "2314988a9ade22f5d0a3284f69b142b7e1800914",
-    "root_tree_sha": "eb1541cbd7d3798bea8610a2010326d82c6cdbca",
+    "head_sha": "92adc7212f7ff43c78ae4d2af4729be72d6a1dd0",
+    "root_tree_sha": "bae912a5d0f561dbc1cf754e92e48f198adedbef",
     "module_blobs": [
       {
         "path": "core/option.atto",
@@ -546,6 +546,10 @@
       {
         "path": "src/test/java/dev/oreslang/CoreOptionResultSourceTest.java",
         "sha": "4d4950a2d3b1970499ba6eccbd5552143f4023da"
+      },
+      {
+        "path": "src/test/java/dev/oreslang/CoreOptionResultBorrowSafetyTest.java",
+        "sha": "d44dfe085ed6728e5f5b50be889a1c56bf78bc39"
       }
     ],
     "authored_junit_tests": [
@@ -596,10 +600,66 @@
         "guest_path": null,
         "expected_stdout": null,
         "state": "not_executed"
+      },
+      {
+        "id": "read_only_borrow_queries",
+        "method": "readOnlyQueriesPreserveBorrowerAndCarrier",
+        "kind": "borrow_positive",
+        "guest_path": null,
+        "expected_stdout": null,
+        "state": "not_executed"
+      },
+      {
+        "id": "borrowed_flatten_denied",
+        "method": "borrowedNestedOptionCannotFlattenIntoAnOwner",
+        "kind": "borrow_negative",
+        "guest_path": null,
+        "expected_stdout": null,
+        "state": "not_executed"
+      },
+      {
+        "id": "borrowed_option_extract_denied",
+        "method": "borrowedOptionCannotExtractOwnedAffineValue",
+        "kind": "borrow_negative",
+        "guest_path": null,
+        "expected_stdout": null,
+        "state": "not_executed"
+      },
+      {
+        "id": "borrowed_result_extract_denied",
+        "method": "borrowedResultCannotExtractOwnedAffineValue",
+        "kind": "borrow_negative",
+        "guest_path": null,
+        "expected_stdout": null,
+        "state": "not_executed"
+      },
+      {
+        "id": "borrowed_repackaging_denied",
+        "method": "borrowedOptionCannotRepackageAffineOwnedValue",
+        "kind": "borrow_negative",
+        "guest_path": null,
+        "expected_stdout": null,
+        "state": "not_executed"
+      },
+      {
+        "id": "borrowed_fallback_escape_denied",
+        "method": "borrowedOptionCannotEscapeThroughEagerFallback",
+        "kind": "borrow_negative",
+        "guest_path": null,
+        "expected_stdout": null,
+        "state": "not_executed"
+      },
+      {
+        "id": "borrowed_copyable_nested_read",
+        "method": "copyableNestedOptionCanStillReadWithoutStealingOwnership",
+        "kind": "borrow_positive",
+        "guest_path": null,
+        "expected_stdout": null,
+        "state": "not_executed"
       }
     ],
     "required_commands": {
-      "jvm_guest": "mvn -B -Dtest=CoreOptionResultSourceTest test",
+      "jvm_guest": "mvn -B -Dtest=CoreOptionResultSourceTest,CoreOptionResultBorrowSafetyTest test",
       "native_aot": "Not provided by this PR; require independent GraalVM Native Image exact-head build and guest receipt.",
       "sanitizers": "Java: ownership/poison/drop assertions; LLVM/native: ASan/UBSan or equivalent; non-native profiles: target-specific memory safety gates."
     }
