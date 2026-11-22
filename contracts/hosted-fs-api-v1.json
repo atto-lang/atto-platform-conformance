@@ -202,5 +202,32 @@
       "executed_cases": 0
     }
   ],
-  "release_gate": "No backend can claim implemented std.fs until a compiler-linked .atto guest executes real capability-scoped read/write/dir/handle/stream cases and negatives on exact-head CI; unsupported targets must fail closed."
+  "release_gate": "No backend can claim implemented std.fs until a compiler-linked .atto guest executes real capability-scoped read/write/dir/handle/stream cases and negatives on exact-head CI; unsupported targets must fail closed.",
+  "positive_source_fixtures": [
+    {
+      "path": "fixtures/hosted-fs-api-v1/pass/file_lifecycle.atto",
+      "guest_status": "NOT_EXECUTED",
+      "harness": "preseed source, grant workspace, verify bytes/copy/append/rename"
+    },
+    {
+      "path": "fixtures/hosted-fs-api-v1/pass/directory_lifecycle.atto",
+      "guest_status": "NOT_EXECUTED",
+      "harness": "tenant root, nested/empty dirs, sorted listing, removal"
+    },
+    {
+      "path": "fixtures/hosted-fs-api-v1/pass/handles_streams.atto",
+      "guest_status": "NOT_EXECUTED",
+      "harness": "Read/Write OpenOptions, bytes, close, bounded read stream"
+    }
+  ],
+  "path_semantics": {
+    "root_value": ".",
+    "root_dir_listing": "read_dir(root) allowed with READ",
+    "root_metadata": "metadata(root) reports directory",
+    "root_mutation": "always denied",
+    "root_parent": "None",
+    "child_parent": "Path('.')",
+    "root_file_name": "None",
+    "normalization": "lexical only; never erase parent traversal to bypass tenant root"
+  }
 }
