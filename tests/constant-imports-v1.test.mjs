@@ -103,3 +103,15 @@ test('qualified std.env constant scenarios record exact launch-time assertions',
     assert.equal(byId.get(name).kind, 'fail');
   }
 });
+
+test('startup evidence is per declaration and does not permit fake guest PASS', () => {
+  assert.match(doc.evidence_rule, /one initializer invocation per declaration per launch/);
+  assert.match(doc.evidence_rule, /Separate declarations reading the same key need not share one host API lookup/);
+  assert.doesNotMatch(doc.evidence_rule, /exactly one startup host read per key/);
+  assert.match(doc.evidence_rule, /Zero-step, cancelled, skipped/);
+  assert.deepEqual(
+    Object.values(doc.backend_status),
+    Array(11).fill('NOT_EXECUTED'),
+    'host-only fixtures must not promote backend evidence'
+  );
+});
