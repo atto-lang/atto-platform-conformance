@@ -19,7 +19,7 @@ test('manifest distinguishes static source proof from executable backend parity'
   assert.equal(contract.evidence_policy.exact_head_required, true);
   assert.equal(contract.evidence_policy.alternate_org_mirror_requires_per_blob_sha, true);
   assert.equal(contract.evidence_policy.secret_free_private_mirroring, true);
-  assert.equal(contract.cases.length, 9);
+  assert.equal(contract.cases.length, 13);
   assert.equal(new Set(contract.cases.map(x=>x.id)).size, contract.cases.length);
   assert.deepEqual(Object.keys(contract.backend_status).sort(), contract.target_backends.slice().sort());
   assert.ok(Object.values(contract.backend_status).every(s=>s==='NOT_VERIFIED'));
@@ -84,7 +84,11 @@ for (const [id, diagnostic, marker] of [
   ['early_terminal','E_PROTOCOL_TERMINAL_INCOMPLETE','disconnected.complete_protocol()'],
   ['stream_unary_confusion','E_PROTOCOL_REPLY_MISMATCH','connected.call(Subscribe())'],
   ['wrong_actor_kind','E_PROTOCOL_IMPLEMENTATION_MISMATCH','define class Connection implements ConnectionProtocol'],
-  ['wrong_nominal_reply','E_PROTOCOL_REPLY_MISMATCH','val (ack: WrongAck, connected) = await connecting?;']
+  ['wrong_nominal_reply','E_PROTOCOL_REPLY_MISMATCH','val (ack: WrongAck, connected) = await connecting?;'],
+  ['nonlinear_if','E_PROTOCOL_CFG_UNSUPPORTED','if true then'],
+  ['effectful_call_argument','E_PROTOCOL_CFG_UNSUPPORTED','Connect(revoke_authority())'],
+  ['handle_argument_escape','E_PROTOCOL_AFFINE_HANDLE','Connect(disconnected)'],
+  ['forward_declaration_only','E_PROTOCOL_UNPROVEN_STATE','declare actor Connection implements ConnectionProtocol;']
 ]) {
   test('negative fixture is distinctly pinned: ' + id, () => {
     assert.equal(contract.cases.find(x=>x.id===id).expected_static, diagnostic);
