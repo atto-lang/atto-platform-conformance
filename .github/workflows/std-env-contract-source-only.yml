@@ -1,0 +1,51 @@
+name: std-env portable source-only registry v1
+on:
+  pull_request:
+    paths:
+      - 'contracts/std-env-v1/**'
+      - 'bin/verify-std-env-v1.mjs'
+      - 'tests/std-env-v1.registry.test.mjs'
+      - '.github/workflows/std-env-contract-source-only.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'contracts/std-env-v1/**'
+      - 'bin/verify-std-env-v1.mjs'
+      - 'tests/std-env-v1.registry.test.mjs'
+      - '.github/workflows/std-env-contract-source-only.yml'
+permissions:
+  contents: read
+jobs:
+  check-registry:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Exact head and tree receipt
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          test -z "$(git status --porcelain)"
+          echo "SOURCE_ONLY_SHA=$EXPECTED_HEAD"
+          echo "SOURCE_ONLY_TREE=$(git rev-parse HEAD^{tree})"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Validate 13-case registry and Git blobs (NOT guest parity)
+        shell: bash
+        run: |
+          set -euo pipefail
+          node bin/verify-std-env-v1.mjs
+          node --test --test-reporter=tap tests/std-env-v1.registry.test.mjs \
+            | tee "$RUNNER_TEMP/std-env-registry.tap"
+          grep -Fx '# tests 9' "$RUNNER_TEMP/std-env-registry.tap"
+          grep -Fx '# pass 9' "$RUNNER_TEMP/std-env-registry.tap"
+          grep -Fx '# fail 0' "$RUNNER_TEMP/std-env-registry.tap"
+          grep -Fx '# skipped 0' "$RUNNER_TEMP/std-env-registry.tap"
+          echo 'SOURCE_ONLY_REGISTRY_TESTS=PASS; GUEST_PARITY=NOT_EXECUTED'
