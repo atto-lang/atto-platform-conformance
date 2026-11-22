@@ -43,9 +43,20 @@ def after_release(readers, writer):
 
 class SourceFreeCoreOracle(unittest.TestCase):
     def test_math_vectors(self):
-        for value, want in CONTRACT["math"]["signum"]:
+        math = CONTRACT["math"]
+        minimum, maximum = int(math["min_int"]), int(math["max_int"])
+        self.assertEqual(minimum,-(1 << 63))
+        self.assertEqual(maximum,(1 << 63) - 1)
+        for raw, want in math["signum"]:
+            self.assertIsInstance(raw,str) # JSON numbers round at 2^53 in JS
+            value = int(raw)
+            self.assertLessEqual(minimum, value)
+            self.assertLessEqual(value, maximum)
             got = -1 if value < 0 else 1 if value > 0 else 0
             self.assertEqual(got, want)
+        for raw in math["rejected_out_of_range_decimal"]:
+            value = int(raw)
+            self.assertTrue(value < minimum or value > maximum)
         for x in CONTRACT["math"]["closed_bounds"]:
             valid = x["lower"] <= x["upper"]
             got = valid and x["lower"] <= x["value"] <= x["upper"]
