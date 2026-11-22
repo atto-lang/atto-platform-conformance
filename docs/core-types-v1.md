@@ -12,7 +12,7 @@ This registry does **not** claim first-class `Unit`, opaque `TypeId`, metadata `
 
 Every compiler PR now contains `tests/core-types-source.test.mjs`, which parses a deliberately restricted form of the real `.atto` function bodies and checks i64/unsigned range predicates against a BigInt boundary oracle, including values beyond IEEE-754 safe integers. The oracle has mutation controls (shifted endpoint, changed visibility, duplicate export, hosted import) and is explicitly **SOURCE_ONLY**, not compiled guest execution.
 
-The shared `contracts/core-types-v1.json` pins the positive fixture, **four compile-negative fixtures**, and source-model test Git blob SHAs at the current nine compiler PR heads. Java, LLVM and Rust include additional compiled guest test gates; the other backends currently stage source-only checks and fixtures, without pretending their subset compilers support the import/linker path. All nine compiled guest statuses remain **NOT_EXECUTED** until exact-head stepful test evidence exists.
+The shared `contracts/core-types-v1.json` pins the positive fixture, **eight compile-negative fixtures**, and source-model test Git blob SHAs at the current nine compiler PR heads. Java, LLVM and Rust include additional compiled guest test gates; the other backends currently stage source-only checks and fixtures, without pretending their subset compilers support the import/linker path. All nine compiled guest statuses remain **NOT_EXECUTED** until exact-head stepful test evidence exists.
 
 ## Second 63-case compiled-guest fixture
 
@@ -25,3 +25,9 @@ The Java source repository .github/private-ci-approved-repositories.txt has no a
 ## Typed public ABI negative cases
 
 All nine independent core/types branches now stage six compile-negative .atto fixtures, adding bool-as-int invocation and an unsigned 64-bit literal outside the signed int input domain. Java/LLVM/Rust actual-compiler checks are updated to reject those without artifacts. Because the candidate private CI carriers recorded zero runner steps and the Java source export policy has no current approved destination, the compiled guest and negative rejection statuses remain NOT_EXECUTED. The source-only registry cannot promote them.
+
+## Namespace-only implementation (November 22, 2026)
+
+All nine backend-owned `core/types.atto` files now start (after comments) with the canonical `use namespace types;` header. Public functions are top-level `pub fnc` exports; no enclosing `define module` exists. The `import * as types from "../../../core/types.atto";` in positive guests is an explicit static source import, not a side effect of namespace declaration. This is distinct from directory-derived namespaces, whose source-path rules require compiler support and are not asserted here.
+
+Two new negative cases reject duplicate and post-import namespace headers. The registry now pins eight negative fixtures. The source-only registry uniqueness assertion was fixed from a stale hardcoded 4 to `negatives.length`. Real compiler/parser and executable guest parity remain NOT_EXECUTED while runner admission and source-export authorization are unresolved.

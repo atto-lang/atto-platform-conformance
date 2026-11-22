@@ -4,6 +4,9 @@ import { readFileSync } from "node:fs";
 const manifest = JSON.parse(readFileSync(new URL("../contracts/core-types-v1.json", import.meta.url), "utf8"));
 assert.equal(manifest.schema, "atto-core-types-v1");
 assert.equal(manifest.contract.int_signed_bits, 64);
+assert.equal(manifest.namespace_header,"use namespace types;");
+assert.equal(manifest.module_wrapper,false);
+assert.equal(manifest.public_declaration_form,"file-scoped namespace, top-level pub fnc");
 assert.deepEqual(manifest.sources.map(x=>x.backend), ["java","llvm","net","wasm","rs","forge","cranelift","js","hdl"]);
 assert.equal(new Set(manifest.sources.map(x=>x.repository)).size, 9);
 for (const b of manifest.sources) {
@@ -14,6 +17,7 @@ for (const b of manifest.sources) {
   assert.equal(b.guest_status, "NOT_EXECUTED");
   assert.equal(b.negative_status, "NOT_EXECUTED");
   assert.equal(b.aot_status, "NOT_EXECUTED");
+  assert.equal(b.namespace_guest_status, "NOT_EXECUTED");
 }
 assert.equal(manifest.evidence.claim_tier, "SOURCE_ONLY_NO_GUEST_EXECUTION");
 assert.equal(manifest.matrix_positive_guest.assertionCount,63);
@@ -34,13 +38,14 @@ for (const probe of manifest.evidence.source_free_carrier_probes) {
   assert.equal(probe.source_exported,false);
 }
 const negatives = manifest.negative_guests;
-assert.equal(negatives.length, 6);
+assert.equal(negatives.length, 8);
 assert.deepEqual(negatives.map(x => x.file), [
   "void-value-negative.atto", "void-return-negative.atto",
   "bool-truthiness-negative.atto", "i64-literal-overflow-negative.atto",
-  "wrong-arg-negative.atto", "u64-outside-int-negative.atto"
+  "wrong-arg-negative.atto", "u64-outside-int-negative.atto",
+  "namespace-duplicate-negative.atto", "namespace-late-negative.atto"
 ]);
-assert.equal(new Set(negatives.map(x => x.file)).size, 4);
+assert.equal(new Set(negatives.map(x => x.file)).size, negatives.length);
 for (const item of negatives) {
   assert.match(item.blob_sha, /^[a-f0-9]{40}$/);
   assert.equal(item.expect, "compile_reject_no_artifact");
@@ -51,7 +56,7 @@ for (const source of manifest.sources) {
   assert.match(source.source_oracle_test_blob_sha, /^[a-f0-9]{40}$/);
   assert.deepEqual(source.negative_fixture_blobs,
     Object.fromEntries(negatives.map(x=>[x.file,x.blob_sha])),
-    "all backends must pin the four negative fixture Git blobs");
+    "all backends must pin all eight negative fixture Git blobs");
 }
 
 const INT_MIN = -(1n << 63n), INT_MAX = (1n << 63n) - 1n;
