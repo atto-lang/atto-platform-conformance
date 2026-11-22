@@ -39,6 +39,16 @@ test('core Cell policy preserves borrowed read and forbids owner move/write/susp
     assert.equal(byId.get(id)[right],false,id+': '+right);
   assert.equal(byId.get('one_shared_reader').read,true);
   assert.equal(byId.get('exclusive_writer').read,false);
+  // Saturated readers keep existing-owner read permission, but cannot
+  // acquire an extra shared loan. The two backend representations differ
+  // in their numeric max; their observable *rights* must match.
+  assert.equal(byId.get('max_shared_reader').read,true);
+  assert.equal(byId.get('max_shared_reader').acquireShared,false);
+  for(const id of ['idle','one_shared_reader'])
+    assert.equal(byId.get(id).acquireShared,true);
+  for(const id of ['max_shared_reader','exclusive_writer',
+                   'invalid_negative_readers','invalid_conflicting_writer_and_readers'])
+    assert.equal(byId.get(id).acquireShared,false);
 });
 
 test('compiler-negative conformance requires real diagnostics and zero emitted artifacts',()=>{
@@ -204,4 +214,29 @@ test('source-only candidate receipts never override 11 compiler parity receipts'
   for(const entry of Object.values(contract.compilerIntegrationCandidates))
     assert.notEqual(entry.guest,'PASSED');
   assert.match(contract.compilerIntegrationEvidenceRule,/opt-in/);
+});
+
+
+test('11 independent core libraries agree on saturated shared-loan semantics',()=>{
+  const sat=contract.borrowSaturationContract;
+  assert.equal(sat.signedCounter.maxSharedState,'9223372036854775807');
+  assert.equal(sat.boundedReadersWriter.maxSharedReaders,65535);
+  assert.deepEqual([...sat.signedCounter.backends].sort(),['java','llvm']);
+  assert.deepEqual([...sat.boundedReadersWriter.backends].sort(),
+    backends.filter(k=>!['java','llvm'].includes(k)).sort());
+  for(const name of ['signedCounter','boundedReadersWriter']){
+    assert.equal(sat[name].saturatedAcquireShared,false);
+    assert.equal(sat[name].saturatedOwnerRead,true);
+  }
+  assert.match(sat.enforcement,/non-authoritative/);
+});
+
+test('local JS compiled Cell policy observation never elevates global borrow certification',()=>{
+  const local=contract.localPolicyObservations.js;
+  assert.equal(local.kind,'PRODUCTION_COMPILER_EMITTED_PURE_POLICY_JS_LOCAL_V8');
+  assert.equal(local.cases,8);
+  assert.equal(local.certification,'NON_CERTIFYING_LOCAL_ONLY');
+  assert.equal(contract.compilerAdmissionTargets.js.status,'NOT_EXECUTED');
+  assert.equal(contract.guestEvidence.js,'NOT_EXECUTED');
+  assert.match(local.scope,/No Cell<T>, borrow tokens/);
 });
