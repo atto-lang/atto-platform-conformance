@@ -222,7 +222,7 @@
       "source_status": "STAGED_SOURCE_ONLY",
       "guest_status": "NOT_EXECUTED",
       "executed_guest_cases": 0,
-      "captured_branch_head_sha": "4d05af3417a5d0008ffd62fa2a3801bc2854747e"
+      "captured_branch_head_sha": "2f193e8a8567dcda0b9c148a50e1585fff4cf893"
     }
   ],
   "remaining_backends": [
