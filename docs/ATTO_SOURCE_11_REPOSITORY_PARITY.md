@@ -168,3 +168,44 @@ node --test tests/atto-source-repository-parity-audit-v1.test.mjs
 ```
 
 **This executes only a source-free inventory validator. It cannot typecheck or run an Atto program.** Cross-organization private-source mirroring remains blocked without destination-specific confidentiality authorization and reviewed carrier policy; Actions minutes must not be inferred exhausted from a zero-step failure without its explicit admission reason.
+
+## 2026-11-22: independent `.atto` WebSocket / QUIC / compute parity lane
+
+The [immutable source snapshot registry](../contracts/std-protocol-11-backend-evidence-v1.json)
+extends the existing 11-repository parity audit without modifying historical main
+baselines. It tracks `std/websocket` (13 public helpers), `std/quic` (20) and
+`std/compute` (9). Nine independently maintained compiler PRs contain 37
+smoke and 109 boundary `.atto` assertions; the two additional
+`atto-source.atto` and `atto-source.realtime` targets remain bootstrap-only
+with no positive compiler or guest-execution claims.
+
+The source snapshots are **exact Git commit + distinct root tree OIDs**,
+not automatically live current heads. All three source fixture/auditor Git
+blob OIDs are pinned per candidate backend. On every implementation commit,
+regather the current PR head, obtain its real Git tree from the commit object,
+repin changed blobs and rerun the registry checker. A changed PR head is
+**NOT_VERIFIED** until that process and material CI have completed.
+
+All nine local `.atto` libraries now avoid the removed `%` operator.
+Their source tests reject reintroducing it and include a bounded signed-i64
+quotient/subtract reference matrix (20,660 combinations). This is **not**
+native guest execution. Java, LLVM and Rust have authored real guest harnesses;
+`.wasm` and `.js` currently have fail-closed import/capability admissions;
+other backends still need compiler-specific executed guest gates. HDL must
+prove a synthesizable scalar profile rather than pretending socket/TLS/GPU
+transport support. Every compiled guest status in this registry is
+`NOT_EXECUTED`, and `full parity` is `NOT_VERIFIED`.
+
+A [source-free Sonus private runner run](https://github.com/sonus-auris-test/atto-ci/actions/runs/45054599005)
+executed three successful steps on 2026-11-22. This proves only that that
+specific private carrier admitted a runner; it is **neither** authorization
+to export private `atto-source.*` compiler trees **nor** a compiler/guest
+receipt. Before token-free source mirroring, require the source repository's
+independently reviewed exact destination/repository ID, current source
+commit and tree, approved test plan, carrier admission and per-blob Git SHA
+checks. No private source was moved as part of this parity lane.
+
+The [negative mutation test](../tests/std-protocol-11-backend-evidence-v1.test.mjs)
+fails closed on missing/duplicate backends, changed commit/tree/fixture
+identities, invented guest successes, zero-step promotion and unauthorized
+export claims. Green source-free registry CI is still **not** green guest CI.
