@@ -240,7 +240,7 @@
       "backend": "cranelift",
       "repository": "atto-lang/atto-source.cranelift",
       "pr_url": "https://github.com/atto-lang/atto-source.cranelift/pull/89",
-      "head_sha": "7518167df71b3f84a4e47a327781b4ad8892a701",
+      "head_sha": "3a9f99293ac4b30abcc4082e2614726c3eb85a47",
       "source_blob_sha": "a92807a1e7f45f27d80ddcb28afee687089b601b",
       "fixture_positive_blob_sha": "9d4027de080b8d625ab869825c4ec62f369adce8",
       "fixture_negative_blob_sha": "470599e7850a277bae1dec72876e808cc36bd9e8",
@@ -294,7 +294,7 @@
       "backend": "hdl",
       "repository": "atto-lang/atto-source.hdl",
       "pr_url": "https://github.com/atto-lang/atto-source.hdl/pull/59",
-      "head_sha": "6c5b1ff5e0bae68ea0a878b1ac5ba4d0856a301d",
+      "head_sha": "a3102465ac21d09d59338c79f43c7a2b8c999af5",
       "source_blob_sha": "899b1ecd5eb52f0e4cdc6720b774cae8938b7acf",
       "fixture_positive_blob_sha": "9d4027de080b8d625ab869825c4ec62f369adce8",
       "fixture_negative_blob_sha": "470599e7850a277bae1dec72876e808cc36bd9e8",
@@ -458,14 +458,25 @@
       },
       {
         "backend": "cranelift",
-        "exact_head": "7518167df71b3f84a4e47a327781b4ad8892a701",
-        "exact_git_tree": "272b120eb98c4c4e19eb355bdf828421b0371202",
-        "workflow_git_blob": "4a0b9302c5bc4eea0f1af684d7e24f886c5b17a0",
+        "exact_head": "3a9f99293ac4b30abcc4082e2614726c3eb85a47",
+        "exact_git_tree": "76ec22b1111850fc7ddc68ea08d4698a3652838d",
+        "workflow_git_blob": "1ea4d9ecfe32461c0bf5b01523d543b3924b466e",
         "gate_kind": "CRANELIFT_PARSE_AND_IR",
         "actions_execution_status": "NOT_EXECUTED",
         "compiled_guest_status": "NOT_EXECUTED",
         "native_aot_status": "NOT_EXECUTED",
-        "source_mirrored_to_alternate_org": false
+        "source_mirrored_to_alternate_org": false,
+        "header_parser_git_blob": "959defb35300e21755be467eb79b6f35d48654c6",
+        "namespace_fixture_git_blobs": [
+          "e4a46b5eb4c19eca36786cc440cc09ffd38d4354",
+          "3f1531c7677eebab9ce211e22bf38f381419384b",
+          "d52b9a53d0fed9467ed3435e617e077605f6ba29"
+        ],
+        "namespace_fixture_tests_staged": {
+          "positive": 1,
+          "negative": 2,
+          "executed": 0
+        }
       },
       {
         "backend": "js",
@@ -481,17 +492,28 @@
       },
       {
         "backend": "hdl",
-        "exact_head": "6c5b1ff5e0bae68ea0a878b1ac5ba4d0856a301d",
-        "exact_git_tree": "5f72f2f5adccddd1d04c4a2326446dc1f5741fd4",
-        "workflow_git_blob": "92c084a5be168c08e7690405f0a8464fdc3b3a9f",
+        "exact_head": "a3102465ac21d09d59338c79f43c7a2b8c999af5",
+        "exact_git_tree": "0620247e4e28917be32ddd12a496a4110ce18897",
+        "workflow_git_blob": "d3b2d15091a1199287973c9a1d385b483da7856c",
         "gate_kind": "RTL_CODEGEN_ADMISSION",
         "actions_execution_status": "NOT_EXECUTED",
         "compiled_guest_status": "NOT_EXECUTED",
         "native_aot_status": "NOT_EXECUTED",
-        "source_mirrored_to_alternate_org": false
+        "source_mirrored_to_alternate_org": false,
+        "header_parser_git_blob": "de2c78b8d858dfc695ac65b98514b3dd3485f7dd",
+        "namespace_fixture_git_blobs": [
+          "23f06ce787c500f82994b92e061b6badec6e57bd",
+          "9afae200566d8c0aef603c5f0e9141f4cc1d4409",
+          "c5f95c3b53b3b1b8feb4e1078d9b153657281a12"
+        ],
+        "namespace_fixture_tests_staged": {
+          "positive": 1,
+          "negative": 2,
+          "executed": 0
+        }
       }
     ],
-    "backend_compiler_admission_v2_notes": "JS generated ESM test, NET/Forge/Cranelift/HDL real compiler admission jobs and Wasm fail-closed source-graph check are staged, not executed. Source-only and compiler-admission gates are not all-backend guest/AOT parity."
+    "backend_compiler_admission_v2_notes": "JS generated ESM test, NET/Forge/Cranelift/HDL real compiler admission jobs and Wasm fail-closed source-graph check are staged, not executed. Source-only and compiler-admission gates are not all-backend guest/AOT parity. NET, Forge, Cranelift and HDL now stage one namespace fragment positive and two diagnosed namespace negatives each; NONE has stepful execution. Their full core/types compile gates remain mandatory."
   },
   "negative_guests": [
     {
