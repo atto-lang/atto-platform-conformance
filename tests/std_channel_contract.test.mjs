@@ -9,13 +9,18 @@ const manifest = JSON.parse(await readFile(
   new URL('../contracts/std-channel-v1.json', import.meta.url), 'utf8'
 ));
 const backends = ['java', 'llvm', 'net', 'rs', 'wasm', 'forge',
-  'cranelift', 'js', 'hdl'].sort();
+  'cranelift', 'js', 'hdl', 'atto', 'realtime'].sort();
 
 test('std/channel contract is source-owned and explicitly unverified', () => {
   assert.equal(manifest.schema, 'atto.std.channel.v1');
   assert.equal(manifest.status, 'TARGET_ONLY_NOT_EXECUTED');
   assert.equal(manifest.implementation_policy, 'BACKEND_OWNED_NATIVE_ATTO_SOURCE');
   assert.equal(manifest.library_namespace, 'std/channel');
+  assert.deepEqual(Object.keys(manifest.backend_repositories).sort(), backends);
+  assert.equal(manifest.backend_repositories.atto, 'atto-lang/atto-source.atto');
+  assert.equal(manifest.backend_repositories.realtime, 'atto-lang/atto-source.realtime');
+  assert.match(manifest.scope_notes.atto, /NOT_EXECUTED/);
+  assert.match(manifest.scope_notes.realtime, /NOT_EXECUTED/);
   assert.match(manifest.evidence_rule, /actual compiled\/executed guest/);
   assert.match(manifest.scope_notes.rs, /NOT_LINKED/);
   assert.match(manifest.scope_notes.llvm, /rejects unsupported guest lowering/);
