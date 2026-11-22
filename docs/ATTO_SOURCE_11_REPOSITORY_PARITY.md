@@ -241,3 +241,13 @@ A separate [Sonus source-free reference workflow](https://github.com/sonus-auris
 is limited to public arithmetic and dispatch reference vectors; success or
 failure there is not compiled Atto guest evidence or private-source export
 permission.
+
+
+**Executed carrier receipt:** Sonus [run #45058040904](https://github.com/sonus-auris-test/atto-ci/actions/runs/45058040904)
+completed at carrier commit `2fcd30702c2fdb2ad1a3f74f72ba2071293ed482`
+with six successful job steps, four Node tests passed, zero failed, and the
+20,660-case signed-i64 reference matrix. The carrier workflow and independent
+reference test have pinned Git blob OIDs in the ledger. The source-free
+checkout belongs to Sonus; none of the nine private Atto compiler Git trees
+was mirrored or executed there. This receipt cannot promote a compiler or
+authorize export.
