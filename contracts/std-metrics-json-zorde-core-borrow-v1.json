@@ -11,7 +11,7 @@
     "the compiler's typed place/loan CFG, NLL lifetime, exception cleanup and actor/await escape checks are mandatory",
     "a source-only scalar predicate cannot replace a compiler rejection or certify Sendable, Shareable, Serializer or allocation provenance"
   ],
-  "core_source_path_hint": "stdlib/core/borrow_admission.atto (Java: src/main/resources/dev/oreslang/core/borrow_admission.atto)",
+  "core_source_path_hint": "Backend-owned paths in core_source_paths; only Java is registered in its active packaged core import registry.",
   "max_read_loans": 65535,
   "vectors": [
     {
@@ -415,5 +415,17 @@
       "unverified_external_runner",
       "stale-head"
     ]
-  }
+  },
+  "core_source_paths": {
+    "java": "src/main/resources/dev/oreslang/core/borrow_admission.atto",
+    "llvm": "library/ores.core/borrow_admission.atto",
+    "net": "library/atto.core/borrow_admission.atto",
+    "wasm": "stdlib/core/borrow_admission.atto",
+    "forge": "stdlib/core/borrow_admission.atto",
+    "rs": "stdlib/core/borrow_admission.atto",
+    "cranelift": "stdlib/core/borrow_admission.atto",
+    "js": "stdlib/core/borrow_admission.atto",
+    "hdl": "stdlib/core/borrow_admission.atto"
+  },
+  "resolver_status_note": "Only Java's packaged core registry has this module registered; LLVM/.NET use native library paths but no verified resolver; all other backend roots remain staged."
 }
