@@ -354,14 +354,15 @@
     "rust": {
       "repository": "atto-lang/atto-source.rs",
       "pr": 340,
-      "sourceCommit": "b49d0abbafe0a8200d6a73a7996fb686329c09b2",
-      "sourceTree": "b6c1fa7e078c3230cd7dfb4a0a96cf79103c51d5",
+      "sourceCommit": "d312a164e50d9f967a1f32e080278f6ada0ec7b7",
+      "sourceTree": "52745723e25b3646e9adb279a041f1269a748f41",
       "sourceBlobs": {
         "src/check.rs": "d9bdb5c8be1879b53c76b983858a971e38049eb4",
         "tests/borrow_v1_mode.rs": "88d51308ea4a42d1b4c5f4345412cc5be2429349",
-        ".github/workflows/ci.yml": "3d0fb8015b266f74e3f410d346e041abdcba3a03"
+        "tests/borrow_v1_guest.mjs": "22e833fabeca840a3be830c86704ced170c5aacf",
+        ".github/workflows/ci.yml": "548bf0ac19384b91f412490cab95984584e1224c"
       },
-      "check": "Public legacy and borrow-v1 typed resolver must reject stale body-local named/class/actor/enum/callable indices with E_UNKNOWN_TYPE; valid source still compiles. Existing full CI now runs compiled native/browser borrow-v1 guests and zero-artifact negative fixtures.",
+      "check": "Guarded compiler resolver and forged local-type AST regression in legacy+borrow-v1 modes; native/browser compiled guest suite emits per-case machine-readable receipts with exact source head/tree, toolchain, compiler hashes, fixture hashes, expected/actual outcomes, and zero-artifact negative witnesses.",
       "compilation": "NOT_EXECUTED",
       "guest": "NOT_EXECUTED"
     },
