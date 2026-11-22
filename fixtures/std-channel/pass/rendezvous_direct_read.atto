@@ -1,0 +1,13 @@
+// expect-stdout: 42
+// A zero-capacity read must register a real rendezvous partner; polling
+// without a pending-read registration can never unblock a waiting writer.
+import module channel from "std/channel";
+
+pub async routine main(): void {
+  val Channel<int> ch = channel.rendezvous<int>();
+  val Future<void> writer = channel.send_pending<int>(ch, 42);
+  stdio.stdout.write(await channel.receive<int>(ch));
+  await writer;
+  channel.close<int>(ch);
+  return;
+}
