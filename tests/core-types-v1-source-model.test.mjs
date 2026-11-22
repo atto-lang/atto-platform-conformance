@@ -33,10 +33,18 @@ for (const b of manifest.sources) {
   assert.equal(b.matrix_guest_status,"NOT_EXECUTED");
 }
 for (const probe of manifest.evidence.source_free_carrier_probes) {
-  assert.equal(probe.runner_steps,0);
-  assert.equal(probe.status,"NOT_EXECUTED");
   assert.equal(probe.source_exported,false);
+  assert.match(probe.head,/^[0-9a-f]{40}$/);
+  if(probe.status==="NOT_EXECUTED") assert.equal(probe.runner_steps,0);
+  else {
+    assert.equal(probe.status,"PASS_SOURCE_FREE_ONLY");
+    assert.ok(probe.runner_steps>0);
+  }
 }
+assert.equal(manifest.evidence.available_stepful_private_carrier.run_id,45049791824);
+assert.equal(manifest.evidence.available_stepful_private_carrier.runner_steps,4);
+assert.equal(manifest.evidence.available_stepful_private_carrier.source_transfer_status,"DENIED_UNAPPROVED");
+assert.equal(manifest.evidence.rust_namespace_import_linker.cargo_test_status,"NOT_EXECUTED");
 const negatives = manifest.negative_guests;
 assert.equal(negatives.length, 8);
 assert.deepEqual(negatives.map(x => x.file), [

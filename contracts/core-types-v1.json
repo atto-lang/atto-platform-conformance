@@ -78,7 +78,7 @@
       "backend": "java",
       "repository": "atto-lang/atto-source.java",
       "pr_url": "https://github.com/atto-lang/atto-source.java/pull/1766",
-      "head_sha": "356bc898f5210d76745b41d9fb4fe38137c2f899",
+      "head_sha": "3b966fcae36df79cf63878307547f12297b2f674",
       "source_blob_sha": "1fc3a9b6e158d736ed0a282a376b72fea11f2bf4",
       "fixture_positive_blob_sha": "9d4027de080b8d625ab869825c4ec62f369adce8",
       "fixture_negative_blob_sha": "470599e7850a277bae1dec72876e808cc36bd9e8",
@@ -186,7 +186,7 @@
       "backend": "rs",
       "repository": "atto-lang/atto-source.rs",
       "pr_url": "https://github.com/atto-lang/atto-source.rs/pull/532",
-      "head_sha": "1af064e2b6c32c8d6f82f5fb2f9b4e571ec30eea",
+      "head_sha": "a0c5d2d4f454da8fb119e45b360adc8a13ea0459",
       "source_blob_sha": "7d8086e31c8c6dbf28227a2116eb5447db886673",
       "fixture_positive_blob_sha": "9d4027de080b8d625ab869825c4ec62f369adce8",
       "fixture_negative_blob_sha": "470599e7850a277bae1dec72876e808cc36bd9e8",
@@ -339,11 +339,36 @@
         "runner_steps": 0,
         "status": "NOT_EXECUTED",
         "source_exported": false
+      },
+      {
+        "repository": "sonus-auris-test/atto-ci",
+        "repository_id": 1458331448,
+        "head": "03582de5b7ef636d3e80adf3637f84f1545e85c9",
+        "root_tree_sha": "469ea7e75405c09a27da05f7e82869b71a75a8de",
+        "run_id": 45049791824,
+        "runner_steps": 4,
+        "status": "PASS_SOURCE_FREE_ONLY",
+        "source_exported": false
       }
     ],
     "source_export_authorization": "DENIED_UNAPPROVED",
     "source_export_authority": "atto-source.java/.github/private-ci-approved-repositories.txt empty; approved-snapshots.txt does not pin current core/types head/destination",
-    "mirrored_to_other_org": false
+    "mirrored_to_other_org": false,
+    "available_stepful_private_carrier": {
+      "repository": "sonus-auris-test/atto-ci",
+      "repository_id": 1458331448,
+      "run_id": 45049791824,
+      "status": "SOURCE_FREE_STEPS_EXECUTED",
+      "runner_steps": 4,
+      "source_transfer_status": "DENIED_UNAPPROVED"
+    },
+    "rust_namespace_import_linker": {
+      "path": "src/import_link.rs",
+      "test_path": "tests/core_types_namespace_import.rs",
+      "branch_head": "a0c5d2d4f454da8fb119e45b360adc8a13ea0459",
+      "validation": "NAMESPACE_NORMALIZATION_THEN_STRIP_FOR_GENERATED_MODULE",
+      "cargo_test_status": "NOT_EXECUTED"
+    }
   },
   "negative_guests": [
     {
