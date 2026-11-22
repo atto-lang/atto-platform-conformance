@@ -1,0 +1,87 @@
+{
+  "schema": "atto.stdlib.metrics-json-zorde.private-carrier-proposal-v1",
+  "status": "NOT_AUTHORIZED",
+  "allows_source_export": false,
+  "requires_independent_authentication": true,
+  "source_pins": [
+    {
+      "repository": "atto-lang/atto-source.java",
+      "pr": 1787,
+      "source_commit_sha": "503598f84e3c22275a852605869555f07d5d2acd",
+      "source_root_tree_sha": "43eae457d15154941279f2a594865085ecd9ac75"
+    },
+    {
+      "repository": "atto-lang/atto-source.llvm",
+      "pr": 885,
+      "source_commit_sha": "cb85f94058528561b3d2af1fbefa0011cd916df7",
+      "source_root_tree_sha": "7a1ff13f989f42565d6f58daa746058cd99a9f02"
+    },
+    {
+      "repository": "atto-lang/atto-source.net",
+      "pr": 231,
+      "source_commit_sha": "08d322de1350b96bbcda89a77929c5056af97f49",
+      "source_root_tree_sha": "9b714cae2901f88fe55c62ecca34520aa885183f"
+    },
+    {
+      "repository": "atto-lang/atto-source.wasm",
+      "pr": 293,
+      "source_commit_sha": "20593256d9f2776abef2d6ea4fe86e38dcd933ac",
+      "source_root_tree_sha": "c4386247d57682d0a96c7ae30d65d8918b67961a"
+    },
+    {
+      "repository": "atto-lang/atto-source.forge",
+      "pr": 238,
+      "source_commit_sha": "a5f0a0c709a9f0b2fa885510dba5da2a9a98f7b9",
+      "source_root_tree_sha": "1fecb5b6dbe37e4036ae49bcf6f739bf5fd58e5e"
+    },
+    {
+      "repository": "atto-lang/atto-source.rs",
+      "pr": 552,
+      "source_commit_sha": "8bb4f35c40228110deacb618d944d5761d7c615b",
+      "source_root_tree_sha": "8306fce3bdb88ea98ee2bf67f275a13f3c3c685e"
+    },
+    {
+      "repository": "atto-lang/atto-source.cranelift",
+      "pr": 103,
+      "source_commit_sha": "9bd2bd9ca7da7f755a352e6d4c9367871d836046",
+      "source_root_tree_sha": "6aa620a87d818bed2f318ef922019bd10a01b145"
+    },
+    {
+      "repository": "atto-lang/atto-source.js",
+      "pr": 143,
+      "source_commit_sha": "5c69282e5880dcae8dac9a405f43ddec88590a9f",
+      "source_root_tree_sha": "4edeb9942e3581e4a79e708bd2ad0043a54f19fc"
+    },
+    {
+      "repository": "atto-lang/atto-source.hdl",
+      "pr": 72,
+      "source_commit_sha": "f85b86fdc6a6feee02baacbdce92e1aa29438cee",
+      "source_root_tree_sha": "dfbcb61c4de07cd93e690d02407c22fa59c31380"
+    }
+  ],
+  "candidate": {
+    "repository": "canonical-cloud-test/legacy-mirror-guard-e2e",
+    "numeric_repo_id": 1343162432,
+    "capacity_evidence_run": "https://github.com/canonical-cloud-test/legacy-mirror-guard-e2e/actions/runs/45038441021",
+    "successful_stepful_jobs": 10,
+    "approved_for_atto_source": false
+  },
+  "missing_approvals": {
+    "approved_source_export_guard": null,
+    "independently_authenticated_reviewer": null,
+    "authorized_destination_readers": null,
+    "retention_and_deletion_policy": null,
+    "pinned_carrier_workflow_git_blob_sha": null,
+    "pinned_test_plan_sha256": null,
+    "source_org_allowlist_entry": null
+  },
+  "copying_allowed_only_if": "ALL_GUARDS_INDEPENDENTLY_VERIFIED_AND_CURRENT_SHA_TREE_MATCH",
+  "prohibited_actions": [
+    "copy_full_git_tree",
+    "copy_sensitive_repository_blobs",
+    "create_private_mirror_branch",
+    "run_carrier_on_private_source",
+    "claim_external_native_CI_PASS"
+  ],
+  "note": "Proposal is descriptive and does not grant consent. Retention/readers and reviewer identities must not be fabricated."
+}
