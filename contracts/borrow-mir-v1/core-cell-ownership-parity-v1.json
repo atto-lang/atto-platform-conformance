@@ -338,5 +338,46 @@
       "certification": "NON_CERTIFYING_LOCAL_ONLY",
       "scope": "No Cell<T>, borrow tokens, actor/await loans, native AOT, or typed borrow-MIR"
     }
-  }
+  },
+  "compilerIntegrationCandidates": {
+    "rust": {
+      "repository": "atto-lang/atto-source.rs",
+      "pr": 340,
+      "sourceCommit": "b49d0abbafe0a8200d6a73a7996fb686329c09b2",
+      "sourceTree": "b6c1fa7e078c3230cd7dfb4a0a96cf79103c51d5",
+      "sourceBlobs": {
+        "src/check.rs": "d9bdb5c8be1879b53c76b983858a971e38049eb4",
+        "tests/borrow_v1_mode.rs": "88d51308ea4a42d1b4c5f4345412cc5be2429349",
+        ".github/workflows/ci.yml": "3d0fb8015b266f74e3f410d346e041abdcba3a03"
+      },
+      "check": "Public legacy and borrow-v1 typed resolver must reject stale body-local named/class/actor/enum/callable indices with E_UNKNOWN_TYPE; valid source still compiles. Existing full CI now runs compiled native/browser borrow-v1 guests and zero-artifact negative fixtures.",
+      "compilation": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED"
+    },
+    "java": {
+      "repository": "atto-lang/atto-source.java",
+      "pr": 1769,
+      "sourceCommit": "2efb0955140dc465aa55be91a0f2761ad00ad813",
+      "sourceTree": "bd1b1b4ea3f3f8ea9fbefdd8fc05a2d96e281751",
+      "sourceBlobs": {
+        "src/test/java/dev/oreslang/CoreFourGuestTest.java": "8d37869b10d4787fba17f4faa6ada50694b8db13"
+      },
+      "check": "All four negative linked core/cell fixtures must reject through both validate and real guest launch before producing user stdout, with ownership-specific diagnostics.",
+      "compilation": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED"
+    },
+    "llvm": {
+      "repository": "atto-lang/atto-source.llvm",
+      "pr": 868,
+      "sourceCommit": "be39b9f17e803605af8cf9c866f60c14a0f58926",
+      "sourceTree": "2909e3a549d7417280cfe64d179e351d30979ca2",
+      "sourceBlobs": {
+        "scripts/test-core-four-llvm-native.sh": "c3885edf7bd54d747cae23e2529205bc09cadaca"
+      },
+      "check": "O0/O2 real compiler guest and negative IR=NONE gates must require ownership-checker-specific diagnostic strings, not merely generic borrow/take words from fixture names.",
+      "compilation": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED"
+    }
+  },
+  "compilerIntegrationEvidenceRule": "These are exact Git object witnesses for compiler-gate candidates, NOT real guest or typed-MIR proof. Re-fetch current head/tree/blobs and verify material runner steps, compiler binary digest and actual positive/negative guest before promoting. The Rust borrow-v1 profile is opt-in and must not be represented as global Atto borrow-by-default. All eleven backend guestEvidence statuses remain NOT_EXECUTED."
 }
