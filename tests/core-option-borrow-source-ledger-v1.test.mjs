@@ -13,7 +13,7 @@ const reject=(name,mutate)=>test(name,()=>{
   const data=clone();mutate(data);
   assert.throws(()=>validateBorrowSourceLedger(data,dash),/BORROW_SOURCE_LEDGER_DENIED/);
 });
-test('all eleven profiles, seven source-borrow candidates and 47 Git blob pins exist',()=>{
+test('all eleven profiles, seven source-borrow candidates and 50 Git blob pins exist',()=>{
   assert.deepEqual(validateBorrowSourceLedger(ledger,dash),
     {backends:11,borrow_candidates:7,source_artifacts:50,guest_passes:0});
   assert.deepEqual(new Set(ledger.backends.map(x=>x.id)),
@@ -54,11 +54,13 @@ test('Java JUnit linked guest, OwnershipChecker, TypeChecker and exact-head work
     ['src/main/java/dev/oreslang/compiler/OresCompiler.java','c60883bf73abf36b89343a2b18feb11565c11c03'],
     ['src/test/java/dev/oreslang/AutomaticPreludeTest.java','0e354f5478a0651127f746e63e86bb5a591bca74'],
     ['.github/workflows/core-option-result-jvm-borrow-exact-head.yml','1821c6732b79c090f9cfc93121e3ea20e7a40fc2'],
-    ['.github/workflows/core-option-result-jvm-borrow-exact-head.yml','9d74a1ea63898534fb3c991dfd805b031b74a860']
   ]);
   for(const [path,sha] of expected)assert.equal(files.get(path),sha,path);
   assert.equal(java.source_head_sha,'7385b682ff28239d1ce1c52fa6d7aedcb4f6b337');
   assert.equal(java.root_tree_sha,'03981bf0f0540f913a45cbc951934783b61794b5');
+  assert.equal(files.get('src/main/java/dev/oreslang/types/CoreTypeRegistry.java'),'bc9c3574f0e653218ea8a68f85d4effbd6722eeb');
+  assert.equal(files.get('src/test/java/dev/oreslang/AutomaticPreludeTest.java'),'0e354f5478a0651127f746e63e86bb5a591bca74');
+  assert.equal(files.get('.github/workflows/core-option-result-jvm-borrow-exact-head.yml'),'1821c6732b79c090f9cfc93121e3ea20e7a40fc2');
   assert.ok(Object.values(java.checks).every(x=>x==='not_executed'));
 });
 test('noncompiler profiles never masquerade as generic ownership passes',()=>{
