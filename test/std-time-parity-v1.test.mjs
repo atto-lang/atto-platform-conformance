@@ -14,6 +14,15 @@ function validCandidate(contract) {
      contract.status!=='CANDIDATE_NOT_GUEST_VERIFIED'||
      !Array.isArray(contract.backends) || contract.backends.length!==11)
     reject('invalid candidate envelope');
+  const core=contract.core_ownership_fixed_fields;
+  if(contract.core_ownership_status!=='NOT_EXECUTED_ALL_ELEVEN_BACKENDS' ||
+     !Array.isArray(core) || core.length!==2 ||
+     JSON.stringify(core.map(v=>v.id))!==JSON.stringify(['duration_fixed_nanos','instant_fixed_ticks']) ||
+     core.some(v=>v.expected!=='COMPILE_REJECT_FIXED_FIELD_WRITE' ||
+       v.guest_artifact!=='FORBIDDEN' ||
+       !SHA.test(v.source_blob_sha) ||
+       Object.hasOwn(v,'execution_passed')))
+    reject('core fixed-field ownership candidates falsely promoted');
   const sourceAudit=contract.source_parity_audit;
   if(!sourceAudit ||
      sourceAudit.status!=='SOURCE_ONLY_NORMALIZED_BODY_IDENTICAL_NO_EXECUTION' ||
@@ -67,6 +76,8 @@ function validCandidate(contract) {
     seen.add(c.id);
   }
   for(const backend of contract.backends) {
+    if(backend.core_fixed_field_negative_status!=='NOT_EXECUTED')
+      reject('core fixed-field backend evidence falsely promoted');
     if(backend.borrow_positive_guest_status!=='NOT_EXECUTED' ||
        backend.borrow_negative_compile_status!=='NOT_EXECUTED')
       reject('backend borrow evidence falsely promoted');
@@ -197,6 +208,24 @@ test('positive time guest has mutable receivers, three const-receiver negatives 
   assert.equal(manifest.borrow_conformance_status,'NOT_EXECUTED_ALL_ELEVEN_BACKENDS');
 });
 
+test('core owns nonnegative Duration and monotonic Instant fixed fields',()=>{
+  for(const [id,receiver,field] of [
+    ['duration_fixed_nanos','duration','nanos'],
+    ['instant_fixed_ticks','now','ticks_ns']]) {
+    const item=manifest.core_ownership_fixed_fields.find(v=>v.id===id);
+    assert.ok(item,'missing core ownership vector '+id);
+    assert.equal(item.receiver,receiver);
+    assert.equal(item.field,field);
+    const src=readFileSync(new URL('../'+item.source,import.meta.url),'utf8');
+    assert.match(src,/import module time from "std\/time";/);
+    assert.ok(src.includes('val '+receiver+' = time.'),'fixed field negative should start from writable val');
+    assert.ok(src.includes(receiver+'.'+field+' = -1;'),'negative must attempt actual fixed-field write');
+    assert.equal(item.expected,'COMPILE_REJECT_FIXED_FIELD_WRITE');
+    assert.equal(item.guest_artifact,'FORBIDDEN');
+  }
+  assert.equal(manifest.core_ownership_status,'NOT_EXECUTED_ALL_ELEVEN_BACKENDS');
+});
+
 test('mutants cannot promote a host test, zero-step run or scaffold to guest success',()=>{
   const mutate=(fn,pattern)=>{
     const copy=structuredClone(manifest);fn(copy);
@@ -210,6 +239,12 @@ test('mutants cannot promote a host test, zero-step run or scaffold to guest suc
     /source audit erroneously certified as guest parity/);
   mutate(c=>c.borrow_mutability_negatives[0].source_blob_sha='not-a-sha',
     /borrow negative candidate falsely promoted/);
+  mutate(c=>c.core_ownership_fixed_fields[0].execution_passed=true,
+    /core fixed-field ownership candidates falsely promoted/);
+  mutate(c=>c.core_ownership_status='PASSED',
+    /core fixed-field ownership candidates falsely promoted/);
+  mutate(c=>c.backends[0].core_fixed_field_negative_status='PASSED',
+    /core fixed-field backend evidence falsely promoted/);
   mutate(c=>c.borrow_mutability_positive.guest_execution='PASSED',
     /positive val receiver candidate falsely promoted/);
   mutate(c=>c.borrow_mutability_positive.expected_stdout[0]='42',
