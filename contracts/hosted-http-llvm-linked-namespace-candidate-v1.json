@@ -4,14 +4,14 @@
   "status": "NOT_EXECUTED",
   "source_repo": "atto-lang/atto-source.llvm",
   "source_pr": 856,
-  "source_head": "059ce5a1d67611a5f1ba23fc8dfb682e152e97e3",
-  "source_root_tree": "f6d78ee2da080ac476143236b3e23e4f4d942811",
+  "source_head": "b0af5849794a52494a2a70f6b585a28cffbace14",
+  "source_root_tree": "ecccaeda0f4dd91706e3e2052d20d3b3ee0fbf84",
   "source_blobs": {
     "src/main.rs": "a733752f5ded21cbd64a0a8030eac67ddc737cd6",
     "stdlib/http/message_policy.atto": "f88b78313432bce067223cc1853024bfd9b97c90",
     "tests/http_stdlib/namespace_import_canary.atto": "4a63850b44189a77f7bed1dc9e83f3596187c6a0",
-    "ci/test_http_stdlib_policy.sh": "ccdfd39bdff2c9fcec5728d9903d463e29ea70f4",
-    "ci/test_http_namespace_import.sh": "197987583dbd3260257073fba275cab6a54b6d8d",
+    "ci/test_http_stdlib_policy.sh": "f485a72b0cc4e5fc79dd72733980d7726839b47c",
+    "ci/test_http_namespace_import.sh": "4946aef9781629b3ee0fa81451441cf49e8c76cc",
     ".github/workflows/http-stdlib-guest.yml": "8f1c4de849654b896b57cb3ce80d7d69be6a661c"
   },
   "canonical_import": "import * as http from \"std.http\";",
