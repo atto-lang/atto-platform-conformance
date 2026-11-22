@@ -1,0 +1,5 @@
+pub susp fnc main(): int {
+  val Future<void> projected = task<void> { return; };
+  projected.cancel();
+  return 42;
+}
