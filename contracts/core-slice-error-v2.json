@@ -12,7 +12,7 @@
   "source_compatibility": "Public semantics must agree; independent backend source bytes, packages, and lowered representations may differ.",
   "integer_encoding": "Signed i64 numeric values are represented as DECIMAL STRINGS to avoid JSON double rounding.",
   "windows": "valid_range(offset,count,length) means offset/count; valid_endpoints(start,end,length) means explicit half-open endpoints (not necessarily ordered); valid_index checks only raw nonnegative positions; valid_signed_index normalizes -len <= i < len.",
-  "borrow_safety": "These helpers never authorize a live Slice<T> or a mutable loan; returning Option<int> from get_copy_int yields an owned Copy<int> value only.",
+  "borrow_safety": "These helpers never authorize a live Slice<T> or a mutable loan; returning Option<int> from get_copy_int yields an owned Copy<int> value only. The source helpers require borrow Array<int> parameters and rt borrow at call sites; by-value Array ownership consumption is a negative fixture.",
   "catalog": "Candidate atto-lang/atto-source.java#662 std/error 99-class manifest. Codes classify diagnostics only, never confer nominal error identity, panic/raise CONTROL or retry authority.",
   "scalar_vectors": [
     {
@@ -582,13 +582,15 @@
       "id": "live-exclusive-loan",
       "category": "borrow",
       "expect": "failed get_copy under exclusive mutable loan, including out-of-range attempts",
-      "status": "NOT_EXECUTED"
+      "status": "NOT_EXECUTED",
+      "fixture": "fixtures/core-slice-error-v2/borrow-copy-exclusive-negative.atto"
     },
     {
       "id": "source-moved",
       "category": "borrow",
       "expect": "use-after-take/consume rejected before even an Option.None is returned",
-      "status": "NOT_EXECUTED"
+      "status": "NOT_EXECUTED",
+      "fixture": "fixtures/core-slice-error-v2/borrow-copy-moved-negative.atto"
     },
     {
       "id": "borrowed-view-outlives-owner",
@@ -673,5 +675,13 @@
       "borrow_lifetime": "NOT_VERIFIED",
       "nominal_error": "NOT_VERIFIED"
     }
-  }
+  },
+  "positive_guest_fixtures": [
+    {
+      "id": "borrowed-owned-copy-preserves-array",
+      "path": "fixtures/core-slice-error-v2/borrow-copy-positive.atto",
+      "expected_exit": 42,
+      "status": "NOT_EXECUTED"
+    }
+  ]
 }

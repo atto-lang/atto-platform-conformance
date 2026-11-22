@@ -75,6 +75,26 @@ function evalScalar(op, args) {
   }
 }
 
+test('unadmitted source-owned borrow regression fixtures remain explicit', () => {
+  const fixtures = fixture.positive_guest_fixtures;
+  assert.equal(fixtures.length, 1);
+  const path=fixtures[0].path;
+  assert.equal(fixtures[0].status, 'NOT_EXECUTED');
+  const source=readFileSync(new URL('../'+path, import.meta.url),'utf8');
+  assert.ok(source.includes('get_copy_int(rt borrow values,'));
+  assert.ok(source.includes('values.set(0, 99)'));
+  assert.ok(source.includes('return 42;'));
+  for(const kind of ['exclusive', 'moved']) {
+    const neg=fixture.negative_requirements.find(r=>r.id===
+      (kind==='exclusive'?'live-exclusive-loan':'source-moved'));
+    assert.equal(neg.status, 'NOT_EXECUTED');
+    const content=readFileSync(new URL('../'+neg.fixture, import.meta.url),'utf8');
+    assert.ok(content.includes('get_copy_int(rt borrow values,'));
+    assert.ok(kind==='exclusive' ? content.includes('rt mut borrow values')
+      : content.includes('consume(values)'));
+  }
+});
+
 test('source contract never self-attests guest execution', () => {
   assert.equal(fixture.schema,'atto.core-slice-error.v2');
   assert.equal(fixture.status,'CANDIDATE_NOT_EXECUTED');

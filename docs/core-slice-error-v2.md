@@ -24,3 +24,19 @@ The sibling slice/iter/cmp PRs treat `valid_index` as raw, nonnegative
 logical indexing. Java #1768 and LLVM #867 now agree and reserve
 `valid_signed_index` for negative-index normalization. The v2 corpus
 adds ten vectors for both forms, split-at bounds and empty count handling.
+
+## Owner-preservation regression fixtures
+
+- `fixtures/core-slice-error-v2/borrow-copy-positive.atto` demonstrates
+  an array borrowed for repeated `Option<int>` reads, then mutated, with a
+  copied earlier scalar remaining independent. Expected guest exit: **42**.
+- `borrow-copy-exclusive-negative.atto` must be rejected under a live
+  exclusive mutable loan, even when the requested index is invalid.
+- `borrow-copy-moved-negative.atto` must reject use after consuming the
+  array owner by value, again before returning a possible `None`.
+
+The Node harness checks that these unadmitted fixtures and their status
+markers remain present; it **does not** parse or execute Atto guest code.
+Compiler-specific diagnostics and AOT behavior remain pending. Export to
+other organizations requires protected-source approval, verified private
+carrier and a successful material capacity probe.
