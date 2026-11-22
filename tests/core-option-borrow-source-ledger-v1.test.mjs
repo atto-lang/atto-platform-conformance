@@ -1,0 +1,65 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {mkdtempSync,rmSync,writeFileSync,symlinkSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {loadBorrowSourceLedger,validateBorrowSourceLedger} from '../lib/core-option-borrow-source-ledger-v1.mjs';
+import {loadCoreOptionDashboard} from '../lib/core-option-parity-dashboard-v1.mjs';
+
+const ledger=loadBorrowSourceLedger();
+const dash=loadCoreOptionDashboard();
+const clone=()=>structuredClone(ledger);
+const reject=(name,mutate)=>test(name,()=>{
+  const data=clone();mutate(data);
+  assert.throws(()=>validateBorrowSourceLedger(data,dash),/BORROW_SOURCE_LEDGER_DENIED/);
+});
+test('all eleven profiles, seven source-borrow candidates and 35 Git blob pins exist',()=>{
+  assert.deepEqual(validateBorrowSourceLedger(ledger,dash),
+    {backends:11,borrow_candidates:7,source_artifacts:35,guest_passes:0});
+  assert.deepEqual(new Set(ledger.backends.map(x=>x.id)),
+    new Set(['java','llvm','net','rs','wasm','forge','cranelift','js','hdl','atto','realtime']));
+});
+test('noncompiler profiles never masquerade as generic ownership passes',()=>{
+  for(const id of ['js','hdl','atto','realtime']){
+    const b=ledger.backends.find(x=>x.id===id);
+    assert.notEqual(b.stage,'borrow_source_candidate');
+    assert.ok(Object.values(b.checks).every(x=>x==='not_executed'));
+  }
+});
+test('every source-owned implementation fixture is individually pinned and backend-scoped',()=>{
+  for(const id of ['java','rs','llvm','net','wasm','forge','cranelift']){
+    const b=ledger.backends.find(x=>x.id===id);
+    assert.equal(b.source_artifacts.length,4,id);
+    assert.ok(b.source_artifacts.filter(x=>x.path.endsWith('.atto')).length>=3);
+    assert.match(b.root_tree_sha,/^[0-9a-f]{40}$/);
+    assert.equal(b.source_head_sha,dash.backends.find(x=>x.id===id).candidate.head_sha);
+  }
+});
+reject('omit backend',x=>x.backends.pop());
+reject('duplicate backend',x=>x.backends[1].id='java');
+reject('rename repository',x=>x.backends[0].repository='atto-lang/atto-source.llvm');
+reject('swap exact candidate commit with another valid SHA',x=>x.backends[0].source_head_sha='a'.repeat(40));
+reject('swap exact full root Git tree',x=>x.backends[0].root_tree_sha='b'.repeat(40));
+reject('omit a source fixture',x=>x.backends[0].source_artifacts.pop());
+reject('duplicate source fixture',x=>x.backends[0].source_artifacts[1]=structuredClone(x.backends[0].source_artifacts[0]));
+reject('swap a valid-looking source Git blob',x=>x.backends[0].source_artifacts[0].blob_sha='a'.repeat(40));
+reject('inject path traversal',x=>x.backends[0].source_artifacts[0].path='../compiler-secret.txt');
+reject('forge source file as AOT receipt',x=>x.backends[0].checks.native_aot='passed');
+reject('forge compiled guest status',x=>x.backends[0].checks.compiled_guest='passed');
+reject('host-only result cannot count as compiled guest',x=>x.backends[0].checks.compiled_guest='host_only');
+reject('cannot self-declare unsupported semantic borrow',x=>x.backends.find(b=>b.id==='hdl').checks.semantic_borrow_negative='unsupported');
+reject('cannot self-declare sanitized memory',x=>x.backends[0].checks.memory_safety='passed');
+reject('scalar JS cannot become generic borrower by metadata edit',x=>x.backends.find(b=>b.id==='js').stage='borrow_source_candidate');
+reject('self-hosted Atto cannot acquire fictitious root tree',x=>x.backends.find(b=>b.id==='atto').root_tree_sha='a'.repeat(40));
+reject('release flag is not compiler evidence',x=>x.release_qualified=true);
+test('duplicate-key/noncanonical and symlinked ledger files are refused',t=>{
+ const dir=mkdtempSync(join(tmpdir(),'atto-option-borrow-ledger-'));
+ t.after(()=>rmSync(dir,{force:true,recursive:true}));
+ const path=join(dir,'index.json'),link=join(dir,'link.json');
+ writeFileSync(path,JSON.stringify(ledger,null,2).replace(
+   '  "schema": "atto.core-option-borrow-source-ledger.v1",',
+   '  "schema": "forged",\n  "schema": "atto.core-option-borrow-source-ledger.v1",')+'\n');
+ assert.throws(()=>loadBorrowSourceLedger(path),/BORROW_SOURCE_LEDGER_DENIED/);
+ symlinkSync(path,link);
+ assert.throws(()=>loadBorrowSourceLedger(link),/BORROW_SOURCE_LEDGER_DENIED/);
+});
