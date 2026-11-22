@@ -11,7 +11,20 @@ from pathlib import Path, PurePosixPath
 
 ROOT = Path(__file__).resolve().parent.parent
 MANIFEST = ROOT / "contracts" / "implicit-argument-borrow-v1.json"
-BACKENDS = {"rs-browser", "java", "llvm", "net", "wasm-independent", "forge"}
+BACKEND_REPOS = {
+    "rs-browser": "atto-lang/atto-source.rs",
+    "java": "atto-lang/atto-source.java",
+    "llvm": "atto-lang/atto-source.llvm",
+    "net": "atto-lang/atto-source.net",
+    "wasm-independent": "atto-lang/atto-source.wasm",
+    "forge": "atto-lang/atto-source.forge",
+    "cranelift": "atto-lang/atto-source.cranelift",
+    "js": "atto-lang/atto-source.js",
+    "hdl": "atto-lang/atto-source.hdl",
+    "realtime": "atto-lang/atto-source.realtime",
+    "atto-selfhost": "atto-lang/atto-source.atto",
+}
+BACKENDS = set(BACKEND_REPOS)
 CASE_ID = re.compile(r"IB_([PF])_([0-9]{2,})$")
 ERROR_ID = re.compile(r"E_[A-Z][A-Z0-9_]*$")
 
@@ -32,6 +45,8 @@ def validate_manifest(data: dict, root: Path) -> int:
     statuses = data.get("backend_status")
     require(isinstance(statuses, dict) and set(statuses) == BACKENDS,
             "incomplete or unknown backend inventory")
+    require(data.get("backend_repositories") == BACKEND_REPOS,
+            "source-backend inventory must match exact active atto-source.* repositories")
     require(all(statuses[name] == "NOT_EXECUTED" for name in BACKENDS),
             "source-only validator cannot certify a backend PASS/FAIL/UNSUPPORTED")
 
