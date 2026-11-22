@@ -99,3 +99,31 @@ node --test tests/std-metrics-json-zorde-nine-backend.test.mjs
 
 This confirms the portable contract and receipt **structure** only;
 no compiler conformance result may be inferred from its success.
+
+
+## Backend-local staged PRs (all draft / guest NOT_EXECUTED)
+
+- Java: [#1787](https://github.com/atto-lang/atto-source.java/pull/1787);
+  LLVM: [#885](https://github.com/atto-lang/atto-source.llvm/pull/885)
+- .NET: [#231](https://github.com/atto-lang/atto-source.net/pull/231);
+  Wasm: [#293](https://github.com/atto-lang/atto-source.wasm/pull/293)
+- Forge: [#238](https://github.com/atto-lang/atto-source.forge/pull/238);
+  Rust: [#552](https://github.com/atto-lang/atto-source.rs/pull/552)
+- Cranelift: [#103](https://github.com/atto-lang/atto-source.cranelift/pull/103);
+  JS: [#143](https://github.com/atto-lang/atto-source.js/pull/143)
+- HDL scalar subset: [#72](https://github.com/atto-lang/atto-source.hdl/pull/72)
+
+Each six additional software-backend PRs stage independent local source
+and the exact 36 metrics + 36 JSON + 55 Zorde stdout oracles as **future**
+guest execution targets. Per-file Git blob SHAs are included in the
+backend-local expected stdout manifests. A digest-pinned `--runner`-style
+candidate harness fails closed on missing binary, changed blobs and stdout
+mismatch, but **does not authenticate its own compiler**. HDL has a limited
+26-vector scalar contract instead of fake dynamic JSON/Zorde synthesis.
+
+The private runner candidate and all nine source head/root-tree pins are
+recorded only as a **non-authorizing proposal** at
+`contracts/std-metrics-json-zorde-private-carrier-proposal-v1.json`.
+The explicit denial test is
+`tests/std-metrics-json-zorde-carrier-export-denial.test.mjs`. This is
+not an effective source-side allowlist or reviewer authorization.
