@@ -10,23 +10,23 @@
   "math": {
     "signum": [
       [
-        -9223372036854776000,
+        "-9223372036854775808",
         -1
       ],
       [
-        -7,
+        "-7",
         -1
       ],
       [
-        0,
+        "0",
         0
       ],
       [
-        1,
+        "1",
         1
       ],
       [
-        9223372036854776000,
+        "9223372036854775807",
         1
       ]
     ],
@@ -50,7 +50,14 @@
         "expected": false
       }
     ],
-    "clamp_invalid_bounds": "typed-error-not-silent-value"
+    "clamp_invalid_bounds": "typed-error-not-silent-value",
+    "signed_integer_model": "two_complement_signed_64_bit_no_wrap",
+    "min_int": "-9223372036854775808",
+    "max_int": "9223372036854775807",
+    "rejected_out_of_range_decimal": [
+      "-9223372036854775809",
+      "9223372036854775808"
+    ]
   },
   "hash": {
     "algorithm": "ordered polynomial octet fold modulo prime",
