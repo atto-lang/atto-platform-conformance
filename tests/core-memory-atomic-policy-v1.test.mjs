@@ -8,7 +8,9 @@ const data = JSON.parse(readFileSync(
   new URL("../contracts/core-memory-atomic-policy-v1.json", import.meta.url),
   "utf8"
 ));
+const MIN = -9223372036854775808n;
 const MAX = 9223372036854775807n;
+const signedI64 = x => x >= MIN && x <= MAX;
 const INVALID = -1n;
 const validNonnegative = x => x >= 0n && x <= MAX;
 const power2 = a => a > 0n && a <= MAX && (a & (a - 1n)) === 0n;
@@ -79,7 +81,9 @@ test("schema and explicit native evidence boundary", () => {
   assert.equal(data.cases.length, 63);
   assert.equal(data.functions.length, 14);
   assert.equal(new Set(data.functions).size, data.functions.length);
-  assert.equal(Object.keys(data.backends).length, 9);
+  assert.deepEqual(Object.keys(data.backends).sort(),
+    ['java', 'llvm', 'net', 'rs', 'wasm', 'forge', 'cranelift', 'js', 'hdl'].sort(),
+    'the backend set must not silently change');
   assert.deepEqual(data.memory_order_codes, {
     relaxed: 0, acquire: 1, release: 2, acq_rel: 3, seq_cst: 4
   });
@@ -98,12 +102,25 @@ for (const [index, item] of data.cases.entries()) {
     assert.equal(item.id, "CMA-" + String(index + 1).padStart(3, "0"));
     assert.ok(data.functions.includes(item.fn), "unknown canonical function");
     assert.ok(Array.isArray(item.args) && item.args.every(a => /^-?\d+$/.test(a)));
+    assert.ok(item.args.every(v => signedI64(BigInt(v))),
+      'oracle must reject out-of-range signed-i64 input: ' + item.id);
+    if (typeof item.expected !== 'boolean') {
+      assert.ok(signedI64(BigInt(item.expected)),
+        'oracle must reject out-of-range signed-i64 result: ' + item.id);
+    }
     const result = oracle(item.fn, item.args.map(v => BigInt(v)));
     const expected = typeof item.expected === "boolean"
       ? item.expected : BigInt(item.expected);
     assert.equal(result, expected);
   });
 }
+
+test("unbounded BigInt cannot masquerade as an i64 test vector", () => {
+  assert.equal(signedI64(MIN), true);
+  assert.equal(signedI64(MAX), true);
+  assert.equal(signedI64(MIN - 1n), false);
+  assert.equal(signedI64(MAX + 1n), false);
+});
 
 test("no source-only receipt may be promoted to guest pass", () => {
   for (const record of Object.values(data.backends)) {
