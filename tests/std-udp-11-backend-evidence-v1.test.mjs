@@ -95,7 +95,16 @@ function validate(m) {
       canary.executed_steps>=0);
     if(canary.executed_steps===0)
       assert.equal(canary.result,'runner_admission_failure_not_compiler_result');
+    else {
+      assert.equal(canary.result,'source_free_capacity_proven_no_export',
+        'a running carrier is not private source export authorization');
+      assertOid(canary.carrier_head_sha);
+      assert.match(canary.carrier_repo_id,/^[0-9]+$/);
+    }
   }
+  assert.equal(m.ci.carrier_capacity_proven,
+    m.ci.source_free_carriers_observed.some(x=>x.executed_steps>0),
+    'carrier capacity truth must match actual source-free executed steps');
   if(m.ci.carrier_capacity_proven)
     assert(m.ci.source_free_carriers_observed.some(x=>x.executed_steps>0),
       'cannot prove carrier capacity with zero-step runs');
@@ -124,7 +133,10 @@ test('private mirror without authorized export and proven carrier is rejected',(
   fake.ci.private_source_mirrored=true;
   assert.throws(()=>validate(fake));
   const fakeCapacity=clone(ledger);
-  fakeCapacity.ci.carrier_capacity_proven=true;
+  fakeCapacity.ci.source_free_carriers_observed=
+    fakeCapacity.ci.source_free_carriers_observed.map(x=>({
+      ...x,executed_steps:0,result:'runner_admission_failure_not_compiler_result'
+    }));
   assert.throws(()=>validate(fakeCapacity));
 });
 
