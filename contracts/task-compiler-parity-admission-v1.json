@@ -214,6 +214,11 @@
       "id": "taskfuture_wrong_payload_rejected",
       "source_path": "fixtures/task-payload-sync-v1/taskfuture_wrong_payload_rejected.atto",
       "source_git_blob": "636ec117edd112da97a273188bb8244c77955eec"
+    },
+    {
+      "id": "taskfuture_cancel_after_split",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_cancel_after_split.atto",
+      "source_git_blob": "0a6c567bd4433f6e79775bd86f3a8037534e7af8"
     }
   ],
   "source_profiles": {
