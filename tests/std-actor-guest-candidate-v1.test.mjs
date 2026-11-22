@@ -27,6 +27,11 @@ function sample() {
     mutations:[['smoke',1],['smoke',18],['smoke',34],
       ['boundaries',100],['boundaries',166],['boundaries',232]]
       .map(([fixture,code])=>({fixture,injectedCode:code,compilerExit:0,wasmValid:true,guestMainReturn:code,hostImports:[]})),
+    futureOwnershipNegatives:[
+      {file:manifest.guestTests.futureNegative[0],diagnostic:'E_OWNERSHIP'},
+      {file:manifest.guestTests.futureNegative[1],diagnostic:'E_MOVED'},
+      ...manifest.guestTests.futureOwnershipNegative.map(x=>({file:x.file,diagnostic:x.expectedDiagnostic}))
+    ].map(x=>({...x,compilerExit:1,emittedArtifact:false})),
     negative:manifest.guestTests.namespaceNegative.map(x=>({
       file:x.file,diagnostic:x.expectedDiagnostic,compilerExit:1,emittedArtifact:false
     }))
@@ -85,3 +90,11 @@ rejected('mutant added host import',x=>x.artifact.mutations[0].hostImports=['env
 rejected('negative diagnostic weaker than contract',x=>x.artifact.negative[0].diagnostic='E_UNSUPPORTED');
 rejected('negative compilation succeeded',x=>x.artifact.negative[0].compilerExit=0);
 rejected('negative emitted executable artifact',x=>x.artifact.negative[0].emittedArtifact=true);
+
+rejected('missing native core affine borrow receipt',x=>delete x.artifact.futureOwnershipNegatives);
+rejected('false borrowed-await success',x=>x.artifact.futureOwnershipNegatives[0].compilerExit=0);
+rejected('affine negative emitted a guest artifact',x=>x.artifact.futureOwnershipNegatives[1].emittedArtifact=true);
+rejected('borrow-across-await misclassified as unsupported only',
+  x=>x.artifact.futureOwnershipNegatives[3].diagnostic='E_UNSUPPORTED_TYPE');
+rejected('forged Future construction accepted',
+  x=>x.artifact.futureOwnershipNegatives[5].compilerExit=0);

@@ -15,3 +15,5 @@ does not assume that Java, LLVM, .NET or other compilers use Rust CI job labels.
 Future backends can use independent implementations and build procedures.
 
 This code does not authorize private source export or establish Actions minutes.
+
+The candidate classifier additionally requires six *real compiler-core affine* negative results (borrowed await, double-await, use-after-await, live-loan await, take-then-await, sealed Future forgery). Each must have the exact expected diagnostic, a nonzero compiler exit, and no generated artifact. A syntactically present `.atto` fixture is not such a receipt; ownership cannot be enforced merely by the `std.actor` `.atto` library.
