@@ -18,7 +18,7 @@ function validCandidate(contract) {
   if(!sourceAudit ||
      sourceAudit.status!=='SOURCE_ONLY_NORMALIZED_BODY_IDENTICAL_NO_EXECUTION' ||
      sourceAudit.active_compilers!==9 ||
-     sourceAudit.expected_common_body_length!==6556)
+     sourceAudit.expected_common_body_length!==6751)
     reject('source audit erroneously certified as guest parity');
   const pos=contract.borrow_mutability_positive;
   if(!pos || pos.id!=='val_mutable_referent_methods' ||
@@ -54,7 +54,7 @@ function validCandidate(contract) {
     reject('Java/LLVM same-source candidate falsely certified');
   const ids=contract.backends.map(b=>b.id);
   if(JSON.stringify(ids)!==JSON.stringify(BACKENDS))reject('missing, reordered or duplicated backend');
-  if(!Array.isArray(contract.reference_vectors)||contract.reference_vectors.length!==23)
+  if(!Array.isArray(contract.reference_vectors)||contract.reference_vectors.length!==28)
     reject('missing checked nanosecond vectors');
   if(!Array.isArray(contract.guest_expected_stdout)||
      contract.guest_expected_stdout.length!==12||
@@ -106,7 +106,7 @@ function reference(v) {
       return (a/1000000n+(a%1000000n===0n?0n:1n)).toString();
     case 'scaled_ns':
       a=bi(v.amount);b=bi(v.unit_ns);
-      return a<0n||a*b>MAX?'DurationOverflow':(a*b).toString();
+      return a<0n?'NegativeDuration':a*b>MAX?'DurationOverflow':(a*b).toString();
     case 'nonnegative_ns':
       a=bi(v.ns);
       return a<0n?'NegativeDuration':a>MAX?'DurationOverflow':a.toString();
@@ -136,9 +136,16 @@ test('all eleven compiler backends are tracked but none receives fake guest PASS
   assert.equal(manifest.backends.filter(x=>x.target_profile==='BOOTSTRAP_ONLY').length,2);
   assert.ok(manifest.forbidden_claims.includes('cross_org_private_export_without_independent_approval'));
 });
-test('23 signed-i64 time references are independently checked with BigInt',()=>{
+test('28 signed-i64 time references are independently checked with BigInt',()=>{
   for(const c of manifest.reference_vectors)assert.equal(reference(c),c.expected,c.id);
-  assert.equal(manifest.reference_vectors.length,23);
+  assert.equal(manifest.reference_vectors.length,28);
+  const units=['microseconds','milliseconds','seconds','minutes','hours'];
+  for(const unit of units){
+    const item=manifest.reference_vectors.find(v=>v.id===unit+'_negative');
+    assert.ok(item,unit+' negative duration check missing');
+    assert.equal(item.expected,'NegativeDuration');
+    assert.equal(reference(item),'NegativeDuration');
+  }
 });
 test('portable guest fixture has independent 12-line output and explicit .atto import',()=>{
   assert.match(guest,/import module time from "std\/time";/);
