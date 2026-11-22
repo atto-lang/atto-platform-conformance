@@ -896,6 +896,22 @@
         "diagnostic": "E_TASK_RETURN_TYPE",
         "no_artifact": true
       }
+    },
+    {
+      "id": "taskfuture_cancel_after_split",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_cancel_after_split.atto",
+      "source_git_blob": "0a6c567bd4433f6e79775bd86f3a8037534e7af8",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "RESULT_RIGHT_MOVED_ONCE",
+          "TASK_CONTROL_RIGHT_RETAINED",
+          "TASK_CANCEL_REQUEST_OR_TERMINAL_NOOP",
+          "CANCEL_PRIORITY_OVER_COOPERATE",
+          "SCOPE_PHYSICAL_RETIRE"
+        ]
+      }
     }
   ],
   "backends": {
@@ -966,7 +982,7 @@
       "guest_receipt": null
     }
   },
-  "verification": "Source-only registry; requires exact compiler SHA, negative no-artifact proofs, actual guest execution and independent backend receipts.; eight additional TARGET type/inline/const/empty-body fixtures require exact guest receipts; three inferred task Future/void cases added; TaskFuture control/receipt/cooperate fixtures are TARGET only; actual scheduler safe-point and cancellation race witnesses NOT_EXECUTED.",
+  "verification": "Source-only registry; requires exact compiler SHA, negative no-artifact proofs, actual guest execution and independent backend receipts.; eight additional TARGET type/inline/const/empty-body fixtures require exact guest receipts; three inferred task Future/void cases added; TaskFuture control/receipt/cooperate fixtures are TARGET only; actual scheduler safe-point and cancellation race witnesses NOT_EXECUTED.; separate result-receipt ownership does not consume remaining cancellation/cooperation control.",
   "limited_guest_receipts": {
     "java_pure_inline_scalar": {
       "path": "contracts/task-java-pure-inline-20261120.json",
