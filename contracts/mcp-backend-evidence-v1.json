@@ -1,0 +1,199 @@
+{
+  "schema": "atto.mcp.backend-evidence.v1",
+  "contract": "atto.mcp.dev-control.m0.v1",
+  "protocolVersion": "2026-07-28",
+  "scope": "EXACT_HEAD_SEPARATE_HOST_FROM_GUEST",
+  "sourcePR": "ores-truffle-oreslang/oreslang-platform-conformance#326",
+  "backends": {
+    "llvm": {
+      "nativeHost": {
+        "status": "LOCAL_EXECUTED",
+        "pr": 1361,
+        "head": "82ecedc982811663cf206d342f0b084a2ac371fc",
+        "tree": "a46a6e41f30b07e11bee1c28e5d8bf1306daadbb",
+        "compilers": [
+          "gcc-14.2",
+          "clang-17"
+        ],
+        "assertionsPerCompiler": 315,
+        "sanitizers": [
+          "ASan",
+          "UBSan"
+        ],
+        "hostedWorkflowRun": 41754443159,
+        "hostedExecutedSteps": 0,
+        "hostedStatus": "NOT_EXECUTED",
+        "currentHead": "82ecedc982811663cf206d342f0b084a2ac371fc",
+        "currentTree": "a46a6e41f30b07e11bee1c28e5d8bf1306daadbb",
+        "currentSourceRun": 41768208175,
+        "currentSourceSteps": 0,
+        "sourceChangedSinceLocalProof": false,
+        "regression": "ticket invalidated on boot rotation and peer verification revocation"
+      },
+      "m1Descriptor": {
+        "status": "LOCAL_HOST_HELPER_AND_ELF_LINKER_ONLY",
+        "pr": 1364,
+        "head": "c5bd6326a0d53cbcb783f627a9520c812d6f050a",
+        "tree": "f4564d79afd407ef9e6ebb642d8094eb6f8ffa35",
+        "assertionsPerCompiler": 48,
+        "compilers": [
+          "gcc-14.2",
+          "clang-17"
+        ],
+        "hostedWorkflowRun": 41768157742,
+        "hostedExecutedSteps": 0,
+        "compilerDriverExecution": "NOT_EXECUTED",
+        "guestNativeExecution": "NOT_EXECUTED",
+        "localHostModes": [
+          "gcc-optimized",
+          "gcc-asan-ubsan",
+          "clang-optimized",
+          "clang-asan-ubsan"
+        ],
+        "localElfLinkerCanary": "PASSED_READ_ONLY_WRITABLE_MUTATION_O0_O2_SOURCE_FREE",
+        "elfRetention": "llvm.used + read-only allocated .atto.mcp.v1 under --gc-sections",
+        "embeddedDescriptorProof": "NOT_EXECUTED",
+        "evidenceLimitations": [
+          "full LLVM source checkout unavailable to local container",
+          "no compiled oreslang-llvmc binary",
+          "no .atto/.ores guest binary runtime execution",
+          "source Actions runner_id=0 steps=[]"
+        ],
+        "additionalGates": [
+          "LLVM verified-codegen before metadata publication",
+          "reject actor/async/effect/borrowed public descriptor signatures",
+          "compiler-backed native guest output O0 and O2 for atto and ores",
+          "source-free O0/O2 retention and negative writable mutation"
+        ],
+        "currentHead": "70deef2a40f90ed4397cf455ae0badedc1c55070",
+        "currentTree": "4faa79106d3929988b2756222a7d9f979e5ba1a5",
+        "currentSourceRun": 41774656383,
+        "currentSourceSteps": 0,
+        "fullMergedSourceNotExecuted": true,
+        "checkedBlobs": {
+          "emitter": "efd37abbf6e711ba64239b230297fb9b7b091388",
+          "hostTest": "36486827b873f4cfbf132e42eda56ffec9104ca8",
+          "linkerTest": "2e58df063111f0dd5a1afa811e6e3d4ea5d4c317",
+          "nativeGuestTest": "6cc57a0fee6f4abfce875b1a89fcda9f2ff96569",
+          "compilerWorkflow": "b63018962a2373c51b9c077d3018d0f31a57a9ec"
+        },
+        "m0HeadMerged": "82ecedc982811663cf206d342f0b084a2ac371fc",
+        "compilerGuestReceipt": {
+          "status": "NOT_EXECUTED",
+          "schema": "atto.mcp.llvm-aot-guest-evidence.v1",
+          "requiredCases": [
+            "atto:O0",
+            "atto:O2",
+            "ores:O0",
+            "ores:O2"
+          ],
+          "requiredSourceIdentity": "exact HEAD and root tree",
+          "requiredBoundEvidence": [
+            "compilerSha256",
+            "nativeSha256",
+            "descriptorSha256",
+            "compilerMetadataSha256",
+            "defaultOff",
+            "negativeAdmissions"
+          ],
+          "descriptorMustMatchCompilerMetadataBytes": true,
+          "onlyUploadAfterSuccessfulNativeExecution": true
+        },
+        "receiptVerifier": {
+          "classification": "LOCAL_SOURCE_FREE_RECEIPT_FORMAT_TEST_ONLY",
+          "expectedHead": "70deef2a40f90ed4397cf455ae0badedc1c55070",
+          "expectedTree": "4faa79106d3929988b2756222a7d9f979e5ba1a5",
+          "assertions": 29,
+          "standalonePassed": true,
+          "fileBlob": "0dace5b96f1af5c2c7ef2e765d5ca09f0c1ba8e4",
+          "testBlob": "7d98976fd4ae4fce30f80d9d4185aacb275e3e80",
+          "requiredAfterCompilerExecution": true,
+          "hostedVerification": "NOT_EXECUTED",
+          "syntaxAndShapeOnly": true
+        }
+      },
+      "guestParity": "NOT_EXECUTED",
+      "liveMcpTransport": "NOT_IMPLEMENTED",
+      "aotDescriptorEmbedding": "SOURCE_IMPLEMENTED_NOT_EXECUTED",
+      "mergeReady": false,
+      "localCurrentBlobHostProof": {
+        "scope": "EXACT_GIT_BLOBS_NATIVE_HOST_ONLY_NOT_COMPILER_NOT_GUEST",
+        "verifiedAtHeads": {
+          "m0": "82ecedc982811663cf206d342f0b084a2ac371fc",
+          "m1": "70deef2a40f90ed4397cf455ae0badedc1c55070"
+        },
+        "verifiedAtTrees": {
+          "m0": "a46a6e41f30b07e11bee1c28e5d8bf1306daadbb",
+          "m1": "4faa79106d3929988b2756222a7d9f979e5ba1a5"
+        },
+        "blobs": {
+          "m0Ledger": "19006784343a9ff50f1abf6a72ada7c855c0cee6",
+          "m0HostTests": "7a1ff65679b0862dabfb8d94760f9c3cae00c6a5",
+          "m1Emitter": "efd37abbf6e711ba64239b230297fb9b7b091388",
+          "m1HostTests": "36486827b873f4cfbf132e42eda56ffec9104ca8",
+          "m1LinkerCanary": "2e58df063111f0dd5a1afa811e6e3d4ea5d4c317"
+        },
+        "compilers": [
+          "gcc-14.2",
+          "clang-17"
+        ],
+        "modes": [
+          "optimized",
+          "asan-ubsan"
+        ],
+        "m0AssertionsPerMode": 315,
+        "m1AssertionsPerMode": 48,
+        "matrixStatus": "LOCAL_EXECUTED_ALL_8_PASS",
+        "elfLinker": "LOCAL_SOURCE_FREE_O0_O2_AND_WRITABLE_MUTATION_PASS",
+        "hostLogSha256": "ff28f05318e40674da1cad7a30ac71b59b0acf810e7ff321dbd196f6a4feaf2e",
+        "receiptSha256": "9bb027d128fbe96c902d6dbd013acecb9d9e69f075d3fd2ceb2106b6a307e31b",
+        "fullCompilerBuild": "NOT_EXECUTED",
+        "guestExecution": "NOT_EXECUTED",
+        "hostedCI": "NOT_EXECUTED",
+        "independentSecurityReview": "NOT_OBTAINED"
+      }
+    },
+    "java": {
+      "guestParity": "NOT_EXECUTED",
+      "liveMcpTransport": "NOT_IMPLEMENTED",
+      "mergeReady": false
+    },
+    "net": {
+      "guestParity": "NOT_EXECUTED",
+      "liveMcpTransport": "NOT_IMPLEMENTED",
+      "mergeReady": false
+    },
+    "wasm": {
+      "guestParity": "NOT_EXECUTED",
+      "liveMcpTransport": "NOT_IMPLEMENTED",
+      "mergeReady": false
+    },
+    "forge": {
+      "guestParity": "NOT_EXECUTED",
+      "liveMcpTransport": "NOT_IMPLEMENTED",
+      "mergeReady": false
+    }
+  },
+  "blockingGates": [
+    "nonzero exact-head hosted steps",
+    "independent security review",
+    "native compile from AttoLang .atto guest",
+    "stepful LLVM compiler and linked AOT descriptor evidence",
+    "authenticated local MCP transport",
+    "five-backend guest conformance"
+  ],
+  "sourceExportPermitted": false,
+  "jsReference": {
+    "pr": 326,
+    "head": "fd90a0afccfe0c6fb0a7690ece006d91189cd4e6",
+    "admissionAndFrameTests": 62,
+    "scope": "SOURCE_FREE_HOST_MODEL_ONLY",
+    "liveTicketRequires": [
+      "boot_identity",
+      "authenticated_peer",
+      "runtime_generation",
+      "credential_expiry",
+      "monotonic_deadline"
+    ]
+  }
+}

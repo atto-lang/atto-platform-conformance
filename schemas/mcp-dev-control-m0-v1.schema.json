@@ -1,0 +1,411 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://attolang.dev/schemas/mcp-dev-control-m0-v1.schema.json",
+  "title": "Atto MCP M0 read-only request envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "jsonrpc",
+    "id",
+    "method",
+    "params"
+  ],
+  "properties": {
+    "jsonrpc": {
+      "const": "2.0"
+    },
+    "id": {
+      "oneOf": [
+        {
+          "type": "integer",
+          "minimum": 0
+        },
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        }
+      ]
+    },
+    "method": {
+      "enum": [
+        "server/discover",
+        "tools/list",
+        "resources/list",
+        "resources/read"
+      ]
+    },
+    "params": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "_meta"
+      ],
+      "properties": {
+        "_meta": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "io.modelcontextprotocol/protocolVersion",
+            "io.modelcontextprotocol/clientCapabilities",
+            "io.atto.dev/security"
+          ],
+          "properties": {
+            "io.modelcontextprotocol/protocolVersion": {
+              "const": "2026-07-28"
+            },
+            "io.modelcontextprotocol/clientCapabilities": {
+              "type": "object",
+              "maxProperties": 16,
+              "additionalProperties": {
+                "type": "object",
+                "maxProperties": 16
+              }
+            },
+            "io.atto.dev/security": {
+              "$ref": "#/$defs/security"
+            },
+            "io.modelcontextprotocol/clientInfo": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "name",
+                "version"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "version": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64
+                },
+                "title": {
+                  "type": "string",
+                  "maxLength": 128
+                },
+                "websiteUrl": {
+                  "type": "string",
+                  "maxLength": 512,
+                  "pattern": "^https?://"
+                }
+              }
+            },
+            "io.modelcontextprotocol/logLevel": {
+              "enum": [
+                "debug",
+                "info",
+                "notice",
+                "warning",
+                "error",
+                "critical",
+                "alert",
+                "emergency"
+              ]
+            }
+          }
+        },
+        "uri": {
+          "type": "string",
+          "maxLength": 512,
+          "pattern": "^atto-dev://runtime/(?!\\.{1,2}/)[A-Za-z0-9_.-]{1,128}/tenant/(?!\\.{1,2}/)[A-Za-z0-9_.-]{1,128}/(process/summary|actors/counters|tasks/counters|scheduler/counters|upgrade/status)$"
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "method": {
+            "const": "resources/read"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "params": {
+            "required": [
+              "uri"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "method": {
+            "enum": [
+              "server/discover",
+              "tools/list",
+              "resources/list"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "params": {
+            "not": {
+              "required": [
+                "uri"
+              ]
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "security": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "nonce",
+        "issued_at_ms",
+        "runtime_id",
+        "tenant_id",
+        "expected_generation"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "atto.mcp.dev-control.m0.v1"
+        },
+        "nonce": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{32,64}$"
+        },
+        "issued_at_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "runtime_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "tenant_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "expected_generation": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "identifier": {
+      "type": "string",
+      "pattern": "^(?!\\.{1,2}$)[A-Za-z0-9_.-]{1,128}$"
+    },
+    "principal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "principal_id",
+        "boot_id",
+        "runtime_id",
+        "tenant_id",
+        "generation",
+        "expires_at_ms",
+        "scopes"
+      ],
+      "properties": {
+        "principal_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "boot_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "runtime_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "tenant_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "generation": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "expires_at_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "scopes": {
+          "type": "array",
+          "uniqueItems": true,
+          "maxItems": 4,
+          "items": {
+            "enum": [
+              "inspect:catalog",
+              "inspect:summary",
+              "inspect:metrics",
+              "inspect:upgrade_status"
+            ]
+          }
+        }
+      }
+    },
+    "audit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "timestamp",
+        "principal_hash",
+        "tenant_hash",
+        "runtime_hash",
+        "request_id_hash",
+        "method",
+        "decision",
+        "reason",
+        "request_bytes",
+        "response_bytes",
+        "elapsed_ms",
+        "generation"
+      ],
+      "properties": {
+        "schema": {
+          "const": "atto.mcp.audit.v1"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "principal_hash": {
+          "$ref": "#/$defs/hash"
+        },
+        "tenant_hash": {
+          "$ref": "#/$defs/hash"
+        },
+        "runtime_hash": {
+          "$ref": "#/$defs/hash"
+        },
+        "request_id_hash": {
+          "$ref": "#/$defs/hash"
+        },
+        "method": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "decision": {
+          "enum": [
+            "allow",
+            "deny"
+          ]
+        },
+        "reason": {
+          "enum": [
+            "OK",
+            "DISABLED",
+            "UNAUTHENTICATED",
+            "SCOPE",
+            "TENANT",
+            "RUNTIME",
+            "GENERATION",
+            "VERSION",
+            "REPLAY",
+            "QUOTA",
+            "MALFORMED",
+            "UNSUPPORTED",
+            "TIMEOUT",
+            "AUDIT_FAILURE",
+            "OVERFLOW",
+            "DUPLICATE_ID"
+          ]
+        },
+        "request_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 32768
+        },
+        "response_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65536
+        },
+        "elapsed_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "generation": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "resourceSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "runtime_id",
+        "tenant_id",
+        "generation",
+        "status"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "process/summary",
+            "actors/counters",
+            "tasks/counters",
+            "scheduler/counters",
+            "upgrade/status"
+          ]
+        },
+        "runtime_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "tenant_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "generation": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "status": {
+          "enum": [
+            "ok",
+            "degraded",
+            "unavailable",
+            "pending",
+            "stable"
+          ]
+        },
+        "counters": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "actors": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "tasks": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "mailbox_queued": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "scheduler_pending": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "arena_bytes": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    }
+  }
+}

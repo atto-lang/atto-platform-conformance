@@ -28,6 +28,10 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
+      - name: M0 source-free security oracles (NOT MCP server/backend parity)
+        run: |
+          set -euo pipefail
+          node --test tests/mcp-m0-admission-ledger.test.mjs tests/mcp-m0-frame-guard.test.mjs tests/mcp-dev-control-m0-v1.test.mjs
       - run: npm test
       - name: Reject unproven external integration claims and issue inventory drift
         run: node bin/check-external-ores-audit.mjs
@@ -36,6 +40,7 @@ jobs:
           python3 -m venv "$RUNNER_TEMP/ores-evidence-schema-venv"
           "$RUNNER_TEMP/ores-evidence-schema-venv/bin/python" -m pip install --disable-pip-version-check --no-input "jsonschema==4.26.0"
           "$RUNNER_TEMP/ores-evidence-schema-venv/bin/python" -m unittest discover -s tests -p test_performance_schema.py -v
+          "$RUNNER_TEMP/ores-evidence-schema-venv/bin/python" -m unittest discover -s tests -p test_mcp_dev_control_m0_schema.py -v
       - name: Confirm mandatory real compiler gate cannot pass unconfigured
         run: |
           for backend in java llvm net wasm forge; do

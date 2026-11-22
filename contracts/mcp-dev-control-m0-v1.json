@@ -1,0 +1,129 @@
+{
+  "schema": "atto.mcp.dev-control.m0.v1",
+  "version": 1,
+  "status": "SOURCE_FREE_REFERENCE_NOT_BACKEND_EXECUTION",
+  "enabledByDefault": false,
+  "protocolVersion": "2026-07-28",
+  "transport": {
+    "localOnly": true,
+    "remoteSupported": false,
+    "authenticatedPeerRequired": true,
+    "hostCredentialRequired": true
+  },
+  "methods": {
+    "allowed": [
+      "server/discover",
+      "tools/list",
+      "resources/list",
+      "resources/read"
+    ],
+    "emptyToolsList": true,
+    "unsupported": [
+      "initialize",
+      "notifications/initialized",
+      "tools/call",
+      "prompts/list",
+      "prompts/get",
+      "resources/subscribe",
+      "resources/unsubscribe",
+      "roots/list",
+      "logging/setLevel",
+      "sampling/createMessage",
+      "elicitation/create",
+      "tasks/list",
+      "upgrade/prepare",
+      "upgrade/commit",
+      "upgrade/rollback",
+      "guest/eval",
+      "guest/invoke",
+      "memory/write"
+    ]
+  },
+  "scopes": [
+    "inspect:catalog",
+    "inspect:summary",
+    "inspect:metrics",
+    "inspect:upgrade_status"
+  ],
+  "resources": [
+    "process/summary",
+    "actors/counters",
+    "tasks/counters",
+    "scheduler/counters",
+    "upgrade/status"
+  ],
+  "budgets": {
+    "maxFrameBytes": 32768,
+    "maxResponseBytes": 65536,
+    "maxJsonDepth": 12,
+    "maxRequestsPerMinute": 60,
+    "maxRequestsPerSecond": 8,
+    "maxInflight": 2,
+    "deadlineMs": 500,
+    "maxCatalogEntries": 32,
+    "clockSkewMs": 30000,
+    "replayWindowMs": 60000,
+    "maxReplayNonces": 128,
+    "maxAuditBytes": 2048,
+    "maxPrincipalStates": 64,
+    "maxGlobalInflight": 128
+  },
+  "authority": {
+    "source": "trusted-host-only",
+    "tenantWildcard": false,
+    "requiredBindings": [
+      "boot",
+      "principal",
+      "runtime",
+      "tenant",
+      "generation",
+      "expiry",
+      "scopes"
+    ],
+    "clientInfoIsAuthority": false
+  },
+  "audit": {
+    "schema": "atto.mcp.audit.v1",
+    "redacted": true,
+    "failClosed": true
+  },
+  "excluded": [
+    "guest-semantics",
+    "reflection",
+    "classpath-scanning",
+    "dynamic-code",
+    "jit-fallback",
+    "runtime-mutation",
+    "upgrade-operations"
+  ],
+  "clientMetadata": {
+    "clientInfo": "optional-self-reported-nonauthoritative",
+    "clientCapabilities": "required-bounded-nonauthoritative",
+    "logLevel": "optional-no-log-emission-without-explicit-opt-in"
+  },
+  "evidence": {
+    "classification": "SOURCE_FREE_POLICY_MODEL_ONLY",
+    "notProven": [
+      "real-peer-authentication",
+      "wire-duplicate-json-key-rejection",
+      "thread-safe-nonce-reservation",
+      "real-deadlines-and-disconnect",
+      "durable-audit",
+      "guest-execution",
+      "AOT",
+      "cross-process-replay-atomicity",
+      "host-clock-trust",
+      "credential-issuance",
+      "audit-fsync-durability"
+    ]
+  },
+  "referenceLedger": {
+    "module": "bin/mcp-m0-admission-ledger.mjs",
+    "tests": "tests/mcp-m0-admission-ledger.test.mjs",
+    "classification": "SOURCE_FREE_SAME_EVENT_LOOP_MODEL_ONLY",
+    "hostAuthentication": "M2_NOT_IMPLEMENTED",
+    "hostGenerationFence": "required",
+    "expiryFence": "required",
+    "audit": "synchronous-host-sink-required-not_durable_receipt"
+  }
+}
