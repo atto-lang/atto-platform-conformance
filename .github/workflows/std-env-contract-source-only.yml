@@ -5,6 +5,7 @@ on:
       - 'contracts/std-env-v1/**'
       - 'bin/verify-std-env-v1.mjs'
       - 'tests/std-env-v1.registry.test.mjs'
+      - 'tests/std-env-v1.host-snapshot-boundaries.test.mjs'
       - '.github/workflows/std-env-contract-source-only.yml'
   push:
     branches: [main]
@@ -12,6 +13,7 @@ on:
       - 'contracts/std-env-v1/**'
       - 'bin/verify-std-env-v1.mjs'
       - 'tests/std-env-v1.registry.test.mjs'
+      - 'tests/std-env-v1.host-snapshot-boundaries.test.mjs'
       - '.github/workflows/std-env-contract-source-only.yml'
 permissions:
   contents: read
@@ -48,4 +50,11 @@ jobs:
           grep -Fx '# pass 9' "$RUNNER_TEMP/std-env-registry.tap"
           grep -Fx '# fail 0' "$RUNNER_TEMP/std-env-registry.tap"
           grep -Fx '# skipped 0' "$RUNNER_TEMP/std-env-registry.tap"
+          node --test --test-reporter=tap tests/std-env-v1.host-snapshot-boundaries.test.mjs \
+            | tee "$RUNNER_TEMP/std-env-host-boundaries.tap"
+          grep -Fx '# tests 4' "$RUNNER_TEMP/std-env-host-boundaries.tap"
+          grep -Fx '# pass 4' "$RUNNER_TEMP/std-env-host-boundaries.tap"
+          grep -Fx '# fail 0' "$RUNNER_TEMP/std-env-host-boundaries.tap"
+          grep -Fx '# skipped 0' "$RUNNER_TEMP/std-env-host-boundaries.tap"
+          echo 'HOST_BOUNDARY_CONTRACT=SOURCE_ONLY_PASS; GUEST_PARITY=NOT_EXECUTED'
           echo 'SOURCE_ONLY_REGISTRY_TESTS=PASS; GUEST_PARITY=NOT_EXECUTED'
