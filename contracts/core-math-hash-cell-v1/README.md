@@ -50,3 +50,13 @@ LLVM x86-64 + freestanding profiles where supported, and distinct checks
 for other backend capabilities. CI zero-step failures are NOT_EXECUTED.
 Any private cross-org CI mirroring requires separately authorized guarded
 export; this contract does not approve transfer.
+
+### Namespace-based library files (additive)
+
+Backend-local Core sources may declare `use namespace atto.core.math;`
+and top-level `pub fnc` APIs instead of `define module math as ... end`.
+This is source-unit namespace metadata only, not an import grant. The
+.NET candidate validates the compiler-owned source unit and resource
+digest; JS supports checked closed-world math compilation. Backend
+capability and import syntax continue to be separately gated in the
+[admission matrix](BACKEND_MATRIX.md); all guest results NOT_EXECUTED.
