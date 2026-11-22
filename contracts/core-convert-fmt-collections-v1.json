@@ -7,63 +7,63 @@
     {
       "id": "java",
       "repo": "atto-lang/atto-source.java",
-      "headSha": "4bfe3e43ad59076cc5c7d13d65d478bda15e47cd",
+      "headSha": "680bb702e74cc2f687571d311175cf7e2124b459",
       "guestStatus": "NOT_EXECUTED",
       "borrowStatus": "NOT_EXECUTED"
     },
     {
       "id": "llvm",
       "repo": "atto-lang/atto-source.llvm",
-      "headSha": "b9ae1c079467ab29473c068ae90b896326e82563",
+      "headSha": "479593c6c6052d39235a20b61be8e9a64ee4c3eb",
       "guestStatus": "NOT_EXECUTED",
       "borrowStatus": "NOT_EXECUTED"
     },
     {
       "id": "net",
       "repo": "atto-lang/atto-source.net",
-      "headSha": "7b3038779abd8f29da270e94bbbf5c6afd9f620c",
+      "headSha": "c4db91e351ca03e7c018c92b8c21831e07313a68",
       "guestStatus": "NOT_EXECUTED",
       "borrowStatus": "NOT_EXECUTED"
     },
     {
       "id": "wasm",
       "repo": "atto-lang/atto-source.wasm",
-      "headSha": "18dcab95a8e6539b01d283886b0df732d21f6c19",
+      "headSha": "147a7adaae19301b05b40491bedf33ce233ba388",
       "guestStatus": "NOT_EXECUTED",
       "borrowStatus": "NOT_EXECUTED"
     },
     {
       "id": "rs",
       "repo": "atto-lang/atto-source.rs",
-      "headSha": "9754566b09176d972da03bf8bfc4210a488d1421",
+      "headSha": "1a265d1901d31e6f5573788c81ecf8f703288dce",
       "guestStatus": "NOT_EXECUTED",
       "borrowStatus": "NOT_EXECUTED"
     },
     {
       "id": "forge",
       "repo": "atto-lang/atto-source.forge",
-      "headSha": "42870a28cd18eda25303c6ee5a65614f9796c6ae",
+      "headSha": "5a846bee1abfbb621afafad7214c3e758f6268e1",
       "guestStatus": "NOT_EXECUTED",
       "borrowStatus": "NOT_EXECUTED"
     },
     {
       "id": "cranelift",
       "repo": "atto-lang/atto-source.cranelift",
-      "headSha": "1bae3efce90c6818b8c1b481b9e9758a6ba96338",
+      "headSha": "e409c46aca5e5d7232e6d7479af3ec42455be4a8",
       "guestStatus": "NOT_EXECUTED",
       "borrowStatus": "NOT_EXECUTED"
     },
     {
       "id": "js",
       "repo": "atto-lang/atto-source.js",
-      "headSha": "2b392de6f0f63b6554321b757c59790fe3c3f3a3",
+      "headSha": "5cfab3dd9a04ee81ea967a4379859cea73db502e",
       "guestStatus": "NOT_EXECUTED",
       "borrowStatus": "NOT_EXECUTED"
     },
     {
       "id": "hdl",
       "repo": "atto-lang/atto-source.hdl",
-      "headSha": "ba6b8301312a467bd4d696d9e87f3edf758ec95e",
+      "headSha": "b16b1a218e81a4300f47211bf59241cf50274cf6",
       "guestStatus": "NOT_EXECUTED",
       "borrowStatus": "NOT_EXECUTED"
     }
