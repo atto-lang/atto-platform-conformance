@@ -7,7 +7,13 @@
     "llvm",
     "net",
     "wasm",
-    "forge"
+    "forge",
+    "rs",
+    "cranelift",
+    "js",
+    "hdl",
+    "atto",
+    "realtime"
   ],
   "hardRealTimeQualified": false,
   "requiredEvidence": [
@@ -222,5 +228,26 @@
         "actor_local_cross_owner_access": false
       }
     }
-  ]
+  ],
+  "backendScope": {
+    "standard_hosted": [
+      "java",
+      "llvm",
+      "net",
+      "wasm",
+      "forge",
+      "rs",
+      "cranelift",
+      "js"
+    ],
+    "deterministic_hardware_only": [
+      "hdl"
+    ],
+    "compiler_bootstrap_only": [
+      "atto",
+      "realtime"
+    ],
+    "all_guest_std_time_verification": "NOT_EXECUTED",
+    "allow_unsupported_to_count_as_pass": false
+  }
 }
