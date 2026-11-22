@@ -240,3 +240,19 @@ test('local JS compiled Cell policy observation never elevates global borrow cer
   assert.equal(contract.guestEvidence.js,'NOT_EXECUTED');
   assert.match(local.scope,/No Cell<T>, borrow tokens/);
 });
+
+test('standalone source-free GitHub runner cannot promote compiler borrow parity',()=>{
+  const evidence=contract.compilerGateSourceFreeEvidence;
+  assert.equal(evidence.carrier,'channelsiege/atto-ci');
+  assert.equal(evidence.runId,45060723128);
+  assert.equal(evidence.conclusion,'success');
+  assert.equal(evidence.stepsCompleted,5);
+  assert.equal(evidence.evidenceClass,'SOURCE_FREE_INDEPENDENT_REFERENCE_ONLY');
+  assert.equal(evidence.privateCompilerSourceTransferred,false);
+  assert.equal(evidence.compiledAttoGuest,'NOT_EXECUTED');
+  assert.equal(evidence.typedMirBorrowProof,'NOT_EXECUTED');
+  assert.match(evidence.cleanupCommit,/^[0-9a-f]{40}$/);
+  assert.equal(evidence.cleanupTree,'b78051568a02496c9f55790d83a87a158c16ee88');
+  assert.equal(Object.keys(contract.guestEvidence).length,11);
+  assert.ok(Object.values(contract.guestEvidence).every(x=>x==='NOT_EXECUTED'));
+});
