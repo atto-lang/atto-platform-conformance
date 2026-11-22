@@ -90,7 +90,7 @@ def valid(m):
     if (type(java["pr"]) is not int or java["pr"] != 1754
             or java["status"] != "NOT_EXECUTED"
             or type(java["junit_methods_staged"]) is not int
-            or java["junit_methods_staged"] != 3
+            or java["junit_methods_staged"] != 4
             or type(java["guest_fixtures_staged"]) is not int
             or java["guest_fixtures_staged"] != 3
             or java["evidence"] != "SOURCE_ONLY"):
@@ -98,6 +98,7 @@ def valid(m):
     blobs = java["blob_shas"]
     if not isinstance(blobs, dict) or set(blobs) != {
         "src/test/java/dev/oreslang/runtime/NativeAttoHttpCoreBorrowBoundaryTest.java",
+        "src/test/java/dev/oreslang/compiler/ImportedClassBorrowOwnershipTest.java",
         "src/test/resources/stdlib-parity/http-core-borrow-positive.atto",
         "src/test/resources/stdlib-parity/http-core-borrow-negative.atto",
         "src/test/resources/stdlib-parity/http-core-noncopy-argument-negative.atto",
