@@ -68,7 +68,7 @@
       "backend": "wasm",
       "repository": "atto-lang/atto-source.wasm",
       "pr_url": "https://github.com/atto-lang/atto-source.wasm/pull/43",
-      "head_sha": "9c5e136ed6c7d0fd10d78be90d8a08764f3412d2",
+      "head_sha": "657f308eb7fa751764c2ecfbb2b69f3e3b4f3357",
       "numeric_repository_id": 1448701355,
       "files": {
         "vfs": "721168d46cc180b7cb3c6a112d6b61178415ef13",
@@ -78,13 +78,13 @@
       },
       "node22": "NOT_EXECUTED",
       "guest": "NOT_EXECUTED",
-      "git_tree_sha": "dfabd3db6cd40faf4cc4cf31c2bf37dc15d13e92"
+      "git_tree_sha": "5e84461ae3eca69769721b6991a149cda83f315f"
     },
     {
       "backend": "js",
       "repository": "atto-lang/atto-source.js",
       "pr_url": "https://github.com/atto-lang/atto-source.js/pull/39",
-      "head_sha": "a7c926d4adcfe771784094a275095be5813b54dc",
+      "head_sha": "8d2543f7442712c7aaa2aa341b71b3444359e216",
       "numeric_repository_id": 1448703338,
       "files": {
         "vfs": "1cb7b48ad76bdd1122315ab6c2665c984fadd7cd",
@@ -94,7 +94,7 @@
       },
       "node22": "NOT_EXECUTED",
       "guest": "NOT_EXECUTED",
-      "git_tree_sha": "e18f418b1b71213327f93b9e7bcb017cd100b318"
+      "git_tree_sha": "58fb997a74fb00bfeaaee6301576cf835a83a64b"
     }
   ],
   "ci": {
