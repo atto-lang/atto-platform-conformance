@@ -427,5 +427,27 @@
     "js": "stdlib/core/borrow_admission.atto",
     "hdl": "stdlib/core/borrow_admission.atto"
   },
-  "resolver_status_note": "Only Java's packaged core registry has this module registered; LLVM/.NET use native library paths but no verified resolver; all other backend roots remain staged."
+  "resolver_status_note": "Only Java's packaged core registry has this module registered; LLVM/.NET use native library paths but no verified resolver; all other backend roots remain staged.",
+  "executable_backends": {
+    "java": {
+      "pr": 1787,
+      "runner_kind": "LinkedProgramRunner.runWithExitStatus",
+      "source_positive_cases": 2,
+      "source_negative_cases": 4,
+      "source_core_preflight_outputs": 16,
+      "guest_test": "coreBorrowCompilerExecutesPositiveLoans",
+      "negative_test": "coreBorrowCompilerRejectsInvalidLoans",
+      "status": "NOT_EXECUTED"
+    },
+    "rs": {
+      "pr": 552,
+      "runner_kind": "native attoc -> Node WebAssembly.Instance",
+      "source_positive_cases": 2,
+      "source_negative_cases": 4,
+      "guest_runner": "tests/core-borrow-real-guest.mjs",
+      "exact_head_workflow": ".github/workflows/atto-core-borrow-real-guest.yml",
+      "status": "NOT_EXECUTED",
+      "note": "one Rust compiler producing Wasm; not independent Wasm backend compiler parity"
+    }
+  }
 }
