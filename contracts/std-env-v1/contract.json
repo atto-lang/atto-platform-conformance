@@ -1,0 +1,377 @@
+{
+  "schema": "atto-std-env-guest-v1",
+  "version": 1,
+  "feature": "std/env",
+  "claim_tier": "SOURCE_ONLY_UNTIL_COMPILER_GUEST_RECEIPT",
+  "api": [
+    "get",
+    "has",
+    "get_or",
+    "get_required",
+    "get_nonempty",
+    "get_required_nonempty",
+    "parse_bool",
+    "get_bool",
+    "get_bool_or"
+  ],
+  "semantics": {
+    "portable_key_pattern": "^[A-Za-z_][A-Za-z0-9_]{0,127}$",
+    "value_max_utf8_bytes": 16384,
+    "snapshot_max_keys": 512,
+    "snapshot_max_utf8_bytes": 1048576,
+    "bool_true": [
+      "true",
+      "1"
+    ],
+    "bool_false": [
+      "false",
+      "0"
+    ],
+    "absent_distinct_from_present_empty": true,
+    "deny_before_value_lookup": true,
+    "coarse_env_capability_required": true,
+    "must_not_echo_secret_values": true,
+    "ambient_process_environment_forbidden": true,
+    "policy_rules": "exact key, PREFIX*, or *; deny overrides allow"
+  },
+  "backends": {
+    "java": {
+      "status": "not_executed",
+      "reason": "No exact-head compiler-backed guest receipt for all cases."
+    },
+    "llvm": {
+      "status": "not_executed",
+      "reason": "No exact-head compiler-backed guest receipt for all cases."
+    },
+    "net": {
+      "status": "not_executed",
+      "reason": "No exact-head compiler-backed guest receipt for all cases."
+    },
+    "rs": {
+      "status": "not_executed",
+      "reason": "No exact-head compiler-backed guest receipt for all cases."
+    },
+    "forge": {
+      "status": "not_executed",
+      "reason": "No exact-head compiler-backed guest receipt for all cases."
+    },
+    "cranelift": {
+      "status": "not_executed",
+      "reason": "No exact-head compiler-backed guest receipt for all cases."
+    },
+    "js": {
+      "status": "not_executed",
+      "reason": "No exact-head compiler-backed guest receipt for all cases."
+    },
+    "wasm": {
+      "status": "not_executed",
+      "reason": "No exact-head compiler-backed guest receipt for all cases."
+    },
+    "atto": {
+      "status": "not_executed",
+      "reason": "Self-hosted compiler bootstrap only; no compiler execution."
+    },
+    "realtime": {
+      "status": "not_executed",
+      "reason": "Real-time backend bootstrap only; no bounded guest implementation."
+    },
+    "hdl": {
+      "status": "not_executed",
+      "reason": "HDL compile-time subset must reject runtime environment host effects; pure parse_bool separately undecided."
+    }
+  },
+  "cases": [
+    {
+      "id": "basic-values",
+      "fixture": "basic.atto",
+      "environment": {
+        "ATTO_ENV_VALUE": "42",
+        "ATTO_ENV_EMPTY": ""
+      },
+      "allowed": [
+        "ATTO_ENV_*"
+      ],
+      "denied": [
+        "ATTO_ENV_SECRET_KEY"
+      ],
+      "coarse_env": true,
+      "expected": {
+        "kind": "stdout",
+        "lines": [
+          "42",
+          "true",
+          "true",
+          "true",
+          "fallback"
+        ]
+      }
+    },
+    {
+      "id": "strict-bool",
+      "fixture": "strict_bool.atto",
+      "environment": {
+        "ATTO_ENV_FLAG": "true"
+      },
+      "allowed": [
+        "ATTO_ENV_*"
+      ],
+      "denied": [],
+      "coarse_env": true,
+      "expected": {
+        "kind": "stdout",
+        "lines": [
+          "true",
+          "false",
+          "true",
+          "false",
+          "true",
+          "true"
+        ]
+      }
+    },
+    {
+      "id": "invalid-bool",
+      "fixture": "invalid_bool.atto",
+      "environment": {
+        "ATTO_ENV_FLAG": "TRUE"
+      },
+      "allowed": [
+        "ATTO_ENV_*"
+      ],
+      "denied": [],
+      "coarse_env": true,
+      "expected": {
+        "kind": "stdout",
+        "lines": [
+          "true",
+          "true"
+        ]
+      }
+    },
+    {
+      "id": "required-missing-empty",
+      "fixture": "required_missing.atto",
+      "environment": {
+        "ATTO_ENV_EMPTY": ""
+      },
+      "allowed": [
+        "ATTO_ENV_*"
+      ],
+      "denied": [],
+      "coarse_env": true,
+      "expected": {
+        "kind": "stdout",
+        "lines": [
+          "true",
+          "true"
+        ]
+      }
+    },
+    {
+      "id": "denied-fallback",
+      "fixture": "denied_get_or.atto",
+      "environment": {
+        "ATTO_ENV_SECRET_KEY": "CANARY_DO_NOT_LEAK"
+      },
+      "allowed": [
+        "ATTO_ENV_*"
+      ],
+      "denied": [
+        "ATTO_ENV_SECRET_KEY"
+      ],
+      "coarse_env": true,
+      "expected": {
+        "kind": "runtime_error",
+        "category": "ENV_PERMISSION_DENIED",
+        "forbidden_output": [
+          "fallback",
+          "CANARY_DO_NOT_LEAK"
+        ]
+      }
+    },
+    {
+      "id": "denied-probe",
+      "fixture": "denied_has.atto",
+      "environment": {
+        "ATTO_ENV_SECRET_KEY": "CANARY_DO_NOT_LEAK"
+      },
+      "allowed": [
+        "ATTO_ENV_*"
+      ],
+      "denied": [
+        "ATTO_ENV_SECRET_KEY"
+      ],
+      "coarse_env": true,
+      "expected": {
+        "kind": "runtime_error",
+        "category": "ENV_PERMISSION_DENIED",
+        "forbidden_output": [
+          "CANARY_DO_NOT_LEAK"
+        ]
+      }
+    },
+    {
+      "id": "coarse-denied",
+      "fixture": "denied_get_or.atto",
+      "environment": {
+        "ATTO_ENV_SECRET_KEY": "CANARY_DO_NOT_LEAK"
+      },
+      "allowed": [
+        "*"
+      ],
+      "denied": [],
+      "coarse_env": false,
+      "expected": {
+        "kind": "runtime_error",
+        "category": "ENV_PERMISSION_DENIED",
+        "forbidden_output": [
+          "fallback",
+          "CANARY_DO_NOT_LEAK"
+        ]
+      }
+    },
+    {
+      "id": "invalid-name",
+      "fixture": "invalid_name.atto",
+      "environment": {},
+      "allowed": [
+        "*"
+      ],
+      "denied": [],
+      "coarse_env": true,
+      "expected": {
+        "kind": "runtime_error",
+        "category": "ENV_INVALID_NAME",
+        "forbidden_output": [
+          "fallback"
+        ]
+      }
+    },
+    {
+      "id": "oversized-value",
+      "fixture": "basic.atto",
+      "environment": {
+        "ATTO_ENV_VALUE": "42",
+        "ATTO_ENV_EMPTY": ""
+      },
+      "generated_environment": {
+        "ATTO_ENV_OVERSIZED": {
+          "repeat_ascii": "x",
+          "byte_count": 16385
+        }
+      },
+      "allowed": [
+        "ATTO_ENV_*"
+      ],
+      "denied": [],
+      "coarse_env": true,
+      "expected": {
+        "kind": "admission_error",
+        "category": "ENV_INVALID_SNAPSHOT",
+        "forbidden_output": []
+      }
+    },
+    {
+      "id": "host-ambient-hidden",
+      "fixture": "isolated.atto",
+      "environment": {
+        "ATTO_CONTEXT_KEY": "alpha"
+      },
+      "allowed": [
+        "*"
+      ],
+      "denied": [],
+      "coarse_env": true,
+      "expected": {
+        "kind": "stdout",
+        "lines": [
+          "alpha",
+          "false"
+        ]
+      },
+      "host_requirements": [
+        "PATH must exist in host environment but must not be injected"
+      ]
+    },
+    {
+      "id": "independent-contexts",
+      "fixture": "isolated.atto",
+      "environment": {
+        "ATTO_CONTEXT_KEY": "alpha"
+      },
+      "allowed": [
+        "*"
+      ],
+      "denied": [],
+      "coarse_env": true,
+      "context_sequence": [
+        {
+          "ATTO_CONTEXT_KEY": "alpha"
+        },
+        {
+          "ATTO_CONTEXT_KEY": "beta"
+        },
+        {
+          "ATTO_CONTEXT_KEY": "alpha"
+        }
+      ],
+      "expected": {
+        "kind": "stdout_sequence",
+        "runs": [
+          [
+            "alpha",
+            "false"
+          ],
+          [
+            "beta",
+            "false"
+          ],
+          [
+            "alpha",
+            "false"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "package-no-shadow",
+      "fixture": "shadow/entry.atto",
+      "environment": {},
+      "allowed": [],
+      "denied": [],
+      "coarse_env": false,
+      "expected": {
+        "kind": "stdout",
+        "lines": [
+          "true"
+        ]
+      },
+      "fixture_dependency": "shadow/std/env.atto"
+    },
+    {
+      "id": "present-empty-bool-fails",
+      "fixture": "invalid_bool.atto",
+      "environment": {
+        "ATTO_ENV_FLAG": ""
+      },
+      "allowed": [
+        "ATTO_ENV_*"
+      ],
+      "denied": [],
+      "coarse_env": true,
+      "expected": {
+        "kind": "stdout",
+        "lines": [
+          "true",
+          "true"
+        ]
+      }
+    }
+  ],
+  "notes": [
+    "Each compiler maintains its own stdlib/env.atto; byte-identical sources are not required.",
+    "Fixture stdout reflects portable boolean stringification; any compiler lacking this syntax must report NOT_EXECUTED or a tested UNSUPPORTED, never fabricate PASS.",
+    "Host-only sanitizer, Node dispatcher, and synthetic Truffle environment tests do not constitute guest test success.",
+    "Every compiled guest receipt must name exact compiler head+tree SHA, fixture SHA, toolchain, host inputs, policy, executed steps, observed output/error, and source-only control status."
+  ]
+}
