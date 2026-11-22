@@ -10,7 +10,7 @@ const cases = Object.fromEntries(registry.cases.map(c => [c.id,c]));
 test('versioned typed task fixtures are pinned to exact Git blob identity', () => {
   assert.equal(registry.schema, 'atto.task-payload-sync.v1');
   assert.equal(registry.status, 'TARGET_NOT_GUEST_VERIFIED');
-  assert.equal(registry.cases.length, 74);
+  assert.equal(registry.cases.length, 75);
   assert.equal(new Set(registry.cases.map(x=>x.id)).size,42);
   for (const c of registry.cases) {
     assert.match(c.source_path,/^fixtures\/task-payload-sync-v1\/[a-z0-9_]+\.atto$/);
@@ -464,7 +464,7 @@ test('TaskFuture<T> owns the result receipt and a distinct task control capabili
   for (const id of [
     'taskfuture_await_ready','taskfuture_await_direct',
     'taskfuture_receipt_split_control','taskfuture_cooperate_request',
-    'taskfuture_cancel_scope','taskfuture_legacy_future_projection',
+    'taskfuture_cancel_scope','taskfuture_cancel_after_split','taskfuture_legacy_future_projection',
     'taskfuture_legacy_cancel_alias','taskfuture_inferred_empty_void',
     'taskfuture_inferred_valued'
   ]) {
@@ -481,6 +481,12 @@ test('TaskFuture<T> owns the result receipt and a distinct task control capabili
   const split = getSource(cases.taskfuture_receipt_split_control).toString('utf8');
   assert.match(split,/val Future<int> ready = t\.get_ready\(\)/);
   assert.match(split,/t\.cooperate\(\);[\s\S]*await ready;/);
+  const splitCancelled = cases.taskfuture_cancel_after_split;
+  const splitCancelledSource = getSource(splitCancelled).toString('utf8');
+  assert.match(splitCancelledSource,/val Future<void> receipt = t\.get_ready\(\)/);
+  assert.match(splitCancelledSource,/t\.cancel_task\(\);[\s\S]*t\.cooperate\(\)/);
+  assert.ok(splitCancelled.expected.witnesses.includes('TASK_CONTROL_RIGHT_RETAINED'));
+  assert.ok(splitCancelled.expected.witnesses.includes('CANCEL_PRIORITY_OVER_COOPERATE'));
   const cancel = cases.taskfuture_cancel_scope;
   assert.match(getSource(cancel).toString('utf8'),/t\.cancel_task\(\);[\s\S]*t\.cancel_task\(\)/);
   assert.ok(cancel.expected.witnesses.includes('SCOPE_PHYSICAL_RETIRE'));
