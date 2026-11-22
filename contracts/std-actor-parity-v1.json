@@ -117,6 +117,11 @@
       "contracts/std-actor-v1/future-double-await.reject.atto"
     ],
     "runtimeTarget": "tests/fixtures/std-actor-v1/lifecycle_guest.atto",
+    "namespacePositive": {
+      "path": "stdlib/actor/guest_namespace_only.atto",
+      "expectedMain": 42,
+      "noImplicitImports": true
+    },
     "namespaceNegative": [
       {
         "file": "contracts/std-actor-v1/namespace-implicit-import.reject.atto",
@@ -133,12 +138,7 @@
         "expectedDiagnostic": "E_SYNTAX",
         "requires": "namespace-first"
       }
-    ],
-    "namespacePositive": {
-      "path": "stdlib/actor/guest_namespace_only.atto",
-      "expectedMain": 42,
-      "noImplicitImports": true
-    }
+    ]
   },
   "statuses": [
     "PASS",
