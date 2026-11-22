@@ -110,6 +110,28 @@
       "java_compatibility": "JAVA_LEGACY_SCALAR_NOT_OWNED_ALLOC_STRING"
     },
     {
+      "name": "Array",
+      "canonical_identity": "core/array/Array",
+      "scope": "core",
+      "kind": "TYPE",
+      "generic_arity": "1..2",
+      "ownership": "PAYLOAD_DEPENDENT",
+      "allocation": "NONE",
+      "drop_policy": "ALL_INITIALIZED_MEMBERS",
+      "send_policy": "PAYLOAD_DEPENDENT"
+    },
+    {
+      "name": "Pair",
+      "canonical_identity": "core/tuple/Pair",
+      "scope": "core",
+      "kind": "TYPE",
+      "generic_arity": 2,
+      "ownership": "PAYLOAD_DEPENDENT",
+      "allocation": "NONE",
+      "drop_policy": "ALL_INITIALIZED_MEMBERS",
+      "send_policy": "PAYLOAD_DEPENDENT"
+    },
+    {
       "name": "List",
       "canonical_identity": "alloc/list/List",
       "scope": "alloc",
@@ -173,7 +195,8 @@
     "Copy and Send are recursively derived from all contained payloads.",
     "Borrowed views cannot escape, become owned, or cross actor boundaries by name alone.",
     "Allocator-dependent types fail in core-only profiles before artifact emission.",
-    "Unsupported backend lowering fails closed rather than silently using host collections."
+    "Unsupported backend lowering fails closed rather than silently using host collections.",
+    "Active sums destroy only their active payload; arrays/tuples/pairs destroy all initialized members; owned containers destroy backing storage and initialized elements."
   ],
   "backends": [
     {
@@ -217,5 +240,12 @@
     "positive": "exact compiler and guest execution on recorded SHA",
     "negative": "intended semantic diagnostic and zero output artifact",
     "source_export": "deny by default; no cross-organization mirror without separate authorization"
-  }
+  },
+  "drop_policies": [
+    "NONE",
+    "ACTIVE_PAYLOAD_ONCE",
+    "ALL_INITIALIZED_MEMBERS",
+    "OWNED_STORAGE",
+    "NOT_A_VALUE"
+  ]
 }
