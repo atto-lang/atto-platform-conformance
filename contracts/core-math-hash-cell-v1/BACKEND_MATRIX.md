@@ -16,6 +16,9 @@ including every independent source blob Git SHA-1 and exact candidate commit.
 | Cranelift | [#97](https://github.com/atto-lang/atto-source.cranelift/pull/97) | Owned source; JIT imports unsupported | NOT_EXECUTED |
 | HDL | [#66](https://github.com/atto-lang/atto-source.hdl/pull/66) | Owned source; RTL imports unsupported | NOT_EXECUTED |
 
+| Self-hosted Atto | [#21](https://github.com/atto-lang/atto-source.atto/pull/21) | Bootstrap-only source; no compiler | NOT_EXECUTED |
+| Real-time | [#16](https://github.com/atto-lang/atto-source.realtime/pull/16) | Bootstrap-only source; no compiler or WCET proof | NOT_EXECUTED |
+
 The portable subset is **not a general math package**: no IEEE transcendental
 operations, arbitrary precision, checked abs(INT64_MIN), or full numeric
 specification parity is claimed. The modulo-prime octet fold is noncryptographic

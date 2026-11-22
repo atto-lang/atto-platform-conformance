@@ -438,6 +438,56 @@
       "material_ci_status": "NOT_EXECUTED",
       "real_cell_T": false,
       "module_sources_are_backend_owned": true
+    },
+    {
+      "backend": "atto",
+      "repository": "atto-lang/atto-source.atto",
+      "pr": 21,
+      "commit": "76c176714e8cbcfaaacb41f38e151d23f5071e02",
+      "module_admission": "self_hosted_bootstrap_source_only_no_compiler",
+      "source_blobs": {
+        "math": {
+          "path": "library/atto.core/math.atto",
+          "blob_sha1": "bc26640a826c8f397702ea2cb96f5102214d5032"
+        },
+        "hash": {
+          "path": "library/atto.core/hash.atto",
+          "blob_sha1": "3dc146f2df8f0450cca8fea8f7f77ea8bd8766d3"
+        },
+        "cell": {
+          "path": "library/atto.core/cell.atto",
+          "blob_sha1": "c6f1fbe5cccbf57535832ba1245713431fc2374e"
+        }
+      },
+      "guest_status": "NOT_EXECUTED",
+      "material_ci_status": "NOT_EXECUTED",
+      "real_cell_T": false,
+      "module_sources_are_backend_owned": true
+    },
+    {
+      "backend": "realtime",
+      "repository": "atto-lang/atto-source.realtime",
+      "pr": 16,
+      "commit": "8181e929b81c35504cbb0077dee58b00b94fbdde",
+      "module_admission": "realtime_bootstrap_source_only_no_compiler_or_wcet",
+      "source_blobs": {
+        "math": {
+          "path": "library/atto.core/math.atto",
+          "blob_sha1": "025410931c8d2bd03d042036b2d3fa1006a5d8ee"
+        },
+        "hash": {
+          "path": "library/atto.core/hash.atto",
+          "blob_sha1": "6ebafd999f44920a628020662a8b5163e576a119"
+        },
+        "cell": {
+          "path": "library/atto.core/cell.atto",
+          "blob_sha1": "633a54fe4adacbc9f86b046fe2e3c2d19fd4954b"
+        }
+      },
+      "guest_status": "NOT_EXECUTED",
+      "material_ci_status": "NOT_EXECUTED",
+      "real_cell_T": false,
+      "module_sources_are_backend_owned": true
     }
   ],
   "unverified_backends": [
@@ -449,7 +499,9 @@
     "atto-source.forge",
     "atto-source.js",
     "atto-source.cranelift",
-    "atto-source.hdl"
+    "atto-source.hdl",
+    "atto-source.atto",
+    "atto-source.realtime"
   ],
   "certification": {
     "cross_backend_guest_parity": false,
@@ -457,6 +509,9 @@
     "all_backend_executable_imports": false,
     "full_hash_trait": false,
     "real_cell_interior_mutability": false,
-    "stepful_exact_head_evidence": false
+    "stepful_exact_head_evidence": false,
+    "full_eleven_backend_guest_parity": false,
+    "self_hosted_compiler_execution": false,
+    "hard_real_time_wcet": false
   }
 }

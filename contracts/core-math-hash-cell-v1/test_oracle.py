@@ -79,10 +79,10 @@ class SourceFreeCoreOracle(unittest.TestCase):
 
     def test_evidence_never_upgrades_by_presence_of_source(self):
         self.assertEqual(CONTRACT["status"], "candidate_source_free_not_guest_verified")
-        self.assertEqual(len(CONTRACT["candidates"]), 9)
+        self.assertEqual(len(CONTRACT["candidates"]), 11)
         self.assertEqual({x["backend"] for x in CONTRACT["candidates"]},
                          {"java","llvm","net","wasm","rs","forge","js",
-                          "cranelift","hdl"})
+                          "cranelift","hdl","atto","realtime"})
         for x in CONTRACT["candidates"]:
             self.assertEqual(x["guest_status"], "NOT_EXECUTED")
             self.assertEqual(x["material_ci_status"], "NOT_EXECUTED")
