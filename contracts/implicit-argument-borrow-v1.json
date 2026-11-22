@@ -238,7 +238,25 @@
     "llvm": "NOT_EXECUTED",
     "net": "NOT_EXECUTED",
     "wasm-independent": "NOT_EXECUTED",
-    "forge": "NOT_EXECUTED"
+    "forge": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
+    "hdl": "NOT_EXECUTED",
+    "realtime": "NOT_EXECUTED",
+    "atto-selfhost": "NOT_EXECUTED"
   },
-  "evidence_rule": "All fixtures are proposed target syntax. Validate registry shape separately from compiler/guest runs; exact error codes and outputs are target expectations pending backend support. Record source SHA/tree and emitted-byte-free rejection."
+  "evidence_rule": "Source-only contract; status values are target slots, not a claim of compiler admission. Each atto-source.* repository requires exact-head native/wasm/guest execution or a reasoned UNSUPPORTED determination signed off after review, with real no-output rejection for invalid ownership. No registry/host-only validation can certify PASS; zero-step CI remains NOT_EXECUTED.",
+  "backend_repositories": {
+    "rs-browser": "atto-lang/atto-source.rs",
+    "java": "atto-lang/atto-source.java",
+    "llvm": "atto-lang/atto-source.llvm",
+    "net": "atto-lang/atto-source.net",
+    "wasm-independent": "atto-lang/atto-source.wasm",
+    "forge": "atto-lang/atto-source.forge",
+    "cranelift": "atto-lang/atto-source.cranelift",
+    "js": "atto-lang/atto-source.js",
+    "hdl": "atto-lang/atto-source.hdl",
+    "realtime": "atto-lang/atto-source.realtime",
+    "atto-selfhost": "atto-lang/atto-source.atto"
+  }
 }
