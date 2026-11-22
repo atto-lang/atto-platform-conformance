@@ -19,8 +19,8 @@
     "cranelift": "Source channel guest support not independently verified.",
     "js": "Source channel guest support not independently verified.",
     "hdl": "Source channel guest support not independently verified.",
-    "atto": "Self-hosted atto-source.atto compiler: std/channel guest compilation, borrow/ownership ABI and runtime support NOT_EXECUTED / NOT_VERIFIED.",
-    "realtime": "atto-source.realtime deterministic bounded/allocation-free profile: pending queue allocation, cancellation and transport borrow validation NOT_EXECUTED / NOT_VERIFIED; must not silently fall back to allocating general runtime."
+    "atto": "AUDITED_SKELETON: atto-source.atto main has only AGENTS.md and README.md (Git tree 5b9a274490a4567ed9d1088fd1ff304dbe383357), no compiled compiler or std/channel implementation; guest conformance NOT_EXECUTED.",
+    "realtime": "AUDITED_SKELETON: atto-source.realtime main has only AGENTS.md and README.md (Git tree 4f6449470ab075cdad17884c7a1aee2ab54c), no bounded realtime channel/borrow implementation; guest conformance NOT_EXECUTED."
   },
   "required_contracts": [
     "channel capability remains local to its execution domain",
@@ -271,5 +271,21 @@
     "hdl": "atto-lang/atto-source.hdl",
     "atto": "atto-lang/atto-source.atto",
     "realtime": "atto-lang/atto-source.realtime"
+  },
+  "backend_audit_snapshots": {
+    "atto": {
+      "branch": "main",
+      "tree_sha": "5b9a274490a4567ed9d1088fd1ff304dbe383357",
+      "tracked_files": 2,
+      "channel_implementation_files": 0,
+      "execution": "NOT_EXECUTED"
+    },
+    "realtime": {
+      "branch": "main",
+      "tree_sha": "4f6449470ab075cdad17884c7a1aee2a6e2ab54c",
+      "tracked_files": 2,
+      "channel_implementation_files": 0,
+      "execution": "NOT_EXECUTED"
+    }
   }
 }
