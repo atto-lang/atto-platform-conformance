@@ -107,11 +107,11 @@
       "id": "rust-browser-private-i64-static-newtype-v0",
       "status": "FOCUSED_EXECUTED",
       "source_repo": "atto-lang/atto-source.rs",
-      "source_head": "881426fae0cf0bed6f74b6736d42cf26a4ff5158",
-      "source_files_exact_sha_verified": 77,
+      "source_head": "ffcb86945c380b8e177408b1fc196c14b55df3bc",
+      "source_files_exact_sha_verified": 78,
       "carrier_repo": "zed-pkg-test/zed-pkg-e2e",
-      "carrier_run_id": 44969986779,
-      "carrier_workflow_url": "https://github.com/zed-pkg-test/zed-pkg-e2e/actions/runs/44969986779",
+      "carrier_run_id": 44970145702,
+      "carrier_workflow_url": "https://github.com/zed-pkg-test/zed-pkg-e2e/actions/runs/44970145702",
       "executed": {
         "preflight_integration_passed": 8,
         "newtype_guest_integration_passed": 5,
@@ -138,7 +138,8 @@
         "Array and Matrix const-generic physical storage"
       ],
       "note": "This receipt is for the Rust source-repo tests, not proof that every distinct fixture in this registry has executed or that full v1 backend parity is achieved.",
-      "compatibility_regression": "existing named Array layout=soa/aos/aosoa arguments and E_GENERIC_ORDER precedence remain unchanged; complete Rust library suite passed"
+      "compatibility_regression": "existing named Array layout=soa/aos/aosoa arguments and E_GENERIC_ORDER precedence remain unchanged; complete Rust library suite passed",
+      "source_ci_workflow": ".github/workflows/ci.yml (adds compiled newtype guest execution; source-org zero-step jobs are not evidence)"
     }
   ]
 }
