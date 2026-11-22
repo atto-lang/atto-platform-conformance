@@ -214,7 +214,7 @@
     {
       "repository": "atto-lang/atto-source.hdl",
       "source_pr": "https://github.com/atto-lang/atto-source.hdl/pull/56",
-      "head_sha": "8aaa914643c1008a8caa24b1987857503fd2de20",
+      "head_sha": "90889f26cd8ab62514975fe5ca5f97f99b350921",
       "source_readback": "VERIFIED_SOURCE_SHAPE",
       "compiler_typecheck": "NOT_EXECUTED",
       "guest_success": "NOT_EXECUTED",
@@ -240,7 +240,7 @@
     {
       "repository": "atto-lang/atto-source.realtime",
       "source_pr": "https://github.com/atto-lang/atto-source.realtime/pull/14",
-      "head_sha": "3436f62b15160906fc6c1357e9857dd3d1da5e73",
+      "head_sha": "0b4f3e777dfd136f7858b76a10e76b653d3313ea",
       "source_readback": "VERIFIED_SOURCE_SHAPE",
       "compiler_typecheck": "NOT_EXECUTED",
       "guest_success": "NOT_EXECUTED",

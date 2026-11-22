@@ -13,3 +13,5 @@ The `.atto` and `.realtime` repositories do not contain working compilers. Hardw
 - Do not mark any status `PASSED` by editing this manifest. First build a trusted checker for signed, SHA-bound compiler/source/tree/toolchain, independent runner admission, nonzero executed steps, compiled output digest, observed guest result/error and profile evidence.
 - Private cross-org CI mirrors require independently authorized exports, validated readers/retention, active source guard, all blob modes/SHA equivalence and matched root Git tree; none was used here.
 - This draft does not supersede existing [atto-source.llvm#317](https://github.com/atto-lang/atto-source.llvm/pull/317), [atto-source.rs#401](https://github.com/atto-lang/atto-source.rs/pull/401), or Java native testing PRs [#1365](https://github.com/atto-lang/atto-source.java/pull/1365) and [#1394](https://github.com/atto-lang/atto-source.java/pull/1394).
+
+HDL and hard-real-time PRs were updated with explicit target-profile negative fixtures; their exact updated source heads are pinned in this ledger. These are NOT_EXECUTED cases, not negative compiler receipts.
