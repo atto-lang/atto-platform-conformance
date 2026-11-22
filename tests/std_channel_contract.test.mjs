@@ -28,6 +28,10 @@ test('std/channel contract is source-owned and explicitly unverified', () => {
     /cancelled pending operations/.test(x)));
   assert.ok(manifest.required_contracts.some(x =>
     /legacy two-port pipes/.test(x) && /pending public reader/.test(x)));
+  assert.ok(manifest.required_contracts.some(x =>
+    /head\/middle\/tail/.test(x) && /cancelled Future/.test(x)));
+  assert.match(manifest.scope_notes.rs, /NOT_LINKED/);
+  assert.match(manifest.scope_notes.java, /does not yet expose a public cancel_read/);
 });
 
 test('all conformance fixtures exist and no compiler is falsely certified', async () => {
