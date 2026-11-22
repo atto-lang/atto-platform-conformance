@@ -1,0 +1,10 @@
+// ORT4-TRAP_EXPR_NESTED: two explicit Option layers.
+trap fnc checked(): Result<int, String> { return Err("typed-error"); }
+pub fnc main(): int {
+  val Option<Option<Result<int, String>>> outer = trap checked();
+  if outer.is_none(); then return 1; fi
+  val Option<Result<int, String>> inside = outer.unwrap();
+  if inside.is_none(); then return 2; fi
+  if inside.unwrap().is_err(); then return 0; fi
+  return 3;
+}

@@ -1,0 +1,6 @@
+// ORT4-NEGATIVE_EXPR_NO_IMPLICIT_RESULT: trap expr is Option<Result>.
+fnc checked(): Result<int, String> { return Ok(1); }
+fnc invalid(): void {
+  val Result<int, String> wrong = trap checked();
+  return;
+}

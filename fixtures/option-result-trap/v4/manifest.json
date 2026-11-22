@@ -1,0 +1,105 @@
+{
+  "schema": "oreslang.option-result-trap.scalar/v4",
+  "status": "authored_not_executed",
+  "normative_contract": "ores-truffle-oreslang/oreslang-source.java:docs/TRAP.md",
+  "claim_policy": "Source-only, host-only, mock, parser-only, zero-step or SHAPE_VALID evidence cannot certify guest parity.",
+  "backends": [
+    "java",
+    "llvm",
+    "wasm",
+    "cranelift",
+    "net",
+    "forge",
+    "js",
+    "rust",
+    "hdl"
+  ],
+  "cases": [
+    {
+      "id": "ORT4-TRAP_OK",
+      "path": "fixtures/option-result-trap/v4/trap_ok.ores",
+      "kind": "guest_i64",
+      "expected_return": "0",
+      "return_type": "int",
+      "requires_guest_execution": true
+    },
+    {
+      "id": "ORT4-TRAP_ERR",
+      "path": "fixtures/option-result-trap/v4/trap_err.ores",
+      "kind": "guest_i64",
+      "expected_return": "0",
+      "return_type": "int",
+      "requires_guest_execution": true
+    },
+    {
+      "id": "ORT4-TRAP_THROW_NONE",
+      "path": "fixtures/option-result-trap/v4/trap_throw_none.ores",
+      "kind": "guest_i64",
+      "expected_return": "0",
+      "return_type": "int",
+      "requires_guest_execution": true
+    },
+    {
+      "id": "ORT4-TRAP_NESTED_NONE",
+      "path": "fixtures/option-result-trap/v4/trap_nested_none.ores",
+      "kind": "guest_i64",
+      "expected_return": "0",
+      "return_type": "int",
+      "requires_guest_execution": true
+    },
+    {
+      "id": "ORT4-TRAP_OK_NONE",
+      "path": "fixtures/option-result-trap/v4/trap_ok_none.ores",
+      "kind": "guest_i64",
+      "expected_return": "0",
+      "return_type": "int",
+      "requires_guest_execution": true
+    },
+    {
+      "id": "ORT4-TRAP_EXPR_ERR",
+      "path": "fixtures/option-result-trap/v4/trap_expr_err.ores",
+      "kind": "guest_i64",
+      "expected_return": "0",
+      "return_type": "int",
+      "requires_guest_execution": true
+    },
+    {
+      "id": "ORT4-TRAP_EXPR_NESTED",
+      "path": "fixtures/option-result-trap/v4/trap_expr_nested.ores",
+      "kind": "guest_i64",
+      "expected_return": "0",
+      "return_type": "int",
+      "requires_guest_execution": true
+    },
+    {
+      "id": "ORT4-TRAP_PANIC_BYPASS",
+      "path": "fixtures/option-result-trap/v4/trap_panic_bypass.ores",
+      "kind": "guest_panic",
+      "expected_diagnostic_contains": "Result",
+      "forbidden_stdout": "UNREACHABLE-ORT4",
+      "requires_guest_execution": true,
+      "expected_panic_code": "RESULT_UNWRAP_ERR"
+    },
+    {
+      "id": "ORT4-NEGATIVE_CALL_NO_IMPLICIT_RESULT",
+      "path": "fixtures/option-result-trap/v4/negative/call_no_implicit_result.ores",
+      "kind": "compile_reject",
+      "expected_diagnostic_category": "type",
+      "must_not_launch_guest": true
+    },
+    {
+      "id": "ORT4-NEGATIVE_EXPR_NO_IMPLICIT_RESULT",
+      "path": "fixtures/option-result-trap/v4/negative/expr_no_implicit_result.ores",
+      "kind": "compile_reject",
+      "expected_diagnostic_category": "type",
+      "must_not_launch_guest": true
+    },
+    {
+      "id": "ORT4-NEGATIVE_NESTED_NO_FLATTEN",
+      "path": "fixtures/option-result-trap/v4/negative/nested_no_flatten.ores",
+      "kind": "compile_reject",
+      "expected_diagnostic_category": "type",
+      "must_not_launch_guest": true
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+// ORT4-TRAP_THROW_NONE: eligible ordinary cast throw maps to outer None.
+define class Animal as
+end
+define class Dog extends Animal as
+end
+define class Cat extends Animal as
+end
+trap fnc checked(Animal animal): Result<int, String> {
+  val Dog dog = animal as Dog;
+  return Ok(42);
+}
+pub fnc main(): int {
+  val Option<Result<int, String>> outer = checked(new Cat());
+  if outer.is_none(); then return 0; fi
+  return 1;
+}
