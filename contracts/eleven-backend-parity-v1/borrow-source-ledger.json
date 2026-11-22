@@ -73,8 +73,8 @@
     {
       "id": "rs",
       "repository": "atto-lang/atto-source.rs",
-      "source_head_sha": "9ebccaf3297ee08998a616ac1ab624a8ca13f207",
-      "root_tree_sha": "c151bd519e7daccbffa7839050614ceca0ddaddc",
+      "source_head_sha": "92a2a1a4a5694d1626ee4c319f449333dbc1d4e8",
+      "root_tree_sha": "80f1fc4a2d0b0d4c53fc6f1dbbb794508004625d",
       "stage": "borrow_source_candidate",
       "source_artifacts": [
         {
@@ -91,11 +91,11 @@
         },
         {
           "path": "src/check.rs",
-          "blob_sha": "05c8cb0487a8f6da1c6cc7305f9566a3d4da7d3c"
+          "blob_sha": "0578792390f090944b44fb745dc68a7e4eca74df"
         },
         {
           "path": "tests/core_option_result_scalar.rs",
-          "blob_sha": "d5163476cdaef74e1f1203fbb43c1a7075eeb61b"
+          "blob_sha": "bbeb6f381193fcd8897534eaf34e6b60c7c3a106"
         },
         {
           "path": "tests/core_option_result/borrowed_read_42.atto",
@@ -108,6 +108,10 @@
         {
           "path": "tests/core_option_result/negative_borrow_mut_option.atto",
           "blob_sha": "fbca2779ca3268afedabd146c6c09b771a8f2a3f"
+        },
+        {
+          "path": "tests/core_option_result/negative_borrow_option_return.atto",
+          "blob_sha": "77a2d72c3682822993d4f5f01f779601b7c228fc"
         },
         {
           "path": "tests/core_option_result/negative_borrow_option_temporary.atto",
