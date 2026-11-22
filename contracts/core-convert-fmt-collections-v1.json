@@ -1,0 +1,651 @@
+{
+  "schemaVersion": 1,
+  "contract": "atto-core-convert-fmt-collections-v1",
+  "status": "CANDIDATE_NOT_EXECUTED",
+  "guestExecuted": 0,
+  "backendCandidates": [
+    {
+      "id": "java",
+      "repo": "atto-lang/atto-source.java",
+      "headSha": "84875c0a6d5ffa69207f38fc1905523bd48bd29c",
+      "guestStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "llvm",
+      "repo": "atto-lang/atto-source.llvm",
+      "headSha": "bdecdc25df02f84f9ee267bcdc9b90e72f674bd0",
+      "guestStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "net",
+      "repo": "atto-lang/atto-source.net",
+      "headSha": "b9025e1906b691d3ce4f89d992acdf151154dd82",
+      "guestStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "wasm",
+      "repo": "atto-lang/atto-source.wasm",
+      "headSha": "41bca934f9f5b31a0bdb7bd7213b243b1aa0e537",
+      "guestStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "rs",
+      "repo": "atto-lang/atto-source.rs",
+      "headSha": "85d9d9878f0a3dac8723d0b999ddb540520e5b5a",
+      "guestStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "forge",
+      "repo": "atto-lang/atto-source.forge",
+      "headSha": "bdd3af0a3b0559ba754444e78242a7aefaa8b9f4",
+      "guestStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "cranelift",
+      "repo": "atto-lang/atto-source.cranelift",
+      "headSha": "a23a539d5e50bcf87522209e42be37a71988ca02",
+      "guestStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "js",
+      "repo": "atto-lang/atto-source.js",
+      "headSha": "dd14a5c567803de0d9b3b035a7960cb46fdd0e4c",
+      "guestStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "hdl",
+      "repo": "atto-lang/atto-source.hdl",
+      "headSha": "1b10dcc74121bcdd3351c7e81c4833b0b96943bc",
+      "guestStatus": "NOT_EXECUTED"
+    }
+  ],
+  "protocol": "One line per case: ATTO_LIB_V1|case-id|canonical-result; no skips, duplicates or partial coverage.",
+  "cases": [
+    {
+      "id": "convert-bool-zero",
+      "op": "convert.bool_to_int",
+      "args": [
+        false
+      ],
+      "expected": "0"
+    },
+    {
+      "id": "convert-bool-one",
+      "op": "convert.bool_to_int",
+      "args": [
+        true
+      ],
+      "expected": "1"
+    },
+    {
+      "id": "convert-try-bool-zero",
+      "op": "convert.try_bool_from_int",
+      "args": [
+        0
+      ],
+      "expected": "ok:false"
+    },
+    {
+      "id": "convert-try-bool-one",
+      "op": "convert.try_bool_from_int",
+      "args": [
+        1
+      ],
+      "expected": "ok:true"
+    },
+    {
+      "id": "convert-try-bool-reject-negative",
+      "op": "convert.try_bool_from_int",
+      "args": [
+        -1
+      ],
+      "expected": "err:bool conversion accepts only 0 or 1"
+    },
+    {
+      "id": "convert-try-bool-reject-two",
+      "op": "convert.try_bool_from_int",
+      "args": [
+        2
+      ],
+      "expected": "err:bool conversion accepts only 0 or 1"
+    },
+    {
+      "id": "convert-u8-zero",
+      "op": "convert.try_u8_from_int",
+      "args": [
+        0
+      ],
+      "expected": "ok:0"
+    },
+    {
+      "id": "convert-u8-max",
+      "op": "convert.try_u8_from_int",
+      "args": [
+        255
+      ],
+      "expected": "ok:255"
+    },
+    {
+      "id": "convert-u8-negative",
+      "op": "convert.try_u8_from_int",
+      "args": [
+        -1
+      ],
+      "expected": "err:value out of u8 range"
+    },
+    {
+      "id": "convert-u8-overflow",
+      "op": "convert.try_u8_from_int",
+      "args": [
+        256
+      ],
+      "expected": "err:value out of u8 range"
+    },
+    {
+      "id": "convert-ascii-digit-zero",
+      "op": "convert.ascii_decimal_digit",
+      "args": [
+        48
+      ],
+      "expected": "ok:0"
+    },
+    {
+      "id": "convert-ascii-digit-nine",
+      "op": "convert.ascii_decimal_digit",
+      "args": [
+        57
+      ],
+      "expected": "ok:9"
+    },
+    {
+      "id": "convert-ascii-digit-arabic",
+      "op": "convert.ascii_decimal_digit",
+      "args": [
+        1632
+      ],
+      "expected": "err:not an ASCII decimal digit"
+    },
+    {
+      "id": "convert-ascii-hex-capital",
+      "op": "convert.ascii_hex_digit",
+      "args": [
+        70
+      ],
+      "expected": "ok:15"
+    },
+    {
+      "id": "convert-ascii-hex-lower",
+      "op": "convert.ascii_hex_digit",
+      "args": [
+        102
+      ],
+      "expected": "ok:15"
+    },
+    {
+      "id": "convert-ascii-hex-invalid",
+      "op": "convert.ascii_hex_digit",
+      "args": [
+        103
+      ],
+      "expected": "err:not an ASCII hex digit"
+    },
+    {
+      "id": "convert-string-bool-true",
+      "op": "convert.try_bool_from_string",
+      "args": [
+        "true"
+      ],
+      "expected": "ok:true"
+    },
+    {
+      "id": "convert-string-bool-false",
+      "op": "convert.try_bool_from_string",
+      "args": [
+        "false"
+      ],
+      "expected": "ok:false"
+    },
+    {
+      "id": "convert-string-bool-case",
+      "op": "convert.try_bool_from_string",
+      "args": [
+        "TRUE"
+      ],
+      "expected": "err:expected lowercase true or false"
+    },
+    {
+      "id": "convert-parse-empty",
+      "op": "convert.try_int_from_string",
+      "args": [
+        ""
+      ],
+      "expected": "err:invalid signed decimal length"
+    },
+    {
+      "id": "convert-parse-hyphen",
+      "op": "convert.try_int_from_string",
+      "args": [
+        "-"
+      ],
+      "expected": "err:missing decimal digits"
+    },
+    {
+      "id": "convert-parse-plus",
+      "op": "convert.try_int_from_string",
+      "args": [
+        "+1"
+      ],
+      "expected": "err:invalid ASCII decimal digit"
+    },
+    {
+      "id": "convert-parse-zero",
+      "op": "convert.try_int_from_string",
+      "args": [
+        "0"
+      ],
+      "expected": "ok:0"
+    },
+    {
+      "id": "convert-parse-negative-zero",
+      "op": "convert.try_int_from_string",
+      "args": [
+        "-0"
+      ],
+      "expected": "ok:0"
+    },
+    {
+      "id": "convert-parse-leading-zeros",
+      "op": "convert.try_int_from_string",
+      "args": [
+        "00001"
+      ],
+      "expected": "ok:1"
+    },
+    {
+      "id": "convert-parse-i64-max",
+      "op": "convert.try_int_from_string",
+      "args": [
+        "9223372036854775807"
+      ],
+      "expected": "ok:9223372036854775807"
+    },
+    {
+      "id": "convert-parse-i64-min",
+      "op": "convert.try_int_from_string",
+      "args": [
+        "-9223372036854775808"
+      ],
+      "expected": "ok:-9223372036854775808"
+    },
+    {
+      "id": "convert-parse-pos-overflow",
+      "op": "convert.try_int_from_string",
+      "args": [
+        "9223372036854775808"
+      ],
+      "expected": "err:signed decimal overflow"
+    },
+    {
+      "id": "convert-parse-neg-overflow",
+      "op": "convert.try_int_from_string",
+      "args": [
+        "-9223372036854775809"
+      ],
+      "expected": "err:signed decimal overflow"
+    },
+    {
+      "id": "convert-parse-whitespace",
+      "op": "convert.try_int_from_string",
+      "args": [
+        "1 "
+      ],
+      "expected": "err:invalid ASCII decimal digit"
+    },
+    {
+      "id": "convert-parse-arabic",
+      "op": "convert.try_int_from_string",
+      "args": [
+        "١"
+      ],
+      "expected": "err:invalid ASCII decimal digit"
+    },
+    {
+      "id": "convert-parse-too-many",
+      "op": "convert.try_int_from_string",
+      "args": [
+        "00000000000000000000"
+      ],
+      "expected": "err:too many decimal digits"
+    },
+    {
+      "id": "fmt-bool-true",
+      "op": "fmt.format_bool",
+      "args": [
+        true
+      ],
+      "expected": "true"
+    },
+    {
+      "id": "fmt-bool-false",
+      "op": "fmt.format_bool",
+      "args": [
+        false
+      ],
+      "expected": "false"
+    },
+    {
+      "id": "fmt-zero",
+      "op": "fmt.format_int",
+      "args": [
+        "0"
+      ],
+      "expected": "0"
+    },
+    {
+      "id": "fmt-minus-one",
+      "op": "fmt.format_int",
+      "args": [
+        "-1"
+      ],
+      "expected": "-1"
+    },
+    {
+      "id": "fmt-i64-min",
+      "op": "fmt.format_int",
+      "args": [
+        "-9223372036854775808"
+      ],
+      "expected": "-9223372036854775808"
+    },
+    {
+      "id": "fmt-i64-max",
+      "op": "fmt.format_int",
+      "args": [
+        "9223372036854775807"
+      ],
+      "expected": "9223372036854775807"
+    },
+    {
+      "id": "fmt-power-ten",
+      "op": "fmt.format_int",
+      "args": [
+        "1000000000000000000"
+      ],
+      "expected": "1000000000000000000"
+    },
+    {
+      "id": "fmt-hex-zero",
+      "op": "fmt.format_hex_byte",
+      "args": [
+        0
+      ],
+      "expected": "ok:00"
+    },
+    {
+      "id": "fmt-hex-fifteen",
+      "op": "fmt.format_hex_byte",
+      "args": [
+        15
+      ],
+      "expected": "ok:0f"
+    },
+    {
+      "id": "fmt-hex-sixteen",
+      "op": "fmt.format_hex_byte",
+      "args": [
+        16
+      ],
+      "expected": "ok:10"
+    },
+    {
+      "id": "fmt-hex-max",
+      "op": "fmt.format_hex_byte",
+      "args": [
+        255
+      ],
+      "expected": "ok:ff"
+    },
+    {
+      "id": "fmt-hex-negative",
+      "op": "fmt.format_hex_byte",
+      "args": [
+        -1
+      ],
+      "expected": "err:hex byte out of range"
+    },
+    {
+      "id": "fmt-hex-overflow",
+      "op": "fmt.format_hex_byte",
+      "args": [
+        256
+      ],
+      "expected": "err:hex byte out of range"
+    },
+    {
+      "id": "collections-sorted-empty",
+      "op": "collections.is_sorted_int",
+      "args": [
+        []
+      ],
+      "expected": "true"
+    },
+    {
+      "id": "collections-sorted-duplicates",
+      "op": "collections.is_sorted_int",
+      "args": [
+        [
+          1,
+          1,
+          2
+        ]
+      ],
+      "expected": "true"
+    },
+    {
+      "id": "collections-unsorted",
+      "op": "collections.is_sorted_int",
+      "args": [
+        [
+          2,
+          1
+        ]
+      ],
+      "expected": "false"
+    },
+    {
+      "id": "collections-index-first",
+      "op": "collections.index_of_int",
+      "args": [
+        [
+          3,
+          1,
+          3
+        ],
+        3
+      ],
+      "expected": "0"
+    },
+    {
+      "id": "collections-index-missing",
+      "op": "collections.index_of_int",
+      "args": [
+        [
+          3,
+          1,
+          3
+        ],
+        9
+      ],
+      "expected": "-1"
+    },
+    {
+      "id": "collections-contains",
+      "op": "collections.contains_int",
+      "args": [
+        [
+          3,
+          1,
+          3
+        ],
+        1
+      ],
+      "expected": "true"
+    },
+    {
+      "id": "collections-not-contains",
+      "op": "collections.contains_int",
+      "args": [
+        [
+          3,
+          1,
+          3
+        ],
+        2
+      ],
+      "expected": "false"
+    },
+    {
+      "id": "collections-bound-duplicate",
+      "op": "collections.lower_bound_int",
+      "args": [
+        [
+          1,
+          2,
+          2,
+          4
+        ],
+        2
+      ],
+      "expected": "ok:1"
+    },
+    {
+      "id": "collections-bound-before",
+      "op": "collections.lower_bound_int",
+      "args": [
+        [
+          1,
+          2,
+          2,
+          4
+        ],
+        -1
+      ],
+      "expected": "ok:0"
+    },
+    {
+      "id": "collections-bound-after",
+      "op": "collections.lower_bound_int",
+      "args": [
+        [
+          1,
+          2,
+          2,
+          4
+        ],
+        5
+      ],
+      "expected": "ok:4"
+    },
+    {
+      "id": "collections-bound-unsorted",
+      "op": "collections.lower_bound_int",
+      "args": [
+        [
+          2,
+          1
+        ],
+        1
+      ],
+      "expected": "err:lower bound requires sorted input"
+    },
+    {
+      "id": "collections-unique-stable",
+      "op": "collections.unique_int",
+      "args": [
+        [
+          3,
+          1,
+          3,
+          2,
+          1
+        ]
+      ],
+      "expected": "ok:[3,1,2]"
+    },
+    {
+      "id": "collections-unique-empty",
+      "op": "collections.unique_int",
+      "args": [
+        []
+      ],
+      "expected": "ok:[]"
+    },
+    {
+      "id": "collections-merge-normal",
+      "op": "collections.merge_sorted_int",
+      "args": [
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        4
+      ],
+      "expected": "ok:[1,2,2,3]"
+    },
+    {
+      "id": "collections-merge-empty",
+      "op": "collections.merge_sorted_int",
+      "args": [
+        [],
+        [],
+        0
+      ],
+      "expected": "ok:[]"
+    },
+    {
+      "id": "collections-merge-small-budget",
+      "op": "collections.merge_sorted_int",
+      "args": [
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        3
+      ],
+      "expected": "err:merge exceeds item budget"
+    },
+    {
+      "id": "collections-merge-invalid-budget",
+      "op": "collections.merge_sorted_int",
+      "args": [
+        [],
+        [],
+        65537
+      ],
+      "expected": "err:merge budget outside 0..65536"
+    },
+    {
+      "id": "collections-merge-unsorted",
+      "op": "collections.merge_sorted_int",
+      "args": [
+        [
+          2,
+          1
+        ],
+        [
+          3
+        ],
+        3
+      ],
+      "expected": "err:merge requires sorted inputs"
+    }
+  ]
+}
