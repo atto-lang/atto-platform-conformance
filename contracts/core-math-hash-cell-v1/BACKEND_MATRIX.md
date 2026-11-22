@@ -8,7 +8,7 @@ including every independent source blob Git SHA-1 and exact candidate commit.
 | --- | --- | --- | --- |
 | Java | [#1770](https://github.com/atto-lang/atto-source.java/pull/1770) | Registered compiler-owned Atto modules | NOT_EXECUTED |
 | LLVM | [#869](https://github.com/atto-lang/atto-source.llvm/pull/869) | Registered generated/baked Atto modules | NOT_EXECUTED |
-| .NET | [#220](https://github.com/atto-lang/atto-source.net/pull/220) | Namespace-only `.atto` sources with pinned Core loader, proposed linked CIL test | NOT_EXECUTED |
+| .NET | [#220](https://github.com/atto-lang/atto-source.net/pull/220) | Namespace-only `.atto` with pinned `import * as ... from "core.math"` CIL candidate | NOT_EXECUTED |
 | Wasm | [#283](https://github.com/atto-lang/atto-source.wasm/pull/283) | Owned source; scalar Wasm bridge still refuses imports | NOT_EXECUTED |
 | Rust/Wasm | [#540](https://github.com/atto-lang/atto-source.rs/pull/540) | Owned source; module graph integration pending | NOT_EXECUTED |
 | Forge | [#230](https://github.com/atto-lang/atto-source.forge/pull/230) | Owned source; stage-0 compiler has no module imports | NOT_EXECUTED |
@@ -53,3 +53,5 @@ The full canonical static import grammar, built-in `core/alloc/std`
 resolution, and package imports must stay coordinated with atto-spec's
 unified static imports proposal and reviewed import changes; source namespace
 syntax alone cannot enable `import *` or `import pkg` in a backend.
+
+The .NET draft additionally admits restricted canonical `import * as math from "core.math";` (and `core.hash`/`core.cell`) using pinned built-in sources only. `pkg` and local wildcard imports remain unsupported, with negative fixture gates; all real guest executions NOT_EXECUTED.
