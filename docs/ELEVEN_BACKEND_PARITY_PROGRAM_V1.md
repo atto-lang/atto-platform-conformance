@@ -91,7 +91,7 @@ execution routes.
 ## Backend-owned core borrow rollout: 11 tracked compilers (2026-11-22)
 
 [Exact source-only borrow candidate ledger](../contracts/eleven-backend-parity-v1/borrow-source-ledger.json)
-records the observed PR-head commit, full root tree SHA, and **47 explicitly
+records the observed PR-head commit, full root tree SHA, and **50 explicitly
 verified Git blob identities** across all eleven backend slots. No private
 compiler contents are copied into this conformance repo. The companion
 [source-integrity validator](../lib/core-option-borrow-source-ledger-v1.mjs)
@@ -146,3 +146,9 @@ test and guest blob hashes, then executes linked JIT guests plus parser,
 typechecker and ownership negatives. Its Actions run is currently queued;
 no JUnit or JVM guest pass is recorded yet. Native Image remains a separate
 AOT gate.
+
+### Java CoreTypeRegistry and AutomaticPrelude ownership/drop gate
+
+Java PR #1767 now includes `CoreTypeRegistry` as a compiler-owned source of nominal identity, ownership category, allocation requirement, Send policy and deterministic drop policy. `Option<T>` and `Result<T,E>` are payload-dependent; only the active variant payload is destroyed once. The registry explicitly distinguishes borrowed `Slice<T>`, allocator-owned containers, traits and Java's legacy immutable scalar `String`. It does not claim every registry entry is executable or that registry metadata replaces call-site loan analysis.
+
+The exact-head Java workflow now runs `CoreOptionResultSourceTest`, `CoreOptionResultBorrowSafetyTest`, and all ten methods of `AutomaticPreludeTest` under GraalVM 25. The dashboard pins `CoreTypeRegistry.java`, `OresCompiler.java`, `AutomaticPreludeTest.java`, both checkers and the workflow. The exact Java job is queued, not yet a passing JUnit receipt. Native Image is still separate.
