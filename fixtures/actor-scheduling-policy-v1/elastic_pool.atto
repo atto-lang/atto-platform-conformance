@@ -1,0 +1,9 @@
+// TARGET / NOT EXECUTED: ordinary actor bound by dynamically sized shared pool.
+@actor_schedule(max_parallelism = pool_size, affinity = sticky, pool = shared)
+define actor ElasticWorker as
+  susp receive(mail: ActorMail<int>) -> void {
+    ^ void;
+  }
+end
+
+pub fnc main() -> int { return 0; }
