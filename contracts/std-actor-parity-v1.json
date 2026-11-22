@@ -116,7 +116,24 @@
       "contracts/std-actor-v1/future-borrowed.reject.atto",
       "contracts/std-actor-v1/future-double-await.reject.atto"
     ],
-    "runtimeTarget": "tests/fixtures/std-actor-v1/lifecycle_guest.atto"
+    "runtimeTarget": "tests/fixtures/std-actor-v1/lifecycle_guest.atto",
+    "namespaceNegative": [
+      {
+        "file": "contracts/std-actor-v1/namespace-implicit-import.reject.atto",
+        "expectedDiagnostic": "E_UNBOUND",
+        "requires": "explicit-policy-import"
+      },
+      {
+        "file": "contracts/std-actor-v1/namespace-duplicate.reject.atto",
+        "expectedDiagnostic": "E_DUPLICATE",
+        "requires": "single-file-namespace"
+      },
+      {
+        "file": "contracts/std-actor-v1/namespace-after-declaration.reject.atto",
+        "expectedDiagnostic": "E_SYNTAX",
+        "requires": "namespace-first"
+      }
+    ]
   },
   "statuses": [
     "PASS",

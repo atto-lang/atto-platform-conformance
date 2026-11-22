@@ -51,3 +51,13 @@ test('zero-step GitHub failures remain NOT_EXECUTED and cannot authorize mirrori
   assert.equal(result.classification,'RUNNER_ADMISSION_FAILURE');
   assert.equal(result.executedSteps,0);
 });
+
+rejected('remove namespace-negative compiler case',m=>m.guestTests.namespaceNegative.pop());
+rejected('promote namespace fraud from E_UNBOUND to generic syntax failure',m=>m.guestTests.namespaceNegative[0].expectedDiagnostic='E_UNSUPPORTED');
+rejected('remove implicit import authority condition',m=>m.guestTests.namespaceNegative[0].requires='anything');
+test('namespace-negative fixture expectations are distinct, exact, and executable-only',()=>{
+  assert.deepEqual(contract.guestTests.namespaceNegative.map(x=>x.expectedDiagnostic),
+    ['E_UNBOUND','E_DUPLICATE','E_SYNTAX']);
+  assert.equal(new Set(contract.guestTests.namespaceNegative.map(x=>x.file)).size,3);
+  assert.equal(contract.status,'SOURCE_CONTRACT_ONLY');
+});
