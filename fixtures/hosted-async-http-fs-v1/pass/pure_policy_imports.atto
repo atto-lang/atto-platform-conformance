@@ -1,8 +1,8 @@
 // SOURCE-ONLY candidate for real native-Atto module/linker conformance.
 // Must compile and RUN with the canonical std.http/std.fs modules to count.
-// Until std package linking works, use a typed no-artifact diagnostic.
-import * as http from pkg "std.http";
-import * as fs from pkg "std.fs";
+// Until built-in std module linking works, use a typed no-artifact diagnostic.
+import * as http from "std.http";
+import * as fs from "std.fs";
 
 pub fnc main(): int {
   if http.http_status_valid(200) == false then return 1; fi
