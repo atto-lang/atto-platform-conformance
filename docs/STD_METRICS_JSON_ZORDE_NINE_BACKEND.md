@@ -127,3 +127,50 @@ recorded only as a **non-authorizing proposal** at
 The explicit denial test is
 `tests/std-metrics-json-zorde-carrier-export-denial.test.mjs`. This is
 not an effective source-side allowlist or reviewer authorization.
+
+## Core ownership/borrow-checker boundary
+
+Compiler-enforced ownership is **not** implemented by a reusable stdlib
+boolean predicate. The canonical rules remain in
+`atto-spec/language/implicit-argument-borrow-v1.md` and the shared
+ownership/guard contract. Every backend's compiler must prove typed
+place/root provenance, shared/exclusive loan exclusivity, last-use/NLL
+and CFG facts, no move/reinitialize under a live loan, no unsafe
+return/capture/actor-send/suspension escape, and exception/cancellation
+cleanup **before producing guest bytes**.
+
+The core `borrow_admission.atto` preflight staged in nine backend repos
+only bounds scalar tracked-loan counts (up to 65,535 read loans) and
+detects obviously conflicting runtime-owner state. It **never grants a
+borrow, owner right, Sendable capability, cross-actor escape, or compiler
+proof**. Java now packages it under its real
+`src/main/resources/dev/oreslang/core/` and adds the module to
+`CoreLibrarySources.CORE_SOURCES`; the other targets are candidate sources
+pending import/compiler execution.
+
+- Central contract:
+  `contracts/std-metrics-json-zorde-core-borrow-v1.json`.
+- Central source-only regression:
+  `tests/std-metrics-json-zorde-core-borrow.test.mjs`.
+- Scalar preflight: 13 states, all statuses NOT_EXECUTED for guest.
+- Canonical compiler fixtures: 4 compile/exit-42 positives and
+  8 compile-negative cases, pinned by exact .atto Git blob SHA.
+- Eight software backends additionally stage a focused **6-fixture**
+  set: shared-read pass/reject, exclusive-write pass/reject, use-after-take,
+  and unsafe loan across suspension. Negatives require exact ownership
+  diagnostics and zero guest output artifacts. Unknown-keyword/syntax
+  errors do **not** count as correct borrow-checker rejections.
+- Java's focused JUnit suite stages four real compiler-negative cases
+  plus a 16-output core guest test. Real execution is still pending.
+- HistogramSnapshot constructor in eight software backends has
+  module-private admission and clones/validates the caller's arrays
+  to prevent retaining mutable aliases even while compiler-level
+  borrow-default parity is in progress.
+
+HDL hosts only a scalar source-policy candidate. Full dynamic class loans,
+heap snapshots and actor/await loan semantics require target-specific
+support or explicit proven rejection; no synthesis/RTL parity is claimed.
+
+**No source-only pass can satisfy compiler borrow parity.** Each exact-head
+backend receipt must include positive actual execution and negative
+no-artifact compiler rejection, not host emulation or an empty CI job.
