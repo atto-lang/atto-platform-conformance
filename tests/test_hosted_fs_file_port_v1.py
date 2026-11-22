@@ -57,9 +57,9 @@ def valid(doc):
         return False
     tests = doc.get("source_tests", {})
     if (
-        tests.get("port_groups_per_backend") != 16
+        tests.get("port_groups_per_backend") != 17
         or tests.get("existing_host_vfs_groups_per_backend") != 24
-        or tests.get("combined_host_only_groups_per_backend") != 40
+        or tests.get("combined_host_only_groups_per_backend") != 41
         or tests.get("unicode_full_utf8") != "NOT_EXECUTED"
         or tests.get("source_node22_exact_head") != "NOT_EXECUTED"
         or tests.get("compiled_atto_file_guest") != "NOT_EXECUTED"
