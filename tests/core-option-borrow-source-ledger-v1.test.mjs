@@ -15,7 +15,7 @@ const reject=(name,mutate)=>test(name,()=>{
 });
 test('all eleven profiles, seven source-borrow candidates and 35 Git blob pins exist',()=>{
   assert.deepEqual(validateBorrowSourceLedger(ledger,dash),
-    {backends:11,borrow_candidates:7,source_artifacts:42,guest_passes:0});
+    {backends:11,borrow_candidates:7,source_artifacts:43,guest_passes:0});
   assert.deepEqual(new Set(ledger.backends.map(x=>x.id)),
     new Set(['java','llvm','net','rs','wasm','forge','cranelift','js','hdl','atto','realtime']));
 });
@@ -24,6 +24,7 @@ test('bounded Rust immutable ADT borrow checker code and typed negatives have in
   const files=new Map(rs.source_artifacts.map(x=>[x.path,x.blob_sha]));
   const required=new Map([
     ['src/check.rs','0578792390f090944b44fb745dc68a7e4eca74df'],
+    ['.github/workflows/core-option-result-borrow-exact-head.yml','05c8853c15986b35fd5d376b417b34b9f1968eb4'],
     ['tests/core_option_result_scalar.rs','bbeb6f381193fcd8897534eaf34e6b60c7c3a106'],
     ['tests/core_option_result/borrowed_read_42.atto','b18d140202a29425911f4fba7417696ed7f6cf0d'],
     ['tests/core_option_result/negative_affine_borrow_escape.atto','3815a07ee254c30541bf8069f3a17cfd7be01138'],
@@ -33,8 +34,8 @@ test('bounded Rust immutable ADT borrow checker code and typed negatives have in
     ['tests/core_option_result/negative_borrow_option_return.atto','77a2d72c3682822993d4f5f01f779601b7c228fc']
   ]);
   for(const [path,sha] of required)assert.equal(files.get(path),sha,path);
-  assert.equal(rs.source_head_sha,'92a2a1a4a5694d1626ee4c319f449333dbc1d4e8');
-  assert.equal(rs.root_tree_sha,'80f1fc4a2d0b0d4c53fc6f1dbbb794508004625d');
+  assert.equal(rs.source_head_sha,'c7edd32b3ca5cd9d3a85f63f531b6c21968c55e6');
+  assert.equal(rs.root_tree_sha,'352b41213259916837fc825ce7f390c1059d9b7f');
   assert.ok(Object.values(rs.checks).every(x=>x==='not_executed'));
 });
 test('noncompiler profiles never masquerade as generic ownership passes',()=>{
@@ -47,7 +48,7 @@ test('noncompiler profiles never masquerade as generic ownership passes',()=>{
 test('every source-owned implementation fixture is individually pinned and backend-scoped',()=>{
   for(const id of ['java','rs','llvm','net','wasm','forge','cranelift']){
     const b=ledger.backends.find(x=>x.id===id);
-    assert.equal(b.source_artifacts.length,id==='rs'?11:4,id);
+    assert.equal(b.source_artifacts.length,id==='rs'?12:4,id);
     assert.ok(b.source_artifacts.filter(x=>x.path.endsWith('.atto')).length>=3);
     assert.match(b.root_tree_sha,/^[0-9a-f]{40}$/);
     assert.equal(b.source_head_sha,dash.backends.find(x=>x.id===id).candidate.head_sha);
