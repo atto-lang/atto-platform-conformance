@@ -54,7 +54,7 @@ export function verifyGuestTranscript(transcript, cases=contract.cases){
   const expected=new Map(cases.map(c=>[c.id,c.expected]));
   const observed=new Set();
   for(const line of transcript.trimEnd().split("\n")){
-    const match=/^ATTO_LIB_V1\\|([a-z0-9-]+)\\|([^\\r\\n|]*)$/.exec(line);
+    const match=/^ATTO_LIB_V1\|([a-z0-9-]+)\|([^\r\n|]*)$/.exec(line);
     if(!match)throw Error("malformed or unexecuted guest result: "+line);
     const [,id,value]=match;
     if(!expected.has(id)||observed.has(id))throw Error("unknown/duplicate guest case "+id);
@@ -97,7 +97,7 @@ test("strict transcript requires every executed result and rejects fake passes",
     valid.replace(first+"\n",""),
     first+"\n"+valid,
     valid.replace(first,first+"\n"+first),
-    valid.replace(first,first.replace(/\\|[^|]*$/, "|SKIPPED")),
+    valid.replace(first,first.replace(/\|[^|]*$/, "|SKIPPED")),
     valid.replace(first,first.replace("ATTO_LIB_V1|","ATTO_LIB_V1|unexpected-")),
     valid.replace(first,"HOST_ONLY|"+first),
     valid.replace(first,first+"|garbage"),
