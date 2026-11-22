@@ -572,5 +572,149 @@
       "C24"
     ],
     "semantic_status": "SOURCE_FREE_MODEL_PASS_NOT_NATIVE_BACKEND_EXECUTION"
+  },
+  "borrow_mir_backend_replicas": {
+    "schema": "atto-borrow-mir-nine-backend-replicas.v1",
+    "shared_blob_inventory": {
+      "contracts/borrow-mir-v1/semantic-cases.json": "b7bfa0fed6092ff28c8b407661d84fbb277797d1",
+      "tests/borrow-mir-v1-contract.test.mjs": "209e146b481b4ed9b08da3ac190427f8e9151a30",
+      "contracts/borrow-mir-v1/README.md": "f8424da5071be6449270a630f7414c787740bae8",
+      ".github/workflows/borrow-mir-v1-contract.yml": "8470aa93dfdfbf124cecdba95ae8618ceea08f69"
+    },
+    "cases": 24,
+    "lifecycle_cases": [
+      "C23",
+      "C24"
+    ],
+    "evidence_status": "SOURCE_FREE_CONTRACT_REPLICAS_ONLY",
+    "compiled_backend_status": "NOT_EXECUTED",
+    "backends": {
+      "java": {
+        "repository": "atto-lang/atto-source.java",
+        "candidate_pr": 1786,
+        "head_sha": "dc341fc007e61fdfe1d874e62819560b5b96f2a5",
+        "root_tree_sha": "accf238c23fbf3d14f1b6f61eca32fae9ede8736",
+        "blob_inventory": {
+          "contracts/borrow-mir-v1/semantic-cases.json": "b7bfa0fed6092ff28c8b407661d84fbb277797d1",
+          "tests/borrow-mir-v1-contract.test.mjs": "209e146b481b4ed9b08da3ac190427f8e9151a30",
+          "contracts/borrow-mir-v1/README.md": "f8424da5071be6449270a630f7414c787740bae8",
+          ".github/workflows/borrow-mir-v1-contract.yml": "8470aa93dfdfbf124cecdba95ae8618ceea08f69"
+        },
+        "compiled_guest_status": "NOT_EXECUTED",
+        "borrow_checker_status": "EXISTING_CORE_CHECKER_NOT_PROTOCOL_GUEST_VERIFIED"
+      },
+      "llvm": {
+        "repository": "atto-lang/atto-source.llvm",
+        "candidate_pr": 884,
+        "head_sha": "a2e2d204fff1096a495eb2f558fb9f41b620e217",
+        "root_tree_sha": "066aee42cebd8aac0db50cd223d24c34231fc5b8",
+        "blob_inventory": {
+          "contracts/borrow-mir-v1/semantic-cases.json": "b7bfa0fed6092ff28c8b407661d84fbb277797d1",
+          "tests/borrow-mir-v1-contract.test.mjs": "209e146b481b4ed9b08da3ac190427f8e9151a30",
+          "contracts/borrow-mir-v1/README.md": "f8424da5071be6449270a630f7414c787740bae8",
+          ".github/workflows/borrow-mir-v1-contract.yml": "8470aa93dfdfbf124cecdba95ae8618ceea08f69"
+        },
+        "compiled_guest_status": "NOT_EXECUTED",
+        "borrow_checker_status": "LIMITED_I64_CORE_CHECKER_NOT_CLASS_PROTOCOL_VERIFIED"
+      },
+      "rs": {
+        "repository": "atto-lang/atto-source.rs",
+        "candidate_pr": 546,
+        "head_sha": "72de4d8c0273085e5db2f84f9664a6ec3ca876c2",
+        "root_tree_sha": "bc7ab8075e98055a404b910a30741575aaa3bdf5",
+        "blob_inventory": {
+          "contracts/borrow-mir-v1/semantic-cases.json": "b7bfa0fed6092ff28c8b407661d84fbb277797d1",
+          "tests/borrow-mir-v1-contract.test.mjs": "209e146b481b4ed9b08da3ac190427f8e9151a30",
+          "contracts/borrow-mir-v1/README.md": "f8424da5071be6449270a630f7414c787740bae8",
+          ".github/workflows/borrow-mir-v1-contract.yml": "8470aa93dfdfbf124cecdba95ae8618ceea08f69"
+        },
+        "compiled_guest_status": "NOT_EXECUTED",
+        "borrow_checker_status": "CORE_CLASS_LOAN_CHECKER_PROTOCOL_GUEST_NOT_EXECUTED"
+      },
+      "net": {
+        "repository": "atto-lang/atto-source.net",
+        "candidate_pr": 228,
+        "head_sha": "9a8212b014ab2a43a07c3da079069885d06809e4",
+        "root_tree_sha": "0c6b3aaf20d244c8e0936d3dcfc5b2509f1fcd8b",
+        "blob_inventory": {
+          "contracts/borrow-mir-v1/semantic-cases.json": "b7bfa0fed6092ff28c8b407661d84fbb277797d1",
+          "tests/borrow-mir-v1-contract.test.mjs": "209e146b481b4ed9b08da3ac190427f8e9151a30",
+          "contracts/borrow-mir-v1/README.md": "f8424da5071be6449270a630f7414c787740bae8",
+          ".github/workflows/borrow-mir-v1-contract.yml": "8470aa93dfdfbf124cecdba95ae8618ceea08f69"
+        },
+        "compiled_guest_status": "NOT_EXECUTED",
+        "borrow_checker_status": "FRONTEND_ADMISSION_PARTIAL_CORE_LOWERING_NOT_VERIFIED"
+      },
+      "wasm": {
+        "repository": "atto-lang/atto-source.wasm",
+        "candidate_pr": 291,
+        "head_sha": "2ed9b0fcdbe514887b53f66967bd66d44505fa68",
+        "root_tree_sha": "a46aeb297cd678e35b800554b14354c4daa2ca6b",
+        "blob_inventory": {
+          "contracts/borrow-mir-v1/semantic-cases.json": "b7bfa0fed6092ff28c8b407661d84fbb277797d1",
+          "tests/borrow-mir-v1-contract.test.mjs": "209e146b481b4ed9b08da3ac190427f8e9151a30",
+          "contracts/borrow-mir-v1/README.md": "f8424da5071be6449270a630f7414c787740bae8",
+          ".github/workflows/borrow-mir-v1-contract.yml": "8470aa93dfdfbf124cecdba95ae8618ceea08f69"
+        },
+        "compiled_guest_status": "NOT_EXECUTED",
+        "borrow_checker_status": "EXISTING_CONTINUATION_LOAN_CHECKS_PROTOCOL_GUEST_NOT_VERIFIED"
+      },
+      "forge": {
+        "repository": "atto-lang/atto-source.forge",
+        "candidate_pr": 236,
+        "head_sha": "6cbf756c450c8bb91cdd1a08d6b59b86dffdcd2b",
+        "root_tree_sha": "5d09c626846aeb8802a808d7aaf51b1f57136229",
+        "blob_inventory": {
+          "contracts/borrow-mir-v1/semantic-cases.json": "b7bfa0fed6092ff28c8b407661d84fbb277797d1",
+          "tests/borrow-mir-v1-contract.test.mjs": "209e146b481b4ed9b08da3ac190427f8e9151a30",
+          "contracts/borrow-mir-v1/README.md": "f8424da5071be6449270a630f7414c787740bae8",
+          ".github/workflows/borrow-mir-v1-contract.yml": "8470aa93dfdfbf124cecdba95ae8618ceea08f69"
+        },
+        "compiled_guest_status": "NOT_EXECUTED",
+        "borrow_checker_status": "CORE_OWNERSHIP_TESTS_PROTOCOL_GUEST_NOT_VERIFIED"
+      },
+      "cranelift": {
+        "repository": "atto-lang/atto-source.cranelift",
+        "candidate_pr": 101,
+        "head_sha": "75da5bcebe47340c34430f96f0c31e6ca88d44de",
+        "root_tree_sha": "b70525bb0cd3c82211b2ef4a89531f4e86f15d4b",
+        "blob_inventory": {
+          "contracts/borrow-mir-v1/semantic-cases.json": "b7bfa0fed6092ff28c8b407661d84fbb277797d1",
+          "tests/borrow-mir-v1-contract.test.mjs": "209e146b481b4ed9b08da3ac190427f8e9151a30",
+          "contracts/borrow-mir-v1/README.md": "f8424da5071be6449270a630f7414c787740bae8",
+          ".github/workflows/borrow-mir-v1-contract.yml": "8470aa93dfdfbf124cecdba95ae8618ceea08f69"
+        },
+        "compiled_guest_status": "NOT_EXECUTED",
+        "borrow_checker_status": "OWNERSHIP_ADMISSION_TESTS_PROTOCOL_GUEST_NOT_VERIFIED"
+      },
+      "js": {
+        "repository": "atto-lang/atto-source.js",
+        "candidate_pr": 141,
+        "head_sha": "23d7630a8550b71871e8c621642a8854596d47ad",
+        "root_tree_sha": "387173f4cc471587016da30baa30656021468808",
+        "blob_inventory": {
+          "contracts/borrow-mir-v1/semantic-cases.json": "b7bfa0fed6092ff28c8b407661d84fbb277797d1",
+          "tests/borrow-mir-v1-contract.test.mjs": "209e146b481b4ed9b08da3ac190427f8e9151a30",
+          "contracts/borrow-mir-v1/README.md": "f8424da5071be6449270a630f7414c787740bae8",
+          ".github/workflows/borrow-mir-v1-contract.yml": "8470aa93dfdfbf124cecdba95ae8618ceea08f69"
+        },
+        "compiled_guest_status": "NOT_EXECUTED",
+        "borrow_checker_status": "SOURCE_OWNERSHIP_TESTS_PROTOCOL_GUEST_NOT_VERIFIED"
+      },
+      "hdl": {
+        "repository": "atto-lang/atto-source.hdl",
+        "candidate_pr": 70,
+        "head_sha": "965d48dbc40e97541b3bb62752339f211e654fc1",
+        "root_tree_sha": "49d00cebcd6b955a1ac0a4e7c58bd84755c619e9",
+        "blob_inventory": {
+          "contracts/borrow-mir-v1/semantic-cases.json": "b7bfa0fed6092ff28c8b407661d84fbb277797d1",
+          "tests/borrow-mir-v1-contract.test.mjs": "209e146b481b4ed9b08da3ac190427f8e9151a30",
+          "contracts/borrow-mir-v1/README.md": "f8424da5071be6449270a630f7414c787740bae8",
+          ".github/workflows/borrow-mir-v1-contract.yml": "8470aa93dfdfbf124cecdba95ae8618ceea08f69"
+        },
+        "compiled_guest_status": "NOT_EXECUTED",
+        "borrow_checker_status": "STATIC_HDL_PROFILE_PROTOCOL_GUEST_NOT_VERIFIED"
+      }
+    }
   }
 }
