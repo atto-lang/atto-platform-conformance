@@ -11,7 +11,7 @@
   },
   "scope_notes": {
     "java": "Public module std/channel authored in Atto; guest tests staged, exact-head runtime execution not verified.",
-    "rs": "The v2 branch has extracted native Atto runtime source, but package-level std/channel import and the generic API are not linked.",
+    "rs": "The v2 branch has extracted native Atto runtime source, but package-level std/channel import and the generic API are not linked. The direct rendezvous reader runtime fix is staged in Rust/Wasm PR #547; full guest execution remains unverified.",
     "llvm": "The main native Channel<int> gate rejects unsupported guest lowering; a separate i64 C ABI PR is runtime-only.",
     "net": "Source channel guest support not independently verified.",
     "wasm": "Independent worker-Wasm backend must not borrow Rust browser compiler's success.",
@@ -23,6 +23,7 @@
   "required_contracts": [
     "channel capability remains local to its execution domain",
     "bounded capacity 0 is rendezvous, never silently buffered",
+    "ordinary zero-capacity receive must register a rendezvous reader; polling without registration must never deadlock",
     "positive bounded capacity enforces FIFO and backpressure",
     "send and receive suspend cooperatively; scheduler carrier is never parked",
     "nb operations register a Future; try operations do not register",
@@ -56,6 +57,23 @@
       "kind": "pass",
       "expected_stdout": "42",
       "path": "fixtures/std-channel/pass/rendezvous_pending.atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "rendezvous_direct_read",
+      "kind": "pass",
+      "expected_stdout": "42",
+      "path": "fixtures/std-channel/pass/rendezvous_direct_read.atto",
       "backend_status": {
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
