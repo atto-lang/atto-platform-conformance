@@ -106,6 +106,18 @@ class SourceFreeCoreOracle(unittest.TestCase):
         self.assertFalse(net["general_package_namespace_imports"])
         self.assertFalse(js["general_package_namespace_imports"])
 
+    def test_authentic_builtin_star_import_not_general_packages(self):
+        n = CONTRACT["namespace_contract"]
+        self.assertEqual(n["canonical_builtin_static_import"],
+                         'import * as math from "core.math";')
+        self.assertFalse(n["canonical_builtin_import_is_package_grant"])
+        net = next(c for c in CONTRACT["candidates"] if c["backend"] == "net")
+        self.assertTrue(net["canonical_builtin_wildcard_imports"])
+        self.assertFalse(net["arbitrary_local_or_package_wildcard_imports"])
+        self.assertEqual(net["canonical_builtin_import_example"],
+                         n["canonical_builtin_static_import"])
+        self.assertFalse(n["guest_namespace_execution_proven"])
+
     def test_evidence_never_upgrades_by_presence_of_source(self):
         self.assertEqual(CONTRACT["status"], "candidate_source_free_not_guest_verified")
         self.assertEqual(len(CONTRACT["candidates"]), 11)
