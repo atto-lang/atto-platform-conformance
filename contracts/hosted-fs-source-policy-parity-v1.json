@@ -249,18 +249,37 @@
     {
       "backend": "wasm",
       "pr_url": "https://github.com/atto-lang/atto-source.wasm/pull/43",
-      "local_v8_shimmed_groups": 13,
+      "local_v8_shimmed_groups": 19,
       "local_v8_status": "PASS_HOST_SHIM_ONLY",
       "node_exact_head": "NOT_EXECUTED",
-      "compiled_atto_guest": "NOT_EXECUTED"
+      "compiled_atto_guest": "NOT_EXECUTED",
+      "captured_head_sha": "79d1f29566f3ccf85eddf3bfda1636d2f84b42b1",
+      "runtime_blob_sha": "eb6d58eea18407f690a19a30a03c3025c1127d04",
+      "test_blob_sha": "223a6bff4f20f29df9077dff030009042d54f7c7",
+      "source_transfer": "BLOCKED_PENDING_INDEPENDENT_SECURITY_REVIEW"
     },
     {
       "backend": "js",
       "pr_url": "https://github.com/atto-lang/atto-source.js/pull/39",
-      "local_v8_shimmed_groups": 13,
+      "local_v8_shimmed_groups": 19,
       "local_v8_status": "PASS_HOST_SHIM_ONLY",
       "node_exact_head": "NOT_EXECUTED",
-      "compiled_atto_guest": "NOT_EXECUTED"
+      "compiled_atto_guest": "NOT_EXECUTED",
+      "captured_head_sha": "2f193e8a8567dcda0b9c148a50e1585fff4cf893",
+      "runtime_blob_sha": "1984f2c7d3703fa6fb7b2bba7026047a7efd32e8",
+      "test_blob_sha": "4874801e7b1e9bc3f56840c44892d234d6cd313b",
+      "source_transfer": "BLOCKED_PENDING_INDEPENDENT_SECURITY_REVIEW"
     }
-  ]
+  ],
+  "runner_admission": {
+    "source_free_private_carrier": "ORESoftware/ores-e2e-core",
+    "carrier_repo_id": 1378753797,
+    "run_id": 45047556666,
+    "run_head_sha": "912dd632c3b29c0db6634a974977eb3bbf2bb2e4",
+    "executed_steps": 4,
+    "job_conclusion": "success",
+    "private_source_transfer": "NOT_PERFORMED",
+    "transfer_security_review_issue": "https://github.com/atto-lang/atto-source.wasm/issues/286",
+    "purpose": "source-free runner check only, no compiler guest evidence"
+  }
 }
