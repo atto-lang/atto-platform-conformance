@@ -34,10 +34,11 @@ for (const probe of manifest.evidence.source_free_carrier_probes) {
   assert.equal(probe.source_exported,false);
 }
 const negatives = manifest.negative_guests;
-assert.equal(negatives.length, 4);
+assert.equal(negatives.length, 6);
 assert.deepEqual(negatives.map(x => x.file), [
   "void-value-negative.atto", "void-return-negative.atto",
-  "bool-truthiness-negative.atto", "i64-literal-overflow-negative.atto"
+  "bool-truthiness-negative.atto", "i64-literal-overflow-negative.atto",
+  "wrong-arg-negative.atto", "u64-outside-int-negative.atto"
 ]);
 assert.equal(new Set(negatives.map(x => x.file)).size, 4);
 for (const item of negatives) {

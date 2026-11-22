@@ -21,3 +21,7 @@ All nine independently owned backend branches now pin the same edge-matrix-posit
 ## Private carrier approval boundary
 
 The Java source repository .github/private-ci-approved-repositories.txt has no active approved destination, and its .github/private-ci-approved-source-snapshots.txt does not approve the present core/types heads or carrier. The two source-free candidate carrier probes both had zero executed job steps. No private Git tree or source was exported. Before any transfer, an independent trusted reviewer must approve the exact source commit/tree, approved private destination numeric repository ID, readers, retention, and export guard. Current source export disposition is DENIED_UNAPPROVED.
+
+## Typed public ABI negative cases
+
+All nine independent core/types branches now stage six compile-negative .atto fixtures, adding bool-as-int invocation and an unsigned 64-bit literal outside the signed int input domain. Java/LLVM/Rust actual-compiler checks are updated to reject those without artifacts. Because the candidate private CI carriers recorded zero runner steps and the Java source export policy has no current approved destination, the compiled guest and negative rejection statuses remain NOT_EXECUTED. The source-only registry cannot promote them.
