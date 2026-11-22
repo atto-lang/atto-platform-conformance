@@ -10,8 +10,8 @@
     "rs_v2": "https://github.com/atto-lang/atto-source.rs/pull/547"
   },
   "scope_notes": {
-    "java": "Public module std/channel authored in Atto; guest tests staged, exact-head runtime execution not verified. Java std/channel does not yet expose a public cancel_read method; runtime cancellation coverage does not prove Java guest namespace parity.",
-    "rs": "Backend-owned native Atto channel source implements explicit cancel_read(Future<Option<T>>) with queue unlink and cancelled-future panic 15, plus legacy-pipe admission and closed/empty distinction. Public std/channel namespace and Java-compatible API remain NOT_LINKED; compiled guest executions remain NOT_EXECUTED. No automatic task cancellation or pending writer cancellation.",
+    "java": "Native Atto std/channel namespace with rt take on sends and existing runtime-level closed/move ownership controls. Guest JUnit tests NOT_EXECUTED; cancel_read and cancel_write public methods not yet supplied, so Java cancellation feature parity is NOT_IMPLEMENTED.",
+    "rs": "Backend-owned native .atto runtime now stages pending-read cancellation and copy-safe int/bool pending-write registration, FIFO admission and one-shot recovery on cancellation/close; v2 checker stages a data-only transport borrow gate. Public std/channel namespace NOT_LINKED, broader affine move/borrow checking NOT_IMPLEMENTED, compiled guest tests NOT_EXECUTED.",
     "llvm": "The main native Channel<int> gate rejects unsupported guest lowering; a separate i64 C ABI PR is runtime-only.",
     "net": "Source channel guest support not independently verified.",
     "wasm": "Independent worker-Wasm backend must not borrow Rust browser compiler's success.",
@@ -34,7 +34,11 @@
     "borrowed and callable payloads do not cross prohibited channel boundaries",
     "unbounded is separate and MUST NOT map to arbitrary large finite capacity",
     "actor DATA graph attachment (including legacy two-port pipes) rejects preexisting buffered data and pending public reader registrations before claiming channel ownership",
-    "cancelling a pending read must unlink the matching registration exactly once, preserve other readers in FIFO order including head/middle/tail removal, and never interpret a cancelled Future as a normal closed-channel EOF"
+    "cancelling a pending read must unlink the matching registration exactly once, preserve other readers in FIFO order including head/middle/tail removal, and never interpret a cancelled Future as a normal closed-channel EOF",
+    "registered pending writes preserve FIFO relative to earlier queued writes and non-registering sends; zero-capacity reads must rendezvous without buffering",
+    "cancelling or closing an uncommitted write preserves the original payload for exactly one recovery; committed payloads cannot be recovered or delivered twice",
+    "actor DATA graph ownership rejects channels with queued public pending writers as well as readers and buffered data",
+    "channel payload construction must reject dynamic Any, nested channel capabilities, and mutable containers unless a borrow checker proves transfer safety"
   ],
   "cases": [
     {
@@ -154,6 +158,80 @@
         "cranelift": "NOT_EXECUTED",
         "js": "NOT_EXECUTED",
         "hdl": "NOT_EXECUTED"
+      }
+    }
+  ],
+  "feature_matrix": [
+    {
+      "id": "pending_read_cancellation",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED"
+      },
+      "notes": {
+        "rs": "Explicit queued reader cancellation staged, not guest verified",
+        "java": "Public cancel_read not yet implemented"
+      }
+    },
+    {
+      "id": "pending_write_cancellation",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED"
+      },
+      "notes": {
+        "rs": "Copy-safe int/bool staged, other payloads gated",
+        "java": "Public cancel_write not yet implemented"
+      }
+    },
+    {
+      "id": "channel_payload_borrow_check",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED"
+      },
+      "notes": {
+        "rs": "Conservative v2 data-only type gate, not full affine borrow checker",
+        "java": "rt take source-level contract, JUnit guest verification pending"
+      }
+    },
+    {
+      "id": "actor_data_exclusive_channel",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED"
+      },
+      "notes": {
+        "rs": "Both pending reader/writer queues blocked on graph admission",
+        "java": "Backend-specific execution receipt pending"
       }
     }
   ]
