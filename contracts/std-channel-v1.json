@@ -1,0 +1,123 @@
+{
+  "schema": "atto.std.channel.v1",
+  "version": 1,
+  "status": "TARGET_ONLY_NOT_EXECUTED",
+  "library_namespace": "std/channel",
+  "implementation_policy": "BACKEND_OWNED_NATIVE_ATTO_SOURCE",
+  "evidence_rule": "Only exact compiler head, source tree and actual compiled/executed guest steps can upgrade a per-case backend status to PASS. A static Node manifest test or zero-step Actions run is not guest evidence.",
+  "source_prs": {
+    "java": "https://github.com/atto-lang/atto-source.java/pull/1783",
+    "rs_v2": "https://github.com/atto-lang/atto-source.rs/pull/547"
+  },
+  "scope_notes": {
+    "java": "Public module std/channel authored in Atto; guest tests staged, exact-head runtime execution not verified.",
+    "rs": "The v2 branch has extracted native Atto runtime source, but package-level std/channel import and the generic API are not linked.",
+    "llvm": "The main native Channel<int> gate rejects unsupported guest lowering; a separate i64 C ABI PR is runtime-only.",
+    "net": "Source channel guest support not independently verified.",
+    "wasm": "Independent worker-Wasm backend must not borrow Rust browser compiler's success.",
+    "forge": "Source channel guest support not independently verified.",
+    "cranelift": "Source channel guest support not independently verified.",
+    "js": "Source channel guest support not independently verified.",
+    "hdl": "Source channel guest support not independently verified."
+  },
+  "required_contracts": [
+    "channel capability remains local to its execution domain",
+    "bounded capacity 0 is rendezvous, never silently buffered",
+    "positive bounded capacity enforces FIFO and backpressure",
+    "send and receive suspend cooperatively; scheduler carrier is never parked",
+    "nb operations register a Future; try operations do not register",
+    "try_send Full and Closed preserve the original moved value",
+    "close is idempotent, queued data drains before terminal EOF",
+    "closed/empty is not conflated with temporarily-unready None",
+    "cancelled pending operations remove their registrations exactly once",
+    "borrowed and callable payloads do not cross prohibited channel boundaries",
+    "unbounded is separate and MUST NOT map to arbitrary large finite capacity"
+  ],
+  "cases": [
+    {
+      "id": "bounded_fifo_drain",
+      "kind": "pass",
+      "expected_stdout": "42",
+      "path": "fixtures/std-channel/pass/bounded_fifo_drain.atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "rendezvous_pending",
+      "kind": "pass",
+      "expected_stdout": "42",
+      "path": "fixtures/std-channel/pass/rendezvous_pending.atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "try_read_empty_ready",
+      "kind": "pass",
+      "expected_stdout": "empty:7",
+      "path": "fixtures/std-channel/pass/try_read_empty_ready.atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "closed_move_recovery",
+      "kind": "pass",
+      "expected_stdout": "closed:56",
+      "path": "fixtures/std-channel/pass/closed_move_recovery.atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "negative_capacity",
+      "kind": "runtime_reject",
+      "expected_error_contains": "capacity",
+      "path": "fixtures/std-channel/fail/negative_capacity.atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED"
+      }
+    }
+  ]
+}
