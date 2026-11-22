@@ -56,8 +56,8 @@ This is not live CI and does not certify compiled Atto guests. An observed main 
 - `src/test/java/dev/oreslang/CoreOptionResultBorrowSafetyTest.java` · `d44dfe085ed6728e5f5b50be889a1c56bf78bc39`
 - `tests/core_option_result/borrowed_queries.atto` · `35f77b9020812364d1d0885e35f53a071cb50134`
 - `src/main/java/dev/oreslang/types/OwnershipChecker.java` · `6be88b5f3717f70759440be6a3012a0411f2315b`
-- `src/main/java/dev/oreslang/types/TypeChecker.java` · `95a344571ba41d78303f3d1979918927b11619af`
-- `.github/workflows/core-option-result-jvm-borrow-exact-head.yml` · `9d74a1ea63898534fb3c991dfd805b031b74a860`
+- `src/main/java/dev/oreslang/types/TypeChecker.java` · `3c1061d47c087d701f578e39a71ff34ce3197341`
+- `.github/workflows/core-option-result-jvm-borrow-exact-head.yml` · `1821c6732b79c090f9cfc93121e3ea20e7a40fc2`
 - `src/main/java/dev/oreslang/types/CoreTypeRegistry.java` · `bc9c3574f0e653218ea8a68f85d4effbd6722eeb`
 - `src/main/java/dev/oreslang/compiler/OresCompiler.java` · `c60883bf73abf36b89343a2b18feb11565c11c03`
 - `src/test/java/dev/oreslang/AutomaticPreludeTest.java` · `0e354f5478a0651127f746e63e86bb5a591bca74`
