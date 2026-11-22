@@ -369,29 +369,31 @@
     "java": {
       "repository": "atto-lang/atto-source.java",
       "pr": 1769,
-      "sourceCommit": "37f0fab76ccb028c9d6d10341d21c585405cde5b",
-      "sourceTree": "bd1b1b4ea3f3f8ea9fbefdd8fc05a2d96e281751",
+      "sourceCommit": "0787e479bb55545180b6e4c679b40830b5393bbd",
+      "sourceTree": "89b40849f987108498fe44e2f5d5fd2787c57939",
       "sourceBlobs": {
+        ".github/workflows/ci.yml": "68c0464969bffad4a54ddd57ca0188fecb746b37",
         "src/test/java/dev/oreslang/CoreFourGuestTest.java": "8d37869b10d4787fba17f4faa6ada50694b8db13"
       },
-      "check": "All four negative linked core/cell fixtures must reject through both validate and real guest launch before producing user stdout, with ownership-specific diagnostics.",
+      "check": "The active main CI workflow explicitly runs CoreFourGuestTest; linked core/cell borrow negatives must reject through both validate and actual LinkedProgramRunner guest-launch entrypoint before stdout. The draft-only specialized workflow is supplemental.",
       "compilation": "NOT_EXECUTED",
       "guest": "NOT_EXECUTED"
     },
     "llvm": {
       "repository": "atto-lang/atto-source.llvm",
       "pr": 868,
-      "sourceCommit": "be39b9f17e803605af8cf9c866f60c14a0f58926",
-      "sourceTree": "2909e3a549d7417280cfe64d179e351d30979ca2",
+      "sourceCommit": "016ba94c59f66542357ac45eafbe351193250454",
+      "sourceTree": "95a1e340f2bb41ad3f8d2c81bc95ff7b55fdb4ff",
       "sourceBlobs": {
+        ".github/workflows/ci.yml": "25df3d7171dc902e2eb35b5a9ac1a30c5229d7ef",
         "scripts/test-core-four-llvm-native.sh": "c3885edf7bd54d747cae23e2529205bc09cadaca"
       },
-      "check": "O0/O2 real compiler guest and negative IR=NONE gates must require ownership-checker-specific diagnostic strings, not merely generic borrow/take words from fixture names.",
+      "check": "The active main CI workflow explicitly runs the exact-head core-four LLVM O0/O2 native guest gate and requires ownership-specific diagnostics plus zero emitted IR for use-after-take, borrow-escape and conflicting-loans.",
       "compilation": "NOT_EXECUTED",
       "guest": "NOT_EXECUTED"
     }
   },
-  "compilerIntegrationEvidenceRule": "These are exact Git object witnesses for compiler-gate candidates, NOT real guest or typed-MIR proof. Re-fetch current head/tree/blobs and verify material runner steps, compiler binary digest and actual positive/negative guest before promoting. The Rust borrow-v1 profile is opt-in and must not be represented as global Atto borrow-by-default. All eleven backend guestEvidence statuses remain NOT_EXECUTED. 2026-11-22 refreshed exact PR #340/#1769/#868 commit and root-tree identities after the latest ownership-gate edits.",
+  "compilerIntegrationEvidenceRule": "These are exact Git object witnesses for compiler-gate candidates, NOT real guest or typed-MIR proof. Re-fetch current head/tree/blobs and verify material runner steps, compiler binary digest and actual positive/negative guest before promoting. The Rust borrow-v1 profile is opt-in and must not be represented as global Atto borrow-by-default. All eleven backend guestEvidence statuses remain NOT_EXECUTED. 2026-11-22 refreshed exact PR #340/#1769/#868 commit and root-tree identities after the latest ownership-gate edits. Active source-org CI workflows now explicitly contain the Java linked-core guest test and LLVM O0/O2 negative gate; run status and material steps must be refreshed before promotion.",
   "borrowSaturationContract": {
     "portableSemantics": "canAcquireShared is false at max live shared-loan capacity, but an existing owner's read remains allowed. Additional loans must never overflow; owner write/move/unpinned suspension remain denied with any live loan.",
     "signedCounter": {
