@@ -13,7 +13,7 @@ const shaBlob = source => createHash('sha1')
 test('all numerical guest candidates pin exact Git blob IDs', () => {
   assert.equal(manifest.schemaVersion, 1);
   assert.equal(manifest.status, 'CANDIDATE_SOURCE_NOT_EXECUTED');
-  assert.equal(manifest.cases.length, 10);
+  assert.equal(manifest.cases.length, 11);
   assert.equal(new Set(manifest.cases.map(x => x.id)).size, manifest.cases.length);
   assert.equal(new Set(manifest.cases.map(x => x.path)).size, manifest.cases.length);
   for (const fixture of manifest.cases) {
@@ -44,6 +44,7 @@ test('candidate source is never mistaken for authenticated compiler/AOT evidence
       {kind:'value',value:'42'},
       {kind:'value',value:'42'},
       {kind:'value',value:'42'},
+      {kind:'value',value:'42'},
     ]
   );
   const accepted = readFileSync(new URL('checked-i64-quotient.atto', root), 'utf8');
@@ -66,6 +67,10 @@ test('candidate source is never mistaken for authenticated compiler/AOT evidence
   const zero = readFileSync(new URL('ordered-float-signed-zero.atto', root), 'utf8');
   assert.match(zero, /-0\.0/);
   assert.match(zero, /minus_zero\s*>=\s*0\.0/);
+  const equality = readFileSync(new URL('equality-numeric-exact.atto', root), 'utf8');
+  assert.match(equality, /exact\s*==\s*rounded/);
+  assert.match(equality, /nan\s*!=\s*nan/);
+  assert.match(equality, /negative_zero\s*==\s*0\.0/);
   const precision = readFileSync(new URL('ordered-int-float-precision.atto', root), 'utf8');
   assert.match(precision, /9007199254740993/);
   assert.match(precision, /exact\s*>\s*rounded/);
