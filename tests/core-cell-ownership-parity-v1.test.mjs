@@ -76,3 +76,56 @@ test('backend source layouts are allowed to differ without omitting ownership re
     assert.equal(contract.guestEvidence[id],'NOT_EXECUTED');
   }
 });
+
+test('shared borrow saturation is a denied new loan, not loss of existing owner read',()=>{
+  const bound=contract.borrowAdmissionSaturation;
+  assert.equal(bound.sourcePolicyOnly,true);
+  assert.equal(bound.compilerGuestEvidence,'NOT_EXECUTED');
+  for(const [kind,profile] of Object.entries(bound.representations)){
+    const max=BigInt(profile.maxReaders);
+    const valid=readers=>readers>=0n && readers<=max;
+    const canAcquire=(readers,writer)=>readers>=0n&&readers<max&&!writer;
+    const canOwnerRead=(readers,writer)=>valid(readers)&&!writer;
+    for(const n of [-1n,0n,1n,max-1n,max,max+1n]){
+      assert.equal(canAcquire(n,false),n>=0n&&n<max,kind+' '+n);
+      assert.equal(canOwnerRead(n,false),valid(n),kind+' '+n);
+      assert.equal(canAcquire(n,true),false,kind+' writer '+n);
+    }
+    assert.equal(profile.mayAcquireSharedAtMax,false,kind);
+    assert.equal(profile.ownerMayReadAtMax,true,kind);
+    assert.equal(canAcquire(max,false),false,kind);
+    assert.equal(canOwnerRead(max,false),true,kind);
+    assert.equal(BigInt(profile.releaseAtMax),max-1n,kind);
+    assert.equal(profile.acquireAtMax,kind==='signed-counter-i64'?'ERR':-1,kind);
+  }
+  assert.deepEqual(bound.negativeBoundaries,[
+    'negative_readers','reader_overflow','writer_active',
+    'attempt_to_write_with_shared_readers','owner_move_with_live_loan',
+    'unpinned_suspend_with_live_loan'
+  ]);
+});
+
+test('nine independently owned bounded core/cell sources have updated exact blob pins',()=>{
+  const pins={
+    net:'154563e51199140cfad005945c608789bee5ebfa',
+    cranelift:'178dc049f6f19c8af29f96e42661b970e746d671',
+    wasm:'1561f8e71fc831d5787b8652a108d0fb87714503',
+    forge:'7a0b117c5a6775921e541dfa5aaf654ba2aea7f4',
+    js:'ae54f28baee13675a71088251b41dd8182f60084',
+    rs:'7eb09f625637dd11d75aa295947a9c79835cb5df',
+    hdl:'38439b2b0b487b4bb09d191ba50c115611295206',
+    atto:'55a0a3c5a04b825fb597a9c66101ee44d2e584ed',
+    realtime:'30ef700dc973f1af6bda588aa46ae5cdc7ae745b'
+  };
+  for(const [name,sha] of Object.entries(pins)){
+    assert.equal(contract.backends[name].sourceBlobSha,sha,name);
+    assert.equal(contract.backends[name].representation,'bounded-readers-plus-writer',name);
+    assert.equal(contract.guestEvidence[name],'NOT_EXECUTED',name);
+  }
+  assert.equal(contract.backends.java.representation,'signed-counter-i64');
+  assert.equal(contract.backends.llvm.representation,'signed-counter-i64');
+  assert.equal(contract.guestEvidence.java,'NOT_EXECUTED');
+  assert.equal(contract.guestEvidence.llvm,'NOT_EXECUTED');
+  // Source pins cannot be promoted to a compiler-generated loan proof.
+  assert.match(contract.borrowAdmissionSaturation.reviewerRequirement,/typed MIR/);
+});
