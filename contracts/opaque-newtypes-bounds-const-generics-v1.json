@@ -101,5 +101,42 @@
     "js": "NOT_VERIFIED",
     "cranelift": "NOT_VERIFIED",
     "hdl": "NOT_VERIFIED"
-  }
+  },
+  "verified_subprofiles": [
+    {
+      "id": "rust-browser-private-i64-static-newtype-v0",
+      "status": "FOCUSED_EXECUTED",
+      "source_repo": "atto-lang/atto-source.rs",
+      "source_head": "e2516cca2e4839614f3b0dc8c0d39fc097fbae0a",
+      "source_files_exact_sha_verified": 77,
+      "carrier_repo": "zed-pkg-test/zed-pkg-e2e",
+      "carrier_run_id": 44969655932,
+      "carrier_workflow_url": "https://github.com/zed-pkg-test/zed-pkg-e2e/actions/runs/44969655932",
+      "executed": {
+        "preflight_integration_passed": 8,
+        "newtype_guest_integration_passed": 5,
+        "module_unit_passed": 7,
+        "compiled_wasm_guest_passed": 3,
+        "compiler_negative_no_artifact_passed": 3,
+        "guest_imports": 0,
+        "guest_heap_allocation": false
+      },
+      "admitted": [
+        "private single-source signed-i64 nominal newtypes",
+        "checked compile-time from_const literals",
+        "immutable locals",
+        "typed source-local helper parameters/returns",
+        "explicit same-module to_base extraction"
+      ],
+      "excluded": [
+        "dynamic try_from and Result construction",
+        "public nominal ABI",
+        "modules/imports",
+        "actor/FFI/wire/serialization/hot reload",
+        "mutable newtypes",
+        "Array and Matrix const-generic physical storage"
+      ],
+      "note": "This receipt is for the Rust source-repo tests, not proof that every distinct fixture in this registry has executed or that full v1 backend parity is achieved."
+    }
+  ]
 }
