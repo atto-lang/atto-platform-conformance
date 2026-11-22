@@ -9,10 +9,14 @@
     {
       "id": "java",
       "repository": "atto-lang/atto-source.java",
-      "source_head_sha": "919d1d1fc59712e5e2059c72fe7a55cf5720df60",
-      "root_tree_sha": "58d26bb865a1211fae18395ab87587f6a4433b68",
+      "source_head_sha": "fd5055c3544ee7cf7e50dd5ac1b89469ada114a3",
+      "root_tree_sha": "af9c40f78d8f4b15e2cb8903f658f7df5be48aa2",
       "stage": "borrow_source_candidate",
       "source_artifacts": [
+        {
+          "path": ".github/workflows/core-option-result-jvm-borrow-exact-head.yml",
+          "blob_sha": "9d74a1ea63898534fb3c991dfd805b031b74a860"
+        },
         {
           "path": "core/option.atto",
           "blob_sha": "4400fae94588587fbb85474256e82cac6c26256c"
@@ -22,12 +26,24 @@
           "blob_sha": "6bae249740af1088e069c3592ff8fb2bc72f1216"
         },
         {
-          "path": "tests/core_option_result/borrowed_queries.atto",
-          "blob_sha": "35f77b9020812364d1d0885e35f53a071cb50134"
+          "path": "src/main/java/dev/oreslang/types/OwnershipChecker.java",
+          "blob_sha": "6be88b5f3717f70759440be6a3012a0411f2315b"
+        },
+        {
+          "path": "src/main/java/dev/oreslang/types/TypeChecker.java",
+          "blob_sha": "95a344571ba41d78303f3d1979918927b11619af"
         },
         {
           "path": "src/test/java/dev/oreslang/CoreOptionResultBorrowSafetyTest.java",
           "blob_sha": "d44dfe085ed6728e5f5b50be889a1c56bf78bc39"
+        },
+        {
+          "path": "src/test/java/dev/oreslang/CoreOptionResultSourceTest.java",
+          "blob_sha": "ef08bcc9f3165a04a8e57a59525769ad66e7116f"
+        },
+        {
+          "path": "tests/core_option_result/borrowed_queries.atto",
+          "blob_sha": "35f77b9020812364d1d0885e35f53a071cb50134"
         }
       ],
       "checks": {
@@ -73,8 +89,8 @@
     {
       "id": "rs",
       "repository": "atto-lang/atto-source.rs",
-      "source_head_sha": "c7edd32b3ca5cd9d3a85f63f531b6c21968c55e6",
-      "root_tree_sha": "352b41213259916837fc825ce7f390c1059d9b7f",
+      "source_head_sha": "9f881e82675df9bc08621b4056f1206583e9054d",
+      "root_tree_sha": "88d3dda23a74456172e39c0f157db9b7c4db88cf",
       "stage": "borrow_source_candidate",
       "source_artifacts": [
         {
@@ -95,7 +111,7 @@
         },
         {
           "path": "src/check.rs",
-          "blob_sha": "0578792390f090944b44fb745dc68a7e4eca74df"
+          "blob_sha": "0b6da174e5cde0d277db1846ac5106f79370d852"
         },
         {
           "path": "tests/core_option_result_scalar.rs",
