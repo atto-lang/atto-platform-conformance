@@ -6,7 +6,13 @@
     "llvm",
     "net",
     "wasm",
-    "forge"
+    "forge",
+    "rs",
+    "cranelift",
+    "js",
+    "hdl",
+    "atto",
+    "realtime"
   ],
   "semantics": {
     "time.after": "Future<void> owner-bound timer observer, no implicit Task spawn",
@@ -206,5 +212,26 @@
         "automatic_soft_downgrade": false
       }
     }
-  ]
+  ],
+  "backendScope": {
+    "standard_hosted": [
+      "java",
+      "llvm",
+      "net",
+      "wasm",
+      "forge",
+      "rs",
+      "cranelift",
+      "js"
+    ],
+    "deterministic_hardware_only": [
+      "hdl"
+    ],
+    "compiler_bootstrap_only": [
+      "atto",
+      "realtime"
+    ],
+    "all_guest_std_time_verification": "NOT_EXECUTED",
+    "allow_unsupported_to_count_as_pass": false
+  }
 }
