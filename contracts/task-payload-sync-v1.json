@@ -2,7 +2,7 @@
   "schema": "atto.task-payload-sync.v1",
   "status": "TARGET_NOT_GUEST_VERIFIED",
   "source_contract": "atto-lang/atto-spec/language/typed-task-payload-sync-v1.md",
-  "meaning": "task<T> returns Future<T> and is independently schedulable; await task<T> spawns and joins; sync task<T> and void-only do sync task<void> execute inline on caller TaskId, without an independent spawn or Future; do task<T> is supervised child spawn; standalone inline void statements require 'do sync task', and do-inline may only return void; await is type-directed and cannot await scalar/void inline results, but can join a Future returned by an inline task; local const must remain constexpr (use val for task expressions); empty nonvoid task bodies reject",
+  "meaning": "task<T> returns Future<T> and is independently schedulable; await task<T> spawns and joins; sync task<T> and void-only do sync task<void> execute inline on caller TaskId, without an independent spawn or Future; do task<T> is supervised child spawn; standalone inline void statements require 'do sync task', and do-inline may only return void; await is type-directed and cannot await scalar/void inline results, but can join a Future returned by an inline task; local const must remain constexpr (use val for task expressions); empty nonvoid task bodies reject; bare task {} infers Future<void> and task { return 42; } infers Future<int>, while do task {} discards an inferred-void structured child",
   "execution_frame_model": "independent logical continuations for spawned task<T> within a structured TaskScope; inline sync task runs in its caller's logical continuation and creates no independent child; physical frame sharing only after proven lifetime and alias safety",
   "cases": [
     {
@@ -607,6 +607,49 @@
         "diagnostic": "E_AWAIT_TYPE",
         "no_artifact": true
       }
+    },
+    {
+      "id": "inferred_empty_task_future_void",
+      "source_path": "fixtures/task-payload-sync-v1/inferred_empty_task_future_void.atto",
+      "source_git_blob": "712f4760182e52dc964d9db48099c5dd83b75a2b",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "INDEPENDENT_CHILD_SPAWN",
+          "FUTURE_VOID_INFERRED",
+          "TASK_JOIN_PHYSICAL_RETIRE"
+        ]
+      }
+    },
+    {
+      "id": "inferred_int_task_future",
+      "source_path": "fixtures/task-payload-sync-v1/inferred_int_task_future.atto",
+      "source_git_blob": "dc4a78e6edf7771273441c8790405117b93bb8e5",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "INDEPENDENT_CHILD_SPAWN",
+          "FUTURE_INT_INFERRED",
+          "TASK_JOIN_PHYSICAL_RETIRE"
+        ]
+      }
+    },
+    {
+      "id": "do_inferred_void_task",
+      "source_path": "fixtures/task-payload-sync-v1/do_inferred_void_task.atto",
+      "source_git_blob": "78b90394ebe7fbe686c57fbc0c7ddf16723b072d",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "INDEPENDENT_CHILD_SPAWN",
+          "SUPERVISED_DISCARD",
+          "INFERRED_VOID_PAYLOAD",
+          "SCOPE_PHYSICAL_RETIRE"
+        ]
+      }
     }
   ],
   "backends": {
@@ -677,7 +720,7 @@
       "guest_receipt": null
     }
   },
-  "verification": "Source-only registry; requires exact compiler SHA, negative no-artifact proofs, actual guest execution and independent backend receipts.; eight additional TARGET type/inline/const/empty-body fixtures require exact guest receipts",
+  "verification": "Source-only registry; requires exact compiler SHA, negative no-artifact proofs, actual guest execution and independent backend receipts.; eight additional TARGET type/inline/const/empty-body fixtures require exact guest receipts; three inferred task Future/void cases added",
   "limited_guest_receipts": {
     "java_pure_inline_scalar": {
       "path": "contracts/task-java-pure-inline-20261120.json",
