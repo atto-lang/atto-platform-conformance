@@ -1,0 +1,419 @@
+{
+  "schema": "atto.stdlib.core.borrow-admission-boundary-v1",
+  "status": "SOURCE_REFERENCE_ONLY",
+  "normative_sources": [
+    "atto-lang/atto-spec:language/implicit-argument-borrow-v1.md",
+    "atto-lang/atto-spec:language/shared-ownership-and-guards-v1.md",
+    "atto-lang/atto-platform-conformance:contracts/borrow-checker-v1.tsv"
+  ],
+  "warnings": [
+    "core/borrow_admission.atto is a pure diagnostic/runtime preflight and never grants a borrow or owner capability",
+    "the compiler's typed place/loan CFG, NLL lifetime, exception cleanup and actor/await escape checks are mandatory",
+    "a source-only scalar predicate cannot replace a compiler rejection or certify Sendable, Shareable, Serializer or allocation provenance"
+  ],
+  "core_source_path_hint": "stdlib/core/borrow_admission.atto (Java: src/main/resources/dev/oreslang/core/borrow_admission.atto)",
+  "max_read_loans": 65535,
+  "vectors": [
+    {
+      "readers": 0,
+      "writer": false,
+      "owner_live": true,
+      "valid": true,
+      "may_read": true,
+      "may_write": true,
+      "quiescent_owner": true,
+      "may_finish_read": false,
+      "may_finish_write": false,
+      "quiescent_boundary": true
+    },
+    {
+      "readers": 1,
+      "writer": false,
+      "owner_live": true,
+      "valid": true,
+      "may_read": true,
+      "may_write": false,
+      "quiescent_owner": false,
+      "may_finish_read": true,
+      "may_finish_write": false,
+      "quiescent_boundary": false
+    },
+    {
+      "readers": 65535,
+      "writer": false,
+      "owner_live": true,
+      "valid": true,
+      "may_read": false,
+      "may_write": false,
+      "quiescent_owner": false,
+      "may_finish_read": true,
+      "may_finish_write": false,
+      "quiescent_boundary": false
+    },
+    {
+      "readers": 65536,
+      "writer": false,
+      "owner_live": true,
+      "valid": false,
+      "may_read": false,
+      "may_write": false,
+      "quiescent_owner": false,
+      "may_finish_read": false,
+      "may_finish_write": false,
+      "quiescent_boundary": false
+    },
+    {
+      "readers": -1,
+      "writer": false,
+      "owner_live": true,
+      "valid": false,
+      "may_read": false,
+      "may_write": false,
+      "quiescent_owner": false,
+      "may_finish_read": false,
+      "may_finish_write": false,
+      "quiescent_boundary": false
+    },
+    {
+      "readers": 0,
+      "writer": true,
+      "owner_live": true,
+      "valid": true,
+      "may_read": false,
+      "may_write": false,
+      "quiescent_owner": false,
+      "may_finish_read": false,
+      "may_finish_write": true,
+      "quiescent_boundary": false
+    },
+    {
+      "readers": 1,
+      "writer": true,
+      "owner_live": true,
+      "valid": false,
+      "may_read": false,
+      "may_write": false,
+      "quiescent_owner": false,
+      "may_finish_read": false,
+      "may_finish_write": false,
+      "quiescent_boundary": false
+    },
+    {
+      "readers": 0,
+      "writer": false,
+      "owner_live": false,
+      "valid": true,
+      "may_read": false,
+      "may_write": false,
+      "quiescent_owner": false,
+      "may_finish_read": false,
+      "may_finish_write": false,
+      "quiescent_boundary": false
+    },
+    {
+      "readers": 1,
+      "writer": false,
+      "owner_live": false,
+      "valid": false,
+      "may_read": false,
+      "may_write": false,
+      "quiescent_owner": false,
+      "may_finish_read": false,
+      "may_finish_write": false,
+      "quiescent_boundary": false
+    },
+    {
+      "readers": 0,
+      "writer": true,
+      "owner_live": false,
+      "valid": false,
+      "may_read": false,
+      "may_write": false,
+      "quiescent_owner": false,
+      "may_finish_read": false,
+      "may_finish_write": false,
+      "quiescent_boundary": false
+    },
+    {
+      "readers": 2,
+      "writer": false,
+      "owner_live": true,
+      "valid": true,
+      "may_read": true,
+      "may_write": false,
+      "quiescent_owner": false,
+      "may_finish_read": true,
+      "may_finish_write": false,
+      "quiescent_boundary": false
+    },
+    {
+      "readers": 65534,
+      "writer": false,
+      "owner_live": true,
+      "valid": true,
+      "may_read": true,
+      "may_write": false,
+      "quiescent_owner": false,
+      "may_finish_read": true,
+      "may_finish_write": false,
+      "quiescent_boundary": false
+    },
+    {
+      "readers": 65535,
+      "writer": true,
+      "owner_live": true,
+      "valid": false,
+      "may_read": false,
+      "may_write": false,
+      "quiescent_owner": false,
+      "may_finish_read": false,
+      "may_finish_write": false,
+      "quiescent_boundary": false
+    }
+  ],
+  "compiler_fixtures": [
+    {
+      "id": "CORE-BORROW-01",
+      "source": "fixtures/borrow-checker-v1/pass/implicit-borrow.atto",
+      "blob_sha": "f51841bdb32c9b8747d530de1efd0ad24b69a1c3",
+      "expected": "COMPILE_AND_EXECUTE",
+      "expected_exit": 42,
+      "expected_error": null,
+      "versioned_profile": "borrow-default-v1",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "CORE-BORROW-02",
+      "source": "fixtures/borrow-checker-v1/fail/implicit-borrow.atto",
+      "blob_sha": "ef644005bc94694e112af3b6832e8fa6f26a072c",
+      "expected": "COMPILER_REJECTION_NO_GUEST_BYTES",
+      "expected_exit": null,
+      "expected_error": "E_MOVED",
+      "versioned_profile": "borrow-default-v1",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "CORE-BORROW-03",
+      "source": "fixtures/borrow-checker-v1/pass/read-loan.atto",
+      "blob_sha": "aead454081e5b3ea694cbedcf02b6813bd9f1037",
+      "expected": "COMPILE_AND_EXECUTE",
+      "expected_exit": 42,
+      "expected_error": null,
+      "versioned_profile": "canonical-ownership-target-v1",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "CORE-BORROW-04",
+      "source": "fixtures/borrow-checker-v1/fail/read-loan.atto",
+      "blob_sha": "427df953200ba6f2f0679d548c7c15e8fb701f96",
+      "expected": "COMPILER_REJECTION_NO_GUEST_BYTES",
+      "expected_exit": null,
+      "expected_error": "E_BORROW",
+      "versioned_profile": "canonical-ownership-target-v1",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "CORE-BORROW-05",
+      "source": "fixtures/borrow-checker-v1/pass/write-loan.atto",
+      "blob_sha": "cfdd50415dd0da35bb892dc6f48793eacf19c034",
+      "expected": "COMPILE_AND_EXECUTE",
+      "expected_exit": 42,
+      "expected_error": null,
+      "versioned_profile": "borrow-default-v1",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "CORE-BORROW-06",
+      "source": "fixtures/borrow-checker-v1/fail/write-loan.atto",
+      "blob_sha": "fe4d678bd282c9af3331cfd778c78c7d6628bf16",
+      "expected": "COMPILER_REJECTION_NO_GUEST_BYTES",
+      "expected_exit": null,
+      "expected_error": "E_BORROW",
+      "versioned_profile": "borrow-default-v1",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "CORE-BORROW-07",
+      "source": "fixtures/borrow-checker-v1/pass/take.atto",
+      "blob_sha": "a68008f800da5722790fd5a7dfddcbe7bf49804e",
+      "expected": "COMPILE_AND_EXECUTE",
+      "expected_exit": 42,
+      "expected_error": null,
+      "versioned_profile": "canonical-ownership-target-v1",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "CORE-BORROW-08",
+      "source": "fixtures/borrow-checker-v1/fail/take.atto",
+      "blob_sha": "3874d4012c85f5e522458944949ffa9f2a3da22c",
+      "expected": "COMPILER_REJECTION_NO_GUEST_BYTES",
+      "expected_exit": null,
+      "expected_error": "E_MOVED",
+      "versioned_profile": "canonical-ownership-target-v1",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "CORE-BORROW-09",
+      "source": "fixtures/borrow-checker-v1/fail/suspension.atto",
+      "blob_sha": "9b25e1005b9b5436cbb011df7eace1ccab94961f",
+      "expected": "COMPILER_REJECTION_NO_GUEST_BYTES",
+      "expected_exit": null,
+      "expected_error": "E_LOAN_SUSPEND",
+      "versioned_profile": "canonical-ownership-target-v1",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "CORE-BORROW-10",
+      "source": "fixtures/borrow-checker-v1/fail/actor-handoff.atto",
+      "blob_sha": "47010afd088d0fadfb5c8f82d38e57b608e62617",
+      "expected": "COMPILER_REJECTION_NO_GUEST_BYTES",
+      "expected_exit": null,
+      "expected_error": "E_ACTOR_LOAN_ESCAPE",
+      "versioned_profile": "canonical-ownership-target-v1",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "CORE-BORROW-11",
+      "source": "fixtures/borrow-checker-v1/fail/freeze.atto",
+      "blob_sha": "0204e1b6a76bd1ff80ba152fe394238b581eb799",
+      "expected": "COMPILER_REJECTION_NO_GUEST_BYTES",
+      "expected_exit": null,
+      "expected_error": "E_SHARE_ALIAS",
+      "versioned_profile": "canonical-ownership-target-v1",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "CORE-BORROW-12",
+      "source": "fixtures/borrow-checker-v1/fail/copy-deep.atto",
+      "blob_sha": "368cf283bc67aaf072113daa37db5ae1662da8fe",
+      "expected": "COMPILER_REJECTION_NO_GUEST_BYTES",
+      "expected_exit": null,
+      "expected_error": "E_BORROW",
+      "versioned_profile": "canonical-ownership-target-v1",
+      "status": "NOT_EXECUTED"
+    }
+  ],
+  "backend_target_states": [
+    {
+      "backend": "java",
+      "repo": "atto-lang/atto-source.java",
+      "core_source": "STAGED_NOT_EXECUTED",
+      "compiler_borrow_admission": "NOT_EXECUTED",
+      "compiled_positive": "NOT_EXECUTED",
+      "compiled_negative": "NOT_EXECUTED",
+      "guest_execution": "NOT_EXECUTED",
+      "errors_unverified": true,
+      "evidence": null
+    },
+    {
+      "backend": "llvm",
+      "repo": "atto-lang/atto-source.llvm",
+      "core_source": "STAGED_NOT_EXECUTED",
+      "compiler_borrow_admission": "NOT_EXECUTED",
+      "compiled_positive": "NOT_EXECUTED",
+      "compiled_negative": "NOT_EXECUTED",
+      "guest_execution": "NOT_EXECUTED",
+      "errors_unverified": true,
+      "evidence": null
+    },
+    {
+      "backend": "net",
+      "repo": "atto-lang/atto-source.net",
+      "core_source": "STAGED_NOT_EXECUTED",
+      "compiler_borrow_admission": "NOT_EXECUTED",
+      "compiled_positive": "NOT_EXECUTED",
+      "compiled_negative": "NOT_EXECUTED",
+      "guest_execution": "NOT_EXECUTED",
+      "errors_unverified": true,
+      "evidence": null
+    },
+    {
+      "backend": "wasm",
+      "repo": "atto-lang/atto-source.wasm",
+      "core_source": "STAGED_NOT_EXECUTED",
+      "compiler_borrow_admission": "NOT_EXECUTED",
+      "compiled_positive": "NOT_EXECUTED",
+      "compiled_negative": "NOT_EXECUTED",
+      "guest_execution": "NOT_EXECUTED",
+      "errors_unverified": true,
+      "evidence": null
+    },
+    {
+      "backend": "forge",
+      "repo": "atto-lang/atto-source.forge",
+      "core_source": "STAGED_NOT_EXECUTED",
+      "compiler_borrow_admission": "NOT_EXECUTED",
+      "compiled_positive": "NOT_EXECUTED",
+      "compiled_negative": "NOT_EXECUTED",
+      "guest_execution": "NOT_EXECUTED",
+      "errors_unverified": true,
+      "evidence": null
+    },
+    {
+      "backend": "rs",
+      "repo": "atto-lang/atto-source.rs",
+      "core_source": "STAGED_NOT_EXECUTED",
+      "compiler_borrow_admission": "NOT_EXECUTED",
+      "compiled_positive": "NOT_EXECUTED",
+      "compiled_negative": "NOT_EXECUTED",
+      "guest_execution": "NOT_EXECUTED",
+      "errors_unverified": true,
+      "evidence": null
+    },
+    {
+      "backend": "cranelift",
+      "repo": "atto-lang/atto-source.cranelift",
+      "core_source": "STAGED_NOT_EXECUTED",
+      "compiler_borrow_admission": "NOT_EXECUTED",
+      "compiled_positive": "NOT_EXECUTED",
+      "compiled_negative": "NOT_EXECUTED",
+      "guest_execution": "NOT_EXECUTED",
+      "errors_unverified": true,
+      "evidence": null
+    },
+    {
+      "backend": "js",
+      "repo": "atto-lang/atto-source.js",
+      "core_source": "STAGED_NOT_EXECUTED",
+      "compiler_borrow_admission": "NOT_EXECUTED",
+      "compiled_positive": "NOT_EXECUTED",
+      "compiled_negative": "NOT_EXECUTED",
+      "guest_execution": "NOT_EXECUTED",
+      "errors_unverified": true,
+      "evidence": null
+    },
+    {
+      "backend": "hdl",
+      "repo": "atto-lang/atto-source.hdl",
+      "core_source": "STAGED_NOT_EXECUTED",
+      "compiler_borrow_admission": "NOT_EXECUTED",
+      "compiled_positive": "NOT_EXECUTED",
+      "compiled_negative": "NOT_EXECUTED",
+      "guest_execution": "NOT_EXECUTED",
+      "errors_unverified": true,
+      "evidence": null
+    }
+  ],
+  "proof_gate": {
+    "requires": [
+      "exact_source_commit_and_tree",
+      "exact_fixture_blob_sha",
+      "semantic_compiler_rejection_code",
+      "negative_emitted_guest_artifact_bytes=0",
+      "executed_compiler_process",
+      "nonzero_stepful_CI",
+      "owner_provenance_and_lifetime_evidence"
+    ],
+    "deny": [
+      "host_reference_only",
+      "source-only",
+      "queued",
+      "pending",
+      "zero-step",
+      "parser_unknown_keyword_as_borrow_failure",
+      "fake_PASS",
+      "unverified_external_runner",
+      "stale-head"
+    ]
+  }
+}
