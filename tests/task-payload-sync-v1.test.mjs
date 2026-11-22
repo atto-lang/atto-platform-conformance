@@ -10,7 +10,7 @@ const cases = Object.fromEntries(registry.cases.map(c => [c.id,c]));
 test('versioned typed task fixtures are pinned to exact Git blob identity', () => {
   assert.equal(registry.schema, 'atto.task-payload-sync.v1');
   assert.equal(registry.status, 'TARGET_NOT_GUEST_VERIFIED');
-  assert.equal(registry.cases.length, 50);
+  assert.equal(registry.cases.length, 53);
   assert.equal(new Set(registry.cases.map(x=>x.id)).size,42);
   for (const c of registry.cases) {
     assert.match(c.source_path,/^fixtures\/task-payload-sync-v1\/[a-z0-9_]+\.atto$/);
@@ -436,4 +436,22 @@ test('empty typed nonvoid tasks reject, but empty void do task spawns', () => {
   for (const witness of ['INDEPENDENT_CHILD_SPAWN','SUPERVISED_DISCARD','SCOPE_PHYSICAL_RETIRE']) {
     assert.ok(stmt.expected.witnesses.includes(witness), witness);
   }
+});
+
+test('unannotated task infers Future<void> or Future<int> and do task discards within scope', () => {
+  const empty = cases.inferred_empty_task_future_void;
+  const valued = cases.inferred_int_task_future;
+  const discarded = cases.do_inferred_void_task;
+  for (const item of [empty, valued, discarded]) {
+    assert.equal(item.kind, 'positive');
+    assert.equal(item.expected.guest_exit, 42);
+    assert.ok(item.expected.witnesses.includes('INDEPENDENT_CHILD_SPAWN'));
+  }
+  assert.match(getSource(empty).toString('utf8'), /val Future<void> pending = task \{\}/);
+  assert.ok(empty.expected.witnesses.includes('FUTURE_VOID_INFERRED'));
+  assert.match(getSource(valued).toString('utf8'), /val Future<int> pending = task \{ return 42; \}/);
+  assert.ok(valued.expected.witnesses.includes('FUTURE_INT_INFERRED'));
+  assert.match(getSource(discarded).toString('utf8'), /do task \{\}/);
+  assert.ok(discarded.expected.witnesses.includes('SUPERVISED_DISCARD'));
+  assert.ok(discarded.expected.witnesses.includes('SCOPE_PHYSICAL_RETIRE'));
 });
