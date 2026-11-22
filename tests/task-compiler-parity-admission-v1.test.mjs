@@ -60,7 +60,7 @@ test('all eleven new type-directed task cases are represented across backend pro
     'inferred_empty_task_future_void', 'inferred_int_task_future',
     'do_inferred_void_task'
   ];
-  assert.equal(manifest.source_cases.length, 21);
+  assert.equal(manifest.source_cases.length, 42);
   const included = new Set(manifest.source_cases.map(c => c.id));
   const canonical = new Map(targets.cases.map(c => [c.id, c]));
   for (const id of ids) {
@@ -73,5 +73,36 @@ test('all eleven new type-directed task cases are represented across backend pro
   for (const [name,p] of Object.entries(manifest.source_profiles)) {
     assert.equal(p.release_qualified,false,name);
     assert.equal(p.compiled_guest,'NOT_EXECUTED',name);
+  }
+});
+
+test('all TaskFuture handle, ready and cooperative-control cases remain source-only for eleven backends', () => {
+  const ids = [
+    'taskfuture_await_ready', 'taskfuture_await_direct',
+    'taskfuture_receipt_split_control', 'taskfuture_cooperate_request',
+    'taskfuture_cancel_scope', 'taskfuture_legacy_future_projection',
+    'taskfuture_legacy_cancel_alias','taskfuture_inferred_empty_void',
+    'taskfuture_inferred_valued','taskfuture_duplicate_ready_rejected',
+    'taskfuture_duplicate_await_rejected','taskfuture_cooperate_on_future_rejected',
+    'taskfuture_cancel_task_on_future_rejected','taskfuture_get_ready_on_future_rejected',
+    'taskfuture_await_cooperate_rejected','taskfuture_await_cancel_task_rejected',
+    'taskfuture_const_handle_rejected','taskfuture_sync_handle_rejected',
+    'taskfuture_ready_as_int_rejected','taskfuture_control_void_as_int_rejected',
+    'taskfuture_wrong_payload_rejected'
+  ];
+  const byId = new Map(manifest.source_cases.map(c=>[c.id,c]));
+  const pinned = new Map(targets.cases.map(c=>[c.id,c]));
+  assert.equal(byId.size,42);
+  assert.equal(ids.length,21);
+  for (const id of ids) {
+    assert.ok(byId.has(id),'missing parity case '+id);
+    assert.equal(byId.get(id).source_git_blob,pinned.get(id).source_git_blob,id);
+    assert.equal(blobSha(read(byId.get(id).source_path)),byId.get(id).source_git_blob,id);
+  }
+  assert.equal(manifest.evidence_grade,'SOURCE_ONLY');
+  assert.equal(Object.keys(manifest.source_profiles).length,11);
+  for (const [name,profile] of Object.entries(manifest.source_profiles)) {
+    assert.equal(profile.compiled_guest,'NOT_EXECUTED',name);
+    assert.equal(profile.release_qualified,false,name);
   }
 });
