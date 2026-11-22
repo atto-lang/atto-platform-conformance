@@ -157,7 +157,25 @@
       "rejectUnexpectedHostImports": true,
       "mustNotReturnSuccess42": true,
       "artifactProvenanceRequired": true
-    }
+    },
+    "futureOwnershipNegative": [
+      {
+        "file": "contracts/std-actor-v1/future-use-after-await.reject.atto",
+        "expectedDiagnostic": "E_MOVED"
+      },
+      {
+        "file": "contracts/std-actor-v1/future-loan-across-await.reject.atto",
+        "expectedDiagnostic": "E_BORROW"
+      },
+      {
+        "file": "contracts/std-actor-v1/future-take-then-await.reject.atto",
+        "expectedDiagnostic": "E_MOVED"
+      },
+      {
+        "file": "contracts/std-actor-v1/future-forged-constructor.reject.atto",
+        "expectedDiagnostic": "E_RESERVED"
+      }
+    ]
   },
   "statuses": [
     "PASS",
@@ -179,7 +197,8 @@
     "runtime_control_authentication",
     "physical_quiescence",
     "executed_job_steps",
-    "independent_receipt_review"
+    "independent_receipt_review",
+    "core_affine_borrow_checker_receipt"
   ],
   "backends": {
     "atto": {
@@ -248,5 +267,22 @@
       "contractStatus": "NOT_EXECUTED",
       "reason": "source_candidate_unverified"
     }
+  },
+  "coreOwnership": {
+    "sealedTypes": [
+      "Future<T>",
+      "TaskFuture<T>",
+      "ActorFuture<T>"
+    ],
+    "ownedReceiptFormal": "take!",
+    "borrowedAwaitDiagnostic": "E_OWNERSHIP",
+    "doubleAwaitDiagnostic": "E_MOVED",
+    "useAfterAwaitDiagnostic": "E_MOVED",
+    "liveLoanAcrossAwaitDiagnostic": "E_BORROW",
+    "takeThenAwaitDiagnostic": "E_MOVED",
+    "forgedFutureConstructorDiagnostic": "E_RESERVED",
+    "negativeBeforeCodegen": true,
+    "validOwnedRequiresTypedAffineMirAndRuntime": true,
+    "preflightIsNotFullBorrowChecker": true
   }
 }

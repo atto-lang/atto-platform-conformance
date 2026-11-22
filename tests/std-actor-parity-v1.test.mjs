@@ -82,3 +82,20 @@ test('real compiler mutation controls must observe all six distinct failure code
   assert.equal(m.mustCompileAndExecute,true);
   assert.equal(m.requiredCompiler,'production_backend_compiler');
 });
+
+rejected('drop core ownership contract',m=>delete m.coreOwnership);
+rejected('accept borrowed await in core',m=>m.coreOwnership.borrowedAwaitDiagnostic='NONE');
+rejected('silently allow live Future loan over await',m=>m.coreOwnership.liveLoanAcrossAwaitDiagnostic='NONE');
+rejected('treat source preflight as sound MIR',m=>m.coreOwnership.preflightIsNotFullBorrowChecker=false);
+rejected('let valid Future source run without trusted runtime',m=>m.coreOwnership.validOwnedRequiresTypedAffineMirAndRuntime=false);
+rejected('remove core ownership evidence requirement',m=>m.verificationRequired.pop());
+rejected('drop core sealed constructor negative',m=>m.guestTests.futureOwnershipNegative.pop());
+rejected('weaken post-await use error',m=>m.guestTests.futureOwnershipNegative[0].expectedDiagnostic='E_UNSUPPORTED');
+test('native affine Future negative probes cover move, loan, repeat and forgery',()=>{
+  const f=contract.guestTests.futureOwnershipNegative;
+  assert.equal(f.length,4);
+  assert.deepEqual(f.map(x=>x.expectedDiagnostic),['E_MOVED','E_BORROW','E_MOVED','E_RESERVED']);
+  assert.equal(contract.coreOwnership.ownedReceiptFormal,'take!');
+  assert.equal(contract.coreOwnership.negativeBeforeCodegen,true);
+  assert.equal(contract.coreOwnership.preflightIsNotFullBorrowChecker,true);
+});

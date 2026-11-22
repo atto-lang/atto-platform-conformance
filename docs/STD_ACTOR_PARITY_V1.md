@@ -30,3 +30,9 @@ The candidate native guest corpus includes a standalone namespace-only pure-func
 Zero-step Actions failures are `RUNNER_ADMISSION_FAILURE`, not guest compilation failures. A stepful source-free canary verifies capacity only. Private cross-organization Git-tree export is permitted only after independent approval of the **exact source head/tree** and **destination owner, repo numeric ID, visibility, readers, retention, source policy/branch protection and carrier workflow/test plan**. Unapproved transfer via connector Git objects is still denied.
 
 Use `node --test tests/std-actor-parity-v1.test.mjs` for source-contract mutation tests. Keep the existing nine draft `std.actor` PRs as implementation branches and integrate rather than duplicate their work. Future adapter behavior must also remain compatible with `atto-common-source#134`; do not force backend source identity.
+
+## Compiler-core Future ownership admission
+
+This contract also requires compiler-owned sealed `Future<T>`, `TaskFuture<T>`, and `ActorFuture<T>` semantics. The independently authored `.atto` source libraries cannot enforce ownership: a **compiler-core borrow/affine pass** must reject borrowed await (`E_OWNERSHIP`), double await and post-await use (`E_MOVED`), a live loan crossing consuming await (`E_BORROW`), use after `take!` (`E_MOVED`) and guest construction of a sealed Future (`E_RESERVED`) before emitting an artifact.
+
+Four additional authored `.atto` negative fixtures are required across all active compiler branches. A positive owned Future program may compile **only after** typed affine MIR, suspension/loan liveness, trusted allocation/runtime and target codegen exist. Rust currently stages a bounded *negative preflight* in compiler core, but it is deliberately not a complete borrow checker or executable Future runtime. The other backends' fixture presence does not imply checker support. All results remain `NOT_EXECUTED` pending exact-head real compiler evidence.
