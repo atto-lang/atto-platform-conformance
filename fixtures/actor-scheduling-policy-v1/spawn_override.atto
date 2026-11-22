@@ -1,0 +1,12 @@
+// TARGET / NOT EXECUTED: spawn-time policy only narrows the declaration ceiling.
+@actor_schedule(max_parallelism = pool_size, affinity = sticky, pool = shared)
+define actor Worker as
+  susp receive(mail: ActorMail<int>) -> void {
+    ^ void;
+  }
+end
+
+pub fnc main() -> int {
+  val worker = spawn Worker() with schedule(max_parallelism = 2, affinity = sticky);
+  return 0;
+}
