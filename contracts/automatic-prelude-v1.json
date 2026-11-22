@@ -108,6 +108,29 @@
       "outcome": "compile_reject",
       "source": "fixtures/automatic-prelude-v1/alloc_type_without_allocator.atto",
       "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "option_wrong_arity",
+      "profile": "core",
+      "outcome": "compile_reject",
+      "source": "fixtures/automatic-prelude-v1/option_wrong_arity.atto",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "result_wrong_arity",
+      "profile": "core",
+      "outcome": "compile_reject",
+      "source": "fixtures/automatic-prelude-v1/result_wrong_arity.atto",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "borrowed_affine_tag_query",
+      "profile": "core",
+      "outcome": "guest_exit_42",
+      "source": "fixtures/automatic-prelude-v1/borrowed_affine_tag_query.atto",
+      "evidence": "NOT_EXECUTED"
     }
-  ]
+  ],
+  "registry_contract": "contracts/core-type-registry-v1.json",
+  "registry_status": "SOURCE_CONTRACT_NOT_GUEST_VERIFIED"
 }
