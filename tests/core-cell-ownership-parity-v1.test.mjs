@@ -121,7 +121,7 @@ test('nine independently owned bounded core/cell sources have updated exact blob
     cranelift:'178dc049f6f19c8af29f96e42661b970e746d671',
     wasm:'1561f8e71fc831d5787b8652a108d0fb87714503',
     forge:'7a0b117c5a6775921e541dfa5aaf654ba2aea7f4',
-    js:'ae54f28baee13675a71088251b41dd8182f60084',
+    js:'ef1e84dbab1bb476d6ac55bf1802331660879732',
     rs:'7eb09f625637dd11d75aa295947a9c79835cb5df',
     hdl:'38439b2b0b487b4bb09d191ba50c115611295206',
     atto:'55a0a3c5a04b825fb597a9c66101ee44d2e584ed',
