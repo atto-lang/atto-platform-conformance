@@ -93,7 +93,7 @@
         "kind": "draft_pr",
         "pr": 1762,
         "branch": "feat/std-net-udp-datagram-policy-20261122",
-        "head_sha": "50addc1fd35a50db044308066b76597eb1090f77"
+        "head_sha": "9ff8ea0958488f61711c9891ebac85dc0ba5b2b7"
       },
       "phase": "candidate",
       "host": {
@@ -210,18 +210,18 @@
         "kind": "draft_pr",
         "pr": 136,
         "branch": "feat/std-net-udp-datagram-policy-20261122",
-        "head_sha": "e5fa11206647facc928c9394873d17ca0a754c5f"
+        "head_sha": "f237ea6def27c9e8eeb4515708188af682d8e2e6"
       },
       "phase": "host_candidate",
       "host": {
         "status": "passed",
         "receipt": {
           "kind": "node_v22_host_adapter",
-          "cases": 12,
-          "repetitions": 25,
+          "cases": 13,
+          "repetitions": 20,
           "blob_sha": [
-            "a749558c867be4003bc768a8d3fec64dda35dba3",
-            "1e93e9682c1ee818cf4dbaa49691b8c742e26fed"
+            "effedb5710875fa8b5a1336973f916d8bcb4294b",
+            "e9072aa718d0c0a08cdefb67f62f6cad28346125"
           ],
           "caveat": "Node physical host adapter only, not compiled guest"
         }
@@ -269,18 +269,18 @@
         "kind": "draft_pr",
         "pr": 273,
         "branch": "feat/std-net-udp-datagram-policy-20261122",
-        "head_sha": "729bd81e30e127bc61b5c99024c4bed49d34a2b0"
+        "head_sha": "29270a7ac3482eb392ecca4d58a0d4a2ec7170f5"
       },
       "phase": "host_candidate",
       "host": {
         "status": "passed",
         "receipt": {
           "kind": "node_v22_host_adapter",
-          "cases": 12,
-          "repetitions": 25,
+          "cases": 13,
+          "repetitions": 20,
           "blob_sha": [
-            "7f8728a992ac602a93823ca2a93050aabe8c824f",
-            "1e93e9682c1ee818cf4dbaa49691b8c742e26fed"
+            "8f5538bdc6847547b5dc61330627e3ba5f1de42d",
+            "e9072aa718d0c0a08cdefb67f62f6cad28346125"
           ],
           "caveat": "Node host adapter only; browser Wasm cannot open raw UDP sockets"
         }
