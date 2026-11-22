@@ -254,8 +254,8 @@
       "repo": "atto-lang/atto-source.rs",
       "kind": "BACKEND_OWNED_SOURCE_DRAFT",
       "candidate_pr": 546,
-      "head_sha": "25dea0e3579b5742f6e638f911f26423348a92e4",
-      "root_tree_sha": "2df72f607efb04007ec59743c057851eb89678ae",
+      "head_sha": "6fd8892541cad15ae21baa70dc8d44acb15ecec8",
+      "root_tree_sha": "210db14ab20961dd73b1e5387147e90255e1eee2",
       "source_blobs": {
         "tests/stdlib/websocket_quic_compute_smoke.atto": "7534eb2ed7abd2339988b42d5086f5e45a062b9d",
         "tests/stdlib/protocol_boundaries.atto": "409cf612cadff0fed591cdda0d88853def3e4e54",
@@ -560,5 +560,17 @@
     "tests/stdlib_native_guest_wasm.test.mjs": "c6d6e00ba49189214d5ddc0a508dac4d7aeb0b61",
     "examples/stdlib_native_guest.rs": "5750616a0d04c6bbd24cd04f39ea4e60c2abb739",
     ".github/workflows/std-native-guest.yml": "26c816ec3a86577113d1806efb862c521e93be4f"
+  },
+  "rust_borrow_mir_corpus": {
+    "contracts/borrow-mir-v1/semantic-cases.json": "b7bfa0fed6092ff28c8b407661d84fbb277797d1",
+    "tests/borrow-mir-v1-contract.test.mjs": "3c126025ffbab79d512c8b342abf1f2ebf8e1c36",
+    "contracts/borrow-mir-v1/README.md": "f8424da5071be6449270a630f7414c787740bae8",
+    ".github/workflows/borrow-mir-v1-contract.yml": "b5c3a58ad32c4fe4da8904c2490c03e3a2d77532",
+    "cases": 24,
+    "protocol_lifecycle_case_ids": [
+      "C23",
+      "C24"
+    ],
+    "semantic_status": "SOURCE_FREE_MODEL_PASS_NOT_NATIVE_BACKEND_EXECUTION"
   }
 }
