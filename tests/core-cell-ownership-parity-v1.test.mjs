@@ -173,3 +173,35 @@ test('alternate runner evidence is source-free and cleanup restores known tree',
   assert.equal(r.cleanupTree,'b78051568a02496c9f55790d83a87a158c16ee88');
   assert.ok(Object.values(contract.guestEvidence).every(x=>x==='NOT_EXECUTED'));
 });
+
+test('Rust Java LLVM compiler integration candidates pin exact source, tree and gate blobs',()=>{
+  const candidates=contract.compilerIntegrationCandidates;
+  assert.deepEqual(Object.keys(candidates).sort(),['java','llvm','rust']);
+  for (const [id,entry] of Object.entries(candidates)) {
+    assert.equal(entry.repository,'atto-lang/atto-source.'+(id==='rust'?'rs':id));
+    assert.match(entry.sourceCommit,/^[0-9a-f]{40}$/);
+    assert.match(entry.sourceTree,/^[0-9a-f]{40}$/);
+    assert.notEqual(entry.sourceCommit,entry.sourceTree);
+    assert.ok(Object.keys(entry.sourceBlobs).length>=1);
+    for (const [path,sha] of Object.entries(entry.sourceBlobs)) {
+      assert.ok(path.length>3);
+      assert.match(sha,/^[0-9a-f]{40}$/,path);
+    }
+    assert.equal(entry.compilation,'NOT_EXECUTED');
+    assert.equal(entry.guest,'NOT_EXECUTED');
+    assert.equal(contract.guestEvidence[id==='rust'?'rs':id],'NOT_EXECUTED');
+  }
+  assert.match(candidates.rust.check,/E_UNKNOWN_TYPE/);
+  assert.match(candidates.rust.check,/borrow-v1/);
+  assert.match(candidates.java.check,/validate and real guest launch/);
+  assert.match(candidates.llvm.check,/IR=NONE/);
+  assert.match(contract.compilerIntegrationEvidenceRule,/NOT real guest/);
+});
+
+test('source-only candidate receipts never override 11 compiler parity receipts',()=>{
+  assert.equal(Object.keys(contract.guestEvidence).length,11);
+  assert.ok(Object.values(contract.guestEvidence).every(x=>x==='NOT_EXECUTED'));
+  for(const entry of Object.values(contract.compilerIntegrationCandidates))
+    assert.notEqual(entry.guest,'PASSED');
+  assert.match(contract.compilerIntegrationEvidenceRule,/opt-in/);
+});
