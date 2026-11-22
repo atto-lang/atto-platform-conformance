@@ -10,11 +10,12 @@ const shaBlob = source => createHash('sha1')
   .update(source)
   .digest('hex');
 
-test('all checked division candidates pin exact Git blob IDs', () => {
+test('all numerical guest candidates pin exact Git blob IDs', () => {
   assert.equal(manifest.schemaVersion, 1);
   assert.equal(manifest.status, 'CANDIDATE_SOURCE_NOT_EXECUTED');
-  assert.equal(manifest.cases.length, 7);
-  assert.equal(new Set(manifest.cases.map(x => x.id)).size, 4);
+  assert.equal(manifest.cases.length, 10);
+  assert.equal(new Set(manifest.cases.map(x => x.id)).size, manifest.cases.length);
+  assert.equal(new Set(manifest.cases.map(x => x.path)).size, manifest.cases.length);
   for (const fixture of manifest.cases) {
     assert.match(fixture.path, /^[a-z0-9-]+\.atto$/);
     const content = readFileSync(new URL(fixture.path, root), 'utf8');
@@ -40,6 +41,9 @@ test('candidate source is never mistaken for authenticated compiler/AOT evidence
       {kind:'value',value:'42'},
       {kind:'value',value:'42'},
       {kind:'value',value:'42'},
+      {kind:'value',value:'42'},
+      {kind:'value',value:'42'},
+      {kind:'value',value:'42'},
     ]
   );
   const accepted = readFileSync(new URL('checked-i64-quotient.atto', root), 'utf8');
@@ -56,4 +60,13 @@ test('candidate source is never mistaken for authenticated compiler/AOT evidence
   }
   const nested = readFileSync(new URL('trap-result-no-doublewrap.atto', root), 'utf8');
   assert.match(nested, /trap Ok\(42\)/);
+  const nan = readFileSync(new URL('ordered-float-nan.atto', root), 'utf8');
+  assert.match(nan, /0\.0\s*\/\s*0\.0/);
+  assert.match(nan, /nan\s*>\s*1\.0/);
+  const zero = readFileSync(new URL('ordered-float-signed-zero.atto', root), 'utf8');
+  assert.match(zero, /-0\.0/);
+  assert.match(zero, /minus_zero\s*>=\s*0\.0/);
+  const precision = readFileSync(new URL('ordered-int-float-precision.atto', root), 'utf8');
+  assert.match(precision, /9007199254740993/);
+  assert.match(precision, /exact\s*>\s*rounded/);
 });
