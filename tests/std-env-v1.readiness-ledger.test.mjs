@@ -47,3 +47,21 @@ test('unsupported targets require explicit capability gates, not fabricated PASS
   assert.equal(byBackend.atto.implementation_stage,'selfhost_bootstrap_only');
   assert.equal(doc.targets.filter(t=>t.guest_status==='PASSED').length,0);
 });
+
+test('eight independently owned .atto libraries expose nine named public APIs',()=>{
+  const expected=['get','has','get_or','get_required','get_nonempty',
+    'get_required_nonempty','parse_bool','get_bool','get_bool_or'];
+  for(const name of ['java','llvm','net','rs','forge','cranelift','js','wasm']){
+    const entry=byBackend[name];
+    assert.ok(sha40(entry.stdlib_env_source_blob),name+' source blob missing');
+    assert.deepEqual(entry.public_api_source_names,expected,name);
+    assert.equal(entry.source_api_audit,'NINE_NAMES_PRESENT_SOURCE_ONLY');
+    assert.equal(entry.guest_status,'NOT_EXECUTED');
+  }
+  for(const name of ['atto','realtime','hdl']){
+    const entry=byBackend[name];
+    assert.equal(entry.stdlib_env_source_blob,null);
+    assert.deepEqual(entry.public_api_source_names,[]);
+    assert.equal(entry.source_api_audit,'NOT_AUDITED');
+  }
+});
