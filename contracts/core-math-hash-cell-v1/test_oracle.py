@@ -77,6 +77,24 @@ class SourceFreeCoreOracle(unittest.TestCase):
         self.assertFalse(c["usable_refcell_T"])
         self.assertTrue(c["requires_compiler_borrow_enforcement"])
 
+    def test_namespace_metadata_is_not_import_authority(self):
+        n = CONTRACT["namespace_contract"]
+        self.assertTrue(n["namespace_is_source_metadata_not_runtime_object"])
+        self.assertFalse(n["source_namespace_grants_package_permissions"])
+        self.assertFalse(n["named_or_star_package_import_implemented"])
+        self.assertFalse(n["guest_namespace_execution_proven"])
+        self.assertFalse(CONTRACT["certification"]["namespace_import_parity"])
+        net = next(c for c in CONTRACT["candidates"] if c["backend"] == "net")
+        js = next(c for c in CONTRACT["candidates"] if c["backend"] == "js")
+        self.assertTrue(net["compiler_owned_import_authority"])
+        self.assertFalse(js["compiler_owned_import_authority"])
+        self.assertEqual(net["namespace_source_form"],
+                         "use namespace atto.core.<leaf>;")
+        self.assertEqual(js["namespace_source_form"],
+                         "use namespace atto.core.math;")
+        self.assertFalse(net["general_package_namespace_imports"])
+        self.assertFalse(js["general_package_namespace_imports"])
+
     def test_evidence_never_upgrades_by_presence_of_source(self):
         self.assertEqual(CONTRACT["status"], "candidate_source_free_not_guest_verified")
         self.assertEqual(len(CONTRACT["candidates"]), 11)
