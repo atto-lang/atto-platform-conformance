@@ -1,0 +1,18 @@
+// Candidate guest program: exact mixed i64/float equality, NaN, signed zero.
+// Expected main() = 42; NOT_EXECUTED on any guest compiler or AOT backend.
+pub fnc main(): int {
+  val int exact = 9007199254740993;
+  val float rounded = 9007199254740992.0;
+  val float nan = 0.0 / 0.0;
+  val float negative_zero = -0.0;
+  if exact == rounded || rounded == exact then
+    return 1;
+  fi
+  if nan == nan || negative_zero != 0.0 then
+    return 2;
+  fi
+  if exact != rounded && nan != nan && negative_zero == 0.0 then
+    return 42;
+  fi
+  return 3;
+}
