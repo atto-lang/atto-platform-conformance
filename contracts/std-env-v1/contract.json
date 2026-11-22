@@ -373,5 +373,17 @@
     "Fixture stdout reflects portable boolean stringification; any compiler lacking this syntax must report NOT_EXECUTED or a tested UNSUPPORTED, never fabricate PASS.",
     "Host-only sanitizer, Node dispatcher, and synthetic Truffle environment tests do not constitute guest test success.",
     "Every compiled guest receipt must name exact compiler head+tree SHA, fixture SHA, toolchain, host inputs, policy, executed steps, observed output/error, and source-only control status."
-  ]
+  ],
+  "fixture_git_blobs": {
+    "basic.atto": "a7c820efe3935d6bd9a70f72a600095163629852",
+    "strict_bool.atto": "eea7addbc955db90ec17053c51ad35bf00520a34",
+    "invalid_bool.atto": "602e52e8f2cf0e06674e56f01b816ad9cb238afa",
+    "required_missing.atto": "d89c9e608e9b3a9fe71f3b9a5cf443c7cdf15d29",
+    "denied_get_or.atto": "fde333c60ffc63b00bbf430eee10c672ff4f2821",
+    "denied_has.atto": "776aa411d3f6372b9d1144e798721862819690d8",
+    "invalid_name.atto": "6793cb4c23bbbae193a244f4665f7ca302828f50",
+    "isolated.atto": "3efc8f0aeedf4e6ec6e104e774a47af51c45b3c5",
+    "shadow/entry.atto": "cbbaf4e98f0a81d6365027977293fc9ae02e0a1a",
+    "shadow/std/env.atto": "2ccc213d46dc9a131054b1acb9cc6683b85dcd70"
+  }
 }
