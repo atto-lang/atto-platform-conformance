@@ -5,7 +5,7 @@
   "authority": "atto-lang/atto-platform-conformance",
   "evidence_policy": "SOURCE_ONLY_NO_GUEST_PROMOTION",
   "release_qualified": false,
-  "notes": "Observed commits are source snapshots, not verified compilation. Java and six additional compiler drafts have borrowed Option/Result query targets; JS remains scalar-only, HDL unsynthesized, Atto/Realtime without identified candidates. No actual guest/AOT/sanitizer/unsupported evidence admitted.",
+  "notes": "Observed source commits and Git root trees are inventory only. Java's exact-head JVM workflow and Rust's source-local Wasm workflow are queued, not executed. Rust concrete Option/Result carriers are Copy, not generic lifetime loans; affine class escapes reject. No compiler guest, AOT or sanitizer evidence is authenticated.",
   "backends": [
     {
       "id": "java",
@@ -522,8 +522,8 @@
   "java_reference": {
     "repository": "atto-lang/atto-source.java",
     "pr_url": "https://github.com/atto-lang/atto-source.java/pull/1767",
-    "head_sha": "919d1d1fc59712e5e2059c72fe7a55cf5720df60",
-    "root_tree_sha": "58d26bb865a1211fae18395ab87587f6a4433b68",
+    "head_sha": "fd5055c3544ee7cf7e50dd5ac1b89469ada114a3",
+    "root_tree_sha": "af9c40f78d8f4b15e2cb8903f658f7df5be48aa2",
     "module_blobs": [
       {
         "path": "core/option.atto",
@@ -554,6 +554,18 @@
       {
         "path": "tests/core_option_result/borrowed_queries.atto",
         "sha": "35f77b9020812364d1d0885e35f53a071cb50134"
+      },
+      {
+        "path": "src/main/java/dev/oreslang/types/OwnershipChecker.java",
+        "sha": "6be88b5f3717f70759440be6a3012a0411f2315b"
+      },
+      {
+        "path": "src/main/java/dev/oreslang/types/TypeChecker.java",
+        "sha": "95a344571ba41d78303f3d1979918927b11619af"
+      },
+      {
+        "path": ".github/workflows/core-option-result-jvm-borrow-exact-head.yml",
+        "sha": "9d74a1ea63898534fb3c991dfd805b031b74a860"
       }
     ],
     "authored_junit_tests": [
