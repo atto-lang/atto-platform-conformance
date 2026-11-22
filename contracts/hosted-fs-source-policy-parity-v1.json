@@ -23,7 +23,7 @@
       "branch": "feat/native-atto-fs-io-policy-20261122",
       "api_policy": {
         "path": "stdlib/std/fs_api_policy.atto",
-        "blob_sha": "665e90b0921e3bfe0d1a85dd9c89058c35f5c428"
+        "blob_sha": "2d3fa1b65fcec97ba9a6c5877db40f082c3cec46"
       },
       "io_policy": {
         "path": "stdlib/std/fs_io_policy.atto",
@@ -31,7 +31,7 @@
       },
       "api_fixture": {
         "path": "fixtures/fs/fs_api_policy_main.atto",
-        "blob_sha": "e1d9ea37bc7f4e491336a6ae47e930b07f354273"
+        "blob_sha": "cef5b92d5a532fae9f787f37bc585042caacc074"
       },
       "io_fixture": {
         "path": "fixtures/fs/fs_io_policy_main.atto",
@@ -40,7 +40,7 @@
       "source_status": "STAGED_SOURCE_ONLY",
       "guest_status": "NOT_EXECUTED",
       "executed_guest_cases": 0,
-      "captured_branch_head_sha": "2414c21b77f6987f676ee840646da0153f17e083"
+      "captured_branch_head_sha": "079ab405ae3744dc6ef222807f02f11ece9fdca7"
     },
     {
       "backend": "llvm",
@@ -49,7 +49,7 @@
       "branch": "feat/native-atto-fs-io-policy-20261122",
       "api_policy": {
         "path": "stdlib/std/fs_api_policy.atto",
-        "blob_sha": "d4ccdb996f5dca8390e5b0bcb64fe192af920842"
+        "blob_sha": "e7dea9077288387b0298fc936e17c5d55b357d2e"
       },
       "io_policy": {
         "path": "stdlib/std/fs_io_policy.atto",
@@ -57,7 +57,7 @@
       },
       "api_fixture": {
         "path": "fixtures/fs/fs_api_policy_main.atto",
-        "blob_sha": "e1d9ea37bc7f4e491336a6ae47e930b07f354273"
+        "blob_sha": "cef5b92d5a532fae9f787f37bc585042caacc074"
       },
       "io_fixture": {
         "path": "fixtures/fs/fs_io_policy_main.atto",
@@ -66,7 +66,7 @@
       "source_status": "STAGED_SOURCE_ONLY",
       "guest_status": "NOT_EXECUTED",
       "executed_guest_cases": 0,
-      "captured_branch_head_sha": "55ff28608f5f49b88af78101a3aaffeaf04b97ad"
+      "captured_branch_head_sha": "2063d073386441aa8bc277dab43b7185d2300bd2"
     },
     {
       "backend": "net",
@@ -75,7 +75,7 @@
       "branch": "feat/hosted-std-http-fs-policy-parity-20261119",
       "api_policy": {
         "path": "stdlib/std/fs_api_policy.atto",
-        "blob_sha": "1f374f35770c1deb78e7eac0d623143653b21f6d"
+        "blob_sha": "a1f0fdd6eb9713d15a559d521e71a26d71a55a42"
       },
       "io_policy": {
         "path": "stdlib/std/fs_io_policy.atto",
@@ -83,7 +83,7 @@
       },
       "api_fixture": {
         "path": "fixtures/cil/fs-api-policy-main.atto",
-        "blob_sha": "e1d9ea37bc7f4e491336a6ae47e930b07f354273"
+        "blob_sha": "cef5b92d5a532fae9f787f37bc585042caacc074"
       },
       "io_fixture": {
         "path": "fixtures/cil/fs-io-policy-main.atto",
@@ -92,7 +92,7 @@
       "source_status": "STAGED_SOURCE_ONLY",
       "guest_status": "NOT_EXECUTED",
       "executed_guest_cases": 0,
-      "captured_branch_head_sha": "1c7bd2b7a159096002eb55b3e21ccad1d946db78"
+      "captured_branch_head_sha": "6bffa6b3ea4bb9716227aa4412e64fa2db8e9a6c"
     },
     {
       "backend": "wasm",
@@ -101,7 +101,7 @@
       "branch": "feat/native-atto-fs-io-policy-20261122",
       "api_policy": {
         "path": "stdlib/std/fs_api_policy.atto",
-        "blob_sha": "913e5a87d1cda94d71a11c644c39d9a96158ff5a"
+        "blob_sha": "b5585532c8e955816640f284079a4f3170fe669b"
       },
       "io_policy": {
         "path": "stdlib/std/fs_io_policy.atto",
@@ -109,7 +109,7 @@
       },
       "api_fixture": {
         "path": "fixtures/fs/fs_api_policy_main.atto",
-        "blob_sha": "e1d9ea37bc7f4e491336a6ae47e930b07f354273"
+        "blob_sha": "cef5b92d5a532fae9f787f37bc585042caacc074"
       },
       "io_fixture": {
         "path": "fixtures/fs/fs_io_policy_main.atto",
@@ -118,7 +118,7 @@
       "source_status": "STAGED_SOURCE_ONLY",
       "guest_status": "NOT_EXECUTED",
       "executed_guest_cases": 0,
-      "captured_branch_head_sha": "77457cd383a1a17364084995a55c1adb4f488661"
+      "captured_branch_head_sha": "16e51f77246104bac83abc6c2c8df84db59302f6"
     },
     {
       "backend": "rs",
@@ -127,7 +127,7 @@
       "branch": "feat/browser-fs-host-admission-v1-20261119",
       "api_policy": {
         "path": "stdlib/std/fs_api_policy.atto",
-        "blob_sha": "98bc20edb3e29a99d9c8a5509e16bbbe9583a1ba"
+        "blob_sha": "15f1fa0f8134938b04f0162c5a016fcca298bca5"
       },
       "io_policy": {
         "path": "stdlib/std/fs_io_policy.atto",
@@ -135,7 +135,7 @@
       },
       "api_fixture": {
         "path": "fixtures/fs/fs_api_policy_main.atto",
-        "blob_sha": "e1d9ea37bc7f4e491336a6ae47e930b07f354273"
+        "blob_sha": "cef5b92d5a532fae9f787f37bc585042caacc074"
       },
       "io_fixture": {
         "path": "fixtures/fs/fs_io_policy_main.atto",
@@ -144,7 +144,7 @@
       "source_status": "STAGED_SOURCE_ONLY",
       "guest_status": "NOT_EXECUTED",
       "executed_guest_cases": 0,
-      "captured_branch_head_sha": "cb2c8b1388f1a8933973e9e5e271f4f2fc80925c"
+      "captured_branch_head_sha": "9f4ce5100bfd14b53d77bec90a93c17ac49ec559"
     },
     {
       "backend": "forge",
@@ -153,7 +153,7 @@
       "branch": "feat/hosted-std-http-fs-policy-parity-20261119",
       "api_policy": {
         "path": "stdlib/std/fs_api_policy.atto",
-        "blob_sha": "e4ef354513712829701d80a9bca551038c27d0fc"
+        "blob_sha": "2bb516e05fbfe9a5c9aee5e473786ba922e50243"
       },
       "io_policy": {
         "path": "stdlib/std/fs_io_policy.atto",
@@ -161,7 +161,7 @@
       },
       "api_fixture": {
         "path": "fixtures/fs/fs_api_policy_main.atto",
-        "blob_sha": "e1d9ea37bc7f4e491336a6ae47e930b07f354273"
+        "blob_sha": "cef5b92d5a532fae9f787f37bc585042caacc074"
       },
       "io_fixture": {
         "path": "fixtures/fs/fs_io_policy_main.atto",
@@ -170,7 +170,7 @@
       "source_status": "STAGED_SOURCE_ONLY",
       "guest_status": "NOT_EXECUTED",
       "executed_guest_cases": 0,
-      "captured_branch_head_sha": "add414f799ee28e8c5072b9c3734afb72ddd3eeb"
+      "captured_branch_head_sha": "d425bd3744f0c41321b9399ec1d23b2dc9f1e1ad"
     },
     {
       "backend": "cranelift",
@@ -179,7 +179,7 @@
       "branch": "feat/hosted-std-http-fs-policy-parity-20261119",
       "api_policy": {
         "path": "stdlib/std/fs_api_policy.atto",
-        "blob_sha": "dc25fcb2935acfecea70656d0a4a21125ad28d01"
+        "blob_sha": "7d08f2c017784d5b0a7e2ee13d993734c59aec12"
       },
       "io_policy": {
         "path": "stdlib/std/fs_io_policy.atto",
@@ -187,7 +187,7 @@
       },
       "api_fixture": {
         "path": "fixtures/fs/fs_api_policy_main.atto",
-        "blob_sha": "e1d9ea37bc7f4e491336a6ae47e930b07f354273"
+        "blob_sha": "cef5b92d5a532fae9f787f37bc585042caacc074"
       },
       "io_fixture": {
         "path": "fixtures/fs/fs_io_policy_main.atto",
@@ -196,7 +196,7 @@
       "source_status": "STAGED_SOURCE_ONLY",
       "guest_status": "NOT_EXECUTED",
       "executed_guest_cases": 0,
-      "captured_branch_head_sha": "447482454cfa34a8354b2ec827c3ec0ab4c9d3ee"
+      "captured_branch_head_sha": "238d8a39350c6b1510cb19c1b8a6bc416a42b842"
     },
     {
       "backend": "js",
@@ -205,7 +205,7 @@
       "branch": "feat/hosted-http-fs-host-parity-20261119",
       "api_policy": {
         "path": "stdlib/std/fs_api_policy.atto",
-        "blob_sha": "1526595a963a75ec2cd3b4fbbac3bfd89070330c"
+        "blob_sha": "793db8644d3ea471d331b599808b343e160ee67e"
       },
       "io_policy": {
         "path": "stdlib/std/fs_io_policy.atto",
@@ -213,7 +213,7 @@
       },
       "api_fixture": {
         "path": "fixtures/fs/fs_api_policy_main.atto",
-        "blob_sha": "e1d9ea37bc7f4e491336a6ae47e930b07f354273"
+        "blob_sha": "cef5b92d5a532fae9f787f37bc585042caacc074"
       },
       "io_fixture": {
         "path": "fixtures/fs/fs_io_policy_main.atto",
@@ -222,7 +222,7 @@
       "source_status": "STAGED_SOURCE_ONLY",
       "guest_status": "NOT_EXECUTED",
       "executed_guest_cases": 0,
-      "captured_branch_head_sha": "66f417e112ce3a2db01880a72185aa68c3de98bd"
+      "captured_branch_head_sha": "4d05af3417a5d0008ffd62fa2a3801bc2854747e"
     }
   ],
   "remaining_backends": [
