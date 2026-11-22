@@ -11,16 +11,16 @@ pub routine main(): void {
   stdio.println(time.hours(2562048).is_err());
   stdio.println(time.seconds(9223372036).is_ok());
   stdio.println(time.seconds(9223372037).is_err());
-  val manual = time.manual_clock(9, 1000000000);
+  let mut manual = time.manual_clock(9, 1000000000);
   val half = time.milliseconds(500).expect("half");
   val due = time.deadline_after(manual.now(), half).expect("due");
   stdio.println(due.expired(manual.now()).expect("before"));
   stdio.println(manual.advance(half).expect("after").ticks_ns);
   stdio.println(due.expired(manual.now()).expect("at due"));
-  val one_shot = time.one_shot(due);
+  let mut one_shot = time.one_shot(due);
   stdio.println(one_shot.poll(manual.now()).expect("one shot"));
   stdio.println(one_shot.poll(manual.now()).expect("single fire"));
-  val every = time.interval(manual.now(), half);
+  let mut every = time.interval(manual.now(), half);
   stdio.println(every.next_due().expect("next").ticks_ns);
   return;
 }
