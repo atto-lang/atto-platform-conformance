@@ -17,3 +17,10 @@ is maintained independently, not shared as canonical byte-identical files.
 
 No one should flip backend_evidence to VERIFIED without a real source
 commit SHA, identical tested tree, nonempty CI steps and guest results.
+
+## API reconciliation (22 November 2026)
+
+The sibling slice/iter/cmp PRs treat `valid_index` as raw, nonnegative
+logical indexing. Java #1768 and LLVM #867 now agree and reserve
+`valid_signed_index` for negative-index normalization. The v2 corpus
+adds ten vectors for both forms, split-at bounds and empty count handling.

@@ -46,6 +46,10 @@ function group(c) {
 function evalScalar(op, args) {
   const x = args.map(signed), [a,b,c,d]=x;
   switch (op) {
+    case 'valid_index': return a>=0n && b>=0n && a<b;
+    case 'valid_signed_index': return normalizeIndex(a,b)>=0n;
+    case 'is_empty': return a===0n;
+    case 'can_split_at': return a>=0n && b>=0n && b<=a;
     case 'normalize_index': return normalizeIndex(a,b).toString();
     case 'normalize_bound': return normalizeBound(a,b).toString();
     case 'valid_range':

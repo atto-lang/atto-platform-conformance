@@ -11,7 +11,7 @@
   ],
   "source_compatibility": "Public semantics must agree; independent backend source bytes, packages, and lowered representations may differ.",
   "integer_encoding": "Signed i64 numeric values are represented as DECIMAL STRINGS to avoid JSON double rounding.",
-  "windows": "valid_range(offset,count,length) means offset/count; valid_endpoints(start,end,length) means explicit half-open endpoints (not necessarily ordered)",
+  "windows": "valid_range(offset,count,length) means offset/count; valid_endpoints(start,end,length) means explicit half-open endpoints (not necessarily ordered); valid_index checks only raw nonnegative positions; valid_signed_index normalizes -len <= i < len.",
   "borrow_safety": "These helpers never authorize a live Slice<T> or a mutable loan; returning Option<int> from get_copy_int yields an owned Copy<int> value only.",
   "catalog": "Candidate atto-lang/atto-source.java#662 std/error 99-class manifest. Codes classify diagnostics only, never confer nominal error identity, panic/raise CONTROL or retry authority.",
   "scalar_vectors": [
@@ -392,6 +392,104 @@
       "args": [
         "-1",
         "1024"
+      ],
+      "expected": false,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "index-raw-negative",
+      "op": "valid_index",
+      "args": [
+        "-1",
+        "5"
+      ],
+      "expected": false,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "index-raw-last",
+      "op": "valid_index",
+      "args": [
+        "4",
+        "5"
+      ],
+      "expected": true,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "index-raw-past-end",
+      "op": "valid_index",
+      "args": [
+        "5",
+        "5"
+      ],
+      "expected": false,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "index-signed-last",
+      "op": "valid_signed_index",
+      "args": [
+        "-1",
+        "5"
+      ],
+      "expected": true,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "index-signed-first",
+      "op": "valid_signed_index",
+      "args": [
+        "-5",
+        "5"
+      ],
+      "expected": true,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "index-signed-too-negative",
+      "op": "valid_signed_index",
+      "args": [
+        "-6",
+        "5"
+      ],
+      "expected": false,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "empty-zero",
+      "op": "is_empty",
+      "args": [
+        "0"
+      ],
+      "expected": true,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "empty-not-negative",
+      "op": "is_empty",
+      "args": [
+        "-1"
+      ],
+      "expected": false,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "split-at-end",
+      "op": "can_split_at",
+      "args": [
+        "4",
+        "4"
+      ],
+      "expected": true,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "split-past-end",
+      "op": "can_split_at",
+      "args": [
+        "4",
+        "5"
       ],
       "expected": false,
       "guest_status": "NOT_EXECUTED"
