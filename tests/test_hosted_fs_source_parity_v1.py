@@ -74,7 +74,7 @@ def is_safe_inventory(doc):
     if {x.get("backend") for x in hosts if isinstance(x, dict)} != {"js", "wasm"}:
         return False
     for host in hosts:
-        if (host.get("local_v8_shimmed_groups") != 19 or
+        if (host.get("local_v8_shimmed_groups") != 20 or
             host.get("local_v8_status") != "PASS_HOST_SHIM_ONLY" or
             host.get("node_exact_head") != "NOT_EXECUTED" or
             host.get("compiled_atto_guest") != "NOT_EXECUTED"):
