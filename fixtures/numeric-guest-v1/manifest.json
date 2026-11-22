@@ -12,7 +12,7 @@
     "cranelift": "not_executed",
     "rs-wasm": "not_executed"
   },
-  "provenance": "Raw Git blob SHAs are pinned. Source-only matching does not certify parsing, compilation, negative admission, full guest AOT, or executable parity. Three Result trap candidates are source-only and do not certify caller error identity, actor supervision or guest AOT.",
+  "provenance": "Raw Git blob SHAs are pinned. Source-only matching does not certify parsing, compilation, negative admission, full guest AOT, or executable parity. Three Result trap candidates are source-only and do not certify caller error identity, actor supervision or guest AOT. Three additional ordered-comparison candidates test NaN, signed zero, and exact int-vs-binary64 comparison beyond 2^53; no parser, compiler or AOT evidence is asserted.",
   "cases": [
     {
       "id": "checked-i64-quotient",
@@ -78,6 +78,36 @@
       "id": "trap-result-no-doublewrap",
       "path": "trap-result-no-doublewrap.atto",
       "blob": "d7e536f97c703621f61959240e4e44f43d7be3fd",
+      "expected": {
+        "kind": "value",
+        "value": "42"
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "ordered-float-nan",
+      "path": "ordered-float-nan.atto",
+      "blob": "01079335342d403bcb42d731012588321edbc460",
+      "expected": {
+        "kind": "value",
+        "value": "42"
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "ordered-float-signed-zero",
+      "path": "ordered-float-signed-zero.atto",
+      "blob": "8030687c74d7243d8275451f89b96ab9757534c0",
+      "expected": {
+        "kind": "value",
+        "value": "42"
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "ordered-int-float-precision",
+      "path": "ordered-int-float-precision.atto",
+      "blob": "2d57f49dd16760f94bef1525b95dfc20ba654a9a",
       "expected": {
         "kind": "value",
         "value": "42"
