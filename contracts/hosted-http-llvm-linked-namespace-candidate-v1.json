@@ -38,7 +38,7 @@
     "independent_ast_parse_plus_type_check",
     "native_llvm_ir_and_executable",
     "positive_exit_42_with_no_guest_stderr",
-    "eight_negative_diagnostics_and_no_artifacts",
+    "nine_negative_diagnostics_and_no_artifacts",
     "nonzero_executed_workflow_steps",
     "approved_private_source_carrier_if_cross_org"
   ]
