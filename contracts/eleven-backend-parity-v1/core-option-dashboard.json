@@ -5,7 +5,7 @@
   "authority": "atto-lang/atto-platform-conformance",
   "evidence_policy": "SOURCE_ONLY_NO_GUEST_PROMOTION",
   "release_qualified": false,
-  "notes": "Observed main and Option/Result PR SHAs are source snapshots, not compiler receipts. Java #1767 now proposes explicit borrowed-read source helpers, six original JUnit checks, seven affine borrow checks, and a linked borrow-query guest; none have executed. All 11 backends remain unverified. Editable source-only records may never promote PASS, UNSUPPORTED, AOT, sanitizer or release claims.",
+  "notes": "Observed commits are source snapshots, not verified compilation. Java and six additional compiler drafts have borrowed Option/Result query targets; JS remains scalar-only, HDL unsynthesized, Atto/Realtime without identified candidates. No actual guest/AOT/sanitizer/unsupported evidence admitted.",
   "backends": [
     {
       "id": "java",
@@ -62,7 +62,7 @@
       "profile": "LLVM native AOT",
       "candidate": {
         "pr_url": "https://github.com/atto-lang/atto-source.llvm/pull/870",
-        "head_sha": "216c4222414d34f43ed2a6dbd4e6c640f25dae20"
+        "head_sha": "cae1f89e5a10b2feabe36808c0b07263b4c5a07d"
       },
       "source_state": "candidate",
       "checks": {
@@ -109,7 +109,7 @@
       "profile": "Rust host / compiled Wasm guest",
       "candidate": {
         "pr_url": "https://github.com/atto-lang/atto-source.rs/pull/533",
-        "head_sha": "9e4af78f2115f9ea260394929c125c930fab94fc"
+        "head_sha": "c2bc940768146519375ee8e0c57dd5585c649eb5"
       },
       "source_state": "candidate",
       "checks": {
@@ -156,7 +156,7 @@
       "profile": "CIL + NativeAOT",
       "candidate": {
         "pr_url": "https://github.com/atto-lang/atto-source.net/pull/217",
-        "head_sha": "496dddbb595ea5e61489eab8c2b4eac8c86a2d19"
+        "head_sha": "2b4bc19a87c81545a0dd154e35d6e53b7f0e63c7"
       },
       "source_state": "candidate",
       "checks": {
@@ -203,7 +203,7 @@
       "profile": "Independent Wasm/worker",
       "candidate": {
         "pr_url": "https://github.com/atto-lang/atto-source.wasm/pull/279",
-        "head_sha": "85de1a3032c78ce1dea080d7c28953c692b610d3"
+        "head_sha": "d7642727c43147c83d6c594389080f83993c5b8e"
       },
       "source_state": "candidate",
       "checks": {
@@ -250,7 +250,7 @@
       "profile": "Forge JIT/AOT",
       "candidate": {
         "pr_url": "https://github.com/atto-lang/atto-source.forge/pull/226",
-        "head_sha": "b3d79e3191fd32f155d57c1a272af6b13b7f9172"
+        "head_sha": "1a892433ba615af863523701d310eace9513028c"
       },
       "source_state": "candidate",
       "checks": {
@@ -297,7 +297,7 @@
       "profile": "Cranelift native",
       "candidate": {
         "pr_url": "https://github.com/atto-lang/atto-source.cranelift/pull/90",
-        "head_sha": "f24d89ecf2a0384a51b1c6a5dec955ecdfab1727"
+        "head_sha": "9dc2ee61c1d75815b80460a22c860916a8f147b2"
       },
       "source_state": "candidate",
       "checks": {
@@ -344,7 +344,7 @@
       "profile": "JavaScript / Node ESM",
       "candidate": {
         "pr_url": "https://github.com/atto-lang/atto-source.js/pull/132",
-        "head_sha": "2bd0febcb4b94bc57f426a7d551af0bd72e860cd"
+        "head_sha": "b5d4358e50828012512eb95fcc96cff1ba39490a"
       },
       "source_state": "candidate",
       "checks": {
@@ -391,7 +391,7 @@
       "profile": "RTL/HDL",
       "candidate": {
         "pr_url": "https://github.com/atto-lang/atto-source.hdl/pull/61",
-        "head_sha": "a69b9c62424e560ac15b682c96309be78f124fad"
+        "head_sha": "0ae7590bef154ae6501f87189de116bb371a0770"
       },
       "source_state": "candidate",
       "checks": {
