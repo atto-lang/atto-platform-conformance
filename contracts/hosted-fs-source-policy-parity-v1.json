@@ -222,7 +222,7 @@
       "source_status": "STAGED_SOURCE_ONLY",
       "guest_status": "NOT_EXECUTED",
       "executed_guest_cases": 0,
-      "captured_branch_head_sha": "3c561d737f17f12bf4466854df6b2e38d583cab6"
+      "captured_branch_head_sha": "7d0f549462e816d6c91964e2b409f21e8888481c"
     }
   ],
   "remaining_backends": [
@@ -253,9 +253,9 @@
       "local_v8_status": "PASS_HOST_SHIM_ONLY",
       "node_exact_head": "NOT_EXECUTED",
       "compiled_atto_guest": "NOT_EXECUTED",
-      "captured_head_sha": "cfb6d894ac22499b2e3826118c4e6c5517e43a2f",
+      "captured_head_sha": "3e561e5ceed43af12328700cf2d2c89aded2fe9b",
       "runtime_blob_sha": "ea4a6b053cdad9aec67281812fc8668c63b0d8f3",
-      "test_blob_sha": "e98f570f5e1e0e61f55020207f94f5f8adf794b1",
+      "test_blob_sha": "bf0b3f7639ba14769afa992ab5651b1f3ab7d713",
       "source_transfer": "BLOCKED_PENDING_INDEPENDENT_SECURITY_REVIEW",
       "file_object_overloads": {
         "implemented_host_only": true,
@@ -276,9 +276,9 @@
       "local_v8_status": "PASS_HOST_SHIM_ONLY",
       "node_exact_head": "NOT_EXECUTED",
       "compiled_atto_guest": "NOT_EXECUTED",
-      "captured_head_sha": "3c561d737f17f12bf4466854df6b2e38d583cab6",
+      "captured_head_sha": "7d0f549462e816d6c91964e2b409f21e8888481c",
       "runtime_blob_sha": "f6a0386cf2f43128b0b66d17ba06b480e121ecec",
-      "test_blob_sha": "e8405de5d01262e59bc6d4039cde9b012002834b",
+      "test_blob_sha": "1231456190d82112288434c13e98f3bde17598ac",
       "source_transfer": "BLOCKED_PENDING_INDEPENDENT_SECURITY_REVIEW",
       "file_object_overloads": {
         "implemented_host_only": true,
