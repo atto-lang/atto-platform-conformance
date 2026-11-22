@@ -126,7 +126,7 @@
       "id": "java",
       "repository": "atto-lang/atto-source.java",
       "observed_main_sha": "189c73b88502c451e50494f738ae11a1de8c9211",
-      "candidate_head_sha": "919d1d1fc59712e5e2059c72fe7a55cf5720df60",
+      "candidate_head_sha": "fd5055c3544ee7cf7e50dd5ac1b89469ada114a3",
       "capability_state": "unverified",
       "cases": {
         "borrowed_option_some_query": {
@@ -272,7 +272,7 @@
       "id": "rs",
       "repository": "atto-lang/atto-source.rs",
       "observed_main_sha": "877bd9f8d61c598137c8627f73fa5ed2a497d9e8",
-      "candidate_head_sha": "c7edd32b3ca5cd9d3a85f63f531b6c21968c55e6",
+      "candidate_head_sha": "9f881e82675df9bc08621b4056f1206583e9054d",
       "capability_state": "unverified",
       "cases": {
         "borrowed_option_some_query": {
