@@ -122,3 +122,42 @@ test("mutation checks reject false parity/evidence",()=>{
   x=clone();x.vectors[0].fn="unreviewed_method";
   assert.throws(()=>verifyContract(x),"unknown API");
 });
+
+const baselineReadiness = JSON.parse(readFileSync(
+  new URL("../contracts/atto-std-compiler-readiness-v1.json", import.meta.url), "utf8"));
+function verifyReadiness(snapshot) {
+  assert.equal(snapshot.schema, "atto-std-compiler-readiness-v1");
+  assert.equal(snapshot.contract_blob_sha, "3d9e9d5308a4cd0a99d811570f8c80e77b7219b7",
+    "pin the exact shared behavioral corpus separately from execution receipts");
+  assert.deepEqual(snapshot.backends.map(r => r.backend).sort(), expectedTargets);
+  for (const entry of snapshot.backends) {
+    assert.ok(["NOT_AUDITED","SOURCE_CANDIDATE"].includes(entry.source));
+    assert.ok(["NOT_AUDITED","UNSUPPORTED","CANDIDATE_UNVERIFIED"].includes(entry.linker));
+    // A backend may only gain PASS via a separate, independently checked
+    // execution receipt with real GitHub run steps, current Git tree and SHA
+    // checks. This source-only candidate ledger must NEVER self-certify PASS.
+    assert.equal(entry.guest, "NOT_EXECUTED",
+      "source-only readiness ledger cannot attest compiled guest execution");
+    assert.equal(entry.executed_guest_cases, 0);
+    assert.equal(entry.compiled_guest_sha256, null);
+    assert.equal(entry.github_actions_run, null);
+    assert.equal(entry.executed_step_count, 0);
+    if (entry.linker === "UNSUPPORTED")
+      assert.ok(entry.reason && entry.reason.length > 15, "unsupported must explain why");
+  }
+  assert.equal(snapshot.backends.length, 11);
+  return snapshot.backends.length;
+}
+test("11-backend readiness ledger refuses forged guest PASS and missing targets",()=>{
+  assert.equal(verifyReadiness(baselineReadiness),11);
+  const altered = structuredClone(baselineReadiness);
+  altered.backends.find(x => x.backend === "forge").guest = "PASS";
+  assert.throws(()=>verifyReadiness(altered),"fake Forge guest pass");
+  const one = structuredClone(baselineReadiness);
+  one.backends.find(x => x.backend === "wasm").executed_step_count = 5;
+  assert.throws(()=>verifyReadiness(one),"unverified step count is not a receipt");
+  const two = structuredClone(baselineReadiness);
+  two.backends.pop();
+  assert.throws(()=>verifyReadiness(two),"all 11 must be represented");
+  console.log("ATTO_STD_READINESS_SOURCE_ONLY|backends=11|guest_pass=0");
+});
