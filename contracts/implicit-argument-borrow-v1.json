@@ -223,6 +223,13 @@
       "path": "fixtures/implicit-borrow/fail/take_then_read_same_call.atto",
       "expected_error": "E_MOVED",
       "proof": "reject second-argument implicit borrow after first-argument take! invalidates the owner; emit no guest"
+    },
+    {
+      "id": "IB_P_12",
+      "kind": "pass",
+      "path": "fixtures/implicit-borrow/pass/mixed_readers_same_call.atto",
+      "expected_exit": 42,
+      "proof": "native and wasm guests compile/execute the two orderings of explicit and implicit readonly loans to one class owner; both calls retain owner identity and perform no implicit copy"
     }
   ],
   "backend_status": {
