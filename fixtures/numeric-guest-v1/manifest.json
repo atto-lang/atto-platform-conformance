@@ -12,7 +12,7 @@
     "cranelift": "not_executed",
     "rs-wasm": "not_executed"
   },
-  "provenance": "Raw Git blob SHAs are pinned. Source-only matching does not certify parsing, compilation, negative admission, full guest AOT, or executable parity.",
+  "provenance": "Raw Git blob SHAs are pinned. Source-only matching does not certify parsing, compilation, negative admission, full guest AOT, or executable parity. Three Result trap candidates are source-only and do not certify caller error identity, actor supervision or guest AOT.",
   "cases": [
     {
       "id": "checked-i64-quotient",
@@ -51,6 +51,36 @@
       "expected": {
         "kind": "error",
         "code": "division_by_zero"
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "trap-division-by-zero",
+      "path": "trap-division-by-zero.atto",
+      "blob": "5eee4119bb0849be397ce0bc38eac66cb8e7b020",
+      "expected": {
+        "kind": "value",
+        "value": "42"
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "trap-integer-overflow",
+      "path": "trap-integer-overflow.atto",
+      "blob": "44d0975d36915f7fea115c7ea3cd1bbfa8c62747",
+      "expected": {
+        "kind": "value",
+        "value": "42"
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "trap-result-no-doublewrap",
+      "path": "trap-result-no-doublewrap.atto",
+      "blob": "d7e536f97c703621f61959240e4e44f43d7be3fd",
+      "expected": {
+        "kind": "value",
+        "value": "42"
       },
       "status": "not_executed"
     }
