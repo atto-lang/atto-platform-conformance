@@ -504,7 +504,7 @@
       "repo": "atto-lang/atto-source.cranelift",
       "kind": "BACKEND_OWNED_SOURCE_DRAFT",
       "candidate_pr": 101,
-      "head_sha": "215aca3905a706234e0158164db1e80dad3b2449",
+      "head_sha": "215aca3905a706234e0158164db1e80b2938cfef",
       "root_tree_sha": "06d0fd7c16386a68b4aff4503009f80dad3b2449",
       "source_blobs": {
         "tests/stdlib/websocket_quic_compute_smoke.atto": "303419396fbbac44c6f0a55c2c95ea2b94af2e62",
