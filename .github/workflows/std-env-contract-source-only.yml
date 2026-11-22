@@ -60,8 +60,8 @@ jobs:
           grep -Fx '# skipped 0' "$RUNNER_TEMP/std-env-host-boundaries.tap"
           node --test --test-reporter=tap tests/std-env-v1.readiness-ledger.test.mjs \
             | tee "$RUNNER_TEMP/std-env-readiness-ledger.tap"
-          grep -Fx '# tests 4' "$RUNNER_TEMP/std-env-readiness-ledger.tap"
-          grep -Fx '# pass 4' "$RUNNER_TEMP/std-env-readiness-ledger.tap"
+          grep -Fx '# tests 5' "$RUNNER_TEMP/std-env-readiness-ledger.tap"
+          grep -Fx '# pass 5' "$RUNNER_TEMP/std-env-readiness-ledger.tap"
           grep -Fx '# fail 0' "$RUNNER_TEMP/std-env-readiness-ledger.tap"
           grep -Fx '# skipped 0' "$RUNNER_TEMP/std-env-readiness-ledger.tap"
           echo 'READINESS_LEDGER=SOURCE_ONLY_PASS; GUEST_PARITY=NOT_EXECUTED'
