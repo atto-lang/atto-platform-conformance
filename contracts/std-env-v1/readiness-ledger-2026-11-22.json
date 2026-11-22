@@ -24,7 +24,20 @@
       "implementation_stage": "source_and_java_guest_candidate",
       "host_evidence": "NOT_EXECUTED",
       "guest_status": "NOT_EXECUTED",
-      "aot_status": "NOT_EXECUTED"
+      "aot_status": "NOT_EXECUTED",
+      "stdlib_env_source_blob": "98acb1abe181c54771fbe08f127cbac664cf6e11",
+      "public_api_source_names": [
+        "get",
+        "has",
+        "get_or",
+        "get_required",
+        "get_nonempty",
+        "get_required_nonempty",
+        "parse_bool",
+        "get_bool",
+        "get_bool_or"
+      ],
+      "source_api_audit": "NINE_NAMES_PRESENT_SOURCE_ONLY"
     },
     {
       "backend": "llvm",
@@ -36,7 +49,20 @@
       "implementation_stage": "host_c_snapshot_only",
       "host_evidence": "LOCAL_HOST_4_SANITIZER_CONFIGS",
       "guest_status": "NOT_EXECUTED",
-      "aot_status": "NOT_EXECUTED"
+      "aot_status": "NOT_EXECUTED",
+      "stdlib_env_source_blob": "1bda085edb0e4f4ce06815895ee2e3729c615a85",
+      "public_api_source_names": [
+        "get",
+        "has",
+        "get_or",
+        "get_required",
+        "get_nonempty",
+        "get_required_nonempty",
+        "parse_bool",
+        "get_bool",
+        "get_bool_or"
+      ],
+      "source_api_audit": "NINE_NAMES_PRESENT_SOURCE_ONLY"
     },
     {
       "backend": "net",
@@ -48,7 +74,20 @@
       "implementation_stage": "host_csharp_snapshot_only",
       "host_evidence": "NOT_EXECUTED",
       "guest_status": "NOT_EXECUTED",
-      "aot_status": "NOT_EXECUTED"
+      "aot_status": "NOT_EXECUTED",
+      "stdlib_env_source_blob": "41a00c5b0304476699fac1ceab96762c2131c1c7",
+      "public_api_source_names": [
+        "get",
+        "has",
+        "get_or",
+        "get_required",
+        "get_nonempty",
+        "get_required_nonempty",
+        "parse_bool",
+        "get_bool",
+        "get_bool_or"
+      ],
+      "source_api_audit": "NINE_NAMES_PRESENT_SOURCE_ONLY"
     },
     {
       "backend": "rs",
@@ -60,7 +99,20 @@
       "implementation_stage": "atto_source_only",
       "host_evidence": "NOT_EXECUTED",
       "guest_status": "NOT_EXECUTED",
-      "aot_status": "NOT_EXECUTED"
+      "aot_status": "NOT_EXECUTED",
+      "stdlib_env_source_blob": "0ade539a3314ea7895938e3a134b99d0e9e54599",
+      "public_api_source_names": [
+        "get",
+        "has",
+        "get_or",
+        "get_required",
+        "get_nonempty",
+        "get_required_nonempty",
+        "parse_bool",
+        "get_bool",
+        "get_bool_or"
+      ],
+      "source_api_audit": "NINE_NAMES_PRESENT_SOURCE_ONLY"
     },
     {
       "backend": "forge",
@@ -72,7 +124,20 @@
       "implementation_stage": "atto_source_only",
       "host_evidence": "NOT_EXECUTED",
       "guest_status": "NOT_EXECUTED",
-      "aot_status": "NOT_EXECUTED"
+      "aot_status": "NOT_EXECUTED",
+      "stdlib_env_source_blob": "ecf35834646dcf6c4f9bcb15b47cd8e3a696fb68",
+      "public_api_source_names": [
+        "get",
+        "has",
+        "get_or",
+        "get_required",
+        "get_nonempty",
+        "get_required_nonempty",
+        "parse_bool",
+        "get_bool",
+        "get_bool_or"
+      ],
+      "source_api_audit": "NINE_NAMES_PRESENT_SOURCE_ONLY"
     },
     {
       "backend": "cranelift",
@@ -84,7 +149,20 @@
       "implementation_stage": "atto_source_only",
       "host_evidence": "NOT_EXECUTED",
       "guest_status": "NOT_EXECUTED",
-      "aot_status": "NOT_EXECUTED"
+      "aot_status": "NOT_EXECUTED",
+      "stdlib_env_source_blob": "50f7c4a0a25d03e0a4d5766603412f33c3dc925a",
+      "public_api_source_names": [
+        "get",
+        "has",
+        "get_or",
+        "get_required",
+        "get_nonempty",
+        "get_required_nonempty",
+        "parse_bool",
+        "get_bool",
+        "get_bool_or"
+      ],
+      "source_api_audit": "NINE_NAMES_PRESENT_SOURCE_ONLY"
     },
     {
       "backend": "js",
@@ -96,7 +174,20 @@
       "implementation_stage": "host_js_snapshot_and_dispatch_only",
       "host_evidence": "LOCAL_HOST_15_NODE_TESTS",
       "guest_status": "NOT_EXECUTED",
-      "aot_status": "NOT_EXECUTED"
+      "aot_status": "NOT_EXECUTED",
+      "stdlib_env_source_blob": "4125e3ccee0922fafb2eda7609651a905b971bd3",
+      "public_api_source_names": [
+        "get",
+        "has",
+        "get_or",
+        "get_required",
+        "get_nonempty",
+        "get_required_nonempty",
+        "parse_bool",
+        "get_bool",
+        "get_bool_or"
+      ],
+      "source_api_audit": "NINE_NAMES_PRESENT_SOURCE_ONLY"
     },
     {
       "backend": "wasm",
@@ -108,7 +199,20 @@
       "implementation_stage": "host_js_snapshot_and_dispatch_only",
       "host_evidence": "LOCAL_HOST_15_NODE_TESTS",
       "guest_status": "NOT_EXECUTED",
-      "aot_status": "NOT_EXECUTED"
+      "aot_status": "NOT_EXECUTED",
+      "stdlib_env_source_blob": "452836848efa0079b191942cb6eec3891ae6c378",
+      "public_api_source_names": [
+        "get",
+        "has",
+        "get_or",
+        "get_required",
+        "get_nonempty",
+        "get_required_nonempty",
+        "parse_bool",
+        "get_bool",
+        "get_bool_or"
+      ],
+      "source_api_audit": "NINE_NAMES_PRESENT_SOURCE_ONLY"
     },
     {
       "backend": "atto",
@@ -120,7 +224,10 @@
       "implementation_stage": "selfhost_bootstrap_only",
       "host_evidence": "NOT_EXECUTED",
       "guest_status": "NOT_EXECUTED",
-      "aot_status": "NOT_EXECUTED"
+      "aot_status": "NOT_EXECUTED",
+      "stdlib_env_source_blob": null,
+      "public_api_source_names": [],
+      "source_api_audit": "NOT_AUDITED"
     },
     {
       "backend": "realtime",
@@ -132,7 +239,10 @@
       "implementation_stage": "bounded_startup_provider_pending",
       "host_evidence": "NOT_EXECUTED",
       "guest_status": "NOT_EXECUTED",
-      "aot_status": "NOT_EXECUTED"
+      "aot_status": "NOT_EXECUTED",
+      "stdlib_env_source_blob": null,
+      "public_api_source_names": [],
+      "source_api_audit": "NOT_AUDITED"
     },
     {
       "backend": "hdl",
@@ -144,7 +254,10 @@
       "implementation_stage": "runtime_environment_unavailable_in_synthesis",
       "host_evidence": "NOT_EXECUTED",
       "guest_status": "NOT_EXECUTED",
-      "aot_status": "NOT_EXECUTED"
+      "aot_status": "NOT_EXECUTED",
+      "stdlib_env_source_blob": null,
+      "public_api_source_names": [],
+      "source_api_audit": "NOT_AUDITED"
     }
   ],
   "notes": [
@@ -153,6 +266,7 @@
     "Java guest candidate has 15 authored JUnit tests, but no stepful exact-head JDK25/Native Image run.",
     "Rust literal file constant linker is a separate Draft PR #551 and is not std/env startup guest parity.",
     "Selfhost, realtime, and HDL require explicit target capability diagnostics before any UNSUPPORTED claim can be promoted.",
-    "Private cross-org source export remains unapproved."
+    "Private cross-org source export remains unapproved.",
+    "Eight distinct backend-owned stdlib/env.atto blobs were inspected at the exact source heads: each contains all nine public API names. Name presence is source-only, not typed, linked, compiled or executed guest parity."
   ]
 }
