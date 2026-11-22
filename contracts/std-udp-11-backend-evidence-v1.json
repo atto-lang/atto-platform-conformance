@@ -329,7 +329,7 @@
     "repetitions": 1
   },
   "ci": {
-    "source_actions": "queued_without_executed_compiler_steps",
+    "source_actions": "queued_without_executed_compiler_steps; alternative sonus source-free capacity verified; private export not authorized",
     "source_free_carriers_observed": [
       {
         "repository": "benefactor-cc/atto-ci",
@@ -378,11 +378,19 @@
         "run_id": 44969091456,
         "executed_steps": 0,
         "result": "runner_admission_failure_not_compiler_result"
+      },
+      {
+        "repository": "sonus-auris-test/atto-ci",
+        "run_id": 45059875505,
+        "executed_steps": 6,
+        "result": "source_free_capacity_proven_no_export",
+        "carrier_head_sha": "3d7a582fc61df3fcf5cadc6656a0c5b91a5e665e",
+        "carrier_repo_id": "1458331448"
       }
     ],
     "private_source_mirrored": false,
     "authenticated_export_clearance": false,
-    "carrier_capacity_proven": false,
+    "carrier_capacity_proven": true,
     "source_mirror_permitted": false
   },
   "guest_pass_admission": {
