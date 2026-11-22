@@ -26,3 +26,27 @@ The eleven tracked workstreams are canonical `^/^^` operators, checked signed-i6
 6. Merge only after exact-head checks, CODEOWNERS/security review, competing PR disposition and the active Ready-cycle governance conditions.
 
 **Status on 2026-11-20:** 121 inventory entries, **0 new compiled-guest passes** established by this index. Branch protection observed disabled on all 11 main branches; administrator must verify rulesets and enforcement rather than assume this index changes policy. Existing external test receipts are not blanket export authorization.
+
+## Core/Option — eleven-backend library parity dashboard (2026-11-22)
+
+The [generated core/option dashboard](CORE_OPTION_PARITY_DASHBOARD_V1.md) and
+[machine-readable snapshot](../contracts/eleven-backend-parity-v1/core-option-dashboard.json)
+extend this existing draft with all **11** backend repository IDs, immutable observed
+main commit SHAs, and exact implementation candidate heads for nine compiler repos.
+`atto-source.atto` and `atto-source.realtime` remain explicit "no option candidate
+identified" slots, never silently counted as equivalent to another compiler.
+
+The Java/GraalVM candidate [#1767](https://github.com/atto-lang/atto-source.java/pull/1767)
+is additionally pinned to its exact Git root tree, both native `.atto` library
+blobs, two authored guest fixture blobs, and the JUnit test class blob. Six
+JUnit case identities are tracked, including two *actual linked guest* test
+implementations; these are **AUTHORED / NOT_EXECUTED**, not passes.
+
+[`core-option-parity-dashboard-v1.mjs`](../lib/core-option-parity-dashboard-v1.mjs)
+rejects altered source SHAs, wrong repo/PR identities, missing cases, forged
+compiled-guest/JIT/AOT/sanitizer receipts, premature release qualification and
+self-reported unsupported capabilities. The independent source-only test suite
+also checks that the checked-in dashboard matches the exact registry.
+Promotion requires a separate independently authenticated exact-head compiler
+and executed guest verifier; a Node source-only pass must never become a
+compiled guest status.
