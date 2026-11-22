@@ -24,8 +24,8 @@
       "source": "atto-source.net/library/atto.core/cell.atto",
       "representation": "bounded-readers-plus-writer",
       "sourceBlobSha": "154563e51199140cfad005945c608789bee5ebfa",
-      "candidateCommitSha": "429c757d2468ec5f0913baf7e13d92e7b55555d7",
-      "candidateTreeSha": "0563ad4910c8d3381dac79302efce6083fdb293f"
+      "candidateCommitSha": "90225e3e30527b7a69075fe5b01ce71a4bec1c52",
+      "candidateTreeSha": "f6eb660ec37dd6e567bba57531982618a9016bec"
     },
     "cranelift": {
       "policy": "SOURCE_AUTHORED_NOT_GUEST_VERIFIED",
@@ -56,8 +56,8 @@
       "source": "atto-source.js/library/atto.core/cell.atto",
       "representation": "bounded-readers-plus-writer",
       "sourceBlobSha": "ef1e84dbab1bb476d6ac55bf1802331660879732",
-      "candidateCommitSha": "b9985e6249fb35327cabdd6d183dbe9d7f66c49b",
-      "candidateTreeSha": "935e4f75ba301127c5059f7fa374b6ceefd26a85"
+      "candidateCommitSha": "e5646b885933ed5d643d12cf46767db6ea795de4",
+      "candidateTreeSha": "c2828d4033f56994c10e062b92afea0fee051450"
     },
     "rs": {
       "policy": "SOURCE_AUTHORED_NOT_GUEST_VERIFIED",
@@ -342,7 +342,10 @@
       "cases": 8,
       "observation": "Locally assembled exact branch compiler modules, compiled its current .atto Cell source with production parser and typed IR, executed emitted functions in V8; 8/8 boundary vectors; no source-owned GitHub Actions runner evidence.",
       "certification": "NON_CERTIFYING_LOCAL_ONLY",
-      "scope": "No Cell<T>, borrow tokens, actor/await loans, native AOT, or typed borrow-MIR"
+      "scope": "No Cell<T>, borrow tokens, actor/await loans, native AOT, or typed borrow-MIR",
+      "sourceCommit": "e5646b885933ed5d643d12cf46767db6ea795de4",
+      "sourceTree": "c2828d4033f56994c10e062b92afea0fee051450",
+      "sourceBlob": "ef1e84dbab1bb476d6ac55bf1802331660879732"
     }
   },
   "compilerIntegrationCandidates": {
