@@ -14,12 +14,19 @@ function validCandidate(contract) {
      contract.status!=='CANDIDATE_NOT_GUEST_VERIFIED'||
      !Array.isArray(contract.backends) || contract.backends.length!==11)
     reject('invalid candidate envelope');
+  const sourceAudit=contract.source_parity_audit;
+  if(!sourceAudit ||
+     sourceAudit.status!=='SOURCE_ONLY_NORMALIZED_BODY_IDENTICAL_NO_EXECUTION' ||
+     sourceAudit.active_compilers!==9 ||
+     sourceAudit.expected_common_body_length!==6556)
+    reject('source audit erroneously certified as guest parity');
   const pos=contract.borrow_mutability_positive;
   if(!pos || pos.id!=='val_mutable_referent_methods' ||
      pos.binding!=='val' ||
      pos.guest_execution!=='NOT_EXECUTED' ||
      pos.file!=='fixtures/std-time-parity-v1/borrow-positive-val-mutable-referent.atto' ||
      JSON.stringify(pos.expected_stdout)!==JSON.stringify(['1','true','true']) ||
+     !SHA.test(pos.source_blob_sha) ||
      Object.hasOwn(pos,'pass') || Object.hasOwn(pos,'guest_result'))
     reject('positive val receiver candidate falsely promoted');
   const negatives=contract.borrow_mutability_negatives;
@@ -30,6 +37,7 @@ function validCandidate(contract) {
      JSON.stringify(negatives.map(v=>v.id))!==JSON.stringify(expectedBorrowIds)||
      negatives.some(v=>v.expected!=='COMPILE_REJECT_MUTABLE_RECEIVER_REQUIRED'||
        v.guest_artifact!=='FORBIDDEN' ||
+       !SHA.test(v.source_blob_sha) ||
        typeof v.file!=='string' ||
        !v.file.startsWith('fixtures/std-time-parity-v1/borrow-negative-')||
        Object.hasOwn(v,'execution_passed')))
@@ -59,6 +67,12 @@ function validCandidate(contract) {
     seen.add(c.id);
   }
   for(const backend of contract.backends) {
+    if(backend.borrow_positive_guest_status!=='NOT_EXECUTED' ||
+       backend.borrow_negative_compile_status!=='NOT_EXECUTED')
+      reject('backend borrow evidence falsely promoted');
+    if((backend.id==='java'||backend.id==='llvm') &&
+       !SHA.test(backend.candidate_root_tree_sha))
+      reject('current candidate root tree SHA invalid');
     if(backend.repo!==`atto-lang/atto-source.${backend.id}`||
        backend.guest_execution!=='NOT_EXECUTED' ||
        backend.full_tree_verified!==false ||
@@ -181,6 +195,14 @@ test('mutants cannot promote a host test, zero-step run or scaffold to guest suc
     const copy=structuredClone(manifest);fn(copy);
     assert.throws(()=>validCandidate(copy),pattern);
   };
+  mutate(c=>c.backends[2].borrow_positive_guest_status='PASSED',
+    /backend borrow evidence falsely promoted/);
+  mutate(c=>c.backends[3].borrow_negative_compile_status='PASSED',
+    /backend borrow evidence falsely promoted/);
+  mutate(c=>c.source_parity_audit.status='GUEST_VERIFIED',
+    /source audit erroneously certified as guest parity/);
+  mutate(c=>c.borrow_mutability_negatives[0].source_blob_sha='not-a-sha',
+    /borrow negative candidate falsely promoted/);
   mutate(c=>c.borrow_mutability_positive.guest_execution='PASSED',
     /positive val receiver candidate falsely promoted/);
   mutate(c=>c.borrow_mutability_positive.expected_stdout[0]='42',
