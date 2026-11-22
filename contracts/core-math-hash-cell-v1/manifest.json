@@ -275,7 +275,7 @@
       "backend": "net",
       "repository": "atto-lang/atto-source.net",
       "pr": 220,
-      "commit": "0beafceb055f15823625fe67f412045d1d7b0eb5",
+      "commit": "c5984d3a0d216d20fca6fd17fa69513b10dce0b9",
       "module_admission": "authenticated_namespace_only_builtins_legacy_module_import_adapter_cil_guest_unexecuted",
       "source_blobs": {
         "math": {
