@@ -315,5 +315,17 @@
     }
   },
   "compilerAdmissionRule": "A negative preflight, parser, or restricted-source denial is NOT a positive borrowed-memory execution proof. Every backend target remains NOT_EXECUTED until exact-head material CI steps prove production admission or compiled guests as stated, and none may promote full typed borrow-MIR parity without proof.",
-  "exactRefEvidence": "11 active draft-PR candidate heads and Git root trees inspected 2026-11-22; heads may advance asynchronously; this is a source-only snapshot, not executed compiler guest or a CI clearance."
+  "exactRefEvidence": "11 active draft-PR candidate heads and Git root trees inspected 2026-11-22; heads may advance asynchronously; this is a source-only snapshot, not executed compiler guest or a CI clearance.",
+  "sourceFreeReferenceEvidence": {
+    "carrier": "channelsiege/atto-ci",
+    "runId": 45059593908,
+    "runUrl": "https://github.com/channelsiege/atto-ci/actions/runs/45059593908",
+    "workflowConclusion": "success",
+    "materialSteps": "pure 11-profile reference model and non-promoting boundary both completed",
+    "compilerSourceTransferred": false,
+    "classification": "SOURCE_FREE_MODEL_ONLY",
+    "typedMirGuestQualified": false,
+    "cleanupCommit": "a0285aa3579bb31649f0dd3e0958b7d5e8407a51",
+    "cleanupTree": "b78051568a02496c9f55790d83a87a158c16ee88"
+  }
 }
