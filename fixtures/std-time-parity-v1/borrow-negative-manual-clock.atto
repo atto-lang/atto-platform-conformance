@@ -1,8 +1,8 @@
-// NEGATIVE: immutable val cannot satisfy ManualClock.advance(mut self).
+// NEGATIVE: immutable const cannot satisfy ManualClock.advance(mut self).
 // A compiler must reject this for a mutable-receiver/borrow reason, and emit no guest.
 import module time from "std/time";
 pub routine main(): void {
-  val clock = time.manual_clock(7, 0);
+  const clock = time.manual_clock(7, 0);
   val delta = time.nanoseconds(1).expect("one");
   clock.advance(delta);
   return;
