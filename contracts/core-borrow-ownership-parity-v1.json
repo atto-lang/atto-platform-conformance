@@ -50,7 +50,7 @@
     }
   ],
   "llvm_source_candidates": {
-    "head": "93ab1efc95b5ef5df84caf60551d9b802c9d7dd8",
+    "head": "9f50ed761ec12d8e4ad688d2049479c3e0c38302",
     "paths": [
       "atto-lang/atto-source.llvm/src/main.rs",
       "atto-lang/atto-source.llvm/frontend/tests/core_ownership_boundary.rs",
