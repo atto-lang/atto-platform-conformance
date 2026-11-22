@@ -76,7 +76,7 @@ fn twenty_eight_case_oracles_are_unique_and_target_only() {
         categories.insert(row[1]);
         if row[3] != "-" {
             let path = Path::new(row[3]);
-            assert!(path.extension().is_some_and(|ext| ext == "atto"));
+            assert_eq!(path.extension().and_then(|ext| ext.to_str()), Some("atto"));
             assert!(path.is_file(), "missing canonical fixture: {}", row[3]);
         }
     }
