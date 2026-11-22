@@ -1,0 +1,9 @@
+// TARGET COMPILE REJECT: E_ACTOR_PARALLELISM_CAP, cap must be >= 1.
+@actor_schedule(max_parallelism = 0, affinity = sticky, pool = shared)
+define actor InvalidCap as
+  susp receive(mail: ActorMail<int>) -> void {
+    ^ void;
+  }
+end
+
+pub fnc main() -> int { return 0; }
