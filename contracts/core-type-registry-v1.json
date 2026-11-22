@@ -38,11 +38,13 @@
       "variants": {
         "Some": {
           "arity": 1,
-          "transfers_payload": true
+          "transfers_payload": true,
+          "drop_policy": "ACTIVE_PAYLOAD_ONCE"
         },
         "None": {
           "arity": 0,
-          "transfers_payload": false
+          "transfers_payload": false,
+          "drop_policy": "NONE"
         }
       }
     },
@@ -54,11 +56,13 @@
       "variants": {
         "Ok": {
           "arity": 1,
-          "transfers_payload": true
+          "transfers_payload": true,
+          "drop_policy": "ACTIVE_PAYLOAD_ONCE"
         },
         "Err": {
           "arity": 1,
-          "transfers_payload": true
+          "transfers_payload": true,
+          "drop_policy": "ACTIVE_PAYLOAD_ONCE"
         }
       }
     }
