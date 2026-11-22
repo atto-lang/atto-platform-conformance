@@ -16,7 +16,11 @@ const knownIds = new Set([
   "reject-keyword-fallthrough", "reject-mixed-delimiters", "reject-missing-end",
   "reject-brace-break", "reject-keyword-break",
   "reject-brace-continue", "reject-keyword-continue",
-  "reject-brace-throw", "reject-keyword-throw"
+  "reject-brace-throw", "reject-keyword-throw",
+  "guard-void-keyword-false", "guard-void-brace-false",
+  "guard-void-keyword-true", "guard-void-brace-true",
+  "reject-guard-void-nonvoid-keyword", "reject-guard-void-nonvoid-brace",
+  "guard-brace-nested-outer-else"
 ]);
 
 function assertManifest(m) {
@@ -104,4 +108,38 @@ test("both guard spellings reject escape-only failure blocks", () => {
       else assert.match(source,/guard false \{/);
     }
   }
+});
+
+
+test("explicit ^ void is a portable valueless guard return in both styles", () => {
+  const byId=Object.fromEntries(manifest.fixtures.map(f=>[f.id,f]));
+  for (const predicate of ["false","true"]) {
+    for (const style of ["keyword","brace"]) {
+      const id="guard-void-"+style+"-"+predicate;
+      const f=byId[id];
+      assert.equal(f.kind,"NATIVE_GUEST_RETURN");
+      assert.equal(f.expected_integer,42);
+      assert.equal(f.style,style);
+      const source=readFileSync(join(root,f.path),"utf8");
+      assert.match(source,/fnc process_explicit\(\) -> void/);
+      if(style==="keyword") assert.ok(source.includes("guard "+predicate+" else ^ void end\nend"));
+      else assert.ok(source.includes("guard "+predicate+" { ^ void }\nend"));
+      assert.match(source,/pub fnc main\(\): int/);
+    }
+  }
+  for (const style of ["keyword","brace"]) {
+    const id="reject-guard-void-nonvoid-"+style;
+    const f=byId[id];
+    assert.equal(f.kind,"COMPILE_REJECT_NO_IR");
+    const source=readFileSync(join(root,f.path),"utf8");
+    assert.match(source,/fnc process_explicit\(\) -> int/);
+    assert.match(source,/\^ void/);
+  }
+  const outer=byId["guard-brace-nested-outer-else"];
+  assert.equal(outer.expected_integer,42);
+  assert.equal(outer.style,"brace");
+  const source=readFileSync(join(root,outer.path),"utf8");
+  assert.match(source,/if true then[\s\S]*guard true \{ return 7; \}[\s\S]*else[\s\S]*fi/);
+  assert.equal(manifest.authored_execution_gates.rs.expected_real_wasm_guest_cases,12);
+  assert.equal(manifest.authored_execution_gates.rs.expected_no_artifact_reject_cases,12);
 });
