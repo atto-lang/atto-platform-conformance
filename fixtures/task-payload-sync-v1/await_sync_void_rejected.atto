@@ -1,0 +1,4 @@
+pub susp fnc main(): int {
+  await sync task<void> { return; };
+  return 42;
+}
