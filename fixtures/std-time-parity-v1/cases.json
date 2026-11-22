@@ -362,5 +362,23 @@
     }
   ],
   "borrow_conformance_status": "NOT_EXECUTED_ALL_ELEVEN_BACKENDS",
-  "borrow_ownership_notes": "Source-only negative candidates, require compiler-issued borrow or mutable-receiver diagnostic and no guest artifact. Source syntax or missing module alone must never count as a passing borrow rejection."
+  "borrow_ownership_notes": "Atto val is const mut and MUST permit mut self on a fixed writable binding; const is an immutable referent and MUST reject mut self. Both positive execution and negative rejection require real compiler linkage. Missing module/grammar diagnostics cannot count as borrow-checker passes.",
+  "borrow_mutability_positive": {
+    "id": "val_mutable_referent_methods",
+    "file": "fixtures/std-time-parity-v1/borrow-positive-val-mutable-referent.atto",
+    "binding": "val",
+    "binding_semantics": "const mut (non-reassignable, mutable referent)",
+    "expected_stdout": [
+      "1",
+      "true",
+      "true"
+    ],
+    "guest_execution": "NOT_EXECUTED",
+    "required_capabilities": [
+      "module_linkage",
+      "mut_self_exclusive_borrow",
+      "const_mut_binding",
+      "owner_state_transition"
+    ]
+  }
 }
