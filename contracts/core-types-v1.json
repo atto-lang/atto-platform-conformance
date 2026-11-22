@@ -132,7 +132,7 @@
       "backend": "net",
       "repository": "atto-lang/atto-source.net",
       "pr_url": "https://github.com/atto-lang/atto-source.net/pull/216",
-      "head_sha": "9fe178450334b5fb6d58d333581d26ee9e969a4e",
+      "head_sha": "ac6319931ec28811370f7b964e84c4245754bf6e",
       "source_blob_sha": "0fd14a9a81c515781232e3953ecb2f8524b9adda",
       "fixture_positive_blob_sha": "9d4027de080b8d625ab869825c4ec62f369adce8",
       "fixture_negative_blob_sha": "470599e7850a277bae1dec72876e808cc36bd9e8",
@@ -213,7 +213,7 @@
       "backend": "forge",
       "repository": "atto-lang/atto-source.forge",
       "pr_url": "https://github.com/atto-lang/atto-source.forge/pull/225",
-      "head_sha": "84aa742c1ccac167b7f96bdea5299433f3aeeb17",
+      "head_sha": "138cf85f20358c71b34a60bc58a7ccddcdcd019c",
       "source_blob_sha": "d77382214d86fb55e0c9e5c77879d4565519467e",
       "fixture_positive_blob_sha": "9d4027de080b8d625ab869825c4ec62f369adce8",
       "fixture_negative_blob_sha": "470599e7850a277bae1dec72876e808cc36bd9e8",
@@ -402,14 +402,25 @@
     "backend_compiler_admission_v2": [
       {
         "backend": "net",
-        "exact_head": "9fe178450334b5fb6d58d333581d26ee9e969a4e",
-        "exact_git_tree": "107e608a15a6a428b839bc21404be0ae550b1e7b",
-        "workflow_git_blob": "e4296c6c35e72d0a722d03afc762a843c471a10b",
+        "exact_head": "ac6319931ec28811370f7b964e84c4245754bf6e",
+        "exact_git_tree": "07c092d7712c330849b3b30a12a6672bc7d7c3ba",
+        "workflow_git_blob": "d9b33574affdcf55850e8c4c4a6e34ad742df207",
         "gate_kind": "NATIVE_CIL_FRONTEND_COMPILE",
         "actions_execution_status": "NOT_EXECUTED",
         "compiled_guest_status": "NOT_EXECUTED",
         "native_aot_status": "NOT_EXECUTED",
-        "source_mirrored_to_alternate_org": false
+        "source_mirrored_to_alternate_org": false,
+        "header_parser_git_blob": "a6a18b8250a90b5a2fd7deb6f6fda368580ede1a",
+        "namespace_fixture_git_blobs": [
+          "8db986183b4c723b16bf6ed135bb38829850f437",
+          "640f9333a9d605b0d4d14dabd7c552279d658b97",
+          "d52b9a53d0fed9467ed3435e617e077605f6ba29"
+        ],
+        "namespace_fixture_tests_staged": {
+          "positive": 1,
+          "negative": 2,
+          "executed": 0
+        }
       },
       {
         "backend": "wasm",
@@ -425,14 +436,25 @@
       },
       {
         "backend": "forge",
-        "exact_head": "84aa742c1ccac167b7f96bdea5299433f3aeeb17",
-        "exact_git_tree": "98dd900d45e3f30606444e1284b197534988c48e",
-        "workflow_git_blob": "9a4a2dc7f12489ccb964c8b6ad381517023f1d45",
+        "exact_head": "138cf85f20358c71b34a60bc58a7ccddcdcd019c",
+        "exact_git_tree": "55174698aab9325f74e2d8a85e666da1683e3aac",
+        "workflow_git_blob": "3a76f0d0f6d4cbf50ec3ccd5b1a73e9f9b880de7",
         "gate_kind": "STAGE0_FORGE_FRONTEND_INTERPRETER",
         "actions_execution_status": "NOT_EXECUTED",
         "compiled_guest_status": "NOT_EXECUTED",
         "native_aot_status": "NOT_EXECUTED",
-        "source_mirrored_to_alternate_org": false
+        "source_mirrored_to_alternate_org": false,
+        "header_parser_git_blob": "87ee8967d8b7d92cc794fcc5772c611523931d8c",
+        "namespace_fixture_git_blobs": [
+          "e4a46b5eb4c19eca36786cc440cc09ffd38d4354",
+          "3f1531c7677eebab9ce211e22bf38f381419384b",
+          "d52b9a53d0fed9467ed3435e617e077605f6ba29"
+        ],
+        "namespace_fixture_tests_staged": {
+          "positive": 1,
+          "negative": 2,
+          "executed": 0
+        }
       },
       {
         "backend": "cranelift",
