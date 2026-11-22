@@ -1,0 +1,254 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "contract": "atto.std.assert.v1",
+  "upstream_design": "https://github.com/atto-lang/atto-spec/pull/114",
+  "scope": "candidate sources only; no guest parity claim",
+  "receipt_policy": "NOT_EXECUTED may not be promoted by author-controlled metadata; only independently checked exact-head stepful guest evidence",
+  "cases": [
+    {
+      "id": "true_success",
+      "expect": "guest_success",
+      "shape": "assert.true(true)"
+    },
+    {
+      "id": "false_success",
+      "expect": "guest_success",
+      "shape": "assert.false(false)"
+    },
+    {
+      "id": "equal_success",
+      "expect": "guest_success",
+      "shape": "assert.equal(42, 42)"
+    },
+    {
+      "id": "not_equal_success",
+      "expect": "guest_success",
+      "shape": "assert.not_equal(42, 43)"
+    },
+    {
+      "id": "true_failure",
+      "expect": "typed_AssertionError",
+      "shape": "assert.true(false)"
+    },
+    {
+      "id": "false_failure",
+      "expect": "typed_AssertionError",
+      "shape": "assert.false(true)"
+    },
+    {
+      "id": "equal_failure",
+      "expect": "typed_AssertionError",
+      "shape": "assert.equal(42, 43)"
+    },
+    {
+      "id": "not_equal_failure",
+      "expect": "typed_AssertionError",
+      "shape": "assert.not_equal(42, 42)"
+    },
+    {
+      "id": "user_failure_message",
+      "expect": "typed_AssertionError",
+      "shape": "assert.fail(\"bad invariant\")"
+    },
+    {
+      "id": "eq_mixed_numeric",
+      "expect": "compile_error",
+      "shape": "assert.equal(42, 42.0)"
+    },
+    {
+      "id": "requires_bool",
+      "expect": "compile_error",
+      "shape": "assert.true(42)"
+    },
+    {
+      "id": "unbound_module",
+      "expect": "compile_error",
+      "shape": "assert.true(true) without import"
+    },
+    {
+      "id": "reserved_member_grammar",
+      "expect": "compile_success",
+      "shape": "qualified true/false only"
+    },
+    {
+      "id": "args_once_left_to_right",
+      "expect": "guest_success",
+      "shape": "effect-counted expected/actual evaluations"
+    },
+    {
+      "id": "retained_in_release_and_aot",
+      "expect": "typed_AssertionError",
+      "shape": "false assertion in optimized build"
+    },
+    {
+      "id": "caught_without_actor_supervisor_panic",
+      "expect": "typed_AssertionError",
+      "shape": "local catch; unrelated actors survive"
+    },
+    {
+      "id": "test_outcome_returns_failure_data",
+      "expect": "guest_success",
+      "shape": "TestOutcome false with message"
+    },
+    {
+      "id": "bounded_diagnostics",
+      "expect": "guest_success",
+      "shape": "no secret/leak or unbounded formatter"
+    },
+    {
+      "id": "hdl_synthesis_reject_or_hosted_simulation",
+      "expect": "profile_specific",
+      "shape": "no silently dropped assertions"
+    },
+    {
+      "id": "hard_realtime_reject_or_bounded_typed_effect",
+      "expect": "profile_specific",
+      "shape": "no uncontrolled throw/allocation in hard RT"
+    }
+  ],
+  "targets": [
+    {
+      "repository": "atto-lang/atto-source.java",
+      "source_pr": "https://github.com/atto-lang/atto-source.java/pull/1757",
+      "head_sha": "8ccb846a0d6b03c5d7608600b7792d6cc8701326",
+      "source_readback": "VERIFIED_SOURCE_SHAPE",
+      "compiler_typecheck": "NOT_EXECUTED",
+      "guest_success": "NOT_EXECUTED",
+      "guest_assertion_error": "NOT_EXECUTED",
+      "guest_negative": "NOT_EXECUTED",
+      "release_aot": "NOT_EXECUTED",
+      "atto_test": "NOT_EXECUTED",
+      "notes": "hosted candidate; independent compilation required"
+    },
+    {
+      "repository": "atto-lang/atto-source.net",
+      "source_pr": "https://github.com/atto-lang/atto-source.net/pull/211",
+      "head_sha": "ac181b2b0bc16646533a056af873802cfdf17b27",
+      "source_readback": "VERIFIED_SOURCE_SHAPE",
+      "compiler_typecheck": "NOT_EXECUTED",
+      "guest_success": "NOT_EXECUTED",
+      "guest_assertion_error": "NOT_EXECUTED",
+      "guest_negative": "NOT_EXECUTED",
+      "release_aot": "NOT_EXECUTED",
+      "atto_test": "NOT_EXECUTED",
+      "notes": "hosted candidate; independent compilation required"
+    },
+    {
+      "repository": "atto-lang/atto-source.llvm",
+      "source_pr": "https://github.com/atto-lang/atto-source.llvm/pull/862",
+      "head_sha": "cee5d69d43e0126decbfa9cea26dff928cd5eca0",
+      "source_readback": "VERIFIED_SOURCE_SHAPE",
+      "compiler_typecheck": "NOT_EXECUTED",
+      "guest_success": "NOT_EXECUTED",
+      "guest_assertion_error": "NOT_EXECUTED",
+      "guest_negative": "NOT_EXECUTED",
+      "release_aot": "NOT_EXECUTED",
+      "atto_test": "NOT_EXECUTED",
+      "notes": "hosted candidate; independent compilation required"
+    },
+    {
+      "repository": "atto-lang/atto-source.rs",
+      "source_pr": "https://github.com/atto-lang/atto-source.rs/pull/529",
+      "head_sha": "fcf18353abe1d7966e1825fae684d6f3af566a73",
+      "source_readback": "VERIFIED_SOURCE_SHAPE",
+      "compiler_typecheck": "NOT_EXECUTED",
+      "guest_success": "NOT_EXECUTED",
+      "guest_assertion_error": "NOT_EXECUTED",
+      "guest_negative": "NOT_EXECUTED",
+      "release_aot": "NOT_EXECUTED",
+      "atto_test": "NOT_EXECUTED",
+      "notes": "hosted candidate; independent compilation required"
+    },
+    {
+      "repository": "atto-lang/atto-source.wasm",
+      "source_pr": "https://github.com/atto-lang/atto-source.wasm/pull/272",
+      "head_sha": "b79e54334bac2fd6a870a859de4e47c7d9afbd7c",
+      "source_readback": "VERIFIED_SOURCE_SHAPE",
+      "compiler_typecheck": "NOT_EXECUTED",
+      "guest_success": "NOT_EXECUTED",
+      "guest_assertion_error": "NOT_EXECUTED",
+      "guest_negative": "NOT_EXECUTED",
+      "release_aot": "NOT_EXECUTED",
+      "atto_test": "NOT_EXECUTED",
+      "notes": "hosted candidate; independent compilation required"
+    },
+    {
+      "repository": "atto-lang/atto-source.js",
+      "source_pr": "https://github.com/atto-lang/atto-source.js/pull/125",
+      "head_sha": "b96053bb11d397a29feeba2c497702ebd98155d4",
+      "source_readback": "VERIFIED_SOURCE_SHAPE",
+      "compiler_typecheck": "NOT_EXECUTED",
+      "guest_success": "NOT_EXECUTED",
+      "guest_assertion_error": "NOT_EXECUTED",
+      "guest_negative": "NOT_EXECUTED",
+      "release_aot": "NOT_EXECUTED",
+      "atto_test": "NOT_EXECUTED",
+      "notes": "hosted candidate; independent compilation required"
+    },
+    {
+      "repository": "atto-lang/atto-source.forge",
+      "source_pr": "https://github.com/atto-lang/atto-source.forge/pull/222",
+      "head_sha": "69dd53cdcb87e727fec61bd09fbad3392abd4ba6",
+      "source_readback": "VERIFIED_SOURCE_SHAPE",
+      "compiler_typecheck": "NOT_EXECUTED",
+      "guest_success": "NOT_EXECUTED",
+      "guest_assertion_error": "NOT_EXECUTED",
+      "guest_negative": "NOT_EXECUTED",
+      "release_aot": "NOT_EXECUTED",
+      "atto_test": "NOT_EXECUTED",
+      "notes": "hosted candidate; independent compilation required"
+    },
+    {
+      "repository": "atto-lang/atto-source.cranelift",
+      "source_pr": "https://github.com/atto-lang/atto-source.cranelift/pull/86",
+      "head_sha": "7cdf31cc4b0acb7987d787dbc30fb32abc5072a7",
+      "source_readback": "VERIFIED_SOURCE_SHAPE",
+      "compiler_typecheck": "NOT_EXECUTED",
+      "guest_success": "NOT_EXECUTED",
+      "guest_assertion_error": "NOT_EXECUTED",
+      "guest_negative": "NOT_EXECUTED",
+      "release_aot": "NOT_EXECUTED",
+      "atto_test": "NOT_EXECUTED",
+      "notes": "hosted candidate; independent compilation required"
+    },
+    {
+      "repository": "atto-lang/atto-source.hdl",
+      "source_pr": "https://github.com/atto-lang/atto-source.hdl/pull/56",
+      "head_sha": "8aaa914643c1008a8caa24b1987857503fd2de20",
+      "source_readback": "VERIFIED_SOURCE_SHAPE",
+      "compiler_typecheck": "NOT_EXECUTED",
+      "guest_success": "NOT_EXECUTED",
+      "guest_assertion_error": "NOT_EXECUTED",
+      "guest_negative": "NOT_EXECUTED",
+      "release_aot": "NOT_EXECUTED",
+      "atto_test": "NOT_EXECUTED",
+      "notes": "synthesis must explicitly reject unsupported hosted runtime assert; no silent stripping"
+    },
+    {
+      "repository": "atto-lang/atto-source.atto",
+      "source_pr": "https://github.com/atto-lang/atto-source.atto/pull/19",
+      "head_sha": "ea629f4a20794bdde18c5fe57cbec16be9748283",
+      "source_readback": "VERIFIED_SOURCE_SHAPE",
+      "compiler_typecheck": "NOT_EXECUTED",
+      "guest_success": "NOT_EXECUTED",
+      "guest_assertion_error": "NOT_EXECUTED",
+      "guest_negative": "NOT_EXECUTED",
+      "release_aot": "NOT_EXECUTED",
+      "atto_test": "NOT_EXECUTED",
+      "notes": "self-hosting compiler not bootstrapped"
+    },
+    {
+      "repository": "atto-lang/atto-source.realtime",
+      "source_pr": "https://github.com/atto-lang/atto-source.realtime/pull/14",
+      "head_sha": "3436f62b15160906fc6c1357e9857dd3d1da5e73",
+      "source_readback": "VERIFIED_SOURCE_SHAPE",
+      "compiler_typecheck": "NOT_EXECUTED",
+      "guest_success": "NOT_EXECUTED",
+      "guest_assertion_error": "NOT_EXECUTED",
+      "guest_negative": "NOT_EXECUTED",
+      "release_aot": "NOT_EXECUTED",
+      "atto_test": "NOT_EXECUTED",
+      "notes": "hard realtime must reject unsafe unbounded throw/allocation"
+    }
+  ]
+}
