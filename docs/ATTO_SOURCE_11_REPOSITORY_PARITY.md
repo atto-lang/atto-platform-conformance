@@ -209,3 +209,35 @@ The [negative mutation test](../tests/std-protocol-11-backend-evidence-v1.test.m
 fails closed on missing/duplicate backends, changed commit/tree/fixture
 identities, invented guest successes, zero-step promotion and unauthorized
 export claims. Green source-free registry CI is still **not** green guest CI.
+
+
+### Std compute partial-workgroup hardening (2026-11-22)
+
+The numeric `compute_dispatch_valid` helper previously rejected a local workgroup
+dimension larger than its logical global workload, contradicting the existing
+overflow-safe ceiling workgroup-count helper. The nine source PRs now admit
+partial/padded workgroups (including logical 1×1×1 with local 8×8×1, and
+9×9×1 with local 8×8×1) and preserve zero/negative global rejection and
+maximum workgroup invocation checks. The three new acceptance predicates are
+combined within the existing `.atto` boundary case 101; the **109 numbered
+cases remain unchanged**. Two new source-level mutation tests per backend
+reject restoration of the invalid local-versus-global restriction and removal
+of the padded-workgroup vector.
+
+**Safety boundary:** This is a numeric admissibility check only. Actual GPU
+launch must prove device-specific per-axis limits and group-count limits,
+ownership/borrow lifetimes and explicit out-of-range invocation guards before
+memory access. No device handle, memory-safety certification, kernel compiler,
+driver or GPU execution is introduced or claimed. References:
+[Vulkan compute dispatch tutorial](https://docs.vulkan.org/tutorial/latest/11_Compute_Shader.html),
+[WGSL/WebGPU 2026](https://www.w3.org/TR/2026/CRD-WGSL-20261021/).
+
+The [11-backend protocol ledger](../contracts/std-protocol-11-backend-evidence-v1.json)
+now pins the three actual backend-owned `.atto` library blobs **as well as**
+the source tests, candidate commits and distinct root trees. The
+[source-free test](../tests/std-protocol-11-backend-evidence-v1.test.mjs)
+rejects forged library IDs, GPU-memory-safety claims and false guest passes.
+A separate [Sonus source-free reference workflow](https://github.com/sonus-auris-test/atto-ci/actions/runs/45058040904)
+is limited to public arithmetic and dispatch reference vectors; success or
+failure there is not compiled Atto guest evidence or private-source export
+permission.
