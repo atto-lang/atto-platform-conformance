@@ -2,7 +2,7 @@
   "schema": "attolang.guard.dual-form.v1",
   "spec": "atto-lang/atto-spec#200",
   "status": "SOURCE_CONTRACT_NOT_BACKEND_EXECUTION",
-  "scope": "Both forms invert the condition and require an explicit function return on every failure path; throw/break/continue are not valid substitutes. Additive to immutable guard-v1 pins.",
+  "scope": "Both forms invert the condition and require an explicit function return on every failure path; throw/break/continue are not valid substitutes. Additive to immutable guard-v1 pins. Both keyword-ended and braced void-function guards accept ^ void with no-return-value semantics.",
   "backends": {
     "java": "NOT_EXECUTED",
     "llvm": "NOT_EXECUTED",
@@ -131,6 +131,60 @@
       "git_blob": "bcf9af5ba0b2f57121f11a7d792b692aee4bc289",
       "style": "keyword",
       "kind": "COMPILE_REJECT_NO_IR"
+    },
+    {
+      "id": "guard-void-keyword-false",
+      "path": "fixtures/guard-dual-form-v1/guard-void-keyword-false.atto",
+      "git_blob": "0e56a63467eaa73f1108447bd4d98b4f4b1f98af",
+      "kind": "NATIVE_GUEST_RETURN",
+      "style": "keyword",
+      "expected_integer": 42
+    },
+    {
+      "id": "guard-void-brace-false",
+      "path": "fixtures/guard-dual-form-v1/guard-void-brace-false.atto",
+      "git_blob": "08f1fb299614e99ec472c6e160fbe97f48810020",
+      "kind": "NATIVE_GUEST_RETURN",
+      "style": "brace",
+      "expected_integer": 42
+    },
+    {
+      "id": "guard-void-keyword-true",
+      "path": "fixtures/guard-dual-form-v1/guard-void-keyword-true.atto",
+      "git_blob": "8cacd565b948305c04dad30df8faf87de9e36e1b",
+      "kind": "NATIVE_GUEST_RETURN",
+      "style": "keyword",
+      "expected_integer": 42
+    },
+    {
+      "id": "guard-void-brace-true",
+      "path": "fixtures/guard-dual-form-v1/guard-void-brace-true.atto",
+      "git_blob": "193049b7e60ddb7e3778b18158506d04b12405f1",
+      "kind": "NATIVE_GUEST_RETURN",
+      "style": "brace",
+      "expected_integer": 42
+    },
+    {
+      "id": "reject-guard-void-nonvoid-keyword",
+      "path": "fixtures/guard-dual-form-v1/reject-guard-void-nonvoid-keyword.atto",
+      "git_blob": "75f6874a4e51c84b53f4f33449a6fdc5970bced3",
+      "kind": "COMPILE_REJECT_NO_IR",
+      "style": "keyword"
+    },
+    {
+      "id": "reject-guard-void-nonvoid-brace",
+      "path": "fixtures/guard-dual-form-v1/reject-guard-void-nonvoid-brace.atto",
+      "git_blob": "1373f6e7e40d06f567d0b4e3cebf6c9f6cc70780",
+      "kind": "COMPILE_REJECT_NO_IR",
+      "style": "brace"
+    },
+    {
+      "id": "guard-brace-nested-outer-else",
+      "path": "fixtures/guard-dual-form-v1/guard-brace-nested-outer-else.atto",
+      "git_blob": "108162d467c5725811bb57349349e03328a07ebd",
+      "kind": "NATIVE_GUEST_RETURN",
+      "style": "brace",
+      "expected_integer": 42
     }
   ],
   "required_observations": [
@@ -158,7 +212,7 @@
     "hdl": "https://github.com/atto-lang/atto-source.hdl/issues/52",
     "net_shipping_scalar": "https://github.com/atto-lang/atto-source.net/issues/5"
   },
-  "notes": "Implementation PRs are drafts/authored-only. Every backend remains NOT_EXECUTED until separately source-pinned real compilation and guest execution succeeds. .NET draft is structured experimental mode only; shipping scalar source remains fail closed.",
+  "notes": "Implementation PRs are drafts/authored-only. Every backend remains NOT_EXECUTED until separately source-pinned real compilation and guest execution succeeds. .NET draft is structured experimental mode only; shipping scalar source remains fail closed. Additive void-guard fixtures and nested outer-if delimiter case were SHA-pinned without changing historical fixture blobs; they are NOT_EXECUTED.",
   "return_contract": {
     "condition": "strict bool; short circuit left to right; evaluated once per test",
     "true_path": "continue after guard",
@@ -170,7 +224,7 @@
       "break",
       "continue"
     ],
-    "type_rule": "return expression statically checked against enclosing function return type; void uses return",
+    "type_rule": "return expression matches enclosing function result; in void functions ^ void/return void are contextual no-value returns and reject in nonvoid callables",
     "evidence": "no compiler or guest parity certified without exact-head executed stepful receipts"
   },
   "authored_execution_gates": {
@@ -178,8 +232,8 @@
       "pr": "https://github.com/atto-lang/atto-source.rs/pull/504",
       "path": "tests/guard_dual_form_guest.mjs",
       "workflow": ".github/workflows/ci.yml",
-      "expected_real_wasm_guest_cases": 8,
-      "expected_no_artifact_reject_cases": 8,
+      "expected_real_wasm_guest_cases": 12,
+      "expected_no_artifact_reject_cases": 12,
       "result": "NOT_EXECUTED"
     },
     "llvm": {
