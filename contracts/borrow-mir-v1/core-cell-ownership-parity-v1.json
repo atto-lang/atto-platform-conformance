@@ -364,7 +364,15 @@
       },
       "check": "Guarded compiler resolver and forged local-type AST regression in legacy+borrow-v1 modes; native/browser compiled guest suite emits per-case machine-readable receipts with exact source head/tree, toolchain, compiler hashes, fixture hashes, expected/actual outcomes, and zero-artifact negative witnesses.",
       "compilation": "NOT_EXECUTED",
-      "guest": "NOT_EXECUTED"
+      "guest": "NOT_EXECUTED",
+      "latestActions": {
+        "runId": 45061369675,
+        "workflow": "Portable Atto frontend and browser Wasm conformance",
+        "event": "pull_request",
+        "status": "queued",
+        "conclusion": null,
+        "materialSteps": "NOT_EXECUTED"
+      }
     },
     "java": {
       "repository": "atto-lang/atto-source.java",
@@ -377,7 +385,25 @@
       },
       "check": "The active main CI workflow explicitly runs CoreFourGuestTest; linked core/cell borrow negatives must reject through both validate and actual LinkedProgramRunner guest-launch entrypoint before stdout. The draft-only specialized workflow is supplemental.",
       "compilation": "NOT_EXECUTED",
-      "guest": "NOT_EXECUTED"
+      "guest": "NOT_EXECUTED",
+      "latestActions": [
+        {
+          "runId": 45061439884,
+          "workflow": "ci",
+          "event": "push",
+          "status": "queued",
+          "conclusion": null,
+          "materialSteps": "NOT_EXECUTED"
+        },
+        {
+          "runId": 45061439842,
+          "workflow": "fast-ci",
+          "event": "push",
+          "status": "queued",
+          "conclusion": null,
+          "materialSteps": "NOT_EXECUTED"
+        }
+      ]
     },
     "llvm": {
       "repository": "atto-lang/atto-source.llvm",
@@ -390,10 +416,28 @@
       },
       "check": "The active main CI workflow explicitly runs the exact-head core-four LLVM O0/O2 native guest gate and requires ownership-specific diagnostics plus zero emitted IR for use-after-take, borrow-escape and conflicting-loans.",
       "compilation": "NOT_EXECUTED",
-      "guest": "NOT_EXECUTED"
+      "guest": "NOT_EXECUTED",
+      "latestActions": [
+        {
+          "runId": 45061468054,
+          "workflow": "LLVM compiler and native execution",
+          "event": "pull_request",
+          "status": "pending",
+          "conclusion": null,
+          "materialSteps": "NOT_EXECUTED"
+        },
+        {
+          "runId": 45061467442,
+          "workflow": "Atto core-four real LLVM native guest O0 and O2 exact-head",
+          "event": "pull_request",
+          "status": "queued",
+          "conclusion": null,
+          "materialSteps": "NOT_EXECUTED"
+        }
+      ]
     }
   },
-  "compilerIntegrationEvidenceRule": "These are exact Git object witnesses for compiler-gate candidates, NOT real guest or typed-MIR proof. Re-fetch current head/tree/blobs and verify material runner steps, compiler binary digest and actual positive/negative guest before promoting. The Rust borrow-v1 profile is opt-in and must not be represented as global Atto borrow-by-default. All eleven backend guestEvidence statuses remain NOT_EXECUTED. 2026-11-22 refreshed exact PR #340/#1769/#868 commit and root-tree identities after the latest ownership-gate edits. Active source-org CI workflows now explicitly contain the Java linked-core guest test and LLVM O0/O2 negative gate; run status and material steps must be refreshed before promotion.",
+  "compilerIntegrationEvidenceRule": "These are exact Git object witnesses for compiler-gate candidates, NOT real guest or typed-MIR proof. Re-fetch current head/tree/blobs and verify material runner steps, compiler binary digest and actual positive/negative guest before promoting. The Rust borrow-v1 profile is opt-in and must not be represented as global Atto borrow-by-default. All eleven backend guestEvidence statuses remain NOT_EXECUTED. 2026-11-22 refreshed exact PR #340/#1769/#868 commit and root-tree identities after the latest ownership-gate edits. Active source-org CI workflows now explicitly contain the Java linked-core guest test and LLVM O0/O2 negative gate; run status and material steps must be refreshed before promotion. Latest source-org exact-head actions observations 2026-11-22: Rust #45061369675 queued; Java ci #45061439884 and fast-ci #45061439842 queued; LLVM core-four #45061467442 queued and main LLVM compiler/native #45061468054 pending. All recorded job step lists are empty at this observation; guest/compilation statuses remain NOT_EXECUTED.",
   "borrowSaturationContract": {
     "portableSemantics": "canAcquireShared is false at max live shared-loan capacity, but an existing owner's read remains allowed. Additional loans must never overflow; owner write/move/unpinned suspension remain denied with any live loan.",
     "signedCounter": {
