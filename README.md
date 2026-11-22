@@ -10,7 +10,7 @@ This repository is maintained at [atto-lang/atto-platform-conformance](https://g
 
 ## Numerical semantics v1 (target only)
 
-The [38-case exact numeric registry](contracts/numeric-semantics-v1.json) and [source-free BigInt-based oracle test](tests/numeric-semantics-v1.test.mjs) check proposed integer, decimal, fixed-point, vector and dimensional results. Run `node --test tests/numeric-semantics-v1.test.mjs`. **These tests do not execute an AttoLang compiler or prove full guest AOT; every backend remains not_executed until authenticated guest evidence is added.**
+The [51-case exact numeric registry](contracts/numeric-semantics-v1.json) and [source-free BigInt-based oracle test](tests/numeric-semantics-v1.test.mjs) check proposed integer, decimal, fixed-point, vector and dimensional results. Run `node --test tests/numeric-semantics-v1.test.mjs`. **These tests do not execute an AttoLang compiler or prove full guest AOT; every backend remains not_executed until authenticated guest evidence is added.**
 
 ## Purpose
 
