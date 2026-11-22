@@ -43,12 +43,12 @@
       "repo": "atto-lang/atto-source.net",
       "kind": "BACKEND_OWNED_SOURCE_DRAFT",
       "candidate_pr": 228,
-      "head_sha": "6a593297f3c1bd34fdf9f1ecc193d093ddf98f0e",
-      "root_tree_sha": "e425873c0688dd828f7c05a5d8c76a41ddbaa985",
+      "head_sha": "6842289a035f3d3153894d5bd6594d3c0aa55104",
+      "root_tree_sha": "a5b4211574cba40ec33a2847da524f6b49819925",
       "source_blobs": {
         "tests/stdlib/websocket_quic_compute_smoke.atto": "9daec1444782870ba9b292d6f374b4af64faf743",
         "tests/stdlib/protocol_boundaries.atto": "89bbc1d8f9bf658d1b31993b1a8a8bc7c1f496b4",
-        "tests/stdlib/source_contract.test.mjs": "ce84a8ebd30aab5d77729e61e8733bb958c29148"
+        "tests/stdlib/source_contract.test.mjs": "e19020d3d07a62e214a9d4f1eb79ee2e04b45aef"
       },
       "source_fixture_cases": 146,
       "smoke_cases": 37,
@@ -66,12 +66,12 @@
       "repo": "atto-lang/atto-source.hdl",
       "kind": "BACKEND_OWNED_SOURCE_DRAFT",
       "candidate_pr": 70,
-      "head_sha": "3b966583f798c9829189e9ddef253507b4e101d1",
-      "root_tree_sha": "6819212c486bb44d215fa75313b7f1253e7ec8c3",
+      "head_sha": "c61ce1eaad8a266bf00541eb8ee4b6e244de5509",
+      "root_tree_sha": "8a965049bbd38d1626c9ca7b1478887a5f4ef7fc",
       "source_blobs": {
         "tests/stdlib/websocket_quic_compute_smoke.atto": "656eed3d274ab7bd6ae679497736b47ac8aff4b3",
         "tests/stdlib/protocol_boundaries.atto": "57843779acd2c424a9f5bcadeff2cb4f8b2c954e",
-        "tests/stdlib/source_contract.test.mjs": "ce84a8ebd30aab5d77729e61e8733bb958c29148"
+        "tests/stdlib/source_contract.test.mjs": "e19020d3d07a62e214a9d4f1eb79ee2e04b45aef"
       },
       "source_fixture_cases": 146,
       "smoke_cases": 37,
@@ -89,12 +89,12 @@
       "repo": "atto-lang/atto-source.java",
       "kind": "BACKEND_OWNED_SOURCE_DRAFT",
       "candidate_pr": 1786,
-      "head_sha": "27c607901a1d995a341c85e904f7eea49aa00ec8",
-      "root_tree_sha": "927dbd0edc6174b8551a269b2ad28eebb223589c",
+      "head_sha": "e2c7ea4d1050c447b6ea74f2ff97dfe32df502db",
+      "root_tree_sha": "6607962d835b980a21ece755a300cafb354b4410",
       "source_blobs": {
         "tests/stdlib/websocket_quic_compute_smoke.atto": "2fe74c554f4163d0436a2f45fb47eec13a904f80",
         "tests/stdlib/protocol_boundaries.atto": "8fa7427fb0a0323ad09e700f87da1f8e50707bb0",
-        "tests/stdlib/source_contract.test.mjs": "f211b5cfd3ece3a67cb95d35d21e0f6e1e1794a1"
+        "tests/stdlib/source_contract.test.mjs": "8b5960abd66f49c1f5f7b3c712ff8e62baf8f0bb"
       },
       "source_fixture_cases": 146,
       "smoke_cases": 37,
@@ -129,12 +129,12 @@
       "repo": "atto-lang/atto-source.rs",
       "kind": "BACKEND_OWNED_SOURCE_DRAFT",
       "candidate_pr": 546,
-      "head_sha": "2e5acfe959df23df753c3bca40b116b5b2527333",
-      "root_tree_sha": "2379992c25982c549ccca35a328bef44ea326b86",
+      "head_sha": "01f9e5b735fd9c88280970d83e7f26151b21995d",
+      "root_tree_sha": "55ef501700d3786ae319a1aadef04798bf922c3b",
       "source_blobs": {
         "tests/stdlib/websocket_quic_compute_smoke.atto": "7534eb2ed7abd2339988b42d5086f5e45a062b9d",
         "tests/stdlib/protocol_boundaries.atto": "79fd2bde916b6400c09a34f5a37f1e3a394344f3",
-        "tests/stdlib/source_contract.test.mjs": "28ca3554d928a068abebc8d88bf603876e0dc754"
+        "tests/stdlib/source_contract.test.mjs": "dfd845d74366e7b794be015eb90302bb331ce6c8"
       },
       "source_fixture_cases": 146,
       "smoke_cases": 37,
@@ -152,12 +152,12 @@
       "repo": "atto-lang/atto-source.llvm",
       "kind": "BACKEND_OWNED_SOURCE_DRAFT",
       "candidate_pr": 884,
-      "head_sha": "cb05a4cc2aa6409a893be0b2996aef1723d22960",
-      "root_tree_sha": "bad0735ca0bfd33980d7543a17514eaf3fd18210",
+      "head_sha": "ba4feaa4e4e11ef52c5495ff3caac0bfc6cb7df0",
+      "root_tree_sha": "a61f3521dbf589c9dffb5e307698319ed136adf7",
       "source_blobs": {
         "tests/stdlib/websocket_quic_compute_smoke.atto": "4f984f5e0d39f2205b4e7b979ecdd4168bf587e6",
         "tests/stdlib/protocol_boundaries.atto": "3beafcab41c72e0c4a8986072afad9362b320c14",
-        "tests/stdlib/source_contract.test.mjs": "ce84a8ebd30aab5d77729e61e8733bb958c29148"
+        "tests/stdlib/source_contract.test.mjs": "e19020d3d07a62e214a9d4f1eb79ee2e04b45aef"
       },
       "source_fixture_cases": 146,
       "smoke_cases": 37,
@@ -175,12 +175,12 @@
       "repo": "atto-lang/atto-source.js",
       "kind": "BACKEND_OWNED_SOURCE_DRAFT",
       "candidate_pr": 141,
-      "head_sha": "4122ef2c3f0bbc61c720b70021a1df4f0e90ee50",
-      "root_tree_sha": "265af688cc9a331103fceb2bb7c12d3f10bd46ba",
+      "head_sha": "ae0000ffe1ec069cf25a52b9a456d3e4be61f185",
+      "root_tree_sha": "31ba0d1b1d84229227cb98ce80a552765c141feb",
       "source_blobs": {
         "tests/stdlib/websocket_quic_compute_smoke.atto": "f0b3a7d79d8db3ee5dd51dc90b0439261a3355da",
         "tests/stdlib/protocol_boundaries.atto": "53efc3037f36a7325d541506e23459bf82a439d9",
-        "tests/stdlib/source_contract.test.mjs": "ce84a8ebd30aab5d77729e61e8733bb958c29148"
+        "tests/stdlib/source_contract.test.mjs": "e19020d3d07a62e214a9d4f1eb79ee2e04b45aef"
       },
       "source_fixture_cases": 146,
       "smoke_cases": 37,
@@ -198,12 +198,12 @@
       "repo": "atto-lang/atto-source.forge",
       "kind": "BACKEND_OWNED_SOURCE_DRAFT",
       "candidate_pr": 236,
-      "head_sha": "5eab11a6f925fb1787ca1a1dd475efecb0382d99",
-      "root_tree_sha": "248dae49884e34266d783792e43b8a7e23b61bc7",
+      "head_sha": "dfa251e9be0eb7972648f1ba4b8bc29e3500b27c",
+      "root_tree_sha": "92cb739ed2514c9715ddde03380e875b3cf66734",
       "source_blobs": {
         "tests/stdlib/websocket_quic_compute_smoke.atto": "a6d1c99c308e2fe85b0dc8db09231c2da35ba3a7",
         "tests/stdlib/protocol_boundaries.atto": "829ce079172f5862d5e6e5e18751b7b1f49dd1ca",
-        "tests/stdlib/source_contract.test.mjs": "ce84a8ebd30aab5d77729e61e8733bb958c29148"
+        "tests/stdlib/source_contract.test.mjs": "e19020d3d07a62e214a9d4f1eb79ee2e04b45aef"
       },
       "source_fixture_cases": 146,
       "smoke_cases": 37,
@@ -221,12 +221,12 @@
       "repo": "atto-lang/atto-source.wasm",
       "kind": "BACKEND_OWNED_SOURCE_DRAFT",
       "candidate_pr": 291,
-      "head_sha": "2ea4f1f04201e3788abfb5bdc0c1a68b821d84a2",
-      "root_tree_sha": "5302c4f2df0ec3bf5f8e1d663cc31c0c2e5db1d5",
+      "head_sha": "5a902a60fbf0af240f2c41c0c383b665e6b194d5",
+      "root_tree_sha": "b4dcc5417f247bfa9443433d523917ac56681869",
       "source_blobs": {
         "tests/stdlib/websocket_quic_compute_smoke.atto": "ced295c28708c747d4148977bda55568aa797179",
         "tests/stdlib/protocol_boundaries.atto": "0a94acdc69825a3d352dafa6a91cb82916fcf1e9",
-        "tests/stdlib/source_contract.test.mjs": "ce84a8ebd30aab5d77729e61e8733bb958c29148"
+        "tests/stdlib/source_contract.test.mjs": "e19020d3d07a62e214a9d4f1eb79ee2e04b45aef"
       },
       "source_fixture_cases": 146,
       "smoke_cases": 37,
@@ -244,12 +244,12 @@
       "repo": "atto-lang/atto-source.cranelift",
       "kind": "BACKEND_OWNED_SOURCE_DRAFT",
       "candidate_pr": 101,
-      "head_sha": "377bf0dc51b5c193cebdc7b1bef2e97227ff4f98",
-      "root_tree_sha": "17b118439467cd62f7c584f0fac14760f06ee7e7",
+      "head_sha": "d2b1d4054867a856170583709ebcf064f60eec9d",
+      "root_tree_sha": "e27dee919c636c6f190da0e80e334284ace08666",
       "source_blobs": {
         "tests/stdlib/websocket_quic_compute_smoke.atto": "303419396fbbac44c6f0a55c2c95ea2b94af2e62",
         "tests/stdlib/protocol_boundaries.atto": "31ec1b924304afb80fe576de22ace644d876db61",
-        "tests/stdlib/source_contract.test.mjs": "ce84a8ebd30aab5d77729e61e8733bb958c29148"
+        "tests/stdlib/source_contract.test.mjs": "e19020d3d07a62e214a9d4f1eb79ee2e04b45aef"
       },
       "source_fixture_cases": 146,
       "smoke_cases": 37,
