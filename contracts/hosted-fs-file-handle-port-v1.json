@@ -50,12 +50,14 @@
     "unknown_write_outcome_no_implicit_retry",
     "read_text_decode_utf8_fatal",
     "no_untrusted_host_disk_permission",
-    "not_cross_org_mirrored_without_transfer_review"
+    "not_cross_org_mirrored_without_transfer_review",
+    "post_async_actor_revoke_must_not_publish_success",
+    "close_is_idempotent_for_issued_retired_handles"
   ],
   "source_tests": {
-    "port_groups_per_backend": 17,
+    "port_groups_per_backend": 19,
     "existing_host_vfs_groups_per_backend": 24,
-    "combined_host_only_groups_per_backend": 41,
+    "combined_host_only_groups_per_backend": 43,
     "execution_environment": "in-process isolated V8 ASCII TextEncoder/assert shims (not Node GitHub Actions)",
     "unicode_full_utf8": "NOT_EXECUTED",
     "source_node22_exact_head": "NOT_EXECUTED",
@@ -66,35 +68,37 @@
       "backend": "wasm",
       "repository": "atto-lang/atto-source.wasm",
       "pr_url": "https://github.com/atto-lang/atto-source.wasm/pull/43",
-      "head_sha": "ca6ae01ef9bdf54030c1d8fd59ce28d99aaf69b4",
+      "head_sha": "9c5e136ed6c7d0fd10d78be90d8a08764f3412d2",
       "numeric_repository_id": 1448701355,
       "files": {
-        "vfs": "191cbac83b457c9332e2533ddcf2a459055e5d1a",
+        "vfs": "721168d46cc180b7cb3c6a112d6b61178415ef13",
         "vfs_tests": "bf0b3f7639ba14769afa992ab5651b1f3ab7d713",
-        "port": "795201e771b12d2442b9b07488adf6ce2e554c16",
-        "port_tests": "556f5b2d78f63d35bbe16554271da42da7011602"
+        "port": "40d7814eaa4e38da517ca77346ff0215d38c8828",
+        "port_tests": "51f4a819569c965fbfab6221fcc8f8f355cce220"
       },
       "node22": "NOT_EXECUTED",
-      "guest": "NOT_EXECUTED"
+      "guest": "NOT_EXECUTED",
+      "git_tree_sha": "dfabd3db6cd40faf4cc4cf31c2bf37dc15d13e92"
     },
     {
       "backend": "js",
       "repository": "atto-lang/atto-source.js",
       "pr_url": "https://github.com/atto-lang/atto-source.js/pull/39",
-      "head_sha": "47b0f8e470fd6961b6db86705c7edd1e96dcf789",
+      "head_sha": "a7c926d4adcfe771784094a275095be5813b54dc",
       "numeric_repository_id": 1448703338,
       "files": {
-        "vfs": "1c9293f030bfa088dcab56aaba246dadb05a14ba",
+        "vfs": "1cb7b48ad76bdd1122315ab6c2665c984fadd7cd",
         "vfs_tests": "1231456190d82112288434c13e98f3bde17598ac",
-        "port": "795201e771b12d2442b9b07488adf6ce2e554c16",
-        "port_tests": "556f5b2d78f63d35bbe16554271da42da7011602"
+        "port": "40d7814eaa4e38da517ca77346ff0215d38c8828",
+        "port_tests": "51f4a819569c965fbfab6221fcc8f8f355cce220"
       },
       "node22": "NOT_EXECUTED",
-      "guest": "NOT_EXECUTED"
+      "guest": "NOT_EXECUTED",
+      "git_tree_sha": "e18f418b1b71213327f93b9e7bcb017cd100b318"
     }
   ],
   "ci": {
-    "source_runner": "queued on both source branches; no executed steps",
+    "source_runner": "queued, exact-head workflows not yet admitted with executed steps",
     "carrier_repo": "ORESoftware/ores-e2e-core",
     "source_free_admission_run": 45047556666,
     "source_free_executed_steps": 4,
