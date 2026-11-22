@@ -245,3 +245,25 @@ test("declaration/spawn policy may narrow but never increase authority", () => {
   assert.throws(() => override(1, 2), /E_POLICY_ESCALATION/);
   assert.throws(() => override(2, "pool_size"), /E_POLICY_ESCALATION/);
 });
+
+test("target .atto policy fixtures are linked, fail closed and not reported as compiled", () => {
+  assert.equal(registry.fixture_status, "TARGET_ONLY_NEVER_COMPILED_OR_EXECUTED");
+  const linked = registry.cases.filter(c => c.source);
+  assert.equal(linked.length, 5);
+  assert.equal(new Set(linked.map(c => c.source)).size, 5);
+  for (const c of linked) {
+    assert.match(c.source, /^fixtures\/actor-scheduling-policy-v1\/[a-z0-9_]+\.atto$/);
+    const source = readFileSync(new URL("../" + c.source, import.meta.url), "utf8");
+    assert.match(source, /^\/\/ TARGET/);
+    assert.match(source, /@actor_schedule\(/);
+    assert.match(source, /define (serial )?actor/);
+    assert.equal(c.status, "not_executed");
+    if (c.kind === "compile_reject") {
+      assert.ok(c.expected_diagnostic?.startsWith("E_"));
+      assert.match(source, /COMPILE REJECT/);
+    }
+  }
+  const override = linked.find(c => c.id === "override-only-narrows");
+  assert.ok(override);
+  assert.match(readFileSync(new URL("../" + override.source, import.meta.url), "utf8"), /spawn Worker\(\) with schedule\(/);
+});
