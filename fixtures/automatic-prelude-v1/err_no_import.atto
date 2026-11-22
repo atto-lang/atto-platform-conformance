@@ -1,0 +1,9 @@
+// PRELUDE V1 CANDIDATE: err_no_import; profile=core; expected=guest_exit_42
+// Not an executed guest or compiler receipt.
+pub fnc main(): int {
+  val Result<int,string> value = Err("expected");
+  match value over
+    on Ok(_) -> { return 0; }
+    on Err(_) -> { return 42; }
+  end
+}

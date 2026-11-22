@@ -1,0 +1,11 @@
+// PRELUDE V1 CANDIDATE: sum_use_after_take; profile=core; expected=compile_reject
+// Not an executed guest or compiler receipt.
+define class Envelope as
+  pub val int value = 42;
+end
+pub fnc main(): int {
+  let Option<Envelope> owner = Some(new Envelope());
+  val Option<Envelope> moved = rt take owner;
+  if owner.is_some(); do return 1; fi
+  return 42;
+}

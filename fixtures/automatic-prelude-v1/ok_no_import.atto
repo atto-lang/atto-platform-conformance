@@ -1,0 +1,9 @@
+// PRELUDE V1 CANDIDATE: ok_no_import; profile=core; expected=guest_exit_42
+// Not an executed guest or compiler receipt.
+pub fnc main(): int {
+  val Result<int,string> value = Ok(42);
+  match value over
+    on Ok(n) -> { return n; }
+    on Err(_) -> { return 0; }
+  end
+}

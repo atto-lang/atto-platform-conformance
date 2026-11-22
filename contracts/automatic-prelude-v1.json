@@ -1,0 +1,113 @@
+{
+  "schema": "atto.automatic-prelude.v1",
+  "status": "SOURCE_CANDIDATES_NOT_GUEST_VERIFIED",
+  "spec_reference": "atto-lang/atto-spec#218",
+  "impl_references": [
+    "atto-lang/atto-source.rs#554",
+    "atto-lang/atto-source.java#1767"
+  ],
+  "description": "Implicit lexical prelude, canonical ADT variant identity, no-alloc isolation and ownership safety; do not accept unsupported-feature diagnostics as implementation parity.",
+  "backends": [
+    "java",
+    "llvm",
+    "wasm",
+    "net",
+    "forge",
+    "rs",
+    "cranelift",
+    "js",
+    "hdl"
+  ],
+  "evidence_policy": {
+    "positive": "compiled guest must execute at exact head, match exit 42, and include compiler and runner provenance",
+    "negative": "real compiler must reject for the intended semantic reason with zero artifact; parser-only unsupported is NOT proof",
+    "missing_runner": "NOT_EXECUTED",
+    "source_export": "obey deny-by-default policy; no unapproved private mirror"
+  },
+  "cases": [
+    {
+      "id": "some_no_import",
+      "profile": "core",
+      "outcome": "guest_exit_42",
+      "source": "fixtures/automatic-prelude-v1/some_no_import.atto",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "none_no_import",
+      "profile": "core",
+      "outcome": "guest_exit_42",
+      "source": "fixtures/automatic-prelude-v1/none_no_import.atto",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "ok_no_import",
+      "profile": "core",
+      "outcome": "guest_exit_42",
+      "source": "fixtures/automatic-prelude-v1/ok_no_import.atto",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "err_no_import",
+      "profile": "core",
+      "outcome": "guest_exit_42",
+      "source": "fixtures/automatic-prelude-v1/err_no_import.atto",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "read_only_borrow",
+      "profile": "core",
+      "outcome": "guest_exit_42",
+      "source": "fixtures/automatic-prelude-v1/read_only_borrow.atto",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "none_ambiguous",
+      "profile": "core",
+      "outcome": "compile_reject",
+      "source": "fixtures/automatic-prelude-v1/none_ambiguous.atto",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "err_ambiguous",
+      "profile": "core",
+      "outcome": "compile_reject",
+      "source": "fixtures/automatic-prelude-v1/err_ambiguous.atto",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "forge_result_type",
+      "profile": "core",
+      "outcome": "compile_reject",
+      "source": "fixtures/automatic-prelude-v1/forge_result_type.atto",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "forge_some_function",
+      "profile": "core",
+      "outcome": "compile_reject",
+      "source": "fixtures/automatic-prelude-v1/forge_some_function.atto",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "borrowed_sum_extraction",
+      "profile": "core",
+      "outcome": "compile_reject",
+      "source": "fixtures/automatic-prelude-v1/borrowed_sum_extraction.atto",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "sum_use_after_take",
+      "profile": "core",
+      "outcome": "compile_reject",
+      "source": "fixtures/automatic-prelude-v1/sum_use_after_take.atto",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "alloc_type_without_allocator",
+      "profile": "core",
+      "outcome": "compile_reject",
+      "source": "fixtures/automatic-prelude-v1/alloc_type_without_allocator.atto",
+      "evidence": "NOT_EXECUTED"
+    }
+  ]
+}

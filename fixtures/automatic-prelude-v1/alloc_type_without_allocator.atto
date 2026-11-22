@@ -1,0 +1,6 @@
+// PRELUDE V1 CANDIDATE: alloc_type_without_allocator; profile=core; expected=compile_reject
+// Not an executed guest or compiler receipt.
+pub fnc main(): int {
+  val List<int> values = [1,2,3];
+  return 42;
+}
