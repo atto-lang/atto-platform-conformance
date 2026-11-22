@@ -15,7 +15,7 @@ const reject=(name,mutate)=>test(name,()=>{
 });
 test('all eleven profiles, seven source-borrow candidates and 47 Git blob pins exist',()=>{
   assert.deepEqual(validateBorrowSourceLedger(ledger,dash),
-    {backends:11,borrow_candidates:7,source_artifacts:47,guest_passes:0});
+    {backends:11,borrow_candidates:7,source_artifacts:50,guest_passes:0});
   assert.deepEqual(new Set(ledger.backends.map(x=>x.id)),
     new Set(['java','llvm','net','rs','wasm','forge','cranelift','js','hdl','atto','realtime']));
 });
@@ -49,12 +49,16 @@ test('Java JUnit linked guest, OwnershipChecker, TypeChecker and exact-head work
     ['src/test/java/dev/oreslang/CoreOptionResultSourceTest.java','ef08bcc9f3165a04a8e57a59525769ad66e7116f'],
     ['src/test/java/dev/oreslang/CoreOptionResultBorrowSafetyTest.java','d44dfe085ed6728e5f5b50be889a1c56bf78bc39'],
     ['src/main/java/dev/oreslang/types/OwnershipChecker.java','6be88b5f3717f70759440be6a3012a0411f2315b'],
-    ['src/main/java/dev/oreslang/types/TypeChecker.java','95a344571ba41d78303f3d1979918927b11619af'],
+    ['src/main/java/dev/oreslang/types/TypeChecker.java','3c1061d47c087d701f578e39a71ff34ce3197341'],
+    ['src/main/java/dev/oreslang/types/CoreTypeRegistry.java','bc9c3574f0e653218ea8a68f85d4effbd6722eeb'],
+    ['src/main/java/dev/oreslang/compiler/OresCompiler.java','c60883bf73abf36b89343a2b18feb11565c11c03'],
+    ['src/test/java/dev/oreslang/AutomaticPreludeTest.java','0e354f5478a0651127f746e63e86bb5a591bca74'],
+    ['.github/workflows/core-option-result-jvm-borrow-exact-head.yml','1821c6732b79c090f9cfc93121e3ea20e7a40fc2'],
     ['.github/workflows/core-option-result-jvm-borrow-exact-head.yml','9d74a1ea63898534fb3c991dfd805b031b74a860']
   ]);
   for(const [path,sha] of expected)assert.equal(files.get(path),sha,path);
-  assert.equal(java.source_head_sha,'fd5055c3544ee7cf7e50dd5ac1b89469ada114a3');
-  assert.equal(java.root_tree_sha,'af9c40f78d8f4b15e2cb8903f658f7df5be48aa2');
+  assert.equal(java.source_head_sha,'7385b682ff28239d1ce1c52fa6d7aedcb4f6b337');
+  assert.equal(java.root_tree_sha,'03981bf0f0540f913a45cbc951934783b61794b5');
   assert.ok(Object.values(java.checks).every(x=>x==='not_executed'));
 });
 test('noncompiler profiles never masquerade as generic ownership passes',()=>{
@@ -67,7 +71,7 @@ test('noncompiler profiles never masquerade as generic ownership passes',()=>{
 test('every source-owned implementation fixture is individually pinned and backend-scoped',()=>{
   for(const id of ['java','rs','llvm','net','wasm','forge','cranelift']){
     const b=ledger.backends.find(x=>x.id===id);
-    assert.equal(b.source_artifacts.length,id==='java'?8:id==='rs'?12:4,id);
+    assert.equal(b.source_artifacts.length,id==='java'?11:id==='rs'?12:4,id);
     assert.ok(b.source_artifacts.filter(x=>x.path.endsWith('.atto')).length>=3);
     assert.match(b.root_tree_sha,/^[0-9a-f]{40}$/);
     assert.equal(b.source_head_sha,dash.backends.find(x=>x.id===id).candidate.head_sha);
