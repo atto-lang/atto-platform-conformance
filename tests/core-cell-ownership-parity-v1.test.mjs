@@ -15,7 +15,10 @@ test('all 11 backend profiles are accounted for but not certified',()=>{
   assert.ok(Object.values(contract.guestEvidence).every(s=>s==='NOT_EXECUTED'));
   assert.ok(Object.values(contract.backends).every(x=>
     x.policy==='SOURCE_AUTHORED_NOT_GUEST_VERIFIED'||
-    x.policy==='NOT_EXECUTED'||x.policy==='NOT_EXECUTED_SCAFFOLD'));
+    x.policy==='SOURCE_AUTHORED_SCAFFOLD_NOT_GUEST_VERIFIED'));
+  assert.equal(Object.values(contract.backends).filter(x=>typeof x.source==='string').length,11);
+  assert.match(contract.sourceCoverage,/11\/11 compiler-owned source candidates/);
+  assert.match(contract.compilerBorrowCoverage,/UNVERIFIED across 11 profiles/);
   assert.match(contract.sourcePolicy,/never references, tokens/);
 });
 
@@ -58,5 +61,12 @@ test('backend source layouts are allowed to differ without omitting ownership re
   assert.equal(contract.backends.llvm.representation,'signed-counter-i64');
   assert.equal(contract.backends.net.representation,'bounded-readers-plus-writer');
   assert.equal(contract.backends.cranelift.representation,'bounded-readers-plus-writer');
-  for(const id of ['atto','realtime']) assert.equal(contract.backends[id].source,null);
+  for(const id of backends) {
+    assert.ok(contract.backends[id].source.startsWith('atto-source.'),id);
+    assert.ok(contract.backends[id].source.endsWith('/cell.atto'),id);
+  }
+  for(const id of ['atto','realtime']) {
+    assert.equal(contract.backends[id].policy,'SOURCE_AUTHORED_SCAFFOLD_NOT_GUEST_VERIFIED');
+    assert.equal(contract.guestEvidence[id],'NOT_EXECUTED');
+  }
 });
