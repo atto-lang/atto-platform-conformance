@@ -322,5 +322,17 @@
       "period": "1",
       "expected": "IntervalRangeExhausted"
     }
-  ]
+  ],
+  "java_llvm_same_source_guest_candidate": {
+    "status": "SOURCE_BLOB_IDENTICAL_GUEST_NOT_EXECUTED",
+    "paths": {
+      "java": "examples/atto-time-contract.atto",
+      "llvm": "examples/atto-time-contract.atto"
+    },
+    "identical_git_blob_sha": "4937c0d975b4d87ea65cb93957175b6ba557b5c1",
+    "expected_unique_pass_labels": 52,
+    "expected_final_stdout_line": "TIME-CONTRACT-DONE",
+    "executable_guest_evidence": "NOT_EXECUTED",
+    "note": "Identical source bytes do not show either compiler can parse, link or execute std/time."
+  }
 }
