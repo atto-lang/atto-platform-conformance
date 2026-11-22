@@ -6,7 +6,7 @@ This is not live CI and does not certify compiled Atto guests. An observed main 
 
 | Backend | Observed main SHA | Option candidate head | Parse/typecheck | Positive guest | Negative guest | JIT | AOT | Sanitizers / memory safety |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `java` | `189c73b88502c451e50494f738ae11a1de8c9211` | [PR](https://github.com/atto-lang/atto-source.java/pull/1767) `2314988a9ade22f5d0a3284f69b142b7e1800914` | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED |
+| `java` | `189c73b88502c451e50494f738ae11a1de8c9211` | [PR](https://github.com/atto-lang/atto-source.java/pull/1767) `919d1d1fc59712e5e2059c72fe7a55cf5720df60` | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED |
 | `llvm` | `553154ac83c060f9182edf751ee6ba6aa192dd3b` | [PR](https://github.com/atto-lang/atto-source.llvm/pull/870) `216c4222414d34f43ed2a6dbd4e6c640f25dae20` | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED |
 | `rs` | `877bd9f8d61c598137c8627f73fa5ed2a497d9e8` | [PR](https://github.com/atto-lang/atto-source.rs/pull/533) `9e4af78f2115f9ea260394929c125c930fab94fc` | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED |
 | `net` | `75830ed371ec386d2c7ebe162410258d3e9fdbf2` | [PR](https://github.com/atto-lang/atto-source.net/pull/217) `496dddbb595ea5e61489eab8c2b4eac8c86a2d19` | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED |
@@ -20,9 +20,9 @@ This is not live CI and does not certify compiled Atto guests. An observed main 
 
 ## Java core/option source and tests
 
-- Candidate: [atto-source.java #1767](https://github.com/atto-lang/atto-source.java/pull/1767) at `2314988a9ade22f5d0a3284f69b142b7e1800914`
-- Root Git tree: `eb1541cbd7d3798bea8610a2010326d82c6cdbca`
-- JUnit command (proposed, **not executed**): `mvn -B -Dtest=CoreOptionResultSourceTest test`
+- Candidate: [atto-source.java #1767](https://github.com/atto-lang/atto-source.java/pull/1767) at `919d1d1fc59712e5e2059c72fe7a55cf5720df60`
+- Root Git tree: `58d26bb865a1211fae18395ab87587f6a4433b68`
+- JUnit command (proposed, **not executed**): `mvn -B -Dtest=CoreOptionResultSourceTest,CoreOptionResultBorrowSafetyTest test`
 - AOT: Not provided by this PR; require independent GraalVM Native Image exact-head build and guest receipt.
 - Sanitizers/memory safety: Java: ownership/poison/drop assertions; LLVM/native: ASan/UBSan or equivalent; non-native profiles: target-specific memory safety gates.
 
@@ -34,14 +34,24 @@ This is not live CI and does not certify compiled Atto guests. An observed main 
 | `sourceLinkedCallbacksMustSkipInactiveVariants` | compiled_positive_guest | `M42:Etrue:true:true` | NOT_EXECUTED |
 | `resultAndOptionMustRemainNominalDisjointVariants` | compiler_reject | — | NOT_EXECUTED |
 | `nestedOptionMustNotImplicitlyUnwrapTwice` | compiler_reject | — | NOT_EXECUTED |
+| `readOnlyQueriesPreserveBorrowerAndCarrier` | borrow_positive | — | NOT_EXECUTED |
+| `borrowedNestedOptionCannotFlattenIntoAnOwner` | borrow_negative | — | NOT_EXECUTED |
+| `borrowedOptionCannotExtractOwnedAffineValue` | borrow_negative | — | NOT_EXECUTED |
+| `borrowedResultCannotExtractOwnedAffineValue` | borrow_negative | — | NOT_EXECUTED |
+| `borrowedOptionCannotRepackageAffineOwnedValue` | borrow_negative | — | NOT_EXECUTED |
+| `borrowedOptionCannotEscapeThroughEagerFallback` | borrow_negative | — | NOT_EXECUTED |
+| `copyableNestedOptionCanStillReadWithoutStealingOwnership` | borrow_positive | — | NOT_EXECUTED |
+| `linkedBorrowedCoreQueriesMustNotConsumeOwner` | compiled_positive_guest | `42` | NOT_EXECUTED |
 
 ## Exact Java file blobs
 
-- `core/option.atto` · `08bacaaf1c12510909931e20829d4867653793ae`
-- `core/result.atto` · `0f07d8f50187495d2846f8773c306b649ab4b89b`
+- `core/option.atto` · `4400fae94588587fbb85474256e82cac6c26256c`
+- `core/result.atto` · `6bae249740af1088e069c3592ff8fb2bc72f1216`
 - `tests/core_option_result/scalar_roundtrip.atto` · `9d91f9945ad1010b35ecae1f112d405fb8b815d3`
 - `tests/core_option_result/lazy_callbacks.atto` · `dce245f73a77fc1717c1fe087bbb3fd273c0c08e`
-- `src/test/java/dev/oreslang/CoreOptionResultSourceTest.java` · `4d4950a2d3b1970499ba6eccbd5552143f4023da`
+- `src/test/java/dev/oreslang/CoreOptionResultSourceTest.java` · `ef08bcc9f3165a04a8e57a59525769ad66e7116f`
+- `src/test/java/dev/oreslang/CoreOptionResultBorrowSafetyTest.java` · `d44dfe085ed6728e5f5b50be889a1c56bf78bc39`
+- `tests/core_option_result/borrowed_queries.atto` · `35f77b9020812364d1d0885e35f53a071cb50134`
 
 ## Capability limitations (NOT verified as supported or unsupported)
 
