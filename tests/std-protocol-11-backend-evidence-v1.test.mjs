@@ -76,6 +76,23 @@ function verify(x) {
     'stepful runner is not private source export authorization');
   assert.equal(carrier.transferred_private_source,false);
   assert.equal(carrier.provenance_scope,'HOSTED_RUNNER_CAPACITY_ONLY_NOT_GUEST_OR_SOURCE_EXPORT_EVIDENCE');
+  const receipt=carrier.protocol_reference_run;
+  assert.equal(receipt.repo_id,1458331448);
+  assert.equal(receipt.run_id,45058040904);
+  assert.equal(receipt.job_id,137317561550);
+  assert.equal(receipt.carrier_head_sha,'2fcd30702c2fdb2ad1a3f74f72ba2071293ed482');
+  assert.equal(receipt.carrier_root_tree_sha,'7b1fcc5953061bb8d3f92b1b0fd9305a9c9d87f2');
+  assert.equal(receipt.source_free_workflow_blob,'f8d6e2e6d0a4e3f0b4534808935cb212efacde40');
+  assert.equal(receipt.source_free_reference_test_blob,'f840e68f8d01826f574ef03e3d52c514c8121a7a');
+  assert.equal(receipt.actual_job_steps,6);
+  assert.equal(receipt.node_tests_passed,4);
+  assert.equal(receipt.node_tests_failed,0);
+  assert.equal(receipt.checked_arithmetic_pairs,20660);
+  assert.equal(receipt.run_conclusion,'success');
+  assert.equal(receipt.scope,'HOSTED_SOURCE_FREE_REFERENCE_NOT_COMPILED_ATTO');
+  assert.equal(receipt.source_snapshot_export_authorized,false);
+  assert.equal(receipt.transferred_private_atto_source,false);
+
 
   for(const row of x.rows) {
     assert.equal(row.compiled_guest_status,'NOT_EXECUTED');
@@ -203,5 +220,19 @@ test('library implementation Git blobs, numeric dispatch and runtime bounds obli
     x=>x.rows[3].padded_invocation_bounds_guard='GPU_MEMORY_SAFE',
     x=>x.compute_dispatch_contract='RUNTIME_UNCHECKED_GPU_OK',
     x=>x.rows[0].library_blobs={'stdlib/std/compute.atto':'0'.repeat(40)}
+  ]){const altered=structuredClone(evidence);mutant(altered);assert.throws(()=>verify(altered));}
+});
+
+
+test('genuine source-free carrier receipt cannot be used as private-source or guest authorization',()=>{
+  for(const mutant of [
+    x=>x.private_carrier.protocol_reference_run.run_id=0,
+    x=>x.private_carrier.protocol_reference_run.actual_job_steps=0,
+    x=>x.private_carrier.protocol_reference_run.node_tests_passed=5,
+    x=>x.private_carrier.protocol_reference_run.carrier_root_tree_sha='0'.repeat(40),
+    x=>x.private_carrier.protocol_reference_run.source_free_reference_test_blob='0'.repeat(40),
+    x=>x.private_carrier.protocol_reference_run.scope='ATTO_NATIVE_GUEST_SUCCESS',
+    x=>x.private_carrier.protocol_reference_run.source_snapshot_export_authorized=true,
+    x=>x.private_carrier.protocol_reference_run.transferred_private_atto_source=true
   ]){const altered=structuredClone(evidence);mutant(altered);assert.throws(()=>verify(altered));}
 });
