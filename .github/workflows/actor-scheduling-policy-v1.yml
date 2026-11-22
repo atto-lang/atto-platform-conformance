@@ -4,11 +4,13 @@ on:
     paths:
       - 'contracts/actor-scheduling-policy-v1.json'
       - 'tests/actor-scheduling-policy-v1.test.mjs'
+      - 'fixtures/actor-scheduling-policy-v1/**'
       - '.github/workflows/actor-scheduling-policy-v1.yml'
   push:
     paths:
       - 'contracts/actor-scheduling-policy-v1.json'
       - 'tests/actor-scheduling-policy-v1.test.mjs'
+      - 'fixtures/actor-scheduling-policy-v1/**'
       - '.github/workflows/actor-scheduling-policy-v1.yml'
 permissions:
   contents: read
