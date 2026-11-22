@@ -1,4 +1,5 @@
 // PRELUDE V1: a read-only borrowed sum query must not consume its owner.
+// Not an executed guest or compiler receipt.
 // This does not count as executed compiler evidence.
 define class Envelope as
   pub val int value = 42;
