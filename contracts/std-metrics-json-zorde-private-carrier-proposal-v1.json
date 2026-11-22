@@ -7,56 +7,56 @@
     {
       "repository": "atto-lang/atto-source.java",
       "pr": 1787,
-      "source_commit_sha": "503598f84e3c22275a852605869555f07d5d2acd",
-      "source_root_tree_sha": "43eae457d15154941279f2a594865085ecd9ac75"
+      "source_commit_sha": "f4713216f2a17ada49fbea6de9789e69e3f6609e",
+      "source_root_tree_sha": "e61414938390222a2a67468f427dfb6d4b345d20"
     },
     {
       "repository": "atto-lang/atto-source.llvm",
       "pr": 885,
-      "source_commit_sha": "cb85f94058528561b3d2af1fbefa0011cd916df7",
-      "source_root_tree_sha": "7a1ff13f989f42565d6f58daa746058cd99a9f02"
+      "source_commit_sha": "7c68cec9d3fd0cf4f9c0a6a43f11817ffb82f1ae",
+      "source_root_tree_sha": "53834f0f6a21a8351700737425e0bae3658b2754"
     },
     {
       "repository": "atto-lang/atto-source.net",
       "pr": 231,
-      "source_commit_sha": "08d322de1350b96bbcda89a77929c5056af97f49",
-      "source_root_tree_sha": "9b714cae2901f88fe55c62ecca34520aa885183f"
+      "source_commit_sha": "b7e01fd6bbeebdfc19afc4da5634654c7eb8fe16",
+      "source_root_tree_sha": "69a882f5e8d8bb93a73064403f13bdc7af4a5df7"
     },
     {
       "repository": "atto-lang/atto-source.wasm",
       "pr": 293,
-      "source_commit_sha": "20593256d9f2776abef2d6ea4fe86e38dcd933ac",
-      "source_root_tree_sha": "c4386247d57682d0a96c7ae30d65d8918b67961a"
+      "source_commit_sha": "cce816933de1b4dc39ef58b0d57afb6b72374659",
+      "source_root_tree_sha": "948593e783612a480a2e45fb6f44d231d76ebf60"
     },
     {
       "repository": "atto-lang/atto-source.forge",
       "pr": 238,
-      "source_commit_sha": "a5f0a0c709a9f0b2fa885510dba5da2a9a98f7b9",
-      "source_root_tree_sha": "1fecb5b6dbe37e4036ae49bcf6f739bf5fd58e5e"
+      "source_commit_sha": "8fcb26ebca5b3a0ddd3df50f78cd1d3a9339fb8e",
+      "source_root_tree_sha": "fa3ef34e04c12b5bdb18bb375bdf0c9f3a9406e9"
     },
     {
       "repository": "atto-lang/atto-source.rs",
       "pr": 552,
-      "source_commit_sha": "8bb4f35c40228110deacb618d944d5761d7c615b",
-      "source_root_tree_sha": "8306fce3bdb88ea98ee2bf67f275a13f3c3c685e"
+      "source_commit_sha": "e8e6947d2301a98cb658e79873270b549ae69800",
+      "source_root_tree_sha": "e5e8c708d7aa34c00538b87bffa557c4c53ca6a5"
     },
     {
       "repository": "atto-lang/atto-source.cranelift",
       "pr": 103,
-      "source_commit_sha": "9bd2bd9ca7da7f755a352e6d4c9367871d836046",
-      "source_root_tree_sha": "6aa620a87d818bed2f318ef922019bd10a01b145"
+      "source_commit_sha": "9cd5f8aaa76eef1aec6f72214ae767b0d41d65b2",
+      "source_root_tree_sha": "7dc2649c8fb690261553073fd6f69ca012fc2ccd"
     },
     {
       "repository": "atto-lang/atto-source.js",
       "pr": 143,
-      "source_commit_sha": "5c69282e5880dcae8dac9a405f43ddec88590a9f",
-      "source_root_tree_sha": "4edeb9942e3581e4a79e708bd2ad0043a54f19fc"
+      "source_commit_sha": "bdb6460589bf2938e0df16a3687408c56e6ef206",
+      "source_root_tree_sha": "7bd66ede70d3866330eeffe22463bdb584008905"
     },
     {
       "repository": "atto-lang/atto-source.hdl",
       "pr": 72,
-      "source_commit_sha": "f85b86fdc6a6feee02baacbdce92e1aa29438cee",
-      "source_root_tree_sha": "dfbcb61c4de07cd93e690d02407c22fa59c31380"
+      "source_commit_sha": "ef688afd58ece4ce290c446a9e28e00425fb7ee6",
+      "source_root_tree_sha": "a80c37dab0bfa89ede74c08cdb945ba5abfe097f"
     }
   ],
   "candidate": {
@@ -83,5 +83,6 @@
     "run_carrier_on_private_source",
     "claim_external_native_CI_PASS"
   ],
-  "note": "Proposal is descriptive and does not grant consent. Retention/readers and reviewer identities must not be fabricated."
+  "note": "Proposal is descriptive and does not grant consent. Retention/readers and reviewer identities must not be fabricated.",
+  "scope_addendum": "Includes native core/borrow_admission scalar preflight candidates; eight software backends have six compiler-positive/negative fixtures. None has executed borrow or guest parity proof."
 }
