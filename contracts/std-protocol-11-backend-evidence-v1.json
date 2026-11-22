@@ -83,12 +83,12 @@
       "repo": "atto-lang/atto-source.net",
       "kind": "BACKEND_OWNED_SOURCE_DRAFT",
       "candidate_pr": 228,
-      "head_sha": "8d0e658fd677fcb518a65b3ad74ac20a55b1f8ef",
-      "root_tree_sha": "6a430d0150ca83b16af9d8c613f4727846826aa3",
+      "head_sha": "b857f8149d37fb50f28587a61cef452bfd5c00f2",
+      "root_tree_sha": "39d7c795d3fa24fe84ad65ad3568f94a40884846",
       "source_blobs": {
         "tests/stdlib/websocket_quic_compute_smoke.atto": "9daec1444782870ba9b292d6f374b4af64faf743",
         "tests/stdlib/protocol_boundaries.atto": "767a274beda8190200057b993036673beb0a0d23",
-        "tests/stdlib/source_contract.test.mjs": "b35ff8ed06d11b7168c09b6d4b77b12c08840dd0"
+        "tests/stdlib/source_contract.test.mjs": "5635e40064983c69ac7a3029c774a1e46c459c6a"
       },
       "source_fixture_cases": 146,
       "smoke_cases": 37,
@@ -110,7 +110,7 @@
       "padded_invocation_bounds_guard": "RUNTIME_REQUIRED_NOT_VERIFIED",
       "borrow_core": {
         "positive_fixture_path": "tests/stdlib/protocol_borrow_core.atto",
-        "positive_fixture_git_blob": "19211cf32235ba85b34652bffd377ef339519731",
+        "positive_fixture_git_blob": "9ce7a029cff977e24b583bbe5967d8fcc29659dc",
         "language_profile": "SCOPED_CLASS_READ_WRITE_LOANS_AND_TAKE",
         "enforced_in": "CORE_COMPILER_FRONTEND_NOT_STDLIB_SHIM",
         "linked_protocol_helpers": [
@@ -121,7 +121,7 @@
         ],
         "candidate_compile_status": "NOT_EXECUTED",
         "negative_compiler_checks_authored": 0,
-        "negative_source_mutations_authored": 7,
+        "negative_source_mutations_authored": 8,
         "compiled_wasm_guest_required": false,
         "guest_execution_status": "NOT_EXECUTED",
         "resource_handle_borrow_safety": "NOT_VERIFIED",
@@ -133,12 +133,12 @@
       "repo": "atto-lang/atto-source.hdl",
       "kind": "BACKEND_OWNED_SOURCE_DRAFT",
       "candidate_pr": 70,
-      "head_sha": "449633fb2985795f821363a41338877e16fb2d7d",
-      "root_tree_sha": "de111481859481cc5d75a5d6838a7f905d92bce6",
+      "head_sha": "1d18341a9cb5094aaa1b23781a62fc258b3304b5",
+      "root_tree_sha": "e4c140fcfeaeb3ecc46beeffae7f3a79a1cbf08a",
       "source_blobs": {
         "tests/stdlib/websocket_quic_compute_smoke.atto": "656eed3d274ab7bd6ae679497736b47ac8aff4b3",
         "tests/stdlib/protocol_boundaries.atto": "45326a21daf9f15734436d4c3066866e5669dafc",
-        "tests/stdlib/source_contract.test.mjs": "b35ff8ed06d11b7168c09b6d4b77b12c08840dd0"
+        "tests/stdlib/source_contract.test.mjs": "5635e40064983c69ac7a3029c774a1e46c459c6a"
       },
       "source_fixture_cases": 146,
       "smoke_cases": 37,
@@ -160,7 +160,7 @@
       "padded_invocation_bounds_guard": "RUNTIME_REQUIRED_NOT_VERIFIED",
       "borrow_core": {
         "positive_fixture_path": "tests/stdlib/protocol_borrow_core.atto",
-        "positive_fixture_git_blob": "4e86845baadc479bcdaf00a30cd36b41bf5c3467",
+        "positive_fixture_git_blob": "02bc04d93ee76dbf1944bcbd705051a5cad5c7d9",
         "language_profile": "SCOPED_CLASS_READ_WRITE_LOANS_AND_TAKE",
         "enforced_in": "CORE_COMPILER_FRONTEND_NOT_STDLIB_SHIM",
         "linked_protocol_helpers": [
@@ -171,7 +171,7 @@
         ],
         "candidate_compile_status": "NOT_EXECUTED",
         "negative_compiler_checks_authored": 0,
-        "negative_source_mutations_authored": 7,
+        "negative_source_mutations_authored": 8,
         "compiled_wasm_guest_required": false,
         "guest_execution_status": "NOT_EXECUTED",
         "resource_handle_borrow_safety": "NOT_VERIFIED",
@@ -183,12 +183,12 @@
       "repo": "atto-lang/atto-source.java",
       "kind": "BACKEND_OWNED_SOURCE_DRAFT",
       "candidate_pr": 1786,
-      "head_sha": "dd024bd68cb2d289a260f21b284d26d1da634784",
-      "root_tree_sha": "1c51b4688d3ed0d06fe859a6a5b7f36980838cb8",
+      "head_sha": "ea657a0a2e2706d447b93ddb99a4c999e26e56f5",
+      "root_tree_sha": "1f87f8160526c1efdee214858737d623015a2de8",
       "source_blobs": {
         "tests/stdlib/websocket_quic_compute_smoke.atto": "2fe74c554f4163d0436a2f45fb47eec13a904f80",
         "tests/stdlib/protocol_boundaries.atto": "4d9985481f2f52b8fb94038a15de2135a3ad6aad",
-        "tests/stdlib/source_contract.test.mjs": "0e4a836fe21bd4517d20ecebe5a03520e1dcb6b1"
+        "tests/stdlib/source_contract.test.mjs": "623e8625187044fa2c24729f42c11c8cbd997fcd"
       },
       "source_fixture_cases": 146,
       "smoke_cases": 37,
@@ -210,7 +210,7 @@
       "padded_invocation_bounds_guard": "RUNTIME_REQUIRED_NOT_VERIFIED",
       "borrow_core": {
         "positive_fixture_path": "tests/stdlib/protocol_borrow_core.atto",
-        "positive_fixture_git_blob": "539b209c74668973305408c32309ace063206964",
+        "positive_fixture_git_blob": "2a53e3578bd5db1bc0ab828438606c2b8b21abe9",
         "language_profile": "SCOPED_CLASS_READ_WRITE_LOANS_AND_TAKE",
         "enforced_in": "CORE_COMPILER_FRONTEND_NOT_STDLIB_SHIM",
         "linked_protocol_helpers": [
@@ -221,7 +221,7 @@
         ],
         "candidate_compile_status": "NOT_EXECUTED",
         "negative_compiler_checks_authored": 0,
-        "negative_source_mutations_authored": 7,
+        "negative_source_mutations_authored": 8,
         "compiled_wasm_guest_required": false,
         "guest_execution_status": "NOT_EXECUTED",
         "resource_handle_borrow_safety": "NOT_VERIFIED",
@@ -254,8 +254,8 @@
       "repo": "atto-lang/atto-source.rs",
       "kind": "BACKEND_OWNED_SOURCE_DRAFT",
       "candidate_pr": 546,
-      "head_sha": "fae9f55964fec888147ba48efd9e0bfef7407f6e",
-      "root_tree_sha": "cdd55487dfa8c03a40f8bac12480d13d0f6e7e49",
+      "head_sha": "25dea0e3579b5742f6e638f911f26423348a92e4",
+      "root_tree_sha": "2df72f607efb04007ec59743c057851eb89678ae",
       "source_blobs": {
         "tests/stdlib/websocket_quic_compute_smoke.atto": "7534eb2ed7abd2339988b42d5086f5e45a062b9d",
         "tests/stdlib/protocol_boundaries.atto": "409cf612cadff0fed591cdda0d88853def3e4e54",
@@ -281,7 +281,7 @@
       "padded_invocation_bounds_guard": "RUNTIME_REQUIRED_NOT_VERIFIED",
       "borrow_core": {
         "positive_fixture_path": "tests/stdlib/protocol_borrow_core.atto",
-        "positive_fixture_git_blob": "f590427df95284c9ba3fdbdfc87294e970c9ab68",
+        "positive_fixture_git_blob": "a5878d48f8d3ab314c9f74e74a3bf4296ec1344d",
         "language_profile": "SCOPED_CLASS_READ_WRITE_LOANS_AND_TAKE",
         "enforced_in": "CORE_COMPILER_FRONTEND_NOT_STDLIB_SHIM",
         "linked_protocol_helpers": [
@@ -291,7 +291,7 @@
           "compute_upload_admit"
         ],
         "candidate_compile_status": "NOT_EXECUTED",
-        "negative_compiler_checks_authored": 6,
+        "negative_compiler_checks_authored": 7,
         "negative_source_mutations_authored": 0,
         "compiled_wasm_guest_required": true,
         "guest_execution_status": "NOT_EXECUTED",
@@ -304,12 +304,12 @@
       "repo": "atto-lang/atto-source.llvm",
       "kind": "BACKEND_OWNED_SOURCE_DRAFT",
       "candidate_pr": 884,
-      "head_sha": "80aa22a678a2781da260b32374b0782b76a59509",
-      "root_tree_sha": "c7d229b05c5fcc011a5a0789dbad8ef98a60c94f",
+      "head_sha": "8bb196640846196ecd3890cc8de195ec02b77a9b",
+      "root_tree_sha": "660ccaa7f17474cde542c2eb19d5edeb046346d9",
       "source_blobs": {
         "tests/stdlib/websocket_quic_compute_smoke.atto": "4f984f5e0d39f2205b4e7b979ecdd4168bf587e6",
         "tests/stdlib/protocol_boundaries.atto": "7e992ec38d953ec49cc7dabcf9f3fbd4b920dd92",
-        "tests/stdlib/source_contract.test.mjs": "b35ff8ed06d11b7168c09b6d4b77b12c08840dd0"
+        "tests/stdlib/source_contract.test.mjs": "5635e40064983c69ac7a3029c774a1e46c459c6a"
       },
       "source_fixture_cases": 146,
       "smoke_cases": 37,
@@ -331,7 +331,7 @@
       "padded_invocation_bounds_guard": "RUNTIME_REQUIRED_NOT_VERIFIED",
       "borrow_core": {
         "positive_fixture_path": "tests/stdlib/protocol_borrow_core.atto",
-        "positive_fixture_git_blob": "962647bc6c18f6e44c8d1f5a5fabf0705b8974c6",
+        "positive_fixture_git_blob": "dca66c0f78986ce071768f3828955493beb03386",
         "language_profile": "SCOPED_CLASS_READ_WRITE_LOANS_AND_TAKE",
         "enforced_in": "CORE_COMPILER_FRONTEND_NOT_STDLIB_SHIM",
         "linked_protocol_helpers": [
@@ -342,7 +342,7 @@
         ],
         "candidate_compile_status": "NOT_EXECUTED",
         "negative_compiler_checks_authored": 0,
-        "negative_source_mutations_authored": 7,
+        "negative_source_mutations_authored": 8,
         "compiled_wasm_guest_required": false,
         "guest_execution_status": "NOT_EXECUTED",
         "resource_handle_borrow_safety": "NOT_VERIFIED",
@@ -354,12 +354,12 @@
       "repo": "atto-lang/atto-source.js",
       "kind": "BACKEND_OWNED_SOURCE_DRAFT",
       "candidate_pr": 141,
-      "head_sha": "358d4d6f063721c1380d4aaf186889aeecb846a6",
-      "root_tree_sha": "43e6fe50cb1daa06501a4d088c0d94c5ac43f9f6",
+      "head_sha": "350ab984639c1ab3cff9bc8ee5300fcf388b60e5",
+      "root_tree_sha": "2073508a4dc42b012a68dad02a2db61bd26279f0",
       "source_blobs": {
         "tests/stdlib/websocket_quic_compute_smoke.atto": "f0b3a7d79d8db3ee5dd51dc90b0439261a3355da",
         "tests/stdlib/protocol_boundaries.atto": "288160e53aac3bcb32cadcbf20bcafdc48f0b72c",
-        "tests/stdlib/source_contract.test.mjs": "b35ff8ed06d11b7168c09b6d4b77b12c08840dd0"
+        "tests/stdlib/source_contract.test.mjs": "5635e40064983c69ac7a3029c774a1e46c459c6a"
       },
       "source_fixture_cases": 146,
       "smoke_cases": 37,
@@ -381,7 +381,7 @@
       "padded_invocation_bounds_guard": "RUNTIME_REQUIRED_NOT_VERIFIED",
       "borrow_core": {
         "positive_fixture_path": "tests/stdlib/protocol_borrow_core.atto",
-        "positive_fixture_git_blob": "a517c9c9f91d8f9240d9f902c753b947c3cb6aa0",
+        "positive_fixture_git_blob": "f1eedf86f53567a610bacbc5531690d4d4e2fd1f",
         "language_profile": "SCOPED_CLASS_READ_WRITE_LOANS_AND_TAKE",
         "enforced_in": "CORE_COMPILER_FRONTEND_NOT_STDLIB_SHIM",
         "linked_protocol_helpers": [
@@ -392,7 +392,7 @@
         ],
         "candidate_compile_status": "NOT_EXECUTED",
         "negative_compiler_checks_authored": 0,
-        "negative_source_mutations_authored": 7,
+        "negative_source_mutations_authored": 8,
         "compiled_wasm_guest_required": false,
         "guest_execution_status": "NOT_EXECUTED",
         "resource_handle_borrow_safety": "NOT_VERIFIED",
@@ -404,12 +404,12 @@
       "repo": "atto-lang/atto-source.forge",
       "kind": "BACKEND_OWNED_SOURCE_DRAFT",
       "candidate_pr": 236,
-      "head_sha": "3205ac988683a4d06e725416ae4a9065b80374b9",
-      "root_tree_sha": "6d5988b470621edac979bef3bcbddee8680ccc19",
+      "head_sha": "5bac10117ae8897608055c249842f3ad125f90fa",
+      "root_tree_sha": "f1e0b1871f1a9c62d2c5072338b4e8a0b9a5b167",
       "source_blobs": {
         "tests/stdlib/websocket_quic_compute_smoke.atto": "a6d1c99c308e2fe85b0dc8db09231c2da35ba3a7",
         "tests/stdlib/protocol_boundaries.atto": "cea8847999701be6cff603d4c3c7458213acbb98",
-        "tests/stdlib/source_contract.test.mjs": "b35ff8ed06d11b7168c09b6d4b77b12c08840dd0"
+        "tests/stdlib/source_contract.test.mjs": "5635e40064983c69ac7a3029c774a1e46c459c6a"
       },
       "source_fixture_cases": 146,
       "smoke_cases": 37,
@@ -431,7 +431,7 @@
       "padded_invocation_bounds_guard": "RUNTIME_REQUIRED_NOT_VERIFIED",
       "borrow_core": {
         "positive_fixture_path": "tests/stdlib/protocol_borrow_core.atto",
-        "positive_fixture_git_blob": "b180f399ac952671009c7bb61c80eba3e8216aa4",
+        "positive_fixture_git_blob": "27fa151c44f09c149a35da09b8047e608104bb11",
         "language_profile": "SCOPED_CLASS_READ_WRITE_LOANS_AND_TAKE",
         "enforced_in": "CORE_COMPILER_FRONTEND_NOT_STDLIB_SHIM",
         "linked_protocol_helpers": [
@@ -442,7 +442,7 @@
         ],
         "candidate_compile_status": "NOT_EXECUTED",
         "negative_compiler_checks_authored": 0,
-        "negative_source_mutations_authored": 7,
+        "negative_source_mutations_authored": 8,
         "compiled_wasm_guest_required": false,
         "guest_execution_status": "NOT_EXECUTED",
         "resource_handle_borrow_safety": "NOT_VERIFIED",
@@ -454,12 +454,12 @@
       "repo": "atto-lang/atto-source.wasm",
       "kind": "BACKEND_OWNED_SOURCE_DRAFT",
       "candidate_pr": 291,
-      "head_sha": "95a3d37fa14108beec973e87256688f919054c9f",
-      "root_tree_sha": "e36b0759106b1f4bd5f3d7f9e80d9715636afeb8",
+      "head_sha": "00bec0902db5d9c5a36e1bce3a84adfb21cc18eb",
+      "root_tree_sha": "45d6cf6da8624e9b7b5d99776a8c78ede8ecb088",
       "source_blobs": {
         "tests/stdlib/websocket_quic_compute_smoke.atto": "ced295c28708c747d4148977bda55568aa797179",
         "tests/stdlib/protocol_boundaries.atto": "077e3a21d721a0df7ae05481e06650b07da6da8d",
-        "tests/stdlib/source_contract.test.mjs": "b35ff8ed06d11b7168c09b6d4b77b12c08840dd0"
+        "tests/stdlib/source_contract.test.mjs": "5635e40064983c69ac7a3029c774a1e46c459c6a"
       },
       "source_fixture_cases": 146,
       "smoke_cases": 37,
@@ -481,7 +481,7 @@
       "padded_invocation_bounds_guard": "RUNTIME_REQUIRED_NOT_VERIFIED",
       "borrow_core": {
         "positive_fixture_path": "tests/stdlib/protocol_borrow_core.atto",
-        "positive_fixture_git_blob": "81bcdf607015803236c9826ce9943ebc26d05cff",
+        "positive_fixture_git_blob": "405012fa6dfe0f812147c9a4fc979e23f88124c4",
         "language_profile": "SCOPED_CLASS_READ_WRITE_LOANS_AND_TAKE",
         "enforced_in": "CORE_COMPILER_FRONTEND_NOT_STDLIB_SHIM",
         "linked_protocol_helpers": [
@@ -492,7 +492,7 @@
         ],
         "candidate_compile_status": "NOT_EXECUTED",
         "negative_compiler_checks_authored": 0,
-        "negative_source_mutations_authored": 7,
+        "negative_source_mutations_authored": 8,
         "compiled_wasm_guest_required": false,
         "guest_execution_status": "NOT_EXECUTED",
         "resource_handle_borrow_safety": "NOT_VERIFIED",
@@ -504,12 +504,12 @@
       "repo": "atto-lang/atto-source.cranelift",
       "kind": "BACKEND_OWNED_SOURCE_DRAFT",
       "candidate_pr": 101,
-      "head_sha": "215aca3905a706234e0158164db1e80b2938cfef",
-      "root_tree_sha": "06d0fd7c16386a68b4aff4503009f80dad3b2449",
+      "head_sha": "946c37426a81eede6741231676002d6022748969",
+      "root_tree_sha": "0c1b47113516914f8ed05f91f6396ff1a3d2d5c7",
       "source_blobs": {
         "tests/stdlib/websocket_quic_compute_smoke.atto": "303419396fbbac44c6f0a55c2c95ea2b94af2e62",
         "tests/stdlib/protocol_boundaries.atto": "1c1e93ab36b55166844c8c66c397c127e6950597",
-        "tests/stdlib/source_contract.test.mjs": "b35ff8ed06d11b7168c09b6d4b77b12c08840dd0"
+        "tests/stdlib/source_contract.test.mjs": "5635e40064983c69ac7a3029c774a1e46c459c6a"
       },
       "source_fixture_cases": 146,
       "smoke_cases": 37,
@@ -531,7 +531,7 @@
       "padded_invocation_bounds_guard": "RUNTIME_REQUIRED_NOT_VERIFIED",
       "borrow_core": {
         "positive_fixture_path": "tests/stdlib/protocol_borrow_core.atto",
-        "positive_fixture_git_blob": "28659ee7f18548b08f0d6c4db027c6034e51c94f",
+        "positive_fixture_git_blob": "5614b518c10070dd947e1c94e4b77f0ccca95261",
         "language_profile": "SCOPED_CLASS_READ_WRITE_LOANS_AND_TAKE",
         "enforced_in": "CORE_COMPILER_FRONTEND_NOT_STDLIB_SHIM",
         "linked_protocol_helpers": [
@@ -542,7 +542,7 @@
         ],
         "candidate_compile_status": "NOT_EXECUTED",
         "negative_compiler_checks_authored": 0,
-        "negative_source_mutations_authored": 7,
+        "negative_source_mutations_authored": 8,
         "compiled_wasm_guest_required": false,
         "guest_execution_status": "NOT_EXECUTED",
         "resource_handle_borrow_safety": "NOT_VERIFIED",
@@ -556,7 +556,7 @@
   "core_borrow_compiled_guest_parity": "NOT_VERIFIED",
   "core_borrow_certified_backends": [],
   "rust_borrow_core_harness_blobs": {
-    "tests/stdlib_native_guest.rs": "d349a17c27c5dcadd058bdcbd5c257891ce7d744",
+    "tests/stdlib_native_guest.rs": "fcf2c32c04be92d4cca52217fa4f8003e10a05f2",
     "tests/stdlib_native_guest_wasm.test.mjs": "c6d6e00ba49189214d5ddc0a508dac4d7aeb0b61",
     "examples/stdlib_native_guest.rs": "5750616a0d04c6bbd24cd04f39ea4e60c2abb739",
     ".github/workflows/std-native-guest.yml": "26c816ec3a86577113d1806efb862c521e93be4f"
