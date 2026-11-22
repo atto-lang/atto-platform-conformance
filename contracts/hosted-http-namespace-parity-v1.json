@@ -36,6 +36,13 @@
           "true"
         ],
         "kind": "PUBLIC_MODULE"
+      },
+      {
+        "path": "fixtures/hosted-async-http-fs-v1/namespace/pass_public_module_wildcard.atto",
+        "expected_guest_lines": [
+          "true"
+        ],
+        "kind": "PUBLIC_MODULE_WILDCARD"
       }
     ],
     "negative": [
@@ -57,6 +64,11 @@
       {
         "path": "fixtures/hosted-async-http-fs-v1/namespace/fail_alias_collision.atto",
         "category": "DUPLICATE_IMPORT_BINDING",
+        "must_fail_before_guest_output": true
+      },
+      {
+        "path": "fixtures/hosted-async-http-fs-v1/namespace/fail_public_member_in_private_module.atto",
+        "category": "PUBLIC_MEMBER_IN_PRIVATE_MODULE_DENIED",
         "must_fail_before_guest_output": true
       }
     ],
