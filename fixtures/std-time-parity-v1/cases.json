@@ -334,5 +334,33 @@
     "expected_final_stdout_line": "TIME-CONTRACT-DONE",
     "executable_guest_evidence": "NOT_EXECUTED",
     "note": "Identical source bytes do not show either compiler can parse, link or execute std/time."
-  }
+  },
+  "borrow_mutability_negatives": [
+    {
+      "id": "immutable_manual_clock_advance",
+      "file": "fixtures/std-time-parity-v1/borrow-negative-manual-clock.atto",
+      "receiver": "clock",
+      "requires": "ManualClock.advance(mut self)",
+      "expected": "COMPILE_REJECT_MUTABLE_RECEIVER_REQUIRED",
+      "guest_artifact": "FORBIDDEN"
+    },
+    {
+      "id": "immutable_timer_poll",
+      "file": "fixtures/std-time-parity-v1/borrow-negative-timer-poll.atto",
+      "receiver": "timer",
+      "requires": "Timer.poll(mut self)",
+      "expected": "COMPILE_REJECT_MUTABLE_RECEIVER_REQUIRED",
+      "guest_artifact": "FORBIDDEN"
+    },
+    {
+      "id": "immutable_interval_cancel",
+      "file": "fixtures/std-time-parity-v1/borrow-negative-interval-cancel.atto",
+      "receiver": "repeat",
+      "requires": "Interval.cancel(mut self)",
+      "expected": "COMPILE_REJECT_MUTABLE_RECEIVER_REQUIRED",
+      "guest_artifact": "FORBIDDEN"
+    }
+  ],
+  "borrow_conformance_status": "NOT_EXECUTED_ALL_ELEVEN_BACKENDS",
+  "borrow_ownership_notes": "Source-only negative candidates, require compiler-issued borrow or mutable-receiver diagnostic and no guest artifact. Source syntax or missing module alone must never count as a passing borrow rejection."
 }
