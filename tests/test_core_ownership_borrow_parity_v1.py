@@ -32,6 +32,7 @@ def valid(m):
     if not isinstance(m, dict) or set(m) != {
         "schema", "status", "library_rule", "proof_scope",
         "copy_types", "ownership_obligations", "llvm_source_candidates",
+        "java_source_candidates",
         "backend_rows", "release_requirements",
     }:
         return False
@@ -76,6 +77,37 @@ def valid(m):
             or not all(isinstance(p, str) and p.startswith(
                 "atto-lang/atto-source.llvm/") for p in llvm["paths"])):
         return False
+    java = m["java_source_candidates"]
+    if not isinstance(java, dict) or set(java) != {
+        "head", "root_tree", "pr", "status", "junit_methods_staged",
+        "guest_fixtures_staged", "blob_shas", "evidence",
+    }:
+        return False
+    for key in ("head", "root_tree"):
+        if (not isinstance(java[key], str) or len(java[key]) != 40
+                or any(ch not in "0123456789abcdef" for ch in java[key])):
+            return False
+    if (type(java["pr"]) is not int or java["pr"] != 1754
+            or java["status"] != "NOT_EXECUTED"
+            or type(java["junit_methods_staged"]) is not int
+            or java["junit_methods_staged"] != 3
+            or type(java["guest_fixtures_staged"]) is not int
+            or java["guest_fixtures_staged"] != 3
+            or java["evidence"] != "SOURCE_ONLY"):
+        return False
+    blobs = java["blob_shas"]
+    if not isinstance(blobs, dict) or set(blobs) != {
+        "src/test/java/dev/oreslang/runtime/NativeAttoHttpCoreBorrowBoundaryTest.java",
+        "src/test/resources/stdlib-parity/http-core-borrow-positive.atto",
+        "src/test/resources/stdlib-parity/http-core-borrow-negative.atto",
+        "src/test/resources/stdlib-parity/http-core-noncopy-argument-negative.atto",
+        ".github/workflows/atto-http-core-borrow-guest.yml",
+    }:
+        return False
+    if any(not isinstance(sha, str) or len(sha) != 40
+           or any(ch not in "0123456789abcdef" for ch in sha)
+           for sha in blobs.values()):
+        return False
     rows = m["backend_rows"]
     if not isinstance(rows, list) or len(rows) != len(BACKENDS):
         return False
@@ -94,7 +126,9 @@ def valid(m):
         if (row["repository"] != "atto-lang/atto-source." + name
                 or row["source_state"] != (
                     "SCALAR_CORE_AND_HTTP_COPY_GATE_STAGED_UNVERIFIED"
-                    if name == "llvm" else "UNASSESSED")
+                    if name == "llvm" else
+                    "JAVA_HTTP_CORE_BORROW_STAGED_UNVERIFIED" if name == "java"
+                    else "UNASSESSED")
                 or row["guest_execution"] != "NOT_EXECUTED"
                 or type(row["guest_cases_executed"]) is not int
                 or row["guest_cases_executed"] != 0
@@ -136,6 +170,20 @@ class CoreBorrowSourceAudit(unittest.TestCase):
                 o for o in m["ownership_obligations"] if o["id"] != obligation
             ]
             self.assertFalse(valid(m), obligation)
+
+    def test_java_source_only_borrow_candidate_requires_exact_identity(self):
+        for key, value in (
+            ("status", "PASS"),
+            ("evidence", "COMPILED_GUEST"),
+            ("junit_methods_staged", 0),
+        ):
+            bad = copy.deepcopy(self.m)
+            bad["java_source_candidates"][key] = value
+            self.assertFalse(valid(bad), key)
+        bad = copy.deepcopy(self.m)
+        bad["java_source_candidates"]["blob_shas"].pop(
+            "src/test/resources/stdlib-parity/http-core-borrow-negative.atto")
+        self.assertFalse(valid(bad), "missing negative fixture blob")
 
     def test_source_only_or_fake_llvm_copy_gate_cannot_promote_release(self):
         for key, fake in (
