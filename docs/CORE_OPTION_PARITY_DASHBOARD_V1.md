@@ -84,3 +84,15 @@ This is not live CI and does not certify compiled Atto guests. An observed main 
 - The source-only v1 validator rejects all claimed PASS, UNSUPPORTED or attached self-authored receipts. A separately reviewed authenticated evidence importer is required before promoting any result.
 
 _Generated deterministically by `lib/core-option-parity-dashboard-v1.mjs`; do not edit the table by hand._
+
+## Rust Copy-carrier correction
+
+The current Rust candidate treats only the existing concrete `Option<int>`,
+`Result<int,string>` and nested scalar Option profile as Copy because their
+payloads are Copy. A `borrow!` marker in that restricted guest is lowered
+through the ordinary value path; it proves reusable Copy values, **not** a
+lifetime-bearing borrow or generic affine Option/Result loan. The unchecked
+call-argument bypass has been removed. The affine class-owner escape remains
+a real `E_BORROW` negative; `Option<Payload>` remains explicitly
+`E_UNSUPPORTED_TYPE`. No compiled guest result is promoted before the exact
+Rust source-local workflow executes.
