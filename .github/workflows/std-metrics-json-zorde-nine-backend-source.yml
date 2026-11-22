@@ -3,6 +3,8 @@ on:
   pull_request:
     paths:
       - 'contracts/std-metrics-json-zorde-nine-backend-v1.json'
+      - 'contracts/std-metrics-json-zorde-core-borrow-v1.json'
+      - 'tests/std-metrics-json-zorde-core-borrow.test.mjs'
       - 'contracts/std-metrics-json-zorde-private-carrier-proposal-v1.json'
       - 'tests/std-metrics-json-zorde-carrier-export-denial.test.mjs'
       - 'tests/std-metrics-json-zorde-nine-backend.test.mjs'
@@ -33,6 +35,7 @@ jobs:
           echo "SOURCE_ROOT_TREE_SHA=$(git rev-parse 'HEAD^{tree}')"
           node --version
           node --test tests/std-metrics-json-zorde-nine-backend.test.mjs
+          node --test tests/std-metrics-json-zorde-core-borrow.test.mjs
           node --test tests/std-metrics-json-zorde-carrier-export-denial.test.mjs
           echo 'ATTO_METRICS_JSON_ZORDE_REFERENCE_TESTS=EXECUTED'
           echo 'ATTO_METRICS_JSON_ZORDE_GUEST_TESTS=NOT_EXECUTED'
