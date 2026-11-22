@@ -561,11 +561,11 @@
       },
       {
         "path": "src/main/java/dev/oreslang/types/TypeChecker.java",
-        "sha": "95a344571ba41d78303f3d1979918927b11619af"
+        "sha": "3c1061d47c087d701f578e39a71ff34ce3197341"
       },
       {
         "path": ".github/workflows/core-option-result-jvm-borrow-exact-head.yml",
-        "sha": "9d74a1ea63898534fb3c991dfd805b031b74a860"
+        "sha": "1821c6732b79c090f9cfc93121e3ea20e7a40fc2"
       },
       {
         "path": "src/main/java/dev/oreslang/types/CoreTypeRegistry.java",
