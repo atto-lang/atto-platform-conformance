@@ -7,20 +7,20 @@
     {
       "repository": "atto-lang/atto-source.java",
       "pr": 1787,
-      "source_commit_sha": "48c75f289079fc40562d64747aed0c31d041cabb",
-      "source_root_tree_sha": "21549ddc2fb46614b1ef82661fd3924d3bee770c"
+      "source_commit_sha": "503e055cc9129c07f51c5febd1f23fcf4d5a1c62",
+      "source_root_tree_sha": "c6e5f2530dabf08620545b33c87a30ba36280478"
     },
     {
       "repository": "atto-lang/atto-source.llvm",
       "pr": 885,
-      "source_commit_sha": "7c68cec9d3fd0cf4f9c0a6a43f11817ffb82f1ae",
-      "source_root_tree_sha": "53834f0f6a21a8351700737425e0bae3658b2754"
+      "source_commit_sha": "0067066e7d91c060b0754362a609ce11f4dafb80",
+      "source_root_tree_sha": "9ae6e1be8713621a4b08c5fa9cea47a3c48f8334"
     },
     {
       "repository": "atto-lang/atto-source.net",
       "pr": 231,
-      "source_commit_sha": "b7e01fd6bbeebdfc19afc4da5634654c7eb8fe16",
-      "source_root_tree_sha": "69a882f5e8d8bb93a73064403f13bdc7af4a5df7"
+      "source_commit_sha": "6c743daaee0c093b22fcdaec931ab57b9a4bdded",
+      "source_root_tree_sha": "63aa0ae70b561f24d1ec88b95e35d18a3a12f44c"
     },
     {
       "repository": "atto-lang/atto-source.wasm",
@@ -84,5 +84,5 @@
     "claim_external_native_CI_PASS"
   ],
   "note": "Proposal is descriptive and does not grant consent. Retention/readers and reviewer identities must not be fabricated.",
-  "scope_addendum": "Java PR #1787 conflict resolved by two-parent merge preserving main's core collections/telemetry and PR metrics/json/zorde/borrow preflight; Java negative tests additionally assert zero guest stdout. All private export approvals remain DENIED."
+  "scope_addendum": "Java PR #1787 has merged main safely, preserving collections/telemetry and all new core/std modules; Java borrow compiler negatives assert no guest stdout. LLVM and .NET core borrow source moved into existing library/ores.core and library/atto.core roots, respectively. These staged imports are NOT_EXECUTED. Independently authorized export required."
 }
