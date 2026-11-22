@@ -26,12 +26,14 @@ test('std/channel contract is source-owned and explicitly unverified', () => {
     /never silently buffered/.test(x)));
   assert.ok(manifest.required_contracts.some(x =>
     /cancelled pending operations/.test(x)));
+  assert.ok(manifest.required_contracts.some(x =>
+    /legacy two-port pipes/.test(x) && /pending public reader/.test(x)));
 });
 
 test('all conformance fixtures exist and no compiler is falsely certified', async () => {
   const ids = new Set();
   const paths = new Set();
-  assert.equal(manifest.cases.length, 6);
+  assert.equal(manifest.cases.length, 7);
   for (const c of manifest.cases) {
     assert.ok(!ids.has(c.id), 'duplicate case ID: ' + c.id);
     assert.ok(!paths.has(c.path), 'duplicate fixture path: ' + c.path);
@@ -42,7 +44,7 @@ test('all conformance fixtures exist and no compiler is falsely certified', asyn
       assert.equal(status, 'NOT_EXECUTED', backend + ':' + c.id);
     assert.ok(['pass', 'runtime_reject'].includes(c.kind));
     if (c.kind === 'pass') assert.equal(typeof c.expected_stdout, 'string');
-    else assert.match(c.expected_error_contains, /capacity/);
+    else assert.match(c.expected_error_contains, /capacity|closed/);
 
     const path = resolve(root, c.path);
     assert.ok(path.startsWith(root + sep), 'path traversal: ' + c.path);
@@ -72,4 +74,6 @@ test('required semantics are actually present in candidate Atto programs', async
   assert.match(await load('closed_move_recovery'),
     /rt take owned[\s\S]*on Closed\(value\)/);
   assert.match(await load('negative_capacity'), /bounded<int>\(-1\)/);
+  assert.match(await load('try_receive_closed'),
+    /close<int>\(ch\)[\s\S]*readch ch[\s\S]*try_receive<int>\(ch\)/);
 });
