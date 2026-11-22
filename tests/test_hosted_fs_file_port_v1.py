@@ -29,6 +29,8 @@ REQUIRED = {
     "close_all_waits_inflight_and_pending_opens",
     "unknown_write_outcome_no_implicit_retry",
     "not_cross_org_mirrored_without_transfer_review",
+    "post_async_actor_revoke_must_not_publish_success",
+    "close_is_idempotent_for_issued_retired_handles",
 }
 
 
@@ -57,9 +59,9 @@ def valid(doc):
         return False
     tests = doc.get("source_tests", {})
     if (
-        tests.get("port_groups_per_backend") != 17
+        tests.get("port_groups_per_backend") != 19
         or tests.get("existing_host_vfs_groups_per_backend") != 24
-        or tests.get("combined_host_only_groups_per_backend") != 41
+        or tests.get("combined_host_only_groups_per_backend") != 43
         or tests.get("unicode_full_utf8") != "NOT_EXECUTED"
         or tests.get("source_node22_exact_head") != "NOT_EXECUTED"
         or tests.get("compiled_atto_file_guest") != "NOT_EXECUTED"
@@ -82,6 +84,8 @@ def valid(doc):
         if row.get("node22") != "NOT_EXECUTED" or row.get("guest") != "NOT_EXECUTED":
             return False
         if not isinstance(row.get("head_sha"), str) or not SHA.fullmatch(row["head_sha"]):
+            return False
+        if not isinstance(row.get("git_tree_sha"), str) or not SHA.fullmatch(row["git_tree_sha"]):
             return False
         files = row.get("files")
         if not isinstance(files, dict) or set(files) != {
