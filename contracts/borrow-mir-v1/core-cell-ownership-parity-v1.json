@@ -368,7 +368,7 @@
     "java": {
       "repository": "atto-lang/atto-source.java",
       "pr": 1769,
-      "sourceCommit": "2efb0955140dc465aa55be91a0f2761ad00ad813",
+      "sourceCommit": "37f0fab76ccb028c9d6d10341d21c585405cde5b",
       "sourceTree": "bd1b1b4ea3f3f8ea9fbefdd8fc05a2d96e281751",
       "sourceBlobs": {
         "src/test/java/dev/oreslang/CoreFourGuestTest.java": "8d37869b10d4787fba17f4faa6ada50694b8db13"
@@ -390,7 +390,7 @@
       "guest": "NOT_EXECUTED"
     }
   },
-  "compilerIntegrationEvidenceRule": "These are exact Git object witnesses for compiler-gate candidates, NOT real guest or typed-MIR proof. Re-fetch current head/tree/blobs and verify material runner steps, compiler binary digest and actual positive/negative guest before promoting. The Rust borrow-v1 profile is opt-in and must not be represented as global Atto borrow-by-default. All eleven backend guestEvidence statuses remain NOT_EXECUTED.",
+  "compilerIntegrationEvidenceRule": "These are exact Git object witnesses for compiler-gate candidates, NOT real guest or typed-MIR proof. Re-fetch current head/tree/blobs and verify material runner steps, compiler binary digest and actual positive/negative guest before promoting. The Rust borrow-v1 profile is opt-in and must not be represented as global Atto borrow-by-default. All eleven backend guestEvidence statuses remain NOT_EXECUTED. 2026-11-22 refreshed exact PR #340/#1769/#868 commit and root-tree identities after the latest ownership-gate edits.",
   "borrowSaturationContract": {
     "portableSemantics": "canAcquireShared is false at max live shared-loan capacity, but an existing owner's read remains allowed. Additional loans must never overflow; owner write/move/unpinned suspension remain denied with any live loan.",
     "signedCounter": {
