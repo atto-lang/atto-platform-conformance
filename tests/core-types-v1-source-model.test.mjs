@@ -54,6 +54,17 @@ assert.equal(manifest.evidence.available_stepful_private_carrier.run_id,45049791
 assert.equal(manifest.evidence.available_stepful_private_carrier.runner_steps,4);
 assert.equal(manifest.evidence.available_stepful_private_carrier.source_transfer_status,"DENIED_UNAPPROVED");
 assert.equal(manifest.evidence.rust_namespace_import_linker.cargo_test_status,"NOT_EXECUTED");
+assert.equal(manifest.evidence.rust_namespace_import_linker.integration_test_count,9);
+assert.match(manifest.evidence.rust_namespace_import_linker.source_blob_sha,/^[0-9a-f]{40}$/);
+assert.match(manifest.evidence.rust_namespace_import_linker.test_blob_sha,/^[0-9a-f]{40}$/);
+assert.equal(manifest.evidence.rust_namespace_import_linker.original_input_order_checked,true);
+assert.equal(manifest.evidence.rust_namespace_import_linker.root_namespace_hoisted_before_synthetic_modules,true);
+assert.equal(manifest.evidence.llvm_function_only_namespace_import.namespace_header_must_precede_imports,true);
+assert.equal(manifest.evidence.llvm_function_only_namespace_import.duplicate_code,"NAMESPACE_DUPLICATE");
+assert.equal(manifest.evidence.llvm_function_only_namespace_import.late_code,"NAMESPACE_HEADER_ORDER");
+assert.equal(manifest.evidence.namespace_hardening_source_review.total_checks_passed,15);
+assert.equal(manifest.evidence.namespace_hardening_source_review.kind,"STATIC_SOURCE_INSPECTION_ONLY");
+assert.equal(manifest.evidence.namespace_hardening_source_review.compilers_executed,0);
 const negatives = manifest.negative_guests;
 assert.equal(negatives.length, 8);
 assert.deepEqual(negatives.map(x => x.file), [

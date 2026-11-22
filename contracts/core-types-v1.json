@@ -105,7 +105,7 @@
       "backend": "llvm",
       "repository": "atto-lang/atto-source.llvm",
       "pr_url": "https://github.com/atto-lang/atto-source.llvm/pull/866",
-      "head_sha": "a399efb6bd905d6b28d324655e04afe2a6e73903",
+      "head_sha": "cdd8bc29b42878bab41038a3beb2e0380b93c0c7",
       "source_blob_sha": "6cb39f5f6dba2b207adc571499ac3ee3338ba19a",
       "fixture_positive_blob_sha": "adaa3e84de2a79f680284e3d86f9a8aa36efba88",
       "fixture_negative_blob_sha": "470599e7850a277bae1dec72876e808cc36bd9e8",
@@ -186,7 +186,7 @@
       "backend": "rs",
       "repository": "atto-lang/atto-source.rs",
       "pr_url": "https://github.com/atto-lang/atto-source.rs/pull/532",
-      "head_sha": "a0c5d2d4f454da8fb119e45b360adc8a13ea0459",
+      "head_sha": "a4cdd0d342fc53732a44fd63c0131097fdcbdf86",
       "source_blob_sha": "7d8086e31c8c6dbf28227a2116eb5447db886673",
       "fixture_positive_blob_sha": "9d4027de080b8d625ab869825c4ec62f369adce8",
       "fixture_negative_blob_sha": "470599e7850a277bae1dec72876e808cc36bd9e8",
@@ -365,9 +365,16 @@
     "rust_namespace_import_linker": {
       "path": "src/import_link.rs",
       "test_path": "tests/core_types_namespace_import.rs",
-      "branch_head": "a0c5d2d4f454da8fb119e45b360adc8a13ea0459",
+      "branch_head": "a4cdd0d342fc53732a44fd63c0131097fdcbdf86",
       "validation": "NAMESPACE_NORMALIZATION_THEN_STRIP_FOR_GENERATED_MODULE",
-      "cargo_test_status": "NOT_EXECUTED"
+      "cargo_test_status": "NOT_EXECUTED",
+      "root_tree_sha": "2d93d07cc1062aa1a3f42fe4998ab13dfe6bc923",
+      "source_blob_sha": "587ea9f625463f617f17bba262d851020bedb775",
+      "test_blob_sha": "d2e2b019011564f6ffa4c62396428d863c9d40a9",
+      "integration_test_count": 9,
+      "original_input_order_checked": true,
+      "root_namespace_hoisted_before_synthetic_modules": true,
+      "private_export_traversal_and_spoofing_gates": true
     },
     "llvm_function_only_namespace_import": {
       "backend": "llvm",
@@ -375,7 +382,22 @@
       "source_blob_sha": "283e22a30e914d7031b55f838cbdeb82261cfb5f",
       "import_style": "static_named_fnc",
       "guest_execution_status": "NOT_EXECUTED",
-      "unverified_package_namespace_imports": "DENIED"
+      "unverified_package_namespace_imports": "DENIED",
+      "branch_head": "cdd8bc29b42878bab41038a3beb2e0380b93c0c7",
+      "root_tree_sha": "4c6a6ad64dd69d4c0ddbd971476c83cd91533c06",
+      "parser_blob_sha": "f3ea0ddf5ac21904713c41b4d565470745710ada",
+      "negative_gate_blob_sha": "633f25a110fa3d2a6e277d10887b2d4d3a9aa962",
+      "namespace_header_must_precede_imports": true,
+      "duplicate_code": "NAMESPACE_DUPLICATE",
+      "late_code": "NAMESPACE_HEADER_ORDER"
+    },
+    "namespace_hardening_source_review": {
+      "kind": "STATIC_SOURCE_INSPECTION_ONLY",
+      "rust_static_checks": 8,
+      "llvm_static_checks": 7,
+      "total_checks_passed": 15,
+      "compilers_executed": 0,
+      "limitations": "Checked exact current code paths and fixture diagnostics; no cargo/C++ build, compiled guest or AOT tests executed"
     }
   },
   "negative_guests": [

@@ -41,3 +41,11 @@ The Java source's protected export allowlist remains empty and no independently 
 ## Native LLVM function-only namespace parity
 
 The native LLVM C++ compiler's currently executable file linker accepts explicit `import fnc ... from "relative.atto";` but not the wildcard-binding syntax used by Java and Rust. The LLVM branch now allows a **file-scoped namespace header only for ordinary function-only linked units** and retains fail-closed rejection for unverified package namespace imports and cross-unit nominal types. Its two guest fixtures select all 13 functions by name and retain exactly 63 boundary assertions. The three source fixtures containing file-import statements that otherwise would have been rejected by syntax were rewritten to use supported imports; their blob SHAs are separately recorded under `backend_specific_guests.llvm`. This is backend-local fixture representation, not a change to public scalar semantics. The real LLVM compiler and native guests still require stepful CI before any `PASS` status.
+
+## Additional namespace/header and private import admission audit (2026-11-22)
+
+At exact Rust PR #532 head `a4cdd0d342fc53732a44fd63c0131097fdcbdf86`, the one-hop importer validates the **original** file before stripping import statements, preserves source namespace identity when injecting compiler-generated private modules, and rejects duplicate/late headers, private/missing exports, forged internal symbols, path traversal, and binding collisions. Nine compiler-backed Rust tests are staged, **NOT_EXECUTED**.
+
+At exact LLVM PR #866 head `cdd8bc29b42878bab41038a3beb2e0380b93c0c7`, the native parser now accepts an optional source namespace header **before imports only**, and emits explicit `NAMESPACE_HEADER_ORDER` or `NAMESPACE_DUPLICATE` errors. Native guest negative-test gates require the corresponding diagnostic code, not merely any failing exit status; compiled O0/O2 guest execution remains **NOT_EXECUTED**.
+
+The independent GitHub source check inspected eight Rust and seven LLVM code/test properties (15/15 static checks), **not executable compiler tests**. The only stepful runner evidence is the four-step, *source-free* private canary on `sonus-auris-test/atto-ci`. Source allowlist/export approval is still missing: no private blobs or Git tree were transferred, no conformance guest PASS or merge claimed.
