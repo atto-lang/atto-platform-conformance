@@ -1,0 +1,24 @@
+name: Durable scalar wire golden vector (host only)
+on:
+  pull_request:
+    paths:
+      - 'contracts/durable-typed-scalar-wire-v1.json'
+      - 'tests/durable-typed-scalar-wire-reference.test.mjs'
+      - '.github/workflows/durable-typed-scalar-wire.yml'
+  push:
+    paths:
+      - 'contracts/durable-typed-scalar-wire-v1.json'
+      - 'tests/durable-typed-scalar-wire-reference.test.mjs'
+      - '.github/workflows/durable-typed-scalar-wire.yml'
+permissions:
+  contents: read
+jobs:
+  host-vector:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - run: node --test tests/durable-typed-scalar-wire-reference.test.mjs
+      - run: echo 'HOST VECTOR ONLY - no AttoLang guest compiler or backend parity executed'
