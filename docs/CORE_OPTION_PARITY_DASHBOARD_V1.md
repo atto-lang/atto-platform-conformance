@@ -6,7 +6,7 @@ This is not live CI and does not certify compiled Atto guests. An observed main 
 
 | Backend | Observed main SHA | Option candidate head | Parse/typecheck | Positive guest | Negative guest | JIT | AOT | Sanitizers / memory safety |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `java` | `189c73b88502c451e50494f738ae11a1de8c9211` | [PR](https://github.com/atto-lang/atto-source.java/pull/1767) `fd5055c3544ee7cf7e50dd5ac1b89469ada114a3` | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED |
+| `java` | `189c73b88502c451e50494f738ae11a1de8c9211` | [PR](https://github.com/atto-lang/atto-source.java/pull/1767) `7385b682ff28239d1ce1c52fa6d7aedcb4f6b337` | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED |
 | `llvm` | `553154ac83c060f9182edf751ee6ba6aa192dd3b` | [PR](https://github.com/atto-lang/atto-source.llvm/pull/870) `cae1f89e5a10b2feabe36808c0b07263b4c5a07d` | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED |
 | `rs` | `877bd9f8d61c598137c8627f73fa5ed2a497d9e8` | [PR](https://github.com/atto-lang/atto-source.rs/pull/533) `e1310a921d41f0fc4ab18b28b7ce4f297b95b754` | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED |
 | `net` | `75830ed371ec386d2c7ebe162410258d3e9fdbf2` | [PR](https://github.com/atto-lang/atto-source.net/pull/217) `2b4bc19a87c81545a0dd154e35d6e53b7f0e63c7` | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED |
@@ -20,9 +20,9 @@ This is not live CI and does not certify compiled Atto guests. An observed main 
 
 ## Java core/option source and tests
 
-- Candidate: [atto-source.java #1767](https://github.com/atto-lang/atto-source.java/pull/1767) at `fd5055c3544ee7cf7e50dd5ac1b89469ada114a3`
-- Root Git tree: `af9c40f78d8f4b15e2cb8903f658f7df5be48aa2`
-- JUnit command (proposed, **not executed**): `mvn -B -Dtest=CoreOptionResultSourceTest,CoreOptionResultBorrowSafetyTest test`
+- Candidate: [atto-source.java #1767](https://github.com/atto-lang/atto-source.java/pull/1767) at `7385b682ff28239d1ce1c52fa6d7aedcb4f6b337`
+- Root Git tree: `03981bf0f0540f913a45cbc951934783b61794b5`
+- JUnit command (proposed, **not executed**): `mvn -B -ntp -Dtest=CoreOptionResultSourceTest,CoreOptionResultBorrowSafetyTest,AutomaticPreludeTest -DfailIfNoTests=true -Dsurefire.failIfNoSpecifiedTests=true test`
 - AOT: Not provided by this PR; require independent GraalVM Native Image exact-head build and guest receipt.
 - Sanitizers/memory safety: Java: ownership/poison/drop assertions; LLVM/native: ASan/UBSan or equivalent; non-native profiles: target-specific memory safety gates.
 
@@ -42,6 +42,9 @@ This is not live CI and does not certify compiled Atto guests. An observed main 
 | `borrowedOptionCannotEscapeThroughEagerFallback` | borrow_negative | — | NOT_EXECUTED |
 | `copyableNestedOptionCanStillReadWithoutStealingOwnership` | borrow_positive | — | NOT_EXECUTED |
 | `linkedBorrowedCoreQueriesMustNotConsumeOwner` | compiled_positive_guest | `42` | NOT_EXECUTED |
+| `coreTypeRegistryIsTheCanonicalOwnershipAndDropSource` | compiler_admission | — | NOT_EXECUTED |
+| `coreRegistryGenericArityIsEnforcedByTheRealTypeChecker` | compiler_reject | — | NOT_EXECUTED |
+| `coreProfileRejectsAllocatorTypesWithoutMisclassifyingLegacyString` | compiler_reject | — | NOT_EXECUTED |
 
 ## Exact Java file blobs
 
@@ -52,6 +55,12 @@ This is not live CI and does not certify compiled Atto guests. An observed main 
 - `src/test/java/dev/oreslang/CoreOptionResultSourceTest.java` · `ef08bcc9f3165a04a8e57a59525769ad66e7116f`
 - `src/test/java/dev/oreslang/CoreOptionResultBorrowSafetyTest.java` · `d44dfe085ed6728e5f5b50be889a1c56bf78bc39`
 - `tests/core_option_result/borrowed_queries.atto` · `35f77b9020812364d1d0885e35f53a071cb50134`
+- `src/main/java/dev/oreslang/types/OwnershipChecker.java` · `6be88b5f3717f70759440be6a3012a0411f2315b`
+- `src/main/java/dev/oreslang/types/TypeChecker.java` · `95a344571ba41d78303f3d1979918927b11619af`
+- `.github/workflows/core-option-result-jvm-borrow-exact-head.yml` · `9d74a1ea63898534fb3c991dfd805b031b74a860`
+- `src/main/java/dev/oreslang/types/CoreTypeRegistry.java` · `bc9c3574f0e653218ea8a68f85d4effbd6722eeb`
+- `src/main/java/dev/oreslang/compiler/OresCompiler.java` · `c60883bf73abf36b89343a2b18feb11565c11c03`
+- `src/test/java/dev/oreslang/AutomaticPreludeTest.java` · `0e354f5478a0651127f746e63e86bb5a591bca74`
 
 ## Capability limitations (NOT verified as supported or unsupported)
 
@@ -75,15 +84,3 @@ This is not live CI and does not certify compiled Atto guests. An observed main 
 - The source-only v1 validator rejects all claimed PASS, UNSUPPORTED or attached self-authored receipts. A separately reviewed authenticated evidence importer is required before promoting any result.
 
 _Generated deterministically by `lib/core-option-parity-dashboard-v1.mjs`; do not edit the table by hand._
-
-## Rust Copy-carrier correction
-
-The current Rust candidate treats only the existing concrete `Option<int>`,
-`Result<int,string>` and nested scalar Option profile as Copy because their
-payloads are Copy. A `borrow!` marker in that restricted guest is lowered
-through the ordinary value path; it proves reusable Copy values, **not** a
-lifetime-bearing borrow or generic affine Option/Result loan. The unchecked
-call-argument bypass has been removed. The affine class-owner escape remains
-a real `E_BORROW` negative; `Option<Payload>` remains explicitly
-`E_UNSUPPORTED_TYPE`. No compiled guest result is promoted before the exact
-Rust source-local workflow executes.
