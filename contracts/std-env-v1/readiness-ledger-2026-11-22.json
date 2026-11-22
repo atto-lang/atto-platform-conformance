@@ -1,0 +1,158 @@
+{
+  "schema": "atto.std-env.readiness-ledger.v1",
+  "as_of_date": "2026-11-22",
+  "claim": "SNAPSHOT_ONLY_NONPROMOTING",
+  "status_source": "GitHub branch/commit/tree API plus exact-blob local host runs",
+  "guest_contract": "contracts/std-env-v1/contract.json (13 cases)",
+  "host_boundary_contract": "contracts/std-env-v1/host-snapshot-boundaries-v1.json (6 source-only target cases)",
+  "compiler_source_copied_to_carrier": false,
+  "sourcefree_carrier": {
+    "repository": "channelsiege/atto-ci",
+    "run_id": 45057734221,
+    "result": "PASSED",
+    "evidence_category": "SOURCE_FREE_ONLY",
+    "guest_qualified": false
+  },
+  "targets": [
+    {
+      "backend": "java",
+      "repository": "atto-lang/atto-source.java",
+      "source_commit": "66f4911a65a4c3830bd10db2a74fce5d52fedee3",
+      "root_tree": "10b792daa54ee81a3f052c8e17253925cd84d660",
+      "ref_kind": "DRAFT_PR_HEAD",
+      "pr": 1765,
+      "implementation_stage": "source_and_java_guest_candidate",
+      "host_evidence": "NOT_EXECUTED",
+      "guest_status": "NOT_EXECUTED",
+      "aot_status": "NOT_EXECUTED"
+    },
+    {
+      "backend": "llvm",
+      "repository": "atto-lang/atto-source.llvm",
+      "source_commit": "5c9482a5babf970ab7ba69101b989dc9c7f62f95",
+      "root_tree": "a963ab53ea0ac285a535a1c6490e467fe1a8da89",
+      "ref_kind": "DRAFT_PR_HEAD",
+      "pr": 871,
+      "implementation_stage": "host_c_snapshot_only",
+      "host_evidence": "LOCAL_HOST_4_SANITIZER_CONFIGS",
+      "guest_status": "NOT_EXECUTED",
+      "aot_status": "NOT_EXECUTED"
+    },
+    {
+      "backend": "net",
+      "repository": "atto-lang/atto-source.net",
+      "source_commit": "cc6ec43af9213734b8a065d5319b64e56204191f",
+      "root_tree": "1e7ddaaf3e38000f232497a0a02f1298e820f5f6",
+      "ref_kind": "DRAFT_PR_HEAD",
+      "pr": 218,
+      "implementation_stage": "host_csharp_snapshot_only",
+      "host_evidence": "NOT_EXECUTED",
+      "guest_status": "NOT_EXECUTED",
+      "aot_status": "NOT_EXECUTED"
+    },
+    {
+      "backend": "rs",
+      "repository": "atto-lang/atto-source.rs",
+      "source_commit": "f1eb517b759f9bdf122e27d1c74951e57067e455",
+      "root_tree": "327cc528bbbc71ae6dbd0989549098545450b696",
+      "ref_kind": "DRAFT_PR_HEAD",
+      "pr": 534,
+      "implementation_stage": "atto_source_only",
+      "host_evidence": "NOT_EXECUTED",
+      "guest_status": "NOT_EXECUTED",
+      "aot_status": "NOT_EXECUTED"
+    },
+    {
+      "backend": "forge",
+      "repository": "atto-lang/atto-source.forge",
+      "source_commit": "1ff149fbe1de8f80b18be17a77233b3be8f2bf04",
+      "root_tree": "867ccf82489635813c7835dded65d17f1b68d5cb",
+      "ref_kind": "DRAFT_PR_HEAD",
+      "pr": 227,
+      "implementation_stage": "atto_source_only",
+      "host_evidence": "NOT_EXECUTED",
+      "guest_status": "NOT_EXECUTED",
+      "aot_status": "NOT_EXECUTED"
+    },
+    {
+      "backend": "cranelift",
+      "repository": "atto-lang/atto-source.cranelift",
+      "source_commit": "44ea64658d8496a622df2e067e466d1609edf3d6",
+      "root_tree": "1377eacc5d7ad8d901455a94a0c8a3d84da6df2c",
+      "ref_kind": "DRAFT_PR_HEAD",
+      "pr": 91,
+      "implementation_stage": "atto_source_only",
+      "host_evidence": "NOT_EXECUTED",
+      "guest_status": "NOT_EXECUTED",
+      "aot_status": "NOT_EXECUTED"
+    },
+    {
+      "backend": "js",
+      "repository": "atto-lang/atto-source.js",
+      "source_commit": "ac7ea9cc402e20f01c9adc53d4010a06efd53392",
+      "root_tree": "8d4dfd6abf07188d286dd1cd550e979b2031fddd",
+      "ref_kind": "DRAFT_PR_HEAD",
+      "pr": 130,
+      "implementation_stage": "host_js_snapshot_and_dispatch_only",
+      "host_evidence": "LOCAL_HOST_15_NODE_TESTS",
+      "guest_status": "NOT_EXECUTED",
+      "aot_status": "NOT_EXECUTED"
+    },
+    {
+      "backend": "wasm",
+      "repository": "atto-lang/atto-source.wasm",
+      "source_commit": "fe6ffab84c12db3be3df72531c215a1d15ecdc7a",
+      "root_tree": "81df160f50985e9bd7eca8edec8f8d93e4f82dda",
+      "ref_kind": "DRAFT_PR_HEAD",
+      "pr": 280,
+      "implementation_stage": "host_js_snapshot_and_dispatch_only",
+      "host_evidence": "LOCAL_HOST_15_NODE_TESTS",
+      "guest_status": "NOT_EXECUTED",
+      "aot_status": "NOT_EXECUTED"
+    },
+    {
+      "backend": "atto",
+      "repository": "atto-lang/atto-source.atto",
+      "source_commit": "5b9a274490a4567ed9d1088fd1ff304dbe383357",
+      "root_tree": "7a732a5679ab98b723a23f5b0f2fe6a0cd58260e",
+      "ref_kind": "MAIN_HEAD",
+      "pr": null,
+      "implementation_stage": "selfhost_bootstrap_only",
+      "host_evidence": "NOT_EXECUTED",
+      "guest_status": "NOT_EXECUTED",
+      "aot_status": "NOT_EXECUTED"
+    },
+    {
+      "backend": "realtime",
+      "repository": "atto-lang/atto-source.realtime",
+      "source_commit": "4f6449470ab075cdad17884c7a1aee2a6e2ab54c",
+      "root_tree": "20a219f24ea86b5d7e11a8164940b5e51d225c44",
+      "ref_kind": "MAIN_HEAD",
+      "pr": null,
+      "implementation_stage": "bounded_startup_provider_pending",
+      "host_evidence": "NOT_EXECUTED",
+      "guest_status": "NOT_EXECUTED",
+      "aot_status": "NOT_EXECUTED"
+    },
+    {
+      "backend": "hdl",
+      "repository": "atto-lang/atto-source.hdl",
+      "source_commit": "023455e496bb9cfbdd157ccc94bb69f31eec44ea",
+      "root_tree": "271f3a99177fcd1f2d306a503e272c9d87c132da",
+      "ref_kind": "MAIN_HEAD",
+      "pr": null,
+      "implementation_stage": "runtime_environment_unavailable_in_synthesis",
+      "host_evidence": "NOT_EXECUTED",
+      "guest_status": "NOT_EXECUTED",
+      "aot_status": "NOT_EXECUTED"
+    }
+  ],
+  "notes": [
+    "Every guest and AOT status is NOT_EXECUTED; no host-only or source-free success promotes a compiler guest.",
+    "Local host checks use Git blob-identical JS/Wasm source and tests (15/15 Node) or LLVM C source/tests (GCC/Clang O1/O2 ASan/UBSan 4/4).",
+    "Java guest candidate has 15 authored JUnit tests, but no stepful exact-head JDK25/Native Image run.",
+    "Rust literal file constant linker is a separate Draft PR #551 and is not std/env startup guest parity.",
+    "Selfhost, realtime, and HDL require explicit target capability diagnostics before any UNSUPPORTED claim can be promoted.",
+    "Private cross-org source export remains unapproved."
+  ]
+}
