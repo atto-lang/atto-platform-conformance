@@ -126,7 +126,7 @@
       "id": "java",
       "repository": "atto-lang/atto-source.java",
       "observed_main_sha": "189c73b88502c451e50494f738ae11a1de8c9211",
-      "candidate_head_sha": "fd5055c3544ee7cf7e50dd5ac1b89469ada114a3",
+      "candidate_head_sha": "7385b682ff28239d1ce1c52fa6d7aedcb4f6b337",
       "capability_state": "unverified",
       "cases": {
         "borrowed_option_some_query": {
