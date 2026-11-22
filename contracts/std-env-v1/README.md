@@ -61,6 +61,26 @@ result is valid only for a genuine, tested target restriction; zero-step CI,
 host-only dispatch and synthetic GraalVM tests are `NOT_EXECUTED` guest
 evidence.
 
+## Supplemental host-snapshot quota contract (not guest evidence)
+
+`host-snapshot-boundaries-v1.json` adds six explicit host-substrate boundary
+cases across the same 11 target identities: exactly 1 MiB, one byte over,
+multibyte UTF-8 accounting, a denied poisoned value, no coarse-capability key
+enumeration, and 513 authorized keys. The source-only structural test is:
+
+```sh
+node --test tests/std-env-v1.host-snapshot-boundaries.test.mjs
+```
+
+This does **not** increase or silently alter the existing 13-case compiled
+guest oracle, whose contract/blob is independently pinned by downstream
+receipt validators. Host implementations must enforce the 1 MiB **authorized
+value** budget before copying secrets; an inadmissible or denied key must
+never be dereferenced or counted. Backend-owned `.atto` libraries remain
+independent. The supplemental ledger defaults all 11 backend statuses to
+`NOT_EXECUTED`; local C/Node host checks may be noted separately but cannot
+promote compiled guest or AOT statuses.
+
 ## Overlaps and governance
 
 - `atto-platform-conformance#574` tracks **static import constants and
