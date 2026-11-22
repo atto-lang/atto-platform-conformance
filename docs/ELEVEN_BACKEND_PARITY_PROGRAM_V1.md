@@ -125,8 +125,24 @@ Do not use an alternate Actions org unless the exact source head/tree,
 private carrier identity and independent approval are genuinely admitted.
 
 
-### Rust concrete ADT read-only call boundary
+### Rust Copy-carrier boundary
 
-Rust's independently owned core borrow profile now checks only a named live `Option<int>` or `Result<int,string>` used as an explicit `borrow!` argument to a statically resolved synchronous function call. Standalone ADT `borrow!` cannot be returned as owned; temporary and mutable ADT borrows reject. Its actual compiler-based Rust test suite now separates `E_BORROW` for an affine class escape from `E_UNSUPPORTED_TYPE` for `Option<Payload>`. These tests are authored and **not yet executed** on a verified Rust compiler runner. The other backend implementations remain independent and unchanged by the Rust specialization.
+Rust's current executable Option/Result profile contains only Copy scalar
+payloads. The compiler no longer has a special borrow-call bypass. Explicit
+`borrow!` over these concrete carriers follows the ordinary Copy value path;
+it preserves the source local but is **not** evidence of a lifetime-bearing
+generic loan. The existing class-loan path rejects returning a borrowed
+affine class owner with `E_BORROW`; `Option<Payload>` is still an explicit
+`E_UNSUPPORTED_TYPE` fail-closed case. The Rust compiler guest and typed
+negative tests are still `NOT_EXECUTED` until an exact-head Actions job
+completes its compiler and Wasm steps.
 
-The Rust source PR now includes a source-local [exact-head compiled Wasm guest workflow](https://github.com/atto-lang/atto-source.rs/blob/feat/core-option-result-source-parity-20261122/.github/workflows/core-option-result-borrow-exact-head.yml) using the actual compiler, Node Wasm guest execution, typed borrow negatives, and Git tree verification. Its presence does **not** establish execution: source-org Actions has not provided a completed stepful receipt on this head. No unapproved private-source carrier mirror is authorized.
+### Exact Java JVM ownership/guest execution gate
+
+Java PR #1767 now has a source-local exact-head workflow that runs
+`CoreOptionResultSourceTest` and `CoreOptionResultBorrowSafetyTest`
+under pinned GraalVM 25. It verifies source head/tree and critical compiler,
+test and guest blob hashes, then executes linked JIT guests plus parser,
+typechecker and ownership negatives. Its Actions run is currently queued;
+no JUnit or JVM guest pass is recorded yet. Native Image remains a separate
+AOT gate.
