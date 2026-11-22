@@ -10,7 +10,7 @@ This repository is maintained at [atto-lang/atto-platform-conformance](https://g
 
 ## Numeric guest source candidates — no execution proof
 
-[Manifest](fixtures/numeric-guest-v1/manifest.json) pins four canonical `.atto` programs for checked int/i64 division, remainder, zero divisors and MIN / -1 overflow. Each source has an independently verifiable Git blob SHA. Run `node --test tests/numeric-guest-source-v1.test.mjs` to validate the source-only contract (not compiler support).
+[Manifest](fixtures/numeric-guest-v1/manifest.json) pins seven canonical `.atto` programs for checked int/i64 division, remainder, zero divisors and MIN / -1 overflow. Each source has an independently verifiable Git blob SHA. Run `node --test tests/numeric-guest-source-v1.test.mjs` to validate the source-only contract (not compiler support).
 
 Required later: compile the same source blob with every declared backend, execute the success case to return 42, prove typed negative diagnostics or guest failures with no illegal artifact, and capture exact compiler/tree/fixture/run/step/AOT provenance. Every backend remains `not_executed` until those receipts are authenticated.
 
