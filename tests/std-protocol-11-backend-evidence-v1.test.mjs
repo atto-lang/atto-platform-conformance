@@ -37,6 +37,24 @@ const files=[
   'tests/stdlib/protocol_boundaries.atto',
   'tests/stdlib/source_contract.test.mjs'
 ];
+const borrowCorePins=new Map([
+ ['java','539b209c74668973305408c32309ace063206964'],
+ ['llvm','962647bc6c18f6e44c8d1f5a5fabf0705b8974c6'],
+ ['rs','f590427df95284c9ba3fdbdfc87294e970c9ab68'],
+ ['net','19211cf32235ba85b34652bffd377ef339519731'],
+ ['wasm','81bcdf607015803236c9826ce9943ebc26d05cff'],
+ ['forge','b180f399ac952671009c7bb61c80eba3e8216aa4'],
+ ['cranelift','28659ee7f18548b08f0d6c4db027c6034e51c94f'],
+ ['js','a517c9c9f91d8f9240d9f902c753b947c3cb6aa0'],
+ ['hdl','4e86845baadc479bcdaf00a30cd36b41bf5c3467']
+]);
+const rustBorrowHarnessPins={
+ 'tests/stdlib_native_guest.rs':'d349a17c27c5dcadd058bdcbd5c257891ce7d744',
+ 'tests/stdlib_native_guest_wasm.test.mjs':'c6d6e00ba49189214d5ddc0a508dac4d7aeb0b61',
+ 'examples/stdlib_native_guest.rs':'5750616a0d04c6bbd24cd04f39ea4e60c2abb739',
+ '.github/workflows/std-native-guest.yml':'26c816ec3a86577113d1806efb862c521e93be4f'
+};
+
 const profiles=new Map([
   ['java','JAVA_LINKED_GUEST_HARNESS_NOT_EXECUTED'],
   ['llvm','LLVM_NATIVE_GUEST_HARNESS_NOT_EXECUTED'],
@@ -64,6 +82,11 @@ function verify(x) {
   assert.equal(x.compute_dispatch_contract,
     'PARTIAL_WORKGROUPS_ALLOWED_NUMERIC_ONLY_RUNTIME_MUST_GUARD_PADDED_INVOCATIONS');
   assert.deepEqual(x.guest_execution_certified_backends,[]);
+  assert.equal(x.core_borrow_contract,
+    'COMPILER_ENFORCED_SCOPED_LOANS_NO_LIBRARY_RUNTIME_SUBSTITUTE');
+  assert.equal(x.core_borrow_compiled_guest_parity,'NOT_VERIFIED');
+  assert.deepEqual(x.core_borrow_certified_backends,[]);
+  assert.deepEqual(x.rust_borrow_core_harness_blobs,rustBorrowHarnessPins);
   assert.deepEqual(x.rows.map(r=>r.repo),names.map(n=>prefix+n),
     'all eleven canonical backends must occur exactly once and in stable order');
   assert.equal(x.rows.filter(r=>r.candidate_pr!==null).length,9);
@@ -92,6 +115,24 @@ function verify(x) {
   assert.equal(receipt.scope,'HOSTED_SOURCE_FREE_REFERENCE_NOT_COMPILED_ATTO');
   assert.equal(receipt.source_snapshot_export_authorized,false);
   assert.equal(receipt.transferred_private_atto_source,false);
+  const ownership=carrier.borrow_reference_run;
+  assert.equal(ownership.repo_id,1458331448);
+  assert.equal(ownership.run_id,45059875505);
+  assert.equal(ownership.job_id,137323186804);
+  assert.equal(ownership.carrier_head_sha,'3d7a582fc61df3fcf5cadc6656a0c5b91a5e665e');
+  assert.equal(ownership.carrier_root_tree_sha,'9b5edded4df406ec43edf739ec293f92ec80bce9');
+  assert.equal(ownership.source_free_borrow_test_blob,'76dd59ccbd32dfd21617507bb59817cea83fb9f0');
+  assert.equal(ownership.source_free_math_test_blob,'f840e68f8d01826f574ef03e3d52c514c8121a7a');
+  assert.equal(ownership.workflow_blob,'eb37a6982d0632cc19c3ae009f28510844af4361');
+  assert.equal(ownership.actual_job_steps,6);
+  assert.equal(ownership.node_tests_passed,10);
+  assert.equal(ownership.node_tests_failed,0);
+  assert.equal(ownership.borrow_reference_cases,6);
+  assert.equal(ownership.arithmetic_pairs,20660);
+  assert.equal(ownership.run_conclusion,'success');
+  assert.equal(ownership.scope,'SOURCE_FREE_BORROW_AUTOMATON_NOT_ATTO_GUEST_COMPILER');
+  assert.equal(ownership.private_source_export_authorized,false);
+  assert.equal(ownership.transferred_private_source,false);
 
 
   for(const row of x.rows) {
@@ -111,6 +152,7 @@ function verify(x) {
       assert.equal(row.root_tree_sha,null);
       assert.equal(row.source_blobs,null);
       assert.equal(row.library_blobs,null);
+      assert.equal(row.borrow_core,null);
       assert.equal(row.partial_workgroup_numeric_admission,'NOT_IMPLEMENTED');
       assert.equal(row.padded_invocation_bounds_guard,'NOT_APPLICABLE_BOOTSTRAP');
       assert.equal(row.source_fixture_cases,0);
@@ -147,6 +189,25 @@ function verify(x) {
     assert.equal(row.boundary_cases,109);
     assert.equal(row.source_helpers,42);
     assert.equal(row.source_contract_status,'SOURCE_AUDIT_AUTHORED_LOCAL_REFERENCE_ONLY');
+    const borrow=row.borrow_core;
+    assert.equal(borrow.positive_fixture_path,'tests/stdlib/protocol_borrow_core.atto');
+    assert.equal(borrow.positive_fixture_git_blob,borrowCorePins.get(backend),
+      'independent exact core borrow .atto Git blob must match reviewed source');
+    assert.match(borrow.positive_fixture_git_blob,sha40);
+    assert.equal(borrow.language_profile,'SCOPED_CLASS_READ_WRITE_LOANS_AND_TAKE');
+    assert.equal(borrow.enforced_in,'CORE_COMPILER_FRONTEND_NOT_STDLIB_SHIM');
+    assert.deepEqual(borrow.linked_protocol_helpers,[
+      'websocket_backpressure_admit','quic_stream_range_fits',
+      'compute_buffer_range_fits','compute_upload_admit'
+    ]);
+    assert.equal(borrow.candidate_compile_status,'NOT_EXECUTED');
+    assert.equal(borrow.negative_compiler_checks_authored,backend==='rs'?6:0);
+    assert.equal(borrow.negative_source_mutations_authored,backend==='rs'?0:6);
+    assert.equal(borrow.compiled_wasm_guest_required,backend==='rs');
+    assert.equal(borrow.guest_execution_status,'NOT_EXECUTED');
+    assert.equal(borrow.resource_handle_borrow_safety,'NOT_VERIFIED');
+    assert.equal(borrow.borrow_cross_await,'NOT_VERIFIED');
+    assert.equal(borrow.borrow_ownership_transfer,'NOT_VERIFIED');
     assert.equal(row.execution_profile,profiles.get(backend));
     assert.equal(row.ci_status,'QUEUED_OR_FAILED_NO_EXECUTED_STEPS');
   }
@@ -235,4 +296,30 @@ test('genuine source-free carrier receipt cannot be used as private-source or gu
     x=>x.private_carrier.protocol_reference_run.source_snapshot_export_authorized=true,
     x=>x.private_carrier.protocol_reference_run.transferred_private_atto_source=true
   ]){const altered=structuredClone(evidence);mutant(altered);assert.throws(()=>verify(altered));}
+});
+
+
+test('core borrow candidate remains source-authored, never silently promoted to compiled guest',()=>{
+  for (const mutate of [
+    x=>x.core_borrow_compiled_guest_parity='PASS',
+    x=>x.core_borrow_certified_backends.push('rs'),
+    x=>x.rows[5].borrow_core.positive_fixture_git_blob='0'.repeat(40),
+    x=>x.rows[3].borrow_core.candidate_compile_status='PASS',
+    x=>x.rows[3].borrow_core.negative_compiler_checks_authored=6,
+    x=>x.rows[5].borrow_core.negative_compiler_checks_authored=0,
+    x=>x.rows[3].borrow_core.borrow_cross_await='SAFE',
+    x=>x.rows[5].borrow_core.resource_handle_borrow_safety='CERTIFIED',
+    x=>x.rust_borrow_core_harness_blobs['examples/stdlib_native_guest.rs']='0'.repeat(40),
+    x=>x.rows[0].borrow_core={claim:'PASS'}
+  ]){const v=structuredClone(evidence);mutate(v);assert.throws(()=>verify(v));}
+});
+test('source-free borrow reference receipt cannot counterfeit private compiler or export proof',()=>{
+  for (const mutate of [
+    x=>x.private_carrier.borrow_reference_run.run_id=0,
+    x=>x.private_carrier.borrow_reference_run.node_tests_passed=0,
+    x=>x.private_carrier.borrow_reference_run.source_free_borrow_test_blob='0'.repeat(40),
+    x=>x.private_carrier.borrow_reference_run.scope='CORE_COMPILER_PASSED',
+    x=>x.private_carrier.borrow_reference_run.private_source_export_authorized=true,
+    x=>x.private_carrier.borrow_reference_run.transferred_private_source=true
+  ]){const v=structuredClone(evidence);mutate(v);assert.throws(()=>verify(v));}
 });
