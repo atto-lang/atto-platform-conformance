@@ -1,0 +1,247 @@
+{
+  "schema": "attolang.core-math-hash-cell.v1",
+  "status": "candidate_source_free_not_guest_verified",
+  "description": "Portable behavioral subset; backend-local .atto source ownership and independent compiler admission",
+  "platform_requirements": [
+    "no OS, heap, process or host hashing",
+    "signed checked i64 math",
+    "read-only cell policy never grants live loan authority"
+  ],
+  "math": {
+    "signum": [
+      [
+        -9223372036854776000,
+        -1
+      ],
+      [
+        -7,
+        -1
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        9223372036854776000,
+        1
+      ]
+    ],
+    "closed_bounds": [
+      {
+        "value": 5,
+        "lower": 1,
+        "upper": 5,
+        "expected": true
+      },
+      {
+        "value": 6,
+        "lower": 1,
+        "upper": 5,
+        "expected": false
+      },
+      {
+        "value": 5,
+        "lower": 8,
+        "upper": 1,
+        "expected": false
+      }
+    ],
+    "clamp_invalid_bounds": "typed-error-not-silent-value"
+  },
+  "hash": {
+    "algorithm": "ordered polynomial octet fold modulo prime",
+    "seed": 17,
+    "prime": 1000000007,
+    "multiplier": 31,
+    "octet_min": 0,
+    "octet_max": 255,
+    "invalid_sentinel": -1,
+    "cryptographic": false,
+    "hash_flood_resistant": false,
+    "stable_without_overflow": true,
+    "canonical_full_value_Hash_trait": false,
+    "vectors": [
+      {
+        "state": 17,
+        "octet": 42,
+        "expected": 569
+      },
+      {
+        "state": 569,
+        "octet": 7,
+        "expected": 17646
+      },
+      {
+        "state": 17,
+        "octet": 0,
+        "expected": 527
+      },
+      {
+        "state": 17,
+        "octet": 1,
+        "expected": 528
+      },
+      {
+        "state": 1000000006,
+        "octet": 255,
+        "expected": 224
+      },
+      {
+        "state": -1,
+        "octet": 2,
+        "expected": -1
+      },
+      {
+        "state": 17,
+        "octet": 256,
+        "expected": -1
+      },
+      {
+        "state": 1000000007,
+        "octet": 0,
+        "expected": -1
+      }
+    ]
+  },
+  "cell": {
+    "status": "non_authoritative_admission_policy_only",
+    "max_readers": 65535,
+    "usable_cell_T": false,
+    "usable_refcell_T": false,
+    "requires_compiler_borrow_enforcement": true,
+    "requires_atomic_runtime_admission_for_shared_access": true,
+    "read_vectors": [
+      {
+        "readers": 0,
+        "writer": false,
+        "expected": true
+      },
+      {
+        "readers": 10,
+        "writer": false,
+        "expected": true
+      },
+      {
+        "readers": 65535,
+        "writer": false,
+        "expected": true
+      },
+      {
+        "readers": 65536,
+        "writer": false,
+        "expected": false
+      },
+      {
+        "readers": -1,
+        "writer": false,
+        "expected": false
+      },
+      {
+        "readers": 1,
+        "writer": true,
+        "expected": false
+      }
+    ],
+    "write_vectors": [
+      {
+        "readers": 0,
+        "writer": false,
+        "expected": true
+      },
+      {
+        "readers": 1,
+        "writer": false,
+        "expected": false
+      },
+      {
+        "readers": 0,
+        "writer": true,
+        "expected": false
+      },
+      {
+        "readers": -1,
+        "writer": false,
+        "expected": false
+      }
+    ],
+    "acquire_vectors": [
+      {
+        "readers": 0,
+        "writer": false,
+        "expected": 1
+      },
+      {
+        "readers": 65534,
+        "writer": false,
+        "expected": 65535
+      },
+      {
+        "readers": 65535,
+        "writer": false,
+        "expected": -1
+      },
+      {
+        "readers": 0,
+        "writer": true,
+        "expected": -1
+      }
+    ],
+    "release_vectors": [
+      {
+        "readers": 1,
+        "writer": false,
+        "expected": 0
+      },
+      {
+        "readers": 65535,
+        "writer": false,
+        "expected": 65534
+      },
+      {
+        "readers": 0,
+        "writer": false,
+        "expected": -1
+      },
+      {
+        "readers": 1,
+        "writer": true,
+        "expected": -1
+      }
+    ]
+  },
+  "candidates": [
+    {
+      "backend": "java",
+      "repository": "atto-lang/atto-source.java",
+      "pr": 1770,
+      "commit": "77105f2fca114a78984c26f23faabd0a324ef9c7",
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "backend": "llvm",
+      "repository": "atto-lang/atto-source.llvm",
+      "pr": 869,
+      "commit": "fe08a606d3be25304862da9fb7fce2cb64faa556",
+      "guest_status": "NOT_EXECUTED"
+    }
+  ],
+  "unverified_backends": [
+    "atto-source.rs",
+    "atto-source.net",
+    "atto-source.wasm",
+    "atto-source.forge",
+    "atto-source.cranelift",
+    "atto-source.js",
+    "atto-source.hdl"
+  ],
+  "certification": {
+    "cross_backend_guest_parity": false,
+    "registered_compiler_modules_complete": false,
+    "real_cell_interior_mutability": false,
+    "stepful_exact_head_evidence": false
+  }
+}
