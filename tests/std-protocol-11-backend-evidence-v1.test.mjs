@@ -55,6 +55,15 @@ const rustBorrowHarnessPins={
  '.github/workflows/std-native-guest.yml':'26c816ec3a86577113d1806efb862c521e93be4f'
 };
 
+const rustBorrowMirCorpusPins={
+ 'contracts/borrow-mir-v1/semantic-cases.json':'b7bfa0fed6092ff28c8b407661d84fbb277797d1',
+ 'tests/borrow-mir-v1-contract.test.mjs':'3c126025ffbab79d512c8b342abf1f2ebf8e1c36',
+ 'contracts/borrow-mir-v1/README.md':'f8424da5071be6449270a630f7414c787740bae8',
+ '.github/workflows/borrow-mir-v1-contract.yml':'b5c3a58ad32c4fe4da8904c2490c03e3a2d77532',
+ cases:24,
+ protocol_lifecycle_case_ids:['C23','C24'],
+ semantic_status:'SOURCE_FREE_MODEL_PASS_NOT_NATIVE_BACKEND_EXECUTION'
+};
 const profiles=new Map([
   ['java','JAVA_LINKED_GUEST_HARNESS_NOT_EXECUTED'],
   ['llvm','LLVM_NATIVE_GUEST_HARNESS_NOT_EXECUTED'],
@@ -87,6 +96,7 @@ function verify(x) {
   assert.equal(x.core_borrow_compiled_guest_parity,'NOT_VERIFIED');
   assert.deepEqual(x.core_borrow_certified_backends,[]);
   assert.deepEqual(x.rust_borrow_core_harness_blobs,rustBorrowHarnessPins);
+  assert.deepEqual(x.rust_borrow_mir_corpus,rustBorrowMirCorpusPins);
   assert.deepEqual(x.rows.map(r=>r.repo),names.map(n=>prefix+n),
     'all eleven canonical backends must occur exactly once and in stable order');
   assert.equal(x.rows.filter(r=>r.candidate_pr!==null).length,9);
@@ -322,4 +332,22 @@ test('source-free borrow reference receipt cannot counterfeit private compiler o
     x=>x.private_carrier.borrow_reference_run.private_source_export_authorized=true,
     x=>x.private_carrier.borrow_reference_run.transferred_private_source=true
   ]){const v=structuredClone(evidence);mutate(v);assert.throws(()=>verify(v));}
+});
+
+
+test('canonical borrow MIR corpus includes two-reader protocol lifecycle and conflict cases',()=>{
+  const corpus=evidence.rust_borrow_mir_corpus;
+  assert.deepEqual(corpus,rustBorrowMirCorpusPins);
+  assert.equal(corpus.cases,24);
+  assert.deepEqual(corpus.protocol_lifecycle_case_ids,['C23','C24']);
+  assert.equal(corpus.semantic_status,'SOURCE_FREE_MODEL_PASS_NOT_NATIVE_BACKEND_EXECUTION');
+});
+test('borrow MIR corpus cannot be reduced or falsely promoted to backend execution',()=>{
+  for(const mutate of [
+    x=>x.rust_borrow_mir_corpus.cases=22,
+    x=>x.rust_borrow_mir_corpus.protocol_lifecycle_case_ids=['C23'],
+    x=>x.rust_borrow_mir_corpus.semantic_status='NATIVE_BACKEND_PARITY',
+    x=>x.rust_borrow_mir_corpus['contracts/borrow-mir-v1/semantic-cases.json']='0'.repeat(40),
+    x=>x.rust_borrow_mir_corpus['tests/borrow-mir-v1-contract.test.mjs']='0'.repeat(40)
+  ]){const altered=structuredClone(evidence);mutate(altered);assert.throws(()=>verify(altered));}
 });
