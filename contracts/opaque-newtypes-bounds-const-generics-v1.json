@@ -107,19 +107,20 @@
       "id": "rust-browser-private-i64-static-newtype-v0",
       "status": "FOCUSED_EXECUTED",
       "source_repo": "atto-lang/atto-source.rs",
-      "source_head": "e2516cca2e4839614f3b0dc8c0d39fc097fbae0a",
+      "source_head": "881426fae0cf0bed6f74b6736d42cf26a4ff5158",
       "source_files_exact_sha_verified": 77,
       "carrier_repo": "zed-pkg-test/zed-pkg-e2e",
-      "carrier_run_id": 44969655932,
-      "carrier_workflow_url": "https://github.com/zed-pkg-test/zed-pkg-e2e/actions/runs/44969655932",
+      "carrier_run_id": 44969986779,
+      "carrier_workflow_url": "https://github.com/zed-pkg-test/zed-pkg-e2e/actions/runs/44969986779",
       "executed": {
         "preflight_integration_passed": 8,
         "newtype_guest_integration_passed": 5,
-        "module_unit_passed": 7,
+        "module_unit_passed": 66,
         "compiled_wasm_guest_passed": 3,
         "compiler_negative_no_artifact_passed": 3,
         "guest_imports": 0,
-        "guest_heap_allocation": false
+        "guest_heap_allocation": false,
+        "total_rust_tests_passed": 79
       },
       "admitted": [
         "private single-source signed-i64 nominal newtypes",
@@ -136,7 +137,8 @@
         "mutable newtypes",
         "Array and Matrix const-generic physical storage"
       ],
-      "note": "This receipt is for the Rust source-repo tests, not proof that every distinct fixture in this registry has executed or that full v1 backend parity is achieved."
+      "note": "This receipt is for the Rust source-repo tests, not proof that every distinct fixture in this registry has executed or that full v1 backend parity is achieved.",
+      "compatibility_regression": "existing named Array layout=soa/aos/aosoa arguments and E_GENERIC_ORDER precedence remain unchanged; complete Rust library suite passed"
     }
   ]
 }
