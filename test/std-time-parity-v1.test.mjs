@@ -14,6 +14,14 @@ function validCandidate(contract) {
      contract.status!=='CANDIDATE_NOT_GUEST_VERIFIED'||
      !Array.isArray(contract.backends) || contract.backends.length!==11)
     reject('invalid candidate envelope');
+  const pos=contract.borrow_mutability_positive;
+  if(!pos || pos.id!=='val_mutable_referent_methods' ||
+     pos.binding!=='val' ||
+     pos.guest_execution!=='NOT_EXECUTED' ||
+     pos.file!=='fixtures/std-time-parity-v1/borrow-positive-val-mutable-referent.atto' ||
+     JSON.stringify(pos.expected_stdout)!==JSON.stringify(['1','true','true']) ||
+     Object.hasOwn(pos,'pass') || Object.hasOwn(pos,'guest_result'))
+    reject('positive val receiver candidate falsely promoted');
   const negatives=contract.borrow_mutability_negatives;
   const expectedBorrowIds=['immutable_manual_clock_advance','immutable_timer_poll',
     'immutable_interval_cancel'];
@@ -154,6 +162,17 @@ test('positive time guest has mutable receivers, three const-receiver negatives 
     assert.equal(vector.expected,'COMPILE_REJECT_MUTABLE_RECEIVER_REQUIRED');
     assert.equal(vector.guest_artifact,'FORBIDDEN');
   }
+  const positive=readFileSync(new URL(
+    '../fixtures/std-time-parity-v1/borrow-positive-val-mutable-referent.atto',
+    import.meta.url),'utf8');
+  assert.match(positive,/import module time from "std\/time";/);
+  for(const [name,call] of [['clock','clock.advance('],
+    ['timer','timer.poll('],['repeating','repeating.cancel(']]){
+    assert.ok(positive.includes('val '+name+' = time.'),'val const-mut source binding '+name);
+    assert.ok(positive.includes(call),'mut self call on val '+name);
+  }
+  assert.deepEqual(manifest.borrow_mutability_positive.expected_stdout,['1','true','true']);
+  assert.equal(manifest.borrow_mutability_positive.guest_execution,'NOT_EXECUTED');
   assert.equal(manifest.borrow_conformance_status,'NOT_EXECUTED_ALL_ELEVEN_BACKENDS');
 });
 
@@ -162,6 +181,10 @@ test('mutants cannot promote a host test, zero-step run or scaffold to guest suc
     const copy=structuredClone(manifest);fn(copy);
     assert.throws(()=>validCandidate(copy),pattern);
   };
+  mutate(c=>c.borrow_mutability_positive.guest_execution='PASSED',
+    /positive val receiver candidate falsely promoted/);
+  mutate(c=>c.borrow_mutability_positive.expected_stdout[0]='42',
+    /positive val receiver candidate falsely promoted/);
   mutate(c=>c.borrow_conformance_status='PASSED',
     /borrow negative candidate falsely promoted/);
   mutate(c=>c.borrow_mutability_negatives[1].execution_passed=true,
