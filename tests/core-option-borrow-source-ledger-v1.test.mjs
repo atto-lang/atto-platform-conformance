@@ -13,9 +13,9 @@ const reject=(name,mutate)=>test(name,()=>{
   const data=clone();mutate(data);
   assert.throws(()=>validateBorrowSourceLedger(data,dash),/BORROW_SOURCE_LEDGER_DENIED/);
 });
-test('all eleven profiles, seven source-borrow candidates and 35 Git blob pins exist',()=>{
+test('all eleven profiles, seven source-borrow candidates and 47 Git blob pins exist',()=>{
   assert.deepEqual(validateBorrowSourceLedger(ledger,dash),
-    {backends:11,borrow_candidates:7,source_artifacts:43,guest_passes:0});
+    {backends:11,borrow_candidates:7,source_artifacts:47,guest_passes:0});
   assert.deepEqual(new Set(ledger.backends.map(x=>x.id)),
     new Set(['java','llvm','net','rs','wasm','forge','cranelift','js','hdl','atto','realtime']));
 });
@@ -23,7 +23,7 @@ test('bounded Rust immutable ADT borrow checker code and typed negatives have in
   const rs=ledger.backends.find(x=>x.id==='rs');
   const files=new Map(rs.source_artifacts.map(x=>[x.path,x.blob_sha]));
   const required=new Map([
-    ['src/check.rs','0578792390f090944b44fb745dc68a7e4eca74df'],
+    ['src/check.rs','0b6da174e5cde0d277db1846ac5106f79370d852'],
     ['.github/workflows/core-option-result-borrow-exact-head.yml','05c8853c15986b35fd5d376b417b34b9f1968eb4'],
     ['tests/core_option_result_scalar.rs','bbeb6f381193fcd8897534eaf34e6b60c7c3a106'],
     ['tests/core_option_result/borrowed_read_42.atto','b18d140202a29425911f4fba7417696ed7f6cf0d'],
@@ -34,9 +34,27 @@ test('bounded Rust immutable ADT borrow checker code and typed negatives have in
     ['tests/core_option_result/negative_borrow_option_return.atto','77a2d72c3682822993d4f5f01f779601b7c228fc']
   ]);
   for(const [path,sha] of required)assert.equal(files.get(path),sha,path);
-  assert.equal(rs.source_head_sha,'c7edd32b3ca5cd9d3a85f63f531b6c21968c55e6');
-  assert.equal(rs.root_tree_sha,'352b41213259916837fc825ce7f390c1059d9b7f');
+  assert.equal(rs.source_head_sha,'9f881e82675df9bc08621b4056f1206583e9054d');
+  assert.equal(rs.root_tree_sha,'88d3dda23a74456172e39c0f157db9b7c4db88cf');
   assert.ok(Object.values(rs.checks).every(x=>x==='not_executed'));
+});
+test('Java JUnit linked guest, OwnershipChecker, TypeChecker and exact-head workflow are pinned',()=>{
+  const java=ledger.backends.find(x=>x.id==='java');
+  const files=new Map(java.source_artifacts.map(x=>[x.path,x.blob_sha]));
+  const expected=new Map([
+    ['core/option.atto','4400fae94588587fbb85474256e82cac6c26256c'],
+    ['core/result.atto','6bae249740af1088e069c3592ff8fb2bc72f1216'],
+    ['tests/core_option_result/borrowed_queries.atto','35f77b9020812364d1d0885e35f53a071cb50134'],
+    ['src/test/java/dev/oreslang/CoreOptionResultSourceTest.java','ef08bcc9f3165a04a8e57a59525769ad66e7116f'],
+    ['src/test/java/dev/oreslang/CoreOptionResultBorrowSafetyTest.java','d44dfe085ed6728e5f5b50be889a1c56bf78bc39'],
+    ['src/main/java/dev/oreslang/types/OwnershipChecker.java','6be88b5f3717f70759440be6a3012a0411f2315b'],
+    ['src/main/java/dev/oreslang/types/TypeChecker.java','95a344571ba41d78303f3d1979918927b11619af'],
+    ['.github/workflows/core-option-result-jvm-borrow-exact-head.yml','9d74a1ea63898534fb3c991dfd805b031b74a860']
+  ]);
+  for(const [path,sha] of expected)assert.equal(files.get(path),sha,path);
+  assert.equal(java.source_head_sha,'fd5055c3544ee7cf7e50dd5ac1b89469ada114a3');
+  assert.equal(java.root_tree_sha,'af9c40f78d8f4b15e2cb8903f658f7df5be48aa2');
+  assert.ok(Object.values(java.checks).every(x=>x==='not_executed'));
 });
 test('noncompiler profiles never masquerade as generic ownership passes',()=>{
   for(const id of ['js','hdl','atto','realtime']){
@@ -48,7 +66,7 @@ test('noncompiler profiles never masquerade as generic ownership passes',()=>{
 test('every source-owned implementation fixture is individually pinned and backend-scoped',()=>{
   for(const id of ['java','rs','llvm','net','wasm','forge','cranelift']){
     const b=ledger.backends.find(x=>x.id===id);
-    assert.equal(b.source_artifacts.length,id==='rs'?12:4,id);
+    assert.equal(b.source_artifacts.length,id==='java'?8:id==='rs'?12:4,id);
     assert.ok(b.source_artifacts.filter(x=>x.path.endsWith('.atto')).length>=3);
     assert.match(b.root_tree_sha,/^[0-9a-f]{40}$/);
     assert.equal(b.source_head_sha,dash.backends.find(x=>x.id===id).candidate.head_sha);
