@@ -148,3 +148,15 @@ test('compiled ownership admissions never inherit PASS from core source predicat
   assert.match(contract.compilerAdmissionRule,/NOT a positive borrowed-memory execution proof/);
   assert.match(contract.compilerAdmissionRule,/full typed borrow-MIR parity/);
 });
+
+test('candidate source receipts identify nonzero commit and tree per backend, never guest proof',()=>{
+  const sha=x=>typeof x==='string'&&/^[a-f0-9]{40}$/.test(x)&&!/^0+$/.test(x);
+  for(const name of backends){
+    const ref=contract.backends[name];
+    assert.ok(sha(ref.candidateCommitSha),name+' commit');
+    assert.ok(sha(ref.candidateTreeSha),name+' tree');
+    assert.notEqual(ref.candidateCommitSha,ref.candidateTreeSha,name);
+    assert.equal(contract.guestEvidence[name],'NOT_EXECUTED',name);
+  }
+  assert.match(contract.exactRefEvidence,/source-only snapshot/);
+});
