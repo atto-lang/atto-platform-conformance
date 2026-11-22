@@ -10,8 +10,8 @@
     "rs_v2": "https://github.com/atto-lang/atto-source.rs/pull/547"
   },
   "scope_notes": {
-    "java": "Public module std/channel authored in Atto; guest tests staged, exact-head runtime execution not verified.",
-    "rs": "The v2 branch extracts native Atto channel runtime source and now rejects stale buffered/pending-reader legacy two-port pipe admission; terminal try-read is distinct from open/empty. Package-level std/channel imports and the generic Java-compatible API are not linked. All guest execution remains NOT_EXECUTED.",
+    "java": "Public module std/channel authored in Atto; guest tests staged, exact-head runtime execution not verified. Java std/channel does not yet expose a public cancel_read method; runtime cancellation coverage does not prove Java guest namespace parity.",
+    "rs": "Backend-owned native Atto channel source implements explicit cancel_read(Future<Option<T>>) with queue unlink and cancelled-future panic 15, plus legacy-pipe admission and closed/empty distinction. Public std/channel namespace and Java-compatible API remain NOT_LINKED; compiled guest executions remain NOT_EXECUTED. No automatic task cancellation or pending writer cancellation.",
     "llvm": "The main native Channel<int> gate rejects unsupported guest lowering; a separate i64 C ABI PR is runtime-only.",
     "net": "Source channel guest support not independently verified.",
     "wasm": "Independent worker-Wasm backend must not borrow Rust browser compiler's success.",
@@ -33,7 +33,8 @@
     "cancelled pending operations remove their registrations exactly once",
     "borrowed and callable payloads do not cross prohibited channel boundaries",
     "unbounded is separate and MUST NOT map to arbitrary large finite capacity",
-    "actor DATA graph attachment (including legacy two-port pipes) rejects preexisting buffered data and pending public reader registrations before claiming channel ownership"
+    "actor DATA graph attachment (including legacy two-port pipes) rejects preexisting buffered data and pending public reader registrations before claiming channel ownership",
+    "cancelling a pending read must unlink the matching registration exactly once, preserve other readers in FIFO order including head/middle/tail removal, and never interpret a cancelled Future as a normal closed-channel EOF"
   ],
   "cases": [
     {
