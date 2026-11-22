@@ -251,3 +251,54 @@ reference test have pinned Git blob OIDs in the ledger. The source-free
 checkout belongs to Sonus; none of the nine private Atto compiler Git trees
 was mirrored or executed there. This receipt cannot promote a compiler or
 authorize export.
+
+
+## 2026-11-22: core compiler borrow-checking × protocol stdlib lane
+
+Borrow checking remains a **core compiler/frontend ownership discipline**.
+A `.atto` library can safely compute bounded sizes and offsets, but cannot
+manufacture a read loan, an exclusive loan, transfer authority, pinning,
+cancellation safety or cross-worker Sendability from host-only bookkeeping.
+The nine source protocol PRs therefore add **backend-owned `.atto` candidate
+borrow/transfer guests**, not a fake `core/borrow` host shim.
+
+The positive fixture requires a class-owned bounded descriptor; a scoped
+`borrow! owner` read-only loan while invoking source-owned WebSocket, QUIC
+and compute policy helpers; a later scoped `borrow! mut owner` exclusive loan
+and bounded field update; and a single `take! owner` **after both loans end**.
+This tests the compiler's ownership effects where source code crosses
+standard-library calls. No actual GPU device, socket handle or borrowable
+OS buffer is created by this candidate. Device/transport resource lifetime,
+actor crossing and borrow across suspension remain `NOT_VERIFIED`.
+
+**Rust** [#546](https://github.com/atto-lang/atto-source.rs/pull/546)
+adds a real linked-source compiler integration candidate:
+one positive Wasm guest and six negative compiler cases (live-loan owner
+take, shared-reader mutation, conflicting exclusive/read loans, direct owner
+read under exclusive loan, use after take, and temporary-owner borrow).
+The existing Rust compiler checker owns these errors; the test does not
+substitute a host-side checker. Its workflow now builds a **fourth guest
+Wasm**, executing the positive lifecycle as `main() == 0`, in addition to
+the existing 37/109 positive fixtures and QUIC failure mutation. All Rust
+compiler/guest tests remain **AUTHORED_NOT_EXECUTED** until real exact-head
+CI proves the expected diagnostics and output.
+
+The other eight existing backend protocol PRs contain independently owned
+`tests/stdlib/protocol_borrow_core.atto` source candidates and static
+integrity audits rejecting **seven** mutations, including an unauthorized
+`share!` escape. These audits are not compiler/frontend admissions, and
+must not be promoted. A target that does not yet parse, type-check or
+lower these ownership forms must reject them clearly until supported.
+`.atto` and `.realtime` remain bootstrap-only.
+
+**Source-free independent CI receipt:** private Sonus
+[run #45059875505](https://github.com/sonus-auris-test/atto-ci/actions/runs/45059875505)
+completed on exact carrier commit
+`3d7a582fc61df3fcf5cadc6656a0c5b91a5e665e`, with **six successful
+job steps, ten Node tests passing, zero failing**, including six
+borrow-state reference cases and 20,660 i64 arithmetic comparisons.
+The conformance ledger pins its tree/workflow/test Git blobs and explicitly
+marks it `SOURCE_FREE_BORROW_AUTOMATON_NOT_ATTO_GUEST_COMPILER`.
+This is genuine runner admission and reference behavior, **not**
+authorization to transfer private `atto-source.*` code, a compiler source
+build, execution of the `.atto` guests or a proof of target borrow safety.
