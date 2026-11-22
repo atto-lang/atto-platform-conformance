@@ -17,7 +17,7 @@ test('std/channel contract is source-owned and explicitly unverified', () => {
   assert.equal(manifest.implementation_policy, 'BACKEND_OWNED_NATIVE_ATTO_SOURCE');
   assert.equal(manifest.library_namespace, 'std/channel');
   assert.match(manifest.evidence_rule, /actual compiled\/executed guest/);
-  assert.match(manifest.scope_notes.rs, /not linked/);
+  assert.match(manifest.scope_notes.rs, /NOT_LINKED/);
   assert.match(manifest.scope_notes.llvm, /rejects unsupported guest lowering/);
   assert.ok(manifest.required_contracts.length >= 10);
   assert.ok(manifest.required_contracts.some(x =>
