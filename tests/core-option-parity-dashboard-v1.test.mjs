@@ -32,7 +32,7 @@ test('Java source tree and the two imported guest programs are individually SHA-
   assert.equal(j.authored_junit_tests.filter(x=>x.kind==='compiled_positive_guest').length,3);
   assert.ok(j.test_blobs.some(x=>x.path==='src/main/java/dev/oreslang/types/OwnershipChecker.java' && x.sha==='6be88b5f3717f70759440be6a3012a0411f2315b'));
   assert.ok(j.test_blobs.some(x=>x.path==='src/main/java/dev/oreslang/types/TypeChecker.java' && x.sha==='3c1061d47c087d701f578e39a71ff34ce3197341'));
-  assert.ok(j.test_blobs.some(x=>x.path==='.github/workflows/core-option-result-jvm-borrow-exact-head.yml' && x.sha==='9d74a1ea63898534fb3c991dfd805b031b74a860'));
+  assert.ok(j.test_blobs.some(x=>x.path==='.github/workflows/core-option-result-jvm-borrow-exact-head.yml' && x.sha==='1821c6732b79c090f9cfc93121e3ea20e7a40fc2'));
   assert.ok(j.test_blobs.some(x=>x.path==='src/main/java/dev/oreslang/types/CoreTypeRegistry.java' && x.sha==='bc9c3574f0e653218ea8a68f85d4effbd6722eeb'));
   assert.ok(j.test_blobs.some(x=>x.path==='src/main/java/dev/oreslang/compiler/OresCompiler.java' && x.sha==='c60883bf73abf36b89343a2b18feb11565c11c03'));
   assert.ok(j.test_blobs.some(x=>x.path==='src/test/java/dev/oreslang/AutomaticPreludeTest.java' && x.sha==='0e354f5478a0651127f746e63e86bb5a591bca74'));
