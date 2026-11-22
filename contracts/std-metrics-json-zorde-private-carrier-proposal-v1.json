@@ -7,8 +7,8 @@
     {
       "repository": "atto-lang/atto-source.java",
       "pr": 1787,
-      "source_commit_sha": "f4713216f2a17ada49fbea6de9789e69e3f6609e",
-      "source_root_tree_sha": "e61414938390222a2a67468f427dfb6d4b345d20"
+      "source_commit_sha": "48c75f289079fc40562d64747aed0c31d041cabb",
+      "source_root_tree_sha": "21549ddc2fb46614b1ef82661fd3924d3bee770c"
     },
     {
       "repository": "atto-lang/atto-source.llvm",
@@ -84,5 +84,5 @@
     "claim_external_native_CI_PASS"
   ],
   "note": "Proposal is descriptive and does not grant consent. Retention/readers and reviewer identities must not be fabricated.",
-  "scope_addendum": "Includes native core/borrow_admission scalar preflight candidates; eight software backends have six compiler-positive/negative fixtures. None has executed borrow or guest parity proof."
+  "scope_addendum": "Java PR #1787 conflict resolved by two-parent merge preserving main's core collections/telemetry and PR metrics/json/zorde/borrow preflight; Java negative tests additionally assert zero guest stdout. All private export approvals remain DENIED."
 }
