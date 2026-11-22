@@ -139,6 +139,24 @@
         "requires": "namespace-first"
       }
     ],
+    "futureOwnershipNegative": [
+      {
+        "file": "contracts/std-actor-v1/future-use-after-await.reject.atto",
+        "expectedDiagnostic": "E_MOVED"
+      },
+      {
+        "file": "contracts/std-actor-v1/future-loan-across-await.reject.atto",
+        "expectedDiagnostic": "E_BORROW"
+      },
+      {
+        "file": "contracts/std-actor-v1/future-take-then-await.reject.atto",
+        "expectedDiagnostic": "E_MOVED"
+      },
+      {
+        "file": "contracts/std-actor-v1/future-forged-constructor.reject.atto",
+        "expectedDiagnostic": "E_RESERVED"
+      }
+    ],
     "mutationControls": {
       "requiredCompiler": "production_backend_compiler",
       "selector": "first_middle_last",
@@ -157,25 +175,7 @@
       "rejectUnexpectedHostImports": true,
       "mustNotReturnSuccess42": true,
       "artifactProvenanceRequired": true
-    },
-    "futureOwnershipNegative": [
-      {
-        "file": "contracts/std-actor-v1/future-use-after-await.reject.atto",
-        "expectedDiagnostic": "E_MOVED"
-      },
-      {
-        "file": "contracts/std-actor-v1/future-loan-across-await.reject.atto",
-        "expectedDiagnostic": "E_BORROW"
-      },
-      {
-        "file": "contracts/std-actor-v1/future-take-then-await.reject.atto",
-        "expectedDiagnostic": "E_MOVED"
-      },
-      {
-        "file": "contracts/std-actor-v1/future-forged-constructor.reject.atto",
-        "expectedDiagnostic": "E_RESERVED"
-      }
-    ]
+    }
   },
   "statuses": [
     "PASS",
