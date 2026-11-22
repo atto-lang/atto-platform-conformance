@@ -1,0 +1,140 @@
+{
+  "schema": "atto-std-compiler-readiness-v1",
+  "contract_blob_sha": "3d9e9d5308a4cd0a99d811570f8c80e77b7219b7",
+  "description": "Source and native compiler execution are independent proof dimensions. This is a conservative draft baseline, not a live status feed.",
+  "security": "No source-only model, skipped workflow, queued job, empty-steps job, or unsigned artifact may become PASS.",
+  "backends": [
+    {
+      "backend": "atto",
+      "source": "NOT_AUDITED",
+      "linker": "NOT_AUDITED",
+      "guest": "NOT_EXECUTED",
+      "executed_guest_cases": 0,
+      "compiled_guest_sha256": null,
+      "github_actions_run": null,
+      "executed_step_count": 0,
+      "reason": "Not examined for this policy contract",
+      "draft_pr": null
+    },
+    {
+      "backend": "cranelift",
+      "source": "NOT_AUDITED",
+      "linker": "NOT_AUDITED",
+      "guest": "NOT_EXECUTED",
+      "executed_guest_cases": 0,
+      "compiled_guest_sha256": null,
+      "github_actions_run": null,
+      "executed_step_count": 0,
+      "reason": "Not examined for this policy contract",
+      "draft_pr": null
+    },
+    {
+      "backend": "forge",
+      "source": "SOURCE_CANDIDATE",
+      "linker": "UNSUPPORTED",
+      "guest": "NOT_EXECUTED",
+      "executed_guest_cases": 0,
+      "compiled_guest_sha256": null,
+      "github_actions_run": null,
+      "executed_step_count": 0,
+      "reason": "Forge stage-0 and native-call compilers reject source imports",
+      "draft_pr": "https://github.com/atto-lang/atto-source.forge/pull/221"
+    },
+    {
+      "backend": "hdl",
+      "source": "NOT_AUDITED",
+      "linker": "NOT_AUDITED",
+      "guest": "NOT_EXECUTED",
+      "executed_guest_cases": 0,
+      "compiled_guest_sha256": null,
+      "github_actions_run": null,
+      "executed_step_count": 0,
+      "reason": "Not examined for this policy contract",
+      "draft_pr": null
+    },
+    {
+      "backend": "java",
+      "source": "SOURCE_CANDIDATE",
+      "linker": "CANDIDATE_UNVERIFIED",
+      "guest": "NOT_EXECUTED",
+      "executed_guest_cases": 0,
+      "compiled_guest_sha256": null,
+      "github_actions_run": null,
+      "executed_step_count": 0,
+      "reason": "Execution for exact current head unverified",
+      "draft_pr": "https://github.com/atto-lang/atto-source.java/pull/1756"
+    },
+    {
+      "backend": "js",
+      "source": "NOT_AUDITED",
+      "linker": "NOT_AUDITED",
+      "guest": "NOT_EXECUTED",
+      "executed_guest_cases": 0,
+      "compiled_guest_sha256": null,
+      "github_actions_run": null,
+      "executed_step_count": 0,
+      "reason": "Not examined for this policy contract",
+      "draft_pr": null
+    },
+    {
+      "backend": "llvm",
+      "source": "SOURCE_CANDIDATE",
+      "linker": "CANDIDATE_UNVERIFIED",
+      "guest": "NOT_EXECUTED",
+      "executed_guest_cases": 0,
+      "compiled_guest_sha256": null,
+      "github_actions_run": null,
+      "executed_step_count": 0,
+      "reason": "Execution for exact current head unverified",
+      "draft_pr": "https://github.com/atto-lang/atto-source.llvm/pull/883"
+    },
+    {
+      "backend": "net",
+      "source": "SOURCE_CANDIDATE",
+      "linker": "UNSUPPORTED",
+      "guest": "NOT_EXECUTED",
+      "executed_guest_cases": 0,
+      "compiled_guest_sha256": null,
+      "github_actions_run": null,
+      "executed_step_count": 0,
+      "reason": "NET typed std/class linking not yet available",
+      "draft_pr": "https://github.com/atto-lang/atto-source.net/pull/209"
+    },
+    {
+      "backend": "realtime",
+      "source": "NOT_AUDITED",
+      "linker": "NOT_AUDITED",
+      "guest": "NOT_EXECUTED",
+      "executed_guest_cases": 0,
+      "compiled_guest_sha256": null,
+      "github_actions_run": null,
+      "executed_step_count": 0,
+      "reason": "Not examined for this policy contract",
+      "draft_pr": null
+    },
+    {
+      "backend": "rs",
+      "source": "NOT_AUDITED",
+      "linker": "NOT_AUDITED",
+      "guest": "NOT_EXECUTED",
+      "executed_guest_cases": 0,
+      "compiled_guest_sha256": null,
+      "github_actions_run": null,
+      "executed_step_count": 0,
+      "reason": "Not examined for this policy contract",
+      "draft_pr": null
+    },
+    {
+      "backend": "wasm",
+      "source": "SOURCE_CANDIDATE",
+      "linker": "UNSUPPORTED",
+      "guest": "NOT_EXECUTED",
+      "executed_guest_cases": 0,
+      "compiled_guest_sha256": null,
+      "github_actions_run": null,
+      "executed_step_count": 0,
+      "reason": "Wasm scalar publication bridge forbids incomplete module graphs",
+      "draft_pr": "https://github.com/atto-lang/atto-source.wasm/pull/269"
+    }
+  ]
+}
