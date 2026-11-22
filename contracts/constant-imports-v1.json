@@ -213,9 +213,11 @@
         "status_valid": "ready"
       },
       "expected_return": 1,
-      "expected_host_reads": {
-        "status_valid": 1
-      }
+      "expected_initializer_invocations": {
+        "status_valid": 1,
+        "old_status_valid": 1
+      },
+      "oracle_note": "Each declaration initializes once per deployment. The contract does not demand a global one-host-call cache across distinct declarations with the same environment key."
     },
     {
       "id": "env_wrong_type",
@@ -246,6 +248,72 @@
         "app.atto": "import const status_valid from \"std.http\";\npub fnc main(): int { return 0; }\n"
       },
       "expected_error": "E_CONST"
+    },
+    {
+      "id": "env_missing_defaults_empty",
+      "kind": "pass",
+      "entry": "app.atto",
+      "files": {
+        "std/http.atto": "use namespace std.http;\ndefine pub const string missing = std.env.read_env(\"ATTO_MISSING_KEY\");\n",
+        "app.atto": "import const missing from \"std.http\";\npub fnc main(): int { if missing eq \"\" then return 1; else return 0; fi }\n"
+      },
+      "unset_env_keys": [
+        "ATTO_MISSING_KEY"
+      ],
+      "expected_return": 1
+    },
+    {
+      "id": "env_constexpr_key_reference",
+      "kind": "pass",
+      "entry": "app.atto",
+      "files": {
+        "std/http.atto": "use namespace std.http;\ndefine const string key = \"status_valid\";\ndefine pub const string status_valid = std.env.read_env(key);\n",
+        "app.atto": "import const status_valid from \"std.http\";\npub fnc main(): int { if status_valid eq \"ready\" then return 1; else return 0; fi }\n"
+      },
+      "env": {
+        "status_valid": "ready"
+      },
+      "expected_return": 1
+    },
+    {
+      "id": "env_private_not_importable",
+      "kind": "fail",
+      "entry": "app.atto",
+      "files": {
+        "std/http.atto": "use namespace std.http;\ndefine const string secret = std.env.read_env(\"SECRET\");\n",
+        "app.atto": "import const secret from \"std.http\";\npub fnc main(): int { return 0; }\n"
+      },
+      "expected_error": "E_PRIVATE"
+    },
+    {
+      "id": "const_overflow_across_import",
+      "kind": "fail",
+      "entry": "app.atto",
+      "files": {
+        "std/http.atto": "use namespace std.http;\ndefine pub const int bad = 9223372036854775808;\n",
+        "app.atto": "import const bad from \"std.http\";\npub fnc main(): int { return bad; }\n"
+      },
+      "expected_error": "E_CONST_OVERFLOW"
+    },
+    {
+      "id": "const_dynamic_call_reject",
+      "kind": "fail",
+      "entry": "app.atto",
+      "files": {
+        "std/http.atto": "use namespace std.http;\ndefine pub const string dynamic_value = get_value();\n",
+        "app.atto": "import const dynamic_value from \"std.http\";\npub fnc main(): int { return 0; }\n"
+      },
+      "expected_error": "E_CONST"
+    },
+    {
+      "id": "env_non_string_key_reject",
+      "kind": "fail",
+      "entry": "app.atto",
+      "files": {
+        "std/http.atto": "use namespace std.http;\ndefine pub const string bad = std.env.read_env(123);\n",
+        "app.atto": "import const bad from \"std.http\";\npub fnc main(): int { return 0; }\n"
+      },
+      "expected_error": "E_CONST_TYPE"
     }
   ],
   "backend_status": {
@@ -254,7 +322,14 @@
     "llvm": "NOT_EXECUTED",
     "net": "NOT_EXECUTED",
     "forge": "NOT_EXECUTED",
-    "wasm-independent": "NOT_EXECUTED"
+    "wasm-independent": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
+    "hdl": "NOT_EXECUTED",
+    "atto-self-hosted": "NOT_EXECUTED",
+    "realtime": "NOT_EXECUTED"
   },
-  "evidence_rule": "Per backend, compile exact source files with verified SHA; require actual guest exit/return for successes and deterministic code + no artifact for negatives. Cross-file constexpr and permission-backed runtime-once constants require independent linkage and startup proof. For qualified std.env.read_env prove trusted standard namespace resolution, env-permission denial no leak, exactly one startup host read per key, same AOT binary launched with distinct values, and no build-time capture. Legacy os.read_env must agree."
+  "evidence_rule": "Per backend, compile exact source files with verified SHA; require actual guest exit/return for successes and deterministic code + no artifact for negatives. Cross-file constexpr and permission-backed runtime-once constants require independent linkage and startup proof. For qualified std.env.read_env prove trusted standard namespace resolution, env-permission denial no leak, exactly one startup host read per key, same AOT binary launched with distinct values, and no build-time capture. Legacy os.read_env must agree.",
+  "backend_contract": "All active atto-source.* compiler repositories are enumerated. A backend with no host environment capability must reject env-backed constants with a documented deterministic error; do not simulate success. Profiles may implement compiler-owned .atto libraries independently.",
+  "notes": "No CI or guest evidence attaches automatically to this registry. Correctness requires exact compiler SHA, material runner steps, compiled artifact, host permissions and repeat-launch evidence."
 }
