@@ -239,6 +239,13 @@ test('local JS compiled Cell policy observation never elevates global borrow cer
   assert.equal(contract.compilerAdmissionTargets.js.status,'NOT_EXECUTED');
   assert.equal(contract.guestEvidence.js,'NOT_EXECUTED');
   assert.match(local.scope,/No Cell<T>, borrow tokens/);
+  assert.equal(local.sourceCommit,contract.backends.js.candidateCommitSha);
+  assert.equal(local.sourceTree,contract.backends.js.candidateTreeSha);
+  assert.equal(local.sourceBlob,contract.backends.js.sourceBlobSha);
+  assert.match(contract.backends.net.authenticatedEmbeddedSourceSha256,/^[a-f0-9]{64}$/);
+  assert.equal(contract.backends.net.authenticatedEmbeddedSourceSha256,
+    'ad876ea26e04754e1a62cc85245860876dc8ed512645e30d5150a144e6b96ce3');
+  assert.equal(contract.guestEvidence.net,'NOT_EXECUTED');
 });
 
 test('standalone source-free GitHub runner cannot promote compiler borrow parity',()=>{
