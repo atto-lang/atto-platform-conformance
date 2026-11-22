@@ -7,8 +7,8 @@
     {
       "repository": "atto-lang/atto-source.java",
       "pr": 1787,
-      "source_commit_sha": "503e055cc9129c07f51c5febd1f23fcf4d5a1c62",
-      "source_root_tree_sha": "c6e5f2530dabf08620545b33c87a30ba36280478"
+      "source_commit_sha": "ad6eb43ac531b14d97dea84bf270ba91f786e327",
+      "source_root_tree_sha": "77e0eb5c43474cf5d394c4e563a0b794b8a9482d"
     },
     {
       "repository": "atto-lang/atto-source.llvm",
@@ -37,8 +37,8 @@
     {
       "repository": "atto-lang/atto-source.rs",
       "pr": 552,
-      "source_commit_sha": "e8e6947d2301a98cb658e79873270b549ae69800",
-      "source_root_tree_sha": "e5e8c708d7aa34c00538b87bffa557c4c53ca6a5"
+      "source_commit_sha": "2c8ad097cb0f915fcf422072e3df40b3d03f51f9",
+      "source_root_tree_sha": "69dbacd7de2ef50bd1306d6fc8bcea1367dd3217"
     },
     {
       "repository": "atto-lang/atto-source.cranelift",
@@ -84,5 +84,5 @@
     "claim_external_native_CI_PASS"
   ],
   "note": "Proposal is descriptive and does not grant consent. Retention/readers and reviewer identities must not be fabricated.",
-  "scope_addendum": "Java PR #1787 has merged main safely, preserving collections/telemetry and all new core/std modules; Java borrow compiler negatives assert no guest stdout. LLVM and .NET core borrow source moved into existing library/ores.core and library/atto.core roots, respectively. These staged imports are NOT_EXECUTED. Independently authorized export required."
+  "scope_addendum": "Java PR #1787 now has true runWithExitStatus positive ownership JUnit gates and typed negative checks; Rust PR #552 now includes a native attoc->real Node Wasm guest 2-positive/4-negative fail-closed workflow. Current source org runner admission remains queued. All nine source head/tree pins are exact and current; no carrier export approval exists."
 }
