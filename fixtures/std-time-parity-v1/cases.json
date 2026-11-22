@@ -39,25 +39,31 @@
       "id": "java",
       "repo": "atto-lang/atto-source.java",
       "implementation_pr": 1785,
-      "source_head_sha": "9c7ea58aad2cc123f505ee94c019350b93ff1a8c",
+      "source_head_sha": "c7b03286d030987778e60400197a1087f70cc41b",
       "library_path": "stdlib/time.atto",
       "library_blob_sha": "31f45572dcbd7b478ce16dbb54a7d87ef68d78fc",
       "target_profile": "HOSTED_OR_NATIVE_TARGET",
       "guest_execution": "NOT_EXECUTED",
       "full_tree_verified": false,
-      "compiler_artifact_verified": false
+      "compiler_artifact_verified": false,
+      "candidate_root_tree_sha": "04c379a434453a9cd2c8d0a7bff860e164431f29",
+      "borrow_positive_guest_status": "NOT_EXECUTED",
+      "borrow_negative_compile_status": "NOT_EXECUTED"
     },
     {
       "id": "llvm",
       "repo": "atto-lang/atto-source.llvm",
       "implementation_pr": 882,
-      "source_head_sha": "d9cfb74b233da40ad81c89b0aa08a088f2bd0409",
+      "source_head_sha": "b4279315bf516e26a758fa02df5a045c4042dac8",
       "library_path": "stdlib/std/time.atto",
       "library_blob_sha": "3b8e4c82550fec5cda3f27b9afb71eedacc7d37e",
       "target_profile": "HOSTED_OR_NATIVE_TARGET",
       "guest_execution": "NOT_EXECUTED",
       "full_tree_verified": false,
-      "compiler_artifact_verified": false
+      "compiler_artifact_verified": false,
+      "candidate_root_tree_sha": "e22e6c4b111d3351bbb6d65088db763c637cb552",
+      "borrow_positive_guest_status": "NOT_EXECUTED",
+      "borrow_negative_compile_status": "NOT_EXECUTED"
     },
     {
       "id": "net",
@@ -69,7 +75,9 @@
       "target_profile": "HOSTED_OR_NATIVE_TARGET",
       "guest_execution": "NOT_EXECUTED",
       "full_tree_verified": false,
-      "compiler_artifact_verified": false
+      "compiler_artifact_verified": false,
+      "borrow_positive_guest_status": "NOT_EXECUTED",
+      "borrow_negative_compile_status": "NOT_EXECUTED"
     },
     {
       "id": "wasm",
@@ -81,7 +89,9 @@
       "target_profile": "HOSTED_OR_NATIVE_TARGET",
       "guest_execution": "NOT_EXECUTED",
       "full_tree_verified": false,
-      "compiler_artifact_verified": false
+      "compiler_artifact_verified": false,
+      "borrow_positive_guest_status": "NOT_EXECUTED",
+      "borrow_negative_compile_status": "NOT_EXECUTED"
     },
     {
       "id": "forge",
@@ -93,7 +103,9 @@
       "target_profile": "HOSTED_OR_NATIVE_TARGET",
       "guest_execution": "NOT_EXECUTED",
       "full_tree_verified": false,
-      "compiler_artifact_verified": false
+      "compiler_artifact_verified": false,
+      "borrow_positive_guest_status": "NOT_EXECUTED",
+      "borrow_negative_compile_status": "NOT_EXECUTED"
     },
     {
       "id": "rs",
@@ -105,7 +117,9 @@
       "target_profile": "HOSTED_OR_NATIVE_TARGET",
       "guest_execution": "NOT_EXECUTED",
       "full_tree_verified": false,
-      "compiler_artifact_verified": false
+      "compiler_artifact_verified": false,
+      "borrow_positive_guest_status": "NOT_EXECUTED",
+      "borrow_negative_compile_status": "NOT_EXECUTED"
     },
     {
       "id": "cranelift",
@@ -117,7 +131,9 @@
       "target_profile": "HOSTED_OR_NATIVE_TARGET",
       "guest_execution": "NOT_EXECUTED",
       "full_tree_verified": false,
-      "compiler_artifact_verified": false
+      "compiler_artifact_verified": false,
+      "borrow_positive_guest_status": "NOT_EXECUTED",
+      "borrow_negative_compile_status": "NOT_EXECUTED"
     },
     {
       "id": "js",
@@ -129,7 +145,9 @@
       "target_profile": "HOSTED_OR_NATIVE_TARGET",
       "guest_execution": "NOT_EXECUTED",
       "full_tree_verified": false,
-      "compiler_artifact_verified": false
+      "compiler_artifact_verified": false,
+      "borrow_positive_guest_status": "NOT_EXECUTED",
+      "borrow_negative_compile_status": "NOT_EXECUTED"
     },
     {
       "id": "hdl",
@@ -141,7 +159,9 @@
       "target_profile": "DETERMINISTIC_HARDWARE_SUBSET_TARGET",
       "guest_execution": "NOT_EXECUTED",
       "full_tree_verified": false,
-      "compiler_artifact_verified": false
+      "compiler_artifact_verified": false,
+      "borrow_positive_guest_status": "NOT_EXECUTED",
+      "borrow_negative_compile_status": "NOT_EXECUTED"
     },
     {
       "id": "atto",
@@ -149,7 +169,9 @@
       "target_profile": "BOOTSTRAP_ONLY",
       "guest_execution": "NOT_EXECUTED",
       "full_tree_verified": false,
-      "compiler_artifact_verified": false
+      "compiler_artifact_verified": false,
+      "borrow_positive_guest_status": "NOT_EXECUTED",
+      "borrow_negative_compile_status": "NOT_EXECUTED"
     },
     {
       "id": "realtime",
@@ -157,7 +179,9 @@
       "target_profile": "BOOTSTRAP_ONLY",
       "guest_execution": "NOT_EXECUTED",
       "full_tree_verified": false,
-      "compiler_artifact_verified": false
+      "compiler_artifact_verified": false,
+      "borrow_positive_guest_status": "NOT_EXECUTED",
+      "borrow_negative_compile_status": "NOT_EXECUTED"
     }
   ],
   "reference_vectors": [
@@ -342,7 +366,8 @@
       "receiver": "clock",
       "requires": "ManualClock.advance(mut self)",
       "expected": "COMPILE_REJECT_MUTABLE_RECEIVER_REQUIRED",
-      "guest_artifact": "FORBIDDEN"
+      "guest_artifact": "FORBIDDEN",
+      "source_blob_sha": "bc88a6ba40fee5a77a59526dfb0219a6c68c021b"
     },
     {
       "id": "immutable_timer_poll",
@@ -350,7 +375,8 @@
       "receiver": "timer",
       "requires": "Timer.poll(mut self)",
       "expected": "COMPILE_REJECT_MUTABLE_RECEIVER_REQUIRED",
-      "guest_artifact": "FORBIDDEN"
+      "guest_artifact": "FORBIDDEN",
+      "source_blob_sha": "9f383698d95ac6e4f7017cbc5708172b8fdcb6eb"
     },
     {
       "id": "immutable_interval_cancel",
@@ -358,7 +384,8 @@
       "receiver": "repeat",
       "requires": "Interval.cancel(mut self)",
       "expected": "COMPILE_REJECT_MUTABLE_RECEIVER_REQUIRED",
-      "guest_artifact": "FORBIDDEN"
+      "guest_artifact": "FORBIDDEN",
+      "source_blob_sha": "e3643044be696a920e83785f2752aebac1bf5582"
     }
   ],
   "borrow_conformance_status": "NOT_EXECUTED_ALL_ELEVEN_BACKENDS",
@@ -379,6 +406,15 @@
       "mut_self_exclusive_borrow",
       "const_mut_binding",
       "owner_state_transition"
-    ]
+    ],
+    "source_blob_sha": "4476b45b8b0af4be4b57216653ee6271fbc0b4f3"
+  },
+  "source_parity_audit": {
+    "status": "SOURCE_ONLY_NORMALIZED_BODY_IDENTICAL_NO_EXECUTION",
+    "active_compilers": 9,
+    "method": "Strip comments, whitespace and Java-only monotonic_now extension; compare remaining module implementation.",
+    "expected_common_body_length": 6556,
+    "verified_date": "2026-11-22",
+    "caveat": "Source text equivalence does not demonstrate lexical, type-checker, ownership, compiler lowering, linker, or runtime support on any backend."
   }
 }
