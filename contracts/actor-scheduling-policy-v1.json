@@ -89,7 +89,8 @@
         "wasm": "not_executed",
         "forge": "not_executed",
         "net": "not_executed"
-      }
+      },
+      "source": "fixtures/actor-scheduling-policy-v1/elastic_pool.atto"
     },
     {
       "id": "elastic-pool-shrink",
@@ -149,7 +150,8 @@
         "wasm": "not_executed",
         "forge": "not_executed",
         "net": "not_executed"
-      }
+      },
+      "source": "fixtures/actor-scheduling-policy-v1/serial_sticky.atto"
     },
     {
       "id": "serial-forbids-multi-carrier",
@@ -161,7 +163,9 @@
         "wasm": "not_executed",
         "forge": "not_executed",
         "net": "not_executed"
-      }
+      },
+      "source": "fixtures/actor-scheduling-policy-v1/reject_serial_two.atto",
+      "expected_diagnostic": "E_SERIAL_PARALLELISM"
     },
     {
       "id": "serial-method-task-one-carrier",
@@ -329,7 +333,9 @@
         "wasm": "not_executed",
         "forge": "not_executed",
         "net": "not_executed"
-      }
+      },
+      "source": "fixtures/actor-scheduling-policy-v1/reject_zero_cap.atto",
+      "expected_diagnostic": "E_ACTOR_PARALLELISM_CAP"
     },
     {
       "id": "override-only-narrows",
@@ -341,7 +347,8 @@
         "wasm": "not_executed",
         "forge": "not_executed",
         "net": "not_executed"
-      }
+      },
+      "source": "fixtures/actor-scheduling-policy-v1/spawn_override.atto"
     },
     {
       "id": "single-threaded-memory-space",
@@ -383,5 +390,6 @@
     ],
     "source_free_model_is_guest_evidence": false,
     "zero_step": "not_executed"
-  }
+  },
+  "fixture_status": "TARGET_ONLY_NEVER_COMPILED_OR_EXECUTED"
 }
