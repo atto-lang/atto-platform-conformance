@@ -1,6 +1,6 @@
 {
   "schema": "atto.task-compiler-parity-admission.v1",
-  "scope": "typed Future<T>, reserved sync, task cancellation and exactly-once lock cleanup",
+  "scope": "typed Future<T>, reserved sync, task cancellation and exactly-once lock cleanup; await non-Future failure, inline-returned Future join, constexpr prohibition and empty/inferred task payloads",
   "evidence_grade": "SOURCE_ONLY",
   "normative": "atto-lang/atto-spec/language/typed-task-payload-sync-v1.md",
   "target_registry": "contracts/task-payload-sync-v1.json",
@@ -54,6 +54,61 @@
       "id": "cancel_lock_guard_escape",
       "source_path": "fixtures/task-payload-sync-v1/cancel_lock_guard_escape.atto",
       "source_git_blob": "d92895d54013fc50ce0c095aa421df2421043a50"
+    },
+    {
+      "id": "await_sync_scalar_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/await_sync_scalar_rejected.atto",
+      "source_git_blob": "129fb813a56dcd558cd4b2f8cd072966390b5f92"
+    },
+    {
+      "id": "await_sync_future_valid",
+      "source_path": "fixtures/task-payload-sync-v1/await_sync_future_valid.atto",
+      "source_git_blob": "d831e2aa0c87001286bd64f7b7b54de36e51bc14"
+    },
+    {
+      "id": "const_async_task_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/const_async_task_rejected.atto",
+      "source_git_blob": "f4867c172a9d0833c7709c94e095e4ecef1b6559"
+    },
+    {
+      "id": "const_sync_task_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/const_sync_task_rejected.atto",
+      "source_git_blob": "11693f7f333c11e9b748a33f1908445532cc0d20"
+    },
+    {
+      "id": "empty_async_nonvoid_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/empty_async_nonvoid_rejected.atto",
+      "source_git_blob": "1535cd2b101914e30c7634e479f2aec5b3d70de5"
+    },
+    {
+      "id": "empty_sync_nonvoid_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/empty_sync_nonvoid_rejected.atto",
+      "source_git_blob": "fc9f78707a5dcf874d19accfe6b47c9b70252628"
+    },
+    {
+      "id": "do_async_void_empty",
+      "source_path": "fixtures/task-payload-sync-v1/do_async_void_empty.atto",
+      "source_git_blob": "cad17fc646ae947f943b7f6cc7a20e00ebd0e6b9"
+    },
+    {
+      "id": "await_sync_void_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/await_sync_void_rejected.atto",
+      "source_git_blob": "13772d562383ab08f30071ac813ca7ad9aae82a8"
+    },
+    {
+      "id": "inferred_empty_task_future_void",
+      "source_path": "fixtures/task-payload-sync-v1/inferred_empty_task_future_void.atto",
+      "source_git_blob": "712f4760182e52dc964d9db48099c5dd83b75a2b"
+    },
+    {
+      "id": "inferred_int_task_future",
+      "source_path": "fixtures/task-payload-sync-v1/inferred_int_task_future.atto",
+      "source_git_blob": "dc4a78e6edf7771273441c8790405117b93bb8e5"
+    },
+    {
+      "id": "do_inferred_void_task",
+      "source_path": "fixtures/task-payload-sync-v1/do_inferred_void_task.atto",
+      "source_git_blob": "78b90394ebe7fbe686c57fbc0c7ddf16723b072d"
     }
   ],
   "source_profiles": {
@@ -209,5 +264,6 @@
     "Unsupported backends must reject task syntax before native guest artifact emission, not silently block or inline.",
     "The normative distinctions are: task<T> creates Future<T>; await task<T> spawns and joins; sync task<T> is inline on the caller; do sync task accepts void only, never aliases do task or discards nonvoid; verified cancellation and lock cleanup still require executed tests.",
     "Every backend requires exact-head compiler binary plus guest execution, cancellation race, reverse lock unwind, verified physical child retirement, and TenantVM isolation receipts."
-  ]
+  ],
+  "hardening_notes": "These 11 additional task cases are immutable source-only admissions. Every backend must either execute its own guest positive and exact negative no-artifact errors or fail closed with an explicit unsupported-feature diagnostic, but may not claim cross-backend parity from this manifest. Original source profile blob/head snapshots are historical evidence anchors, not refreshed current-head certifications."
 }
