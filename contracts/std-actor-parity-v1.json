@@ -133,7 +133,12 @@
         "expectedDiagnostic": "E_SYNTAX",
         "requires": "namespace-first"
       }
-    ]
+    ],
+    "namespacePositive": {
+      "path": "stdlib/actor/guest_namespace_only.atto",
+      "expectedMain": 42,
+      "noImplicitImports": true
+    }
   },
   "statuses": [
     "PASS",

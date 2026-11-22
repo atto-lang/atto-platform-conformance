@@ -61,3 +61,11 @@ test('namespace-negative fixture expectations are distinct, exact, and executabl
   assert.equal(new Set(contract.guestTests.namespaceNegative.map(x=>x.file)).size,3);
   assert.equal(contract.status,'SOURCE_CONTRACT_ONLY');
 });
+
+rejected('make namespace-only fixture silently import dependencies',m=>m.guestTests.namespacePositive.noImplicitImports=false);
+rejected('drop executable namespace-only guest',m=>delete m.guestTests.namespacePositive);
+test('standalone pure namespaced functions require actual guest main 42',()=>{
+  assert.equal(contract.guestTests.namespacePositive.path,'stdlib/actor/guest_namespace_only.atto');
+  assert.equal(contract.guestTests.namespacePositive.expectedMain,42);
+  assert.equal(contract.guestTests.namespacePositive.noImplicitImports,true);
+});
