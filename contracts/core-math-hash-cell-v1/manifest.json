@@ -275,8 +275,8 @@
       "backend": "net",
       "repository": "atto-lang/atto-source.net",
       "pr": 220,
-      "commit": "c5984d3a0d216d20fca6fd17fa69513b10dce0b9",
-      "module_admission": "authenticated_namespace_only_builtins_legacy_module_import_adapter_cil_guest_unexecuted",
+      "commit": "3057120a9701ff1523fd23ae2d3d0617dcdefae7",
+      "module_admission": "SHA256_pinned_compiler_owned_namespace_sources_restricted_canonical_core_star_import_and_legacy_module_import_CIL_tests_NOT_EXECUTED",
       "source_blobs": {
         "math": {
           "path": "library/atto.core/math.atto",
@@ -297,7 +297,10 @@
       "module_sources_are_backend_owned": true,
       "namespace_source_form": "use namespace atto.core.<leaf>;",
       "compiler_owned_import_authority": true,
-      "general_package_namespace_imports": false
+      "general_package_namespace_imports": false,
+      "canonical_builtin_wildcard_imports": true,
+      "canonical_builtin_import_example": "import * as math from \"core.math\";",
+      "arbitrary_local_or_package_wildcard_imports": false
     },
     {
       "backend": "wasm",
@@ -542,7 +545,7 @@
     "named_or_star_package_import_implemented": false,
     "guest_namespace_execution_proven": false,
     "backend_coverage": {
-      "net": "compiler_owned_namespace_sources_sha256_pinned_CIL_guest_not_executed",
+      "net": "compiler_owned_namespace_sources_pinned_CIL_canonical_core_star_import_only_guest_NOT_EXECUTED",
       "js": "pure_math_namespace_adapter_ESM_guest_not_executed",
       "other_backends": "module_wrappers_or_source_only_until_verified_namespace_parse_link"
     },
@@ -550,7 +553,11 @@
       "duplicate or late use namespace header rejects",
       "file namespace spoof of builtin Core rejects without compiler authority",
       "canonical import cannot fall back to project or filesystem shadow",
-      "unsupported namespace import rejects without artifact publication"
-    ]
+      "unsupported namespace import rejects without artifact publication",
+      "builtin wildcard import only resolves exact core.math, core.hash, core.cell to SHA-pinned resources",
+      "duplicate local wildcard aliases reject; two aliases of one Core unit are de-duplicated by identity"
+    ],
+    "canonical_builtin_static_import": "import * as math from \"core.math\";",
+    "canonical_builtin_import_is_package_grant": false
   }
 }
