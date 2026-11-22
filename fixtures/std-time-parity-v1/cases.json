@@ -39,31 +39,33 @@
       "id": "java",
       "repo": "atto-lang/atto-source.java",
       "implementation_pr": 1785,
-      "source_head_sha": "319b65370028feb4c151361bd7d3b2e60756d6ba",
+      "source_head_sha": "99bf7fa549c2fcdd00bfa858a244a88cc0ab1f3e",
       "library_path": "stdlib/time.atto",
       "library_blob_sha": "c42c3935b9bbabf3d272109a213da798618eb777",
       "target_profile": "HOSTED_OR_NATIVE_TARGET",
       "guest_execution": "NOT_EXECUTED",
       "full_tree_verified": false,
       "compiler_artifact_verified": false,
-      "candidate_root_tree_sha": "3377027875b4a2230b5c153cc0051d42c53fe3dc",
+      "candidate_root_tree_sha": "ef93a71838accb73531e9f24de6818a6b2d22247",
       "borrow_positive_guest_status": "NOT_EXECUTED",
-      "borrow_negative_compile_status": "NOT_EXECUTED"
+      "borrow_negative_compile_status": "NOT_EXECUTED",
+      "core_fixed_field_negative_status": "NOT_EXECUTED"
     },
     {
       "id": "llvm",
       "repo": "atto-lang/atto-source.llvm",
       "implementation_pr": 882,
-      "source_head_sha": "52c9d3c78bdf385467fa39af65ef2c126478758c",
+      "source_head_sha": "cde2170e77d6339938f5344921758672ee64bd6e",
       "library_path": "stdlib/std/time.atto",
       "library_blob_sha": "3521f8024208aeb516c9958ce89b096ac30ad57f",
       "target_profile": "HOSTED_OR_NATIVE_TARGET",
       "guest_execution": "NOT_EXECUTED",
       "full_tree_verified": false,
       "compiler_artifact_verified": false,
-      "candidate_root_tree_sha": "5fe0cd2586397f91d140db8136241339e2438861",
+      "candidate_root_tree_sha": "65d057a3d54b921786590ae878c6c4a2799fe737",
       "borrow_positive_guest_status": "NOT_EXECUTED",
-      "borrow_negative_compile_status": "NOT_EXECUTED"
+      "borrow_negative_compile_status": "NOT_EXECUTED",
+      "core_fixed_field_negative_status": "NOT_EXECUTED"
     },
     {
       "id": "net",
@@ -77,7 +79,8 @@
       "full_tree_verified": false,
       "compiler_artifact_verified": false,
       "borrow_positive_guest_status": "NOT_EXECUTED",
-      "borrow_negative_compile_status": "NOT_EXECUTED"
+      "borrow_negative_compile_status": "NOT_EXECUTED",
+      "core_fixed_field_negative_status": "NOT_EXECUTED"
     },
     {
       "id": "wasm",
@@ -91,7 +94,8 @@
       "full_tree_verified": false,
       "compiler_artifact_verified": false,
       "borrow_positive_guest_status": "NOT_EXECUTED",
-      "borrow_negative_compile_status": "NOT_EXECUTED"
+      "borrow_negative_compile_status": "NOT_EXECUTED",
+      "core_fixed_field_negative_status": "NOT_EXECUTED"
     },
     {
       "id": "forge",
@@ -105,7 +109,8 @@
       "full_tree_verified": false,
       "compiler_artifact_verified": false,
       "borrow_positive_guest_status": "NOT_EXECUTED",
-      "borrow_negative_compile_status": "NOT_EXECUTED"
+      "borrow_negative_compile_status": "NOT_EXECUTED",
+      "core_fixed_field_negative_status": "NOT_EXECUTED"
     },
     {
       "id": "rs",
@@ -119,7 +124,8 @@
       "full_tree_verified": false,
       "compiler_artifact_verified": false,
       "borrow_positive_guest_status": "NOT_EXECUTED",
-      "borrow_negative_compile_status": "NOT_EXECUTED"
+      "borrow_negative_compile_status": "NOT_EXECUTED",
+      "core_fixed_field_negative_status": "NOT_EXECUTED"
     },
     {
       "id": "cranelift",
@@ -133,7 +139,8 @@
       "full_tree_verified": false,
       "compiler_artifact_verified": false,
       "borrow_positive_guest_status": "NOT_EXECUTED",
-      "borrow_negative_compile_status": "NOT_EXECUTED"
+      "borrow_negative_compile_status": "NOT_EXECUTED",
+      "core_fixed_field_negative_status": "NOT_EXECUTED"
     },
     {
       "id": "js",
@@ -147,7 +154,8 @@
       "full_tree_verified": false,
       "compiler_artifact_verified": false,
       "borrow_positive_guest_status": "NOT_EXECUTED",
-      "borrow_negative_compile_status": "NOT_EXECUTED"
+      "borrow_negative_compile_status": "NOT_EXECUTED",
+      "core_fixed_field_negative_status": "NOT_EXECUTED"
     },
     {
       "id": "hdl",
@@ -161,7 +169,8 @@
       "full_tree_verified": false,
       "compiler_artifact_verified": false,
       "borrow_positive_guest_status": "NOT_EXECUTED",
-      "borrow_negative_compile_status": "NOT_EXECUTED"
+      "borrow_negative_compile_status": "NOT_EXECUTED",
+      "core_fixed_field_negative_status": "NOT_EXECUTED"
     },
     {
       "id": "atto",
@@ -171,7 +180,8 @@
       "full_tree_verified": false,
       "compiler_artifact_verified": false,
       "borrow_positive_guest_status": "NOT_EXECUTED",
-      "borrow_negative_compile_status": "NOT_EXECUTED"
+      "borrow_negative_compile_status": "NOT_EXECUTED",
+      "core_fixed_field_negative_status": "NOT_EXECUTED"
     },
     {
       "id": "realtime",
@@ -181,7 +191,8 @@
       "full_tree_verified": false,
       "compiler_artifact_verified": false,
       "borrow_positive_guest_status": "NOT_EXECUTED",
-      "borrow_negative_compile_status": "NOT_EXECUTED"
+      "borrow_negative_compile_status": "NOT_EXECUTED",
+      "core_fixed_field_negative_status": "NOT_EXECUTED"
     }
   ],
   "reference_vectors": [
@@ -452,5 +463,26 @@
     "verified_date": "2026-11-22",
     "caveat": "Source text equivalence does not demonstrate lexical, type-checker, ownership, compiler lowering, linker, or runtime support on any backend.",
     "note": "Six unit constructors now distinguish negative inputs (NegativeDuration) from positive i64 scaling overflow (DurationOverflow), independently in nine backend-owned .atto files."
-  }
+  },
+  "core_ownership_fixed_fields": [
+    {
+      "id": "duration_fixed_nanos",
+      "source": "fixtures/std-time-parity-v1/core-negative-duration-nanos-write.atto",
+      "source_blob_sha": "52f0d90330b3094fb073147551b3ee6af7cf6bee",
+      "receiver": "duration",
+      "field": "nanos",
+      "expected": "COMPILE_REJECT_FIXED_FIELD_WRITE",
+      "guest_artifact": "FORBIDDEN"
+    },
+    {
+      "id": "instant_fixed_ticks",
+      "source": "fixtures/std-time-parity-v1/core-negative-instant-ticks-write.atto",
+      "source_blob_sha": "82638b0d6f5640bc17814e3b8073dd68c18982f8",
+      "receiver": "now",
+      "field": "ticks_ns",
+      "expected": "COMPILE_REJECT_FIXED_FIELD_WRITE",
+      "guest_artifact": "FORBIDDEN"
+    }
+  ],
+  "core_ownership_status": "NOT_EXECUTED_ALL_ELEVEN_BACKENDS"
 }
