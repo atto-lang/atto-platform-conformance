@@ -4,6 +4,24 @@
 
 This PR specifies a backend-neutral, executable **policy-model checker**, not a shipped runtime/compiler profile. The existing LLVM `tools/core-baremetal-gate` exercises an **older `ores.core`** module on Cortex-M QEMU; it does **not** establish that this canonical `atto.core` fixture links or runs. Every new backend evidence field therefore remains `NOT_EXECUTED`.
 
+## `std.actor` source namespace versus optional actor runtime
+
+The compiler-owned `.atto` standard actor library uses `use namespace std.actor;`.
+The existing `atto.runtime.actor` name remains the optional runtime/profile
+namespace. These names identify **different surfaces**: declaring/importing
+a pure `std.actor` predicate never grants actor spawn, CONTROL, scheduler,
+mailbox or supervisor authority. A source importer must resolve the
+library explicitly, and an actor-capable build must separately admit the
+runtime profile. `std.actor` belongs to the optional **actor** tier despite
+its `std.` spelling; ordinary `std` must remain usable without actors.
+Do not install an automatic alias between the two namespaces.
+
+See [`STD_ACTOR_PARITY_V1.md`](STD_ACTOR_PARITY_V1.md) and
+[`std-actor-parity-v1.json`](../contracts/std-actor-parity-v1.json).
+The contract covers all **eleven** `atto-source.*` repositories; the
+self-hosted and realtime repositories are bootstrap-only, so their `std.actor`
+contract is `NOT_IMPLEMENTED`, never a fabricated guest PASS.
+
 ## Layer boundaries
 
 | Tier | Allowed library dependencies | Capabilities | Representative APIs |
