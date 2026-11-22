@@ -25,17 +25,18 @@ test('bounded Rust immutable ADT borrow checker code and typed negatives have in
   const required=new Map([
     ['src/check.rs','0b6da174e5cde0d277db1846ac5106f79370d852'],
     ['.github/workflows/core-option-result-borrow-exact-head.yml','05c8853c15986b35fd5d376b417b34b9f1968eb4'],
-    ['tests/core_option_result_scalar.rs','bbeb6f381193fcd8897534eaf34e6b60c7c3a106'],
-    ['tests/core_option_result/borrowed_read_42.atto','b18d140202a29425911f4fba7417696ed7f6cf0d'],
+    ['tests/core_option_result_scalar.rs','abba37f5762afe01d8a8624ac8bc6a938158b3e3'],
+    ['tests/core_option_result/borrowed_read_42.atto','797d5f1ce30684f78cddf7d1735643cf190540c0'],
     ['tests/core_option_result/negative_affine_borrow_escape.atto','3815a07ee254c30541bf8069f3a17cfd7be01138'],
     ['tests/core_option_result/negative_unproved_affine_option.atto','6f4cde94cf54a65b0271bb8fbbc79dd32b7f014a'],
     ['tests/core_option_result/negative_borrow_option_temporary.atto','c40331a00c8ad8b912f02c2c2bfac04ece716508'],
     ['tests/core_option_result/negative_borrow_mut_option.atto','fbca2779ca3268afedabd146c6c09b771a8f2a3f'],
-    ['tests/core_option_result/negative_borrow_option_return.atto','77a2d72c3682822993d4f5f01f779601b7c228fc']
+    ['tests/core_option_result/negative_borrow_option_return.atto','9fce98079881ca8e23e27738715178ff3f2bd093']
   ]);
   for(const [path,sha] of required)assert.equal(files.get(path),sha,path);
-  assert.equal(rs.source_head_sha,'9f881e82675df9bc08621b4056f1206583e9054d');
-  assert.equal(rs.root_tree_sha,'88d3dda23a74456172e39c0f157db9b7c4db88cf');
+  assert.equal(rs.source_head_sha,'e1310a921d41f0fc4ab18b28b7ce4f297b95b754');
+  assert.equal(rs.root_tree_sha,'0dae60e39422674e4c242fbd441e5cf6707d73b6');
+  assert.ok(files.get('core/OPTION_RESULT_STATUS.md')==='b336c29035e94e3f594182f9bdf122fc33fa6600');
   assert.ok(Object.values(rs.checks).every(x=>x==='not_executed'));
 });
 test('Java JUnit linked guest, OwnershipChecker, TypeChecker and exact-head workflow are pinned',()=>{
