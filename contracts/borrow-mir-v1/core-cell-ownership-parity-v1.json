@@ -415,5 +415,19 @@
       "saturatedOwnerRead": true
     },
     "enforcement": "Pure policy is non-authoritative; the compiler must separately enforce live-loan root identity, aliasing, actor boundaries, generations and suspension."
+  },
+  "compilerGateSourceFreeEvidence": {
+    "carrier": "channelsiege/atto-ci",
+    "runId": 45060723128,
+    "runUrl": "https://github.com/channelsiege/atto-ci/actions/runs/45060723128",
+    "conclusion": "success",
+    "stepsCompleted": 5,
+    "tests": "Standalone Rust checked type-index reference and LLVM diagnostic filename-spoof control",
+    "evidenceClass": "SOURCE_FREE_INDEPENDENT_REFERENCE_ONLY",
+    "privateCompilerSourceTransferred": false,
+    "compiledAttoGuest": "NOT_EXECUTED",
+    "typedMirBorrowProof": "NOT_EXECUTED",
+    "cleanupCommit": "52f308d1010d3efd82acc961cee6344195944b91",
+    "cleanupTree": "b78051568a02496c9f55790d83a87a158c16ee88"
   }
 }
