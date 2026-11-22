@@ -1,0 +1,153 @@
+{
+  "schema": "attolang.core.cell-ownership-parity.v1",
+  "status": "TARGET_NOT_EXECUTED",
+  "sourcePolicy": "Compiler-owned .atto core/cell predicates are admission policy only, never references, tokens, thread safety, locks or authority.",
+  "backends": {
+    "java": {
+      "policy": "SOURCE_AUTHORED_NOT_GUEST_VERIFIED",
+      "source": "atto-source.java/core/cell.atto",
+      "representation": "signed-counter-i64"
+    },
+    "llvm": {
+      "policy": "SOURCE_AUTHORED_NOT_GUEST_VERIFIED",
+      "source": "atto-source.llvm/core/cell.atto",
+      "representation": "signed-counter-i64"
+    },
+    "net": {
+      "policy": "SOURCE_AUTHORED_NOT_GUEST_VERIFIED",
+      "source": "atto-source.net/library/atto.core/cell.atto",
+      "representation": "bounded-readers-plus-writer"
+    },
+    "cranelift": {
+      "policy": "SOURCE_AUTHORED_NOT_GUEST_VERIFIED",
+      "source": "atto-source.cranelift/library/atto.core/cell.atto",
+      "representation": "bounded-readers-plus-writer"
+    },
+    "wasm": {
+      "policy": "NOT_EXECUTED",
+      "source": null,
+      "representation": "UNSPECIFIED"
+    },
+    "forge": {
+      "policy": "NOT_EXECUTED",
+      "source": null,
+      "representation": "UNSPECIFIED"
+    },
+    "js": {
+      "policy": "NOT_EXECUTED",
+      "source": null,
+      "representation": "UNSPECIFIED"
+    },
+    "rs": {
+      "policy": "NOT_EXECUTED",
+      "source": null,
+      "representation": "UNSPECIFIED"
+    },
+    "hdl": {
+      "policy": "NOT_EXECUTED",
+      "source": null,
+      "representation": "UNSPECIFIED"
+    },
+    "atto": {
+      "policy": "NOT_EXECUTED_SCAFFOLD",
+      "source": null,
+      "representation": "UNSPECIFIED"
+    },
+    "realtime": {
+      "policy": "NOT_EXECUTED_SCAFFOLD",
+      "source": null,
+      "representation": "UNSPECIFIED"
+    }
+  },
+  "guestEvidence": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
+    "rs": "NOT_EXECUTED",
+    "hdl": "NOT_EXECUTED",
+    "atto": "NOT_EXECUTED",
+    "realtime": "NOT_EXECUTED"
+  },
+  "caseClasses": [
+    {
+      "id": "idle",
+      "read": true,
+      "write": true,
+      "move": true,
+      "unpinnedSuspend": true
+    },
+    {
+      "id": "one_shared_reader",
+      "read": true,
+      "write": false,
+      "move": false,
+      "unpinnedSuspend": false
+    },
+    {
+      "id": "max_shared_reader",
+      "read": true,
+      "write": false,
+      "move": false,
+      "unpinnedSuspend": false
+    },
+    {
+      "id": "exclusive_writer",
+      "read": false,
+      "write": false,
+      "move": false,
+      "unpinnedSuspend": false
+    },
+    {
+      "id": "invalid_negative_readers",
+      "read": false,
+      "write": false,
+      "move": false,
+      "unpinnedSuspend": false
+    },
+    {
+      "id": "invalid_conflicting_writer_and_readers",
+      "read": false,
+      "write": false,
+      "move": false,
+      "unpinnedSuspend": false
+    }
+  ],
+  "compilerNegativeCases": [
+    {
+      "id": "use_after_take",
+      "diagnostic": "E_USE_AFTER_MOVE_OR_DROP",
+      "requireZeroArtifacts": true
+    },
+    {
+      "id": "escaping_local_borrow",
+      "diagnostic": "E_BORROW_ESCAPE",
+      "requireZeroArtifacts": true
+    },
+    {
+      "id": "conflicting_shared_mutable_loans",
+      "diagnostic": "E_BORROW_CONFLICT",
+      "requireZeroArtifacts": true
+    },
+    {
+      "id": "suspend_with_unpinned_loan",
+      "diagnostic": "E_SUSPEND_WITH_LIVE_LOAN",
+      "requireZeroArtifacts": true
+    },
+    {
+      "id": "foreign_actor_mutation",
+      "diagnostic": "E_BORROW_ACTOR_BOUNDARY",
+      "requireZeroArtifacts": true
+    },
+    {
+      "id": "stale_owner_generation",
+      "diagnostic": "E_BORROW_GENERATION",
+      "requireZeroArtifacts": true
+    }
+  ],
+  "evidenceRequirement": "No backend gets PASS from policy arithmetic or fixture presence. Require compiler-produced typed MIR/effect and ownership proof with precise root/alias tracking; real compiler negative diagnostic with zero emitted IR/object/executable; exact source commit/tree/blobs; material runner steps; real guest positive and cancellation/suspension behavior where supported. Unsupported native profiles must reject before codegen. Source-only receipts always NOT_EXECUTED.",
+  "abiNote": "Java/LLVM use a signed counter where -1 represents an exclusive loan. .NET/Cranelift use a bounded reader count and writer flag. Backend .atto sources are independent; only observable conservative owner operations must agree. Do not require byte-identical files."
+}
