@@ -37,8 +37,8 @@
     {
       "repository": "atto-lang/atto-source.rs",
       "pr": 552,
-      "source_commit_sha": "2c8ad097cb0f915fcf422072e3df40b3d03f51f9",
-      "source_root_tree_sha": "69dbacd7de2ef50bd1306d6fc8bcea1367dd3217"
+      "source_commit_sha": "680b452b3324dfc86b349d76569bd9149036993b",
+      "source_root_tree_sha": "89832e581552b11c82c58d10016b1f3969d20e81"
     },
     {
       "repository": "atto-lang/atto-source.cranelift",
@@ -84,5 +84,5 @@
     "claim_external_native_CI_PASS"
   ],
   "note": "Proposal is descriptive and does not grant consent. Retention/readers and reviewer identities must not be fabricated.",
-  "scope_addendum": "Java PR #1787 now has true runWithExitStatus positive ownership JUnit gates and typed negative checks; Rust PR #552 now includes a native attoc->real Node Wasm guest 2-positive/4-negative fail-closed workflow. Current source org runner admission remains queued. All nine source head/tree pins are exact and current; no carrier export approval exists."
+  "scope_addendum": "Java PR #1787 now requires 2 real runWithExitStatus ownership positives and 4 typed negatives; Rust PR #552 now adds actual native attoc->Node WebAssembly real 2-positive/4-negative CI and documents the current function-only source-linker limitation for core modules. All source heads/trees are pinned, Actions queued, no private tree export permitted."
 }
