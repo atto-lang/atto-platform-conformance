@@ -25,7 +25,9 @@
       "representation": "bounded-readers-plus-writer",
       "sourceBlobSha": "154563e51199140cfad005945c608789bee5ebfa",
       "candidateCommitSha": "90225e3e30527b7a69075fe5b01ce71a4bec1c52",
-      "candidateTreeSha": "f6eb660ec37dd6e567bba57531982618a9016bec"
+      "candidateTreeSha": "f6eb660ec37dd6e567bba57531982618a9016bec",
+      "authenticatedEmbeddedSourceSha256": "ad876ea26e04754e1a62cc85245860876dc8ed512645e30d5150a144e6b96ce3",
+      "embeddedPinMeaning": "Exact SHA-256 of compiler-owned library/atto.core/cell.atto bytes verified locally; source digest admission, not a compiled CIL result."
     },
     "cranelift": {
       "policy": "SOURCE_AUTHORED_NOT_GUEST_VERIFIED",
