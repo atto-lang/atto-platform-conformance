@@ -10,7 +10,7 @@ const cases = Object.fromEntries(registry.cases.map(c => [c.id,c]));
 test('versioned typed task fixtures are pinned to exact Git blob identity', () => {
   assert.equal(registry.schema, 'atto.task-payload-sync.v1');
   assert.equal(registry.status, 'TARGET_NOT_GUEST_VERIFIED');
-  assert.equal(registry.cases.length, 53);
+  assert.equal(registry.cases.length, 74);
   assert.equal(new Set(registry.cases.map(x=>x.id)).size,42);
   for (const c of registry.cases) {
     assert.match(c.source_path,/^fixtures\/task-payload-sync-v1\/[a-z0-9_]+\.atto$/);
@@ -454,4 +454,79 @@ test('unannotated task infers Future<void> or Future<int> and do task discards w
   assert.match(getSource(discarded).toString('utf8'), /do task \{\}/);
   assert.ok(discarded.expected.witnesses.includes('SUPERVISED_DISCARD'));
   assert.ok(discarded.expected.witnesses.includes('SCOPE_PHYSICAL_RETIRE'));
+});
+
+test('TaskFuture<T> owns the result receipt and a distinct task control capability', () => {
+  assert.match(registry.taskfuture_control_model,/separate affine task-control/);
+  assert.match(registry.taskfuture_control_model,/get_ready\(\): Future<T>/);
+  assert.match(registry.taskfuture_control_model,/cancel_task\(\): void/);
+  assert.match(registry.taskfuture_control_model,/cooperate\(\): void/);
+  for (const id of [
+    'taskfuture_await_ready','taskfuture_await_direct',
+    'taskfuture_receipt_split_control','taskfuture_cooperate_request',
+    'taskfuture_cancel_scope','taskfuture_legacy_future_projection',
+    'taskfuture_legacy_cancel_alias','taskfuture_inferred_empty_void',
+    'taskfuture_inferred_valued'
+  ]) {
+    const item = cases[id];
+    assert.equal(item.kind,'positive',id);
+    assert.equal(item.expected.guest_exit,42,id);
+    assert.ok(item.expected.witnesses.length >= 2,id);
+    assert.match(getSource(item).toString('utf8'),/task(?:<[^>]+>)?\s*\{/);
+  }
+  const plain = getSource(cases.taskfuture_await_ready).toString('utf8');
+  assert.match(plain,/val TaskFuture<int> t = task<int>/);
+  assert.match(plain,/await t\.get_ready\(\)/);
+  assert.match(getSource(cases.taskfuture_await_direct).toString('utf8'),/return await t;/);
+  const split = getSource(cases.taskfuture_receipt_split_control).toString('utf8');
+  assert.match(split,/val Future<int> ready = t\.get_ready\(\)/);
+  assert.match(split,/t\.cooperate\(\);[\s\S]*await ready;/);
+  const cancel = cases.taskfuture_cancel_scope;
+  assert.match(getSource(cancel).toString('utf8'),/t\.cancel_task\(\);[\s\S]*t\.cancel_task\(\)/);
+  assert.ok(cancel.expected.witnesses.includes('SCOPE_PHYSICAL_RETIRE'));
+  assert.match(getSource(cases.taskfuture_legacy_cancel_alias).toString('utf8'),/projected\.cancel\(\)/);
+  assert.match(getSource(cases.taskfuture_inferred_empty_void).toString('utf8'),/TaskFuture<void> pending = task \{\}/);
+  assert.match(getSource(cases.taskfuture_inferred_valued).toString('utf8'),/TaskFuture<int> pending = task \{ return 42; \}/);
+});
+
+test('TaskFuture control cannot duplicate receipts or apply to a result-only Future', () => {
+  const failures = {
+    taskfuture_duplicate_ready_rejected: 'E_TASK_RESULT_CONSUMED',
+    taskfuture_duplicate_await_rejected: 'E_TASK_RESULT_CONSUMED',
+    taskfuture_cooperate_on_future_rejected: 'E_TASK_CONTROL_TARGET',
+    taskfuture_cancel_task_on_future_rejected: 'E_TASK_CONTROL_TARGET',
+    taskfuture_get_ready_on_future_rejected: 'E_TASK_CONTROL_TARGET',
+    taskfuture_await_cooperate_rejected: 'E_AWAIT_TYPE',
+    taskfuture_await_cancel_task_rejected: 'E_AWAIT_TYPE',
+    taskfuture_const_handle_rejected: 'E_CONST',
+    taskfuture_sync_handle_rejected: 'E_TASK_RETURN_TYPE',
+    taskfuture_ready_as_int_rejected: 'E_TASK_RETURN_TYPE',
+    taskfuture_control_void_as_int_rejected: 'E_TASK_CONTROL_TYPE',
+    taskfuture_wrong_payload_rejected: 'E_TASK_RETURN_TYPE'
+  };
+  for (const [id,code] of Object.entries(failures)) {
+    const item = cases[id];
+    assert.equal(item.kind,'negative',id);
+    assert.equal(item.expected.diagnostic,code,id);
+    assert.equal(item.expected.no_artifact,true,id);
+    assert.match(getSource(item).toString('utf8'),/TaskFuture|Future<int>/,id);
+  }
+});
+
+test('TaskFuture cooperation requires real scheduler proof and never reports guest evidence from source alone', () => {
+  assert.equal(registry.taskfuture_runtime_probes.length,5);
+  for (const probe of registry.taskfuture_runtime_probes) {
+    assert.equal(probe.release_qualified,false,probe.id);
+    assert.equal(probe.execution,'NOT_EXECUTED',probe.id);
+    assert.ok(probe.required.length>=3,probe.id);
+  }
+  const ids = registry.taskfuture_runtime_probes.map(p=>p.id);
+  for (const id of [
+    'cooperate_running_child_yields_at_safe_point',
+    'cooperate_guard_defers_until_release',
+    'cooperate_cancel_priority',
+    'get_ready_control_split',
+    'cooperate_hint_bounded_coalescing'
+  ]) assert.ok(ids.includes(id),id);
+  assert.match(registry.taskfuture_control_model,/not forced preemption/);
 });
