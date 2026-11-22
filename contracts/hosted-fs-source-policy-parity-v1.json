@@ -222,7 +222,7 @@
       "source_status": "STAGED_SOURCE_ONLY",
       "guest_status": "NOT_EXECUTED",
       "executed_guest_cases": 0,
-      "captured_branch_head_sha": "2f193e8a8567dcda0b9c148a50e1585fff4cf893"
+      "captured_branch_head_sha": "aa8af2d755f88114fc27d968e9105509c66f799b"
     }
   ],
   "remaining_backends": [
@@ -249,25 +249,25 @@
     {
       "backend": "wasm",
       "pr_url": "https://github.com/atto-lang/atto-source.wasm/pull/43",
-      "local_v8_shimmed_groups": 19,
+      "local_v8_shimmed_groups": 20,
       "local_v8_status": "PASS_HOST_SHIM_ONLY",
       "node_exact_head": "NOT_EXECUTED",
       "compiled_atto_guest": "NOT_EXECUTED",
-      "captured_head_sha": "79d1f29566f3ccf85eddf3bfda1636d2f84b42b1",
-      "runtime_blob_sha": "eb6d58eea18407f690a19a30a03c3025c1127d04",
-      "test_blob_sha": "223a6bff4f20f29df9077dff030009042d54f7c7",
+      "captured_head_sha": "31d2444fd599c6642beeb4fd9b99a1b407461e61",
+      "runtime_blob_sha": "979a8e29554cc1cac87c8e58b2b2e0ccda19accd",
+      "test_blob_sha": "ad39b486b552e43bc682a2d3205d642e56b9f5ee",
       "source_transfer": "BLOCKED_PENDING_INDEPENDENT_SECURITY_REVIEW"
     },
     {
       "backend": "js",
       "pr_url": "https://github.com/atto-lang/atto-source.js/pull/39",
-      "local_v8_shimmed_groups": 19,
+      "local_v8_shimmed_groups": 20,
       "local_v8_status": "PASS_HOST_SHIM_ONLY",
       "node_exact_head": "NOT_EXECUTED",
       "compiled_atto_guest": "NOT_EXECUTED",
-      "captured_head_sha": "2f193e8a8567dcda0b9c148a50e1585fff4cf893",
-      "runtime_blob_sha": "1984f2c7d3703fa6fb7b2bba7026047a7efd32e8",
-      "test_blob_sha": "4874801e7b1e9bc3f56840c44892d234d6cd313b",
+      "captured_head_sha": "aa8af2d755f88114fc27d968e9105509c66f799b",
+      "runtime_blob_sha": "7f7ad5271e76745ab5121c83de70f929fd1b814d",
+      "test_blob_sha": "cae5a23fccf3c03f46de9f60ebc6b48fe106d812",
       "source_transfer": "BLOCKED_PENDING_INDEPENDENT_SECURITY_REVIEW"
     }
   ],
