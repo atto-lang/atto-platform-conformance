@@ -91,7 +91,7 @@ execution routes.
 ## Backend-owned core borrow rollout: 11 tracked compilers (2026-11-22)
 
 [Exact source-only borrow candidate ledger](../contracts/eleven-backend-parity-v1/borrow-source-ledger.json)
-records the observed PR-head commit, full root tree SHA, and **43 explicitly
+records the observed PR-head commit, full root tree SHA, and **47 explicitly
 verified Git blob identities** across all eleven backend slots. No private
 compiler contents are copied into this conformance repo. The companion
 [source-integrity validator](../lib/core-option-borrow-source-ledger-v1.mjs)
