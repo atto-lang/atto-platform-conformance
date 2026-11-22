@@ -14,6 +14,16 @@ function validCandidate(contract) {
      contract.status!=='CANDIDATE_NOT_GUEST_VERIFIED'||
      !Array.isArray(contract.backends) || contract.backends.length!==11)
     reject('invalid candidate envelope');
+  const pair=contract.java_llvm_same_source_guest_candidate;
+  if(!pair ||
+     pair.status!=='SOURCE_BLOB_IDENTICAL_GUEST_NOT_EXECUTED' ||
+     pair.executable_guest_evidence!=='NOT_EXECUTED' ||
+     !SHA.test(pair.identical_git_blob_sha) ||
+     pair.expected_unique_pass_labels!==52 ||
+     pair.expected_final_stdout_line!=='TIME-CONTRACT-DONE' ||
+     pair.paths?.java!=='examples/atto-time-contract.atto' ||
+     pair.paths?.llvm!=='examples/atto-time-contract.atto')
+    reject('Java/LLVM same-source candidate falsely certified');
   const ids=contract.backends.map(b=>b.id);
   if(JSON.stringify(ids)!==JSON.stringify(BACKENDS))reject('missing, reordered or duplicated backend');
   if(!Array.isArray(contract.reference_vectors)||contract.reference_vectors.length!==23)
@@ -114,6 +124,10 @@ test('mutants cannot promote a host test, zero-step run or scaffold to guest suc
     const copy=structuredClone(manifest);fn(copy);
     assert.throws(()=>validCandidate(copy),pattern);
   };
+  mutate(c=>c.java_llvm_same_source_guest_candidate.executable_guest_evidence='PASSED',
+    /same-source candidate falsely certified/);
+  mutate(c=>c.java_llvm_same_source_guest_candidate.expected_unique_pass_labels=0,
+    /same-source candidate falsely certified/);
   mutate(c=>c.backends[0].guest_execution='PASSED',/falsely promoted/);
   mutate(c=>c.backends[0].full_tree_verified=true,/falsely promoted/);
   mutate(c=>c.backends[0].compiler_artifact_verified=true,/falsely promoted/);
