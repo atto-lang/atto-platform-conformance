@@ -50,3 +50,40 @@ also checks that the checked-in dashboard matches the exact registry.
 Promotion requires a separate independently authenticated exact-head compiler
 and executed guest verifier; a Node source-only pass must never become a
 compiled guest status.
+
+## Core/Option borrow and affine ownership parity (2026-11-22)
+
+The [borrow/ownership matrix](../contracts/eleven-backend-parity-v1/core-option-borrow-v1.json)
+now registers **16 semantic cases × all 11 compiler profiles = 176
+NOT_EXECUTED cells**. The cases cover shared tag queries, the original owner
+surviving a scoped loan, affine nested `Option` and `Result` extraction
+denials, `unwrap_safe` and fallback escape denials, Copy-safe extraction,
+move/escape/suspension boundaries, inactive-variant deterministic drop and
+callback invocation counts.
+
+Java implementation draft [#1767](https://github.com/atto-lang/atto-source.java/pull/1767)
+now contains `is_some_borrowed/is_none_borrowed` in `core/option.atto`
+and `is_ok_borrowed/is_err_borrowed` in `core/result.atto`, all using
+explicit scoped `borrow` formals. The linked
+`tests/core_option_result/borrowed_queries.atto` guest must output `42`
+after borrowing and then reusing the original owner. A separate
+`CoreOptionResultBorrowSafetyTest` exercises genuine compiler ownership
+analysis and requires targeted rejection of affine extraction from a loan.
+These are authored requirements, **not executed compiler or guest results**.
+
+The [borrow parity validator](../lib/core-option-borrow-parity-v1.mjs)
+and [mutation tests](../tests/core-option-borrow-parity-v1.test.mjs) compare
+exact backend candidate source SHAs to the existing core-option dashboard and
+reject any self-authored `passed`, `unsupported`, `host_only`, receipt, or
+release claim. A separately authenticated source/guest/AOT verifier is
+required before promotion.
+
+**Important CI export blocker:** Java's checked-in
+`.github/private-ci-approved-repositories.txt` currently lists no active
+approved destinations; the observed source head/root tree is not a reviewed
+snapshot for `channelsiege/atto-ci`. The user-requested token-free Git-tree
+mirror cannot override that explicit Java repository guard. Do not mirror
+the complete private Java compiler into a different organization or interpret
+a small source-only contract copy as a compiler run. Source-local full builds
+or an independently approved exact-snapshot destination remain the real
+execution routes.
