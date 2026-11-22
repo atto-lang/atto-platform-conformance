@@ -144,7 +144,7 @@
       "source_status": "STAGED_SOURCE_ONLY",
       "guest_status": "NOT_EXECUTED",
       "executed_guest_cases": 0,
-      "captured_branch_head_sha": "9f4ce5100bfd14b53d77bec90a93c17ac49ec559"
+      "captured_branch_head_sha": "c36396b555e50d515a46338be17dc5313832978f"
     },
     {
       "backend": "forge",
