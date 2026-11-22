@@ -6,6 +6,9 @@ on:
       - 'contracts/std-actor-parity-v1.json'
       - 'lib/std-actor-parity-v1.mjs'
       - 'tests/std-actor-parity-v1.test.mjs'
+      - 'lib/std-actor-guest-candidate-v1.mjs'
+      - 'tests/std-actor-guest-candidate-v1.test.mjs'
+      - 'docs/STD_ACTOR_GUEST_CANDIDATES_V1.md'
       - 'docs/STD_ACTOR_PARITY_V1.md'
       - 'lib/atto-library-profiles-v1.mjs'
       - 'lib/atto-library-run-evidence-v1.mjs'
@@ -43,7 +46,7 @@ jobs:
         run: |
           set -euo pipefail
           node --version
-          node --test tests/atto-library-profiles-v1.test.mjs tests/atto-library-run-evidence-v1.test.mjs tests/std-actor-parity-v1.test.mjs
+          node --test tests/atto-library-profiles-v1.test.mjs tests/atto-library-run-evidence-v1.test.mjs tests/std-actor-parity-v1.test.mjs tests/std-actor-guest-candidate-v1.test.mjs
       - name: Preserve evidence boundary
         shell: bash
         run: |
