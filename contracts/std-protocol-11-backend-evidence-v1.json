@@ -563,9 +563,9 @@
   },
   "rust_borrow_mir_corpus": {
     "contracts/borrow-mir-v1/semantic-cases.json": "b7bfa0fed6092ff28c8b407661d84fbb277797d1",
-    "tests/borrow-mir-v1-contract.test.mjs": "3c126025ffbab79d512c8b342abf1f2ebf8e1c36",
+    "tests/borrow-mir-v1-contract.test.mjs": "209e146b481b4ed9b08da3ac190427f8e9151a30",
     "contracts/borrow-mir-v1/README.md": "f8424da5071be6449270a630f7414c787740bae8",
-    ".github/workflows/borrow-mir-v1-contract.yml": "b5c3a58ad32c4fe4da8904c2490c03e3a2d77532",
+    ".github/workflows/borrow-mir-v1-contract.yml": "8470aa93dfdfbf124cecdba95ae8618ceea08f69",
     "cases": 24,
     "protocol_lifecycle_case_ids": [
       "C23",
