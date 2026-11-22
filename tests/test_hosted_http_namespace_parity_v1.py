@@ -11,8 +11,9 @@ BACKENDS = {"llvm", "java", "net", "wasm", "rs", "forge", "cranelift", "js",
 NEGATIVES = {"PRIVATE_MODULE_EXPORT_DENIED",
              "PRIVATE_NAMESPACE_MEMBER_DENIED",
              "UNREGISTERED_BUILTIN_DENIED",
-             "DUPLICATE_IMPORT_BINDING"}
-POSITIVES = {"BUILTIN_NAMESPACE", "PUBLIC_MODULE"}
+             "DUPLICATE_IMPORT_BINDING",
+             "PUBLIC_MEMBER_IN_PRIVATE_MODULE_DENIED"}
+POSITIVES = {"BUILTIN_NAMESPACE", "PUBLIC_MODULE", "PUBLIC_MODULE_WILDCARD"}
 SOURCE_ROOT = "fixtures/hosted-async-http-fs-v1/namespace/"
 
 
@@ -100,7 +101,7 @@ def valid_manifest(data: dict, root: Path = ROOT) -> bool:
         "positive", "negative", "source_units"
     }:
         return False
-    if (len(f["positive"]) != 2 or len(f["negative"]) != 4
+    if (len(f["positive"]) != 3 or len(f["negative"]) != 5
             or len(f["source_units"]) != 2):
         return False
     if {x.get("kind") for x in f["positive"]} != POSITIVES:
@@ -121,7 +122,7 @@ def valid_manifest(data: dict, root: Path = ROOT) -> bool:
             return False
         paths.append(n["path"])
     paths.extend(f["source_units"])
-    if len(set(paths)) != 8:
+    if len(set(paths)) != 10:
         return False
     for p in paths:
         if (not isinstance(p, str) or not p.startswith(SOURCE_ROOT)
@@ -140,6 +141,8 @@ def valid_manifest(data: dict, root: Path = ROOT) -> bool:
             not in sources["fail_private_module.atto"]
             or 'fnc secret()' not in sources["library_private.atto"]
             or 'p.secret()' not in sources["fail_private_member.atto"]
+            or 'lib.http3.version()' not in sources["pass_public_module_wildcard.atto"]
+            or 'lib.internal.secret()' not in sources["fail_public_member_in_private_module.atto"]
             or 'std.unregistered_parity_guard'
             not in sources["fail_unregistered_builtin.atto"]
             or sources["fail_alias_collision.atto"].count(
