@@ -61,6 +61,26 @@
       "id": "wrong_nominal_reply",
       "file": "wrong-nominal-reply.atto",
       "expected_static": "E_PROTOCOL_REPLY_MISMATCH"
+    },
+    {
+      "id": "nonlinear_if",
+      "file": "nonlinear-if.atto",
+      "expected_static": "E_PROTOCOL_CFG_UNSUPPORTED"
+    },
+    {
+      "id": "effectful_call_argument",
+      "file": "effectful-call-argument.atto",
+      "expected_static": "E_PROTOCOL_CFG_UNSUPPORTED"
+    },
+    {
+      "id": "handle_argument_escape",
+      "file": "handle-argument-escape.atto",
+      "expected_static": "E_PROTOCOL_AFFINE_HANDLE"
+    },
+    {
+      "id": "forward_declaration_only",
+      "file": "forward-declaration-only.atto",
+      "expected_static": "E_PROTOCOL_UNPROVEN_STATE"
     }
   ],
   "invariants": [
@@ -75,7 +95,9 @@
     "supervisor CONTROL separate from protocol DATA",
     "sealed critical state loans cannot cross await",
     "runtime protocol descriptor in full guest AOT without interpreter/JIT",
-    "nominal reply annotation agrees with protocol declaration"
+    "nominal reply annotation agrees with protocol declaration",
+    "static protocol proof must fail closed on CFG and effectful argument expressions",
+    "a declaration-only actor does not mint protocol state authority"
   ],
   "target_backends": [
     "java",
