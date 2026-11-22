@@ -151,7 +151,7 @@
         "kind": "draft_pr",
         "pr": 542,
         "branch": "feat/std-net-udp-datagram-policy-20261122",
-        "head_sha": "0ee17b507f5106c3aa4ee14c1b3782725273eb3a"
+        "head_sha": "4b8425da5e4ce30c858e2ad47a24d5671149de49"
       },
       "phase": "unsupported_guard_candidate",
       "host": {
@@ -303,7 +303,7 @@
         "kind": "draft_pr",
         "pr": 96,
         "branch": "feat/std-net-udp-datagram-policy-20261122",
-        "head_sha": "88f22ecfc315346e419795a721008eb92a0909e3"
+        "head_sha": "f91cc0ea4f569996c9aa1a922cf00e347b36ff02"
       },
       "phase": "unsupported_guard_candidate",
       "host": {
