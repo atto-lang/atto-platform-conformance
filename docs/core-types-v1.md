@@ -13,3 +13,11 @@ This registry does **not** claim first-class `Unit`, opaque `TypeId`, metadata `
 Every compiler PR now contains `tests/core-types-source.test.mjs`, which parses a deliberately restricted form of the real `.atto` function bodies and checks i64/unsigned range predicates against a BigInt boundary oracle, including values beyond IEEE-754 safe integers. The oracle has mutation controls (shifted endpoint, changed visibility, duplicate export, hosted import) and is explicitly **SOURCE_ONLY**, not compiled guest execution.
 
 The shared `contracts/core-types-v1.json` pins the positive fixture, **four compile-negative fixtures**, and source-model test Git blob SHAs at the current nine compiler PR heads. Java, LLVM and Rust include additional compiled guest test gates; the other backends currently stage source-only checks and fixtures, without pretending their subset compilers support the import/linker path. All nine compiled guest statuses remain **NOT_EXECUTED** until exact-head stepful test evidence exists.
+
+## Second 63-case compiled-guest fixture
+
+All nine independently owned backend branches now pin the same edge-matrix-positive.atto input and BigInt source-model test. Java, LLVM, and Rust must compile and execute two actual .atto guest programs, plus reject four negative fixtures. Neither source-only nor zero-step CI is compiled-guest evidence.
+
+## Private carrier approval boundary
+
+The Java source repository .github/private-ci-approved-repositories.txt has no active approved destination, and its .github/private-ci-approved-source-snapshots.txt does not approve the present core/types heads or carrier. The two source-free candidate carrier probes both had zero executed job steps. No private Git tree or source was exported. Before any transfer, an independent trusted reviewer must approve the exact source commit/tree, approved private destination numeric repository ID, readers, retention, and export guard. Current source export disposition is DENIED_UNAPPROVED.

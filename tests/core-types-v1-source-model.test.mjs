@@ -16,6 +16,23 @@ for (const b of manifest.sources) {
   assert.equal(b.aot_status, "NOT_EXECUTED");
 }
 assert.equal(manifest.evidence.claim_tier, "SOURCE_ONLY_NO_GUEST_EXECUTION");
+assert.equal(manifest.matrix_positive_guest.assertionCount,63);
+assert.equal(manifest.matrix_positive_guest.expected_exit,0);
+assert.equal(manifest.matrix_positive_guest.compiledGuestStatus,"NOT_EXECUTED");
+assert.match(manifest.matrix_positive_guest.sourceGitBlobSha,/^[0-9a-f]{40}$/);
+assert.match(manifest.matrix_positive_guest.sourceOnlyOracleGitBlobSha,/^[0-9a-f]{40}$/);
+assert.equal(manifest.evidence.source_export_authorization,"DENIED_UNAPPROVED");
+assert.equal(manifest.evidence.mirrored_to_other_org,false);
+for (const b of manifest.sources) {
+  assert.equal(b.fixture_matrix_blob_sha,manifest.matrix_positive_guest.sourceGitBlobSha);
+  assert.equal(b.matrix_oracle_test_blob_sha,manifest.matrix_positive_guest.sourceOnlyOracleGitBlobSha);
+  assert.equal(b.matrix_guest_status,"NOT_EXECUTED");
+}
+for (const probe of manifest.evidence.source_free_carrier_probes) {
+  assert.equal(probe.runner_steps,0);
+  assert.equal(probe.status,"NOT_EXECUTED");
+  assert.equal(probe.source_exported,false);
+}
 const negatives = manifest.negative_guests;
 assert.equal(negatives.length, 4);
 assert.deepEqual(negatives.map(x => x.file), [

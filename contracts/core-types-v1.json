@@ -78,7 +78,7 @@
       "backend": "java",
       "repository": "atto-lang/atto-source.java",
       "pr_url": "https://github.com/atto-lang/atto-source.java/pull/1766",
-      "head_sha": "971cab857896c85ada78c56eb26193c25fdb1b04",
+      "head_sha": "2356853a89d3e129d959e9225f064af66adac9ad",
       "source_blob_sha": "035012981c4046fad7c4264cd286e52947aacba5",
       "fixture_positive_blob_sha": "9d4027de080b8d625ab869825c4ec62f369adce8",
       "fixture_negative_blob_sha": "470599e7850a277bae1dec72876e808cc36bd9e8",
@@ -91,13 +91,16 @@
         "void-return-negative.atto": "28a7798cadbdbfe4d46f32e3530a524d8c558f99",
         "bool-truthiness-negative.atto": "732412e77e467dc6db33da8d820d568147906204",
         "i64-literal-overflow-negative.atto": "f5a9f716dfe1b9b3d87fda6c087190e730652cdd"
-      }
+      },
+      "fixture_matrix_blob_sha": "4e9bba988971f1aa053b569d4e2e453402269d4b",
+      "matrix_oracle_test_blob_sha": "a27bd79c38addcd26d3f776e758dc2f5dbb2a848",
+      "matrix_guest_status": "NOT_EXECUTED"
     },
     {
       "backend": "llvm",
       "repository": "atto-lang/atto-source.llvm",
       "pr_url": "https://github.com/atto-lang/atto-source.llvm/pull/866",
-      "head_sha": "d8ecd15beb9f35d924f632a35525d203894841d7",
+      "head_sha": "253deb4b04ea6a4eda698da080c8eee69ff4e5e2",
       "source_blob_sha": "eca4b9ef6cdcce8a81cd7dfa576e7f94b3acd4ff",
       "fixture_positive_blob_sha": "9d4027de080b8d625ab869825c4ec62f369adce8",
       "fixture_negative_blob_sha": "470599e7850a277bae1dec72876e808cc36bd9e8",
@@ -110,13 +113,16 @@
         "void-return-negative.atto": "28a7798cadbdbfe4d46f32e3530a524d8c558f99",
         "bool-truthiness-negative.atto": "732412e77e467dc6db33da8d820d568147906204",
         "i64-literal-overflow-negative.atto": "f5a9f716dfe1b9b3d87fda6c087190e730652cdd"
-      }
+      },
+      "fixture_matrix_blob_sha": "4e9bba988971f1aa053b569d4e2e453402269d4b",
+      "matrix_oracle_test_blob_sha": "a27bd79c38addcd26d3f776e758dc2f5dbb2a848",
+      "matrix_guest_status": "NOT_EXECUTED"
     },
     {
       "backend": "net",
       "repository": "atto-lang/atto-source.net",
       "pr_url": "https://github.com/atto-lang/atto-source.net/pull/216",
-      "head_sha": "aa50d26f47b5f9c525a8e42648f59377459284f5",
+      "head_sha": "3138b7f049e01b6348b8112c846d53f0248aefe5",
       "source_blob_sha": "f443310152161c06311bed4a1578a5cd1d88fb76",
       "fixture_positive_blob_sha": "9d4027de080b8d625ab869825c4ec62f369adce8",
       "fixture_negative_blob_sha": "470599e7850a277bae1dec72876e808cc36bd9e8",
@@ -129,13 +135,16 @@
         "void-return-negative.atto": "28a7798cadbdbfe4d46f32e3530a524d8c558f99",
         "bool-truthiness-negative.atto": "732412e77e467dc6db33da8d820d568147906204",
         "i64-literal-overflow-negative.atto": "f5a9f716dfe1b9b3d87fda6c087190e730652cdd"
-      }
+      },
+      "fixture_matrix_blob_sha": "4e9bba988971f1aa053b569d4e2e453402269d4b",
+      "matrix_oracle_test_blob_sha": "a27bd79c38addcd26d3f776e758dc2f5dbb2a848",
+      "matrix_guest_status": "NOT_EXECUTED"
     },
     {
       "backend": "wasm",
       "repository": "atto-lang/atto-source.wasm",
       "pr_url": "https://github.com/atto-lang/atto-source.wasm/pull/278",
-      "head_sha": "f0df94d510d0703d1631f82afc851ddbabb96021",
+      "head_sha": "d3498352999c39a32b3bc2be3cb389f61eb54526",
       "source_blob_sha": "5c30b3f7eef878001d73899b45860e9db4ac7b1a",
       "fixture_positive_blob_sha": "9d4027de080b8d625ab869825c4ec62f369adce8",
       "fixture_negative_blob_sha": "470599e7850a277bae1dec72876e808cc36bd9e8",
@@ -148,13 +157,16 @@
         "void-return-negative.atto": "28a7798cadbdbfe4d46f32e3530a524d8c558f99",
         "bool-truthiness-negative.atto": "732412e77e467dc6db33da8d820d568147906204",
         "i64-literal-overflow-negative.atto": "f5a9f716dfe1b9b3d87fda6c087190e730652cdd"
-      }
+      },
+      "fixture_matrix_blob_sha": "4e9bba988971f1aa053b569d4e2e453402269d4b",
+      "matrix_oracle_test_blob_sha": "a27bd79c38addcd26d3f776e758dc2f5dbb2a848",
+      "matrix_guest_status": "NOT_EXECUTED"
     },
     {
       "backend": "rs",
       "repository": "atto-lang/atto-source.rs",
       "pr_url": "https://github.com/atto-lang/atto-source.rs/pull/532",
-      "head_sha": "412505acafe8059008ae58af48646520c1dabadc",
+      "head_sha": "418b8ee47f6f60cdab23d3216a7e159ab4347903",
       "source_blob_sha": "e34a11f0d7e4456c789681cb78cd8b6768c734b2",
       "fixture_positive_blob_sha": "9d4027de080b8d625ab869825c4ec62f369adce8",
       "fixture_negative_blob_sha": "470599e7850a277bae1dec72876e808cc36bd9e8",
@@ -167,13 +179,16 @@
         "void-return-negative.atto": "28a7798cadbdbfe4d46f32e3530a524d8c558f99",
         "bool-truthiness-negative.atto": "732412e77e467dc6db33da8d820d568147906204",
         "i64-literal-overflow-negative.atto": "f5a9f716dfe1b9b3d87fda6c087190e730652cdd"
-      }
+      },
+      "fixture_matrix_blob_sha": "4e9bba988971f1aa053b569d4e2e453402269d4b",
+      "matrix_oracle_test_blob_sha": "a27bd79c38addcd26d3f776e758dc2f5dbb2a848",
+      "matrix_guest_status": "NOT_EXECUTED"
     },
     {
       "backend": "forge",
       "repository": "atto-lang/atto-source.forge",
       "pr_url": "https://github.com/atto-lang/atto-source.forge/pull/225",
-      "head_sha": "da81fffbafca1bb7f5b3e35d2fd9b8c453c5352d",
+      "head_sha": "e29a43b37869d54122324b61b712a57bc5d08346",
       "source_blob_sha": "13e005ba2543c3ceb0e16e921219a8978708ec94",
       "fixture_positive_blob_sha": "9d4027de080b8d625ab869825c4ec62f369adce8",
       "fixture_negative_blob_sha": "470599e7850a277bae1dec72876e808cc36bd9e8",
@@ -186,13 +201,16 @@
         "void-return-negative.atto": "28a7798cadbdbfe4d46f32e3530a524d8c558f99",
         "bool-truthiness-negative.atto": "732412e77e467dc6db33da8d820d568147906204",
         "i64-literal-overflow-negative.atto": "f5a9f716dfe1b9b3d87fda6c087190e730652cdd"
-      }
+      },
+      "fixture_matrix_blob_sha": "4e9bba988971f1aa053b569d4e2e453402269d4b",
+      "matrix_oracle_test_blob_sha": "a27bd79c38addcd26d3f776e758dc2f5dbb2a848",
+      "matrix_guest_status": "NOT_EXECUTED"
     },
     {
       "backend": "cranelift",
       "repository": "atto-lang/atto-source.cranelift",
       "pr_url": "https://github.com/atto-lang/atto-source.cranelift/pull/89",
-      "head_sha": "83196c0c64ac1b0170d18f6f449ae4e1d26584dd",
+      "head_sha": "be4b347cbe60f0600b1a1f7b7602c330e3f56ff9",
       "source_blob_sha": "b69c8885b9db166fe725e9cf5f645fc21e3fa970",
       "fixture_positive_blob_sha": "9d4027de080b8d625ab869825c4ec62f369adce8",
       "fixture_negative_blob_sha": "470599e7850a277bae1dec72876e808cc36bd9e8",
@@ -205,13 +223,16 @@
         "void-return-negative.atto": "28a7798cadbdbfe4d46f32e3530a524d8c558f99",
         "bool-truthiness-negative.atto": "732412e77e467dc6db33da8d820d568147906204",
         "i64-literal-overflow-negative.atto": "f5a9f716dfe1b9b3d87fda6c087190e730652cdd"
-      }
+      },
+      "fixture_matrix_blob_sha": "4e9bba988971f1aa053b569d4e2e453402269d4b",
+      "matrix_oracle_test_blob_sha": "a27bd79c38addcd26d3f776e758dc2f5dbb2a848",
+      "matrix_guest_status": "NOT_EXECUTED"
     },
     {
       "backend": "js",
       "repository": "atto-lang/atto-source.js",
       "pr_url": "https://github.com/atto-lang/atto-source.js/pull/128",
-      "head_sha": "6f05a3a51d6623dbd858d7c58ac2d44e3758c55a",
+      "head_sha": "e64dd2c33a5945cc779a5d6535cdac5ae79501af",
       "source_blob_sha": "0649821ab5e4a0119025b4bf82630ac76326938f",
       "fixture_positive_blob_sha": "9d4027de080b8d625ab869825c4ec62f369adce8",
       "fixture_negative_blob_sha": "470599e7850a277bae1dec72876e808cc36bd9e8",
@@ -224,13 +245,16 @@
         "void-return-negative.atto": "28a7798cadbdbfe4d46f32e3530a524d8c558f99",
         "bool-truthiness-negative.atto": "732412e77e467dc6db33da8d820d568147906204",
         "i64-literal-overflow-negative.atto": "f5a9f716dfe1b9b3d87fda6c087190e730652cdd"
-      }
+      },
+      "fixture_matrix_blob_sha": "4e9bba988971f1aa053b569d4e2e453402269d4b",
+      "matrix_oracle_test_blob_sha": "a27bd79c38addcd26d3f776e758dc2f5dbb2a848",
+      "matrix_guest_status": "NOT_EXECUTED"
     },
     {
       "backend": "hdl",
       "repository": "atto-lang/atto-source.hdl",
       "pr_url": "https://github.com/atto-lang/atto-source.hdl/pull/59",
-      "head_sha": "1087763c2d621219f88f63a0952274612a271593",
+      "head_sha": "30063a86269d2daecd8c786c93fc2d0f008e258a",
       "source_blob_sha": "ae9e1640bc90676032aaabfc1d96902e68301e5f",
       "fixture_positive_blob_sha": "9d4027de080b8d625ab869825c4ec62f369adce8",
       "fixture_negative_blob_sha": "470599e7850a277bae1dec72876e808cc36bd9e8",
@@ -243,14 +267,38 @@
         "void-return-negative.atto": "28a7798cadbdbfe4d46f32e3530a524d8c558f99",
         "bool-truthiness-negative.atto": "732412e77e467dc6db33da8d820d568147906204",
         "i64-literal-overflow-negative.atto": "f5a9f716dfe1b9b3d87fda6c087190e730652cdd"
-      }
+      },
+      "fixture_matrix_blob_sha": "4e9bba988971f1aa053b569d4e2e453402269d4b",
+      "matrix_oracle_test_blob_sha": "a27bd79c38addcd26d3f776e758dc2f5dbb2a848",
+      "matrix_guest_status": "NOT_EXECUTED"
     }
   ],
   "evidence": {
     "claim_tier": "SOURCE_ONLY_NO_GUEST_EXECUTION",
     "observed_current_head_sampled_actions_jobs": "ZERO_EXECUTED_STEPS_BEFORE_TEST_EXPANSION",
     "mirror_authorized": false,
-    "note": "Source-only oracle and material guest workflows newly staged; exact-head material CI and compiled guest still NOT_EXECUTED"
+    "note": "Source-only oracle and material guest workflows newly staged; exact-head material CI and compiled guest still NOT_EXECUTED",
+    "source_free_carrier_probes": [
+      {
+        "repository": "gha-indie-worker/atto-ci",
+        "head": "9442ef2f7dd6190be57cc9147369ba72d07e9e57",
+        "run_id": 45046880959,
+        "runner_steps": 0,
+        "status": "NOT_EXECUTED",
+        "source_exported": false
+      },
+      {
+        "repository": "embedded-alerts-test/web-ui-e2e",
+        "head": "7f141527893454b13cdec299b87f4a9659262954",
+        "run_id": 45047073727,
+        "runner_steps": 0,
+        "status": "NOT_EXECUTED",
+        "source_exported": false
+      }
+    ],
+    "source_export_authorization": "DENIED_UNAPPROVED",
+    "source_export_authority": "atto-source.java/.github/private-ci-approved-repositories.txt empty; approved-snapshots.txt does not pin current core/types head/destination",
+    "mirrored_to_other_org": false
   },
   "negative_guests": [
     {
@@ -281,5 +329,13 @@
       "expect": "compile_reject_no_artifact",
       "guest_status": "NOT_EXECUTED"
     }
-  ]
+  ],
+  "matrix_positive_guest": {
+    "file": "tests/fixtures/core-types-v1/edge-matrix-positive.atto",
+    "sourceGitBlobSha": "4e9bba988971f1aa053b569d4e2e453402269d4b",
+    "sourceOnlyOracleGitBlobSha": "a27bd79c38addcd26d3f776e758dc2f5dbb2a848",
+    "assertionCount": 63,
+    "expected_exit": 0,
+    "compiledGuestStatus": "NOT_EXECUTED"
+  }
 }
