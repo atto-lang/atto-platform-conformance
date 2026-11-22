@@ -60,3 +60,12 @@ This is source-unit namespace metadata only, not an import grant. The
 digest; JS supports checked closed-world math compilation. Backend
 capability and import syntax continue to be separately gated in the
 [admission matrix](BACKEND_MATRIX.md); all guest results NOT_EXECUTED.
+
+### Exact signed-64 boundary vectors
+
+The shared manifest's `math.signum` values are decimal **strings**, not
+JSON numeric literals. Its negative/positive extremes are exactly
+`-9223372036854775808` and `9223372036854775807`, with intentionally
+out-of-range negative cases requiring compiler rejection. Backends must
+avoid lossy IEEE-double JSON parsing of 64-bit test values. This is
+source-free oracle validation only, not compiled guest acceptance.
