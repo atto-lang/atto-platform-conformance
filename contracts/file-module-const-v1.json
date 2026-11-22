@@ -9,7 +9,9 @@
       "define const T name = constexpr;",
       "define const T name as constexpr;",
       "define const string name = os.read_env(\"KEY\");",
-      "define const string name as os.read_env(\"KEY\");"
+      "define const string name as os.read_env(\"KEY\");",
+      "define pub const string name = std.env.read_env(\"KEY\");",
+      "define const string name as std.env.read_env(\"KEY\");"
     ],
     "top_level_unconditional": true,
     "constexpr_folded_at_build_time": true,
@@ -26,7 +28,11 @@
     "mutable_process_global": false,
     "typed_string_env_no_implicit_coercion": true,
     "unsupported_runtime_calls_forbidden": true,
-    "same_artifact_different_environments": true
+    "same_artifact_different_environments": true,
+    "std_env_qualified_initializer": true,
+    "std_env_accessor_equivalent_to_os_read_env": true,
+    "std_env_resolved_by_trusted_symbol_identity": true,
+    "imported_public_env_const_no_reread": true
   },
   "required_cases": [
     {
@@ -205,5 +211,6 @@
     "wasm-independent": "NOT_EXECUTED",
     "forge": "NOT_EXECUTED"
   },
-  "evidence_rule": "Run real guest with exact-SHA-pinned compiler and artifact. For env reads use launch-time/capability-provided environment, never build-time env. For denied, missing, empty-key and explicitly-empty values verify normal guest execution and empty string without throw/raise. For compile-fail require expected diagnostic and no artifact. Check same AOT artifact under different runtime environments, once-only snapshot immutability and permission denial confidentiality. All backends NOT_EXECUTED pending real runs."
+  "evidence_rule": "Run real guest with exact-SHA-pinned compiler and artifact. For env reads use launch-time/capability-provided environment, never build-time env. For denied, missing, empty-key and explicitly-empty values verify normal guest execution and empty string without throw/raise. For compile-fail require expected diagnostic and no artifact. Check same AOT artifact under different runtime environments, once-only snapshot immutability and permission denial confidentiality. All backends NOT_EXECUTED pending real runs.",
+  "companion_registry": "contracts/constant-imports-v1.json"
 }
