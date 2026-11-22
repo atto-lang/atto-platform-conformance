@@ -1,0 +1,191 @@
+{
+  "schema": "atto-core-types-v1",
+  "version": 1,
+  "authority": "atto-spec/spec/17-primitives-and-core-types.md",
+  "scope": "Freestanding value bits and signed-i64 input narrowing admission; NO type identity, unit representation, physical ABI layout, or actual narrow cast",
+  "contract": {
+    "int_signed_bits": 64,
+    "bool_logical_bits": 1,
+    "byte_bits": 8,
+    "endpoints": {
+      "i8": [
+        "-128",
+        "127"
+      ],
+      "i16": [
+        "-32768",
+        "32767"
+      ],
+      "i32": [
+        "-2147483648",
+        "2147483647"
+      ],
+      "i64": [
+        "-9223372036854775808",
+        "9223372036854775807"
+      ],
+      "u8": [
+        "0",
+        "255"
+      ],
+      "u16": [
+        "0",
+        "65535"
+      ],
+      "u32": [
+        "0",
+        "4294967295"
+      ],
+      "u64_signed_input": [
+        "0",
+        "9223372036854775807"
+      ]
+    },
+    "functions": [
+      "int_value_bits",
+      "bool_value_bits",
+      "byte_value_bits",
+      "int_min_value",
+      "int_max_value",
+      "fits_i8",
+      "fits_i16",
+      "fits_i32",
+      "fits_i64",
+      "fits_u8",
+      "fits_u16",
+      "fits_u32",
+      "fits_u64"
+    ]
+  },
+  "positive_guest": {
+    "file": "tests/fixtures/core-types-v1/edge-positive.atto",
+    "expected_exit": 0,
+    "imported_library": "core/types.atto"
+  },
+  "negative_guest": {
+    "file": "tests/fixtures/core-types-v1/void-value-negative.atto",
+    "expected": "compile_reject_no_artifact"
+  },
+  "unsupported_until_compiler_intrinsics": [
+    "opaque TypeId identity",
+    "AOT TypeInfo<T> metadata",
+    "Unit singleton value type",
+    "checked sized integer types",
+    "ABI size/align/layout"
+  ],
+  "sources": [
+    {
+      "backend": "java",
+      "repository": "atto-lang/atto-source.java",
+      "pr_url": "https://github.com/atto-lang/atto-source.java/pull/1766",
+      "head_sha": "b462f9cf567996225aedc1dbd47f3c5c65e84bab",
+      "source_blob_sha": "035012981c4046fad7c4264cd286e52947aacba5",
+      "fixture_positive_blob_sha": "6166567483c427e23594e71ad6d6067577ed84fd",
+      "fixture_negative_blob_sha": "470599e7850a277bae1dec72876e808cc36bd9e8",
+      "guest_status": "NOT_EXECUTED",
+      "negative_status": "NOT_EXECUTED",
+      "aot_status": "NOT_EXECUTED"
+    },
+    {
+      "backend": "llvm",
+      "repository": "atto-lang/atto-source.llvm",
+      "pr_url": "https://github.com/atto-lang/atto-source.llvm/pull/866",
+      "head_sha": "7bb09e328ee2d154558b02a995c5a40ff01f054e",
+      "source_blob_sha": "eca4b9ef6cdcce8a81cd7dfa576e7f94b3acd4ff",
+      "fixture_positive_blob_sha": "6166567483c427e23594e71ad6d6067577ed84fd",
+      "fixture_negative_blob_sha": "470599e7850a277bae1dec72876e808cc36bd9e8",
+      "guest_status": "NOT_EXECUTED",
+      "negative_status": "NOT_EXECUTED",
+      "aot_status": "NOT_EXECUTED"
+    },
+    {
+      "backend": "net",
+      "repository": "atto-lang/atto-source.net",
+      "pr_url": "https://github.com/atto-lang/atto-source.net/pull/216",
+      "head_sha": "4bbe442fe499cb925c9bc83eebf71155c40f548e",
+      "source_blob_sha": "f443310152161c06311bed4a1578a5cd1d88fb76",
+      "fixture_positive_blob_sha": "6166567483c427e23594e71ad6d6067577ed84fd",
+      "fixture_negative_blob_sha": "470599e7850a277bae1dec72876e808cc36bd9e8",
+      "guest_status": "NOT_EXECUTED",
+      "negative_status": "NOT_EXECUTED",
+      "aot_status": "NOT_EXECUTED"
+    },
+    {
+      "backend": "wasm",
+      "repository": "atto-lang/atto-source.wasm",
+      "pr_url": "https://github.com/atto-lang/atto-source.wasm/pull/278",
+      "head_sha": "547184747aee9e76a0869eec21b60822fab6c4ec",
+      "source_blob_sha": "5c30b3f7eef878001d73899b45860e9db4ac7b1a",
+      "fixture_positive_blob_sha": "6166567483c427e23594e71ad6d6067577ed84fd",
+      "fixture_negative_blob_sha": "470599e7850a277bae1dec72876e808cc36bd9e8",
+      "guest_status": "NOT_EXECUTED",
+      "negative_status": "NOT_EXECUTED",
+      "aot_status": "NOT_EXECUTED"
+    },
+    {
+      "backend": "rs",
+      "repository": "atto-lang/atto-source.rs",
+      "pr_url": "https://github.com/atto-lang/atto-source.rs/pull/532",
+      "head_sha": "dca5b9902b3b9f4d0c6e523cb1d85a4dce042959",
+      "source_blob_sha": "e34a11f0d7e4456c789681cb78cd8b6768c734b2",
+      "fixture_positive_blob_sha": "6166567483c427e23594e71ad6d6067577ed84fd",
+      "fixture_negative_blob_sha": "470599e7850a277bae1dec72876e808cc36bd9e8",
+      "guest_status": "NOT_EXECUTED",
+      "negative_status": "NOT_EXECUTED",
+      "aot_status": "NOT_EXECUTED"
+    },
+    {
+      "backend": "forge",
+      "repository": "atto-lang/atto-source.forge",
+      "pr_url": "https://github.com/atto-lang/atto-source.forge/pull/225",
+      "head_sha": "92e5451ecdd6e70b1431557c093960bd8ae68488",
+      "source_blob_sha": "13e005ba2543c3ceb0e16e921219a8978708ec94",
+      "fixture_positive_blob_sha": "6166567483c427e23594e71ad6d6067577ed84fd",
+      "fixture_negative_blob_sha": "470599e7850a277bae1dec72876e808cc36bd9e8",
+      "guest_status": "NOT_EXECUTED",
+      "negative_status": "NOT_EXECUTED",
+      "aot_status": "NOT_EXECUTED"
+    },
+    {
+      "backend": "cranelift",
+      "repository": "atto-lang/atto-source.cranelift",
+      "pr_url": "https://github.com/atto-lang/atto-source.cranelift/pull/89",
+      "head_sha": "5f01be571e1350a7c6b52e6631c9f86ddbc82864",
+      "source_blob_sha": "b69c8885b9db166fe725e9cf5f645fc21e3fa970",
+      "fixture_positive_blob_sha": "6166567483c427e23594e71ad6d6067577ed84fd",
+      "fixture_negative_blob_sha": "470599e7850a277bae1dec72876e808cc36bd9e8",
+      "guest_status": "NOT_EXECUTED",
+      "negative_status": "NOT_EXECUTED",
+      "aot_status": "NOT_EXECUTED"
+    },
+    {
+      "backend": "js",
+      "repository": "atto-lang/atto-source.js",
+      "pr_url": "https://github.com/atto-lang/atto-source.js/pull/128",
+      "head_sha": "d01fc175a39be3ad7bd271a7c8a15b301ae8ef56",
+      "source_blob_sha": "0649821ab5e4a0119025b4bf82630ac76326938f",
+      "fixture_positive_blob_sha": "6166567483c427e23594e71ad6d6067577ed84fd",
+      "fixture_negative_blob_sha": "470599e7850a277bae1dec72876e808cc36bd9e8",
+      "guest_status": "NOT_EXECUTED",
+      "negative_status": "NOT_EXECUTED",
+      "aot_status": "NOT_EXECUTED"
+    },
+    {
+      "backend": "hdl",
+      "repository": "atto-lang/atto-source.hdl",
+      "pr_url": "https://github.com/atto-lang/atto-source.hdl/pull/59",
+      "head_sha": "d555595922664e9832424af906ec1e50ba025df9",
+      "source_blob_sha": "ae9e1640bc90676032aaabfc1d96902e68301e5f",
+      "fixture_positive_blob_sha": "6166567483c427e23594e71ad6d6067577ed84fd",
+      "fixture_negative_blob_sha": "470599e7850a277bae1dec72876e808cc36bd9e8",
+      "guest_status": "NOT_EXECUTED",
+      "negative_status": "NOT_EXECUTED",
+      "aot_status": "NOT_EXECUTED"
+    }
+  ],
+  "evidence": {
+    "claim_tier": "SOURCE_ONLY_NO_GUEST_EXECUTION",
+    "observed_current_head_sampled_actions_jobs": "FAILED_WITH_ZERO_STEPS",
+    "mirror_authorized": false
+  }
+}
