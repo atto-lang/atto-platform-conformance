@@ -5,7 +5,7 @@
   "owner": "atto-lang/atto-spec",
   "spec_path": "language/constant-imports-v1.md",
   "scope": "typed constant imports, top-level const and illegal file/namespace globals; qualified std.env.read_env startup-only initializer and legacy os alias",
-  "case_status": "All cases remain UNEXECUTED target fixtures. Environment-backed cases require startup-only, permission and exact-AOT launch verification.",
+  "case_status": "All cases remain NOT_EXECUTED target fixtures; static registry integrity is not compiler or guest evidence.",
   "cases": [
     {
       "id": "dotted_public",
@@ -329,7 +329,7 @@
     "atto-self-hosted": "NOT_EXECUTED",
     "realtime": "NOT_EXECUTED"
   },
-  "evidence_rule": "Per backend, compile exact source files with verified SHA; require actual guest exit/return for successes and deterministic code + no artifact for negatives. Cross-file constexpr and permission-backed runtime-once constants require independent linkage and startup proof. For qualified std.env.read_env prove trusted standard namespace resolution, env-permission denial no leak, exactly one startup host read per key, same AOT binary launched with distinct values, and no build-time capture. Legacy os.read_env must agree.",
+  "evidence_rule": "Per backend, compile exact source files with verified commit/tree SHA and compiler/artifact digests; require material source-owning CI job steps, actual guest exit/return for successes, and exact deterministic diagnostic code plus zero emitted artifacts for negatives. Cross-file constexpr and permission-backed runtime-once constants require independent linkage and startup proof. For qualified std.env.read_env prove trusted standard namespace resolution, env-permission denial without leaks, exactly one initializer invocation per declaration per launch, the same AOT binary executed in two distinct launch environments without build-host capture, and no extra initializer invocation caused by re-importing aliases. Separate declarations reading the same key need not share one host API lookup. Legacy os.read_env must observe the same launch snapshot. Zero-step, cancelled, skipped, source-free-only, synthetic carrier, parser-only and no-guest reports are never compiler PASS.",
   "backend_contract": "All active atto-source.* compiler repositories are enumerated. A backend with no host environment capability must reject env-backed constants with a documented deterministic error; do not simulate success. Profiles may implement compiler-owned .atto libraries independently.",
   "notes": "No CI or guest evidence attaches automatically to this registry. Correctness requires exact compiler SHA, material runner steps, compiled artifact, host permissions and repeat-launch evidence."
 }
