@@ -378,7 +378,7 @@
       "backend": "js",
       "repository": "atto-lang/atto-source.js",
       "pr": 137,
-      "commit": "25412db7f3f16734690fbc8864854850eaf8f251",
+      "commit": "f7e01a52efe39e06324914a54c427349bd8f8816",
       "module_admission": "namespace_math_to_checked_esm_test_not_executed_hash_cell_source_only",
       "source_blobs": {
         "math": {
