@@ -37,47 +37,58 @@
   "backends": {
     "java": {
       "status": "not_executed",
-      "reason": "No exact-head compiler-backed guest receipt for all cases."
+      "reason": "No exact-head compiler-backed guest receipt for all cases.",
+      "target_policy": "host_capability_required"
     },
     "llvm": {
       "status": "not_executed",
-      "reason": "No exact-head compiler-backed guest receipt for all cases."
+      "reason": "No exact-head compiler-backed guest receipt for all cases.",
+      "target_policy": "host_capability_required"
     },
     "net": {
       "status": "not_executed",
-      "reason": "No exact-head compiler-backed guest receipt for all cases."
+      "reason": "No exact-head compiler-backed guest receipt for all cases.",
+      "target_policy": "host_capability_required"
     },
     "rs": {
       "status": "not_executed",
-      "reason": "No exact-head compiler-backed guest receipt for all cases."
+      "reason": "No exact-head compiler-backed guest receipt for all cases.",
+      "target_policy": "host_capability_required"
     },
     "forge": {
       "status": "not_executed",
-      "reason": "No exact-head compiler-backed guest receipt for all cases."
+      "reason": "No exact-head compiler-backed guest receipt for all cases.",
+      "target_policy": "host_capability_required"
     },
     "cranelift": {
       "status": "not_executed",
-      "reason": "No exact-head compiler-backed guest receipt for all cases."
+      "reason": "No exact-head compiler-backed guest receipt for all cases.",
+      "target_policy": "host_capability_required"
     },
     "js": {
       "status": "not_executed",
-      "reason": "No exact-head compiler-backed guest receipt for all cases."
+      "reason": "No exact-head compiler-backed guest receipt for all cases.",
+      "target_policy": "host_capability_required"
     },
     "wasm": {
       "status": "not_executed",
-      "reason": "No exact-head compiler-backed guest receipt for all cases."
+      "reason": "No exact-head compiler-backed guest receipt for all cases.",
+      "target_policy": "host_capability_required"
     },
     "atto": {
       "status": "not_executed",
-      "reason": "Self-hosted compiler bootstrap only; no compiler execution."
+      "reason": "Self-hosted compiler bootstrap only; no compiler execution.",
+      "target_policy": "bootstrap_pending"
     },
     "realtime": {
       "status": "not_executed",
-      "reason": "Real-time backend bootstrap only; no bounded guest implementation."
+      "reason": "Real-time backend bootstrap only; no bounded guest implementation.",
+      "target_policy": "bounded_startup_snapshot_required"
     },
     "hdl": {
       "status": "not_executed",
-      "reason": "HDL compile-time subset must reject runtime environment host effects; pure parse_bool separately undecided."
+      "reason": "HDL compile-time subset must reject runtime environment host effects; pure parse_bool separately undecided.",
+      "target_policy": "reject_runtime_environment_effect"
     }
   },
   "cases": [
@@ -372,7 +383,8 @@
     "Each compiler maintains its own stdlib/env.atto; byte-identical sources are not required.",
     "Fixture stdout reflects portable boolean stringification; any compiler lacking this syntax must report NOT_EXECUTED or a tested UNSUPPORTED, never fabricate PASS.",
     "Host-only sanitizer, Node dispatcher, and synthetic Truffle environment tests do not constitute guest test success.",
-    "Every compiled guest receipt must name exact compiler head+tree SHA, fixture SHA, toolchain, host inputs, policy, executed steps, observed output/error, and source-only control status."
+    "Every compiled guest receipt must name exact compiler head+tree SHA, fixture SHA, toolchain, host inputs, policy, executed steps, observed output/error, and source-only control status.",
+    "HDL runtime host-environment reads must be compile-time rejected for synthesizable profiles; pure parse_bool remains a separate, unverified candidate."
   ],
   "fixture_git_blobs": {
     "basic.atto": "a7c820efe3935d6bd9a70f72a600095163629852",
