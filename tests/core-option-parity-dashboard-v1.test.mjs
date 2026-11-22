@@ -17,7 +17,7 @@ const denied=(title,edit)=>test(title,()=>{
 test('all eleven backend identities and explicit nonpromoting execution gates are present',()=>{
   assert.deepEqual(validateCoreOptionDashboard(snapshot),{
     backends:11,candidates:9,unidentified:2,guest_passes:0,
-    test_targets:6,unexecuted_gates:66
+    test_targets:14,unexecuted_gates:66
   });
   assert.deepEqual(new Set(snapshot.backends.map(x=>x.id)),
     new Set(['java','llvm','rs','net','wasm','forge','cranelift','js','hdl','atto','realtime']));
@@ -26,10 +26,10 @@ test('all eleven backend identities and explicit nonpromoting execution gates ar
 });
 test('Java source tree and the two imported guest programs are individually SHA-pinned',()=>{
   const j=snapshot.java_reference;
-  assert.equal(j.root_tree_sha,'eb1541cbd7d3798bea8610a2010326d82c6cdbca');
+  assert.equal(j.root_tree_sha,'58d26bb865a1211fae18395ab87587f6a4433b68');
   assert.equal(j.head_sha,snapshot.backends.find(x=>x.id==='java').candidate.head_sha);
-  assert.equal(j.test_blobs.filter(x=>x.path.endsWith('.atto')).length,2);
-  assert.equal(j.authored_junit_tests.filter(x=>x.kind==='compiled_positive_guest').length,2);
+  assert.equal(j.test_blobs.filter(x=>x.path.endsWith('.atto')).length,3);
+  assert.equal(j.authored_junit_tests.filter(x=>x.kind==='compiled_positive_guest').length,3);
   assert.ok(j.authored_junit_tests.every(x=>x.state==='not_executed'));
 });
 test('dashboard is the exact deterministic projection of the audited registry',()=>{
