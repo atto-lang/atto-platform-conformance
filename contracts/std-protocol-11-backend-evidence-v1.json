@@ -19,7 +19,24 @@
     "source_free_run_conclusion": "success",
     "source_snapshot_export_authorized": false,
     "transferred_private_source": false,
-    "provenance_scope": "HOSTED_RUNNER_CAPACITY_ONLY_NOT_GUEST_OR_SOURCE_EXPORT_EVIDENCE"
+    "provenance_scope": "HOSTED_RUNNER_CAPACITY_ONLY_NOT_GUEST_OR_SOURCE_EXPORT_EVIDENCE",
+    "protocol_reference_run": {
+      "repo_id": 1458331448,
+      "run_id": 45058040904,
+      "job_id": 137317561550,
+      "carrier_head_sha": "2fcd30702c2fdb2ad1a3f74f72ba2071293ed482",
+      "carrier_root_tree_sha": "7b1fcc5953061bb8d3f92b1b0fd9305a9c9d87f2",
+      "source_free_workflow_blob": "f8d6e2e6d0a4e3f0b4534808935cb212efacde40",
+      "source_free_reference_test_blob": "f840e68f8d01826f574ef03e3d52c514c8121a7a",
+      "actual_job_steps": 6,
+      "node_tests_passed": 4,
+      "node_tests_failed": 0,
+      "checked_arithmetic_pairs": 20660,
+      "run_conclusion": "success",
+      "scope": "HOSTED_SOURCE_FREE_REFERENCE_NOT_COMPILED_ATTO",
+      "source_snapshot_export_authorized": false,
+      "transferred_private_atto_source": false
+    }
   },
   "rows": [
     {
