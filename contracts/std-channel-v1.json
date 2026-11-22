@@ -137,6 +137,23 @@
         "js": "NOT_EXECUTED",
         "hdl": "NOT_EXECUTED"
       }
+    },
+    {
+      "id": "try_receive_closed",
+      "kind": "runtime_reject",
+      "expected_error_contains": "closed",
+      "path": "fixtures/std-channel/fail/try_receive_closed.atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED"
+      }
     }
   ]
 }
