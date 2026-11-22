@@ -1,0 +1,929 @@
+{
+  "schema": "atto.core-option-borrow-parity.v1",
+  "snapshot_date": "2026-11-22",
+  "registry_dependency": "contracts/eleven-backend-parity-v1/core-option-dashboard.json",
+  "normative_reference": "https://github.com/atto-lang/atto-spec/blob/main/language/ownership-vocabulary-v1.md",
+  "scope": "core/option+core/result",
+  "evidence_policy": "SOURCE_ONLY_NON_PROMOTING",
+  "release_qualified": false,
+  "notes": "Cases are conformance targets, not executed guest results. Java owns additional borrowed-query source adapters and negative compiler JUnit tests; all eleven backends must independently enforce affine ownership, lifetimes and conditional drop with backend-specific code.",
+  "cases": [
+    {
+      "id": "borrowed_option_some_query",
+      "expected": "accept",
+      "kind": "compiled_guest",
+      "requirement": "Read only Option.Some tag without moving its owner",
+      "diagnostic_class": null
+    },
+    {
+      "id": "borrowed_option_none_query",
+      "expected": "accept",
+      "kind": "compiled_guest",
+      "requirement": "Read only Option.None tag without moving its owner",
+      "diagnostic_class": null
+    },
+    {
+      "id": "borrowed_result_ok_query",
+      "expected": "accept",
+      "kind": "compiled_guest",
+      "requirement": "Read only Result.Ok tag without moving its owner",
+      "diagnostic_class": null
+    },
+    {
+      "id": "borrowed_result_err_query",
+      "expected": "accept",
+      "kind": "compiled_guest",
+      "requirement": "Read only Result.Err tag without moving its owner",
+      "diagnostic_class": null
+    },
+    {
+      "id": "owner_survives_loan",
+      "expected": "accept",
+      "kind": "compiled_guest",
+      "requirement": "Return from scoped borrow, then use the original owner",
+      "diagnostic_class": null
+    },
+    {
+      "id": "borrowed_affine_flatten",
+      "expected": "reject",
+      "kind": "compiler_negative",
+      "requirement": "Borrowed nested Option must not yield an owned affine inner value",
+      "diagnostic_class": "borrow-or-ownership"
+    },
+    {
+      "id": "borrowed_affine_option_unwrap",
+      "expected": "reject",
+      "kind": "compiler_negative",
+      "requirement": "Borrowed Option must not yield an owned affine payload",
+      "diagnostic_class": "borrow-or-ownership"
+    },
+    {
+      "id": "borrowed_affine_result_unwrap",
+      "expected": "reject",
+      "kind": "compiler_negative",
+      "requirement": "Borrowed Result must not yield an owned affine payload",
+      "diagnostic_class": "borrow-or-ownership"
+    },
+    {
+      "id": "borrowed_affine_safe_repackage",
+      "expected": "reject",
+      "kind": "compiler_negative",
+      "requirement": "Borrowed Option must not repackage an affine owner",
+      "diagnostic_class": "borrow-or-ownership"
+    },
+    {
+      "id": "borrowed_affine_fallback",
+      "expected": "reject",
+      "kind": "compiler_negative",
+      "requirement": "Borrowed Option unwrap_or cannot launder an affine owner",
+      "diagnostic_class": "borrow-or-ownership"
+    },
+    {
+      "id": "copyable_nested_borrow",
+      "expected": "accept",
+      "kind": "compiled_guest",
+      "requirement": "Borrowed Copy nested Option may be read without moving the carrier",
+      "diagnostic_class": null
+    },
+    {
+      "id": "loan_then_move",
+      "expected": "reject",
+      "kind": "compiler_negative",
+      "requirement": "Moving an owner during an outstanding loan must be rejected",
+      "diagnostic_class": "borrow-or-ownership"
+    },
+    {
+      "id": "borrowed_escape",
+      "expected": "reject",
+      "kind": "compiler_negative",
+      "requirement": "Borrowed owner must not outlive the original owner",
+      "diagnostic_class": "borrow-or-ownership"
+    },
+    {
+      "id": "inactive_variant_drop_once",
+      "expected": "accept",
+      "kind": "compiled_guest",
+      "requirement": "Consuming zip or transpose must drop unused affine variant exactly once",
+      "diagnostic_class": null
+    },
+    {
+      "id": "callback_exactly_once",
+      "expected": "accept",
+      "kind": "compiled_guest",
+      "requirement": "Map and error callbacks run at most once and skip inactive variants",
+      "diagnostic_class": null
+    },
+    {
+      "id": "suspend_with_live_loan",
+      "expected": "reject",
+      "kind": "compiler_negative",
+      "requirement": "Live borrow cannot cross unsupported suspend or actor handoff",
+      "diagnostic_class": "borrow-or-ownership"
+    }
+  ],
+  "backends": [
+    {
+      "id": "java",
+      "repository": "atto-lang/atto-source.java",
+      "observed_main_sha": "189c73b88502c451e50494f738ae11a1de8c9211",
+      "candidate_head_sha": "919d1d1fc59712e5e2059c72fe7a55cf5720df60",
+      "capability_state": "unverified",
+      "cases": {
+        "borrowed_option_some_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_option_none_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_result_ok_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_result_err_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "owner_survives_loan": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_flatten": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_option_unwrap": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_result_unwrap": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_safe_repackage": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_fallback": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "copyable_nested_borrow": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "loan_then_move": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_escape": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "inactive_variant_drop_once": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "callback_exactly_once": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "suspend_with_live_loan": {
+          "state": "not_executed",
+          "receipt": null
+        }
+      }
+    },
+    {
+      "id": "llvm",
+      "repository": "atto-lang/atto-source.llvm",
+      "observed_main_sha": "553154ac83c060f9182edf751ee6ba6aa192dd3b",
+      "candidate_head_sha": "216c4222414d34f43ed2a6dbd4e6c640f25dae20",
+      "capability_state": "unverified",
+      "cases": {
+        "borrowed_option_some_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_option_none_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_result_ok_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_result_err_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "owner_survives_loan": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_flatten": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_option_unwrap": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_result_unwrap": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_safe_repackage": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_fallback": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "copyable_nested_borrow": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "loan_then_move": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_escape": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "inactive_variant_drop_once": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "callback_exactly_once": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "suspend_with_live_loan": {
+          "state": "not_executed",
+          "receipt": null
+        }
+      }
+    },
+    {
+      "id": "rs",
+      "repository": "atto-lang/atto-source.rs",
+      "observed_main_sha": "877bd9f8d61c598137c8627f73fa5ed2a497d9e8",
+      "candidate_head_sha": "9e4af78f2115f9ea260394929c125c930fab94fc",
+      "capability_state": "unverified",
+      "cases": {
+        "borrowed_option_some_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_option_none_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_result_ok_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_result_err_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "owner_survives_loan": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_flatten": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_option_unwrap": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_result_unwrap": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_safe_repackage": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_fallback": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "copyable_nested_borrow": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "loan_then_move": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_escape": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "inactive_variant_drop_once": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "callback_exactly_once": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "suspend_with_live_loan": {
+          "state": "not_executed",
+          "receipt": null
+        }
+      }
+    },
+    {
+      "id": "net",
+      "repository": "atto-lang/atto-source.net",
+      "observed_main_sha": "75830ed371ec386d2c7ebe162410258d3e9fdbf2",
+      "candidate_head_sha": "496dddbb595ea5e61489eab8c2b4eac8c86a2d19",
+      "capability_state": "unverified",
+      "cases": {
+        "borrowed_option_some_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_option_none_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_result_ok_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_result_err_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "owner_survives_loan": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_flatten": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_option_unwrap": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_result_unwrap": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_safe_repackage": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_fallback": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "copyable_nested_borrow": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "loan_then_move": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_escape": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "inactive_variant_drop_once": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "callback_exactly_once": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "suspend_with_live_loan": {
+          "state": "not_executed",
+          "receipt": null
+        }
+      }
+    },
+    {
+      "id": "wasm",
+      "repository": "atto-lang/atto-source.wasm",
+      "observed_main_sha": "16ba74ab9f9959cc15d21dcb6e54a18e1c325fef",
+      "candidate_head_sha": "85de1a3032c78ce1dea080d7c28953c692b610d3",
+      "capability_state": "unverified",
+      "cases": {
+        "borrowed_option_some_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_option_none_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_result_ok_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_result_err_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "owner_survives_loan": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_flatten": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_option_unwrap": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_result_unwrap": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_safe_repackage": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_fallback": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "copyable_nested_borrow": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "loan_then_move": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_escape": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "inactive_variant_drop_once": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "callback_exactly_once": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "suspend_with_live_loan": {
+          "state": "not_executed",
+          "receipt": null
+        }
+      }
+    },
+    {
+      "id": "forge",
+      "repository": "atto-lang/atto-source.forge",
+      "observed_main_sha": "f5dd299c277376cabe9e536edbbb4e662a267ad4",
+      "candidate_head_sha": "b3d79e3191fd32f155d57c1a272af6b13b7f9172",
+      "capability_state": "unverified",
+      "cases": {
+        "borrowed_option_some_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_option_none_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_result_ok_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_result_err_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "owner_survives_loan": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_flatten": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_option_unwrap": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_result_unwrap": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_safe_repackage": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_fallback": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "copyable_nested_borrow": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "loan_then_move": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_escape": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "inactive_variant_drop_once": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "callback_exactly_once": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "suspend_with_live_loan": {
+          "state": "not_executed",
+          "receipt": null
+        }
+      }
+    },
+    {
+      "id": "cranelift",
+      "repository": "atto-lang/atto-source.cranelift",
+      "observed_main_sha": "e867c0a5cf8b94f98ce9b1212d2c735b76bc4120",
+      "candidate_head_sha": "f24d89ecf2a0384a51b1c6a5dec955ecdfab1727",
+      "capability_state": "unverified",
+      "cases": {
+        "borrowed_option_some_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_option_none_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_result_ok_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_result_err_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "owner_survives_loan": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_flatten": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_option_unwrap": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_result_unwrap": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_safe_repackage": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_fallback": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "copyable_nested_borrow": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "loan_then_move": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_escape": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "inactive_variant_drop_once": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "callback_exactly_once": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "suspend_with_live_loan": {
+          "state": "not_executed",
+          "receipt": null
+        }
+      }
+    },
+    {
+      "id": "js",
+      "repository": "atto-lang/atto-source.js",
+      "observed_main_sha": "b8e48b19c33b61e5faa4628bf03bddf2823f403d",
+      "candidate_head_sha": "2bd0febcb4b94bc57f426a7d551af0bd72e860cd",
+      "capability_state": "unverified",
+      "cases": {
+        "borrowed_option_some_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_option_none_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_result_ok_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_result_err_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "owner_survives_loan": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_flatten": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_option_unwrap": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_result_unwrap": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_safe_repackage": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_fallback": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "copyable_nested_borrow": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "loan_then_move": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_escape": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "inactive_variant_drop_once": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "callback_exactly_once": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "suspend_with_live_loan": {
+          "state": "not_executed",
+          "receipt": null
+        }
+      }
+    },
+    {
+      "id": "hdl",
+      "repository": "atto-lang/atto-source.hdl",
+      "observed_main_sha": "023455e496bb9cfbdd157ccc94bb69f31eec44ea",
+      "candidate_head_sha": "a69b9c62424e560ac15b682c96309be78f124fad",
+      "capability_state": "unverified",
+      "cases": {
+        "borrowed_option_some_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_option_none_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_result_ok_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_result_err_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "owner_survives_loan": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_flatten": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_option_unwrap": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_result_unwrap": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_safe_repackage": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_fallback": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "copyable_nested_borrow": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "loan_then_move": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_escape": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "inactive_variant_drop_once": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "callback_exactly_once": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "suspend_with_live_loan": {
+          "state": "not_executed",
+          "receipt": null
+        }
+      }
+    },
+    {
+      "id": "atto",
+      "repository": "atto-lang/atto-source.atto",
+      "observed_main_sha": "5b9a274490a4567ed9d1088fd1ff304dbe383357",
+      "candidate_head_sha": null,
+      "capability_state": "unverified",
+      "cases": {
+        "borrowed_option_some_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_option_none_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_result_ok_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_result_err_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "owner_survives_loan": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_flatten": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_option_unwrap": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_result_unwrap": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_safe_repackage": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_fallback": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "copyable_nested_borrow": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "loan_then_move": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_escape": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "inactive_variant_drop_once": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "callback_exactly_once": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "suspend_with_live_loan": {
+          "state": "not_executed",
+          "receipt": null
+        }
+      }
+    },
+    {
+      "id": "realtime",
+      "repository": "atto-lang/atto-source.realtime",
+      "observed_main_sha": "4f6449470ab075cdad17884c7a1aee2a6e2ab54c",
+      "candidate_head_sha": null,
+      "capability_state": "unverified",
+      "cases": {
+        "borrowed_option_some_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_option_none_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_result_ok_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_result_err_query": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "owner_survives_loan": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_flatten": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_option_unwrap": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_result_unwrap": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_safe_repackage": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_affine_fallback": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "copyable_nested_borrow": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "loan_then_move": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "borrowed_escape": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "inactive_variant_drop_once": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "callback_exactly_once": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "suspend_with_live_loan": {
+          "state": "not_executed",
+          "receipt": null
+        }
+      }
+    }
+  ]
+}
