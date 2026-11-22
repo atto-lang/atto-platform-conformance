@@ -41,6 +41,7 @@ def fixtures(root: Path) -> dict:
         "status": "TARGET_NOT_EXECUTED",
         "required_cases": cases,
         "backend_status": {name: "NOT_EXECUTED" for name in validator.BACKENDS},
+        "backend_repositories": dict(validator.BACKEND_REPOS),
     }
 
 
@@ -54,6 +55,12 @@ def main() -> None:
         tampered = copy.deepcopy(data)
         tampered["backend_status"]["java"] = "PASS"
         invalid.append(("fabricated backend PASS", tampered))
+        tampered = copy.deepcopy(data)
+        tampered["backend_repositories"]["js"] = "unapproved/atto-source.js"
+        invalid.append(("mismatched backend repository identity", tampered))
+        tampered = copy.deepcopy(data)
+        del tampered["backend_status"]["realtime"]
+        invalid.append(("omitted backend status", tampered))
         tampered = copy.deepcopy(data)
         tampered["required_cases"][2]["id"] = tampered["required_cases"][0]["id"]
         invalid.append(("duplicate id", tampered))
