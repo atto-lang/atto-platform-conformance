@@ -29,6 +29,19 @@ function admit(x) {
 test('core loan-state admission scalar reference rejects invalid or overlapping loans',()=>{
   assert.equal(spec.schema,'atto.stdlib.core.borrow-admission-boundary-v1');
   assert.equal(spec.max_read_loans,65535);
+  const java = spec.executable_backends.java;
+  const rust = spec.executable_backends.rs;
+  for (const backend of [java, rust]) {
+    assert.equal(backend.status, 'NOT_EXECUTED');
+    assert.equal(backend.source_positive_cases, 2);
+    assert.equal(backend.source_negative_cases, 4);
+  }
+  assert.equal(java.source_core_preflight_outputs, 16);
+  assert.equal(java.guest_test, 'coreBorrowCompilerExecutesPositiveLoans');
+  assert.equal(rust.guest_runner, 'tests/core-borrow-real-guest.mjs');
+  assert.equal(rust.exact_head_workflow,
+    '.github/workflows/atto-core-borrow-real-guest.yml');
+
   assert.equal(Object.keys(spec.core_source_paths).length,9);
   for(const backend of ['java','llvm','net','wasm','forge','rs','cranelift','js','hdl']) {
     const path = spec.core_source_paths[backend];
