@@ -11,7 +11,11 @@ const cases = new Map(manifest.cases.map((entry) => [entry.id, entry]));
 test("async timer vector inventory is unique and never claims runtime verification", () => {
   assert.equal(manifest.contract, "async-await-task-timers-v1");
   assert.equal(manifest.status, "candidate-unverified");
-  assert.deepEqual(manifest.backends, ["java", "llvm", "net", "wasm", "forge"]);
+  assert.deepEqual(manifest.backends, ["java","llvm","net","wasm","forge","rs","cranelift","js","hdl","atto","realtime"]);
+  assert.deepEqual(manifest.backendScope.compiler_bootstrap_only, ["atto", "realtime"]);
+  assert.deepEqual(manifest.backendScope.deterministic_hardware_only, ["hdl"]);
+  assert.equal(manifest.backendScope.all_guest_std_time_verification, "NOT_EXECUTED");
+  assert.equal(manifest.backendScope.allow_unsupported_to_count_as_pass, false);
   assert.ok(manifest.requires.includes("compiled_guest_execution"));
   assert.ok(manifest.requires.includes("nonzero_runner_steps"));
   assert.equal(cases.size, manifest.cases.length);
