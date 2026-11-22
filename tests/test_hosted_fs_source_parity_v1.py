@@ -74,7 +74,7 @@ def is_safe_inventory(doc):
     if {x.get("backend") for x in hosts if isinstance(x, dict)} != {"js", "wasm"}:
         return False
     for host in hosts:
-        if (host.get("local_v8_shimmed_groups") != 20 or
+        if (host.get("local_v8_shimmed_groups") != 24 or
             host.get("local_v8_status") != "PASS_HOST_SHIM_ONLY" or
             host.get("node_exact_head") != "NOT_EXECUTED" or
             host.get("compiled_atto_guest") != "NOT_EXECUTED"):
@@ -94,6 +94,15 @@ def is_safe_inventory(doc):
             not HEX40.fullmatch(host.get("captured_head_sha", "")) or
             not HEX40.fullmatch(host.get("runtime_blob_sha", "")) or
             not HEX40.fullmatch(host.get("test_blob_sha", ""))):
+            return False
+        overloads=host.get("file_object_overloads")
+        if (not isinstance(overloads, dict) or
+            overloads.get("implemented_host_only") is not True or
+            overloads.get("typed_guest") != "NOT_EXECUTED" or
+            overloads.get("seek") is not True or
+            overloads.get("methods") != [
+                "read_text","write_text","read_file","write_file"
+            ]):
             return False
     return True
 
@@ -133,6 +142,9 @@ class HostedFsSourceParityTests(unittest.TestCase):
         self.assertFalse(is_safe_inventory(forged))
         forged = copy.deepcopy(self.doc)
         forged["host_vfs_candidates"][0]["source_transfer"] = "APPROVED"
+        self.assertFalse(is_safe_inventory(forged))
+        forged = copy.deepcopy(self.doc)
+        forged["host_vfs_candidates"][0]["file_object_overloads"]["typed_guest"] = "PASS"
         self.assertFalse(is_safe_inventory(forged))
 
 
