@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'contracts/atto-core-borrow-ranges-v1.json'
+      - 'contracts/atto-core-borrow-source-ledger-v1.json'
       - 'tests/atto-core-borrow-ranges-v1.test.mjs'
       - '.github/workflows/atto-core-borrow-ranges-v1.yml'
   workflow_dispatch:
