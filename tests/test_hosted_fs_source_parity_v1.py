@@ -74,10 +74,26 @@ def is_safe_inventory(doc):
     if {x.get("backend") for x in hosts if isinstance(x, dict)} != {"js", "wasm"}:
         return False
     for host in hosts:
-        if (host.get("local_v8_shimmed_groups") != 13 or
+        if (host.get("local_v8_shimmed_groups") != 19 or
             host.get("local_v8_status") != "PASS_HOST_SHIM_ONLY" or
             host.get("node_exact_head") != "NOT_EXECUTED" or
             host.get("compiled_atto_guest") != "NOT_EXECUTED"):
+            return False
+    carrier = doc.get("runner_admission")
+    if not isinstance(carrier, dict):
+        return False
+    if (carrier.get("carrier_repo_id") != 1378753797 or
+        carrier.get("run_id") != 45047556666 or
+        carrier.get("executed_steps") != 4 or
+        carrier.get("job_conclusion") != "success" or
+        carrier.get("private_source_transfer") != "NOT_PERFORMED" or
+        carrier.get("run_head_sha") != "912dd632c3b29c0db6634a974977eb3bbf2bb2e4"):
+        return False
+    for host in hosts:
+        if (host.get("source_transfer") != "BLOCKED_PENDING_INDEPENDENT_SECURITY_REVIEW" or
+            not HEX40.fullmatch(host.get("captured_head_sha", "")) or
+            not HEX40.fullmatch(host.get("runtime_blob_sha", "")) or
+            not HEX40.fullmatch(host.get("test_blob_sha", ""))):
             return False
     return True
 
@@ -111,6 +127,12 @@ class HostedFsSourceParityTests(unittest.TestCase):
         self.assertFalse(is_safe_inventory(forged))
         forged = copy.deepcopy(self.doc)
         forged["host_vfs_candidates"][1]["node_exact_head"] = "PASS"
+        self.assertFalse(is_safe_inventory(forged))
+        forged = copy.deepcopy(self.doc)
+        forged["runner_admission"]["private_source_transfer"] = "COMPLETE"
+        self.assertFalse(is_safe_inventory(forged))
+        forged = copy.deepcopy(self.doc)
+        forged["host_vfs_candidates"][0]["source_transfer"] = "APPROVED"
         self.assertFalse(is_safe_inventory(forged))
 
 
