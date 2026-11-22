@@ -222,7 +222,7 @@
       "source_status": "STAGED_SOURCE_ONLY",
       "guest_status": "NOT_EXECUTED",
       "executed_guest_cases": 0,
-      "captured_branch_head_sha": "7d0f549462e816d6c91964e2b409f21e8888481c"
+      "captured_branch_head_sha": "a7c926d4adcfe771784094a275095be5813b54dc"
     }
   ],
   "remaining_backends": [
@@ -253,8 +253,8 @@
       "local_v8_status": "PASS_HOST_SHIM_ONLY",
       "node_exact_head": "NOT_EXECUTED",
       "compiled_atto_guest": "NOT_EXECUTED",
-      "captured_head_sha": "3e561e5ceed43af12328700cf2d2c89aded2fe9b",
-      "runtime_blob_sha": "ea4a6b053cdad9aec67281812fc8668c63b0d8f3",
+      "captured_head_sha": "9c5e136ed6c7d0fd10d78be90d8a08764f3412d2",
+      "runtime_blob_sha": "721168d46cc180b7cb3c6a112d6b61178415ef13",
       "test_blob_sha": "bf0b3f7639ba14769afa992ab5651b1f3ab7d713",
       "source_transfer": "BLOCKED_PENDING_INDEPENDENT_SECURITY_REVIEW",
       "file_object_overloads": {
@@ -267,7 +267,10 @@
         ],
         "seek": true,
         "typed_guest": "NOT_EXECUTED"
-      }
+      },
+      "captured_git_tree_sha": "dfabd3db6cd40faf4cc4cf31c2bf37dc15d13e92",
+      "actor_scoped_file_port_contract": "contracts/hosted-fs-file-handle-port-v1.json",
+      "actor_scoped_file_port_guest": "NOT_LINKED"
     },
     {
       "backend": "js",
@@ -276,8 +279,8 @@
       "local_v8_status": "PASS_HOST_SHIM_ONLY",
       "node_exact_head": "NOT_EXECUTED",
       "compiled_atto_guest": "NOT_EXECUTED",
-      "captured_head_sha": "7d0f549462e816d6c91964e2b409f21e8888481c",
-      "runtime_blob_sha": "f6a0386cf2f43128b0b66d17ba06b480e121ecec",
+      "captured_head_sha": "a7c926d4adcfe771784094a275095be5813b54dc",
+      "runtime_blob_sha": "1cb7b48ad76bdd1122315ab6c2665c984fadd7cd",
       "test_blob_sha": "1231456190d82112288434c13e98f3bde17598ac",
       "source_transfer": "BLOCKED_PENDING_INDEPENDENT_SECURITY_REVIEW",
       "file_object_overloads": {
@@ -290,7 +293,10 @@
         ],
         "seek": true,
         "typed_guest": "NOT_EXECUTED"
-      }
+      },
+      "captured_git_tree_sha": "e18f418b1b71213327f93b9e7bcb017cd100b318",
+      "actor_scoped_file_port_contract": "contracts/hosted-fs-file-handle-port-v1.json",
+      "actor_scoped_file_port_guest": "NOT_LINKED"
     }
   ],
   "runner_admission": {
