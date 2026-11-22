@@ -5,7 +5,7 @@
   "authority": "atto-lang/atto-platform-conformance",
   "evidence_policy": "SOURCE_ONLY_NO_GUEST_PROMOTION",
   "release_qualified": false,
-  "notes": "Observed main SHAs and candidate PR heads are GitHub snapshots, not executed compiler proof. v1 never admits self-attested pass or unsupported claims; an independently authenticated evidence verifier is required for any promotion. Backend-owned .atto implementations may differ. Java PR #1767 now adds compiler-linked affine borrow extraction negative regressions, not an executed test receipt. Borrow-only Option/Result source adapters and linked guest candidate have been added in the Java draft; no compiler execution is verified.",
+  "notes": "Observed main and Option/Result PR SHAs are source snapshots, not compiler receipts. Java #1767 now proposes explicit borrowed-read source helpers, six original JUnit checks, seven affine borrow checks, and a linked borrow-query guest; none have executed. All 11 backends remain unverified. Editable source-only records may never promote PASS, UNSUPPORTED, AOT, sanitizer or release claims.",
   "backends": [
     {
       "id": "java",
