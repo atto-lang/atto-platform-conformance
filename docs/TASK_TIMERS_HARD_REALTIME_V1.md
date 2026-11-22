@@ -133,3 +133,22 @@ as the same normalized source body (comments/whitespace and Java-only
 `monotonic_now` removed). This is **source consistency only** and does not
 mean the nine independent compilers understand or execute that source.
 The `.atto` and `.realtime` repositories remain bootstrap targets.
+
+### Core/ownership invariant and negative duration classification (candidate)
+
+In each of the nine active, separately owned `.atto` implementations, the
+nanoseconds and scaled duration factories now reject **negative** values with
+`NegativeDuration`, reserving `DurationOverflow` for positive scaled values
+outside signed-i64 range. The 28 BigInt reference vectors include all five
+negative scaled units. These reference checks are **not** guest execution.
+
+The core compiler's ownership checks must also reject assignments to the
+fixed `Duration.nanos` and `Instant.ticks_ns` fields after their constructors
+return. A mutable owner binding (`val` or `let mut`) does not grant permission
+to mutate a fixed class field. Two additional source fixtures,
+`core-negative-duration-nanos-write.atto` and
+`core-negative-instant-ticks-write.atto`, require **compile-time fixed-field
+rejection with no output artifact**. Java's linked-compiler JUnit suite and the
+LLVM AOT admission script contain the matching backend-local gates. Until
+the exact-head source Actions execute, the eleven compiler matrix remains
+`NOT_EXECUTED` for these two core ownership cases.
