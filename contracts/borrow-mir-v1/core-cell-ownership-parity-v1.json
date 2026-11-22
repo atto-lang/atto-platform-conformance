@@ -19,55 +19,55 @@
       "policy": "SOURCE_AUTHORED_NOT_GUEST_VERIFIED",
       "source": "atto-source.net/library/atto.core/cell.atto",
       "representation": "bounded-readers-plus-writer",
-      "sourceBlobSha": "f241db3eb234f06b77cfd2c03007b2a35f30db96"
+      "sourceBlobSha": "154563e51199140cfad005945c608789bee5ebfa"
     },
     "cranelift": {
       "policy": "SOURCE_AUTHORED_NOT_GUEST_VERIFIED",
       "source": "atto-source.cranelift/library/atto.core/cell.atto",
       "representation": "bounded-readers-plus-writer",
-      "sourceBlobSha": "92732bb98e7b92bcaa4aa8cad7ab8d2e89c2edec"
+      "sourceBlobSha": "178dc049f6f19c8af29f96e42661b970e746d671"
     },
     "wasm": {
       "policy": "SOURCE_AUTHORED_NOT_GUEST_VERIFIED",
       "source": "atto-source.wasm/library/atto.core/cell.atto",
       "representation": "bounded-readers-plus-writer",
-      "sourceBlobSha": "0b44fe273e22e881d0129371dbcead5addc96a8a"
+      "sourceBlobSha": "1561f8e71fc831d5787b8652a108d0fb87714503"
     },
     "forge": {
       "policy": "SOURCE_AUTHORED_NOT_GUEST_VERIFIED",
       "source": "atto-source.forge/library/atto.core/cell.atto",
       "representation": "bounded-readers-plus-writer",
-      "sourceBlobSha": "9d01059e9ea54460a0700ab3ed6225ec557222c2"
+      "sourceBlobSha": "7a0b117c5a6775921e541dfa5aaf654ba2aea7f4"
     },
     "js": {
       "policy": "SOURCE_AUTHORED_NOT_GUEST_VERIFIED",
       "source": "atto-source.js/library/atto.core/cell.atto",
       "representation": "bounded-readers-plus-writer",
-      "sourceBlobSha": "01e75c747dce25c0b76629e186e54d9889593a78"
+      "sourceBlobSha": "ae54f28baee13675a71088251b41dd8182f60084"
     },
     "rs": {
       "policy": "SOURCE_AUTHORED_NOT_GUEST_VERIFIED",
       "source": "atto-source.rs/library/atto.core/cell.atto",
       "representation": "bounded-readers-plus-writer",
-      "sourceBlobSha": "579b6028f88df0e9d3ead5fcce37542b031f8d3a"
+      "sourceBlobSha": "7eb09f625637dd11d75aa295947a9c79835cb5df"
     },
     "hdl": {
       "policy": "SOURCE_AUTHORED_NOT_GUEST_VERIFIED",
       "source": "atto-source.hdl/library/atto.core/cell.atto",
       "representation": "bounded-readers-plus-writer",
-      "sourceBlobSha": "54f75dcb27fe9754a44349889d281ed52026301b"
+      "sourceBlobSha": "38439b2b0b487b4bb09d191ba50c115611295206"
     },
     "atto": {
       "policy": "SOURCE_AUTHORED_SCAFFOLD_NOT_GUEST_VERIFIED",
       "source": "atto-source.atto/library/atto.core/cell.atto",
       "representation": "bounded-readers-plus-writer",
-      "sourceBlobSha": "a00ed65daedb05857c9351989a6dc9a7453f60c8"
+      "sourceBlobSha": "55a0a3c5a04b825fb597a9c66101ee44d2e584ed"
     },
     "realtime": {
       "policy": "SOURCE_AUTHORED_SCAFFOLD_NOT_GUEST_VERIFIED",
       "source": "atto-source.realtime/library/atto.core/cell.atto",
       "representation": "bounded-readers-plus-writer",
-      "sourceBlobSha": "8745aba9c4d5a37d58b0980a79e008b38562cda2"
+      "sourceBlobSha": "30ef700dc973f1af6bda588aa46ae5cdc7ae745b"
     }
   },
   "guestEvidence": {
@@ -163,5 +163,35 @@
   "abiNote": "Java/LLVM use a signed counter where -1 represents an exclusive loan. .NET/Cranelift use a bounded reader count and writer flag. Backend .atto sources are independent; only observable conservative owner operations must agree. Do not require byte-identical files.",
   "sourceCoverage": "11/11 compiler-owned source candidates; source only; .atto and .realtime are bootstrapping scaffolds, not functioning compiler guests.",
   "compilerBorrowCoverage": "UNVERIFIED across 11 profiles; core/cell policy predicates are not compiler-enforced loans, ownership proofs or actor runtime permissions.",
-  "blobPinPolicy": "These Git-blob SHA-1 identities are source-only immutable byte witnesses from active PR branches as inspected 2026-11-22. Independently re-fetch exact branch head/tree/blob and runtime/toolchain evidence before promotion. A matching blob does NOT grant compiler guest PASS."
+  "blobPinPolicy": "These Git-blob SHA-1 identities are source-only immutable byte witnesses from active PR branches as inspected 2026-11-22. Independently re-fetch exact branch head/tree/blob and runtime/toolchain evidence before promotion. A matching blob does NOT grant compiler guest PASS. Nine bounded-reader source-policy files were updated in independently owned draft branches to make saturated new-loan admission fail closed; those source hashes must be independently verified against exact heads before any certification.",
+  "borrowAdmissionSaturation": {
+    "description": "The acquisition-admission predicate must return false when the shared-loan counter is at its maximum, even though the existing owner may still read. Pure policy result never grants a loan, heap reference or permission.",
+    "representations": {
+      "signed-counter-i64": {
+        "maxReaders": "9223372036854775807",
+        "mayAcquireSharedAtMax": false,
+        "ownerMayReadAtMax": true,
+        "acquireAtMax": "ERR",
+        "releaseAtMax": "9223372036854775806"
+      },
+      "bounded-readers-plus-writer": {
+        "maxReaders": 65535,
+        "mayAcquireSharedAtMax": false,
+        "ownerMayReadAtMax": true,
+        "acquireAtMax": -1,
+        "releaseAtMax": 65534
+      }
+    },
+    "negativeBoundaries": [
+      "negative_readers",
+      "reader_overflow",
+      "writer_active",
+      "attempt_to_write_with_shared_readers",
+      "owner_move_with_live_loan",
+      "unpinned_suspend_with_live_loan"
+    ],
+    "sourcePolicyOnly": true,
+    "compilerGuestEvidence": "NOT_EXECUTED",
+    "reviewerRequirement": "Independently verify actual typed MIR/borrow-checker rejects escapes, use-after-take, incompatible loans, stale generation and unpinned suspend. Policy math is never an authorization token."
+  }
 }
