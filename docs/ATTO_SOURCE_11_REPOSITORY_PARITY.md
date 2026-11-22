@@ -302,3 +302,30 @@ marks it `SOURCE_FREE_BORROW_AUTOMATON_NOT_ATTO_GUEST_COMPILER`.
 This is genuine runner admission and reference behavior, **not**
 authorization to transfer private `atto-source.*` code, a compiler source
 build, execution of the `.atto` guests or a proof of target borrow safety.
+
+
+## Nine-backend shared core borrow contract (C23–C24)
+
+The 24-case borrow-MIR v1 source-free contract is now present in each of the
+nine candidate compiler PR branches: Java, LLVM, Rust, .NET, Wasm, Forge,
+Cranelift, JavaScript and HDL. Each replica has identical Git blob IDs for the
+semantic manifest, Node model test, README and non-promoting contract workflow.
+The registry pins each backend's exact candidate PR head, root tree and shared
+contract blob inventory.
+
+The new C23 acceptance case models two shared loans, an owner read while only
+shared loans exist, ending both loans, one exclusive loan/write-through, ending
+that loan, transferring the owner and reading the new owner identity. C24
+rejects exclusive acquisition while both shared loans remain live with
+`E_BORROW_CONFLICT`. The source-free restricted model replayed these two graphs:
+C23 accepted and C24 rejected with the required diagnostic.
+
+This is **semantic contract consistency**, not native checker parity. The
+compiler maturity profiles differ: Java has an integrated ownership checker;
+LLVM's current native checker admits a narrower i64 ownership subset; .NET
+still has front-end admission gaps; Wasm has continuation-loan checks; Forge
+and Cranelift have ownership admission/tests; JS and HDL have narrower
+ownership profiles. All nine compiled protocol/borrow guests remain
+`NOT_EXECUTED` in the ledger. The Rust protocol guest includes a compiler
+negative for requesting an exclusive loan while two shared readers are live,
+but that exact-head test has not yet executed.
