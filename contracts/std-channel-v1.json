@@ -18,7 +18,9 @@
     "forge": "Source channel guest support not independently verified.",
     "cranelift": "Source channel guest support not independently verified.",
     "js": "Source channel guest support not independently verified.",
-    "hdl": "Source channel guest support not independently verified."
+    "hdl": "Source channel guest support not independently verified.",
+    "atto": "Self-hosted atto-source.atto compiler: std/channel guest compilation, borrow/ownership ABI and runtime support NOT_EXECUTED / NOT_VERIFIED.",
+    "realtime": "atto-source.realtime deterministic bounded/allocation-free profile: pending queue allocation, cancellation and transport borrow validation NOT_EXECUTED / NOT_VERIFIED; must not silently fall back to allocating general runtime."
   },
   "required_contracts": [
     "channel capability remains local to its execution domain",
@@ -55,7 +57,9 @@
         "forge": "NOT_EXECUTED",
         "cranelift": "NOT_EXECUTED",
         "js": "NOT_EXECUTED",
-        "hdl": "NOT_EXECUTED"
+        "hdl": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -72,7 +76,9 @@
         "forge": "NOT_EXECUTED",
         "cranelift": "NOT_EXECUTED",
         "js": "NOT_EXECUTED",
-        "hdl": "NOT_EXECUTED"
+        "hdl": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -89,7 +95,9 @@
         "forge": "NOT_EXECUTED",
         "cranelift": "NOT_EXECUTED",
         "js": "NOT_EXECUTED",
-        "hdl": "NOT_EXECUTED"
+        "hdl": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -106,7 +114,9 @@
         "forge": "NOT_EXECUTED",
         "cranelift": "NOT_EXECUTED",
         "js": "NOT_EXECUTED",
-        "hdl": "NOT_EXECUTED"
+        "hdl": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -123,7 +133,9 @@
         "forge": "NOT_EXECUTED",
         "cranelift": "NOT_EXECUTED",
         "js": "NOT_EXECUTED",
-        "hdl": "NOT_EXECUTED"
+        "hdl": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -140,7 +152,9 @@
         "forge": "NOT_EXECUTED",
         "cranelift": "NOT_EXECUTED",
         "js": "NOT_EXECUTED",
-        "hdl": "NOT_EXECUTED"
+        "hdl": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -157,7 +171,9 @@
         "forge": "NOT_EXECUTED",
         "cranelift": "NOT_EXECUTED",
         "js": "NOT_EXECUTED",
-        "hdl": "NOT_EXECUTED"
+        "hdl": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     }
   ],
@@ -173,7 +189,9 @@
         "forge": "NOT_EXECUTED",
         "cranelift": "NOT_EXECUTED",
         "js": "NOT_EXECUTED",
-        "hdl": "NOT_EXECUTED"
+        "hdl": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       },
       "notes": {
         "rs": "Explicit queued reader cancellation staged, not guest verified",
@@ -191,7 +209,9 @@
         "forge": "NOT_EXECUTED",
         "cranelift": "NOT_EXECUTED",
         "js": "NOT_EXECUTED",
-        "hdl": "NOT_EXECUTED"
+        "hdl": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       },
       "notes": {
         "rs": "Copy-safe int/bool staged, other payloads gated",
@@ -209,7 +229,9 @@
         "forge": "NOT_EXECUTED",
         "cranelift": "NOT_EXECUTED",
         "js": "NOT_EXECUTED",
-        "hdl": "NOT_EXECUTED"
+        "hdl": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       },
       "notes": {
         "rs": "Conservative v2 data-only type gate, not full affine borrow checker",
@@ -227,12 +249,27 @@
         "forge": "NOT_EXECUTED",
         "cranelift": "NOT_EXECUTED",
         "js": "NOT_EXECUTED",
-        "hdl": "NOT_EXECUTED"
+        "hdl": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       },
       "notes": {
         "rs": "Both pending reader/writer queues blocked on graph admission",
         "java": "Backend-specific execution receipt pending"
       }
     }
-  ]
+  ],
+  "backend_repositories": {
+    "java": "atto-lang/atto-source.java",
+    "llvm": "atto-lang/atto-source.llvm",
+    "net": "atto-lang/atto-source.net",
+    "rs": "atto-lang/atto-source.rs",
+    "wasm": "atto-lang/atto-source.wasm",
+    "forge": "atto-lang/atto-source.forge",
+    "cranelift": "atto-lang/atto-source.cranelift",
+    "js": "atto-lang/atto-source.js",
+    "hdl": "atto-lang/atto-source.hdl",
+    "atto": "atto-lang/atto-source.atto",
+    "realtime": "atto-lang/atto-source.realtime"
+  }
 }
