@@ -119,3 +119,35 @@ The four backend core libraries remain independent .atto source files; parity
 is defined by observable rights, not byte-identical source blobs. Source-only
 test checks and synthetic counters must never be reported as compiler guest
 or MIR borrow certification.
+
+## Executable pure Cell policy versus compiler loan authority (2026-11-22)
+
+The 11 independently owned `.atto` core/cell candidate sources now agree
+that a saturated shared-loan count **rejects another acquisition**, while
+an existing owner may still read. Java and LLVM use a signed 64-bit counter
+with maximal shared state `9223372036854775807`; the other nine source
+candidates use a bounded readers-plus-writer representation with a maximum
+of `65535`. The conformance contract records both policies and does not
+interpret these helper predicates as actual loan authority.
+
+JS PR #137 now has a restricted production parser → typed IR → emitted
+ESM path for its *pure* Cell policy; it was executed locally in V8 against
+8 boundary states and rejected 8 adversarial source mutations. This is
+**local non-certifying compiled policy evidence**, NOT a working
+`Cell<T>`/borrow checker, a certified browser runtime or exact-head
+source-owned CI. The policy's new Git source blob is
+`ef1e84dbab1bb476d6ac55bf1802331660879732`.
+
+.NET PR #220's authenticated resource pin was checked against the new
+bounded-source bytes and corrected to SHA-256
+`ad876ea26e04754e1a62cc85245860876dc8ed512645e30d5150a144e6b96ce3`.
+Its CIL test now includes saturation and owner-read test vectors, but
+no material exact-head compiler job has executed.
+
+A source-free run on alternate carrier `channelsiege/atto-ci` (#45060723128)
+completed five real steps successfully. It did **not** transfer private
+compiler source, execute the eleven backend compilers or establish their
+budget/export authorization. Atto source repository policies continue to
+deny private-source mirroring to an unapproved carrier. All eleven
+full typed borrow-MIR/compiled-memory guest statuses remain NOT_EXECUTED.
+
