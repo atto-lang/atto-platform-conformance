@@ -1,0 +1,9 @@
+// TARGET COMPILE REJECT: E_SERIAL_PARALLELISM, no emitted guest artifact.
+@actor_schedule(max_parallelism = 2, affinity = pinned, pool = shared)
+define serial actor InvalidSerial as
+  susp receive(mail: ActorMail<int>) -> void {
+    ^ void;
+  }
+end
+
+pub fnc main() -> int { return 0; }
