@@ -55,7 +55,7 @@
       "policy": "SOURCE_AUTHORED_NOT_GUEST_VERIFIED",
       "source": "atto-source.js/library/atto.core/cell.atto",
       "representation": "bounded-readers-plus-writer",
-      "sourceBlobSha": "ae54f28baee13675a71088251b41dd8182f60084",
+      "sourceBlobSha": "ef1e84dbab1bb476d6ac55bf1802331660879732",
       "candidateCommitSha": "b9985e6249fb35327cabdd6d183dbe9d7f66c49b",
       "candidateTreeSha": "935e4f75ba301127c5059f7fa374b6ceefd26a85"
     },
@@ -183,7 +183,7 @@
   ],
   "evidenceRequirement": "No backend gets PASS from policy arithmetic or fixture presence. Require compiler-produced typed MIR/effect and ownership proof with precise root/alias tracking; real compiler negative diagnostic with zero emitted IR/object/executable; exact source commit/tree/blobs; material runner steps; real guest positive and cancellation/suspension behavior where supported. Unsupported native profiles must reject before codegen. Source-only receipts always NOT_EXECUTED. Latest source additions across all 11 do not promote guestEvidence to PASS; individually verify exact branch/tree/source blob and real compiled guest for every capable profile.",
   "abiNote": "Java/LLVM use a signed counter where -1 represents an exclusive loan. .NET/Cranelift use a bounded reader count and writer flag. Backend .atto sources are independent; only observable conservative owner operations must agree. Do not require byte-identical files.",
-  "sourceCoverage": "11/11 compiler-owned source candidates; source only; .atto and .realtime are bootstrapping scaffolds, not functioning compiler guests.",
+  "sourceCoverage": "11/11 backend-owned .atto Cell policy source candidates; JS now also has local production-emitted ESM policy execution, which is not GitHub exact-head certification; self-hosted Atto and Realtime are still bootstrapping scaffolds.",
   "compilerBorrowCoverage": "UNVERIFIED across 11 profiles; core/cell policy predicates are not compiler-enforced loans, ownership proofs or actor runtime permissions.",
   "blobPinPolicy": "These Git-blob SHA-1 identities are source-only immutable byte witnesses from active PR branches as inspected 2026-11-22. Independently re-fetch exact branch head/tree/blob and runtime/toolchain evidence before promotion. A matching blob does NOT grant compiler guest PASS. Nine bounded-reader source-policy files were updated in independently owned draft branches to make saturated new-loan admission fail closed; those source hashes must be independently verified against exact heads before any certification.",
   "borrowAdmissionSaturation": {
@@ -262,12 +262,14 @@
     },
     "js": {
       "profile": "restricted-esm-core-admission",
-      "positive": null,
+      "positive": "Production JS typed-IR compiler emits backend-owned pure core/cell policy ESM and the generated predicates execute against eight boundary-state vectors; exact-head Node runner evidence still required",
       "negative": [
-        "core_cell_link_unavailable"
+        "core_cell_link_unavailable",
+        "forged_cell_module_identity_or_signature",
+        "borrow_capability_not_implemented"
       ],
       "status": "NOT_EXECUTED",
-      "evidence": "JS #137 compiler denies unproven core/cell source promotion"
+      "evidence": "JS #137 compileOwnedCoreCellPolicy; local V8 execution of emitted JS returned 8/8 expected boundary vectors; awaiting exact-head material Node runner. This is a compiled policy guest only, not runtime loan/borrow-MIR."
     },
     "cranelift": {
       "profile": "core-source-only",
@@ -327,5 +329,14 @@
     "typedMirGuestQualified": false,
     "cleanupCommit": "a0285aa3579bb31649f0dd3e0958b7d5e8407a51",
     "cleanupTree": "b78051568a02496c9f55790d83a87a158c16ee88"
+  },
+  "localPolicyObservations": {
+    "js": {
+      "kind": "PRODUCTION_COMPILER_EMITTED_PURE_POLICY_JS_LOCAL_V8",
+      "cases": 8,
+      "observation": "Locally assembled exact branch compiler modules, compiled its current .atto Cell source with production parser and typed IR, executed emitted functions in V8; 8/8 boundary vectors; no source-owned GitHub Actions runner evidence.",
+      "certification": "NON_CERTIFYING_LOCAL_ONLY",
+      "scope": "No Cell<T>, borrow tokens, actor/await loans, native AOT, or typed borrow-MIR"
+    }
   }
 }
