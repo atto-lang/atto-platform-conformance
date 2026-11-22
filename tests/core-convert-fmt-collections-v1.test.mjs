@@ -62,7 +62,7 @@ export function verifyGuestTranscript(transcript, cases=contract.cases){
     observed.add(id);
   }
   if(observed.size!==expected.size)throw Error("missing guest case results");
-  return {executedCases:observed.size,kind:"verified-captured-results-only"};
+  return {matchedCases:observed.size,evidenceKind:"UNAUTHENTICATED_TRANSCRIPT"};
 }
 
 test("manifest explicitly refuses to certify candidate heads",()=>{
@@ -90,7 +90,7 @@ test("all unique cases agree with independent BigInt/array oracle",()=>{
 
 test("strict transcript requires every executed result and rejects fake passes",()=>{
   const valid=contract.cases.map(c=>"ATTO_LIB_V1|"+c.id+"|"+c.expected).join("\n")+"\n";
-  assert.equal(verifyGuestTranscript(valid).executedCases,contract.cases.length);
+  assert.equal(verifyGuestTranscript(valid).matchedCases,contract.cases.length);
   const first=valid.split("\n")[0];
   const corrupt=[
     "",
