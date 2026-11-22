@@ -1,4 +1,5 @@
 // PRELUDE V1: Result has exactly two generic parameters.
+// Not an executed guest or compiler receipt.
 // This does not count as executed compiler evidence.
 fnc invalid(): Result<int> { return Ok(42); }
 pub fnc main(): int { return 42; }
