@@ -186,8 +186,8 @@
       "src/test/resources/stdlib-parity/http-core-borrow-positive.atto": "db51329274f9f8f8d523b5b61ddb4676008016dd",
       "src/test/resources/stdlib-parity/http-core-borrow-negative.atto": "94f26cfd4148a24725dd027a95dbe0604b4c6fdf",
       "src/test/resources/stdlib-parity/http-core-noncopy-argument-negative.atto": "e30e5a9a6cf71a47f69787b5796452963b652ac9",
-      ".github/workflows/atto-http-core-borrow-guest.yml": "0c2f9f3f2cfa5c421374116faee95e37878e8175",
-      "src/test/java/dev/oreslang/compiler/ImportedClassBorrowOwnershipTest.java": "b7b51af4e8e58d16a68c55298a36f665008efd6e"
+      ".github/workflows/atto-http-core-borrow-guest.yml": "b20124d333c3cedbab72c1209674c798dddfa376",
+      "src/test/java/dev/oreslang/compiler/ImportedClassBorrowOwnershipTest.java": "013e920da5fa4ea3076625f7d80dd0f62fe309a5"
     },
     "evidence": "SOURCE_ONLY"
   }
