@@ -29,6 +29,14 @@ function admit(x) {
 test('core loan-state admission scalar reference rejects invalid or overlapping loans',()=>{
   assert.equal(spec.schema,'atto.stdlib.core.borrow-admission-boundary-v1');
   assert.equal(spec.max_read_loans,65535);
+  assert.equal(Object.keys(spec.core_source_paths).length,9);
+  for(const backend of ['java','llvm','net','wasm','forge','rs','cranelift','js','hdl']) {
+    const path = spec.core_source_paths[backend];
+    assert.match(path,/^[a-zA-Z0-9_./-]+borrow_admission\\.atto$/,
+      'bad core source location for '+backend);
+  }
+  assert.match(spec.resolver_status_note,/no verified resolver/);
+
   assert.equal(spec.vectors.length,13);
   for(const x of spec.vectors) {
     const observed=admit(x);
