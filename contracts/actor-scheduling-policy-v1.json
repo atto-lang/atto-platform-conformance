@@ -1,0 +1,387 @@
+{
+  "schema": "atto.actor-scheduling-policy.v1",
+  "version": 1,
+  "status": "TARGET_NOT_GUEST_EXECUTED",
+  "normative": "atto-lang/atto-spec/language/actor-scheduling-policy-v1.md",
+  "related": {
+    "scheduler_domains": "atto-lang/atto-spec/pull/49",
+    "serial_receive": "atto-lang/atto-spec/pull/175",
+    "task_affinity": "atto-lang/atto-platform-conformance/pull/515",
+    "runtime_single_threaded": "atto-lang/atto-spec/pull/95"
+  },
+  "rules": {
+    "parallelism": "PHYSICAL_RUNNING_ACTOR_GUEST_SEGMENTS",
+    "live_invocations": "SEPARATE_BOUNDED_STACK_QUOTA",
+    "fixed_cap_min": 1,
+    "pool_size": "DYNAMIC_ELIGIBLE_HEALTHY_POOL_CARRIERS",
+    "pool_size_evaluated_at": "EACH_ADMISSION_AND_POOL_CHANGE",
+    "effective_cap": "MIN_REQUEST_HEALTHY_ACTOR_TENANT_GLOBAL",
+    "zero_healthy": "NO_WORKER_RESERVED",
+    "serial_live_receives": 1,
+    "serial_physical_max": 1,
+    "serial_suspended_keeps_receive_permit": true,
+    "serial_suspension_releases_carrier": true,
+    "ordinary_concurrent_default": true,
+    "actor_owned_tasks_share_physical_cap": true,
+    "control_capacity_independent": true,
+    "affinities": [
+      "none",
+      "sticky",
+      "pinned",
+      "dedicated"
+    ],
+    "default_serial_affinity": "sticky",
+    "pinned_single_carrier": true,
+    "pinned_worker_death": "FENCED_REPIN",
+    "dedicated_single_carrier": true,
+    "dedicated_quota": "REQUIRE_EXPLICIT_RESERVATION_OR_DENY",
+    "pool_domains": [
+      "shared",
+      "isolated",
+      "untrusted"
+    ],
+    "cross_domain_fallback": "FORBIDDEN",
+    "spawn_override": "NARROW_ONLY",
+    "shrink": "NO_NEW_ADMISSIONS_ABOVE_REDUCED_CAP_DRAIN_INFLIGHT",
+    "stop": "SEAL_NEW_GUEST_ADMISSIONS_PRESERVE_BOUNDED_CLEANUP",
+    "security": "AUTHENTICATED_HOST_POOL_ID_NOT_GUEST_MUTABLE",
+    "guest_proof_required": true
+  },
+  "backends": {
+    "java": "not_executed",
+    "llvm": "not_executed",
+    "wasm": "not_executed",
+    "forge": "not_executed",
+    "net": "not_executed"
+  },
+  "cases": [
+    {
+      "id": "fixed-one-cap",
+      "kind": "runtime",
+      "status": "not_executed",
+      "backend_statuses": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "fixed-two-cap",
+      "kind": "runtime",
+      "status": "not_executed",
+      "backend_statuses": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "elastic-pool-growth",
+      "kind": "runtime",
+      "status": "not_executed",
+      "backend_statuses": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "elastic-pool-shrink",
+      "kind": "runtime",
+      "status": "not_executed",
+      "backend_statuses": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "shrink-drain-inflight",
+      "kind": "runtime",
+      "status": "not_executed",
+      "backend_statuses": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "lazy-zero-healthy-workers",
+      "kind": "runtime",
+      "status": "not_executed",
+      "backend_statuses": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "actor-tenant-global-quotas",
+      "kind": "runtime",
+      "status": "not_executed",
+      "backend_statuses": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "serial-live-receive-await",
+      "kind": "runtime",
+      "status": "not_executed",
+      "backend_statuses": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "serial-forbids-multi-carrier",
+      "kind": "compile_reject",
+      "status": "not_executed",
+      "backend_statuses": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "serial-method-task-one-carrier",
+      "kind": "runtime",
+      "status": "not_executed",
+      "backend_statuses": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "concurrent-two-receives",
+      "kind": "runtime",
+      "status": "not_executed",
+      "backend_statuses": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "task-receive-shared-cap",
+      "kind": "runtime",
+      "status": "not_executed",
+      "backend_statuses": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "sticky-prefers-home",
+      "kind": "runtime",
+      "status": "not_executed",
+      "backend_statuses": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "sticky-bounded-spill",
+      "kind": "runtime",
+      "status": "not_executed",
+      "backend_statuses": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "pinned-reuses-worker",
+      "kind": "runtime",
+      "status": "not_executed",
+      "backend_statuses": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "pinned-repin-worker-death",
+      "kind": "runtime",
+      "status": "not_executed",
+      "backend_statuses": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "dedicated-quota-denial",
+      "kind": "runtime",
+      "status": "not_executed",
+      "backend_statuses": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "dedicated-no-fallback",
+      "kind": "runtime",
+      "status": "not_executed",
+      "backend_statuses": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "untrusted-domain-no-escape",
+      "kind": "runtime",
+      "status": "not_executed",
+      "backend_statuses": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "stale-generation-reject",
+      "kind": "runtime",
+      "status": "not_executed",
+      "backend_statuses": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "stop-seals-new-work",
+      "kind": "runtime",
+      "status": "not_executed",
+      "backend_statuses": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "control-not-starved",
+      "kind": "runtime",
+      "status": "not_executed",
+      "backend_statuses": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "invalid-zero-cap",
+      "kind": "compile_reject",
+      "status": "not_executed",
+      "backend_statuses": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "override-only-narrows",
+      "kind": "runtime",
+      "status": "not_executed",
+      "backend_statuses": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "single-threaded-memory-space",
+      "kind": "runtime",
+      "status": "not_executed",
+      "backend_statuses": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "fixed-overflow-rejection",
+      "kind": "compile_reject",
+      "status": "not_executed",
+      "backend_statuses": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    }
+  ],
+  "receipt": {
+    "pass_requires": [
+      "exact_backend_head_sha",
+      "source_tree_sha",
+      "compiler_artifact_sha256",
+      "toolchain",
+      "nonzero_executed_steps",
+      "guest_executed",
+      "carrier_lease_trace",
+      "tenant_actor_generation_trace",
+      "observed_result",
+      "expected_result"
+    ],
+    "source_free_model_is_guest_evidence": false,
+    "zero_step": "not_executed"
+  }
+}
