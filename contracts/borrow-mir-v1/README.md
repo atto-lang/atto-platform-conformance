@@ -94,15 +94,21 @@ JavaScript, Rust, HDL and the self-hosted Atto/Realtime scaffolds.
 This does **not** change the established nine-compiler MIR/CFG contract's
 certification scope.
 
-At the time of writing, Java/LLVM draft core-four branches have signed
-borrow-counter policies with owner read/write/move/park predicates, and .NET/
-Cranelift have independent bounded readers+writer-flag versions. Neither
-representation grants a real `Cell<T>` capability or replaces the compiler.
-Only Java and LLVM have added corresponding compiler-negative source fixtures
-so far. .NET's extension is compiler-owned .atto source SHA-256 pinned and
-its separate candidate CIL guest tests cover policy vectors; Cranelift's
-extension remains source-model-only. **All four remain unverified on current
-exact heads; remaining seven profiles are NOT_EXECUTED.**
+All eleven draft backends now contain compiler-owned `.atto` core-cell
+source candidates with conservative owner read/write/move/unpinned-suspension
+predicates. Java/LLVM use a signed borrow counter; .NET, Cranelift, Forge,
+Wasm, JS, Rust, HDL, self-hosted Atto and Realtime use bounded readers plus
+writer-active policy. The latter two remain compiler scaffolds, not functioning
+guest toolchains. No representation grants `Cell<T>` authority or replaces the
+compiler.
+
+Only Java and LLVM have new linked-core compiler-negative `.atto` test
+fixtures so far; .NET has pinned CIL/test-interpreter policy candidate vectors,
+JS and HDL retain actual negative *compiler admission* candidates, and the
+other profiles add source-model or integrity checks. Each of the seven newly
+expanded backend PRs has an exact-head, source-local, non-certifying policy
+workflow. **All 11 compiled-guest and full typed borrow-MIR statuses remain
+NOT_EXECUTED on their latest heads.**
 
 Required real backend negative cases: use after take, local borrow escape,
 conflicting shared/mutable loans, unpinned suspension, actor/domain boundary,
