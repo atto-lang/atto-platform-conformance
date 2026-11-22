@@ -132,7 +132,7 @@
       "backend": "net",
       "repository": "atto-lang/atto-source.net",
       "pr_url": "https://github.com/atto-lang/atto-source.net/pull/216",
-      "head_sha": "59809e6e6130f6f97808a10db04a6b77e8c37922",
+      "head_sha": "9fe178450334b5fb6d58d333581d26ee9e969a4e",
       "source_blob_sha": "0fd14a9a81c515781232e3953ecb2f8524b9adda",
       "fixture_positive_blob_sha": "9d4027de080b8d625ab869825c4ec62f369adce8",
       "fixture_negative_blob_sha": "470599e7850a277bae1dec72876e808cc36bd9e8",
@@ -159,7 +159,7 @@
       "backend": "wasm",
       "repository": "atto-lang/atto-source.wasm",
       "pr_url": "https://github.com/atto-lang/atto-source.wasm/pull/278",
-      "head_sha": "6fc9af76cf78f9f9852bcec8282bfc0c9263db69",
+      "head_sha": "62847d1c6c925a86f92287c6190a71529a3d09e3",
       "source_blob_sha": "d69ca063f8f8b5203f666a5586ac3fc77be484fc",
       "fixture_positive_blob_sha": "9d4027de080b8d625ab869825c4ec62f369adce8",
       "fixture_negative_blob_sha": "470599e7850a277bae1dec72876e808cc36bd9e8",
@@ -213,7 +213,7 @@
       "backend": "forge",
       "repository": "atto-lang/atto-source.forge",
       "pr_url": "https://github.com/atto-lang/atto-source.forge/pull/225",
-      "head_sha": "fb2eebd792a893949bf6b6514ab5686debe57833",
+      "head_sha": "84aa742c1ccac167b7f96bdea5299433f3aeeb17",
       "source_blob_sha": "d77382214d86fb55e0c9e5c77879d4565519467e",
       "fixture_positive_blob_sha": "9d4027de080b8d625ab869825c4ec62f369adce8",
       "fixture_negative_blob_sha": "470599e7850a277bae1dec72876e808cc36bd9e8",
@@ -240,7 +240,7 @@
       "backend": "cranelift",
       "repository": "atto-lang/atto-source.cranelift",
       "pr_url": "https://github.com/atto-lang/atto-source.cranelift/pull/89",
-      "head_sha": "0254e6e7e663b500840a81d30a3945274c165789",
+      "head_sha": "7518167df71b3f84a4e47a327781b4ad8892a701",
       "source_blob_sha": "a92807a1e7f45f27d80ddcb28afee687089b601b",
       "fixture_positive_blob_sha": "9d4027de080b8d625ab869825c4ec62f369adce8",
       "fixture_negative_blob_sha": "470599e7850a277bae1dec72876e808cc36bd9e8",
@@ -267,7 +267,7 @@
       "backend": "js",
       "repository": "atto-lang/atto-source.js",
       "pr_url": "https://github.com/atto-lang/atto-source.js/pull/128",
-      "head_sha": "09a653e5d8d24ddf60fa05b7eddb7ee0f85f37f5",
+      "head_sha": "e8df153be5945ec43cfcadf5a253ff93a657c0dc",
       "source_blob_sha": "78f976331d92ab80fbf326142595303019b2ddba",
       "fixture_positive_blob_sha": "9d4027de080b8d625ab869825c4ec62f369adce8",
       "fixture_negative_blob_sha": "470599e7850a277bae1dec72876e808cc36bd9e8",
@@ -294,7 +294,7 @@
       "backend": "hdl",
       "repository": "atto-lang/atto-source.hdl",
       "pr_url": "https://github.com/atto-lang/atto-source.hdl/pull/59",
-      "head_sha": "c8e2d089a4f0ba9f4741ae22c3b0cfa32d7b0de3",
+      "head_sha": "6c5b1ff5e0bae68ea0a878b1ac5ba4d0856a301d",
       "source_blob_sha": "899b1ecd5eb52f0e4cdc6720b774cae8938b7acf",
       "fixture_positive_blob_sha": "9d4027de080b8d625ab869825c4ec62f369adce8",
       "fixture_negative_blob_sha": "470599e7850a277bae1dec72876e808cc36bd9e8",
@@ -398,7 +398,78 @@
       "total_checks_passed": 15,
       "compilers_executed": 0,
       "limitations": "Checked exact current code paths and fixture diagnostics; no cargo/C++ build, compiled guest or AOT tests executed"
-    }
+    },
+    "backend_compiler_admission_v2": [
+      {
+        "backend": "net",
+        "exact_head": "9fe178450334b5fb6d58d333581d26ee9e969a4e",
+        "exact_git_tree": "107e608a15a6a428b839bc21404be0ae550b1e7b",
+        "workflow_git_blob": "e4296c6c35e72d0a722d03afc762a843c471a10b",
+        "gate_kind": "NATIVE_CIL_FRONTEND_COMPILE",
+        "actions_execution_status": "NOT_EXECUTED",
+        "compiled_guest_status": "NOT_EXECUTED",
+        "native_aot_status": "NOT_EXECUTED",
+        "source_mirrored_to_alternate_org": false
+      },
+      {
+        "backend": "wasm",
+        "exact_head": "62847d1c6c925a86f92287c6190a71529a3d09e3",
+        "exact_git_tree": "7101a085e269fe8234d0a07567e2c47dfd597ef8",
+        "workflow_git_blob": "2ee51cedd8ef5cddbc343f4cb8de3aff891336d5",
+        "gate_kind": "SOURCE_IMPORT_GRAPH_DENIAL_ONLY",
+        "compiler_test_git_blob": "4b02b07b3882f41c961f56c0c243d0228e25977a",
+        "actions_execution_status": "NOT_EXECUTED",
+        "compiled_guest_status": "NOT_EXECUTED",
+        "native_aot_status": "NOT_EXECUTED",
+        "source_mirrored_to_alternate_org": false
+      },
+      {
+        "backend": "forge",
+        "exact_head": "84aa742c1ccac167b7f96bdea5299433f3aeeb17",
+        "exact_git_tree": "98dd900d45e3f30606444e1284b197534988c48e",
+        "workflow_git_blob": "9a4a2dc7f12489ccb964c8b6ad381517023f1d45",
+        "gate_kind": "STAGE0_FORGE_FRONTEND_INTERPRETER",
+        "actions_execution_status": "NOT_EXECUTED",
+        "compiled_guest_status": "NOT_EXECUTED",
+        "native_aot_status": "NOT_EXECUTED",
+        "source_mirrored_to_alternate_org": false
+      },
+      {
+        "backend": "cranelift",
+        "exact_head": "7518167df71b3f84a4e47a327781b4ad8892a701",
+        "exact_git_tree": "272b120eb98c4c4e19eb355bdf828421b0371202",
+        "workflow_git_blob": "4a0b9302c5bc4eea0f1af684d7e24f886c5b17a0",
+        "gate_kind": "CRANELIFT_PARSE_AND_IR",
+        "actions_execution_status": "NOT_EXECUTED",
+        "compiled_guest_status": "NOT_EXECUTED",
+        "native_aot_status": "NOT_EXECUTED",
+        "source_mirrored_to_alternate_org": false
+      },
+      {
+        "backend": "js",
+        "exact_head": "e8df153be5945ec43cfcadf5a253ff93a657c0dc",
+        "exact_git_tree": "fcb14c17678ee0ddc93c521494cec373b472ab85",
+        "workflow_git_blob": "474056d2fd3e83e8f2abac5eeefb515babf183e3",
+        "gate_kind": "COMPILED_ESM_EXECUTED_GUEST_TEST",
+        "compiler_test_git_blob": "4c2a351b0d444d0df65fafd23148d79e49baf65a",
+        "actions_execution_status": "NOT_EXECUTED",
+        "compiled_guest_status": "NOT_EXECUTED",
+        "native_aot_status": "NOT_EXECUTED",
+        "source_mirrored_to_alternate_org": false
+      },
+      {
+        "backend": "hdl",
+        "exact_head": "6c5b1ff5e0bae68ea0a878b1ac5ba4d0856a301d",
+        "exact_git_tree": "5f72f2f5adccddd1d04c4a2326446dc1f5741fd4",
+        "workflow_git_blob": "92c084a5be168c08e7690405f0a8464fdc3b3a9f",
+        "gate_kind": "RTL_CODEGEN_ADMISSION",
+        "actions_execution_status": "NOT_EXECUTED",
+        "compiled_guest_status": "NOT_EXECUTED",
+        "native_aot_status": "NOT_EXECUTED",
+        "source_mirrored_to_alternate_org": false
+      }
+    ],
+    "backend_compiler_admission_v2_notes": "JS generated ESM test, NET/Forge/Cranelift/HDL real compiler admission jobs and Wasm fail-closed source-graph check are staged, not executed. Source-only and compiler-admission gates are not all-backend guest/AOT parity."
   },
   "negative_guests": [
     {
