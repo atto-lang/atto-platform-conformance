@@ -20,6 +20,14 @@ export const REQUIRED_CASES = Object.freeze([
   'oversized-value','host-ambient-hidden','independent-contexts',
   'package-no-shadow','present-empty-bool-fails'
 ]);
+export const TARGET_POLICIES = Object.freeze({
+  java:'host_capability_required',llvm:'host_capability_required',
+  net:'host_capability_required',rs:'host_capability_required',
+  forge:'host_capability_required',cranelift:'host_capability_required',
+  js:'host_capability_required',wasm:'host_capability_required',
+  atto:'bootstrap_pending',realtime:'bounded_startup_snapshot_required',
+  hdl:'reject_runtime_environment_effect'
+});
 const HEX40 = /^[a-f0-9]{40}$/;
 const CASE_ID = /^[a-z][a-z0-9-]{0,70}$/;
 const KEY = /^[A-Za-z_][A-Za-z0-9_]{0,127}$/;
@@ -43,7 +51,8 @@ export function verifyStdEnvRegistry(data, root=ROOT) {
     const state=data.backends[backend];
     // This ledger is a prospective target registry, never an execution receipt.
     if (state?.status!=='not_executed' || typeof state.reason!=='string' ||
-        state.reason.length<10 || state.reason.length>512)
+        state.reason.length<10 || state.reason.length>512 ||
+        state.target_policy!==TARGET_POLICIES[backend])
       err(errors,'backend '+backend+' cannot claim execution or implicit support');
   }
   if (!data.semantics || data.semantics.value_max_utf8_bytes!==16384 ||
