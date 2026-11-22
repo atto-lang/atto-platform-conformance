@@ -26,10 +26,13 @@ test('all eleven backend identities and explicit nonpromoting execution gates ar
 });
 test('Java source tree and the two imported guest programs are individually SHA-pinned',()=>{
   const j=snapshot.java_reference;
-  assert.equal(j.root_tree_sha,'58d26bb865a1211fae18395ab87587f6a4433b68');
+  assert.equal(j.root_tree_sha,'af9c40f78d8f4b15e2cb8903f658f7df5be48aa2');
   assert.equal(j.head_sha,snapshot.backends.find(x=>x.id==='java').candidate.head_sha);
   assert.equal(j.test_blobs.filter(x=>x.path.endsWith('.atto')).length,3);
   assert.equal(j.authored_junit_tests.filter(x=>x.kind==='compiled_positive_guest').length,3);
+  assert.ok(j.test_blobs.some(x=>x.path==='src/main/java/dev/oreslang/types/OwnershipChecker.java' && x.sha==='6be88b5f3717f70759440be6a3012a0411f2315b'));
+  assert.ok(j.test_blobs.some(x=>x.path==='src/main/java/dev/oreslang/types/TypeChecker.java' && x.sha==='95a344571ba41d78303f3d1979918927b11619af'));
+  assert.ok(j.test_blobs.some(x=>x.path==='.github/workflows/core-option-result-jvm-borrow-exact-head.yml' && x.sha==='9d74a1ea63898534fb3c991dfd805b031b74a860'));
   assert.ok(j.authored_junit_tests.every(x=>x.state==='not_executed'));
 });
 test('dashboard is the exact deterministic projection of the audited registry',()=>{
