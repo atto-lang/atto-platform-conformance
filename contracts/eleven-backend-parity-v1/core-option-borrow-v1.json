@@ -272,7 +272,7 @@
       "id": "rs",
       "repository": "atto-lang/atto-source.rs",
       "observed_main_sha": "877bd9f8d61c598137c8627f73fa5ed2a497d9e8",
-      "candidate_head_sha": "9f881e82675df9bc08621b4056f1206583e9054d",
+      "candidate_head_sha": "e1310a921d41f0fc4ab18b28b7ce4f297b95b754",
       "capability_state": "unverified",
       "cases": {
         "borrowed_option_some_query": {
