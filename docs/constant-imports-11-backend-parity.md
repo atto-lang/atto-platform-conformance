@@ -56,6 +56,14 @@ by a reviewed source-owned DAG, not by overwriting branches.
 source SHA/tree, selected CI job, material checkout/compile/guest steps,
 all 27 case receipts, negative zero-artifact proofs, per-declaration
 initializer invocations or same-AOT two-launch artifact digests disagree.
+The receipt uses only `PASSED`, `FAILED`, `UNSUPPORTED` and `NOT_EXECUTED`
+as backend/case execution statuses. A candidate `PASSED` must also pin an
+independently selected compiler SHA-256, toolchain version, target, source
+commit/tree, immutable registry Git blob SHA and per-case SHA-256 manifest
+that covers the complete inline `.atto` fixture, launch inputs and oracle.
+A `PASSED` report with a mismatched fixture, compiler or target is invalid.
+`STRUCTURAL_REVIEW_REQUIRED` is a validator classification, **not** a release
+status.
 
 Even a complete, synthetically well-formed receipt returns
 `STRUCTURAL_REVIEW_REQUIRED` with `releaseQualified:false` and
