@@ -87,3 +87,39 @@ the complete private Java compiler into a different organization or interpret
 a small source-only contract copy as a compiler run. Source-local full builds
 or an independently approved exact-snapshot destination remain the real
 execution routes.
+
+## Backend-owned core borrow rollout: 11 tracked compilers (2026-11-22)
+
+[Exact source-only borrow candidate ledger](../contracts/eleven-backend-parity-v1/borrow-source-ledger.json)
+records the observed PR-head commit, full root tree SHA, and **35 explicitly
+verified Git blob identities** across all eleven backend slots. No private
+compiler contents are copied into this conformance repo. The companion
+[source-integrity validator](../lib/core-option-borrow-source-ledger-v1.mjs)
+and [adversarial regression suite](../tests/core-option-borrow-source-ledger-v1.test.mjs)
+cross-check the backend identities against the core-option dashboard and
+reject missing/duplicated source artifacts, valid-looking SHA substitution,
+fake AOT, fake guest PASS, fake unsupported, or release promotion.
+
+Seven compiler-owned source candidates (Java, LLVM, Rust, .NET, Wasm, Forge,
+Cranelift) propose explicit `borrow Option<T>` and `borrow Result<T,E>`
+read-only tag queries. Six of them now also have local
+`tests/core_option_result/borrowed_read_42.atto` and
+`negative_affine_borrow_escape.atto` source fixtures. The expected
+semantic negative **must reach the typed ownership checker and produce no
+guest artifact**; rejecting unknown syntax, class grammar, imports, or
+unimplemented generics does *not* prove the borrow model.
+
+JS keeps its independent concrete `Option<int>`/`Result<int,int>`
+compiler; the expanded Node test requires scalar carriers to remain
+reusable and prohibits unsupported generic `borrow!`/`take!` or
+affine escapes from compiling. HDL remains a distinct proposed RTL
+scalar tagging path requiring real synthesis/simulation evidence.
+Self-hosted Atto and Realtime are explicit no-candidate slots, not
+omitted or implicitly marked unsupported.
+
+**Execution boundary:** metadata SHA comparison and source-only Node
+tests are not guest compilation. All **176 borrow conformance cases**,
+all native AOT and sanitizer/equivalent checks remain `not_executed`.
+Private source export policy denies this snapshot to unapproved carriers.
+Do not use an alternate Actions org unless the exact source head/tree,
+private carrier identity and independent approval are genuinely admitted.
