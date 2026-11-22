@@ -8,10 +8,13 @@ on:
       - '.github/workflows/eleven-backend-parity-v1.yml'
       - 'docs/ELEVEN_BACKEND_PARITY_PROGRAM_V1.md'
       - 'contracts/eleven-backend-parity-v1/core-option-dashboard.json'
+      - 'contracts/eleven-backend-parity-v1/borrow-source-ledger.json'
       - 'lib/core-option-parity-dashboard-v1.mjs'
       - 'lib/core-option-borrow-parity-v1.mjs'
+      - 'lib/core-option-borrow-source-ledger-v1.mjs'
       - 'tests/core-option-parity-dashboard-v1.test.mjs'
       - 'tests/core-option-borrow-parity-v1.test.mjs'
+      - 'tests/core-option-borrow-source-ledger-v1.test.mjs'
       - 'docs/CORE_OPTION_PARITY_DASHBOARD_V1.md'
   workflow_dispatch:
 permissions:
@@ -42,12 +45,13 @@ jobs:
       - name: Run source-only 11-backend 121-cell integrity and adversarial tests
         run: node --test tests/eleven-backend-parity-v1.test.mjs
       - name: Validate all eleven core/option backends, pinned candidate heads and no-fake-PASS gates
-        run: node --test tests/core-option-parity-dashboard-v1.test.mjs tests/core-option-borrow-parity-v1.test.mjs
+        run: node --test tests/core-option-parity-dashboard-v1.test.mjs tests/core-option-borrow-parity-v1.test.mjs tests/core-option-borrow-source-ledger-v1.test.mjs
       - name: Declare scope, never guest parity
         run: |
           echo 'ELEVEN_BACKEND_SOURCE_INVENTORY_ONLY=VALIDATED'
           echo 'CORE_OPTION_JAVA_GUEST=NOT_EXECUTED'
           echo 'CORE_OPTION_BORROW_176_CELLS=NOT_EXECUTED'
+          echo 'BORROW_SOURCE_GIT_BLOBS_35=METADATA_PINNED_ONLY'
           echo 'CORE_OPTION_GRAALVM_AOT=NOT_EXECUTED'
           echo 'CORE_OPTION_SANITIZERS=NOT_EXECUTED'
           echo 'BACKEND_COMPILER_EXECUTION=NOT_EXECUTED'
