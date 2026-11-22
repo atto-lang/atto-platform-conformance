@@ -67,7 +67,7 @@
     {
       "backend": "java",
       "repository": "atto-lang/atto-source.java",
-      "source_state": "UNASSESSED",
+      "source_state": "JAVA_HTTP_CORE_BORROW_STAGED_UNVERIFIED",
       "guest_execution": "NOT_EXECUTED",
       "guest_cases_executed": 0,
       "complete_ownership_parity": false,
@@ -173,5 +173,21 @@
     "no_noncopy_without_checker": true,
     "independent_atto_sources_allowed": true,
     "exact_source_tree_required": true
+  },
+  "java_source_candidates": {
+    "head": "ed70297dcdbe197ea1daf59b2a7abaf7dbb3990f",
+    "root_tree": "85c61cc99800cc649742700b60d242db5ab312f9",
+    "pr": 1754,
+    "status": "NOT_EXECUTED",
+    "junit_methods_staged": 3,
+    "guest_fixtures_staged": 3,
+    "blob_shas": {
+      "src/test/java/dev/oreslang/runtime/NativeAttoHttpCoreBorrowBoundaryTest.java": "4ae6d101577922d2babe267cd0b1caff5270fb26",
+      "src/test/resources/stdlib-parity/http-core-borrow-positive.atto": "db51329274f9f8f8d523b5b61ddb4676008016dd",
+      "src/test/resources/stdlib-parity/http-core-borrow-negative.atto": "94f26cfd4148a24725dd027a95dbe0604b4c6fdf",
+      "src/test/resources/stdlib-parity/http-core-noncopy-argument-negative.atto": "e30e5a9a6cf71a47f69787b5796452963b652ac9",
+      ".github/workflows/atto-http-core-borrow-guest.yml": "d28c6c57f5f995f7ae23b39c0980e467c886d256"
+    },
+    "evidence": "SOURCE_ONLY"
   }
 }
