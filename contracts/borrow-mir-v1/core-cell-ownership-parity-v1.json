@@ -111,42 +111,48 @@
       "read": true,
       "write": true,
       "move": true,
-      "unpinnedSuspend": true
+      "unpinnedSuspend": true,
+      "acquireShared": true
     },
     {
       "id": "one_shared_reader",
       "read": true,
       "write": false,
       "move": false,
-      "unpinnedSuspend": false
+      "unpinnedSuspend": false,
+      "acquireShared": true
     },
     {
       "id": "max_shared_reader",
       "read": true,
       "write": false,
       "move": false,
-      "unpinnedSuspend": false
+      "unpinnedSuspend": false,
+      "acquireShared": false
     },
     {
       "id": "exclusive_writer",
       "read": false,
       "write": false,
       "move": false,
-      "unpinnedSuspend": false
+      "unpinnedSuspend": false,
+      "acquireShared": false
     },
     {
       "id": "invalid_negative_readers",
       "read": false,
       "write": false,
       "move": false,
-      "unpinnedSuspend": false
+      "unpinnedSuspend": false,
+      "acquireShared": false
     },
     {
       "id": "invalid_conflicting_writer_and_readers",
       "read": false,
       "write": false,
       "move": false,
-      "unpinnedSuspend": false
+      "unpinnedSuspend": false,
+      "acquireShared": false
     }
   ],
   "compilerNegativeCases": [
@@ -379,5 +385,35 @@
       "guest": "NOT_EXECUTED"
     }
   },
-  "compilerIntegrationEvidenceRule": "These are exact Git object witnesses for compiler-gate candidates, NOT real guest or typed-MIR proof. Re-fetch current head/tree/blobs and verify material runner steps, compiler binary digest and actual positive/negative guest before promoting. The Rust borrow-v1 profile is opt-in and must not be represented as global Atto borrow-by-default. All eleven backend guestEvidence statuses remain NOT_EXECUTED."
+  "compilerIntegrationEvidenceRule": "These are exact Git object witnesses for compiler-gate candidates, NOT real guest or typed-MIR proof. Re-fetch current head/tree/blobs and verify material runner steps, compiler binary digest and actual positive/negative guest before promoting. The Rust borrow-v1 profile is opt-in and must not be represented as global Atto borrow-by-default. All eleven backend guestEvidence statuses remain NOT_EXECUTED.",
+  "borrowSaturationContract": {
+    "portableSemantics": "canAcquireShared is false at max live shared-loan capacity, but an existing owner's read remains allowed. Additional loans must never overflow; owner write/move/unpinned suspension remain denied with any live loan.",
+    "signedCounter": {
+      "backends": [
+        "java",
+        "llvm"
+      ],
+      "exclusiveState": "-1",
+      "maxSharedState": "9223372036854775807",
+      "saturatedAcquireShared": false,
+      "saturatedOwnerRead": true
+    },
+    "boundedReadersWriter": {
+      "backends": [
+        "net",
+        "cranelift",
+        "forge",
+        "wasm",
+        "js",
+        "rs",
+        "hdl",
+        "atto",
+        "realtime"
+      ],
+      "maxSharedReaders": 65535,
+      "saturatedAcquireShared": false,
+      "saturatedOwnerRead": true
+    },
+    "enforcement": "Pure policy is non-authoritative; the compiler must separately enforce live-loan root identity, aliasing, actor boundaries, generations and suspension."
+  }
 }
