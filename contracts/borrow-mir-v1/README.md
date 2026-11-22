@@ -84,3 +84,32 @@ repository scaffolds, not functional additional compilers.
    existing ready-cycle policy.
 
 This contract is intentionally fail-closed until all of those proofs exist.
+
+## Core/cell owner policy extension — 11-target inventory (2026-11-22)
+
+`core-cell-ownership-parity-v1.json` and
+`tests/core-cell-ownership-parity-v1.test.mjs` extend the **separate
+core/cell policy** inventory to Java, LLVM, .NET, Wasm, Forge, Cranelift,
+JavaScript, Rust, HDL and the self-hosted Atto/Realtime scaffolds.
+This does **not** change the established nine-compiler MIR/CFG contract's
+certification scope.
+
+At the time of writing, Java/LLVM draft core-four branches have signed
+borrow-counter policies with owner read/write/move/park predicates, and .NET/
+Cranelift have independent bounded readers+writer-flag versions. Neither
+representation grants a real `Cell<T>` capability or replaces the compiler.
+Only Java and LLVM have added corresponding compiler-negative source fixtures
+so far. .NET's extension is compiler-owned .atto source SHA-256 pinned and
+its separate candidate CIL guest tests cover policy vectors; Cranelift's
+extension remains source-model-only. **All four remain unverified on current
+exact heads; remaining seven profiles are NOT_EXECUTED.**
+
+Required real backend negative cases: use after take, local borrow escape,
+conflicting shared/mutable loans, unpinned suspension, actor/domain boundary,
+stale owner generation. Unsupported targets must fail before codegen; no core
+API or integer helper may bypass compiler MIR or native guest tests.
+
+The four backend core libraries remain independent .atto source files; parity
+is defined by observable rights, not byte-identical source blobs. Source-only
+test checks and synthetic counters must never be reported as compiler guest
+or MIR borrow certification.
