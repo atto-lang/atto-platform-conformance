@@ -268,26 +268,29 @@
       "backend": "net",
       "repository": "atto-lang/atto-source.net",
       "pr": 220,
-      "commit": "2342eea325fb7e6a9ad9664d368bdcb4b3aedca6",
-      "module_admission": "registered_embedded_cil_guest_unexecuted",
+      "commit": "0beafceb055f15823625fe67f412045d1d7b0eb5",
+      "module_admission": "authenticated_namespace_only_builtins_legacy_module_import_adapter_cil_guest_unexecuted",
       "source_blobs": {
         "math": {
           "path": "library/atto.core/math.atto",
-          "blob_sha1": "53bde53ebbcf1bff74ecf5dd21289ec1992535cb"
+          "blob_sha1": "a54bfc2d63c639c273e607b8d1bcf76967bccfb2"
         },
         "hash": {
           "path": "library/atto.core/hash.atto",
-          "blob_sha1": "4bad9e77fc02dc4b0d4da2ff456d07941cb2b5e8"
+          "blob_sha1": "7ac88c19335d3c88054f6dfb59c60b4330a7acdd"
         },
         "cell": {
           "path": "library/atto.core/cell.atto",
-          "blob_sha1": "e5ec2bd29cb7d1983db2c089a18a36ec21f6d774"
+          "blob_sha1": "4d58de28141e2cd551036cc783d18e82c172949a"
         }
       },
       "guest_status": "NOT_EXECUTED",
       "material_ci_status": "NOT_EXECUTED",
       "real_cell_T": false,
-      "module_sources_are_backend_owned": true
+      "module_sources_are_backend_owned": true,
+      "namespace_source_form": "use namespace atto.core.<leaf>;",
+      "compiler_owned_import_authority": true,
+      "general_package_namespace_imports": false
     },
     {
       "backend": "wasm",
@@ -368,12 +371,12 @@
       "backend": "js",
       "repository": "atto-lang/atto-source.js",
       "pr": 137,
-      "commit": "a90df3340f759258d761532ca3ac2229698def31",
-      "module_admission": "math_es_module_guest_candidate_hash_cell_source_only",
+      "commit": "25412db7f3f16734690fbc8864854850eaf8f251",
+      "module_admission": "namespace_math_to_checked_esm_test_not_executed_hash_cell_source_only",
       "source_blobs": {
         "math": {
           "path": "library/atto.core/math.atto",
-          "blob_sha1": "aec5ab486e1103be07872886de0a6df7b7897d8c"
+          "blob_sha1": "845379a28b68e4674aed7d94489a18725ca16144"
         },
         "hash": {
           "path": "library/atto.core/hash.atto",
@@ -387,7 +390,10 @@
       "guest_status": "NOT_EXECUTED",
       "material_ci_status": "NOT_EXECUTED",
       "real_cell_T": false,
-      "module_sources_are_backend_owned": true
+      "module_sources_are_backend_owned": true,
+      "namespace_source_form": "use namespace atto.core.math;",
+      "compiler_owned_import_authority": false,
+      "general_package_namespace_imports": false
     },
     {
       "backend": "cranelift",
@@ -512,6 +518,32 @@
     "stepful_exact_head_evidence": false,
     "full_eleven_backend_guest_parity": false,
     "self_hosted_compiler_execution": false,
-    "hard_real_time_wcet": false
+    "hard_real_time_wcet": false,
+    "namespace_import_parity": false
+  },
+  "namespace_contract": {
+    "status": "namespace_source_draft_not_general_import_registry",
+    "file_declaration": "use namespace atto.core.math;",
+    "builtin_core_namespace_examples": [
+      "atto.core.math",
+      "atto.core.hash",
+      "atto.core.cell"
+    ],
+    "namespace_is_source_metadata_not_runtime_object": true,
+    "source_namespace_grants_package_permissions": false,
+    "legacy_define_module_not_required_for_namespace_library": true,
+    "named_or_star_package_import_implemented": false,
+    "guest_namespace_execution_proven": false,
+    "backend_coverage": {
+      "net": "compiler_owned_namespace_sources_sha256_pinned_CIL_guest_not_executed",
+      "js": "pure_math_namespace_adapter_ESM_guest_not_executed",
+      "other_backends": "module_wrappers_or_source_only_until_verified_namespace_parse_link"
+    },
+    "negative_requirements": [
+      "duplicate or late use namespace header rejects",
+      "file namespace spoof of builtin Core rejects without compiler authority",
+      "canonical import cannot fall back to project or filesystem shadow",
+      "unsupported namespace import rejects without artifact publication"
+    ]
   }
 }
