@@ -5,7 +5,7 @@
   "authority": "atto-lang/atto-platform-conformance",
   "evidence_policy": "SOURCE_ONLY_NO_GUEST_PROMOTION",
   "release_qualified": false,
-  "notes": "Observed main SHAs and candidate PR heads are GitHub snapshots, not executed compiler proof. v1 never admits self-attested pass or unsupported claims; an independently authenticated evidence verifier is required for any promotion. Backend-owned .atto implementations may differ. Java PR #1767 now adds compiler-linked affine borrow extraction negative regressions, not an executed test receipt.",
+  "notes": "Observed main SHAs and candidate PR heads are GitHub snapshots, not executed compiler proof. v1 never admits self-attested pass or unsupported claims; an independently authenticated evidence verifier is required for any promotion. Backend-owned .atto implementations may differ. Java PR #1767 now adds compiler-linked affine borrow extraction negative regressions, not an executed test receipt. Borrow-only Option/Result source adapters and linked guest candidate have been added in the Java draft; no compiler execution is verified.",
   "backends": [
     {
       "id": "java",
@@ -15,7 +15,7 @@
       "profile": "Graal/JVM + Native Image",
       "candidate": {
         "pr_url": "https://github.com/atto-lang/atto-source.java/pull/1767",
-        "head_sha": "92adc7212f7ff43c78ae4d2af4729be72d6a1dd0"
+        "head_sha": "919d1d1fc59712e5e2059c72fe7a55cf5720df60"
       },
       "source_state": "candidate",
       "checks": {
@@ -522,16 +522,16 @@
   "java_reference": {
     "repository": "atto-lang/atto-source.java",
     "pr_url": "https://github.com/atto-lang/atto-source.java/pull/1767",
-    "head_sha": "92adc7212f7ff43c78ae4d2af4729be72d6a1dd0",
-    "root_tree_sha": "bae912a5d0f561dbc1cf754e92e48f198adedbef",
+    "head_sha": "919d1d1fc59712e5e2059c72fe7a55cf5720df60",
+    "root_tree_sha": "58d26bb865a1211fae18395ab87587f6a4433b68",
     "module_blobs": [
       {
         "path": "core/option.atto",
-        "sha": "08bacaaf1c12510909931e20829d4867653793ae"
+        "sha": "4400fae94588587fbb85474256e82cac6c26256c"
       },
       {
         "path": "core/result.atto",
-        "sha": "0f07d8f50187495d2846f8773c306b649ab4b89b"
+        "sha": "6bae249740af1088e069c3592ff8fb2bc72f1216"
       }
     ],
     "test_blobs": [
@@ -545,11 +545,15 @@
       },
       {
         "path": "src/test/java/dev/oreslang/CoreOptionResultSourceTest.java",
-        "sha": "4d4950a2d3b1970499ba6eccbd5552143f4023da"
+        "sha": "ef08bcc9f3165a04a8e57a59525769ad66e7116f"
       },
       {
         "path": "src/test/java/dev/oreslang/CoreOptionResultBorrowSafetyTest.java",
         "sha": "d44dfe085ed6728e5f5b50be889a1c56bf78bc39"
+      },
+      {
+        "path": "tests/core_option_result/borrowed_queries.atto",
+        "sha": "35f77b9020812364d1d0885e35f53a071cb50134"
       }
     ],
     "authored_junit_tests": [
@@ -655,6 +659,14 @@
         "kind": "borrow_positive",
         "guest_path": null,
         "expected_stdout": null,
+        "state": "not_executed"
+      },
+      {
+        "id": "linked_borrowed_core_queries",
+        "method": "linkedBorrowedCoreQueriesMustNotConsumeOwner",
+        "kind": "compiled_positive_guest",
+        "guest_path": "tests/core_option_result/borrowed_queries.atto",
+        "expected_stdout": "42",
         "state": "not_executed"
       }
     ],
