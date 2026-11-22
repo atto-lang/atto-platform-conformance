@@ -9,8 +9,12 @@ test('typed constant import contract is explicit and not falsely certified', () 
   assert.equal(doc.schema, 'atto.constant-imports.v1');
   assert.equal(doc.status, 'TARGET_NOT_EXECUTED');
   assert.ok(doc.spec_path.endsWith('constant-imports-v1.md'));
-  assert.ok(doc.cases.length >= 21);
-  assert.ok(Object.values(doc.backend_status).length >= 6);
+  assert.ok(doc.cases.length >= 27);
+  assert.deepEqual(
+    Object.keys(doc.backend_status).sort(),
+    ['rs-browser', 'java', 'llvm', 'net', 'forge', 'wasm-independent',
+     'cranelift', 'js', 'hdl', 'atto-self-hosted', 'realtime'].sort()
+  );
   assert.ok(Object.values(doc.backend_status).every(status => status === 'NOT_EXECUTED'));
 });
 
@@ -40,8 +44,8 @@ test('each case has real multiple-source text or isolated negative, and a unique
       assert.equal(c.expected_return, undefined, c.id);
     }
   }
-  assert.ok(successes >= 8);
-  assert.ok(negatives >= 13);
+  assert.ok(successes >= 10);
+  assert.ok(negatives >= 17);
 });
 
 test('selection, visibility, assignment and static-global rejection are represented', () => {
@@ -53,6 +57,9 @@ test('selection, visibility, assignment and static-global rejection are represen
     'env_std_qualified_export_import', 'env_same_aot_artifact_different_startups',
     'env_denied_returns_empty', 'env_legacy_and_canonical_same_snapshot',
     'env_wrong_type', 'env_dynamic_key', 'env_spoofed_provider',
+    'env_missing_defaults_empty', 'env_constexpr_key_reference',
+    'env_private_not_importable', 'const_overflow_across_import',
+    'const_dynamic_call_reject', 'env_non_string_key_reject',
   ]) {
     assert.ok(doc.cases.some(c => c.id === id), 'missing ' + id);
   }
@@ -82,7 +89,16 @@ test('qualified std.env constant scenarios record exact launch-time assertions',
   const legacy = byId.get('env_legacy_and_canonical_same_snapshot');
   assert.match(legacy.files['std/http.atto'], /os\.read_env/);
   assert.match(legacy.files['std/http.atto'], /std\.env\.read_env/);
-  assert.equal(legacy.expected_host_reads.status_valid, 1);
+  assert.deepEqual(legacy.expected_initializer_invocations,
+    { status_valid: 1, old_status_valid: 1 });
+  assert.equal(legacy.expected_host_reads, undefined,
+    'per-declaration once semantics do not require cross-constant key caching');
+
+  assert.equal(byId.get('env_constexpr_key_reference').env.status_valid, 'ready');
+  assert.deepEqual(byId.get('env_missing_defaults_empty').unset_env_keys, ['ATTO_MISSING_KEY']);
+  assert.equal(byId.get('env_private_not_importable').expected_error, 'E_PRIVATE');
+  assert.equal(byId.get('const_overflow_across_import').expected_error, 'E_CONST_OVERFLOW');
+  assert.equal(byId.get('env_non_string_key_reject').expected_error, 'E_CONST_TYPE');
   for (const name of ['env_wrong_type', 'env_dynamic_key', 'env_spoofed_provider']) {
     assert.equal(byId.get(name).kind, 'fail');
   }
