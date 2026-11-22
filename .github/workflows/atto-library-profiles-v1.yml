@@ -3,6 +3,10 @@ on:
   pull_request:
     paths:
       - 'contracts/atto-library-profiles-v1.json'
+      - 'contracts/std-actor-parity-v1.json'
+      - 'lib/std-actor-parity-v1.mjs'
+      - 'tests/std-actor-parity-v1.test.mjs'
+      - 'docs/STD_ACTOR_PARITY_V1.md'
       - 'lib/atto-library-profiles-v1.mjs'
       - 'lib/atto-library-run-evidence-v1.mjs'
       - 'tests/atto-library-profiles-v1.test.mjs'
@@ -39,11 +43,12 @@ jobs:
         run: |
           set -euo pipefail
           node --version
-          node --test tests/atto-library-profiles-v1.test.mjs tests/atto-library-run-evidence-v1.test.mjs
+          node --test tests/atto-library-profiles-v1.test.mjs tests/atto-library-run-evidence-v1.test.mjs tests/std-actor-parity-v1.test.mjs
       - name: Preserve evidence boundary
         shell: bash
         run: |
           set -euo pipefail
           echo 'ATTO_LIBRARY_POLICY_TESTS=SOURCE_ONLY'
           echo 'COMPILER_BACKED_GUEST_EXECUTION=NOT_EXECUTED'
-          echo 'FIVE_BACKEND_PARITY=NOT_EXECUTED'
+          echo 'ELEVEN_BACKEND_STD_ACTOR_GUEST_PARITY=NOT_EXECUTED'
+          echo 'SELF_HOSTED_AND_REALTIME_STD_ACTOR=NOT_IMPLEMENTED'
