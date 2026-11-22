@@ -104,3 +104,25 @@ for (const [kind, [loText, hiText]] of Object.entries(limits)) {
 }
 assert.equal(vectorCount, 8*21);
 console.log("SOURCE_ONLY_MODEL_PASS: "+vectorCount+" BigInt vectors, 9 backend source references. Guest parity NOT_EXECUTED.");
+
+test('secondary backend compiler gate blobs and current heads are pinned without false receipts',()=>{
+  const gates=manifest.evidence.backend_compiler_admission_v2;
+  assert.equal(gates.length,6);
+  assert.deepEqual(gates.map(x=>x.backend).sort(),['cranelift','forge','hdl','js','net','wasm']);
+  for(const gate of gates){
+    const source=manifest.sources.find(x=>x.backend===gate.backend);
+    assert.ok(source,'unknown backend '+gate.backend);
+    assert.equal(source.head_sha,gate.exact_head);
+    for(const attr of ['exact_head','exact_git_tree','workflow_git_blob'])
+      assert.match(gate[attr],/^[0-9a-f]{40}$/);
+    if(gate.compiler_test_git_blob) assert.match(gate.compiler_test_git_blob,/^[0-9a-f]{40}$/);
+    assert.equal(gate.actions_execution_status,'NOT_EXECUTED');
+    assert.equal(gate.compiled_guest_status,'NOT_EXECUTED');
+    assert.equal(gate.native_aot_status,'NOT_EXECUTED');
+    assert.equal(gate.source_mirrored_to_alternate_org,false);
+    assert.equal(source.guest_status,'NOT_EXECUTED');
+    assert.equal(source.aot_status,'NOT_EXECUTED');
+  }
+  assert.equal(gates.find(x=>x.backend==='js').gate_kind,'COMPILED_ESM_EXECUTED_GUEST_TEST');
+  assert.equal(gates.find(x=>x.backend==='wasm').gate_kind,'SOURCE_IMPORT_GRAPH_DENIAL_ONLY');
+});
