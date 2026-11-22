@@ -31,7 +31,31 @@ test('std/channel contract is source-owned and explicitly unverified', () => {
   assert.ok(manifest.required_contracts.some(x =>
     /head\/middle\/tail/.test(x) && /cancelled Future/.test(x)));
   assert.match(manifest.scope_notes.rs, /NOT_LINKED/);
-  assert.match(manifest.scope_notes.java, /does not yet expose a public cancel_read/);
+  assert.match(manifest.scope_notes.java, /cancel_read and cancel_write/);
+  assert.ok(manifest.required_contracts.some(x =>
+    /pending writes preserve FIFO/.test(x)));
+  assert.ok(manifest.required_contracts.some(x =>
+    /exactly one recovery/.test(x)));
+  assert.ok(manifest.required_contracts.some(x =>
+    /nested channel capabilities/.test(x)));
+  assert.ok(manifest.required_contracts.some(x =>
+    /queued public pending writers/.test(x)));
+});
+
+test('backend cancellation and borrow features have no false PASS', () => {
+  const expected = ['pending_read_cancellation', 'pending_write_cancellation',
+    'channel_payload_borrow_check', 'actor_data_exclusive_channel'].sort();
+  assert.deepEqual(manifest.feature_matrix.map(f => f.id).sort(), expected);
+  for (const feature of manifest.feature_matrix) {
+    assert.deepEqual(Object.keys(feature.backend_status).sort(), backends);
+    for (const [backend, value] of Object.entries(feature.backend_status))
+      assert.equal(value, 'NOT_EXECUTED', feature.id + ':' + backend);
+    assert.ok(feature.notes.rs?.length > 20);
+    assert.ok(feature.notes.java?.length > 20);
+  }
+  assert.match(manifest.scope_notes.rs, /NOT_LINKED/);
+  assert.match(manifest.scope_notes.rs, /NOT_IMPLEMENTED/);
+  assert.match(manifest.scope_notes.java, /NOT_EXECUTED/);
 });
 
 test('all conformance fixtures exist and no compiler is falsely certified', async () => {
