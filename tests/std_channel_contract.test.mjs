@@ -21,6 +21,15 @@ test('std/channel contract is source-owned and explicitly unverified', () => {
   assert.equal(manifest.backend_repositories.realtime, 'atto-lang/atto-source.realtime');
   assert.match(manifest.scope_notes.atto, /NOT_EXECUTED/);
   assert.match(manifest.scope_notes.realtime, /NOT_EXECUTED/);
+  for (const backend of ['atto', 'realtime']) {
+    const audit = manifest.backend_audit_snapshots[backend];
+    assert.match(audit.tree_sha, /^[0-9a-f]{40}$/);
+    assert.equal(audit.branch, 'main');
+    assert.equal(audit.tracked_files, 2);
+    assert.equal(audit.channel_implementation_files, 0);
+    assert.equal(audit.execution, 'NOT_EXECUTED');
+    assert.match(manifest.scope_notes[backend], /AUDITED_SKELETON/);
+  }
   assert.match(manifest.evidence_rule, /actual compiled\/executed guest/);
   assert.match(manifest.scope_notes.rs, /NOT_LINKED/);
   assert.match(manifest.scope_notes.llvm, /rejects unsupported guest lowering/);
