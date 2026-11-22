@@ -7,67 +7,89 @@
       "policy": "SOURCE_AUTHORED_NOT_GUEST_VERIFIED",
       "source": "atto-source.java/core/cell.atto",
       "representation": "signed-counter-i64",
-      "sourceBlobSha": "f8151e996dfdbd1e0892991d28d44f77a0d23c16"
+      "sourceBlobSha": "f8151e996dfdbd1e0892991d28d44f77a0d23c16",
+      "candidateCommitSha": "be9006bd58ecfa2de603dcc8564945ced787ec84",
+      "candidateTreeSha": "cf1ffc1a09241a3ed5997dde93aa2b720422596a"
     },
     "llvm": {
       "policy": "SOURCE_AUTHORED_NOT_GUEST_VERIFIED",
       "source": "atto-source.llvm/core/cell.atto",
       "representation": "signed-counter-i64",
-      "sourceBlobSha": "51e0467d09b25d0138cf185fc3c7c0405c3465ad"
+      "sourceBlobSha": "51e0467d09b25d0138cf185fc3c7c0405c3465ad",
+      "candidateCommitSha": "92b329df9e471d877e56336a3c5d17857e7e7bc2",
+      "candidateTreeSha": "a217b781a2a7ff77b9217c9f372289d8d23b397c"
     },
     "net": {
       "policy": "SOURCE_AUTHORED_NOT_GUEST_VERIFIED",
       "source": "atto-source.net/library/atto.core/cell.atto",
       "representation": "bounded-readers-plus-writer",
-      "sourceBlobSha": "154563e51199140cfad005945c608789bee5ebfa"
+      "sourceBlobSha": "154563e51199140cfad005945c608789bee5ebfa",
+      "candidateCommitSha": "429c757d2468ec5f0913baf7e13d92e7b55555d7",
+      "candidateTreeSha": "0563ad4910c8d3381dac79302efce6083fdb293f"
     },
     "cranelift": {
       "policy": "SOURCE_AUTHORED_NOT_GUEST_VERIFIED",
       "source": "atto-source.cranelift/library/atto.core/cell.atto",
       "representation": "bounded-readers-plus-writer",
-      "sourceBlobSha": "178dc049f6f19c8af29f96e42661b970e746d671"
+      "sourceBlobSha": "178dc049f6f19c8af29f96e42661b970e746d671",
+      "candidateCommitSha": "3caf0f4b47491cad266a17f805f5adcf5956ac0e",
+      "candidateTreeSha": "d559df2692b7129876f49912cfe790d127f7b516"
     },
     "wasm": {
       "policy": "SOURCE_AUTHORED_NOT_GUEST_VERIFIED",
       "source": "atto-source.wasm/library/atto.core/cell.atto",
       "representation": "bounded-readers-plus-writer",
-      "sourceBlobSha": "1561f8e71fc831d5787b8652a108d0fb87714503"
+      "sourceBlobSha": "1561f8e71fc831d5787b8652a108d0fb87714503",
+      "candidateCommitSha": "3214014f973916d43e3b2d15b61d93f1ee7521dc",
+      "candidateTreeSha": "7e15c7505b4558c4158b7584535c170d407a70a1"
     },
     "forge": {
       "policy": "SOURCE_AUTHORED_NOT_GUEST_VERIFIED",
       "source": "atto-source.forge/library/atto.core/cell.atto",
       "representation": "bounded-readers-plus-writer",
-      "sourceBlobSha": "7a0b117c5a6775921e541dfa5aaf654ba2aea7f4"
+      "sourceBlobSha": "7a0b117c5a6775921e541dfa5aaf654ba2aea7f4",
+      "candidateCommitSha": "9d9d399f58d919bc64f5147387091474629b88c7",
+      "candidateTreeSha": "2f70eac004c65af9b21a6ad6060ffc7778c42808"
     },
     "js": {
       "policy": "SOURCE_AUTHORED_NOT_GUEST_VERIFIED",
       "source": "atto-source.js/library/atto.core/cell.atto",
       "representation": "bounded-readers-plus-writer",
-      "sourceBlobSha": "ae54f28baee13675a71088251b41dd8182f60084"
+      "sourceBlobSha": "ae54f28baee13675a71088251b41dd8182f60084",
+      "candidateCommitSha": "b9985e6249fb35327cabdd6d183dbe9d7f66c49b",
+      "candidateTreeSha": "935e4f75ba301127c5059f7fa374b6ceefd26a85"
     },
     "rs": {
       "policy": "SOURCE_AUTHORED_NOT_GUEST_VERIFIED",
       "source": "atto-source.rs/library/atto.core/cell.atto",
       "representation": "bounded-readers-plus-writer",
-      "sourceBlobSha": "7eb09f625637dd11d75aa295947a9c79835cb5df"
+      "sourceBlobSha": "7eb09f625637dd11d75aa295947a9c79835cb5df",
+      "candidateCommitSha": "d8690dd50f40caef9979392b762a80fdcb1da6f1",
+      "candidateTreeSha": "5b6c6c081cd4e34fcbfcff9585dd1e0b1e5b7151"
     },
     "hdl": {
       "policy": "SOURCE_AUTHORED_NOT_GUEST_VERIFIED",
       "source": "atto-source.hdl/library/atto.core/cell.atto",
       "representation": "bounded-readers-plus-writer",
-      "sourceBlobSha": "38439b2b0b487b4bb09d191ba50c115611295206"
+      "sourceBlobSha": "38439b2b0b487b4bb09d191ba50c115611295206",
+      "candidateCommitSha": "981f808f7d705c7f480e89ec6a87d1348ed1ca97",
+      "candidateTreeSha": "16d7949ccb43f4999ca259f3b60b1eaa6f1d48f9"
     },
     "atto": {
       "policy": "SOURCE_AUTHORED_SCAFFOLD_NOT_GUEST_VERIFIED",
       "source": "atto-source.atto/library/atto.core/cell.atto",
       "representation": "bounded-readers-plus-writer",
-      "sourceBlobSha": "55a0a3c5a04b825fb597a9c66101ee44d2e584ed"
+      "sourceBlobSha": "55a0a3c5a04b825fb597a9c66101ee44d2e584ed",
+      "candidateCommitSha": "07246c5f749b9440ffbf72518c580a1fd52f897f",
+      "candidateTreeSha": "a4fdd694c6ef78f0afed25bba0f29e3d4f8e018d"
     },
     "realtime": {
       "policy": "SOURCE_AUTHORED_SCAFFOLD_NOT_GUEST_VERIFIED",
       "source": "atto-source.realtime/library/atto.core/cell.atto",
       "representation": "bounded-readers-plus-writer",
-      "sourceBlobSha": "30ef700dc973f1af6bda588aa46ae5cdc7ae745b"
+      "sourceBlobSha": "30ef700dc973f1af6bda588aa46ae5cdc7ae745b",
+      "candidateCommitSha": "7bf09781f1297857550db52e4690437492cb6f75",
+      "candidateTreeSha": "ff312b345aa360efe55460771fc912a77ad1afd5"
     }
   },
   "guestEvidence": {
@@ -292,5 +314,6 @@
       "evidence": "No hard-real-time WCET, ownership or compiled guest evidence"
     }
   },
-  "compilerAdmissionRule": "A negative preflight, parser, or restricted-source denial is NOT a positive borrowed-memory execution proof. Every backend target remains NOT_EXECUTED until exact-head material CI steps prove production admission or compiled guests as stated, and none may promote full typed borrow-MIR parity without proof."
+  "compilerAdmissionRule": "A negative preflight, parser, or restricted-source denial is NOT a positive borrowed-memory execution proof. Every backend target remains NOT_EXECUTED until exact-head material CI steps prove production admission or compiled guests as stated, and none may promote full typed borrow-MIR parity without proof.",
+  "exactRefEvidence": "11 active draft-PR candidate heads and Git root trees inspected 2026-11-22; heads may advance asynchronously; this is a source-only snapshot, not executed compiler guest or a CI clearance."
 }
