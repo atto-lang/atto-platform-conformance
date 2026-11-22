@@ -59,5 +59,31 @@
     "No Java/LLVM/NET/FORGE/WASM/JS/Cranelift/HDL guest backend certification",
     "Conformance repository's own Node fixture integrity workflow has NOT run on verified exact source tree"
   ],
-  "backend_guest_runtime_status": "ALL_NOT_VERIFIED"
+  "backend_guest_runtime_status": "ALL_NOT_VERIFIED",
+  "additional_rust_exact_tree_regressions": {
+    "workflow_run": "https://github.com/ORESoftware/axum-leptos-dioxus-unified-ssr-test/actions/runs/44975434351",
+    "source_commit": "38eb59f909573b1b29373ac216b38e17ba4ce5ae",
+    "tree_sha": "4e0031e1d5de5390aa95521243c5b9abaabd0ed1",
+    "results": [
+      {
+        "command": "cargo test --locked --lib",
+        "passed": 58,
+        "failed": 0
+      },
+      {
+        "command": "cargo test --locked --test nominal_actor_struct_implements",
+        "passed": 14,
+        "failed": 0
+      }
+    ],
+    "separate_full_suite": {
+      "command": "cargo test --locked",
+      "result": "FAILED_BEFORE_RUNNING_ALL_TESTS",
+      "failure": "Legacy tests/atto_scalar_java_llvm_v1.rs imports unresolved oreslang_source_rs; actual lib is atto_compiler",
+      "unrelated_to_protocol_static_regression": true,
+      "workflow_run": "https://github.com/ORESoftware/axum-leptos-dioxus-unified-ssr-test/actions/runs/44975434351"
+    }
+  },
+  "targeted_tests_total_passed": 103,
+  "targeted_tests_total_failed": 0
 }
