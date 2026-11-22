@@ -110,19 +110,19 @@ alternate runner does not authorize copying private compiler trees.
 
 ### Borrow checking for mutable timer receivers (candidate; not compiled guest PASS)
 
-AttoLang **\`val\` is \`const mut\`**: a non-reassignable binding with a mutable
-referent, which may take an exclusive \`mut self\` loan. A default \`const\`
-binding is read-only and cannot call \`ManualClock.advance(mut self)\`,
-\`Timer.poll(mut self)\` or \`Interval.cancel(mut self)\`. \`let mut\` may
-also hold a mutable referent; a \`let\` without \`mut\` is not sufficient.
+AttoLang **`val` is `const mut`**: a non-reassignable binding with a mutable
+referent, which may take an exclusive `mut self` loan. A default `const`
+binding is read-only and cannot call `ManualClock.advance(mut self)`,
+`Timer.poll(mut self)` or `Interval.cancel(mut self)`. `let mut` may
+also hold a mutable referent; a `let` without `mut` is not sufficient.
 
 The source-independent test sources are
-\`fixtures/std-time-parity-v1/borrow-positive-val-mutable-referent.atto\`
-(expected stdout \`1\`, \`true\`, \`true\`) and three
-\`borrow-negative-*.atto\` fixtures (required compile-time ownership
+`fixtures/std-time-parity-v1/borrow-positive-val-mutable-referent.atto`
+(expected stdout `1`, `true`, `true`) and three
+`borrow-negative-*.atto` fixtures (required compile-time ownership
 rejection with **no** guest artifact). Java's backend-owned JUnit test
-executes the positive \`val\` case and separately calls the production
-compiler for the negative \`const\` cases; LLVM has corresponding native
+executes the positive `val` case and separately calls the production
+compiler for the negative `const` cases; LLVM has corresponding native
 AOT candidate fixtures and admission script. **No backend is certified**
 until real compiler diagnostics and guest output are captured on exact
 heads. Rejection due to an unsupported import, parser error or absent
@@ -130,6 +130,6 @@ library does not count as passing the borrow checker.
 
 The nine active compiler-owned value/state implementations were audited
 as the same normalized source body (comments/whitespace and Java-only
-\`monotonic_now\` removed). This is **source consistency only** and does not
+`monotonic_now` removed). This is **source consistency only** and does not
 mean the nine independent compilers understand or execute that source.
-The \`.atto\` and \`.realtime\` repositories remain bootstrap targets.
+The `.atto` and `.realtime` repositories remain bootstrap targets.
