@@ -66,3 +66,51 @@ test("reject forged borrow proof, duplicate case, missing backend and changed bo
   assert.throws(()=>validate(mutate(x=>{x.vectors[0].args[0]=-99})),
     "negative-range changes must still be checked against oracle");
 });
+
+const snapshot=JSON.parse(readFileSync(
+  new URL("../contracts/atto-core-borrow-source-ledger-v1.json",import.meta.url),"utf8"));
+function validateLedger(ledger) {
+  assert.equal(ledger.schema,"atto-core-borrow-source-ledger-v1");
+  assert.equal(ledger.contract_git_blob,"a6e35b7605c758559c9bdc094aacde152be7f2c0");
+  assert.deepEqual(ledger.backends.map(x=>x.backend),allBackends);
+  const proved=new Set(["java","llvm","net","forge","wasm","rs","cranelift","js"]);
+  let sourceOnly=0;
+  for(const backend of ledger.backends){
+    const model=proved.has(backend.backend);
+    assert.equal(backend.source_policy,model?"SOURCE_MODEL_ONLY":"NOT_AUDITED");
+    assert.equal(backend.source_model_vectors,model?64:0);
+    assert.equal(backend.mutation_negative_cases,model?7:0);
+    if(model) {
+      assert.match(backend.source_commit_snapshot,/^[0-9a-f]{40}$/);
+      assert.match(backend.source_blob_snapshot,/^[0-9a-f]{40}$/);
+      assert.match(backend.pr,/^https:\/\/github\.com\/atto-lang\/atto-source\./);
+      sourceOnly++;
+    } else {
+      assert.equal(backend.source_commit_snapshot,null);
+      assert.equal(backend.source_blob_snapshot,null);
+      assert.equal(backend.pr,null);
+    }
+    assert.equal(backend.compiler_owned_loan_proof,"NOT_EXECUTED");
+    assert.equal(backend.native_guest,"NOT_EXECUTED");
+    assert.equal(backend.compiler_mir_provenance,null);
+    assert.equal(backend.executed_runner_steps,0);
+  }
+  assert.equal(ledger.compiler_negative_gates_authored.llvm.status,"NOT_EXECUTED");
+  assert.equal(ledger.compiler_negative_gates_authored.java.status,"NOT_EXECUTED");
+  assert.equal(sourceOnly,8);
+  return sourceOnly;
+}
+test("eight compiler-local sources remain model-only; three targets stay unaudited",()=>{
+  assert.equal(validateLedger(snapshot),8);
+  console.log("ATTO_CORE_BORROW_LEDGER|sources=8|guest_pass=0|compiler_proofs=0");
+});
+test("borrow readiness ledger denies fabricated compiler and CI proof",()=>{
+  const change=fn=>{const c=structuredClone(snapshot);fn(c);return c};
+  assert.throws(()=>validateLedger(change(x=>x.backends[0].native_guest="PASS")));
+  assert.throws(()=>validateLedger(change(x=>x.backends[0].executed_runner_steps=10)));
+  assert.throws(()=>validateLedger(change(x=>
+    x.backends.find(v=>v.backend==="llvm").compiler_owned_loan_proof="CERTIFIED")));
+  assert.throws(()=>validateLedger(change(x=>x.backends.splice(3,1))));
+  assert.throws(()=>validateLedger(change(x=>
+    x.backends.find(v=>v.backend==="java").source_model_vectors=0)));
+});
