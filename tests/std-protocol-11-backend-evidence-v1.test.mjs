@@ -38,18 +38,18 @@ const files=[
   'tests/stdlib/source_contract.test.mjs'
 ];
 const borrowCorePins=new Map([
- ['java','539b209c74668973305408c32309ace063206964'],
- ['llvm','962647bc6c18f6e44c8d1f5a5fabf0705b8974c6'],
- ['rs','f590427df95284c9ba3fdbdfc87294e970c9ab68'],
- ['net','19211cf32235ba85b34652bffd377ef339519731'],
- ['wasm','81bcdf607015803236c9826ce9943ebc26d05cff'],
- ['forge','b180f399ac952671009c7bb61c80eba3e8216aa4'],
- ['cranelift','28659ee7f18548b08f0d6c4db027c6034e51c94f'],
- ['js','a517c9c9f91d8f9240d9f902c753b947c3cb6aa0'],
- ['hdl','4e86845baadc479bcdaf00a30cd36b41bf5c3467']
+ ['java','2a53e3578bd5db1bc0ab828438606c2b8b21abe9'],
+ ['llvm','dca66c0f78986ce071768f3828955493beb03386'],
+ ['rs','a5878d48f8d3ab314c9f74e74a3bf4296ec1344d'],
+ ['net','9ce7a029cff977e24b583bbe5967d8fcc29659dc'],
+ ['wasm','405012fa6dfe0f812147c9a4fc979e23f88124c4'],
+ ['forge','27fa151c44f09c149a35da09b8047e608104bb11'],
+ ['cranelift','5614b518c10070dd947e1c94e4b77f0ccca95261'],
+ ['js','f1eedf86f53567a610bacbc5531690d4d4e2fd1f'],
+ ['hdl','02bc04d93ee76dbf1944bcbd705051a5cad5c7d9']
 ]);
 const rustBorrowHarnessPins={
- 'tests/stdlib_native_guest.rs':'d349a17c27c5dcadd058bdcbd5c257891ce7d744',
+ 'tests/stdlib_native_guest.rs':'fcf2c32c04be92d4cca52217fa4f8003e10a05f2',
  'tests/stdlib_native_guest_wasm.test.mjs':'c6d6e00ba49189214d5ddc0a508dac4d7aeb0b61',
  'examples/stdlib_native_guest.rs':'5750616a0d04c6bbd24cd04f39ea4e60c2abb739',
  '.github/workflows/std-native-guest.yml':'26c816ec3a86577113d1806efb862c521e93be4f'
@@ -201,8 +201,8 @@ function verify(x) {
       'compute_buffer_range_fits','compute_upload_admit'
     ]);
     assert.equal(borrow.candidate_compile_status,'NOT_EXECUTED');
-    assert.equal(borrow.negative_compiler_checks_authored,backend==='rs'?6:0);
-    assert.equal(borrow.negative_source_mutations_authored,backend==='rs'?0:7);
+    assert.equal(borrow.negative_compiler_checks_authored,backend==='rs'?7:0);
+    assert.equal(borrow.negative_source_mutations_authored,backend==='rs'?0:8);
     assert.equal(borrow.compiled_wasm_guest_required,backend==='rs');
     assert.equal(borrow.guest_execution_status,'NOT_EXECUTED');
     assert.equal(borrow.resource_handle_borrow_safety,'NOT_VERIFIED');
