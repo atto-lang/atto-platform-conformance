@@ -79,9 +79,21 @@ class SourceFreeCoreOracle(unittest.TestCase):
 
     def test_evidence_never_upgrades_by_presence_of_source(self):
         self.assertEqual(CONTRACT["status"], "candidate_source_free_not_guest_verified")
-        self.assertTrue(CONTRACT["candidates"])
+        self.assertEqual(len(CONTRACT["candidates"]), 9)
+        self.assertEqual({x["backend"] for x in CONTRACT["candidates"]},
+                         {"java","llvm","net","wasm","rs","forge","js",
+                          "cranelift","hdl"})
         for x in CONTRACT["candidates"]:
             self.assertEqual(x["guest_status"], "NOT_EXECUTED")
+            self.assertEqual(x["material_ci_status"], "NOT_EXECUTED")
+            self.assertFalse(x["real_cell_T"])
+            self.assertTrue(x["module_sources_are_backend_owned"])
+            self.assertRegex(x["commit"],r"^[0-9a-f]{40}$")
+            self.assertGreater(x["pr"],0)
+            self.assertEqual(set(x["source_blobs"]),{"math","hash","cell"})
+            for source in x["source_blobs"].values():
+                self.assertTrue(source["path"].endswith(".atto"))
+                self.assertRegex(source["blob_sha1"],r"^[0-9a-f]{40}$")
         for certified in CONTRACT["certification"].values():
             self.assertIs(certified, False)
 
