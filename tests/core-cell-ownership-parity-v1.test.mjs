@@ -61,10 +61,16 @@ test('backend source layouts are allowed to differ without omitting ownership re
   assert.equal(contract.backends.llvm.representation,'signed-counter-i64');
   assert.equal(contract.backends.net.representation,'bounded-readers-plus-writer');
   assert.equal(contract.backends.cranelift.representation,'bounded-readers-plus-writer');
+  const seenBlobs=new Set();
   for(const id of backends) {
     assert.ok(contract.backends[id].source.startsWith('atto-source.'),id);
     assert.ok(contract.backends[id].source.endsWith('/cell.atto'),id);
+    const sha=contract.backends[id].sourceBlobSha;
+    assert.match(sha,/^[a-f0-9]{40}$/,id+' exact Git blob');
+    assert.ok(!seenBlobs.has(sha),id+' compiler-owned independent source');
+    seenBlobs.add(sha);
   }
+  assert.match(contract.blobPinPolicy,/matching blob does NOT grant compiler guest PASS/);
   for(const id of ['atto','realtime']) {
     assert.equal(contract.backends[id].policy,'SOURCE_AUTHORED_SCAFFOLD_NOT_GUEST_VERIFIED');
     assert.equal(contract.guestEvidence[id],'NOT_EXECUTED');
