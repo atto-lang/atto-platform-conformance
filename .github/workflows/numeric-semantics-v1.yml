@@ -4,11 +4,15 @@ on:
     paths:
       - 'contracts/numeric-semantics-v1.json'
       - 'tests/numeric-semantics-v1.test.mjs'
+      - 'fixtures/numeric-guest-v1/**'
+      - 'tests/numeric-guest-source-v1.test.mjs'
       - '.github/workflows/numeric-semantics-v1.yml'
   pull_request:
     paths:
       - 'contracts/numeric-semantics-v1.json'
       - 'tests/numeric-semantics-v1.test.mjs'
+      - 'fixtures/numeric-guest-v1/**'
+      - 'tests/numeric-guest-source-v1.test.mjs'
       - '.github/workflows/numeric-semantics-v1.yml'
   workflow_dispatch:
 permissions:
@@ -22,4 +26,4 @@ jobs:
         with:
           persist-credentials: false
       - name: Verify numeric goldens using Node BigInt (NO AttoLang guest execution)
-        run: node --test tests/numeric-semantics-v1.test.mjs
+        run: node --test tests/numeric-semantics-v1.test.mjs tests/numeric-guest-source-v1.test.mjs
