@@ -44,7 +44,14 @@ test('canonical registry pins variant arity, payload ownership and drop rules', 
   assert.equal(some.arity,1);
   assert.equal(some.transfers_payload,true);
   assert.equal(registry.sum_contracts.Option.variants.None.arity,0);
+  assert.equal(registry.sum_contracts.Option.variants.None.drop_policy,'NONE');
+  assert.equal(registry.sum_contracts.Option.variants.Some.drop_policy,'ACTIVE_PAYLOAD_ONCE');
+  assert.equal(registry.sum_contracts.Result.variants.Ok.drop_policy,'ACTIVE_PAYLOAD_ONCE');
+  assert.equal(registry.sum_contracts.Result.variants.Err.drop_policy,'ACTIVE_PAYLOAD_ONCE');
   assert.equal(registry.sum_contracts.Result.variants.Err.transfers_payload,true);
+  assert.ok(registry.drop_policies.includes('ALL_INITIALIZED_MEMBERS'));
+  assert.ok(registry.samples.some(x=>x.name==='Array' && x.drop_policy==='ALL_INITIALIZED_MEMBERS'));
+  assert.ok(registry.samples.some(x=>x.name==='Pair' && x.drop_policy==='ALL_INITIALIZED_MEMBERS'));
   for (const item of registry.samples) {
     assert.ok(item.name && item.canonical_identity);
     assert.ok(['core','alloc','explicit'].includes(item.scope));
