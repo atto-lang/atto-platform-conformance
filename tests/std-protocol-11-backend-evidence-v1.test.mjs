@@ -10,15 +10,27 @@ const names=['atto','net','hdl','java','realtime','rs','llvm','js','forge','wasm
 const prefix='atto-lang/atto-source.';
 const sha40=/^[0-9a-f]{40}$/;
 const snapshots=new Map([
-  ['java',['e2c7ea4d1050c447b6ea74f2ff97dfe32df502db','6607962d835b980a21ece755a300cafb354b4410','8fa7427fb0a0323ad09e700f87da1f8e50707bb0','2fe74c554f4163d0436a2f45fb47eec13a904f80','8b5960abd66f49c1f5f7b3c712ff8e62baf8f0bb',1786]],
-  ['llvm',['ba4feaa4e4e11ef52c5495ff3caac0bfc6cb7df0','a61f3521dbf589c9dffb5e307698319ed136adf7','3beafcab41c72e0c4a8986072afad9362b320c14','4f984f5e0d39f2205b4e7b979ecdd4168bf587e6','e19020d3d07a62e214a9d4f1eb79ee2e04b45aef',884]],
-  ['rs',['01f9e5b735fd9c88280970d83e7f26151b21995d','55ef501700d3786ae319a1aadef04798bf922c3b','79fd2bde916b6400c09a34f5a37f1e3a394344f3','7534eb2ed7abd2339988b42d5086f5e45a062b9d','dfd845d74366e7b794be015eb90302bb331ce6c8',546]],
-  ['net',['6842289a035f3d3153894d5bd6594d3c0aa55104','a5b4211574cba40ec33a2847da524f6b49819925','89bbc1d8f9bf658d1b31993b1a8a8bc7c1f496b4','9daec1444782870ba9b292d6f374b4af64faf743','e19020d3d07a62e214a9d4f1eb79ee2e04b45aef',228]],
-  ['wasm',['5a902a60fbf0af240f2c41c0c383b665e6b194d5','b4dcc5417f247bfa9443433d523917ac56681869','0a94acdc69825a3d352dafa6a91cb82916fcf1e9','ced295c28708c747d4148977bda55568aa797179','e19020d3d07a62e214a9d4f1eb79ee2e04b45aef',291]],
-  ['forge',['dfa251e9be0eb7972648f1ba4b8bc29e3500b27c','92cb739ed2514c9715ddde03380e875b3cf66734','829ce079172f5862d5e6e5e18751b7b1f49dd1ca','a6d1c99c308e2fe85b0dc8db09231c2da35ba3a7','e19020d3d07a62e214a9d4f1eb79ee2e04b45aef',236]],
-  ['cranelift',['d2b1d4054867a856170583709ebcf064f60eec9d','e27dee919c636c6f190da0e80e334284ace08666','31ec1b924304afb80fe576de22ace644d876db61','303419396fbbac44c6f0a55c2c95ea2b94af2e62','e19020d3d07a62e214a9d4f1eb79ee2e04b45aef',101]],
-  ['js',['ae0000ffe1ec069cf25a52b9a456d3e4be61f185','31ba0d1b1d84229227cb98ce80a552765c141feb','53efc3037f36a7325d541506e23459bf82a439d9','f0b3a7d79d8db3ee5dd51dc90b0439261a3355da','e19020d3d07a62e214a9d4f1eb79ee2e04b45aef',141]],
-  ['hdl',['c61ce1eaad8a266bf00541eb8ee4b6e244de5509','8a965049bbd38d1626c9ca7b1478887a5f4ef7fc','57843779acd2c424a9f5bcadeff2cb4f8b2c954e','656eed3d274ab7bd6ae679497736b47ac8aff4b3','e19020d3d07a62e214a9d4f1eb79ee2e04b45aef',70]],
+  ['net',["419ff4f8397986b77240ccef5090dfcaff0ff7ec","0b255aba23ec3c66112661c3a059d15b3e461239","767a274beda8190200057b993036673beb0a0d23","9daec1444782870ba9b292d6f374b4af64faf743","029c26e4017db916efa99ef5656b339e05327d39",228]],
+  ['hdl',["35b6c5c1746dbc3415d016a8b3aab2e3c61945ac","9ef76f31ea57f0aff942e070f1a45c48f364de52","45326a21daf9f15734436d4c3066866e5669dafc","656eed3d274ab7bd6ae679497736b47ac8aff4b3","029c26e4017db916efa99ef5656b339e05327d39",70]],
+  ['java',["c0162aaf31870ff09f70e483a20a0574127a166f","405fc43b834177a4e68539efc891765ff8b6846a","4d9985481f2f52b8fb94038a15de2135a3ad6aad","2fe74c554f4163d0436a2f45fb47eec13a904f80","7c503fc42e2855373c19bf0b946aec466249dad3",1786]],
+  ['rs',["87c017283f90de17e133f4c79f1726ab28acf538","3c52c969c3e07c33e75192441f68168fd4dc24cf","409cf612cadff0fed591cdda0d88853def3e4e54","7534eb2ed7abd2339988b42d5086f5e45a062b9d","f60cf9c7bc5e0961ceec28638d7aff1eb51f9be4",546]],
+  ['llvm',["a1147b23762d027572483e19e22226721ece5bbb","0acee7a1078420d9a8ffb9ac24579187176f0999","7e992ec38d953ec49cc7dabcf9f3fbd4b920dd92","4f984f5e0d39f2205b4e7b979ecdd4168bf587e6","029c26e4017db916efa99ef5656b339e05327d39",884]],
+  ['js',["e996f283392849d0d7209c71980ab8f2f7fcbc5c","8b8085d5eda5a31578af1d3114d7470544f3f124","288160e53aac3bcb32cadcbf20bcafdc48f0b72c","f0b3a7d79d8db3ee5dd51dc90b0439261a3355da","029c26e4017db916efa99ef5656b339e05327d39",141]],
+  ['forge',["7e3a05d58786e2cd6d8b484e0acd9426c1c65e52","5eebc3cc5ee7c563613449fc09a35af5c29d92e9","cea8847999701be6cff603d4c3c7458213acbb98","a6d1c99c308e2fe85b0dc8db09231c2da35ba3a7","029c26e4017db916efa99ef5656b339e05327d39",236]],
+  ['wasm',["bfffb7235dae553571026894f8bf5506d258e1b1","33653124468e22ccc648e6578b77261c6b2337be","077e3a21d721a0df7ae05481e06650b07da6da8d","ced295c28708c747d4148977bda55568aa797179","029c26e4017db916efa99ef5656b339e05327d39",291]],
+  ['cranelift',["22d19819e8a390190e37e76a9fd01000d0e4a15b","a6d3d5663ca1dec46d5e9c9198618379652acc9a","1c1e93ab36b55166844c8c66c397c127e6950597","303419396fbbac44c6f0a55c2c95ea2b94af2e62","029c26e4017db916efa99ef5656b339e05327d39",101]],
+]);
+const libraryFiles=["stdlib/std/websocket.atto","stdlib/std/quic.atto","stdlib/std/compute.atto"];
+const librarySnapshots=new Map([
+  ['net',["886e8883b386a26770d29a58da6be7f781dd6f53","0e324d759ed412900dfe8b3d3071bc7ab053fddd","757649105ca8e510e5f7ed7dc2d4706e2d473791"]],
+  ['hdl',["5f4a58c0907487cef6c775b11f4ac3658998be3e","6ee44475c34e903d4aa3b4c3a25baada67670b43","5b17bb9b22ec0e9b8b78b8b54629482ea1e20871"]],
+  ['java',["ee0f622bea3bd63707aff7ff667308d59f9da974","7694229c2fd13b6ab1ba6309369a909c1714dc1b","ee89c7aa787977391a363142283ec8d262a8bbe4"]],
+  ['rs',["160fe1425abcfec3a5b666d15c1df14aea1eaaeb","944149db26c9accaf0a683b12c11142fe7dc23dd","903e172cd72bd3fc84744c9a225ddfefefce048c"]],
+  ['llvm',["2be6c322fb9a4033ad70d369e7981645617bb004","154b86bdfe8d51cac7fd9dd213067db2c9c1a6eb","d2a0df787e7b8a9a9292ae086023e3db126fb100"]],
+  ['js',["9e68e0e482f67bb765c77574db40fbe7d94fbc6a","37bfcb1ea955ab9f45eb2f294ced9d067d8d81d0","f4f857ffb9f2ab97021b6ad02a00bffecea6aaec"]],
+  ['forge',["febcc65011ea839020b07c2c0a59b1698f5be715","f4d4a77907adc42b6372d7d0a53b8b76cd09be72","75ec867aab3c29a0cb614b0e6e6d8c1d1bdf3616"]],
+  ['wasm',["547976194bb2dc17a1bf2b64318a189d819e46d1","1e68c03d1ae0c8aead045ce67d8501530f1427e1","f4b44c8a49615f965a1e1aa893f917acaef65701"]],
+  ['cranelift',["bcbf71b39d5d7d8d93440f5ddd3758fb9946812b","75ded91cc10ba0fed5d2f0b601d8966a5806749e","e983b32a94d1d7511e3bcd84b64967158d082f64"]],
 ]);
 const files=[
   'tests/stdlib/websocket_quic_compute_smoke.atto',
@@ -49,6 +61,8 @@ function verify(x) {
   assert.equal(x.guest_cases_per_authored_backend,146);
   assert.equal(x.source_implementations,'INDEPENDENT_BACKEND_OWNED_ATTO_FILES');
   assert.equal(x.cross_backend_execution_parity,'NOT_VERIFIED');
+  assert.equal(x.compute_dispatch_contract,
+    'PARTIAL_WORKGROUPS_ALLOWED_NUMERIC_ONLY_RUNTIME_MUST_GUARD_PADDED_INVOCATIONS');
   assert.deepEqual(x.guest_execution_certified_backends,[]);
   assert.deepEqual(x.rows.map(r=>r.repo),names.map(n=>prefix+n),
     'all eleven canonical backends must occur exactly once and in stable order');
@@ -79,6 +93,9 @@ function verify(x) {
       assert.equal(row.head_sha,null);
       assert.equal(row.root_tree_sha,null);
       assert.equal(row.source_blobs,null);
+      assert.equal(row.library_blobs,null);
+      assert.equal(row.partial_workgroup_numeric_admission,'NOT_IMPLEMENTED');
+      assert.equal(row.padded_invocation_bounds_guard,'NOT_APPLICABLE_BOOTSTRAP');
       assert.equal(row.source_fixture_cases,0);
       assert.equal(row.source_helpers,0);
       assert.equal(row.source_contract_status,'NO_PROTOCOL_SOURCE');
@@ -100,6 +117,14 @@ function verify(x) {
     assert.equal(row.source_blobs[files[1]],boundary);
     assert.equal(row.source_blobs[files[2]],audit);
     for(const oid of Object.values(row.source_blobs)) assert.match(oid,sha40);
+    assert.deepEqual(Object.keys(row.library_blobs),libraryFiles,
+      'three independently maintained .atto library implementations must be pinned');
+    assert.deepEqual(libraryFiles.map(path=>row.library_blobs[path]),
+      librarySnapshots.get(backend),
+      'library Git blob must match independent exact head inspection');
+    for(const oid of Object.values(row.library_blobs)) assert.match(oid,sha40);
+    assert.equal(row.partial_workgroup_numeric_admission,'SOURCE_AUTHORED_NOT_EXECUTED');
+    assert.equal(row.padded_invocation_bounds_guard,'RUNTIME_REQUIRED_NOT_VERIFIED');
     assert.equal(row.source_fixture_cases,146);
     assert.equal(row.smoke_cases,37);
     assert.equal(row.boundary_cases,109);
@@ -167,4 +192,16 @@ test('unknown/reordered file identities and status promotion fail closed',()=>{
     x=>{x.rows[3].source_contract_status='PASS'},
     x=>{x.rows[3].execution_profile='FULL_COMPILER_PARITY'}
   ]){const x=structuredClone(evidence);mutant(x);assert.throws(()=>verify(x));}
+});
+
+
+test('library implementation Git blobs, numeric dispatch and runtime bounds obligations are nonforgeable',()=>{
+  for(const mutant of [
+    x=>x.rows[3].library_blobs['stdlib/std/compute.atto']='a'.repeat(40),
+    x=>{delete x.rows[3].library_blobs['stdlib/std/websocket.atto']},
+    x=>x.rows[3].partial_workgroup_numeric_admission='GUEST_PASS',
+    x=>x.rows[3].padded_invocation_bounds_guard='GPU_MEMORY_SAFE',
+    x=>x.compute_dispatch_contract='RUNTIME_UNCHECKED_GPU_OK',
+    x=>x.rows[0].library_blobs={'stdlib/std/compute.atto':'0'.repeat(40)}
+  ]){const altered=structuredClone(evidence);mutant(altered);assert.throws(()=>verify(altered));}
 });
