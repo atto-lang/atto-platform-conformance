@@ -54,6 +54,10 @@ test('security semantic downgrades are rejected',()=>{
   fails(c,/security or API semantic drift/);
   const c2=copy();c2.semantics.ambient_process_environment_forbidden=false;
   fails(c2,/security or API semantic drift/);
+  const c3=copy();c3.backends.hdl.target_policy='host_capability_required';
+  fails(c3,/cannot claim execution or implicit support/);
+  const c4=copy();c4.backends.realtime.target_policy='host_capability_required';
+  fails(c4,/cannot claim execution or implicit support/);
 });
 
 test('denied keys and missing coarse ENV cannot pass as ordinary absence',()=>{
