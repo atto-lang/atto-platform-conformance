@@ -8,6 +8,10 @@ Cross-platform conformance tests for AttoLang compiler and runtime implementatio
 
 This repository is maintained at [atto-lang/atto-platform-conformance](https://github.com/atto-lang/atto-platform-conformance); use `https://github.com/atto-lang/atto-platform-conformance.git` for Git remotes and canonical `.atto` source examples. The normative language contract is [atto-spec](https://github.com/atto-lang/atto-spec), with executable guest evidence tracked by [atto-platform-conformance](https://github.com/atto-lang/atto-platform-conformance). Follow current ownership, borrowing, effects, actor, and syntax rules there; do not infer implemented features from a README or unexecuted CI.
 
+## Java current-main checked-i64 candidate
+
+[Java PR #1736](https://github.com/atto-lang/atto-source.java/pull/1736) is the narrow **current-main** forward-port corresponding to this numerical fixture set. It preserves newer `Result` trap handling rather than overwriting it from stale [Java #1329](https://github.com/atto-lang/atto-source.java/pull/1329). Its source CI [run 44968407111](https://github.com/atto-lang/atto-source.java/actions/runs/44968407111) has zero steps; all target compiler lanes remain `not_executed`, including Java native AOT.
+
 ## Numeric guest source candidates — no execution proof
 
 [Manifest](fixtures/numeric-guest-v1/manifest.json) pins seven canonical `.atto` programs for checked int/i64 division, remainder, zero divisors and MIN / -1 overflow. Each source has an independently verifiable Git blob SHA. Run `node --test tests/numeric-guest-source-v1.test.mjs` to validate the source-only contract (not compiler support).
