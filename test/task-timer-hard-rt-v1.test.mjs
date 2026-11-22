@@ -18,7 +18,11 @@ test("task-timer vectors are unique candidate cases, never claimed as passes", (
   assert.equal(manifest.contract, "task-timers-hard-rt-v1");
   assert.equal(manifest.status, "candidate-unverified");
   assert.equal(manifest.hardRealTimeQualified, false);
-  assert.deepEqual(manifest.backends, ["java", "llvm", "net", "wasm", "forge"]);
+  assert.deepEqual(manifest.backends, ["java","llvm","net","wasm","forge","rs","cranelift","js","hdl","atto","realtime"]);
+  assert.deepEqual(manifest.backendScope.compiler_bootstrap_only, ["atto", "realtime"]);
+  assert.deepEqual(manifest.backendScope.deterministic_hardware_only, ["hdl"]);
+  assert.equal(manifest.backendScope.all_guest_std_time_verification, "NOT_EXECUTED");
+  assert.equal(manifest.backendScope.allow_unsupported_to_count_as_pass, false);
   assert.ok(manifest.requiredEvidence.includes("nonzero_executed_guest_steps"));
   assert.ok(manifest.requiredEvidence.includes("on_target_wcet_jitter_first_guest_instruction"));
   assert.equal(caseById.size, manifest.cases.length);
