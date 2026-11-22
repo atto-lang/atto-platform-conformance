@@ -131,7 +131,7 @@ test('portable guest fixture has independent 12-line output and explicit .atto i
   ]);
   assert.doesNotMatch(guest,/Thread\.sleep|setTimeout|process\.monotonic|java:/);
 });
-test('positive time guest has mutable receivers, three immutable-receiver negatives require compiler rejection',()=>{
+test('positive time guest has mutable receivers, three const-receiver negatives require compiler rejection',()=>{
   assert.match(guest,/let mut manual = time\.manual_clock\(/);
   assert.match(guest,/let mut one_shot = time\.one_shot\(/);
   assert.match(guest,/let mut every = time\.interval\(/);
@@ -147,7 +147,7 @@ test('positive time guest has mutable receivers, three immutable-receiver negati
     const relative=vector.file.replace(/^fixtures\//,'');
     const source=readFileSync(new URL('../fixtures/'+relative,import.meta.url),'utf8');
     assert.match(source,/import module time from "std\/time";/);
-    assert.ok(source.includes('val '+receiver+' = time.'),id+': missing immutable binding');
+    assert.ok(source.includes('const '+receiver+' = time.'),id+': missing immutable-referent binding');
     assert.ok(source.includes(call),id+': missing mutable receiver call');
     assert.doesNotMatch(source,new RegExp('let mut '+receiver+'\\b'),
       id+': negative fixture accidentally grants mutable borrow');
