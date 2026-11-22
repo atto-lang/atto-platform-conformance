@@ -14,6 +14,18 @@ function validCandidate(contract) {
      contract.status!=='CANDIDATE_NOT_GUEST_VERIFIED'||
      !Array.isArray(contract.backends) || contract.backends.length!==11)
     reject('invalid candidate envelope');
+  const negatives=contract.borrow_mutability_negatives;
+  const expectedBorrowIds=['immutable_manual_clock_advance','immutable_timer_poll',
+    'immutable_interval_cancel'];
+  if(contract.borrow_conformance_status!=='NOT_EXECUTED_ALL_ELEVEN_BACKENDS'||
+     !Array.isArray(negatives)||negatives.length!==3||
+     JSON.stringify(negatives.map(v=>v.id))!==JSON.stringify(expectedBorrowIds)||
+     negatives.some(v=>v.expected!=='COMPILE_REJECT_MUTABLE_RECEIVER_REQUIRED'||
+       v.guest_artifact!=='FORBIDDEN' ||
+       typeof v.file!=='string' ||
+       !v.file.startsWith('fixtures/std-time-parity-v1/borrow-negative-')||
+       Object.hasOwn(v,'execution_passed')))
+    reject('borrow negative candidate falsely promoted');
   const pair=contract.java_llvm_same_source_guest_candidate;
   if(!pair ||
      pair.status!=='SOURCE_BLOB_IDENTICAL_GUEST_NOT_EXECUTED' ||
@@ -119,11 +131,43 @@ test('portable guest fixture has independent 12-line output and explicit .atto i
   ]);
   assert.doesNotMatch(guest,/Thread\.sleep|setTimeout|process\.monotonic|java:/);
 });
+test('positive time guest has mutable receivers, three immutable-receiver negatives require compiler rejection',()=>{
+  assert.match(guest,/let mut manual = time\.manual_clock\(/);
+  assert.match(guest,/let mut one_shot = time\.one_shot\(/);
+  assert.match(guest,/let mut every = time\.interval\(/);
+  const required=[
+    ['immutable_manual_clock_advance','clock','clock.advance('],
+    ['immutable_timer_poll','timer','timer.poll('],
+    ['immutable_interval_cancel','repeat','repeat.cancel(']
+  ];
+  for(const [id,receiver,call] of required){
+    const vector=manifest.borrow_mutability_negatives.find(v=>v.id===id);
+    assert.ok(vector,'missing borrow vector '+id);
+    assert.equal(vector.receiver,receiver);
+    const relative=vector.file.replace(/^fixtures\//,'');
+    const source=readFileSync(new URL('../fixtures/'+relative,import.meta.url),'utf8');
+    assert.match(source,/import module time from "std\/time";/);
+    assert.ok(source.includes('val '+receiver+' = time.'),id+': missing immutable binding');
+    assert.ok(source.includes(call),id+': missing mutable receiver call');
+    assert.doesNotMatch(source,new RegExp('let mut '+receiver+'\\b'),
+      id+': negative fixture accidentally grants mutable borrow');
+    assert.equal(vector.expected,'COMPILE_REJECT_MUTABLE_RECEIVER_REQUIRED');
+    assert.equal(vector.guest_artifact,'FORBIDDEN');
+  }
+  assert.equal(manifest.borrow_conformance_status,'NOT_EXECUTED_ALL_ELEVEN_BACKENDS');
+});
+
 test('mutants cannot promote a host test, zero-step run or scaffold to guest success',()=>{
   const mutate=(fn,pattern)=>{
     const copy=structuredClone(manifest);fn(copy);
     assert.throws(()=>validCandidate(copy),pattern);
   };
+  mutate(c=>c.borrow_conformance_status='PASSED',
+    /borrow negative candidate falsely promoted/);
+  mutate(c=>c.borrow_mutability_negatives[1].execution_passed=true,
+    /borrow negative candidate falsely promoted/);
+  mutate(c=>c.borrow_mutability_negatives[0].expected='ACCEPT',
+    /borrow negative candidate falsely promoted/);
   mutate(c=>c.java_llvm_same_source_guest_candidate.executable_guest_evidence='PASSED',
     /same-source candidate falsely certified/);
   mutate(c=>c.java_llvm_same_source_guest_candidate.expected_unique_pass_labels=0,
