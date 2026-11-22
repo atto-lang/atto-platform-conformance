@@ -4,17 +4,21 @@ on:
     paths:
       - 'contracts/hosted-http-namespace-parity-v1.json'
       - 'contracts/hosted-http-framing-numeric-parity-v1.json'
+      - 'contracts/hosted-http-llvm-linked-namespace-candidate-v1.json'
       - 'fixtures/hosted-async-http-fs-v1/namespace/**'
       - 'tests/test_hosted_http_namespace_parity_v1.py'
       - 'tests/test_hosted_http_framing_parity_v1.py'
+      - 'tests/test_hosted_http_llvm_linked_parity_v1.py'
       - '.github/workflows/hosted-http-namespace-parity-v1.yml'
   push:
     paths:
       - 'contracts/hosted-http-namespace-parity-v1.json'
       - 'contracts/hosted-http-framing-numeric-parity-v1.json'
+      - 'contracts/hosted-http-llvm-linked-namespace-candidate-v1.json'
       - 'fixtures/hosted-async-http-fs-v1/namespace/**'
       - 'tests/test_hosted_http_namespace_parity_v1.py'
       - 'tests/test_hosted_http_framing_parity_v1.py'
+      - 'tests/test_hosted_http_llvm_linked_parity_v1.py'
       - '.github/workflows/hosted-http-namespace-parity-v1.yml'
   workflow_dispatch:
 
