@@ -1,6 +1,6 @@
 # AttoLang Task-owned timers and qualified hard real time — candidate v1
 
-**Status:** Proposed backend-neutral semantic and evidence contract. **NOT** merged compiler/runtime functionality, guest parity, qualified timing, or certification. Intended for Java/GraalVM, LLVM, .NET NativeAOT, Wasm and Forge/Cranelift.
+**Status:** Proposed backend-neutral semantic and evidence contract. **NOT** merged compiler/runtime functionality, guest parity, qualified timing, or certification. Tracked across all eleven atto-source.* repositories; hosted guest execution is a separate requirement from deterministic hardware and bootstrap-only targets.
 
 Related existing contracts: `docs/TIMER_TIMEOUT_OBSERVER_V1.md`, `docs/TASK_BLOCKS_V0.md`, `docs/ATTO_NATIVE_THREADS_SCHEDULER_V1.md`, `docs/LOGICAL_CONTEXT_LOCAL_STORAGE_V1.md`. This contract preserves their semantics; it does not silently turn soft-RT `sleep` into certified hard-RT execution.
 
@@ -79,3 +79,31 @@ Zero-step CI, source-free model PASS, host CTest PASS and parser-only acceptance
 ## 5. Related draft implementation work
 
 Java timer substrate and source typing: `oreslang-source.java` #2203/#2208. LLVM timer fixed-capacity queue and actor-ledger handoff: `oreslang-source.llvm` #1123/#1144. Java-specific qualification preflight (synthetic policy tests only): `oreslang-runtime.realtime-java` #11. None of these alone proves hard-RT Task timers.
+
+## 6. Eleven-backend std/time values parity gate (candidate; not a guest receipt)
+
+The shared, **source-only** 11-backend inventory and 23 checked signed-i64
+nanosecond reference vectors are in
+`fixtures/std-time-parity-v1/cases.json`, with a common candidate source
+`fixtures/std-time-parity-v1/manual-deadline.atto` expecting 12 exact
+stdout lines. `test/std-time-parity-v1.test.mjs` verifies the independent
+BigInt arithmetic, unique registry entries, current candidate Git identities,
+and **fails closed** if a metadata edit tries to promote an unexecuted
+backend to `PASSED` or `full_tree_verified`.
+
+The independently owned `.atto` libraries from draft Java #1785, LLVM #882,
+.NET #227, Wasm #290, Forge #235, Rust #545, Cranelift #100, JS #140 and
+HDL #69 are **source candidates** only. `atto-source.atto` and
+`atto-source.realtime` are compiler-bootstrap repositories without a
+verified executable compiler. HDL requires a clock-domain hardware subset,
+not ambient OS sleeping. Source bytes may differ per backend; public behavior
+should match. Existing JS/Wasm host adapter and C++ queue tests are not
+proof of compiled Atto `std/time` guest support.
+
+Portable guest PASS requires an independent compiler, actual linked
+`std/time` module, generated guest artifact SHA, executed positive and
+negative fixtures, and complete per-head/tree provenance. **Host-only or
+metadata-only tests never turn a backend green.** The private CI recovery
+path must honor the source repository's effective protected export allowlist,
+source owner authorization and exact destination ID; a source-free successful
+alternate runner does not authorize copying private compiler trees.
