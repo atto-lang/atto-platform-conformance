@@ -1,0 +1,34 @@
+// SOURCE-ONLY oracle and manifest integrity test. DOES NOT compile Atto guest.
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+const manifest = JSON.parse(readFileSync(new URL("../contracts/core-types-v1.json", import.meta.url), "utf8"));
+assert.equal(manifest.schema, "atto-core-types-v1");
+assert.equal(manifest.contract.int_signed_bits, 64);
+assert.deepEqual(manifest.sources.map(x=>x.backend), ["java","llvm","net","wasm","rs","forge","cranelift","js","hdl"]);
+assert.equal(new Set(manifest.sources.map(x=>x.repository)).size, 9);
+for (const b of manifest.sources) {
+  assert.match(b.head_sha, /^[a-f0-9]{40}$/);
+  assert.match(b.source_blob_sha, /^[a-f0-9]{40}$/);
+  assert.match(b.fixture_positive_blob_sha, /^[a-f0-9]{40}$/);
+  assert.match(b.fixture_negative_blob_sha, /^[a-f0-9]{40}$/);
+  assert.equal(b.guest_status, "NOT_EXECUTED");
+  assert.equal(b.negative_status, "NOT_EXECUTED");
+  assert.equal(b.aot_status, "NOT_EXECUTED");
+}
+assert.equal(manifest.evidence.claim_tier, "SOURCE_ONLY_NO_GUEST_EXECUTION");
+const INT_MIN = -(1n << 63n), INT_MAX = (1n << 63n) - 1n;
+const limits = manifest.contract.endpoints;
+let vectorCount = 0;
+for (const [kind, [loText, hiText]] of Object.entries(limits)) {
+  const lo=BigInt(loText),hi=BigInt(hiText);
+  assert(lo<=hi);
+  assert(lo>=INT_MIN&&hi<=INT_MAX);
+  for(const x of [INT_MIN,-4294967296n,-2147483649n,-32769n,-129n,-1n,0n,1n,127n,128n,255n,256n,32767n,32768n,65535n,65536n,2147483647n,2147483648n,4294967295n,4294967296n,INT_MAX]){
+    const expected = (x>=lo&&x<=hi);
+    const model = kind==="i64" ? true : kind==="u64_signed_input" ? x>=0n : x>=lo&&x<=hi;
+    assert.equal(model, expected, kind+" on "+x);
+    vectorCount++;
+  }
+}
+assert.equal(vectorCount, 8*21);
+console.log("SOURCE_ONLY_MODEL_PASS: "+vectorCount+" BigInt vectors, 9 backend source references. Guest parity NOT_EXECUTED.");
