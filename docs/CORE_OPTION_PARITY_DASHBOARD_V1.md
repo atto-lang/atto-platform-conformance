@@ -6,9 +6,9 @@ This is not live CI and does not certify compiled Atto guests. An observed main 
 
 | Backend | Observed main SHA | Option candidate head | Parse/typecheck | Positive guest | Negative guest | JIT | AOT | Sanitizers / memory safety |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `java` | `189c73b88502c451e50494f738ae11a1de8c9211` | [PR](https://github.com/atto-lang/atto-source.java/pull/1767) `919d1d1fc59712e5e2059c72fe7a55cf5720df60` | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED |
+| `java` | `189c73b88502c451e50494f738ae11a1de8c9211` | [PR](https://github.com/atto-lang/atto-source.java/pull/1767) `fd5055c3544ee7cf7e50dd5ac1b89469ada114a3` | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED |
 | `llvm` | `553154ac83c060f9182edf751ee6ba6aa192dd3b` | [PR](https://github.com/atto-lang/atto-source.llvm/pull/870) `cae1f89e5a10b2feabe36808c0b07263b4c5a07d` | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED |
-| `rs` | `877bd9f8d61c598137c8627f73fa5ed2a497d9e8` | [PR](https://github.com/atto-lang/atto-source.rs/pull/533) `c7edd32b3ca5cd9d3a85f63f531b6c21968c55e6` | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED |
+| `rs` | `877bd9f8d61c598137c8627f73fa5ed2a497d9e8` | [PR](https://github.com/atto-lang/atto-source.rs/pull/533) `9f881e82675df9bc08621b4056f1206583e9054d` | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED |
 | `net` | `75830ed371ec386d2c7ebe162410258d3e9fdbf2` | [PR](https://github.com/atto-lang/atto-source.net/pull/217) `2b4bc19a87c81545a0dd154e35d6e53b7f0e63c7` | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED |
 | `wasm` | `16ba74ab9f9959cc15d21dcb6e54a18e1c325fef` | [PR](https://github.com/atto-lang/atto-source.wasm/pull/279) `d7642727c43147c83d6c594389080f83993c5b8e` | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED |
 | `forge` | `f5dd299c277376cabe9e536edbbb4e662a267ad4` | [PR](https://github.com/atto-lang/atto-source.forge/pull/226) `1a892433ba615af863523701d310eace9513028c` | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED | NOT_EXECUTED |
@@ -20,8 +20,8 @@ This is not live CI and does not certify compiled Atto guests. An observed main 
 
 ## Java core/option source and tests
 
-- Candidate: [atto-source.java #1767](https://github.com/atto-lang/atto-source.java/pull/1767) at `919d1d1fc59712e5e2059c72fe7a55cf5720df60`
-- Root Git tree: `58d26bb865a1211fae18395ab87587f6a4433b68`
+- Candidate: [atto-source.java #1767](https://github.com/atto-lang/atto-source.java/pull/1767) at `fd5055c3544ee7cf7e50dd5ac1b89469ada114a3`
+- Root Git tree: `af9c40f78d8f4b15e2cb8903f658f7df5be48aa2`
 - JUnit command (proposed, **not executed**): `mvn -B -Dtest=CoreOptionResultSourceTest,CoreOptionResultBorrowSafetyTest test`
 - AOT: Not provided by this PR; require independent GraalVM Native Image exact-head build and guest receipt.
 - Sanitizers/memory safety: Java: ownership/poison/drop assertions; LLVM/native: ASan/UBSan or equivalent; non-native profiles: target-specific memory safety gates.
