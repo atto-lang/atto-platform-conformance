@@ -6,6 +6,9 @@ assert.equal(manifest.schema, "atto-core-types-v1");
 assert.equal(manifest.contract.int_signed_bits, 64);
 assert.equal(manifest.namespace_header,"use namespace types;");
 assert.equal(manifest.module_wrapper,false);
+assert.equal(manifest.backend_specific_guests.llvm.import_style,"static_named_fnc");
+assert.equal(manifest.backend_specific_guests.llvm.guest_status,"NOT_EXECUTED");
+assert.equal(manifest.evidence.llvm_function_only_namespace_import.unverified_package_namespace_imports,"DENIED");
 assert.equal(manifest.public_declaration_form,"file-scoped namespace, top-level pub fnc");
 assert.deepEqual(manifest.sources.map(x=>x.backend), ["java","llvm","net","wasm","rs","forge","cranelift","js","hdl"]);
 assert.equal(new Set(manifest.sources.map(x=>x.repository)).size, 9);
@@ -28,8 +31,14 @@ assert.match(manifest.matrix_positive_guest.sourceOnlyOracleGitBlobSha,/^[0-9a-f
 assert.equal(manifest.evidence.source_export_authorization,"DENIED_UNAPPROVED");
 assert.equal(manifest.evidence.mirrored_to_other_org,false);
 for (const b of manifest.sources) {
-  assert.equal(b.fixture_matrix_blob_sha,manifest.matrix_positive_guest.sourceGitBlobSha);
-  assert.equal(b.matrix_oracle_test_blob_sha,manifest.matrix_positive_guest.sourceOnlyOracleGitBlobSha);
+  const backend = manifest.backend_specific_guests?.[b.backend];
+  assert.equal(b.fixture_matrix_blob_sha,backend?.matrix_blob_sha ?? manifest.matrix_positive_guest.sourceGitBlobSha);
+  assert.equal(b.matrix_oracle_test_blob_sha,backend?.matrix_oracle_blob_sha ?? manifest.matrix_positive_guest.sourceOnlyOracleGitBlobSha);
+  if(backend){
+    assert.equal(b.fixture_positive_blob_sha,backend.positive_blob_sha);
+    assert.equal(b.source_oracle_test_blob_sha,backend.source_oracle_blob_sha);
+    assert.equal(backend.guest_status,"NOT_EXECUTED");
+  }
   assert.equal(b.matrix_guest_status,"NOT_EXECUTED");
 }
 for (const probe of manifest.evidence.source_free_carrier_probes) {
@@ -60,11 +69,12 @@ for (const item of negatives) {
   assert.equal(item.guest_status, "NOT_EXECUTED");
 }
 for (const source of manifest.sources) {
-  assert.equal(source.fixture_positive_blob_sha, "9d4027de080b8d625ab869825c4ec62f369adce8");
+  const backend = manifest.backend_specific_guests?.[source.backend];
+  assert.equal(source.fixture_positive_blob_sha, backend?.positive_blob_sha ?? "9d4027de080b8d625ab869825c4ec62f369adce8");
   assert.match(source.source_oracle_test_blob_sha, /^[a-f0-9]{40}$/);
   assert.deepEqual(source.negative_fixture_blobs,
-    Object.fromEntries(negatives.map(x=>[x.file,x.blob_sha])),
-    "all backends must pin all eight negative fixture Git blobs");
+    Object.fromEntries(negatives.map(x=>[x.file,backend?.negative_fixture_blobs?.[x.file] ?? x.blob_sha])),
+    "each backend must pin the exact native negative fixture Git blobs");
 }
 
 const INT_MIN = -(1n << 63n), INT_MAX = (1n << 63n) - 1n;

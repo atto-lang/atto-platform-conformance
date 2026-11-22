@@ -105,26 +105,26 @@
       "backend": "llvm",
       "repository": "atto-lang/atto-source.llvm",
       "pr_url": "https://github.com/atto-lang/atto-source.llvm/pull/866",
-      "head_sha": "71778b1c4236febdbca1599cda93817fa00258e1",
+      "head_sha": "a399efb6bd905d6b28d324655e04afe2a6e73903",
       "source_blob_sha": "6cb39f5f6dba2b207adc571499ac3ee3338ba19a",
-      "fixture_positive_blob_sha": "9d4027de080b8d625ab869825c4ec62f369adce8",
+      "fixture_positive_blob_sha": "adaa3e84de2a79f680284e3d86f9a8aa36efba88",
       "fixture_negative_blob_sha": "470599e7850a277bae1dec72876e808cc36bd9e8",
       "guest_status": "NOT_EXECUTED",
       "negative_status": "NOT_EXECUTED",
       "aot_status": "NOT_EXECUTED",
-      "source_oracle_test_blob_sha": "47befc72937d8e616ad08aeff88e8b99114efbbc",
+      "source_oracle_test_blob_sha": "d64ae209a4175df388592891f3821b0a08ad0f3b",
       "negative_fixture_blobs": {
         "void-value-negative.atto": "470599e7850a277bae1dec72876e808cc36bd9e8",
         "void-return-negative.atto": "28a7798cadbdbfe4d46f32e3530a524d8c558f99",
         "bool-truthiness-negative.atto": "732412e77e467dc6db33da8d820d568147906204",
         "i64-literal-overflow-negative.atto": "f5a9f716dfe1b9b3d87fda6c087190e730652cdd",
-        "wrong-arg-negative.atto": "9c6ece5416c7c10145ad2c65695d338230f721de",
-        "u64-outside-int-negative.atto": "99502aed13a62201310b45f39aa845278650852e",
+        "wrong-arg-negative.atto": "5a5b7c231a0d461824198193b9fd12eb19e2dd8c",
+        "u64-outside-int-negative.atto": "70ea6e60daeb836017537da854849f283be4bcaa",
         "namespace-duplicate-negative.atto": "0894f5f72141762d8c2346c95e3a38f0b5204b61",
-        "namespace-late-negative.atto": "ffbe894237315f9290d34e47f004b9c9e1bc451b"
+        "namespace-late-negative.atto": "38af62ee27786dd5ae03a84308762ad0cb118b10"
       },
-      "fixture_matrix_blob_sha": "4e9bba988971f1aa053b569d4e2e453402269d4b",
-      "matrix_oracle_test_blob_sha": "a27bd79c38addcd26d3f776e758dc2f5dbb2a848",
+      "fixture_matrix_blob_sha": "581e85bb216ecb28040673e7a5d136a73c5b854a",
+      "matrix_oracle_test_blob_sha": "1bc0a92e3c685a778bcf1484e17d11ef4675dde6",
       "matrix_guest_status": "NOT_EXECUTED",
       "namespace_guest_status": "NOT_EXECUTED"
     },
@@ -368,6 +368,14 @@
       "branch_head": "a0c5d2d4f454da8fb119e45b360adc8a13ea0459",
       "validation": "NAMESPACE_NORMALIZATION_THEN_STRIP_FOR_GENERATED_MODULE",
       "cargo_test_status": "NOT_EXECUTED"
+    },
+    "llvm_function_only_namespace_import": {
+      "backend": "llvm",
+      "path": "src/main/cpp/oreslang/frontend/ModuleLoader.cpp",
+      "source_blob_sha": "283e22a30e914d7031b55f838cbdeb82261cfb5f",
+      "import_style": "static_named_fnc",
+      "guest_execution_status": "NOT_EXECUTED",
+      "unverified_package_namespace_imports": "DENIED"
     }
   },
   "negative_guests": [
@@ -439,5 +447,22 @@
   "public_declaration_form": "file-scoped namespace, top-level pub fnc",
   "namespace_header": "use namespace types;",
   "module_wrapper": false,
-  "namespace_reference": "atto-spec/language/unified-static-imports-v1.md"
+  "namespace_reference": "atto-spec/language/unified-static-imports-v1.md",
+  "backend_specific_guests": {
+    "llvm": {
+      "import_style": "static_named_fnc",
+      "positive_blob_sha": "adaa3e84de2a79f680284e3d86f9a8aa36efba88",
+      "matrix_blob_sha": "581e85bb216ecb28040673e7a5d136a73c5b854a",
+      "source_oracle_blob_sha": "d64ae209a4175df388592891f3821b0a08ad0f3b",
+      "matrix_oracle_blob_sha": "1bc0a92e3c685a778bcf1484e17d11ef4675dde6",
+      "function_only_namespace_loader_blob_sha": "283e22a30e914d7031b55f838cbdeb82261cfb5f",
+      "negative_fixture_blobs": {
+        "wrong-arg-negative.atto": "5a5b7c231a0d461824198193b9fd12eb19e2dd8c",
+        "u64-outside-int-negative.atto": "70ea6e60daeb836017537da854849f283be4bcaa",
+        "namespace-late-negative.atto": "38af62ee27786dd5ae03a84308762ad0cb118b10"
+      },
+      "guest_status": "NOT_EXECUTED",
+      "notes": "LLVM native C++ frontend uses explicitly named function imports; wildcard imports are not yet supported by this linker. Only file-scoped direct-function namespaces are admitted, not namespace package federation."
+    }
+  }
 }
