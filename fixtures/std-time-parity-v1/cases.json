@@ -1,0 +1,326 @@
+{
+  "schema": "atto.std-time.eleven-backend-candidate.v1",
+  "status": "CANDIDATE_NOT_GUEST_VERIFIED",
+  "date_utc": "2026-11-22",
+  "source_authority": "atto-lang/atto-spec",
+  "executable_guest_fixture": "fixtures/std-time-parity-v1/manual-deadline.atto",
+  "guest_expected_stdout": [
+    "1",
+    "2",
+    "true",
+    "true",
+    "true",
+    "true",
+    "false",
+    "1500000000",
+    "true",
+    "true",
+    "false",
+    "2000000000"
+  ],
+  "acceptable_evidence": [
+    "verified_full_source_tree_sha",
+    "current_compiler_commit_sha",
+    "compiled_guest_binary_sha256",
+    "stepful_ci_job_id_and_attempt",
+    "executed_positive_guest_exact_output",
+    "executed_negative_guest_no_artifact"
+  ],
+  "forbidden_claims": [
+    "host_model_as_guest_pass",
+    "source_file_present_as_linked_guest",
+    "parser_only_as_guest_pass",
+    "queue_only_as_guest_pass",
+    "skipped_or_queued_as_pass",
+    "cross_org_private_export_without_independent_approval"
+  ],
+  "backends": [
+    {
+      "id": "java",
+      "repo": "atto-lang/atto-source.java",
+      "implementation_pr": 1785,
+      "source_head_sha": "356a6e919da1db0329a956cb36be90868644e6c3",
+      "library_path": "stdlib/time.atto",
+      "library_blob_sha": "31f45572dcbd7b478ce16dbb54a7d87ef68d78fc",
+      "target_profile": "HOSTED_OR_NATIVE_TARGET",
+      "guest_execution": "NOT_EXECUTED",
+      "full_tree_verified": false,
+      "compiler_artifact_verified": false
+    },
+    {
+      "id": "llvm",
+      "repo": "atto-lang/atto-source.llvm",
+      "implementation_pr": 882,
+      "source_head_sha": "3880c6fb52d04e862fdf2a292a93055fb536a255",
+      "library_path": "stdlib/std/time.atto",
+      "library_blob_sha": "3b8e4c82550fec5cda3f27b9afb71eedacc7d37e",
+      "target_profile": "HOSTED_OR_NATIVE_TARGET",
+      "guest_execution": "NOT_EXECUTED",
+      "full_tree_verified": false,
+      "compiler_artifact_verified": false
+    },
+    {
+      "id": "net",
+      "repo": "atto-lang/atto-source.net",
+      "implementation_pr": 227,
+      "source_head_sha": "21c5a4d60ce16262f9a2b0729b9c68b53079c024",
+      "library_path": "stdlib/std/time.atto",
+      "library_blob_sha": "1309e697ffa39c55b6b17af049f563b7320e3e9c",
+      "target_profile": "HOSTED_OR_NATIVE_TARGET",
+      "guest_execution": "NOT_EXECUTED",
+      "full_tree_verified": false,
+      "compiler_artifact_verified": false
+    },
+    {
+      "id": "wasm",
+      "repo": "atto-lang/atto-source.wasm",
+      "implementation_pr": 290,
+      "source_head_sha": "24ff850461817641135f6aa31e48c3a0ba05969e",
+      "library_path": "stdlib/std/time.atto",
+      "library_blob_sha": "8a3749d799a2d93963e9336979523dbd7685fdc7",
+      "target_profile": "HOSTED_OR_NATIVE_TARGET",
+      "guest_execution": "NOT_EXECUTED",
+      "full_tree_verified": false,
+      "compiler_artifact_verified": false
+    },
+    {
+      "id": "forge",
+      "repo": "atto-lang/atto-source.forge",
+      "implementation_pr": 235,
+      "source_head_sha": "24af6285bc6f2f7532b626ba0f6a9d6b277302e2",
+      "library_path": "stdlib/std/time.atto",
+      "library_blob_sha": "3197e94f9de96fcfcd2e7e27c0ef64a34d2e7701",
+      "target_profile": "HOSTED_OR_NATIVE_TARGET",
+      "guest_execution": "NOT_EXECUTED",
+      "full_tree_verified": false,
+      "compiler_artifact_verified": false
+    },
+    {
+      "id": "rs",
+      "repo": "atto-lang/atto-source.rs",
+      "implementation_pr": 545,
+      "source_head_sha": "68df08552178afdf51129f56c40d6846e442504d",
+      "library_path": "stdlib/std/time.atto",
+      "library_blob_sha": "ecfbf5a840d49ef0c2501c0a380f529f188cbe82",
+      "target_profile": "HOSTED_OR_NATIVE_TARGET",
+      "guest_execution": "NOT_EXECUTED",
+      "full_tree_verified": false,
+      "compiler_artifact_verified": false
+    },
+    {
+      "id": "cranelift",
+      "repo": "atto-lang/atto-source.cranelift",
+      "implementation_pr": 100,
+      "source_head_sha": "ec27f35504e3374fa3298a65f5eebfa14e35d817",
+      "library_path": "stdlib/std/time.atto",
+      "library_blob_sha": "38153ea7d201521fc50ca844535135c165a4a998",
+      "target_profile": "HOSTED_OR_NATIVE_TARGET",
+      "guest_execution": "NOT_EXECUTED",
+      "full_tree_verified": false,
+      "compiler_artifact_verified": false
+    },
+    {
+      "id": "js",
+      "repo": "atto-lang/atto-source.js",
+      "implementation_pr": 140,
+      "source_head_sha": "b10040d8dd1039df88bcb508af2b69fa66376ac6",
+      "library_path": "stdlib/std/time.atto",
+      "library_blob_sha": "371dcedbd2469b3f00a46b8dee2de64ae2271a1c",
+      "target_profile": "HOSTED_OR_NATIVE_TARGET",
+      "guest_execution": "NOT_EXECUTED",
+      "full_tree_verified": false,
+      "compiler_artifact_verified": false
+    },
+    {
+      "id": "hdl",
+      "repo": "atto-lang/atto-source.hdl",
+      "implementation_pr": 69,
+      "source_head_sha": "4fd7048bbf16fc163630a09b09016a394597abac",
+      "library_path": "stdlib/std/time.atto",
+      "library_blob_sha": "876aa374e2608d7b02a9e68bf41146a9ef8b6705",
+      "target_profile": "DETERMINISTIC_HARDWARE_SUBSET_TARGET",
+      "guest_execution": "NOT_EXECUTED",
+      "full_tree_verified": false,
+      "compiler_artifact_verified": false
+    },
+    {
+      "id": "atto",
+      "repo": "atto-lang/atto-source.atto",
+      "target_profile": "BOOTSTRAP_ONLY",
+      "guest_execution": "NOT_EXECUTED",
+      "full_tree_verified": false,
+      "compiler_artifact_verified": false
+    },
+    {
+      "id": "realtime",
+      "repo": "atto-lang/atto-source.realtime",
+      "target_profile": "BOOTSTRAP_ONLY",
+      "guest_execution": "NOT_EXECUTED",
+      "full_tree_verified": false,
+      "compiler_artifact_verified": false
+    }
+  ],
+  "reference_vectors": [
+    {
+      "id": "zero_ns",
+      "kind": "ceil_ms",
+      "ns": "0",
+      "expected": "0"
+    },
+    {
+      "id": "single_ns",
+      "kind": "ceil_ms",
+      "ns": "1",
+      "expected": "1"
+    },
+    {
+      "id": "exact_ms",
+      "kind": "ceil_ms",
+      "ns": "1000000",
+      "expected": "1"
+    },
+    {
+      "id": "fraction_ms",
+      "kind": "ceil_ms",
+      "ns": "1000001",
+      "expected": "2"
+    },
+    {
+      "id": "last_i64_ceil",
+      "kind": "ceil_ms",
+      "ns": "9223372036854775807",
+      "expected": "9223372036855"
+    },
+    {
+      "id": "seconds_max",
+      "kind": "scaled_ns",
+      "unit_ns": "1000000000",
+      "amount": "9223372036",
+      "expected": "9223372036000000000"
+    },
+    {
+      "id": "seconds_overflow",
+      "kind": "scaled_ns",
+      "unit_ns": "1000000000",
+      "amount": "9223372037",
+      "expected": "DurationOverflow"
+    },
+    {
+      "id": "minutes_max",
+      "kind": "scaled_ns",
+      "unit_ns": "60000000000",
+      "amount": "153722867",
+      "expected": "9223372020000000000"
+    },
+    {
+      "id": "minutes_overflow",
+      "kind": "scaled_ns",
+      "unit_ns": "60000000000",
+      "amount": "153722868",
+      "expected": "DurationOverflow"
+    },
+    {
+      "id": "hours_max",
+      "kind": "scaled_ns",
+      "unit_ns": "3600000000000",
+      "amount": "2562047",
+      "expected": "9223369200000000000"
+    },
+    {
+      "id": "hours_overflow",
+      "kind": "scaled_ns",
+      "unit_ns": "3600000000000",
+      "amount": "2562048",
+      "expected": "DurationOverflow"
+    },
+    {
+      "id": "negative_duration",
+      "kind": "nonnegative_ns",
+      "ns": "-1",
+      "expected": "NegativeDuration"
+    },
+    {
+      "id": "max_duration",
+      "kind": "nonnegative_ns",
+      "ns": "9223372036854775807",
+      "expected": "9223372036854775807"
+    },
+    {
+      "id": "duration_oob",
+      "kind": "nonnegative_ns",
+      "ns": "9223372036854775808",
+      "expected": "DurationOverflow"
+    },
+    {
+      "id": "add_max_plus_one",
+      "kind": "checked_add",
+      "left": "9223372036854775807",
+      "right": "1",
+      "expected": "DurationOverflow"
+    },
+    {
+      "id": "sub_underflow",
+      "kind": "checked_sub",
+      "left": "0",
+      "right": "1",
+      "expected": "DurationUnderflow"
+    },
+    {
+      "id": "clock_domain_mismatch",
+      "kind": "duration_since",
+      "later_clock": 9,
+      "earlier_clock": 10,
+      "later": "100",
+      "earlier": "1",
+      "expected": "ClockDomainMismatch"
+    },
+    {
+      "id": "clock_backwards",
+      "kind": "duration_since",
+      "later_clock": 9,
+      "earlier_clock": 9,
+      "later": "0",
+      "earlier": "1",
+      "expected": "ClockWentBackwards"
+    },
+    {
+      "id": "clock_delta",
+      "kind": "duration_since",
+      "later_clock": 9,
+      "earlier_clock": 9,
+      "later": "1500000000",
+      "earlier": "1000000000",
+      "expected": "500000000"
+    },
+    {
+      "id": "deadline_before",
+      "kind": "expired",
+      "due": "150",
+      "now": "149",
+      "expected": "false"
+    },
+    {
+      "id": "deadline_exact",
+      "kind": "expired",
+      "due": "150",
+      "now": "150",
+      "expected": "true"
+    },
+    {
+      "id": "interval_coalesce_no_storm",
+      "kind": "interval_next_due",
+      "now": "200",
+      "due": "100",
+      "period": "50",
+      "expected": "250"
+    },
+    {
+      "id": "interval_overflow",
+      "kind": "interval_next_due",
+      "now": "9223372036854775807",
+      "due": "100",
+      "period": "1",
+      "expected": "IntervalRangeExhausted"
+    }
+  ]
+}
