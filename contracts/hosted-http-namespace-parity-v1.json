@@ -1,0 +1,170 @@
+{
+  "schema": "atto.namespace_http.import_parity.v1",
+  "status": "ALL_NOT_EXECUTED",
+  "authority": "atto-lang/atto-spec/language/unified-static-imports-v1.md",
+  "source_policy": "COMPILER_OWNED_BACKEND_LOCAL_NATIVE_ATTO",
+  "canonical_import": "import * as http from \"std.http\";",
+  "selective_import": "import module http3 from \"./library_public.atto\";",
+  "public_module_declaration": "define pub module http3 as",
+  "default_module_visibility": "PRIVATE",
+  "import_contract": {
+    "builtin": "std.http",
+    "symbol": "status_valid",
+    "symbol_return": "bool",
+    "argument": "int",
+    "example_true": 200,
+    "example_false": 99,
+    "builtin_must_be_registered": true,
+    "ambient_file_or_package_fallback": false,
+    "module_export_visibility": "PUBLIC_ONLY",
+    "module_namespace_and_selective_module_differ": true,
+    "capability_granted_by_import": false
+  },
+  "fixtures": {
+    "positive": [
+      {
+        "path": "fixtures/hosted-async-http-fs-v1/namespace/pass_builtin_http.atto",
+        "expected_guest_lines": [
+          "true",
+          "true"
+        ],
+        "kind": "BUILTIN_NAMESPACE"
+      },
+      {
+        "path": "fixtures/hosted-async-http-fs-v1/namespace/pass_selective_public_module.atto",
+        "expected_guest_lines": [
+          "true"
+        ],
+        "kind": "PUBLIC_MODULE"
+      }
+    ],
+    "negative": [
+      {
+        "path": "fixtures/hosted-async-http-fs-v1/namespace/fail_private_module.atto",
+        "category": "PRIVATE_MODULE_EXPORT_DENIED",
+        "must_fail_before_guest_output": true
+      },
+      {
+        "path": "fixtures/hosted-async-http-fs-v1/namespace/fail_private_member.atto",
+        "category": "PRIVATE_NAMESPACE_MEMBER_DENIED",
+        "must_fail_before_guest_output": true
+      },
+      {
+        "path": "fixtures/hosted-async-http-fs-v1/namespace/fail_unregistered_builtin.atto",
+        "category": "UNREGISTERED_BUILTIN_DENIED",
+        "must_fail_before_guest_output": true
+      },
+      {
+        "path": "fixtures/hosted-async-http-fs-v1/namespace/fail_alias_collision.atto",
+        "category": "DUPLICATE_IMPORT_BINDING",
+        "must_fail_before_guest_output": true
+      }
+    ],
+    "source_units": [
+      "fixtures/hosted-async-http-fs-v1/namespace/library_public.atto",
+      "fixtures/hosted-async-http-fs-v1/namespace/library_private.atto"
+    ]
+  },
+  "execution_rules": {
+    "test_only_if_compiler_supports_target": true,
+    "must_compile_real_atto_source": true,
+    "must_use_registered_builtin_bytes": true,
+    "guest_steps_required": true,
+    "host_shim_only_not_sufficient": true,
+    "source_only_not_sufficient": true,
+    "all_negative_cases_required": true,
+    "exact_head_and_case_hash_required": true,
+    "unavailable_or_incomplete_is_not_executed": true,
+    "explicit_unsupported_must_be_reported_without_faked_pass": true
+  },
+  "backends": [
+    {
+      "backend": "llvm",
+      "repository": "atto-lang/atto-source.llvm",
+      "profile": "HOSTED_GUEST_CANDIDATE",
+      "execution": "NOT_EXECUTED",
+      "executed_guest_cases": 0,
+      "evidence": "NONE"
+    },
+    {
+      "backend": "java",
+      "repository": "atto-lang/atto-source.java",
+      "profile": "HOSTED_GUEST_CANDIDATE",
+      "execution": "NOT_EXECUTED",
+      "executed_guest_cases": 0,
+      "evidence": "NONE"
+    },
+    {
+      "backend": "net",
+      "repository": "atto-lang/atto-source.net",
+      "profile": "HOSTED_GUEST_CANDIDATE",
+      "execution": "NOT_EXECUTED",
+      "executed_guest_cases": 0,
+      "evidence": "NONE"
+    },
+    {
+      "backend": "wasm",
+      "repository": "atto-lang/atto-source.wasm",
+      "profile": "HOSTED_GUEST_CANDIDATE",
+      "execution": "NOT_EXECUTED",
+      "executed_guest_cases": 0,
+      "evidence": "NONE"
+    },
+    {
+      "backend": "rs",
+      "repository": "atto-lang/atto-source.rs",
+      "profile": "HOSTED_GUEST_CANDIDATE",
+      "execution": "NOT_EXECUTED",
+      "executed_guest_cases": 0,
+      "evidence": "NONE"
+    },
+    {
+      "backend": "forge",
+      "repository": "atto-lang/atto-source.forge",
+      "profile": "HOSTED_GUEST_CANDIDATE",
+      "execution": "NOT_EXECUTED",
+      "executed_guest_cases": 0,
+      "evidence": "NONE"
+    },
+    {
+      "backend": "cranelift",
+      "repository": "atto-lang/atto-source.cranelift",
+      "profile": "HOSTED_GUEST_CANDIDATE",
+      "execution": "NOT_EXECUTED",
+      "executed_guest_cases": 0,
+      "evidence": "NONE"
+    },
+    {
+      "backend": "js",
+      "repository": "atto-lang/atto-source.js",
+      "profile": "HOSTED_GUEST_CANDIDATE",
+      "execution": "NOT_EXECUTED",
+      "executed_guest_cases": 0,
+      "evidence": "NONE"
+    },
+    {
+      "backend": "atto",
+      "repository": "atto-lang/atto-source.atto",
+      "profile": "HOSTED_GUEST_CANDIDATE",
+      "execution": "NOT_EXECUTED",
+      "executed_guest_cases": 0,
+      "evidence": "NONE"
+    },
+    {
+      "backend": "hdl",
+      "repository": "atto-lang/atto-source.hdl",
+      "profile": "TARGET_SCOPED_PURE_POLICY",
+      "execution": "NOT_EXECUTED",
+      "executed_guest_cases": 0,
+      "evidence": "NONE"
+    },
+    {
+      "backend": "realtime",
+      "repository": "atto-lang/atto-source.realtime",
+      "profile": "TARGET_SCOPED_PURE_POLICY",
+      "execution": "NOT_EXECUTED",
+      "executed_guest_cases": 0,
+      "evidence": "NONE"
+    }
+  ]
+}
