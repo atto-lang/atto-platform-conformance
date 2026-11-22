@@ -2,7 +2,7 @@
   "schema": "atto.task-payload-sync.v1",
   "status": "TARGET_NOT_GUEST_VERIFIED",
   "source_contract": "atto-lang/atto-spec/language/typed-task-payload-sync-v1.md",
-  "meaning": "task<T> returns Future<T> and is independently schedulable; await task<T> spawns and joins; sync task<T> and void-only do sync task<void> execute inline on caller TaskId, without an independent spawn or Future; do task<T> is supervised child spawn; standalone inline void statements require 'do sync task', and do-inline may only return void",
+  "meaning": "task<T> returns Future<T> and is independently schedulable; await task<T> spawns and joins; sync task<T> and void-only do sync task<void> execute inline on caller TaskId, without an independent spawn or Future; do task<T> is supervised child spawn; standalone inline void statements require 'do sync task', and do-inline may only return void; await is type-directed and cannot await scalar/void inline results, but can join a Future returned by an inline task; local const must remain constexpr (use val for task expressions); empty nonvoid task bodies reject",
   "execution_frame_model": "independent logical continuations for spawned task<T> within a structured TaskScope; inline sync task runs in its caller's logical continuation and creates no independent child; physical frame sharing only after proven lifetime and alias safety",
   "cases": [
     {
@@ -516,6 +516,97 @@
         "diagnostic": "E_TASK_RETURN_TYPE",
         "no_artifact": true
       }
+    },
+    {
+      "id": "await_sync_scalar_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/await_sync_scalar_rejected.atto",
+      "source_git_blob": "129fb813a56dcd558cd4b2f8cd072966390b5f92",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_AWAIT_TYPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "await_sync_future_valid",
+      "source_path": "fixtures/task-payload-sync-v1/await_sync_future_valid.atto",
+      "source_git_blob": "d831e2aa0c87001286bd64f7b7b54de36e51bc14",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "INLINE_ENTER_BEFORE_BODY",
+          "SAME_LOGICAL_TASK_ID",
+          "NO_SYNTHETIC_SYNC_CHILD_SPAWN",
+          "INDEPENDENT_CHILD_SPAWN",
+          "AWAIT_RETURNED_FUTURE_ONLY",
+          "TASK_JOIN_PHYSICAL_RETIRE"
+        ]
+      }
+    },
+    {
+      "id": "const_async_task_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/const_async_task_rejected.atto",
+      "source_git_blob": "f4867c172a9d0833c7709c94e095e4ecef1b6559",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_CONST",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "const_sync_task_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/const_sync_task_rejected.atto",
+      "source_git_blob": "11693f7f333c11e9b748a33f1908445532cc0d20",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_CONST",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "empty_async_nonvoid_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/empty_async_nonvoid_rejected.atto",
+      "source_git_blob": "1535cd2b101914e30c7634e479f2aec5b3d70de5",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_TASK_RETURN_TYPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "empty_sync_nonvoid_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/empty_sync_nonvoid_rejected.atto",
+      "source_git_blob": "fc9f78707a5dcf874d19accfe6b47c9b70252628",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_TASK_RETURN_TYPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "do_async_void_empty",
+      "source_path": "fixtures/task-payload-sync-v1/do_async_void_empty.atto",
+      "source_git_blob": "cad17fc646ae947f943b7f6cc7a20e00ebd0e6b9",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "INDEPENDENT_CHILD_SPAWN",
+          "SUPERVISED_DISCARD",
+          "SCOPE_PHYSICAL_RETIRE"
+        ]
+      }
+    },
+    {
+      "id": "await_sync_void_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/await_sync_void_rejected.atto",
+      "source_git_blob": "13772d562383ab08f30071ac813ca7ad9aae82a8",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_AWAIT_TYPE",
+        "no_artifact": true
+      }
     }
   ],
   "backends": {
@@ -586,7 +677,7 @@
       "guest_receipt": null
     }
   },
-  "verification": "Source-only registry; requires exact compiler SHA, negative no-artifact proofs, actual guest execution and independent backend receipts.",
+  "verification": "Source-only registry; requires exact compiler SHA, negative no-artifact proofs, actual guest execution and independent backend receipts.; eight additional TARGET type/inline/const/empty-body fixtures require exact guest receipts",
   "limited_guest_receipts": {
     "java_pure_inline_scalar": {
       "path": "contracts/task-java-pure-inline-20261120.json",
@@ -1128,5 +1219,7 @@
         "SAME_BODY_DIFFERENT_SCHEDULING"
       ]
     }
-  ]
+  ],
+  "await_inline_future_model": "await sync task<int> rejects E_AWAIT_TYPE (int is not Future); await sync task<Future<T>> joins the *returned* independent Future exactly once, without an artificial inline Future or changed scheduling",
+  "const_task_model": "Local const requires compile-time-evaluable initializers; task, await, and sync task are runtime expressions even with constant literal returns. Runtime-immutable declarations use val; must not downgrade const silently"
 }
