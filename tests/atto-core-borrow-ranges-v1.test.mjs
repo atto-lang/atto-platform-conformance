@@ -63,6 +63,6 @@ test("reject forged borrow proof, duplicate case, missing backend and changed bo
   assert.throws(()=>validate(mutate(x=>x.vectors[1].id=x.vectors[0].id)));
   assert.throws(()=>validate(mutate(x=>{x.backends.pop()})));
   assert.throws(()=>validate(mutate(x=>{x.backends[0].compiler_borrow="PASS"})));
-  assert.throws(()=>validate(mutate(x=>{x.vectors[4].args[0]=-99;x.vectors[4].expected=false})),
+  assert.throws(()=>validate(mutate(x=>{x.vectors[0].args[0]=-99})),
     "negative-range changes must still be checked against oracle");
 });
