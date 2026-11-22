@@ -16,7 +16,7 @@
     "true",
     "true",
     "false",
-    "2000000000"
+    "1500000000"
   ],
   "acceptable_evidence": [
     "verified_full_source_tree_sha",
