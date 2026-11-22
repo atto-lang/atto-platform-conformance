@@ -222,7 +222,7 @@
       "source_status": "STAGED_SOURCE_ONLY",
       "guest_status": "NOT_EXECUTED",
       "executed_guest_cases": 0,
-      "captured_branch_head_sha": "a7c926d4adcfe771784094a275095be5813b54dc"
+      "captured_branch_head_sha": "8d2543f7442712c7aaa2aa341b71b3444359e216"
     }
   ],
   "remaining_backends": [
@@ -253,7 +253,7 @@
       "local_v8_status": "PASS_HOST_SHIM_ONLY",
       "node_exact_head": "NOT_EXECUTED",
       "compiled_atto_guest": "NOT_EXECUTED",
-      "captured_head_sha": "9c5e136ed6c7d0fd10d78be90d8a08764f3412d2",
+      "captured_head_sha": "657f308eb7fa751764c2ecfbb2b69f3e3b4f3357",
       "runtime_blob_sha": "721168d46cc180b7cb3c6a112d6b61178415ef13",
       "test_blob_sha": "bf0b3f7639ba14769afa992ab5651b1f3ab7d713",
       "source_transfer": "BLOCKED_PENDING_INDEPENDENT_SECURITY_REVIEW",
@@ -268,7 +268,7 @@
         "seek": true,
         "typed_guest": "NOT_EXECUTED"
       },
-      "captured_git_tree_sha": "dfabd3db6cd40faf4cc4cf31c2bf37dc15d13e92",
+      "captured_git_tree_sha": "5e84461ae3eca69769721b6991a149cda83f315f",
       "actor_scoped_file_port_contract": "contracts/hosted-fs-file-handle-port-v1.json",
       "actor_scoped_file_port_guest": "NOT_LINKED"
     },
@@ -279,7 +279,7 @@
       "local_v8_status": "PASS_HOST_SHIM_ONLY",
       "node_exact_head": "NOT_EXECUTED",
       "compiled_atto_guest": "NOT_EXECUTED",
-      "captured_head_sha": "a7c926d4adcfe771784094a275095be5813b54dc",
+      "captured_head_sha": "8d2543f7442712c7aaa2aa341b71b3444359e216",
       "runtime_blob_sha": "1cb7b48ad76bdd1122315ab6c2665c984fadd7cd",
       "test_blob_sha": "1231456190d82112288434c13e98f3bde17598ac",
       "source_transfer": "BLOCKED_PENDING_INDEPENDENT_SECURITY_REVIEW",
@@ -294,7 +294,7 @@
         "seek": true,
         "typed_guest": "NOT_EXECUTED"
       },
-      "captured_git_tree_sha": "e18f418b1b71213327f93b9e7bcb017cd100b318",
+      "captured_git_tree_sha": "58fb997a74fb00bfeaaee6301576cf835a83a64b",
       "actor_scoped_file_port_contract": "contracts/hosted-fs-file-handle-port-v1.json",
       "actor_scoped_file_port_guest": "NOT_LINKED"
     }
