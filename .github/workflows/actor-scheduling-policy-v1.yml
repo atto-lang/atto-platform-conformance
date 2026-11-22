@@ -1,0 +1,29 @@
+name: Actor scheduling policy v1 (source-free only)
+on:
+  pull_request:
+    paths:
+      - 'contracts/actor-scheduling-policy-v1.json'
+      - 'tests/actor-scheduling-policy-v1.test.mjs'
+      - '.github/workflows/actor-scheduling-policy-v1.yml'
+  push:
+    paths:
+      - 'contracts/actor-scheduling-policy-v1.json'
+      - 'tests/actor-scheduling-policy-v1.test.mjs'
+      - '.github/workflows/actor-scheduling-policy-v1.yml'
+permissions:
+  contents: read
+jobs:
+  source-free-policy-oracle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate policy JSON
+        run: node -e "JSON.parse(require('node:fs').readFileSync('contracts/actor-scheduling-policy-v1.json', 'utf8'))"
+      - name: Execute source-free scheduling model tests
+        run: node --test tests/actor-scheduling-policy-v1.test.mjs
+      - name: Evidence classification
+        run: echo 'SOURCE_FREE_MODEL_ONLY; no compiler-produced .atto guest executed'
