@@ -49,6 +49,22 @@ The table describes source/PR scope, **not** confirmed execution. Existing
 Java work in PRs #683/#673 and LLVM macro-import work in #619 overlap; merge
 by a reviewed source-owned DAG, not by overwriting branches.
 
+## Structural receipt checker — never automatic certification
+
+`lib/constant-import-evidence-v1.mjs` and
+`tests/constant-import-evidence-v1.test.mjs` reject a forged PASS when the
+source SHA/tree, selected CI job, material checkout/compile/guest steps,
+all 27 case receipts, negative zero-artifact proofs, per-declaration
+initializer invocations or same-AOT two-launch artifact digests disagree.
+
+Even a complete, synthetically well-formed receipt returns
+`STRUCTURAL_REVIEW_REQUIRED` with `releaseQualified:false` and
+`guestParityCertified:false`, **never PASS**. Its runner/job/step fields
+are untrusted input until an independent reviewer fetches them from an
+authenticated CI API and compares the exact Git tree, blob SHAs, and actual
+compiled guest binary and logs. Source-free or zero-step statuses remain
+`NOT_EXECUTED`. Tests of this checker are host-only, not compiler guests.
+
 ## Promotion and backend evidence requirements
 
 For each backend, attach a report bound to the **exact latest source head/tree**:
