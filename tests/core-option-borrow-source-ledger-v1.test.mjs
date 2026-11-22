@@ -15,7 +15,7 @@ const reject=(name,mutate)=>test(name,()=>{
 });
 test('all eleven profiles, seven source-borrow candidates and 35 Git blob pins exist',()=>{
   assert.deepEqual(validateBorrowSourceLedger(ledger,dash),
-    {backends:11,borrow_candidates:7,source_artifacts:35,guest_passes:0});
+    {backends:11,borrow_candidates:7,source_artifacts:36,guest_passes:0});
   assert.deepEqual(new Set(ledger.backends.map(x=>x.id)),
     new Set(['java','llvm','net','rs','wasm','forge','cranelift','js','hdl','atto','realtime']));
 });
@@ -29,7 +29,7 @@ test('noncompiler profiles never masquerade as generic ownership passes',()=>{
 test('every source-owned implementation fixture is individually pinned and backend-scoped',()=>{
   for(const id of ['java','rs','llvm','net','wasm','forge','cranelift']){
     const b=ledger.backends.find(x=>x.id===id);
-    assert.equal(b.source_artifacts.length,4,id);
+    assert.equal(b.source_artifacts.length,id==='rs'?5:4,id);
     assert.ok(b.source_artifacts.filter(x=>x.path.endsWith('.atto')).length>=3);
     assert.match(b.root_tree_sha,/^[0-9a-f]{40}$/);
     assert.equal(b.source_head_sha,dash.backends.find(x=>x.id===id).candidate.head_sha);
