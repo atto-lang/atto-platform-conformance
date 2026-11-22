@@ -16,6 +16,26 @@ for (const b of manifest.sources) {
   assert.equal(b.aot_status, "NOT_EXECUTED");
 }
 assert.equal(manifest.evidence.claim_tier, "SOURCE_ONLY_NO_GUEST_EXECUTION");
+const negatives = manifest.negative_guests;
+assert.equal(negatives.length, 4);
+assert.deepEqual(negatives.map(x => x.file), [
+  "void-value-negative.atto", "void-return-negative.atto",
+  "bool-truthiness-negative.atto", "i64-literal-overflow-negative.atto"
+]);
+assert.equal(new Set(negatives.map(x => x.file)).size, 4);
+for (const item of negatives) {
+  assert.match(item.blob_sha, /^[a-f0-9]{40}$/);
+  assert.equal(item.expect, "compile_reject_no_artifact");
+  assert.equal(item.guest_status, "NOT_EXECUTED");
+}
+for (const source of manifest.sources) {
+  assert.equal(source.fixture_positive_blob_sha, "9d4027de080b8d625ab869825c4ec62f369adce8");
+  assert.match(source.source_oracle_test_blob_sha, /^[a-f0-9]{40}$/);
+  assert.deepEqual(source.negative_fixture_blobs,
+    Object.fromEntries(negatives.map(x=>[x.file,x.blob_sha])),
+    "all backends must pin the four negative fixture Git blobs");
+}
+
 const INT_MIN = -(1n << 63n), INT_MAX = (1n << 63n) - 1n;
 const limits = manifest.contract.endpoints;
 let vectorCount = 0;
