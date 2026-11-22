@@ -15,6 +15,9 @@ BLOBS = {
     "ci/test_http_stdlib_policy.sh",
     "ci/test_http_namespace_import.sh",
     ".github/workflows/http-stdlib-guest.yml",
+    "frontend/tests/core_ownership_boundary.rs",
+    "frontend/tests/fixtures/borrow_move_after_transfer.atto",
+    "frontend/tests/fixtures/borrow_move_owner_ok.atto",
 }
 PROOF = {
     "exact_source_head_and_root_git_tree",
@@ -22,7 +25,7 @@ PROOF = {
     "independent_ast_parse_plus_type_check",
     "native_llvm_ir_and_executable",
     "positive_exit_42_with_no_guest_stderr",
-    "eight_negative_diagnostics_and_no_artifacts",
+    "nine_negative_diagnostics_and_no_artifacts",
     "nonzero_executed_workflow_steps",
     "approved_private_source_carrier_if_cross_org",
 }
@@ -49,7 +52,7 @@ def valid(v):
         or type(v["expected_positive_guest_cases"]) is not int
         or v["expected_positive_guest_cases"] != 17
         or type(v["expected_negative_import_cases"]) is not int
-        or v["expected_negative_import_cases"] != 8
+        or v["expected_negative_import_cases"] != 9
         or type(v["existing_same_unit_policy_cases"]) is not int
         or v["existing_same_unit_policy_cases"] != 46
         or type(v["guest_executed_cases"]) is not int
