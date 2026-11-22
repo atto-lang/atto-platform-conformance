@@ -11,7 +11,7 @@
   },
   "scope_notes": {
     "java": "Public module std/channel authored in Atto; guest tests staged, exact-head runtime execution not verified.",
-    "rs": "The v2 branch has extracted native Atto runtime source, but package-level std/channel import and the generic API are not linked. The direct rendezvous reader runtime fix is staged in Rust/Wasm PR #547; full guest execution remains unverified.",
+    "rs": "The v2 branch extracts native Atto channel runtime source and now rejects stale buffered/pending-reader legacy two-port pipe admission; terminal try-read is distinct from open/empty. Package-level std/channel imports and the generic Java-compatible API are not linked. All guest execution remains NOT_EXECUTED.",
     "llvm": "The main native Channel<int> gate rejects unsupported guest lowering; a separate i64 C ABI PR is runtime-only.",
     "net": "Source channel guest support not independently verified.",
     "wasm": "Independent worker-Wasm backend must not borrow Rust browser compiler's success.",
@@ -32,7 +32,8 @@
     "closed/empty is not conflated with temporarily-unready None",
     "cancelled pending operations remove their registrations exactly once",
     "borrowed and callable payloads do not cross prohibited channel boundaries",
-    "unbounded is separate and MUST NOT map to arbitrary large finite capacity"
+    "unbounded is separate and MUST NOT map to arbitrary large finite capacity",
+    "actor DATA graph attachment (including legacy two-port pipes) rejects preexisting buffered data and pending public reader registrations before claiming channel ownership"
   ],
   "cases": [
     {
