@@ -69,3 +69,12 @@ JSON numeric literals. Its negative/positive extremes are exactly
 out-of-range negative cases requiring compiler rejection. Backends must
 avoid lossy IEEE-double JSON parsing of 64-bit test values. This is
 source-free oracle validation only, not compiled guest acceptance.
+
+### Canonical Core selectors (experimental .NET candidate)
+
+.NET now recognizes `import * as math from "core.math";` and the exact
+`core.hash` / `core.cell` counterparts, with static aliases and
+immutable compiler-owned resource identity. This is **not** general
+`pkg` syntax, wildcard filesystem import, or transitive package support.
+The source-file `use namespace atto.core.math;` header alone still grants
+no authority. Committed negative and CIL guest tests are `NOT_EXECUTED`.
