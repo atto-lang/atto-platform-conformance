@@ -91,7 +91,7 @@ execution routes.
 ## Backend-owned core borrow rollout: 11 tracked compilers (2026-11-22)
 
 [Exact source-only borrow candidate ledger](../contracts/eleven-backend-parity-v1/borrow-source-ledger.json)
-records the observed PR-head commit, full root tree SHA, and **36 explicitly
+records the observed PR-head commit, full root tree SHA, and **42 explicitly
 verified Git blob identities** across all eleven backend slots. No private
 compiler contents are copied into this conformance repo. The companion
 [source-integrity validator](../lib/core-option-borrow-source-ledger-v1.mjs)
@@ -123,3 +123,8 @@ all native AOT and sanitizer/equivalent checks remain `not_executed`.
 Private source export policy denies this snapshot to unapproved carriers.
 Do not use an alternate Actions org unless the exact source head/tree,
 private carrier identity and independent approval are genuinely admitted.
+
+
+### Rust concrete ADT read-only call boundary
+
+Rust's independently owned core borrow profile now checks only a named live `Option<int>` or `Result<int,string>` used as an explicit `borrow!` argument to a statically resolved synchronous function call. Standalone ADT `borrow!` cannot be returned as owned; temporary and mutable ADT borrows reject. Its actual compiler-based Rust test suite now separates `E_BORROW` for an affine class escape from `E_UNSUPPORTED_TYPE` for `Option<Payload>`. These tests are authored and **not yet executed** on a verified Rust compiler runner. The other backend implementations remain independent and unchanged by the Rust specialization.
