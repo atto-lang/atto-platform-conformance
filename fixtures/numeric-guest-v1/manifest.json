@@ -113,6 +113,16 @@
         "value": "42"
       },
       "status": "not_executed"
+    },
+    {
+      "id": "equality-numeric-exact",
+      "path": "equality-numeric-exact.atto",
+      "blob": "e82e1260b0f2645c2b49f56b552c12dba48da93f",
+      "expected": {
+        "kind": "value",
+        "value": "42"
+      },
+      "status": "not_executed"
     }
   ]
 }
