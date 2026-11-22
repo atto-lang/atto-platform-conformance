@@ -15,11 +15,11 @@ const reject=(name,mutate)=>test(name,()=>{
 });
 test('all eleven profiles, seven source-borrow candidates and 35 Git blob pins exist',()=>{
   assert.deepEqual(validateBorrowSourceLedger(ledger,dash),
-    {backends:11,borrow_candidates:7,source_artifacts:36,guest_passes:0});
+    {backends:11,borrow_candidates:7,source_artifacts:41,guest_passes:0});
   assert.deepEqual(new Set(ledger.backends.map(x=>x.id)),
     new Set(['java','llvm','net','rs','wasm','forge','cranelift','js','hdl','atto','realtime']));
 });
-test('noncompiler profiles never masquerade as generic ownership passes',()=>{
+test('bounded Rust immutable ADT borrow checker code and typed negatives have independent SHA pins',()=>{\n  const rs=ledger.backends.find(x=>x.id==='rs');\n  const files=new Map(rs.source_artifacts.map(x=>[x.path,x.blob_sha]));\n  const required=new Map([\n    ['src/check.rs','05c8cb0487a8f6da1c6cc7305f9566a3d4da7d3c'],\n    ['tests/core_option_result_scalar.rs','d5163476cdaef74e1f1203fbb43c1a7075eeb61b'],\n    ['tests/core_option_result/borrowed_read_42.atto','b18d140202a29425911f4fba7417696ed7f6cf0d'],\n    ['tests/core_option_result/negative_affine_borrow_escape.atto','3815a07ee254c30541bf8069f3a17cfd7be01138'],\n    ['tests/core_option_result/negative_unproved_affine_option.atto','6f4cde94cf54a65b0271bb8fbbc79dd32b7f014a'],\n    ['tests/core_option_result/negative_borrow_option_temporary.atto','c40331a00c8ad8b912f02c2c2bfac04ece716508'],\n    ['tests/core_option_result/negative_borrow_mut_option.atto','fbca2779ca3268afedabd146c6c09b771a8f2a3f']\n  ]);\n  for(const [path,sha] of required)assert.equal(files.get(path),sha,path);\n  assert.equal(rs.source_head_sha,'9ebccaf3297ee08998a616ac1ab624a8ca13f207');\n  assert.equal(rs.root_tree_sha,'c151bd519e7daccbffa7839050614ceca0ddaddc');\n  assert.ok(Object.values(rs.checks).every(x=>x==='not_executed'));\n});\ntest('noncompiler profiles never masquerade as generic ownership passes',()=>{
   for(const id of ['js','hdl','atto','realtime']){
     const b=ledger.backends.find(x=>x.id===id);
     assert.notEqual(b.stage,'borrow_source_candidate');
@@ -29,7 +29,7 @@ test('noncompiler profiles never masquerade as generic ownership passes',()=>{
 test('every source-owned implementation fixture is individually pinned and backend-scoped',()=>{
   for(const id of ['java','rs','llvm','net','wasm','forge','cranelift']){
     const b=ledger.backends.find(x=>x.id===id);
-    assert.equal(b.source_artifacts.length,id==='rs'?5:4,id);
+    assert.equal(b.source_artifacts.length,id==='rs'?10:4,id);
     assert.ok(b.source_artifacts.filter(x=>x.path.endsWith('.atto')).length>=3);
     assert.match(b.root_tree_sha,/^[0-9a-f]{40}$/);
     assert.equal(b.source_head_sha,dash.backends.find(x=>x.id===id).candidate.head_sha);
