@@ -1,0 +1,221 @@
+{
+  "schema": "atto.core-type-registry.v1",
+  "status": "SOURCE_CONTRACT_NOT_GUEST_VERIFIED",
+  "spec_reference": "atto-lang/atto-spec#218",
+  "java_implementation": "atto-lang/atto-source.java#1767",
+  "description": "Canonical type identity and safety metadata shared across compiler semantics; backend-owned implementations remain independent.",
+  "profiles": {
+    "core": "No allocator or hosted capability is implied. Core scalar/ADT/inline structural types only.",
+    "alloc": "Requires an explicit available allocator and ownership/drop lowering.",
+    "hosted": "Adds hosted runtime APIs but does not grant filesystem/network/process capabilities implicitly.",
+    "explicit": "Specialized type requires an explicit qualified/module import."
+  },
+  "required_fields": [
+    "name",
+    "canonical_identity",
+    "scope",
+    "kind",
+    "generic_arity",
+    "ownership",
+    "allocation",
+    "drop_policy",
+    "send_policy",
+    "lowering_status"
+  ],
+  "ownership": [
+    "COPY",
+    "PAYLOAD_DEPENDENT",
+    "BORROWED_VIEW",
+    "OWNED",
+    "TRAIT"
+  ],
+  "sum_contracts": {
+    "Option": {
+      "canonical_identity": "core/option/Option",
+      "generic_arity": 1,
+      "ownership": "PAYLOAD_DEPENDENT",
+      "drop_policy": "ACTIVE_PAYLOAD_ONCE",
+      "variants": {
+        "Some": {
+          "arity": 1,
+          "transfers_payload": true
+        },
+        "None": {
+          "arity": 0,
+          "transfers_payload": false
+        }
+      }
+    },
+    "Result": {
+      "canonical_identity": "core/result/Result",
+      "generic_arity": 2,
+      "ownership": "PAYLOAD_DEPENDENT",
+      "drop_policy": "ACTIVE_PAYLOAD_ONCE",
+      "variants": {
+        "Ok": {
+          "arity": 1,
+          "transfers_payload": true
+        },
+        "Err": {
+          "arity": 1,
+          "transfers_payload": true
+        }
+      }
+    }
+  },
+  "samples": [
+    {
+      "name": "int",
+      "canonical_identity": "core/primitive/i64",
+      "scope": "core",
+      "kind": "TYPE",
+      "generic_arity": 0,
+      "ownership": "COPY",
+      "allocation": "NONE",
+      "drop_policy": "NONE",
+      "send_policy": "ALWAYS"
+    },
+    {
+      "name": "bool",
+      "canonical_identity": "core/primitive/bool",
+      "scope": "core",
+      "kind": "TYPE",
+      "generic_arity": 0,
+      "ownership": "COPY",
+      "allocation": "NONE",
+      "drop_policy": "NONE",
+      "send_policy": "ALWAYS"
+    },
+    {
+      "name": "Slice",
+      "canonical_identity": "core/slice/Slice",
+      "scope": "core",
+      "kind": "TYPE",
+      "generic_arity": 1,
+      "ownership": "BORROWED_VIEW",
+      "allocation": "BORROWED_VIEW",
+      "drop_policy": "NONE",
+      "send_policy": "NEVER_BORROWED"
+    },
+    {
+      "name": "String",
+      "canonical_identity": "alloc/string/String",
+      "scope": "alloc",
+      "kind": "TYPE",
+      "generic_arity": 0,
+      "ownership": "OWNED",
+      "allocation": "ALLOCATOR_REQUIRED",
+      "drop_policy": "OWNED_STORAGE",
+      "send_policy": "PAYLOAD_DEPENDENT",
+      "java_compatibility": "JAVA_LEGACY_SCALAR_NOT_OWNED_ALLOC_STRING"
+    },
+    {
+      "name": "List",
+      "canonical_identity": "alloc/list/List",
+      "scope": "alloc",
+      "kind": "TYPE",
+      "generic_arity": 1,
+      "ownership": "OWNED",
+      "allocation": "ALLOCATOR_REQUIRED",
+      "drop_policy": "OWNED_STORAGE",
+      "send_policy": "PAYLOAD_DEPENDENT"
+    },
+    {
+      "name": "Map",
+      "canonical_identity": "alloc/map/Map",
+      "scope": "alloc",
+      "kind": "TYPE",
+      "generic_arity": 2,
+      "ownership": "OWNED",
+      "allocation": "ALLOCATOR_REQUIRED",
+      "drop_policy": "OWNED_STORAGE",
+      "send_policy": "PAYLOAD_DEPENDENT"
+    },
+    {
+      "name": "Box",
+      "canonical_identity": "alloc/box/Box",
+      "scope": "alloc",
+      "kind": "TYPE",
+      "generic_arity": 1,
+      "ownership": "OWNED",
+      "allocation": "ALLOCATOR_REQUIRED",
+      "drop_policy": "OWNED_STORAGE",
+      "send_policy": "PAYLOAD_DEPENDENT"
+    },
+    {
+      "name": "HashMap",
+      "canonical_identity": "alloc/hash_map/HashMap",
+      "scope": "explicit",
+      "kind": "TYPE",
+      "generic_arity": 2,
+      "ownership": "OWNED",
+      "allocation": "ALLOCATOR_REQUIRED",
+      "drop_policy": "OWNED_STORAGE",
+      "send_policy": "PAYLOAD_DEPENDENT"
+    },
+    {
+      "name": "Entry",
+      "canonical_identity": "alloc/map/Entry",
+      "scope": "explicit",
+      "kind": "TYPE",
+      "generic_arity": 2,
+      "ownership": "PAYLOAD_DEPENDENT",
+      "allocation": "NONE",
+      "drop_policy": "ACTIVE_PAYLOAD_ONCE",
+      "send_policy": "PAYLOAD_DEPENDENT"
+    }
+  ],
+  "requirements": [
+    "One canonical registry supplies prelude, type resolution, ownership, Copy/Send, and drop facts.",
+    "Aliases share one canonical identity; spelling alone never grants identity.",
+    "Generic arity is checked before backend lowering.",
+    "Option and Result destruction visits only the active variant exactly once.",
+    "Copy and Send are recursively derived from all contained payloads.",
+    "Borrowed views cannot escape, become owned, or cross actor boundaries by name alone.",
+    "Allocator-dependent types fail in core-only profiles before artifact emission.",
+    "Unsupported backend lowering fails closed rather than silently using host collections."
+  ],
+  "backends": [
+    {
+      "name": "java",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "name": "llvm",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "name": "wasm",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "name": "net",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "name": "forge",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "name": "rs",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "name": "cranelift",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "name": "js",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "name": "hdl",
+      "evidence": "NOT_EXECUTED"
+    }
+  ],
+  "evidence_policy": {
+    "positive": "exact compiler and guest execution on recorded SHA",
+    "negative": "intended semantic diagnostic and zero output artifact",
+    "source_export": "deny by default; no cross-organization mirror without separate authorization"
+  }
+}
