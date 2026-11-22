@@ -1,0 +1,607 @@
+{
+  "schema": "atto.core-option-11-backend-dashboard.v1",
+  "snapshot_date": "2026-11-22",
+  "scope": "core/option",
+  "authority": "atto-lang/atto-platform-conformance",
+  "evidence_policy": "SOURCE_ONLY_NO_GUEST_PROMOTION",
+  "release_qualified": false,
+  "notes": "Observed main SHAs and candidate PR heads are GitHub snapshots, not executed compiler proof. v1 never admits self-attested pass or unsupported claims; an independently authenticated evidence verifier is required for any promotion. Backend-owned .atto implementations may differ.",
+  "backends": [
+    {
+      "id": "java",
+      "repository": "atto-lang/atto-source.java",
+      "repository_id": "1448697198",
+      "observed_main_sha": "189c73b88502c451e50494f738ae11a1de8c9211",
+      "profile": "Graal/JVM + Native Image",
+      "candidate": {
+        "pr_url": "https://github.com/atto-lang/atto-source.java/pull/1767",
+        "head_sha": "2314988a9ade22f5d0a3284f69b142b7e1800914"
+      },
+      "source_state": "candidate",
+      "checks": {
+        "parse_typecheck": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "linked_positive_guest": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "negative_guest": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "jit_execution": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "native_aot": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "sanitizers_or_memory_safety": {
+          "state": "not_executed",
+          "receipt": null
+        }
+      },
+      "capability_assessment": [
+        {
+          "capability": "core/option general-purpose admission",
+          "state": "unverified",
+          "reason": "Compiler-owned generic ADT extraction and linked package import are unverified.",
+          "evidence": null
+        }
+      ],
+      "release_qualified": false
+    },
+    {
+      "id": "llvm",
+      "repository": "atto-lang/atto-source.llvm",
+      "repository_id": "1448700962",
+      "observed_main_sha": "553154ac83c060f9182edf751ee6ba6aa192dd3b",
+      "profile": "LLVM native AOT",
+      "candidate": {
+        "pr_url": "https://github.com/atto-lang/atto-source.llvm/pull/870",
+        "head_sha": "216c4222414d34f43ed2a6dbd4e6c640f25dae20"
+      },
+      "source_state": "candidate",
+      "checks": {
+        "parse_typecheck": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "linked_positive_guest": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "negative_guest": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "jit_execution": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "native_aot": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "sanitizers_or_memory_safety": {
+          "state": "not_executed",
+          "receipt": null
+        }
+      },
+      "capability_assessment": [
+        {
+          "capability": "core/option general-purpose admission",
+          "state": "unverified",
+          "reason": "Generic sum lowering and native drop semantics remain unverified.",
+          "evidence": null
+        }
+      ],
+      "release_qualified": false
+    },
+    {
+      "id": "rs",
+      "repository": "atto-lang/atto-source.rs",
+      "repository_id": "1448702852",
+      "observed_main_sha": "877bd9f8d61c598137c8627f73fa5ed2a497d9e8",
+      "profile": "Rust host / compiled Wasm guest",
+      "candidate": {
+        "pr_url": "https://github.com/atto-lang/atto-source.rs/pull/533",
+        "head_sha": "9e4af78f2115f9ea260394929c125c930fab94fc"
+      },
+      "source_state": "candidate",
+      "checks": {
+        "parse_typecheck": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "linked_positive_guest": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "negative_guest": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "jit_execution": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "native_aot": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "sanitizers_or_memory_safety": {
+          "state": "not_executed",
+          "receipt": null
+        }
+      },
+      "capability_assessment": [
+        {
+          "capability": "core/option general-purpose admission",
+          "state": "unverified",
+          "reason": "Generic ADT extraction and Rust-to-Wasm import linkage remain unverified.",
+          "evidence": null
+        }
+      ],
+      "release_qualified": false
+    },
+    {
+      "id": "net",
+      "repository": "atto-lang/atto-source.net",
+      "repository_id": "1448702222",
+      "observed_main_sha": "75830ed371ec386d2c7ebe162410258d3e9fdbf2",
+      "profile": "CIL + NativeAOT",
+      "candidate": {
+        "pr_url": "https://github.com/atto-lang/atto-source.net/pull/217",
+        "head_sha": "496dddbb595ea5e61489eab8c2b4eac8c86a2d19"
+      },
+      "source_state": "candidate",
+      "checks": {
+        "parse_typecheck": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "linked_positive_guest": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "negative_guest": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "jit_execution": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "native_aot": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "sanitizers_or_memory_safety": {
+          "state": "not_executed",
+          "receipt": null
+        }
+      },
+      "capability_assessment": [
+        {
+          "capability": "core/option general-purpose admission",
+          "state": "unverified",
+          "reason": "NativeAOT source adapter guest integration remains unverified.",
+          "evidence": null
+        }
+      ],
+      "release_qualified": false
+    },
+    {
+      "id": "wasm",
+      "repository": "atto-lang/atto-source.wasm",
+      "repository_id": "1448701355",
+      "observed_main_sha": "16ba74ab9f9959cc15d21dcb6e54a18e1c325fef",
+      "profile": "Independent Wasm/worker",
+      "candidate": {
+        "pr_url": "https://github.com/atto-lang/atto-source.wasm/pull/279",
+        "head_sha": "85de1a3032c78ce1dea080d7c28953c692b610d3"
+      },
+      "source_state": "candidate",
+      "checks": {
+        "parse_typecheck": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "linked_positive_guest": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "negative_guest": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "jit_execution": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "native_aot": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "sanitizers_or_memory_safety": {
+          "state": "not_executed",
+          "receipt": null
+        }
+      },
+      "capability_assessment": [
+        {
+          "capability": "core/option general-purpose admission",
+          "state": "unverified",
+          "reason": "Typed Wasm sum lowering and independent runtime guest execution remain unverified.",
+          "evidence": null
+        }
+      ],
+      "release_qualified": false
+    },
+    {
+      "id": "forge",
+      "repository": "atto-lang/atto-source.forge",
+      "repository_id": "1448701874",
+      "observed_main_sha": "f5dd299c277376cabe9e536edbbb4e662a267ad4",
+      "profile": "Forge JIT/AOT",
+      "candidate": {
+        "pr_url": "https://github.com/atto-lang/atto-source.forge/pull/226",
+        "head_sha": "b3d79e3191fd32f155d57c1a272af6b13b7f9172"
+      },
+      "source_state": "candidate",
+      "checks": {
+        "parse_typecheck": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "linked_positive_guest": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "negative_guest": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "jit_execution": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "native_aot": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "sanitizers_or_memory_safety": {
+          "state": "not_executed",
+          "receipt": null
+        }
+      },
+      "capability_assessment": [
+        {
+          "capability": "core/option general-purpose admission",
+          "state": "unverified",
+          "reason": "Bootstrap sum lowering may reject the proposed adapters.",
+          "evidence": null
+        }
+      ],
+      "release_qualified": false
+    },
+    {
+      "id": "cranelift",
+      "repository": "atto-lang/atto-source.cranelift",
+      "repository_id": "1448702554",
+      "observed_main_sha": "e867c0a5cf8b94f98ce9b1212d2c735b76bc4120",
+      "profile": "Cranelift native",
+      "candidate": {
+        "pr_url": "https://github.com/atto-lang/atto-source.cranelift/pull/90",
+        "head_sha": "f24d89ecf2a0384a51b1c6a5dec955ecdfab1727"
+      },
+      "source_state": "candidate",
+      "checks": {
+        "parse_typecheck": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "linked_positive_guest": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "negative_guest": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "jit_execution": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "native_aot": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "sanitizers_or_memory_safety": {
+          "state": "not_executed",
+          "receipt": null
+        }
+      },
+      "capability_assessment": [
+        {
+          "capability": "core/option general-purpose admission",
+          "state": "unverified",
+          "reason": "Generic ADT admission and native compiled guest remain unverified.",
+          "evidence": null
+        }
+      ],
+      "release_qualified": false
+    },
+    {
+      "id": "js",
+      "repository": "atto-lang/atto-source.js",
+      "repository_id": "1448703338",
+      "observed_main_sha": "b8e48b19c33b61e5faa4628bf03bddf2823f403d",
+      "profile": "JavaScript / Node ESM",
+      "candidate": {
+        "pr_url": "https://github.com/atto-lang/atto-source.js/pull/132",
+        "head_sha": "2bd0febcb4b94bc57f426a7d551af0bd72e860cd"
+      },
+      "source_state": "candidate",
+      "checks": {
+        "parse_typecheck": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "linked_positive_guest": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "negative_guest": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "jit_execution": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "native_aot": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "sanitizers_or_memory_safety": {
+          "state": "not_executed",
+          "receipt": null
+        }
+      },
+      "capability_assessment": [
+        {
+          "capability": "core/option general-purpose admission",
+          "state": "unverified",
+          "reason": "Current candidate targets concrete scalars; generic callbacks, affine ownership and nested transpose need separate proof.",
+          "evidence": null
+        }
+      ],
+      "release_qualified": false
+    },
+    {
+      "id": "hdl",
+      "repository": "atto-lang/atto-source.hdl",
+      "repository_id": "1448703717",
+      "observed_main_sha": "023455e496bb9cfbdd157ccc94bb69f31eec44ea",
+      "profile": "RTL/HDL",
+      "candidate": {
+        "pr_url": "https://github.com/atto-lang/atto-source.hdl/pull/61",
+        "head_sha": "a69b9c62424e560ac15b682c96309be78f124fad"
+      },
+      "source_state": "candidate",
+      "checks": {
+        "parse_typecheck": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "linked_positive_guest": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "negative_guest": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "jit_execution": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "native_aot": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "sanitizers_or_memory_safety": {
+          "state": "not_executed",
+          "receipt": null
+        }
+      },
+      "capability_assessment": [
+        {
+          "capability": "core/option general-purpose admission",
+          "state": "unverified",
+          "reason": "Candidate tagged sum RTL lowering and synthesis are not verified; no scalar-source test implies hardware support.",
+          "evidence": null
+        }
+      ],
+      "release_qualified": false
+    },
+    {
+      "id": "atto",
+      "repository": "atto-lang/atto-source.atto",
+      "repository_id": "1461897456",
+      "observed_main_sha": "5b9a274490a4567ed9d1088fd1ff304dbe383357",
+      "profile": "Self-hosted Atto compiler",
+      "candidate": null,
+      "source_state": "not_identified",
+      "checks": {
+        "parse_typecheck": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "linked_positive_guest": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "negative_guest": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "jit_execution": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "native_aot": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "sanitizers_or_memory_safety": {
+          "state": "not_executed",
+          "receipt": null
+        }
+      },
+      "capability_assessment": [
+        {
+          "capability": "core/option general-purpose admission",
+          "state": "unverified",
+          "reason": "No dedicated core/option candidate PR identified in this snapshot.",
+          "evidence": null
+        }
+      ],
+      "release_qualified": false
+    },
+    {
+      "id": "realtime",
+      "repository": "atto-lang/atto-source.realtime",
+      "repository_id": "1448704177",
+      "observed_main_sha": "4f6449470ab075cdad17884c7a1aee2a6e2ab54c",
+      "profile": "Real-time restricted target",
+      "candidate": null,
+      "source_state": "not_identified",
+      "checks": {
+        "parse_typecheck": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "linked_positive_guest": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "negative_guest": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "jit_execution": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "native_aot": {
+          "state": "not_executed",
+          "receipt": null
+        },
+        "sanitizers_or_memory_safety": {
+          "state": "not_executed",
+          "receipt": null
+        }
+      },
+      "capability_assessment": [
+        {
+          "capability": "core/option general-purpose admission",
+          "state": "unverified",
+          "reason": "No dedicated core/option candidate PR identified; deterministic runtime/zero allocation proof needed.",
+          "evidence": null
+        }
+      ],
+      "release_qualified": false
+    }
+  ],
+  "java_reference": {
+    "repository": "atto-lang/atto-source.java",
+    "pr_url": "https://github.com/atto-lang/atto-source.java/pull/1767",
+    "head_sha": "2314988a9ade22f5d0a3284f69b142b7e1800914",
+    "root_tree_sha": "eb1541cbd7d3798bea8610a2010326d82c6cdbca",
+    "module_blobs": [
+      {
+        "path": "core/option.atto",
+        "sha": "08bacaaf1c12510909931e20829d4867653793ae"
+      },
+      {
+        "path": "core/result.atto",
+        "sha": "0f07d8f50187495d2846f8773c306b649ab4b89b"
+      }
+    ],
+    "test_blobs": [
+      {
+        "path": "tests/core_option_result/scalar_roundtrip.atto",
+        "sha": "9d91f9945ad1010b35ecae1f112d405fb8b815d3"
+      },
+      {
+        "path": "tests/core_option_result/lazy_callbacks.atto",
+        "sha": "dce245f73a77fc1717c1fe087bbb3fd273c0c08e"
+      },
+      {
+        "path": "src/test/java/dev/oreslang/CoreOptionResultSourceTest.java",
+        "sha": "4d4950a2d3b1970499ba6eccbd5552143f4023da"
+      }
+    ],
+    "authored_junit_tests": [
+      {
+        "id": "source_parse_typecheck",
+        "method": "libraryModulesMustParseAndTypecheck",
+        "kind": "compiler_admission",
+        "guest_path": null,
+        "expected_stdout": null,
+        "state": "not_executed"
+      },
+      {
+        "id": "namespace_import_boundaries",
+        "method": "coreNamespaceIsSourceIdentityNotImplicitImportAuthority",
+        "kind": "negative_admission",
+        "guest_path": null,
+        "expected_stdout": null,
+        "state": "not_executed"
+      },
+      {
+        "id": "nested_sum_roundtrip",
+        "method": "linkedGuestMustExecuteNestedSumRoundtrip",
+        "kind": "compiled_positive_guest",
+        "guest_path": "tests/core_option_result/scalar_roundtrip.atto",
+        "expected_stdout": "42",
+        "state": "not_executed"
+      },
+      {
+        "id": "lazy_callback_ownership",
+        "method": "sourceLinkedCallbacksMustSkipInactiveVariants",
+        "kind": "compiled_positive_guest",
+        "guest_path": "tests/core_option_result/lazy_callbacks.atto",
+        "expected_stdout": "M42:Etrue:true:true",
+        "state": "not_executed"
+      },
+      {
+        "id": "nominal_tags_negative",
+        "method": "resultAndOptionMustRemainNominalDisjointVariants",
+        "kind": "compiler_reject",
+        "guest_path": null,
+        "expected_stdout": null,
+        "state": "not_executed"
+      },
+      {
+        "id": "no_double_unwrap",
+        "method": "nestedOptionMustNotImplicitlyUnwrapTwice",
+        "kind": "compiler_reject",
+        "guest_path": null,
+        "expected_stdout": null,
+        "state": "not_executed"
+      }
+    ],
+    "required_commands": {
+      "jvm_guest": "mvn -B -Dtest=CoreOptionResultSourceTest test",
+      "native_aot": "Not provided by this PR; require independent GraalVM Native Image exact-head build and guest receipt.",
+      "sanitizers": "Java: ownership/poison/drop assertions; LLVM/native: ASan/UBSan or equivalent; non-native profiles: target-specific memory safety gates."
+    }
+  }
+}
