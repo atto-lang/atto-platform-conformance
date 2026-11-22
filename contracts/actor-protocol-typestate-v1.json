@@ -46,6 +46,21 @@
       "id": "wrong_actor_kind",
       "file": "wrong-actor-kind.atto",
       "expected_static": "E_PROTOCOL_IMPLEMENTATION_MISMATCH"
+    },
+    {
+      "id": "typed_reply_static_valid",
+      "file": "typed-reply-static-valid.atto",
+      "expected_static": "PASS",
+      "expected_guest": "E_PROTOCOL_RUNTIME_UNSUPPORTED",
+      "requires": [
+        "nominal_reply_type_ascription",
+        "terminal_complete"
+      ]
+    },
+    {
+      "id": "wrong_nominal_reply",
+      "file": "wrong-nominal-reply.atto",
+      "expected_static": "E_PROTOCOL_REPLY_MISMATCH"
     }
   ],
   "invariants": [
@@ -59,7 +74,8 @@
     "only terminal with no outstanding reply completes",
     "supervisor CONTROL separate from protocol DATA",
     "sealed critical state loans cannot cross await",
-    "runtime protocol descriptor in full guest AOT without interpreter/JIT"
+    "runtime protocol descriptor in full guest AOT without interpreter/JIT",
+    "nominal reply annotation agrees with protocol declaration"
   ],
   "target_backends": [
     "java",
