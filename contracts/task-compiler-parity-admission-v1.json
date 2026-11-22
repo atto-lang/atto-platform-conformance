@@ -1,6 +1,6 @@
 {
   "schema": "atto.task-compiler-parity-admission.v1",
-  "scope": "typed Future<T>, reserved sync, task cancellation and exactly-once lock cleanup; await non-Future failure, inline-returned Future join, constexpr prohibition and empty/inferred task payloads",
+  "scope": "typed Future<T>, reserved sync, task cancellation and exactly-once lock cleanup; await non-Future failure, inline-returned Future join, constexpr prohibition and empty/inferred task payloads; TaskFuture<T> control handle, single-use get_ready result, cancellation request, cooperative scheduler hint and legacy Future projection",
   "evidence_grade": "SOURCE_ONLY",
   "normative": "atto-lang/atto-spec/language/typed-task-payload-sync-v1.md",
   "target_registry": "contracts/task-payload-sync-v1.json",
@@ -109,6 +109,111 @@
       "id": "do_inferred_void_task",
       "source_path": "fixtures/task-payload-sync-v1/do_inferred_void_task.atto",
       "source_git_blob": "78b90394ebe7fbe686c57fbc0c7ddf16723b072d"
+    },
+    {
+      "id": "taskfuture_await_ready",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_await_ready.atto",
+      "source_git_blob": "58c67cc8e7ea3a82ecbb3e9b09fd9cd3b1f6fd6a"
+    },
+    {
+      "id": "taskfuture_await_direct",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_await_direct.atto",
+      "source_git_blob": "348a4cdd3a5f14c16ced259188658af9fcac1bb6"
+    },
+    {
+      "id": "taskfuture_receipt_split_control",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_receipt_split_control.atto",
+      "source_git_blob": "c0850bd7ace64604e43c3549f8f8e1c6900a8721"
+    },
+    {
+      "id": "taskfuture_cooperate_request",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_cooperate_request.atto",
+      "source_git_blob": "1dd5377b38d6a6ec6188c7572f5a4a8665ed54ae"
+    },
+    {
+      "id": "taskfuture_cancel_scope",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_cancel_scope.atto",
+      "source_git_blob": "a8aaf2f99e48944efc7becaeaf86aaacfee3b3a5"
+    },
+    {
+      "id": "taskfuture_legacy_future_projection",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_legacy_future_projection.atto",
+      "source_git_blob": "7f1ed211389390d6cc243c062f9e7a3c0e6f7eac"
+    },
+    {
+      "id": "taskfuture_legacy_cancel_alias",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_legacy_cancel_alias.atto",
+      "source_git_blob": "bf988020cd8f919d5977335943953310c87cc4d4"
+    },
+    {
+      "id": "taskfuture_inferred_empty_void",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_inferred_empty_void.atto",
+      "source_git_blob": "b7881c96f750209a0e50aa0cd244979fcdde690d"
+    },
+    {
+      "id": "taskfuture_inferred_valued",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_inferred_valued.atto",
+      "source_git_blob": "67b830da072ca0e29c9a5a5f5a1df1e8a9a65b8e"
+    },
+    {
+      "id": "taskfuture_duplicate_ready_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_duplicate_ready_rejected.atto",
+      "source_git_blob": "754e59b20ebdc15962ad65405d52cf44b725e375"
+    },
+    {
+      "id": "taskfuture_duplicate_await_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_duplicate_await_rejected.atto",
+      "source_git_blob": "6713a82451da7b472c90ccc941af2c1a204b0e2a"
+    },
+    {
+      "id": "taskfuture_cooperate_on_future_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_cooperate_on_future_rejected.atto",
+      "source_git_blob": "ec5d97f56d7a2a7dd7690989afca538722d0caec"
+    },
+    {
+      "id": "taskfuture_cancel_task_on_future_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_cancel_task_on_future_rejected.atto",
+      "source_git_blob": "cf1d70147c1ebb1901a903633ce8582db4619275"
+    },
+    {
+      "id": "taskfuture_get_ready_on_future_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_get_ready_on_future_rejected.atto",
+      "source_git_blob": "32deb968eba110dbb36f63b0e418ba1e2f948194"
+    },
+    {
+      "id": "taskfuture_await_cooperate_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_await_cooperate_rejected.atto",
+      "source_git_blob": "4eb0a0497dbc7d0af014e39a85040c4a84b9cd28"
+    },
+    {
+      "id": "taskfuture_await_cancel_task_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_await_cancel_task_rejected.atto",
+      "source_git_blob": "50c5f2dfaa437d99ece39dfda4f45d1c5a4c8906"
+    },
+    {
+      "id": "taskfuture_const_handle_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_const_handle_rejected.atto",
+      "source_git_blob": "4c21f094c63945603f1cfc8484eb657ad4b8da21"
+    },
+    {
+      "id": "taskfuture_sync_handle_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_sync_handle_rejected.atto",
+      "source_git_blob": "08f1338a63bc922f1484e30405e7352ef2877d95"
+    },
+    {
+      "id": "taskfuture_ready_as_int_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_ready_as_int_rejected.atto",
+      "source_git_blob": "dd232541b370c1e51a4e9787afc3513edf0124fe"
+    },
+    {
+      "id": "taskfuture_control_void_as_int_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_control_void_as_int_rejected.atto",
+      "source_git_blob": "d049667810e998013dd13f198437d3acca390fc3"
+    },
+    {
+      "id": "taskfuture_wrong_payload_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_wrong_payload_rejected.atto",
+      "source_git_blob": "636ec117edd112da97a273188bb8244c77955eec"
     }
   ],
   "source_profiles": {
@@ -265,5 +370,5 @@
     "The normative distinctions are: task<T> creates Future<T>; await task<T> spawns and joins; sync task<T> is inline on the caller; do sync task accepts void only, never aliases do task or discards nonvoid; verified cancellation and lock cleanup still require executed tests.",
     "Every backend requires exact-head compiler binary plus guest execution, cancellation race, reverse lock unwind, verified physical child retirement, and TenantVM isolation receipts."
   ],
-  "hardening_notes": "These 11 additional task cases are immutable source-only admissions. Every backend must either execute its own guest positive and exact negative no-artifact errors or fail closed with an explicit unsupported-feature diagnostic, but may not claim cross-backend parity from this manifest. Original source profile blob/head snapshots are historical evidence anchors, not refreshed current-head certifications."
+  "hardening_notes": "These 11 additional task cases are immutable source-only admissions. Every backend must either execute its own guest positive and exact negative no-artifact errors or fail closed with an explicit unsupported-feature diagnostic, but may not claim cross-backend parity from this manifest. Original source profile blob/head snapshots are historical evidence anchors, not refreshed current-head certifications. Added 21 SHA-pinned TaskFuture target cases; each requires independent backend guest results or negative no-artifact receipts, with TaskCooperateRequest safe-point witnesses. Historical source profiles remain NOT_EXECUTED and must not be relabeled by this source-only matrix."
 }
