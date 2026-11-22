@@ -5,7 +5,7 @@
   "authority": "atto-lang/atto-platform-conformance",
   "evidence_policy": "SOURCE_ONLY_NO_GUEST_PROMOTION",
   "release_qualified": false,
-  "notes": "Observed source commits and Git root trees are inventory only. Java's exact-head JVM workflow and Rust's source-local Wasm workflow are queued, not executed. Rust concrete Option/Result carriers are Copy, not generic lifetime loans; affine class escapes reject. No compiler guest, AOT or sanitizer evidence is authenticated.",
+  "notes": "Observed heads and trees are source inventory only. Java's exact-head workflow includes linked core guests, borrow tests and CoreTypeRegistry/AutomaticPrelude tests; Rust's exact-head Wasm workflow remains queued. No backend guest, AOT or sanitizer evidence is authenticated.",
   "backends": [
     {
       "id": "java",
@@ -15,7 +15,7 @@
       "profile": "Graal/JVM + Native Image",
       "candidate": {
         "pr_url": "https://github.com/atto-lang/atto-source.java/pull/1767",
-        "head_sha": "fd5055c3544ee7cf7e50dd5ac1b89469ada114a3"
+        "head_sha": "7385b682ff28239d1ce1c52fa6d7aedcb4f6b337"
       },
       "source_state": "candidate",
       "checks": {
@@ -522,8 +522,8 @@
   "java_reference": {
     "repository": "atto-lang/atto-source.java",
     "pr_url": "https://github.com/atto-lang/atto-source.java/pull/1767",
-    "head_sha": "fd5055c3544ee7cf7e50dd5ac1b89469ada114a3",
-    "root_tree_sha": "af9c40f78d8f4b15e2cb8903f658f7df5be48aa2",
+    "head_sha": "7385b682ff28239d1ce1c52fa6d7aedcb4f6b337",
+    "root_tree_sha": "03981bf0f0540f913a45cbc951934783b61794b5",
     "module_blobs": [
       {
         "path": "core/option.atto",
@@ -566,6 +566,18 @@
       {
         "path": ".github/workflows/core-option-result-jvm-borrow-exact-head.yml",
         "sha": "9d74a1ea63898534fb3c991dfd805b031b74a860"
+      },
+      {
+        "path": "src/main/java/dev/oreslang/types/CoreTypeRegistry.java",
+        "sha": "bc9c3574f0e653218ea8a68f85d4effbd6722eeb"
+      },
+      {
+        "path": "src/main/java/dev/oreslang/compiler/OresCompiler.java",
+        "sha": "c60883bf73abf36b89343a2b18feb11565c11c03"
+      },
+      {
+        "path": "src/test/java/dev/oreslang/AutomaticPreludeTest.java",
+        "sha": "0e354f5478a0651127f746e63e86bb5a591bca74"
       }
     ],
     "authored_junit_tests": [
@@ -680,10 +692,34 @@
         "guest_path": "tests/core_option_result/borrowed_queries.atto",
         "expected_stdout": "42",
         "state": "not_executed"
+      },
+      {
+        "id": "core_registry_ownership_drop",
+        "method": "coreTypeRegistryIsTheCanonicalOwnershipAndDropSource",
+        "kind": "compiler_admission",
+        "guest_path": null,
+        "expected_stdout": null,
+        "state": "not_executed"
+      },
+      {
+        "id": "core_registry_generic_arity",
+        "method": "coreRegistryGenericArityIsEnforcedByTheRealTypeChecker",
+        "kind": "compiler_reject",
+        "guest_path": null,
+        "expected_stdout": null,
+        "state": "not_executed"
+      },
+      {
+        "id": "core_profile_allocator_denial",
+        "method": "coreProfileRejectsAllocatorTypesWithoutMisclassifyingLegacyString",
+        "kind": "compiler_reject",
+        "guest_path": null,
+        "expected_stdout": null,
+        "state": "not_executed"
       }
     ],
     "required_commands": {
-      "jvm_guest": "mvn -B -Dtest=CoreOptionResultSourceTest,CoreOptionResultBorrowSafetyTest test",
+      "jvm_guest": "mvn -B -ntp -Dtest=CoreOptionResultSourceTest,CoreOptionResultBorrowSafetyTest,AutomaticPreludeTest -DfailIfNoTests=true -Dsurefire.failIfNoSpecifiedTests=true test",
       "native_aot": "Not provided by this PR; require independent GraalVM Native Image exact-head build and guest receipt.",
       "sanitizers": "Java: ownership/poison/drop assertions; LLVM/native: ASan/UBSan or equivalent; non-native profiles: target-specific memory safety gates."
     }
