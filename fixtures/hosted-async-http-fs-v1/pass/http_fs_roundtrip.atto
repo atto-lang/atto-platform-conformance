@@ -1,8 +1,8 @@
 // Source-level conformance target. NOT_EXECUTED until a backend runs the guest.
 // A harness must invoke roundtrip with its own locally bound HTTP URL and a
 // granted, tenant-root-relative output path; do not use example.com in CI.
-import * as http from pkg "std.http";
-import * as fs from pkg "std.fs";
+import * as http from "std.http";
+import * as fs from "std.fs";
 
 pub susp fnc roundtrip(string url, string path): int {
   val response = await http.get(url);
