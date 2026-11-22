@@ -1,0 +1,157 @@
+{
+  "schema": "atto.constant-imports.v1",
+  "version": 1,
+  "status": "TARGET_NOT_EXECUTED",
+  "owner": "atto-lang/atto-spec",
+  "spec_path": "language/constant-imports-v1.md",
+  "scope": "typed constant imports, top-level const and illegal file/namespace globals",
+  "case_status": "All cases are unexecuted target fixtures. Parser-only Rust tests are not guest evidence.",
+  "cases": [
+    {
+      "id": "dotted_public",
+      "kind": "pass",
+      "entry": "app.atto",
+      "files": {
+        "std/http.atto": "use namespace std.http;\ndefine pub const int status_valid = 200;\n",
+        "app.atto": "import const status_valid from \"std.http\";\npub fnc main(): int { return status_valid; }\n"
+      },
+      "expected_return": 200
+    },
+    {
+      "id": "multiple_aliased",
+      "kind": "pass",
+      "entry": "app.atto",
+      "files": {
+        "std/http.atto": "use namespace std.http;\ndefine pub const int status_valid = 200;\ndefine pub const int status_extra = 4;\n",
+        "app.atto": "import const status_valid, status_extra as extra from \"std.http\";\npub fnc main(): int { return status_valid + extra; }\n"
+      },
+      "expected_return": 204
+    },
+    {
+      "id": "explicit_pkg",
+      "kind": "pass",
+      "entry": "app.atto",
+      "files": {
+        "std/http.atto": "use namespace std.http;\ndefine pub const int status_valid = 200;\n",
+        "app.atto": "import const status_valid from pkg \"std.http\";\npub fnc main(): int { return status_valid; }\n"
+      },
+      "expected_return": 200
+    },
+    {
+      "id": "relative_file",
+      "kind": "pass",
+      "entry": "app.atto",
+      "files": {
+        "config.atto": "define pub const int threshold = 42;\n",
+        "app.atto": "import const threshold from \"./config.atto\";\npub fnc main(): int { return threshold; }\n"
+      },
+      "expected_return": 42
+    },
+    {
+      "id": "private_export",
+      "kind": "fail",
+      "entry": "app.atto",
+      "files": {
+        "std/http.atto": "use namespace std.http;\ndefine const int internal_key = 7;\n",
+        "app.atto": "import const internal_key from \"std.http\";\npub fnc main(): int { return 0; }\n"
+      },
+      "expected_error": "E_PRIVATE"
+    },
+    {
+      "id": "wrong_kind_function",
+      "kind": "fail",
+      "entry": "app.atto",
+      "files": {
+        "std/http.atto": "use namespace std.http;\npub fnc status_valid(): int { return 200; }\n",
+        "app.atto": "import const status_valid from \"std.http\";\npub fnc main(): int { return 0; }\n"
+      },
+      "expected_error": "E_IMPORT_KIND"
+    },
+    {
+      "id": "unknown_export",
+      "kind": "fail",
+      "entry": "app.atto",
+      "files": {
+        "std/http.atto": "use namespace std.http;\ndefine pub const int other = 200;\n",
+        "app.atto": "import const status_valid from \"std.http\";\npub fnc main(): int { return 0; }\n"
+      },
+      "expected_error": "E_UNBOUND"
+    },
+    {
+      "id": "duplicate_alias",
+      "kind": "fail",
+      "entry": "app.atto",
+      "files": {
+        "std/http.atto": "use namespace std.http;\ndefine pub const int a = 1;\ndefine pub const int b = 2;\n",
+        "app.atto": "import const a as x, b as x from \"std.http\";\npub fnc main(): int { return 0; }\n"
+      },
+      "expected_error": "E_DUPLICATE"
+    },
+    {
+      "id": "local_collision",
+      "kind": "fail",
+      "entry": "app.atto",
+      "files": {
+        "std/http.atto": "use namespace std.http;\ndefine pub const int a = 1;\n",
+        "app.atto": "import const a as threshold from \"std.http\";\ndefine const int threshold = 2;\npub fnc main(): int { return 0; }\n"
+      },
+      "expected_error": "E_DUPLICATE"
+    },
+    {
+      "id": "reassignment",
+      "kind": "fail",
+      "entry": "app.atto",
+      "files": {
+        "std/http.atto": "use namespace std.http;\ndefine pub const int a = 1;\n",
+        "app.atto": "import const a from \"std.http\";\npub fnc main(): int { a = 2; return a; }\n"
+      },
+      "expected_error": "E_ASSIGN_CONST"
+    },
+    {
+      "id": "mutable_global",
+      "kind": "fail",
+      "entry": "app.atto",
+      "files": {
+        "app.atto": "use namespace app;\nlet counter: int = 0;\npub fnc main(): int { return 0; }\n"
+      },
+      "expected_error": "E_GLOBAL_MUTABLE"
+    },
+    {
+      "id": "runtime_val_global",
+      "kind": "fail",
+      "entry": "app.atto",
+      "files": {
+        "app.atto": "use namespace app;\nval counter: int = 0;\npub fnc main(): int { return 0; }\n"
+      },
+      "expected_error": "E_GLOBAL_MUTABLE"
+    },
+    {
+      "id": "const_import_star",
+      "kind": "fail",
+      "entry": "app.atto",
+      "files": {
+        "app.atto": "import const * as http from \"std.http\";\npub fnc main(): int { return 0; }\n"
+      },
+      "expected_error": "E_SYNTAX"
+    },
+    {
+      "id": "const_cycle",
+      "kind": "fail",
+      "entry": "app.atto",
+      "files": {
+        "std/http.atto": "use namespace std.http;\ndefine pub const int a = b;\ndefine pub const int b = a;\n",
+        "app.atto": "import const a from \"std.http\";\npub fnc main(): int { return a; }\n"
+      },
+      "expected_error": "E_CONST_CYCLE"
+    }
+  ],
+  "backend_status": {
+    "rs-browser": "NOT_EXECUTED",
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "wasm-independent": "NOT_EXECUTED"
+  },
+  "evidence_rule": "Per backend, compile exact source files with verified SHA; require actual guest exit/return for successes and deterministic code + no artifact for negatives. Cross-file constexpr and permission-backed runtime-once constants require independent linkage and startup proof."
+}
