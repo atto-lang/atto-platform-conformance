@@ -275,7 +275,7 @@
       "backend": "net",
       "repository": "atto-lang/atto-source.net",
       "pr": 220,
-      "commit": "3057120a9701ff1523fd23ae2d3d0617dcdefae7",
+      "commit": "a7394b595177265edf6e3d96cc190f544e82f6e8",
       "module_admission": "SHA256_pinned_compiler_owned_namespace_sources_restricted_canonical_core_star_import_and_legacy_module_import_CIL_tests_NOT_EXECUTED",
       "source_blobs": {
         "math": {
@@ -300,7 +300,8 @@
       "general_package_namespace_imports": false,
       "canonical_builtin_wildcard_imports": true,
       "canonical_builtin_import_example": "import * as math from \"core.math\";",
-      "arbitrary_local_or_package_wildcard_imports": false
+      "arbitrary_local_or_package_wildcard_imports": false,
+      "canonical_nested_atto_manifest_guard": true
     },
     {
       "backend": "wasm",
@@ -381,7 +382,7 @@
       "backend": "js",
       "repository": "atto-lang/atto-source.js",
       "pr": 137,
-      "commit": "f7e01a52efe39e06324914a54c427349bd8f8816",
+      "commit": "32df74b8a0eb1128ae22f632d377128fbd5e806f",
       "module_admission": "namespace_math_to_checked_esm_test_not_executed_hash_cell_source_only",
       "source_blobs": {
         "math": {
@@ -555,7 +556,8 @@
       "canonical import cannot fall back to project or filesystem shadow",
       "unsupported namespace import rejects without artifact publication",
       "builtin wildcard import only resolves exact core.math, core.hash, core.cell to SHA-pinned resources",
-      "duplicate local wildcard aliases reject; two aliases of one Core unit are de-duplicated by identity"
+      "duplicate local wildcard aliases reject; two aliases of one Core unit are de-duplicated by identity",
+      "nested .atto.pkg.toml and dangling canonical manifest symlink are package boundaries"
     ],
     "canonical_builtin_static_import": "import * as math from \"core.math\";",
     "canonical_builtin_import_is_package_grant": false
