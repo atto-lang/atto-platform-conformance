@@ -15,7 +15,7 @@
       "profile": "Graal/JVM + Native Image",
       "candidate": {
         "pr_url": "https://github.com/atto-lang/atto-source.java/pull/1767",
-        "head_sha": "919d1d1fc59712e5e2059c72fe7a55cf5720df60"
+        "head_sha": "fd5055c3544ee7cf7e50dd5ac1b89469ada114a3"
       },
       "source_state": "candidate",
       "checks": {
@@ -109,7 +109,7 @@
       "profile": "Rust host / compiled Wasm guest",
       "candidate": {
         "pr_url": "https://github.com/atto-lang/atto-source.rs/pull/533",
-        "head_sha": "c7edd32b3ca5cd9d3a85f63f531b6c21968c55e6"
+        "head_sha": "9f881e82675df9bc08621b4056f1206583e9054d"
       },
       "source_state": "candidate",
       "checks": {
