@@ -22,7 +22,10 @@
       "guest_execution": "NOT_EXECUTED",
       "native_aot": "NOT_EXECUTED",
       "limitations": [],
-      "evidence": null
+      "evidence": null,
+      "core_borrow_state": "NOT_EXECUTED",
+      "core_borrow_positive": "NOT_EXECUTED",
+      "core_borrow_negative": "NOT_EXECUTED"
     },
     {
       "repo": "atto-lang/atto-source.llvm",
@@ -33,7 +36,10 @@
       "guest_execution": "NOT_EXECUTED",
       "native_aot": "NOT_EXECUTED",
       "limitations": [],
-      "evidence": null
+      "evidence": null,
+      "core_borrow_state": "NOT_EXECUTED",
+      "core_borrow_positive": "NOT_EXECUTED",
+      "core_borrow_negative": "NOT_EXECUTED"
     },
     {
       "repo": "atto-lang/atto-source.net",
@@ -44,7 +50,10 @@
       "guest_execution": "NOT_EXECUTED",
       "native_aot": "NOT_EXECUTED",
       "limitations": [],
-      "evidence": null
+      "evidence": null,
+      "core_borrow_state": "NOT_EXECUTED",
+      "core_borrow_positive": "NOT_EXECUTED",
+      "core_borrow_negative": "NOT_EXECUTED"
     },
     {
       "repo": "atto-lang/atto-source.wasm",
@@ -55,7 +64,10 @@
       "guest_execution": "NOT_EXECUTED",
       "native_aot": "NOT_APPLICABLE",
       "limitations": [],
-      "evidence": null
+      "evidence": null,
+      "core_borrow_state": "NOT_EXECUTED",
+      "core_borrow_positive": "NOT_EXECUTED",
+      "core_borrow_negative": "NOT_EXECUTED"
     },
     {
       "repo": "atto-lang/atto-source.forge",
@@ -66,7 +78,10 @@
       "guest_execution": "NOT_EXECUTED",
       "native_aot": "NOT_EXECUTED",
       "limitations": [],
-      "evidence": null
+      "evidence": null,
+      "core_borrow_state": "NOT_EXECUTED",
+      "core_borrow_positive": "NOT_EXECUTED",
+      "core_borrow_negative": "NOT_EXECUTED"
     },
     {
       "repo": "atto-lang/atto-source.rs",
@@ -77,7 +92,10 @@
       "guest_execution": "NOT_EXECUTED",
       "native_aot": "NOT_EXECUTED",
       "limitations": [],
-      "evidence": null
+      "evidence": null,
+      "core_borrow_state": "NOT_EXECUTED",
+      "core_borrow_positive": "NOT_EXECUTED",
+      "core_borrow_negative": "NOT_EXECUTED"
     },
     {
       "repo": "atto-lang/atto-source.cranelift",
@@ -88,7 +106,10 @@
       "guest_execution": "NOT_EXECUTED",
       "native_aot": "NOT_EXECUTED",
       "limitations": [],
-      "evidence": null
+      "evidence": null,
+      "core_borrow_state": "NOT_EXECUTED",
+      "core_borrow_positive": "NOT_EXECUTED",
+      "core_borrow_negative": "NOT_EXECUTED"
     },
     {
       "repo": "atto-lang/atto-source.js",
@@ -99,7 +120,10 @@
       "guest_execution": "NOT_EXECUTED",
       "native_aot": "NOT_APPLICABLE",
       "limitations": [],
-      "evidence": null
+      "evidence": null,
+      "core_borrow_state": "NOT_EXECUTED",
+      "core_borrow_positive": "NOT_EXECUTED",
+      "core_borrow_negative": "NOT_EXECUTED"
     },
     {
       "repo": "atto-lang/atto-source.hdl",
@@ -114,7 +138,10 @@
         "heap_allocated_metrics_requires_capability_check",
         "dynamic_zorde_frames_require_capability_check"
       ],
-      "evidence": null
+      "evidence": null,
+      "core_borrow_state": "NOT_EXECUTED",
+      "core_borrow_positive": "NOT_EXECUTED",
+      "core_borrow_negative": "NOT_EXECUTED"
     }
   ],
   "coverage_policy": {
@@ -132,7 +159,13 @@
       "JSON_TYPED",
       "ZORDE_VARUINT31",
       "ZORDE_FRAME",
-      "ZORDE_TYPED"
+      "ZORDE_TYPED",
+      "CORE_BORROW_PREFLIGHT",
+      "CORE_BORROW_READ",
+      "CORE_BORROW_MUT",
+      "CORE_MOVE_WITH_LOAN",
+      "CORE_LOAN_SUSPEND",
+      "CORE_LOAN_ACTOR_ESCAPE"
     ],
     "verdict": "NO_PARITY_PASS_WITHOUT_REAL_EXECUTED_GUEST_RECEIPTS",
     "evidence_requires": [
@@ -148,7 +181,11 @@
       "guest_skip_count",
       "target_profile",
       "test_artifact_sha256",
-      "workflow_run_url"
+      "workflow_run_url",
+      "borrow_positive_compiled_guest_exits",
+      "borrow_negative_compiler_diagnostics",
+      "borrow_negative_no_guest_artifact_bytes",
+      "borrow_owned_place_root_provenance"
     ],
     "fail_closed_on": [
       "queued",
@@ -161,7 +198,11 @@
       "host_only",
       "mock_compiler",
       "current_head_mismatch",
-      "wrong_target"
+      "wrong_target",
+      "parser_unknown_keyword_used_as_borrow_diagnostic",
+      "borrow_reference_predicate_used_as_authority",
+      "borrowed_owner_reused_after_take",
+      "borrow_guard_escaped_across_await_or_actor_turn"
     ]
   },
   "reference": {
@@ -537,5 +578,6 @@
       },
       "snapshot_note": "Counter, Gauge and Histogram snapshots copy values at owner capture time"
     }
-  }
+  },
+  "core_borrow_contract": "contracts/std-metrics-json-zorde-core-borrow-v1.json"
 }
