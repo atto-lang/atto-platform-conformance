@@ -1,0 +1,28 @@
+name: Atto std pure-policy parity-v1 (source/reference ONLY)
+on:
+  pull_request:
+    paths:
+      - 'contracts/atto-std-pure-policy-parity-v1.json'
+      - 'tests/atto-std-pure-policy-parity-v1.test.mjs'
+      - '.github/workflows/atto-std-pure-policy-parity-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  reference-only-not-guest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run contract reference oracle and evidence-denial mutations
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+          node --test tests/atto-std-pure-policy-parity-v1.test.mjs
+          echo "ATTO_STD_CONTRACT_SOURCE_REFERENCE_ONLY=NOT_NATIVE_GUEST"
