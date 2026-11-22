@@ -60,7 +60,7 @@ test('all eleven new type-directed task cases are represented across backend pro
     'inferred_empty_task_future_void', 'inferred_int_task_future',
     'do_inferred_void_task'
   ];
-  assert.equal(manifest.source_cases.length, 42);
+  assert.equal(manifest.source_cases.length, 43);
   const included = new Set(manifest.source_cases.map(c => c.id));
   const canonical = new Map(targets.cases.map(c => [c.id, c]));
   for (const id of ids) {
@@ -80,7 +80,7 @@ test('all TaskFuture handle, ready and cooperative-control cases remain source-o
   const ids = [
     'taskfuture_await_ready', 'taskfuture_await_direct',
     'taskfuture_receipt_split_control', 'taskfuture_cooperate_request',
-    'taskfuture_cancel_scope', 'taskfuture_legacy_future_projection',
+    'taskfuture_cancel_scope', 'taskfuture_cancel_after_split', 'taskfuture_legacy_future_projection',
     'taskfuture_legacy_cancel_alias','taskfuture_inferred_empty_void',
     'taskfuture_inferred_valued','taskfuture_duplicate_ready_rejected',
     'taskfuture_duplicate_await_rejected','taskfuture_cooperate_on_future_rejected',
@@ -92,8 +92,8 @@ test('all TaskFuture handle, ready and cooperative-control cases remain source-o
   ];
   const byId = new Map(manifest.source_cases.map(c=>[c.id,c]));
   const pinned = new Map(targets.cases.map(c=>[c.id,c]));
-  assert.equal(byId.size,42);
-  assert.equal(ids.length,21);
+  assert.equal(byId.size,43);
+  assert.equal(ids.length,22);
   for (const id of ids) {
     assert.ok(byId.has(id),'missing parity case '+id);
     assert.equal(byId.get(id).source_git_blob,pinned.get(id).source_git_blob,id);
