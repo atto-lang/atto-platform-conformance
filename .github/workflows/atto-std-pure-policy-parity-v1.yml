@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'contracts/atto-std-pure-policy-parity-v1.json'
+      - 'contracts/atto-std-compiler-readiness-v1.json'
       - 'tests/atto-std-pure-policy-parity-v1.test.mjs'
       - '.github/workflows/atto-std-pure-policy-parity-v1.yml'
   workflow_dispatch:
