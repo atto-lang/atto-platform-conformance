@@ -142,6 +142,23 @@ function verifyReadiness(snapshot) {
     assert.equal(entry.compiled_guest_sha256, null);
     assert.equal(entry.github_actions_run, null);
     assert.equal(entry.executed_step_count, 0);
+    const model = entry.source_policy_model;
+    const hasCandidate = ["java","llvm","net","forge","wasm"].includes(entry.backend);
+    assert.equal(model.evidence,hasCandidate ? "MODEL_ONLY_NOT_COMPILER" : "NOT_AUDITED");
+    assert.equal(model.checked_vector_count,hasCandidate ? 134 : 0);
+    assert.equal(model.checked_public_apis,hasCandidate ? 28 : 0);
+    assert.equal(model.guest_execution,"NOT_EXECUTED");
+    if (hasCandidate) {
+      assert.match(model.source_snapshot_head,/^[a-f0-9]{40}$/,
+        "model requires exact checked backend head");
+      assert.deepEqual(Object.keys(model.source_git_blobs).sort(),
+        ["path","sync","telemetry"]);
+      for (const sha of Object.values(model.source_git_blobs))
+        assert.match(sha,/^[a-f0-9]{40}$/,"model requires actual git blob identity");
+    } else {
+      assert.equal(model.source_snapshot_head,null);
+      assert.deepEqual(model.source_git_blobs,{});
+    }
     if (entry.linker === "UNSUPPORTED")
       assert.ok(entry.reason && entry.reason.length > 15, "unsupported must explain why");
   }
@@ -159,5 +176,10 @@ test("11-backend readiness ledger refuses forged guest PASS and missing targets"
   const two = structuredClone(baselineReadiness);
   two.backends.pop();
   assert.throws(()=>verifyReadiness(two),"all 11 must be represented");
+  const modelSpoof = structuredClone(baselineReadiness);
+  modelSpoof.backends.find(x => x.backend === "net")
+    .source_policy_model.evidence = "NATIVE_GUEST_PASS";
+  assert.throws(()=>verifyReadiness(modelSpoof),
+    "a model-only result cannot become a compiled guest PASS");
   console.log("ATTO_STD_READINESS_SOURCE_ONLY|backends=11|guest_pass=0");
 });
