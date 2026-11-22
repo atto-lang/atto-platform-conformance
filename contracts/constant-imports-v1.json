@@ -4,8 +4,8 @@
   "status": "TARGET_NOT_EXECUTED",
   "owner": "atto-lang/atto-spec",
   "spec_path": "language/constant-imports-v1.md",
-  "scope": "typed constant imports, top-level const and illegal file/namespace globals",
-  "case_status": "All cases are unexecuted target fixtures. Parser-only Rust tests are not guest evidence.",
+  "scope": "typed constant imports, top-level const and illegal file/namespace globals; qualified std.env.read_env startup-only initializer and legacy os alias",
+  "case_status": "All cases remain UNEXECUTED target fixtures. Environment-backed cases require startup-only, permission and exact-AOT launch verification.",
   "cases": [
     {
       "id": "dotted_public",
@@ -143,6 +143,109 @@
         "app.atto": "import const a from \"std.http\";\npub fnc main(): int { return a; }\n"
       },
       "expected_error": "E_CONST_CYCLE"
+    },
+    {
+      "id": "env_std_qualified_export_import",
+      "kind": "pass",
+      "entry": "app.atto",
+      "files": {
+        "std/http.atto": "use namespace std.http;\ndefine pub const string status_valid = std.env.read_env(\"status_valid\");\n",
+        "app.atto": "import const status_valid from \"std.http\";\npub fnc main(): int {\n  if status_valid eq \"ready\" then return 1;\n  else return 0; fi\n}\n"
+      },
+      "env": {
+        "status_valid": "ready"
+      },
+      "expected_return": 1
+    },
+    {
+      "id": "env_same_aot_artifact_different_startups",
+      "kind": "pass",
+      "entry": "app.atto",
+      "files": {
+        "std/http.atto": "use namespace std.http;\ndefine pub const string status_valid = std.env.read_env(\"status_valid\");\n",
+        "app.atto": "import const status_valid from \"std.http\";\npub fnc main(): int {\n  if status_valid eq \"ready\" then return 1;\n  elif status_valid eq \"changed\" then return 2;\n  else return 0; fi\n}\n"
+      },
+      "env": {
+        "status_valid": "ready"
+      },
+      "expected_return": 1,
+      "reuse_compiled_artifact": true,
+      "startups": [
+        {
+          "env": {
+            "status_valid": "ready"
+          },
+          "expected_return": 1
+        },
+        {
+          "env": {
+            "status_valid": "changed"
+          },
+          "expected_return": 2
+        }
+      ]
+    },
+    {
+      "id": "env_denied_returns_empty",
+      "kind": "pass",
+      "entry": "app.atto",
+      "files": {
+        "std/http.atto": "use namespace std.http;\ndefine pub const string status_valid = std.env.read_env(\"status_valid\");\n",
+        "app.atto": "import const status_valid from \"std.http\";\npub fnc main(): int {\n  if status_valid eq \"\" then return 1;\n  else return 0; fi\n}\n"
+      },
+      "env": {
+        "status_valid": "confidential"
+      },
+      "denied_env_keys": [
+        "status_valid"
+      ],
+      "expected_return": 1
+    },
+    {
+      "id": "env_legacy_and_canonical_same_snapshot",
+      "kind": "pass",
+      "entry": "app.atto",
+      "files": {
+        "std/http.atto": "use namespace std.http;\ndefine pub const string status_valid = std.env.read_env(\"status_valid\");\ndefine pub const string old_status_valid = os.read_env(\"status_valid\");\n",
+        "app.atto": "import const status_valid, old_status_valid from \"std.http\";\npub fnc main(): int {\n  if status_valid eq old_status_valid then return 1;\n  else return 0; fi\n}\n"
+      },
+      "env": {
+        "status_valid": "ready"
+      },
+      "expected_return": 1,
+      "expected_host_reads": {
+        "status_valid": 1
+      }
+    },
+    {
+      "id": "env_wrong_type",
+      "kind": "fail",
+      "entry": "app.atto",
+      "files": {
+        "std/http.atto": "use namespace std.http;\ndefine pub const int status_valid = std.env.read_env(\"status_valid\");\n",
+        "app.atto": "import const status_valid from \"std.http\";\npub fnc main(): int { return status_valid; }\n"
+      },
+      "expected_error": "E_CONST_TYPE"
+    },
+    {
+      "id": "env_dynamic_key",
+      "kind": "fail",
+      "entry": "app.atto",
+      "files": {
+        "std/http.atto": "use namespace std.http;\nfnc get_key(): string { return \"status_valid\"; }\ndefine pub const string status_valid = std.env.read_env(get_key());\n",
+        "app.atto": "import const status_valid from \"std.http\";\npub fnc main(): int { return 0; }\n"
+      },
+      "expected_error": "E_CONST"
+    },
+    {
+      "id": "env_spoofed_provider",
+      "kind": "fail",
+      "entry": "app.atto",
+      "files": {
+        "std/http.atto": "use namespace std.http;\ndefine pub const string status_valid = user.env.read_env(\"status_valid\");\n",
+        "app.atto": "import const status_valid from \"std.http\";\npub fnc main(): int { return 0; }\n"
+      },
+      "expected_error": "E_CONST"
     }
   ],
   "backend_status": {
@@ -153,5 +256,5 @@
     "forge": "NOT_EXECUTED",
     "wasm-independent": "NOT_EXECUTED"
   },
-  "evidence_rule": "Per backend, compile exact source files with verified SHA; require actual guest exit/return for successes and deterministic code + no artifact for negatives. Cross-file constexpr and permission-backed runtime-once constants require independent linkage and startup proof."
+  "evidence_rule": "Per backend, compile exact source files with verified SHA; require actual guest exit/return for successes and deterministic code + no artifact for negatives. Cross-file constexpr and permission-backed runtime-once constants require independent linkage and startup proof. For qualified std.env.read_env prove trusted standard namespace resolution, env-permission denial no leak, exactly one startup host read per key, same AOT binary launched with distinct values, and no build-time capture. Legacy os.read_env must agree."
 }
