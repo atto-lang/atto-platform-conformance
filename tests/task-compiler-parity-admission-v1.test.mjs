@@ -50,3 +50,28 @@ test('unsupported backends remain unverified until real compiled-guest receipts'
   assert.ok(manifest.source_cases.some(x=>x.id==='cancel_lock_await_inside_guard'));
   assert.ok(manifest.source_cases.some(x=>x.id==='discard_do_sync_task'));
 });
+
+test('all eleven new type-directed task cases are represented across backend profiles', () => {
+  const ids = [
+    'await_sync_scalar_rejected', 'await_sync_future_valid',
+    'const_async_task_rejected', 'const_sync_task_rejected',
+    'empty_async_nonvoid_rejected', 'empty_sync_nonvoid_rejected',
+    'do_async_void_empty', 'await_sync_void_rejected',
+    'inferred_empty_task_future_void', 'inferred_int_task_future',
+    'do_inferred_void_task'
+  ];
+  assert.equal(manifest.source_cases.length, 21);
+  const included = new Set(manifest.source_cases.map(c => c.id));
+  const canonical = new Map(targets.cases.map(c => [c.id, c]));
+  for (const id of ids) {
+    assert.ok(included.has(id), id);
+    assert.ok(canonical.has(id), id);
+    assert.equal(manifest.source_cases.find(c=>c.id===id).source_git_blob,
+      canonical.get(id).source_git_blob,id);
+  }
+  assert.equal(manifest.evidence_grade, 'SOURCE_ONLY');
+  for (const [name,p] of Object.entries(manifest.source_profiles)) {
+    assert.equal(p.release_qualified,false,name);
+    assert.equal(p.compiled_guest,'NOT_EXECUTED',name);
+  }
+});
