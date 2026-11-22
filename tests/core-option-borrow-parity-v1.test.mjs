@@ -23,8 +23,8 @@ test('all 11 independent compiler backends retain 16 unexecuted borrow obligatio
 });
 test('Java linked borrow fixture and checker targets have exact audited Git identities',()=>{
   const j=dashboard.java_reference;
-  assert.equal(j.head_sha,'919d1d1fc59712e5e2059c72fe7a55cf5720df60');
-  assert.equal(j.root_tree_sha,'58d26bb865a1211fae18395ab87587f6a4433b68');
+  assert.equal(j.head_sha,'7385b682ff28239d1ce1c52fa6d7aedcb4f6b337');
+  assert.equal(j.root_tree_sha,'03981bf0f0540f913a45cbc951934783b61794b5');
   const expected=new Map([
     ['tests/core_option_result/borrowed_queries.atto','35f77b9020812364d1d0885e35f53a071cb50134'],
     ['src/test/java/dev/oreslang/CoreOptionResultBorrowSafetyTest.java','d44dfe085ed6728e5f5b50be889a1c56bf78bc39'],
