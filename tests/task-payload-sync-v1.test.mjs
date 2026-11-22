@@ -10,7 +10,7 @@ const cases = Object.fromEntries(registry.cases.map(c => [c.id,c]));
 test('versioned typed task fixtures are pinned to exact Git blob identity', () => {
   assert.equal(registry.schema, 'atto.task-payload-sync.v1');
   assert.equal(registry.status, 'TARGET_NOT_GUEST_VERIFIED');
-  assert.equal(registry.cases.length, 42);
+  assert.equal(registry.cases.length, 50);
   assert.equal(new Set(registry.cases.map(x=>x.id)).size,42);
   for (const c of registry.cases) {
     assert.match(c.source_path,/^fixtures\/task-payload-sync-v1\/[a-z0-9_]+\.atto$/);
@@ -384,4 +384,56 @@ test('legacy raw grant ack cannot bypass ready queue insertion', () => {
   assert.ok(probe.assertions.includes('GRANT_ACK_AND_READY_QUEUE_INSERTION_ONE_SERIALIZED_TRANSITION'));
   assert.ok(Object.values(registry.backends).every(b =>
     b.status === 'NOT_EXECUTED' && b.release_qualified === false));
+});
+
+test('await of inline scalar or void is rejected, but awaiting a returned Future is valid', () => {
+  assert.match(registry.await_inline_future_model, /type-directed|E_AWAIT_TYPE/);
+  for (const id of ['await_sync_scalar_rejected','await_sync_void_rejected']) {
+    const item = cases[id];
+    assert.equal(item.kind, 'negative');
+    assert.equal(item.expected.diagnostic, 'E_AWAIT_TYPE');
+    assert.equal(item.expected.no_artifact, true);
+    assert.match(getSource(item).toString('utf8'), /await sync task<(int|void)>/);
+  }
+  const value = cases.await_sync_future_valid;
+  assert.equal(value.kind, 'positive');
+  assert.equal(value.expected.guest_exit, 42);
+  const source = getSource(value).toString('utf8');
+  assert.match(source, /await sync task<Future<int>>/);
+  assert.match(source, /return task<int> \{ return 42; \}/);
+  for (const witness of ['SAME_LOGICAL_TASK_ID','NO_SYNTHETIC_SYNC_CHILD_SPAWN',
+    'INDEPENDENT_CHILD_SPAWN','AWAIT_RETURNED_FUTURE_ONLY','TASK_JOIN_PHYSICAL_RETIRE']) {
+    assert.ok(value.expected.witnesses.includes(witness), witness);
+  }
+});
+
+test('runtime task expressions cannot initialize constexpr const bindings', () => {
+  assert.match(registry.const_task_model, /Local const requires compile-time-evaluable/);
+  for (const id of ['const_async_task_rejected','const_sync_task_rejected']) {
+    const item = cases[id];
+    assert.equal(item.kind, 'negative');
+    assert.equal(item.expected.no_artifact, true);
+    assert.equal(item.expected.diagnostic, 'E_CONST');
+    const source = getSource(item).toString('utf8');
+    assert.match(source, /const (Future<int>|int) /);
+    assert.match(source, /(task<int>|sync task<int>)/);
+    assert.doesNotMatch(source, /val (Future<int>|int) /);
+  }
+});
+
+test('empty typed nonvoid tasks reject, but empty void do task spawns', () => {
+  for (const id of ['empty_async_nonvoid_rejected','empty_sync_nonvoid_rejected']) {
+    const item = cases[id];
+    assert.equal(item.kind, 'negative');
+    assert.equal(item.expected.diagnostic, 'E_TASK_RETURN_TYPE');
+    assert.equal(item.expected.no_artifact, true);
+    assert.match(getSource(item).toString('utf8'), /task<int> \{\}/);
+  }
+  const stmt = cases.do_async_void_empty;
+  assert.equal(stmt.kind, 'positive');
+  assert.equal(stmt.expected.guest_exit, 42);
+  assert.match(getSource(stmt).toString('utf8'), /do task<void> \{\}/);
+  for (const witness of ['INDEPENDENT_CHILD_SPAWN','SUPERVISED_DISCARD','SCOPE_PHYSICAL_RETIRE']) {
+    assert.ok(stmt.expected.witnesses.includes(witness), witness);
+  }
 });
