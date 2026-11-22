@@ -9,13 +9,13 @@
     {
       "id": "java",
       "repository": "atto-lang/atto-source.java",
-      "source_head_sha": "fd5055c3544ee7cf7e50dd5ac1b89469ada114a3",
-      "root_tree_sha": "af9c40f78d8f4b15e2cb8903f658f7df5be48aa2",
+      "source_head_sha": "7385b682ff28239d1ce1c52fa6d7aedcb4f6b337",
+      "root_tree_sha": "03981bf0f0540f913a45cbc951934783b61794b5",
       "stage": "borrow_source_candidate",
       "source_artifacts": [
         {
           "path": ".github/workflows/core-option-result-jvm-borrow-exact-head.yml",
-          "blob_sha": "9d74a1ea63898534fb3c991dfd805b031b74a860"
+          "blob_sha": "1821c6732b79c090f9cfc93121e3ea20e7a40fc2"
         },
         {
           "path": "core/option.atto",
@@ -26,12 +26,24 @@
           "blob_sha": "6bae249740af1088e069c3592ff8fb2bc72f1216"
         },
         {
+          "path": "src/main/java/dev/oreslang/compiler/OresCompiler.java",
+          "blob_sha": "c60883bf73abf36b89343a2b18feb11565c11c03"
+        },
+        {
+          "path": "src/main/java/dev/oreslang/types/CoreTypeRegistry.java",
+          "blob_sha": "bc9c3574f0e653218ea8a68f85d4effbd6722eeb"
+        },
+        {
           "path": "src/main/java/dev/oreslang/types/OwnershipChecker.java",
           "blob_sha": "6be88b5f3717f70759440be6a3012a0411f2315b"
         },
         {
           "path": "src/main/java/dev/oreslang/types/TypeChecker.java",
-          "blob_sha": "95a344571ba41d78303f3d1979918927b11619af"
+          "blob_sha": "3c1061d47c087d701f578e39a71ff34ce3197341"
+        },
+        {
+          "path": "src/test/java/dev/oreslang/AutomaticPreludeTest.java",
+          "blob_sha": "0e354f5478a0651127f746e63e86bb5a591bca74"
         },
         {
           "path": "src/test/java/dev/oreslang/CoreOptionResultBorrowSafetyTest.java",
