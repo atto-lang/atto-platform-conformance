@@ -1,0 +1,4 @@
+// PRELUDE V1: registry generic arity mismatch must be a type diagnostic.
+// This does not count as executed compiler evidence.
+fnc invalid(): Option<int, string> { return None; }
+pub fnc main(): int { return 42; }
