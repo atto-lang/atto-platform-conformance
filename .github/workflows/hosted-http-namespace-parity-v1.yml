@@ -3,8 +3,10 @@ on:
   pull_request:
     paths:
       - 'contracts/hosted-http-namespace-parity-v1.json'
+      - 'contracts/hosted-http-framing-numeric-parity-v1.json'
       - 'fixtures/hosted-async-http-fs-v1/namespace/**'
       - 'tests/test_hosted_http_namespace_parity_v1.py'
+      - 'tests/test_hosted_http_framing_parity_v1.py'
       - '.github/workflows/hosted-http-namespace-parity-v1.yml'
   push:
     paths:
@@ -26,7 +28,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Assert 11 backend rows, fixture inventory and no fake guest PASS
-        run: python3 -m unittest discover -s tests -p test_hosted_http_namespace_parity_v1.py -v
+        run: python3 -m unittest discover -s tests -p 'test_hosted_http_*_parity_v1.py' -v
       - name: Non-guest evidence scope
         run: |
           echo 'SOURCE_ONLY: no Atto compiler, guest, AOT or private-source mirror executed.'
