@@ -73,8 +73,8 @@
     {
       "id": "rs",
       "repository": "atto-lang/atto-source.rs",
-      "source_head_sha": "c2bc940768146519375ee8e0c57dd5585c649eb5",
-      "root_tree_sha": "49903cf337cf9833adefc6a2e70ab58533138f88",
+      "source_head_sha": "721b8559e536581bf9ddd35a55ec694ebd25f81a",
+      "root_tree_sha": "67d958aff3e3d161df264089eb28980c0fda52f6",
       "stage": "borrow_source_candidate",
       "source_artifacts": [
         {
@@ -92,6 +92,10 @@
         {
           "path": "tests/core_option_result/negative_affine_borrow_escape.atto",
           "blob_sha": "8326c4abf663e97c41e28795e9febdbf7e78f4b5"
+        },
+        {
+          "path": "tests/core_option_result_scalar.rs",
+          "blob_sha": "edc9afe7d60f973d73feaf66815d2c9d60896860"
         }
       ],
       "checks": {
