@@ -160,3 +160,16 @@ test('candidate source receipts identify nonzero commit and tree per backend, ne
   }
   assert.match(contract.exactRefEvidence,/source-only snapshot/);
 });
+
+test('alternate runner evidence is source-free and cleanup restores known tree',()=>{
+  const r=contract.sourceFreeReferenceEvidence;
+  assert.equal(r.carrier,'channelsiege/atto-ci');
+  assert.equal(r.runId,45059593908);
+  assert.equal(r.workflowConclusion,'success');
+  assert.equal(r.classification,'SOURCE_FREE_MODEL_ONLY');
+  assert.equal(r.compilerSourceTransferred,false);
+  assert.equal(r.typedMirGuestQualified,false);
+  assert.match(r.cleanupCommit,/^[0-9a-f]{40}$/);
+  assert.equal(r.cleanupTree,'b78051568a02496c9f55790d83a87a158c16ee88');
+  assert.ok(Object.values(contract.guestEvidence).every(x=>x==='NOT_EXECUTED'));
+});
