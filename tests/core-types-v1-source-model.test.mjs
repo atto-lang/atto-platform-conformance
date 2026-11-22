@@ -1,4 +1,5 @@
 // SOURCE-ONLY oracle and manifest integrity test. DOES NOT compile Atto guest.
+import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 const manifest = JSON.parse(readFileSync(new URL("../contracts/core-types-v1.json", import.meta.url), "utf8"));
@@ -116,6 +117,13 @@ test('secondary backend compiler gate blobs and current heads are pinned without
     for(const attr of ['exact_head','exact_git_tree','workflow_git_blob'])
       assert.match(gate[attr],/^[0-9a-f]{40}$/);
     if(gate.compiler_test_git_blob) assert.match(gate.compiler_test_git_blob,/^[0-9a-f]{40}$/);
+    if(gate.namespace_fixture_git_blobs) {
+      assert.ok(gate.backend==='net'||gate.backend==='forge');
+      assert.equal(gate.namespace_fixture_git_blobs.length,3);
+      for(const sha of gate.namespace_fixture_git_blobs) assert.match(sha,/^[0-9a-f]{40}$/);
+      assert.match(gate.header_parser_git_blob,/^[0-9a-f]{40}$/);
+      assert.deepEqual(gate.namespace_fixture_tests_staged,{positive:1,negative:2,executed:0});
+    }
     assert.equal(gate.actions_execution_status,'NOT_EXECUTED');
     assert.equal(gate.compiled_guest_status,'NOT_EXECUTED');
     assert.equal(gate.native_aot_status,'NOT_EXECUTED');
