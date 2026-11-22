@@ -254,7 +254,7 @@
       "repo": "atto-lang/atto-source.rs",
       "kind": "BACKEND_OWNED_SOURCE_DRAFT",
       "candidate_pr": 546,
-      "head_sha": "fae9f55964fec888147ba48efd9e0bf7407f6e",
+      "head_sha": "fae9f55964fec888147ba48efd9e0bfef7407f6e",
       "root_tree_sha": "cdd55487dfa8c03a40f8bac12480d13d0f6e7e49",
       "source_blobs": {
         "tests/stdlib/websocket_quic_compute_smoke.atto": "7534eb2ed7abd2339988b42d5086f5e45a062b9d",
