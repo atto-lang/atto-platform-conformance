@@ -1,0 +1,105 @@
+{
+  "schema": "atto.std.fs.file_handle_port.v1",
+  "scope": "HOST_ONLY_UNLINKED",
+  "user_public_api": "import * as fs from \"std.fs\";",
+  "guest_nominal_type": "std.fs.File",
+  "host_port_implementation": "ActorFileHandlePortV1",
+  "abi_version": 1,
+  "guest_import_linked": false,
+  "native_aot_compiled_guest": "NOT_EXECUTED",
+  "wire_model": {
+    "actor_auth": "trusted host-issued actor ticket captured outside guest memory",
+    "handle": "positive safe integer, scoped within one actor port, monotonically issued and not reused",
+    "lifecycle": "borrowed File instance; explicit close and finalizer cleanup; no guest File closure export",
+    "operations": [
+      "open",
+      "read",
+      "write",
+      "read_file",
+      "write_file",
+      "read_text",
+      "write_text",
+      "seek",
+      "flush",
+      "close",
+      "close_all"
+    ],
+    "file_methods": [
+      "read",
+      "write",
+      "seek",
+      "flush",
+      "close"
+    ],
+    "async": "Promise-only host; Atto susp/await lowering NOT_LINKED",
+    "type_errors": "FsErrorKind including invalid_handle, closed, permission_denied, busy, resource_limit",
+    "file_cursor": "each File has one mutable byte cursor; read_text/read_file to EOF; seek(0) rewinds",
+    "streams": "FileStream not an alias of File"
+  },
+  "invariants": [
+    "host_owned_ticket_never_guest_supplied",
+    "actor_and_tenant_scope_per_port",
+    "issuer_recorded_file_objects_never_exposed_to_guest",
+    "deny_forged_unissued_or_noninteger_handles",
+    "distinct_issued_and_open_budgets",
+    "handle_id_not_reused_even_after_open_failure",
+    "reserve_pending_open_before_side_effect",
+    "serialize_overlapping_operations_per_file",
+    "post_cancel_read_completion_must_not_report_success",
+    "close_all_waits_inflight_and_pending_opens",
+    "unknown_write_outcome_no_implicit_retry",
+    "read_text_decode_utf8_fatal",
+    "no_untrusted_host_disk_permission",
+    "not_cross_org_mirrored_without_transfer_review"
+  ],
+  "source_tests": {
+    "port_groups_per_backend": 16,
+    "existing_host_vfs_groups_per_backend": 24,
+    "combined_host_only_groups_per_backend": 40,
+    "execution_environment": "in-process isolated V8 ASCII TextEncoder/assert shims (not Node GitHub Actions)",
+    "unicode_full_utf8": "NOT_EXECUTED",
+    "source_node22_exact_head": "NOT_EXECUTED",
+    "compiled_atto_file_guest": "NOT_EXECUTED"
+  },
+  "backends": [
+    {
+      "backend": "wasm",
+      "repository": "atto-lang/atto-source.wasm",
+      "pr_url": "https://github.com/atto-lang/atto-source.wasm/pull/43",
+      "head_sha": "5cc778bf621c5d093465d06505d4e55f4db35b1e",
+      "numeric_repository_id": 1448701355,
+      "files": {
+        "vfs": "191cbac83b457c9332e2533ddcf2a459055e5d1a",
+        "vfs_tests": "bf0b3f7639ba14769afa992ab5651b1f3ab7d713",
+        "port": "3c0f13224cf6e5038846ee9d5b2a911b9c453a29",
+        "port_tests": "67ea5587d72079fe352a4e7c1643c00547ed9ff2"
+      },
+      "node22": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED"
+    },
+    {
+      "backend": "js",
+      "repository": "atto-lang/atto-source.js",
+      "pr_url": "https://github.com/atto-lang/atto-source.js/pull/39",
+      "head_sha": "f03d9ba902098a306dcdd9424aab6ad473258746",
+      "numeric_repository_id": 1448703338,
+      "files": {
+        "vfs": "1c9293f030bfa088dcab56aaba246dadb05a14ba",
+        "vfs_tests": "1231456190d82112288434c13e98f3bde17598ac",
+        "port": "3c0f13224cf6e5038846ee9d5b2a911b9c453a29",
+        "port_tests": "67ea5587d72079fe352a4e7c1643c00547ed9ff2"
+      },
+      "node22": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED"
+    }
+  ],
+  "ci": {
+    "source_runner": "queued, no job-step evidence",
+    "carrier_repo": "ORESoftware/ores-e2e-core",
+    "source_free_admission_run": 45047556666,
+    "source_free_executed_steps": 4,
+    "mirror_scope": "PRIVATE_SOURCE_NOT_TRANSFERRED",
+    "mirror_authorization": "BLOCKED",
+    "security_review_issue": "https://github.com/atto-lang/atto-source.wasm/issues/286"
+  }
+}
