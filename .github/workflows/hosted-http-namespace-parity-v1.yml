@@ -5,20 +5,24 @@ on:
       - 'contracts/hosted-http-namespace-parity-v1.json'
       - 'contracts/hosted-http-framing-numeric-parity-v1.json'
       - 'contracts/hosted-http-llvm-linked-namespace-candidate-v1.json'
+      - 'contracts/core-borrow-ownership-parity-v1.json'
       - 'fixtures/hosted-async-http-fs-v1/namespace/**'
       - 'tests/test_hosted_http_namespace_parity_v1.py'
       - 'tests/test_hosted_http_framing_parity_v1.py'
       - 'tests/test_hosted_http_llvm_linked_parity_v1.py'
+      - 'tests/test_core_ownership_borrow_parity_v1.py'
       - '.github/workflows/hosted-http-namespace-parity-v1.yml'
   push:
     paths:
       - 'contracts/hosted-http-namespace-parity-v1.json'
       - 'contracts/hosted-http-framing-numeric-parity-v1.json'
       - 'contracts/hosted-http-llvm-linked-namespace-candidate-v1.json'
+      - 'contracts/core-borrow-ownership-parity-v1.json'
       - 'fixtures/hosted-async-http-fs-v1/namespace/**'
       - 'tests/test_hosted_http_namespace_parity_v1.py'
       - 'tests/test_hosted_http_framing_parity_v1.py'
       - 'tests/test_hosted_http_llvm_linked_parity_v1.py'
+      - 'tests/test_core_ownership_borrow_parity_v1.py'
       - '.github/workflows/hosted-http-namespace-parity-v1.yml'
   workflow_dispatch:
 
@@ -35,6 +39,8 @@ jobs:
           persist-credentials: false
       - name: Assert 11 backend rows, fixture inventory and no fake guest PASS
         run: python3 -m unittest discover -s tests -p 'test_hosted_http_*_parity_v1.py' -v
+      - name: Verify eleven-backend core ownership/borrow proof obligations (source-only)
+        run: python3 -m unittest discover -s tests -p test_core_ownership_borrow_parity_v1.py -v
       - name: Non-guest evidence scope
         run: |
           echo 'SOURCE_ONLY: no Atto compiler, guest, AOT or private-source mirror executed.'
