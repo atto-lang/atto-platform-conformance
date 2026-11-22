@@ -1,0 +1,13 @@
+// expect-exit: 42
+// Target: explicit borrow! and inferred readonly args are equivalent
+// even when both reference the same original class owner in one call.
+define class Parcel as pub let int value = 10; end
+fnc combine(Parcel left, Parcel right): int {
+  return left.value + right.value;
+}
+pub fnc main(): int {
+  let parcel = new Parcel();
+  val first = combine(parcel, borrow! parcel);
+  val second = combine(borrow! parcel, parcel);
+  return first + second + 2;
+}
