@@ -31,7 +31,7 @@ test('std/channel contract is source-owned and explicitly unverified', () => {
 test('all conformance fixtures exist and no compiler is falsely certified', async () => {
   const ids = new Set();
   const paths = new Set();
-  assert.equal(manifest.cases.length, 5);
+  assert.equal(manifest.cases.length, 6);
   for (const c of manifest.cases) {
     assert.ok(!ids.has(c.id), 'duplicate case ID: ' + c.id);
     assert.ok(!paths.has(c.path), 'duplicate fixture path: ' + c.path);
@@ -63,6 +63,10 @@ test('required semantics are actually present in candidate Atto programs', async
     /send<int>\(ch, 20\)[\s\S]*send<int>\(ch, 22\)[\s\S]*close<int>\(ch\)[\s\S]*receive<int>\(ch\)/);
   assert.match(await load('rendezvous_pending'), /rendezvous<int>\(\)/);
   assert.match(await load('rendezvous_pending'), /receive_pending<int>/);
+  assert.ok(manifest.required_contracts.some(x =>
+    /polling without registration must never deadlock/.test(x)));
+  assert.match(await load('rendezvous_direct_read'),
+    /rendezvous<int>\(\)[\s\S]*send_pending<int>\(ch, 42\)[\s\S]*receive<int>\(ch\)/);
   assert.match(await load('try_read_empty_ready'), /on None/);
   assert.match(await load('try_read_empty_ready'), /on Some\(value\)/);
   assert.match(await load('closed_move_recovery'),
