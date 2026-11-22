@@ -129,3 +129,22 @@ test('nine independently owned bounded core/cell sources have updated exact blob
   // Source pins cannot be promoted to a compiler-generated loan proof.
   assert.match(contract.borrowAdmissionSaturation.reviewerRequirement,/typed MIR/);
 });
+
+
+test('compiled ownership admissions never inherit PASS from core source predicates',()=>{
+  assert.deepEqual(Object.keys(contract.compilerAdmissionTargets).sort(),[...backends].sort());
+  for(const [backend,target] of Object.entries(contract.compilerAdmissionTargets)){
+    assert.equal(target.status,'NOT_EXECUTED',backend);
+    assert.ok(typeof target.profile==='string'&&target.profile.length>0);
+    assert.ok(typeof target.evidence==='string'&&target.evidence.length>0);
+    assert.ok(Array.isArray(target.negative));
+    assert.notEqual(target.status,'PASS');
+  }
+  for(const name of ['java','llvm'])
+    assert.ok(contract.compilerAdmissionTargets[name].negative.includes('conflicting_shared_mutable_loans'));
+  assert.ok(contract.compilerAdmissionTargets.java.negative.includes('suspend_with_unpinned_loan'));
+  for(const name of ['net','wasm'])
+    assert.ok(contract.compilerAdmissionTargets[name].negative.includes('canonical_ownership_bang_unsupported'));
+  assert.match(contract.compilerAdmissionRule,/NOT a positive borrowed-memory execution proof/);
+  assert.match(contract.compilerAdmissionRule,/full typed borrow-MIR parity/);
+});
