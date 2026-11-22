@@ -73,10 +73,14 @@
     {
       "id": "rs",
       "repository": "atto-lang/atto-source.rs",
-      "source_head_sha": "92a2a1a4a5694d1626ee4c319f449333dbc1d4e8",
-      "root_tree_sha": "80f1fc4a2d0b0d4c53fc6f1dbbb794508004625d",
+      "source_head_sha": "c7edd32b3ca5cd9d3a85f63f531b6c21968c55e6",
+      "root_tree_sha": "352b41213259916837fc825ce7f390c1059d9b7f",
       "stage": "borrow_source_candidate",
       "source_artifacts": [
+        {
+          "path": ".github/workflows/core-option-result-borrow-exact-head.yml",
+          "blob_sha": "05c8853c15986b35fd5d376b417b34b9f1968eb4"
+        },
         {
           "path": "core/OPTION_RESULT_STATUS.md",
           "blob_sha": "475608589e293371817f571d520e094c53514da5"
