@@ -193,5 +193,104 @@
     "sourcePolicyOnly": true,
     "compilerGuestEvidence": "NOT_EXECUTED",
     "reviewerRequirement": "Independently verify actual typed MIR/borrow-checker rejects escapes, use-after-take, incompatible loans, stale generation and unpinned suspend. Policy math is never an authorization token."
-  }
+  },
+  "compilerAdmissionTargets": {
+    "java": {
+      "profile": "linked-core-ownership",
+      "positive": "core-four guest exit 42",
+      "negative": [
+        "use_after_take",
+        "escaping_local_borrow",
+        "conflicting_shared_mutable_loans",
+        "suspend_with_unpinned_loan"
+      ],
+      "status": "NOT_EXECUTED",
+      "evidence": "Java #1769 CoreFourGuestTest + linked-core .atto negatives"
+    },
+    "llvm": {
+      "profile": "native-llvm-core-ownership",
+      "positive": "O0/O2 compiled guest exit 42",
+      "negative": [
+        "use_after_take",
+        "escaping_local_borrow",
+        "conflicting_shared_mutable_loans"
+      ],
+      "status": "NOT_EXECUTED",
+      "evidence": "LLVM #868 native script requires exact conflicting active native borrow diagnostic and zero LLVM IR"
+    },
+    "net": {
+      "profile": "structured-cil-import-admission",
+      "positive": "compiled CIL core policy guest",
+      "negative": [
+        "canonical_ownership_bang_unsupported",
+        "legacy_rt_ownership_unsupported"
+      ],
+      "status": "NOT_EXECUTED",
+      "evidence": ".NET #220 ModuleInitializer requires production parser rejection before CIL DLL emission; not a full typed borrow checker"
+    },
+    "wasm": {
+      "profile": "scalar-precompiler-admission",
+      "positive": null,
+      "negative": [
+        "canonical_ownership_bang_unsupported",
+        "legacy_rt_ownership_unsupported"
+      ],
+      "status": "NOT_EXECUTED",
+      "evidence": "Wasm #283 heap/loan scanner denies borrow!, take!, copy!, share! and mut borrow! before staging; preserve !eq"
+    },
+    "js": {
+      "profile": "restricted-esm-core-admission",
+      "positive": null,
+      "negative": [
+        "core_cell_link_unavailable"
+      ],
+      "status": "NOT_EXECUTED",
+      "evidence": "JS #137 compiler denies unproven core/cell source promotion"
+    },
+    "cranelift": {
+      "profile": "core-source-only",
+      "positive": null,
+      "negative": [],
+      "status": "NOT_EXECUTED",
+      "evidence": "No linked JIT guest or typed borrow checker proof"
+    },
+    "forge": {
+      "profile": "core-source-only",
+      "positive": null,
+      "negative": [],
+      "status": "NOT_EXECUTED",
+      "evidence": "No linked native Forge guest or typed borrow checker proof"
+    },
+    "rs": {
+      "profile": "core-source-only",
+      "positive": null,
+      "negative": [],
+      "status": "NOT_EXECUTED",
+      "evidence": "Rust #540 does not claim compiled Core library or typed borrow parity"
+    },
+    "hdl": {
+      "profile": "hdl-import-denial",
+      "positive": null,
+      "negative": [
+        "core_cell_link_unavailable"
+      ],
+      "status": "NOT_EXECUTED",
+      "evidence": "HDL #66 compiler import denial target; no positive Cell hardware capability"
+    },
+    "atto": {
+      "profile": "bootstrap-source-only",
+      "positive": null,
+      "negative": [],
+      "status": "NOT_EXECUTED",
+      "evidence": "Self-hosted bootstrap source not a functioning compiled loan guest"
+    },
+    "realtime": {
+      "profile": "freestanding-source-only",
+      "positive": null,
+      "negative": [],
+      "status": "NOT_EXECUTED",
+      "evidence": "No hard-real-time WCET, ownership or compiled guest evidence"
+    }
+  },
+  "compilerAdmissionRule": "A negative preflight, parser, or restricted-source denial is NOT a positive borrowed-memory execution proof. Every backend target remains NOT_EXECUTED until exact-head material CI steps prove production admission or compiled guests as stated, and none may promote full typed borrow-MIR parity without proof."
 }
