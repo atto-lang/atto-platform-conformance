@@ -15,6 +15,7 @@ const gitBlobSha = source => createHash('sha1')
 test('explicit local initialization registry is versioned and fail-closed', () => {
   assert.equal(registry.schema_version, 1);
   assert.equal(registry.contract, 'atto-explicit-local-initialization-v1');
+  assert.equal(registry.aggregate_status, 'not_executed');
   assert.equal(registry.allowed_verification_statuses.includes('not_executed'), true);
   assert.deepEqual(registry.required_backends, backends);
   assert.equal(registry.cases.length, 5);
