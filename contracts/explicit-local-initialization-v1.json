@@ -137,5 +137,6 @@
         "independent_wasm": "not_executed"
       }
     }
-  ]
+  ],
+  "aggregate_status": "not_executed"
 }
