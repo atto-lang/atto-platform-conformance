@@ -2,7 +2,9 @@
 
 The executable conformance corpus for
 [atto-spec core-alloc-std-libraries-v1](https://github.com/atto-lang/atto-spec/blob/main/language/core-alloc-std-libraries-v1.md).
-Each compiler keeps a byte-identical copy in its own repository (CI there
+Cases use the canonical `atto.<layer>/<unit>` selectors (`aliases` covers the
+`<layer>/<unit>` shorthand; `neg_ores_selector` checks that `ores.*` never
+selects a unit). Each compiler keeps a byte-identical copy in its own repository (CI there
 cannot check out this private repository), runs it with its real
 compiler/linker, and executes the guest.
 
@@ -39,7 +41,8 @@ backend fails closed with an explicit "not implemented" diagnostic.
 | neg_nested | PASS | PASS | PASS | PASS |
 | neg_private | PASS | PASS | PASS | PASS |
 | neg_dotted_selector | PASS | PASS | PASS | PASS |
-| **total** | **15/15** | **15/15** | **15/15** | **9 + 6 unsupported** |
+| neg_ores_selector | PASS | PASS | PASS | PASS |
+| **total** | **16/16** | **16/16** | **16/16** | **10 + 6 unsupported** |
 
 Backend-only extras: LLVM `llvm_alloc_vec`, `llvm_legacy_numeric`,
 `llvm_neg_std_freestanding`; .NET `net_core_int_slice`.
