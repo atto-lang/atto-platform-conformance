@@ -4,17 +4,14 @@ import { createHash } from "node:crypto";
 import { copyFileSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
+import { checkReferenceFrames } from "../lib/verified-core-protocol-mailbox.mjs";
 
 const [checkout, dotnet, rid, common] = process.argv.slice(2);
 if (!checkout || !dotnet || !rid || !common || process.argv.length !== 6) {
   throw new Error("Usage: node bin/verify-verified-core-protocol-mailbox-net.mjs <atto-source.net checkout> <dotnet> <AOT runtime identifier> <atto-common-source checkout>");
 }
 const root = resolve(checkout);
-const referenceRoot = resolve(common, "reference/verified-core");
-const { elaborateProtocol } = await import(pathToFileURL(join(referenceRoot, "protocols.mjs")).href);
-const { decodeProtocolTurnReceipt, encodeProtocolMailboxMessage } =
-  await import(pathToFileURL(join(referenceRoot, "protocol-mailbox.mjs")).href);
 const fixtures = fileURLToPath(new URL("../fixtures/", import.meta.url));
 const bindings = join(fixtures, "verified-core-protocol-handlers-v1");
 const mailbox = join(fixtures, "verified-core-protocol-mailbox-net-v1");
@@ -40,36 +37,6 @@ const sha256 = file => createHash("sha256").update(readFileSync(file)).digest("h
 function emit(source, output) {
   successful(dotnet, [compiler, "emit-actor-csharp", source, "--out", output]);
   return readFileSync(output, "utf8");
-}
-
-function checkReferenceFrames(lines) {
-  const protocol = elaborateProtocol({
-    name: "Connection",
-    initial: "Disconnected",
-    terminals: ["Failed"],
-    edges: [
-      { source: "Disconnected", target: "Connecting", message: "connect",
-        payload: [{ name: "timeout", type: "Timeout" }] },
-      { source: "Connecting", target: "Connected", message: "connected" },
-      { source: "Connecting", target: "Failed", message: "fail" },
-      { source: "Connected", target: "Connecting", message: "connect",
-        payload: [{ name: "timeout", type: "Timeout" }] },
-    ],
-  }, new Map([["Timeout", { carrier: "i32", unit: "Millis", range: [1n, 60_000n] }]]), [
-    { kind: "dimension", name: "Time" },
-    { kind: "unit", name: "Second", dimension: "Time" },
-    { kind: "unit", name: "Millis", dimension: "Time", relativeTo: "Second", factor: "1000", divide: true },
-  ]);
-  const [data, firstReceipt] = lines;
-  const frame = encodeProtocolMailboxMessage(protocol.mailbox, "connect", [42n]);
-  assert.equal(data, "frame " + frame.toString("hex").toUpperCase(),
-    "NativeAOT message differs from the independent reference frame");
-  assert.match(firstReceipt, /^receipt [0-9A-F]{68}$/);
-  const observed = decodeProtocolTurnReceipt(Buffer.from(firstReceipt.slice(8), "hex"));
-  const initial = protocol.mailbox.states.findIndex(state => state.name === protocol.initial);
-  assert.ok(observed.actorId > 0n);
-  assert.deepEqual(observed, { actorId: observed.actorId, generation: 1n,
-    turn: 1n, status: 2, source: initial, destination: initial });
 }
 
 try {
@@ -113,7 +80,7 @@ try {
     "Publish must produce a native executable without a managed guest assembly");
   const trace = successful(executable, []).trim().split("\n");
   assert.equal(trace.length, 3);
-  checkReferenceFrames(trace);
+  await checkReferenceFrames(trace, common);
   assert.equal(trace[2], "verified 20 live .NET protocol turn receipts and 24 stop races");
   console.log(trace[2]);
   const [commit, tree] = successful("git", ["rev-parse", "HEAD", "HEAD^{tree}"]).trim().split("\n");
