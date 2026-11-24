@@ -1,0 +1,17 @@
+define dimension Time;
+define unit Second: Time;
+define unit Millis: Time = Second / 1000;
+type MillisValue = int where units in Millis;
+type PositiveMillis = int where self > 0 and units in Millis;
+
+fnc halve(PositiveMillis duration) -> PositiveMillis
+    requires duration >= 2<Millis>
+    ensures result > 0<Millis>
+    ensures result <= duration
+{
+    return duration / 2;
+}
+
+pub fnc main() -> int {
+    return halve() / 1<Millis>;
+}

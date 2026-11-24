@@ -1,0 +1,10 @@
+define dimension Time;
+define unit Second: Time;
+define unit Millis: Time = Second / 1000;
+type MillisValue = int where units in Millis;
+type PositiveMillis = int where self > 0 and units in Millis;
+
+type Impossible = int where self > 9223372036854775807;
+pub fnc main() -> int {
+    return 42;
+}

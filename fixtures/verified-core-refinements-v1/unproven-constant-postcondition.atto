@@ -1,0 +1,14 @@
+define dimension Time;
+define unit Second: Time;
+define unit Millis: Time = Second / 1000;
+type MillisValue = int where units in Millis;
+type PositiveMillis = int where self > 0 and units in Millis;
+
+fnc invalid(MillisValue duration) -> MillisValue
+    ensures result > 0<Millis>
+{
+    return duration;
+}
+pub fnc main() -> int {
+    return 42;
+}

@@ -1,0 +1,17 @@
+define dimension Time;
+define unit Second: Time;
+define unit Millis: Time = Second / 1000;
+type MillisValue = int where units in Millis;
+type PositiveMillis = int where self > 0 and units in Millis;
+
+fnc forward(MillisValue input) -> PositiveMillis
+    requires input >= 1<Millis>
+    ensures result <= input
+{
+    return input;
+}
+
+pub fnc main() -> int {
+    val MillisValue x = 42<Millis>;
+    return forward(x) / 1<Millis>;
+}
