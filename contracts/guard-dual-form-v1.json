@@ -185,6 +185,30 @@
       "kind": "NATIVE_GUEST_RETURN",
       "style": "brace",
       "expected_integer": 42
+    },
+    {
+      "id": "option-result-brace",
+      "path": "fixtures/guard-dual-form-v1/option-result-brace.atto",
+      "git_blob": "5966ff4c94eef9804774ea76fd9e364b9968e24c",
+      "kind": "NATIVE_GUEST_RETURN",
+      "style": "brace",
+      "expected_integer": 42
+    },
+    {
+      "id": "option-result-keyword",
+      "path": "fixtures/guard-dual-form-v1/option-result-keyword.atto",
+      "git_blob": "f791b947af2d870e6644af4f7fb09f78a40eaf85",
+      "kind": "NATIVE_GUEST_RETURN",
+      "style": "keyword",
+      "expected_integer": 42
+    },
+    {
+      "id": "reject-option-result",
+      "path": "fixtures/guard-dual-form-v1/reject-option-result.atto",
+      "git_blob": "cf6b7b6f467596647ee9397d6062eb4286ffbbb1",
+      "kind": "COMPILE_REJECT_NO_IR",
+      "style": "keyword",
+      "expected_diagnostic": "return_value_must_match_option_result"
     }
   ],
   "required_observations": [
@@ -212,7 +236,7 @@
     "hdl": "https://github.com/atto-lang/atto-source.hdl/issues/52",
     "net_shipping_scalar": "https://github.com/atto-lang/atto-source.net/issues/5"
   },
-  "notes": "Implementation PRs are drafts/authored-only. Every backend remains NOT_EXECUTED until separately source-pinned real compilation and guest execution succeeds. .NET draft is structured experimental mode only; shipping scalar source remains fail closed. Additive void-guard fixtures and nested outer-if delimiter case were SHA-pinned without changing historical fixture blobs; they are NOT_EXECUTED.",
+  "notes": "This registry records source targets. Local receipts for scalar and Option callable results are recorded in the compiler PRs. The normal .NET CLI compiles guarded standalone guests through the verified CFG. Backend status here requires the registry’s separate exact-head workflow proof.",
   "return_contract": {
     "condition": "strict bool; short circuit left to right; evaluated once per test",
     "true_path": "continue after guard",

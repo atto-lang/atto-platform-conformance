@@ -13,6 +13,7 @@ const validKinds = new Set(["NATIVE_GUEST_RETURN", "TYPECHECK_ACCEPT", "COMPILE_
 const knownIds = new Set([
   "brace-continue", "keyword-continue", "brace-failure", "keyword-failure",
   "option-brace", "option-keyword", "keyword-nested-outer-else",
+  "option-result-brace", "option-result-keyword", "reject-option-result",
   "reject-keyword-fallthrough", "reject-mixed-delimiters", "reject-missing-end",
   "reject-brace-break", "reject-keyword-break",
   "reject-brace-continue", "reject-keyword-continue",
@@ -91,6 +92,22 @@ test("keyword parse-boundary negative fixtures remain compile-reject targets", (
     assert.equal(byId[id].kind,"COMPILE_REJECT_NO_IR");
   const nested=readFileSync(join(root,byId["keyword-nested-outer-else"].path),"utf8");
   assert.match(nested,/guard true else[\s\S]*?end[\s\S]*?else[\s\S]*?fi/);
+});
+
+test("both guard forms pin Option results across calls and reject an untagged return", () => {
+  const byId = Object.fromEntries(manifest.fixtures.map(f => [f.id, f]));
+  for (const form of ["brace", "keyword"]) {
+    const fixture = byId[`option-result-${form}`];
+    assert.equal(fixture.expected_integer, 42);
+    const source = readFileSync(join(root, fixture.path), "utf8");
+    assert.match(source, /preserve\(optional_port\(true\)\)/);
+    assert.match(source, /preserve\(optional_port\(false\)\)/);
+    assert.match(source, /Some\(-9223372036854775808\)/);
+    assert.match(source, /some\.is_some\(\) && none\.is_none\(\)/);
+  }
+  const rejected = byId["reject-option-result"];
+  assert.equal(rejected.kind, "COMPILE_REJECT_NO_IR");
+  assert.equal(rejected.expected_diagnostic, "return_value_must_match_option_result");
 });
 
 test("both guard spellings reject escape-only failure blocks", () => {
