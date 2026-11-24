@@ -5,7 +5,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { checkReferenceFrames } from "../lib/verified-core-protocol-mailbox.mjs";
+import { checkReferenceFrames, nativeProtocolRuntimeUnits } from "../lib/verified-core-protocol-mailbox.mjs";
 
 const [checkout, compilerArg, clangArg, common] = process.argv.slice(2);
 if (!common || process.argv.length !== 6) {
@@ -65,18 +65,13 @@ try {
   assert.notEqual(wrongTarget.status, 0);
   assert.equal(wrongTarget.stdout, "");
 
-  const runtimeUnits = [
-    "ActorOwnedI64Heap", "NativeActorScheduler", "NativeOresVM", "NativeActorFuture",
-    "SourceActorBootstrap", "NativeActorLogicalFramesV1", "NativeExecutionContextStore",
-    "NativeContinuationStore", "NativeAwaitTraceBridge", "NativeLogicalTrace",
-  ];
   const native = join(work, "protocol-mailbox");
   const sanitize = process.env.ATTO_PROTOCOL_SANITIZE === "1";
   const flags = sanitize
     ? ["-g", "-fno-omit-frame-pointer", "-fsanitize=address,undefined", "-fno-sanitize-recover=all"]
     : [];
   successful(clang, ["-O1", ...flags, "-std=c11", "-pthread", "-I", sourceRoot,
-    host, ...runtimeUnits.map(name => join(runtime, name + ".c")), ...objects, "-o", native]);
+    host, ...nativeProtocolRuntimeUnits.map(name => join(runtime, name + ".c")), ...objects, "-o", native]);
   const trace = successful(native, []).trim().split("\n");
   assert.equal(trace.length, 3);
   await checkReferenceFrames(trace, common);
