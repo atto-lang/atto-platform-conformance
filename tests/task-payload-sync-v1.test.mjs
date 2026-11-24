@@ -10,8 +10,8 @@ const cases = Object.fromEntries(registry.cases.map(c => [c.id,c]));
 test('versioned typed task fixtures are pinned to exact Git blob identity', () => {
   assert.equal(registry.schema, 'atto.task-payload-sync.v1');
   assert.equal(registry.status, 'TARGET_NOT_GUEST_VERIFIED');
-  assert.equal(registry.cases.length, 75);
-  assert.equal(new Set(registry.cases.map(x=>x.id)).size,42);
+  assert.equal(registry.cases.length, 76);
+  assert.equal(new Set(registry.cases.map(x=>x.id)).size,registry.cases.length);
   for (const c of registry.cases) {
     assert.match(c.source_path,/^fixtures\/task-payload-sync-v1\/[a-z0-9_]+\.atto$/);
     assert.equal(gitSha(getSource(c)),c.source_git_blob,c.id);
@@ -75,7 +75,7 @@ test('void-only do sync task and standalone statements match the canonical spec'
   }
 });
 
-test('inline sync task requires only transitive effects and never suspends under guard', () => {
+test('inline sync task can cooperate and rejects suspension without same-thread continuation', () => {
   const pure = cases.sync_inline_non_susp;
   const ordered = cases.sync_inline_order;
   const suspended = cases.sync_inline_suspend;
@@ -88,17 +88,23 @@ test('inline sync task requires only transitive effects and never suspends under
   assert.deepEqual(ordered.expected.stdout,'7\n9\n');
   assert.match(getSource(ordered).toString('utf8'),/stdio\.println\(7\);[\s\S]*stdio\.println\(9\);/);
   assert.match(getSource(suspended).toString('utf8'),/sync task<int>[\s\S]*await task<int>/);
-  assert.ok(suspended.expected.witnesses.includes('CALLER_TASK_ID_RESTORED_AFTER_RESUME'));
-  assert.ok(suspended.expected.witnesses.includes('NO_OS_THREAD_PINNING_ASSUMED'));
+  assert.equal(suspended.kind,'negative');
+  assert.equal(suspended.expected.diagnostic,'E_SYNC_TASK_SUSPEND');
+  assert.equal(suspended.expected.no_artifact,true);
+  assert.ok(pure.expected.witnesses.includes('SAME_CALLER_THREAD'));
+  const cooperating = cases.sync_inline_cooperate;
+  assert.equal(cooperating.kind,'positive');
+  assert.match(getSource(cooperating).toString('utf8'),/sync task<int>\s*\{\s*rt cooperate;/);
+  assert.ok(cooperating.expected.witnesses.includes('SAME_CALLER_THREAD_AFTER_COOPERATE'));
   assert.match(getSource(lockedPure).toString('utf8'),/using await lock\.lock_async/);
   assert.match(getSource(lockedPure).toString('utf8'),/sync task<int> \{ return 1; \}/);
   assert.ok(lockedPure.expected.witnesses.includes('GUARD_RELEASE_EXACTLY_ONCE'));
   assert.equal(lockedSuspend.kind,'negative');
-  assert.equal(lockedSuspend.expected.diagnostic,'E_GUARD_SUSPEND');
+  assert.equal(lockedSuspend.expected.diagnostic,'E_SYNC_TASK_SUSPEND');
   assert.equal(lockedSuspend.expected.no_artifact,true);
   assert.match(getSource(lockedSuspend).toString('utf8'),/sync task<int>[\s\S]*await task<int>/);
   const effect = cases.sync_needs_susp;
-  assert.equal(effect.expected.diagnostic,'E_EFFECT');
+  assert.equal(effect.expected.diagnostic,'E_SYNC_TASK_SUSPEND');
   assert.match(getSource(effect).toString('utf8'),/pub fnc main\(\): int/);
   assert.match(getSource(effect).toString('utf8'),/return await task<int>/);
   assert.equal(registry.inline_sync_runtime_probes.length,5);

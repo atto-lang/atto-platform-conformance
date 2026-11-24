@@ -16,7 +16,7 @@ test('all eleven atto-source.* targets appear once, including bootstrap and real
  assert.equal(matrix.rollup.production_task_runtime_certified,0);
  assert.equal(matrix.rollup.all_backends_release_qualified,false);
  assert.equal(registry.status,'TARGET_NOT_GUEST_VERIFIED');
- assert.equal(registry.cases.length,42);
+ assert.equal(new Set(registry.cases.map(c=>c.id)).size,registry.cases.length);
  assert.deepEqual(Object.keys(registry.backends).sort(),[
    'atto','cranelift','forge','hdl','independent-wasm','java','js','llvm','net','realtime','rs-wasm'
  ]);

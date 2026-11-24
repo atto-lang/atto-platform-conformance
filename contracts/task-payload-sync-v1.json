@@ -2,8 +2,8 @@
   "schema": "atto.task-payload-sync.v1",
   "status": "TARGET_NOT_GUEST_VERIFIED",
   "source_contract": "atto-lang/atto-spec/language/typed-task-payload-sync-v1.md",
-  "meaning": "task<T> returns Future<T> and is independently schedulable; await task<T> spawns and joins; sync task<T> and void-only do sync task<void> execute inline on caller TaskId, without an independent spawn or Future; do task<T> is supervised child spawn; standalone inline void statements require 'do sync task', and do-inline may only return void; await is type-directed and cannot await scalar/void inline results, but can join a Future returned by an inline task; local const must remain constexpr (use val for task expressions); empty nonvoid task bodies reject; bare task {} infers Future<void> and task { return 42; } infers Future<int>, while do task {} discards an inferred-void structured child; task<T> principal type TaskFuture<T>, get_ready moves the one Future<T> receipt, cancel_task requests nonparking cancellation, cooperate requests nonparking scheduler fairness with no forced preemption; old Future<T> task-origin projection/cancel alias remains provenance checked",
-  "execution_frame_model": "independent logical continuations for spawned task<T> within a structured TaskScope; inline sync task runs in its caller's logical continuation and creates no independent child; physical frame sharing only after proven lifetime and alias safety",
+  "meaning": "task<T> returns Future<T> and is independently schedulable; await task<T> spawns and joins; sync task<T> and void-only do sync task<void> execute inline on caller TaskId and thread and may cooperate on that thread, without an independent spawn or Future; do task<T> is supervised child spawn; standalone inline void statements require 'do sync task', and do-inline may only return void; await is type-directed and cannot await scalar/void inline results, but can join a Future returned by an inline task; local const must remain constexpr (use val for task expressions); empty nonvoid task bodies reject; bare task {} infers Future<void> and task { return 42; } infers Future<int>, while do task {} discards an inferred-void structured child; the separate TaskFuture<T> control profile adds handles, get_ready moves the one Future<T> receipt, cancel_task requests nonparking cancellation, cooperate requests nonparking scheduler fairness with no forced preemption; Future<T> cancellation remains task-provenance checked",
+  "execution_frame_model": "independent logical continuations for spawned task<T> within a structured TaskScope; inline sync task runs in its caller's lexical scope on the same carrier across cooperation and creates no independent child; physical frame sharing only after proven lifetime and alias safety",
   "cases": [
     {
       "id": "await_payload",
@@ -51,7 +51,8 @@
           "SAME_LOGICAL_TASK_ID",
           "INLINE_EXIT_BEFORE_NEXT_PARENT_STATEMENT",
           "NO_INDEPENDENT_WORKER_DISPATCH",
-          "INLINE_VOID_COMPLETION_NO_RESULT"
+          "INLINE_VOID_COMPLETION_NO_RESULT",
+          "SAME_CALLER_THREAD"
         ]
       }
     },
@@ -85,7 +86,7 @@
       "source_git_blob": "72d8a7c372da3e1138c936b9fd72aba1580dbaf0",
       "kind": "negative",
       "expected": {
-        "diagnostic": "E_EFFECT",
+        "diagnostic": "E_SYNC_TASK_SUSPEND",
         "no_artifact": true
       }
     },
@@ -102,7 +103,8 @@
           "SAME_LOGICAL_TASK_ID",
           "INLINE_EXIT_BEFORE_NEXT_PARENT_STATEMENT",
           "NO_INDEPENDENT_WORKER_DISPATCH",
-          "INLINE_RETURN_VALUE_42"
+          "INLINE_RETURN_VALUE_42",
+          "SAME_CALLER_THREAD"
         ]
       }
     },
@@ -388,7 +390,23 @@
           "SAME_LOGICAL_TASK_ID",
           "INLINE_EXIT_BEFORE_NEXT_PARENT_STATEMENT",
           "NO_INDEPENDENT_WORKER_DISPATCH",
-          "NON_SUSP_CALLER_ADMITTED"
+          "NON_SUSP_CALLER_ADMITTED",
+          "SAME_CALLER_THREAD"
+        ]
+      }
+    },
+    {
+      "id": "sync_inline_cooperate",
+      "source_path": "fixtures/task-payload-sync-v1/sync_inline_cooperate.atto",
+      "source_git_blob": "f0b0e1e4d27a24a43fd72b4936a4661968e607af",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "SAME_LOGICAL_TASK_ID",
+          "SAME_CALLER_THREAD_AFTER_COOPERATE",
+          "NO_SYNTHETIC_SYNC_CHILD_SPAWN",
+          "INLINE_EXIT_BEFORE_NEXT_PARENT_STATEMENT"
         ]
       }
     },
@@ -406,7 +424,8 @@
           "SAME_LOGICAL_TASK_ID",
           "INLINE_EXIT_BEFORE_NEXT_PARENT_STATEMENT",
           "NO_INDEPENDENT_WORKER_DISPATCH",
-          "BODY_STDOUT_PRECEDES_PARENT_STDOUT"
+          "BODY_STDOUT_PRECEDES_PARENT_STDOUT",
+          "SAME_CALLER_THREAD"
         ]
       }
     },
@@ -414,20 +433,10 @@
       "id": "sync_inline_suspend",
       "source_path": "fixtures/task-payload-sync-v1/sync_inline_suspend.atto",
       "source_git_blob": "26d9f7daedd12f77933dc49c9244870abc17a046",
-      "kind": "positive",
+      "kind": "negative",
       "expected": {
-        "guest_exit": 42,
-        "witnesses": [
-          "INLINE_ENTER_BEFORE_BODY",
-          "NO_SYNTHETIC_SYNC_CHILD_SPAWN",
-          "SAME_LOGICAL_TASK_ID",
-          "INLINE_EXIT_BEFORE_NEXT_PARENT_STATEMENT",
-          "NO_INDEPENDENT_WORKER_DISPATCH",
-          "ONLY_NESTED_EXPLICIT_TASK_SPAWNS",
-          "CALLER_SUSPENDS_NONPARKING",
-          "CALLER_TASK_ID_RESTORED_AFTER_RESUME",
-          "NO_OS_THREAD_PINNING_ASSUMED"
-        ]
+        "diagnostic": "E_SYNC_TASK_SUSPEND",
+        "no_artifact": true
       }
     },
     {
@@ -455,7 +464,7 @@
       "source_git_blob": "f6b22a68ec359381bab86ec68116371eace75bfb",
       "kind": "negative",
       "expected": {
-        "diagnostic": "E_GUARD_SUSPEND",
+        "diagnostic": "E_SYNC_TASK_SUSPEND",
         "no_artifact": true
       }
     },
@@ -1467,7 +1476,7 @@
       "release_qualified": false
     }
   ],
-  "sync_inline_model": "sync task<T> runs inline in caller TaskId; no independent TaskSpawn/TaskJoin/Future or new worker assignment; pure bodies allowed in non-susp context, suspending inline bodies suspend their caller cooperatively (carrier migration allowed); do sync task accepts only an explicit void payload or inferred void, forbids return expressions, and MUST NOT canonicalize to do task; lexical using/defer unwind LIFO before return, cancel/fail; never yield under active critical guard",
+  "sync_inline_model": "sync task<T> runs inline in caller TaskId on the same thread; no independent TaskSpawn, TaskJoin, Future or worker assignment; rt cooperate retains the caller thread; an effect without a same-thread continuation proof is E_SYNC_TASK_SUSPEND even in a susp callable; do sync task accepts only an explicit void payload or inferred void, forbids return expressions, and MUST NOT canonicalize to do task; lexical using/defer unwind LIFO before return, cancel or fail",
   "inline_sync_runtime_probes": [
     {
       "id": "inline_no_child_admission",
@@ -1478,7 +1487,9 @@
         "NO_SYNTHETIC_SYNC_CHILD_SPAWN",
         "SAME_LOGICAL_TASK_ID",
         "INLINE_EXIT_BEFORE_NEXT_PARENT_STATEMENT",
-        "NO_INDEPENDENT_WORKER_DISPATCH"
+        "NO_INDEPENDENT_WORKER_DISPATCH",
+        "SAME_CALLER_THREAD",
+        "SAME_CALLER_THREAD_AFTER_COOPERATE"
       ]
     },
     {
@@ -1492,14 +1503,13 @@
       ]
     },
     {
-      "id": "inline_suspend_may_migrate_carrier",
+      "id": "inline_await_without_same_thread_proof_rejected",
       "evidence_required": true,
       "release_qualified": false,
       "assertions": [
-        "CALLER_SUSPENDS_NONPARKING",
-        "CALLER_TASK_ID_RESTORED_AFTER_RESUME",
-        "NESTED_EXPLICIT_CHILD_RETIRES",
-        "NO_OS_THREAD_PINNING_ASSUMED"
+        "NON_SUSP_CALLER_INLINE_AWAIT_REJECTED",
+        "SUSP_CALLER_INLINE_AWAIT_REJECTED",
+        "NO_ARTIFACT_FOR_UNVERIFIED_INLINE_AWAIT"
       ]
     },
     {
