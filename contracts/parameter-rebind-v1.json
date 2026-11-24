@@ -1,0 +1,60 @@
+{
+  "schema": "atto.parameter-rebind.v1",
+  "version": 1,
+  "status": "TARGET_NOT_EXECUTED",
+  "owner": "atto-lang/atto-spec",
+  "contract": "https://github.com/atto-lang/atto-spec/blob/45333fe8ee7b5ffe8c58f035ded350c6ad474bff/language/implicit-argument-borrow-v1.md#explicit-parameter-rebinding-v1",
+  "required_cases": [
+    {
+      "id": "function_replacement",
+      "kind": "pass",
+      "path": "fixtures/parameter-rebind-v1/pass/function_replacement.atto",
+      "expected_exit": 69
+    },
+    {
+      "id": "method_replacement",
+      "kind": "pass",
+      "path": "fixtures/parameter-rebind-v1/pass/method_replacement.atto",
+      "expected_exit": 69
+    },
+    {
+      "id": "borrowed_owned_join",
+      "kind": "pass",
+      "path": "fixtures/parameter-rebind-v1/pass/borrowed_owned_join.atto",
+      "expected_exit": 15
+    },
+    {
+      "id": "scalar_name_first",
+      "kind": "pass",
+      "path": "fixtures/parameter-rebind-v1/pass/scalar_name_first.atto",
+      "expected_exit": 23
+    },
+    {
+      "id": "fixed_mutable_parameter",
+      "kind": "fail",
+      "path": "fixtures/parameter-rebind-v1/fail/fixed_mutable_parameter.atto",
+      "expected_error": "E_IMMUTABLE"
+    },
+    {
+      "id": "live_owned_reborrow",
+      "kind": "fail",
+      "path": "fixtures/parameter-rebind-v1/fail/live_owned_reborrow.atto",
+      "expected_error": "E_BORROW"
+    }
+  ],
+  "backend_status": {
+    "rs-browser": "NOT_EXECUTED",
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm-independent": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED"
+  },
+  "zero_gc_evidence_required": [
+    "Executed allocator and destructor evidence for repeated replacement, normal return, RHS failure, unwind, and supported cancellation.",
+    "The caller-owned input survives; each retired owned replacement is destroyed exactly once and its storage is reclaimed according to its allocation region.",
+    "Lowered native IR shows no boxing, reference counting or tracing introduced by rebinding."
+  ]
+}
