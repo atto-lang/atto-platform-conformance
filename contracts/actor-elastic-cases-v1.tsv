@@ -10,7 +10,8 @@ policy-reject-dedicated-two	COMPILE_NEGATIVE	E_AFFINITY_REQUIRES_ONE_no_artifact
 policy-reject-unknown-affinity	COMPILE_NEGATIVE	unknown_affinity_no_artifact	-	NOT_EXECUTED
 policy-reject-domain-escalation	SECURITY	guest_must_not_elevate_pool_authority	-	NOT_EXECUTED
 policy-reject-overflow	COMPILE_NEGATIVE	integer_overflow_no_artifact	-	NOT_EXECUTED
-ordinary-two-receives	GUEST_RUNTIME	two_distinct_live_receive_stacks_and_parallel_carriers	-	NOT_EXECUTED
+ordinary-two-receives	GUEST_RUNTIME	explicit_logical_concurrency_allows_two_separate_stacks	-	NOT_EXECUTED
+default-one-live-await	GUEST_RUNTIME	default_logical_receive_permit_retained_across_await	-	NOT_EXECUTED
 serial-one-live-await	GUEST_RUNTIME	one_live_receive_while_suspended	fixtures/actor-scheduling-policy-v1/serial_sticky.atto	NOT_EXECUTED
 serial-method-during-await	GUEST_RUNTIME	independent_method_runs_without_simultaneous_carriers	-	NOT_EXECUTED
 actor-task-shared-cap	GUEST_RUNTIME	receives_methods_tasks_continuations_share_cap	-	NOT_EXECUTED
@@ -22,6 +23,7 @@ pinned-worker-retirement	GUEST_RUNTIME	no_repin_until_fenced_old_lease_retires	-
 dedicated-quota-denied	SECURITY	no_unauthorized_exclusive_carrier_or_fallback	-	NOT_EXECUTED
 stop-drain-once	SECURITY	stop_fences_admission_and_lease_retires_once	-	NOT_EXECUTED
 stale-worker-generation	SECURITY	stale_worker_generation_does_not_grant_guest_lease	-	NOT_EXECUTED
+stale-worker-inventory	SECURITY	rollback_rejected_atomically_and_old_lease_physically_drained	-	NOT_EXECUTED
 stale-actor-generation	SECURITY	stale_actor_generation_does_not_resume_guest	-	NOT_EXECUTED
 tenant-domain-confinement	SECURITY	work_never_enters_foreign_pool_or_tenant	-	NOT_EXECUTED
 control-priority	GUEST_RUNTIME	control_progress_not_starved_by_elastic_data	-	NOT_EXECUTED

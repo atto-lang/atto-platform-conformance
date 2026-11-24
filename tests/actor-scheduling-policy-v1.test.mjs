@@ -7,17 +7,19 @@ const registry = JSON.parse(readFileSync(new URL("../contracts/actor-scheduling-
 const backends = ["java", "llvm", "wasm", "forge", "net"];
 
 class SchedulingOracle {
-  constructor({serial = false, max = "pool_size", affinity = "sticky", workers = 2,
+  constructor({serial = false, max = "pool_size", receives = 1, affinity = "sticky", workers = 2,
     actorCap = 64, tenantCap = 64, globalCap = 64, domain = "shared", reserved = false} = {}) {
     if (!(max === "pool_size" || Number.isSafeInteger(max) && max >= 1))
       throw Error("E_ACTOR_PARALLELISM_CAP");
     if (!["none", "sticky", "pinned", "dedicated"].includes(affinity))
       throw Error("E_ACTOR_AFFINITY");
-    if (serial && max !== 1) throw Error("E_SERIAL_PARALLELISM");
+    if (!Number.isSafeInteger(receives) || receives < 1) throw Error("E_ACTOR_RECEIVE_LIMIT");
+    if (serial && (max !== 1 || receives !== 1)) throw Error("E_SERIAL_PARALLELISM");
     if (["pinned", "dedicated"].includes(affinity) && max !== 1)
       throw Error("E_AFFINITY_REQUIRES_ONE");
-    this.policy = {serial, max, affinity, actorCap, tenantCap, globalCap, domain, reserved};
-    this.pool = Array.from({length: workers}, (_, id) => ({id, alive: true, domain}));
+    this.policy = {serial, max, receives, affinity, actorCap, tenantCap, globalCap, domain, reserved};
+    this.pool = [];
+    this.workerGenerations = new Map();
     this.running = new Map();
     this.suspended = new Map();
     this.liveReceives = 0;
@@ -25,11 +27,13 @@ class SchedulingOracle {
     this.generation = 1;
     this.home = null;
     this.stopped = false;
+    this.resize(workers);
   }
   eligible() {
     return this.pool.filter(w => w.alive && w.domain === this.policy.domain);
   }
   cap() {
+    if (this.stopped) return 0;
     const healthy = this.eligible().length;
     return Math.min(this.policy.max === "pool_size" ? healthy : this.policy.max,
       healthy, this.policy.actorCap, this.policy.tenantCap, this.policy.globalCap);
@@ -51,40 +55,58 @@ class SchedulingOracle {
   }
   start(kind = "receive", generation = this.generation) {
     if (this.stopped || generation !== this.generation || this.running.size >= this.cap()) return null;
-    if (kind === "receive" && this.policy.serial && this.liveReceives > 0) return null;
+    if (kind === "receive" && this.liveReceives >= this.policy.receives) return null;
     const worker = this.pickWorker();
     if (!worker) return null;
-    const ticket = {id: this.nextTicket++, worker: worker.id, generation, kind};
+    const ticket = {id: this.nextTicket++, worker: worker.id, workerGeneration: worker.generation,
+      generation, kind};
     this.running.set(ticket.id, ticket);
     if (kind === "receive") this.liveReceives++;
     return ticket;
   }
   suspend(ticket) {
-    if (ticket?.generation !== this.generation || !this.running.has(ticket.id)) return false;
+    if (ticket?.generation !== this.generation || this.running.get(ticket.id) !== ticket) return false;
     this.running.delete(ticket.id);
     this.suspended.set(ticket.id, ticket);
     return true;
   }
   resume(ticket) {
-    if (this.stopped || ticket?.generation !== this.generation || !this.suspended.has(ticket.id)
+    if (this.stopped || ticket?.generation !== this.generation || this.suspended.get(ticket.id) !== ticket
       || this.running.size >= this.cap()) return null;
     const worker = this.pickWorker();
     if (!worker) return null;
     this.suspended.delete(ticket.id);
     ticket.worker = worker.id;
+    ticket.workerGeneration = worker.generation;
     this.running.set(ticket.id, ticket);
     return ticket;
   }
   finish(ticket) {
-    if (ticket?.generation !== this.generation) return false;
-    const exists = this.running.delete(ticket.id) || this.suspended.delete(ticket.id);
-    if (exists && ticket.kind === "receive") this.liveReceives--;
-    return exists;
+    if (ticket?.generation !== this.generation ||
+        (this.running.get(ticket.id) !== ticket && this.suspended.get(ticket.id) !== ticket)) return false;
+    this.running.delete(ticket.id);
+    this.suspended.delete(ticket.id);
+    if (ticket.kind === "receive") this.liveReceives--;
+    return true;
   }
   resize(n) {
     assert.ok(Number.isSafeInteger(n) && n >= 0);
-    while (this.pool.length < n) this.pool.push({id: this.pool.length, alive: true, domain: this.policy.domain});
-    this.pool.forEach((w, i) => { w.alive = i < n; });
+    this.replaceWorkers(Array.from({length: n}, (_, id) =>
+      ({id, generation: this.workerGenerations.get(id) ?? 1})));
+  }
+  replaceWorkers(workers) {
+    if (this.stopped) throw Error("E_ACTOR_STOPPED");
+    const next = new Map();
+    for (const {id, generation} of workers) {
+      if (!Number.isSafeInteger(id) || id < 0 || next.has(id) ||
+          !Number.isSafeInteger(generation) || generation < 1)
+        throw Error("E_INVALID_WORKER_GENERATION");
+      if (generation < (this.workerGenerations.get(id) ?? 0))
+        throw Error("E_STALE_WORKER_INVENTORY");
+      next.set(id, {id, generation, alive: true, domain: this.policy.domain});
+    }
+    for (const worker of next.values()) this.workerGenerations.set(worker.id, worker.generation);
+    this.pool = [...next.values()];
   }
   killWorker(id) {
     const w = this.pool.find(w => w.id === id);
@@ -92,8 +114,8 @@ class SchedulingOracle {
   }
   stop() { this.stopped = true; }
   restart() {
+    if (!this.stopped || this.running.size !== 0) throw Error("E_PHYSICAL_LEASES_OUTSTANDING");
     this.generation++;
-    this.running.clear();
     this.suspended.clear();
     this.liveReceives = 0;
     this.home = null;
@@ -104,7 +126,7 @@ class SchedulingOracle {
 test("registry is explicit TARGET and every backend remains NOT EXECUTED", () => {
   assert.equal(registry.schema, "atto.actor-scheduling-policy.v1");
   assert.equal(registry.status, "TARGET_NOT_GUEST_EXECUTED");
-  assert.equal(registry.cases.length, 26);
+  assert.equal(registry.cases.length, 28);
   assert.equal(new Set(registry.cases.map(c => c.id)).size, registry.cases.length);
   assert.deepEqual(Object.keys(registry.backends), backends);
   for (const c of registry.cases) {
@@ -115,6 +137,9 @@ test("registry is explicit TARGET and every backend remains NOT EXECUTED", () =>
   }
   assert.equal(registry.rules.fixed_cap_min, 1);
   assert.equal(registry.rules.serial_live_receives, 1);
+  assert.equal(registry.rules.default_live_receives, 1);
+  assert.equal(registry.rules.ordinary_receive_interleaving, "EXPLICIT_BOUNDED_CONCURRENCY");
+  assert.equal(registry.rules.worker_inventory, "MONOTONIC_GENERATION_PER_AUTHORIZED_POOL_SLOT");
   assert.equal(registry.rules.serial_physical_max, 1);
   assert.equal(registry.rules.actor_owned_tasks_share_physical_cap, true);
   assert.equal(registry.receipt.source_free_model_is_guest_evidence, false);
@@ -168,8 +193,21 @@ test("serial receive retains logical permit over await; method can interleave, n
   assert.ok(o.start("receive"));
 });
 
-test("ordinary actor can concurrently run different stacks; child tasks share limit", () => {
-  const o = new SchedulingOracle({workers: 3, max: 3});
+test("ordinary actor keeps a suspended receive logically live by default", () => {
+  const o = new SchedulingOracle({workers: 3});
+  const receive = o.start();
+  assert.ok(receive);
+  assert.equal(o.suspend(receive), true);
+  assert.equal(o.running.size, 0);
+  assert.equal(o.start(), null);
+  assert.ok(o.start("method"));
+  assert.ok(o.resume(receive));
+  assert.equal(o.finish(receive), true);
+  assert.ok(o.start());
+});
+
+test("ordinary actor with explicit receive concurrency runs different stacks within the physical cap", () => {
+  const o = new SchedulingOracle({workers: 3, max: 3, receives: 2});
   const a = o.start("receive"), b = o.start("receive"), t = o.start("task");
   assert.ok(a && b && t);
   assert.equal(new Set([a.worker, b.worker, t.worker]).size, 3);
@@ -203,6 +241,7 @@ test("dedicated requires actual reservation; prohibited multi-carrier policies r
   assert.equal(new SchedulingOracle({max: 1, affinity: "dedicated", reserved: false}).start(), null);
   assert.ok(new SchedulingOracle({max: 1, affinity: "dedicated", reserved: true}).start());
   assert.throws(() => new SchedulingOracle({serial: true, max: 2}), /E_SERIAL_PARALLELISM/);
+  assert.throws(() => new SchedulingOracle({serial: true, max: 1, receives: 2}), /E_SERIAL_PARALLELISM/);
   assert.throws(() => new SchedulingOracle({max: 2, affinity: "pinned"}), /E_AFFINITY_REQUIRES_ONE/);
   assert.throws(() => new SchedulingOracle({max: 0}), /E_ACTOR_PARALLELISM_CAP/);
   assert.throws(() => new SchedulingOracle({max: Number.MAX_SAFE_INTEGER + 1}), /E_ACTOR_PARALLELISM_CAP/);
@@ -212,17 +251,42 @@ test("domain isolation, stale generation and STOP prevent dispatch", () => {
   const o = new SchedulingOracle({workers: 2, domain: "untrusted"});
   const t = o.start();
   assert.ok(t);
+  assert.equal(o.suspend({...t}), false);
+  assert.equal(o.finish({...t}), false);
   o.pool.forEach(w => { w.domain = "shared"; });
   assert.equal(o.cap(), 0);
   assert.equal(o.start(), null);
   o.pool.forEach(w => { w.domain = "untrusted"; });
   o.stop();
+  assert.equal(o.cap(), 0);
   assert.equal(o.start(), null);
   assert.equal(o.resume(t), null);
+  assert.throws(() => o.restart(), /E_PHYSICAL_LEASES_OUTSTANDING/);
+  assert.equal(o.finish(t), true);
   o.restart();
   assert.equal(o.finish(t), false);
   assert.equal(o.start("task", t.generation), null);
   assert.ok(o.start("task"));
+});
+
+test("worker replacement rejects a stale inventory and waits for physical retirement", () => {
+  const o = new SchedulingOracle({workers: 0});
+  o.replaceWorkers([{id: 0, generation: 7}]);
+  const retiring = o.start("method");
+  assert.equal(retiring.workerGeneration, 7);
+  o.replaceWorkers([{id: 0, generation: 8}]);
+  assert.equal(o.start("method"), null);
+  o.replaceWorkers([]);
+  assert.throws(() => o.replaceWorkers([{id: 0, generation: 7}, {id: 1, generation: 10}]),
+    /E_STALE_WORKER_INVENTORY/);
+  assert.equal(o.cap(), 0);
+  assert.equal(o.running.size, 1);
+  o.replaceWorkers([{id: 0, generation: 8}, {id: 1, generation: 9}]);
+  assert.equal(o.cap(), 2);
+  assert.equal(o.finish(retiring), true);
+  const replacement = o.start("method");
+  assert.equal(replacement.worker, 0);
+  assert.equal(replacement.workerGeneration, 8);
 });
 
 test("single-threaded host cap dominates elastic actor without changing declaration", () => {

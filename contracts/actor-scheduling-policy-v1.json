@@ -21,7 +21,6 @@
     "serial_physical_max": 1,
     "serial_suspended_keeps_receive_permit": true,
     "serial_suspension_releases_carrier": true,
-    "ordinary_concurrent_default": true,
     "actor_owned_tasks_share_physical_cap": true,
     "control_capacity_independent": true,
     "affinities": [
@@ -45,7 +44,10 @@
     "shrink": "NO_NEW_ADMISSIONS_ABOVE_REDUCED_CAP_DRAIN_INFLIGHT",
     "stop": "SEAL_NEW_GUEST_ADMISSIONS_PRESERVE_BOUNDED_CLEANUP",
     "security": "AUTHENTICATED_HOST_POOL_ID_NOT_GUEST_MUTABLE",
-    "guest_proof_required": true
+    "guest_proof_required": true,
+    "default_live_receives": 1,
+    "ordinary_receive_interleaving": "EXPLICIT_BOUNDED_CONCURRENCY",
+    "worker_inventory": "MONOTONIC_GENERATION_PER_AUTHORIZED_POOL_SLOT"
   },
   "backends": {
     "java": "not_executed",
@@ -365,6 +367,30 @@
     {
       "id": "fixed-overflow-rejection",
       "kind": "compile_reject",
+      "status": "not_executed",
+      "backend_statuses": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "default-one-live-await",
+      "kind": "runtime",
+      "status": "not_executed",
+      "backend_statuses": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "stale-worker-inventory",
+      "kind": "runtime",
       "status": "not_executed",
       "backend_statuses": {
         "java": "not_executed",
