@@ -1,0 +1,10 @@
+type Window = int where self >= -42 and self <= 42;
+
+fnc read(int input) -> int {
+    return input;
+}
+
+pub fnc main() -> int {
+    val Window value = read(-42) as Window;
+    return 0 - value;
+}

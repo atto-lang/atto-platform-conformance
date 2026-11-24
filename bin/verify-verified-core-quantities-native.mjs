@@ -18,16 +18,18 @@ assert.equal(schemaVersion, 1);
 assert.equal(profile, fixtureProfile);
 const work = mkdtempSync(join(tmpdir(), "atto-quantities-native-"));
 
-const javaArithmeticErrors = {
+const javaRuntimeErrors = {
   divisionByZero: "E_I64_DIV_ZERO",
   integerOverflow: "E_I64_OVERFLOW",
   i32Overflow: "E_I32_OVERFLOW",
+  refinementViolation: "E_REFINEMENT_CHECK_FAILED",
 };
 
-const llvmArithmeticGuards = {
+const llvmFailureGuards = {
   divisionByZero: "quantity.div.zero:",
   integerOverflow: "quantity.div.overflow:",
   i32Overflow: "i32.range.invalid:",
+  refinementViolation: "refinement.bounds.invalid:",
 };
 
 function run(command, args, cwd = work) {
@@ -75,9 +77,9 @@ function checkJava() {
       }
       const guest = run(java, [...launcher, fixture], checkout);
       assert.equal(guest.signal, null, source);
-      if (expected.kind === "arithmeticFailure") {
-        const error = javaArithmeticErrors[expected.category];
-        assert.ok(error, source + " has an unknown arithmetic category");
+      if (expected.kind === "arithmeticFailure" || expected.kind === "refinementFailure") {
+        const error = javaRuntimeErrors[expected.category];
+        assert.ok(error, source + " has an unknown runtime failure category");
         assert.notEqual(guest.status, 0, source);
         assert.ok(guest.stderr.includes(error + ":"), source + ": " + guest.stderr);
       } else {
@@ -113,11 +115,11 @@ function checkLlvm() {
       writeFileSync(ir, result.stdout);
       requireSuccess(run(clang, [ir, "-o", executable]), source + " native link");
       const guest = run(executable, []);
-      if (expected.kind === "arithmeticFailure") {
-        // The native scalar ABI reports arithmetic failures as traps.
-        const guard = llvmArithmeticGuards[expected.category];
-        assert.ok(guard, source + " has an unknown arithmetic category");
-        assert.ok(result.stdout.includes(guard), source + " lacks its checked arithmetic guard");
+      if (expected.kind === "arithmeticFailure" || expected.kind === "refinementFailure") {
+        // The native scalar ABI reports checked value failures as traps.
+        const guard = llvmFailureGuards[expected.category];
+        assert.ok(guard, source + " has an unknown runtime failure category");
+        assert.ok(result.stdout.includes(guard), source + " lacks its runtime guard");
         assert.ok(["SIGILL", "SIGTRAP"].includes(guest.signal), source + ": unexpected guest result " + guest.status);
       } else {
         assert.equal(expected.kind, "value", source);

@@ -1,0 +1,13 @@
+type Window = i32 where self >= 42 and self <= 84;
+
+fnc read(int input) -> int {
+    return input;
+}
+
+fnc consume_value(Window input) -> Window {
+    return input;
+}
+
+pub fnc main() -> int {
+    return consume_value(read(41) + 1 as Window);
+}

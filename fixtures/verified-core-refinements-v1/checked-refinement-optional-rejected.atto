@@ -1,0 +1,5 @@
+type Positive = i32 where self > 0;
+
+pub fnc main() -> int {
+    return 42 as? Positive;
+}

@@ -1,0 +1,9 @@
+define dimension Time;
+define dimension Length;
+define unit Millis: Time;
+define unit Meter: Length;
+type PositiveMillis = i32 where self > 0 and units in Millis;
+
+pub fnc main() -> int {
+    return (42<Meter> as PositiveMillis) / 1<Millis>;
+}

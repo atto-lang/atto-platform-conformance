@@ -1,0 +1,9 @@
+type Positive = i32 where self > 0;
+
+fnc read(int input) -> int {
+    return input;
+}
+
+pub fnc main() -> int {
+    return read(2147483648) as Positive;
+}

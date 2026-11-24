@@ -75,10 +75,11 @@ if (publicEntries != 1 || required.Count != 0)
   assert.equal(result.status, 0, source + ": " + result.stderr);
 }
 
-const arithmeticErrors = {
+const runtimeErrors = {
   divisionByZero: "Oreslang division by zero",
   integerOverflow: "Oreslang arithmetic overflow",
   i32Overflow: "Oreslang arithmetic overflow",
+  refinementViolation: "Oreslang refinement check failed",
 };
 
 try {
@@ -103,9 +104,9 @@ try {
       }
       copyFileSync(assembly, join(host, "OresGenerated.dll"));
       const guest = run([join(host, "oreslang-app.dll")]);
-      if (expected.kind === "arithmeticFailure") {
+      if (expected.kind === "arithmeticFailure" || expected.kind === "refinementFailure") {
         assert.equal(guest.status, 70, source + ": " + guest.stderr);
-        assert.equal(guest.stderr.trim(), arithmeticErrors[expected.category], source);
+        assert.equal(guest.stderr.trim(), runtimeErrors[expected.category], source);
         assert.equal(guest.stdout, "", source);
       } else {
         assert.equal(expected.kind, "value", source);

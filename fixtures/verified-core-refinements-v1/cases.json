@@ -258,6 +258,121 @@
         "kind": "diagnostic",
         "category": "E_REFINEMENT_DUPLICATE"
       }
+    },
+    {
+      "source": "checked-refinement-call.atto",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      },
+      "privateHelpers": [
+        "read",
+        "consume_value"
+      ]
+    },
+    {
+      "source": "checked-refinement-intersection.atto",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      },
+      "privateHelpers": [
+        "intersect"
+      ]
+    },
+    {
+      "source": "checked-refinement-relation.atto",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      },
+      "privateHelpers": [
+        "narrow"
+      ]
+    },
+    {
+      "source": "checked-refinement-quantity.atto",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "source": "checked-refinement-lower-failure.atto",
+      "expected": {
+        "kind": "refinementFailure",
+        "category": "refinementViolation"
+      }
+    },
+    {
+      "source": "checked-refinement-upper-failure.atto",
+      "expected": {
+        "kind": "refinementFailure",
+        "category": "refinementViolation"
+      }
+    },
+    {
+      "source": "checked-refinement-predicate-upper-failure.atto",
+      "expected": {
+        "kind": "refinementFailure",
+        "category": "refinementViolation"
+      }
+    },
+    {
+      "source": "checked-refinement-operand-failure.atto",
+      "expected": {
+        "kind": "arithmeticFailure",
+        "category": "divisionByZero"
+      }
+    },
+    {
+      "source": "checked-refinement-implicit-rejected.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_REFINEMENT_BINDING"
+      }
+    },
+    {
+      "source": "checked-refinement-unproved-precondition.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_REFINEMENT_PRECONDITION"
+      }
+    },
+    {
+      "source": "checked-refinement-unit-dimension.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_UNIT_DIMENSION"
+      }
+    },
+    {
+      "source": "checked-refinement-unit-scale.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_UNIT_SCALE"
+      }
+    },
+    {
+      "source": "checked-refinement-optional-rejected.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_REFINEMENT_CAST"
+      }
+    },
+    {
+      "source": "checked-refinement-signed-boundary.atto",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "source": "checked-refinement-disjoint.atto",
+      "expected": {
+        "kind": "refinementFailure",
+        "category": "refinementViolation"
+      }
     }
   ]
 }

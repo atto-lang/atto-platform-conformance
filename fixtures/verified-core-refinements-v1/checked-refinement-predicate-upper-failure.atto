@@ -1,0 +1,9 @@
+type Window = int where self >= -42 and self <= -1;
+
+fnc read(int input) -> int {
+    return input;
+}
+
+pub fnc main() -> int {
+    return read(0) as Window;
+}
