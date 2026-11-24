@@ -1,0 +1,19 @@
+define protocol Payment as
+    initial Pending;
+    Pending -> Authorized on authorize;
+    Pending -> Rejected on reject;
+    Authorized -> Captured on capture;
+    Authorized -> Cancelled on cancel;
+    terminal Captured;
+    terminal Cancelled;
+    terminal Rejected;
+end
+
+define actor PaymentProcessor implements Payment as
+    authorize() -> void { transition Authorized; }
+    reject() -> void { transition Rejected; }
+    capture() -> void { transition Captured; }
+    cancel() -> void { transition Cancelled; }
+end
+
+pub fnc main() -> int { return 42; }

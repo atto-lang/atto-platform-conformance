@@ -15,6 +15,7 @@ assert.ok([
   "verified-core-quantities-v1",
   "verified-core-refinements-v1",
   "verified-core-protocol-declarations-v1",
+  "verified-core-protocol-handlers-v1",
 ].includes(fixtureProfile));
 const fixtures = fileURLToPath(new URL(`../fixtures/${fixtureProfile}/`, import.meta.url));
 const manifest = JSON.parse(readFileSync(join(fixtures, "cases.json"), "utf8"));

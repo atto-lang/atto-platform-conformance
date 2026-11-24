@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "profile": "verified-core-protocol-handlers-v1",
+  "cases": [
+    {
+      "source": "connection-binding.atto",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "source": "payment-binding.atto",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "source": "bind-unknown-protocol.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_PROTOCOL_ACTOR"
+      }
+    },
+    {
+      "source": "duplicate-actor-binding.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_PROTOCOL_ACTOR"
+      }
+    },
+    {
+      "source": "missing-handler.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_PROTOCOL_HANDLER"
+      }
+    },
+    {
+      "source": "duplicate-handler.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_PROTOCOL_HANDLER"
+      }
+    },
+    {
+      "source": "unrelated-handler.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_PROTOCOL_HANDLER"
+      }
+    },
+    {
+      "source": "different-handler-width.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_PROTOCOL_PAYLOAD"
+      }
+    },
+    {
+      "source": "different-handler-scale.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_PROTOCOL_PAYLOAD"
+      }
+    },
+    {
+      "source": "handler-parameter-missing.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_PROTOCOL_PAYLOAD"
+      }
+    },
+    {
+      "source": "handler-skips-required-state.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_PROTOCOL_TRANSITION"
+      }
+    },
+    {
+      "source": "handler-destination-depends-on-source.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_PROTOCOL_TRANSITION"
+      }
+    },
+    {
+      "source": "missing-transition.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_PROTOCOL_TRANSITION"
+      }
+    },
+    {
+      "source": "multiple-transitions.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_PROTOCOL_TRANSITION"
+      }
+    },
+    {
+      "source": "effect-before-transition.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_PROTOCOL_TRANSITION"
+      }
+    },
+    {
+      "source": "nonvoid-handler.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_PROTOCOL_HANDLER"
+      }
+    },
+    {
+      "source": "handler-is-not-a-free-function.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_REFINEMENT_CALL"
+      }
+    }
+  ]
+}

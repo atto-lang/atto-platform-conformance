@@ -1,0 +1,23 @@
+define dimension Time;
+define unit Second: Time;
+define unit Millis: Time = Second / 1000;
+define unit Tick: Time = Millis;
+type Timeout = i32 where self >= 1 and self <= 60000 and units in Millis;
+type TimeoutAlias = i32 where self > 0 and self < 60001 and units in Tick;
+type Seconds = i32 where self >= 1 and self <= 60000 and units in Second;
+
+define protocol Connection as
+    initial Disconnected;
+    Disconnected -> Connecting on connect(Timeout timeout);
+    Connecting -> Connected on connected;
+    Connecting -> Failed on fail;
+    Connected -> Connecting on connect(Timeout timeout);
+    terminal Failed;
+end
+
+define actor Worker implements Connection as
+    connect(TimeoutAlias admitted) -> void { transition Connecting; }
+    connected() -> void { transition Connected; }
+end
+
+pub fnc main() -> int { return 42; }
