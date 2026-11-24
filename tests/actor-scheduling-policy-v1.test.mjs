@@ -334,3 +334,63 @@ test("target .atto policy fixtures are linked, fail closed and not reported as c
   assert.ok(override);
   assert.match(readFileSync(new URL("../" + override.source, import.meta.url), "utf8"), /spawn Worker\(\) with schedule\(/);
 });
+
+test("suspended receives consume logical capacity independently of carrier availability", () => {
+  const o = new SchedulingOracle({workers: 1, max: 1, receives: 2});
+  const first = o.start();
+  assert.ok(first);
+  assert.equal(o.suspend(first), true);
+  const second = o.start();
+  assert.ok(second);
+  assert.equal(o.suspend(second), true);
+  assert.equal(o.running.size, 0);
+  assert.equal(o.liveReceives, 2);
+  assert.equal(o.start(), null);
+  const unrelated = o.start("method");
+  assert.ok(unrelated);
+  assert.equal(o.finish(unrelated), true);
+  assert.equal(o.finish(first), true);
+  assert.equal(o.finish(first), false);
+  assert.equal(o.resume(first), null);
+  assert.equal(o.liveReceives, 1);
+  const third = o.start();
+  assert.ok(third);
+  assert.equal(o.resume(second), null);
+  assert.equal(o.finish(third), true);
+  assert.equal(o.resume(second), second);
+  assert.equal(o.finish(second), true);
+  assert.equal(o.liveReceives, 0);
+});
+
+test("retiring a suspended sibling does not revoke a running invocation", () => {
+  const o = new SchedulingOracle({workers: 1, max: 1, receives: 2});
+  const suspended = o.start();
+  assert.ok(suspended);
+  assert.equal(o.suspend(suspended), true);
+  const running = o.start();
+  assert.ok(running);
+  assert.equal(o.finish(suspended), true);
+  assert.equal(o.running.get(running.id), running);
+  assert.equal(o.liveReceives, 1);
+  assert.equal(o.resume(suspended), null);
+  assert.equal(o.finish({...running}), false);
+  assert.equal(o.start(), null);
+  assert.equal(o.finish(running), true);
+  assert.equal(o.liveReceives, 0);
+});
+
+test("serial receive cannot admit another DATA receive after a suspend and pool expansion", () => {
+  const o = new SchedulingOracle({serial: true, max: 1, workers: 1});
+  const a = o.start();
+  assert.ok(a);
+  assert.equal(o.suspend(a), true);
+  o.resize(8);
+  assert.equal(o.cap(), 1);
+  assert.equal(o.start(), null);
+  assert.equal(o.resume(a), a);
+  assert.equal(o.finish(a), true);
+  const b = o.start();
+  assert.ok(b);
+  assert.equal(o.finish(a), false);
+  assert.equal(o.finish(b), true);
+});
