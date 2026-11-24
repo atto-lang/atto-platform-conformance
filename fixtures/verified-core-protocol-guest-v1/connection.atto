@@ -1,0 +1,41 @@
+define dimension Time;
+define unit Second: Time;
+define unit Millis: Time = Second / 1000;
+
+type Timeout = i32 where self >= 1 and self <= 60_000 and units in Millis;
+type Elapsed = i32 where self >= 0 and self <= 10 and units in Millis;
+
+define protocol Connection as
+    initial Disconnected;
+    Disconnected -> Connecting on connect(Timeout value);
+    Connecting -> Connected on complete(Timeout value);
+    terminal Connected;
+end
+
+define actor ConnectionActor implements Connection as
+    state { Elapsed elapsed = 2<Millis>; }
+    connect(Timeout timeout) -> void {
+        elapsed = elapsed + timeout;
+        transition Connecting;
+    }
+    complete(Timeout timeout) -> void {
+        elapsed = elapsed + timeout;
+        transition Connected;
+    }
+end
+
+pub fnc main() -> int {
+    val worker = spawn ConnectionActor();
+    worker.send(connect(9<Millis>));
+    val initialRejection = worker.get_receipt();
+    worker.send(connect(7<Millis>));
+    val connecting = worker.get_receipt();
+    worker.send(complete(2<Millis>));
+    val overflowed = worker.get_receipt();
+    worker.send(complete(1<Millis>));
+    val connected = worker.get_receipt();
+    worker.send(complete(1<Millis>));
+    val terminal = worker.get_receipt();
+    worker.stop();
+    return connected;
+}
