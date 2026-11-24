@@ -4,13 +4,15 @@
 
 ```atto
 val result = worker.send(42);
-match result over
+do match result over
     on Ok(ack) -> { /* admitted; not necessarily processed */ }
     on Err(err) -> { /* admission refused; handle err */ }
 end
 ```
 
 Every `match ... over` arm uses the contextual introducer `on`. The same rule applies to `do match`, guarded arms and `on _`. A bare `Ok(...)` or `Err(...)` arm is a syntax error in this profile. `default` is for `switch`; do not silently rewrite `on _` to `default`.
+
+In `return match ... end;`, the selected arm supplies the value of the match and the enclosing `return` exits the function. In `do match`, an arm may fall through or end with an explicit void return. The surrounding function continues after `end`.
 
 ## Fixtures and verification tiers
 

@@ -31,6 +31,14 @@ test('canonical match-on-Result registry pins all six Git input blobs', () => {
       assert.match(src, /on Ok\(ack\) -> \{/);
       assert.match(src, /on (?:Err\(err\)|_)\s*-> \{/);
       assert.doesNotMatch(src, /^\s*(?:Ok\(|Err\(|default\s*->)/m);
+      if (c.id === 'wildcard-on') {
+        assert.match(src, /do match admission\(\) over/);
+        assert.match(src, /on _ -> \{ score = 41; return void; \}/);
+        assert.match(src, /end\s+return score \+ 1;/);
+      } else {
+        assert.match(src, /return match admission\(\) over/);
+        assert.match(src, /end;/);
+      }
     } else {
       assert.equal(c.expect, 'reject');
       assert.equal(c.diagnostic, 'E_SYNTAX');

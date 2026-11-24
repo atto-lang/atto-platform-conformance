@@ -2,8 +2,8 @@
 // match-on-result-v1: positive; native Wasm/LLVM guest NOT_EXECUTED
 fnc admission(): Result<int,string> { return Ok(42); }
 pub fnc main(): int {
-  match admission() over
+  return match admission() over
     on Ok(ack) -> { return ack; }
     on Err(err) -> { return 1; }
-  end
+  end;
 }

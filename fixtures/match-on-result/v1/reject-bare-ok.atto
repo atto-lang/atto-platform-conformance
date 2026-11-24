@@ -2,8 +2,8 @@
 // match-on-result-v1: negative; bare Ok missing contextual on
 fnc admission(): Result<int,string> { return Ok(42); }
 pub fnc main(): int {
-  match admission() over
+  return match admission() over
     Ok(ack) -> { return ack; }
     on Err(err) -> { return 1; }
-  end
+  end;
 }

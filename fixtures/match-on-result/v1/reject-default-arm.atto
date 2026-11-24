@@ -2,8 +2,8 @@
 // match-on-result-v1: negative; default is for switch, not match
 fnc admission(): Result<int,string> { return Ok(42); }
 pub fnc main(): int {
-  match admission() over
+  return match admission() over
     on Ok(ack) -> { return ack; }
     default -> { return 0; }
-  end
+  end;
 }

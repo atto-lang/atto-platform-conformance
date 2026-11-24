@@ -2,7 +2,7 @@
   "schema_version": 1,
   "contract": "atto-match-on-result-arms-v1",
   "normative_spec": "https://github.com/atto-lang/atto-spec/pull/145",
-  "description": "Canonical contextual on introduces every match ... over arm. Ok/Err and wildcard positive cases plus bare and switch-default negatives. Does NOT prove actor send return typing.",
+  "description": "Contextual on introduces every match arm. Value match returns an arm value. Do match arms use void exits and execution continues after the match.",
   "status": "not_executed",
   "backend_evidence": {
     "java": "not_executed",
@@ -18,42 +18,42 @@
     {
       "id": "ok-accepted",
       "path": "fixtures/match-on-result/v1/ok-accepted.atto",
-      "blob_sha": "8b226c8e2be7576b5d066589d20825f3d19820d5",
+      "blob_sha": "284d069d9acec396dbfe6c873c5415de3ff0d881",
       "expect": "accept",
       "exit": 42
     },
     {
       "id": "err-rejected",
       "path": "fixtures/match-on-result/v1/err-rejected.atto",
-      "blob_sha": "94dd5f99014d5ed1854079021927b68b11da1703",
+      "blob_sha": "b2f1d000d380cdb86947db113c578563734f6e54",
       "expect": "accept",
       "exit": 42
     },
     {
       "id": "wildcard-on",
       "path": "fixtures/match-on-result/v1/wildcard-on.atto",
-      "blob_sha": "36209ac27301b67ffdf9d31d9cd91790c888014f",
+      "blob_sha": "d5b93d86729f560d0c1854d942f6447be72cf094",
       "expect": "accept",
       "exit": 42
     },
     {
       "id": "reject-bare-ok",
       "path": "fixtures/match-on-result/v1/reject-bare-ok.atto",
-      "blob_sha": "9faa8f9b163f5e60f09fa371516ae695573b1040",
+      "blob_sha": "66aa40064841f52ac3095901cc5cf8418265e564",
       "expect": "reject",
       "diagnostic": "E_SYNTAX"
     },
     {
       "id": "reject-bare-err",
       "path": "fixtures/match-on-result/v1/reject-bare-err.atto",
-      "blob_sha": "c41882353d510b2dbf1ef965d64b3928f065f04d",
+      "blob_sha": "39b6a3ac36690daa75b85621703660aabb7ae919",
       "expect": "reject",
       "diagnostic": "E_SYNTAX"
     },
     {
       "id": "reject-default-arm",
       "path": "fixtures/match-on-result/v1/reject-default-arm.atto",
-      "blob_sha": "1f67e63506dbbcc9d8faaafb9f763f47db5cc9e6",
+      "blob_sha": "8917c251672fe4da6ec54f3ec6cf48b84942e641",
       "expect": "reject",
       "diagnostic": "E_SYNTAX"
     }
