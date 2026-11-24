@@ -5,13 +5,13 @@ pub fnc main(): int {
   val float rounded = 9007199254740992.0;
   val float nan = 0.0 / 0.0;
   val float negative_zero = -0.0;
-  if exact == rounded || rounded == exact then
+  if exact eq rounded || rounded eq exact then
     return 1;
   fi
-  if nan == nan || negative_zero != 0.0 then
+  if nan eq nan || negative_zero neq 0.0 then
     return 2;
   fi
-  if exact != rounded && nan != nan && negative_zero == 0.0 then
+  if exact neq rounded && nan neq nan && negative_zero eq 0.0 then
     return 42;
   fi
   return 3;

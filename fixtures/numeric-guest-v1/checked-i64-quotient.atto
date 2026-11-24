@@ -4,7 +4,7 @@ pub fnc divide(int lhs, int rhs): int {
   return lhs / rhs;
 }
 pub fnc remainder(int lhs, int rhs): int {
-  return lhs % rhs;
+  return Integer.rem(lhs, rhs);
 }
 pub fnc main(): int {
   val int a = -7;

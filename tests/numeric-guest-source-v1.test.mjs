@@ -49,9 +49,11 @@ test('candidate source is never mistaken for authenticated compiler/AOT evidence
   );
   const accepted = readFileSync(new URL('checked-i64-quotient.atto', root), 'utf8');
   assert.match(accepted, /return\s+lhs\s*\/\s*rhs/);
-  assert.match(accepted, /return\s+lhs\s*%\s*rhs/);
+  assert.match(accepted, /return\s+Integer\.rem\(lhs, rhs\)/);
   const zeroDivisor = readFileSync(new URL('reject-i64-zero-divisor.atto', root), 'utf8');
   assert.match(zeroDivisor, /7\s*\/\s*divisor/);
+  const zeroRemainder = readFileSync(new URL('reject-i64-zero-remainder.atto', root), 'utf8');
+  assert.match(zeroRemainder, /Integer\.rem\(7, divisor\)/);
   const overflow = readFileSync(new URL('reject-i64-min-overflow.atto', root), 'utf8');
   assert.match(overflow, /-9223372036854775808/);
   for (const id of ['trap-division-by-zero', 'trap-integer-overflow', 'trap-result-no-doublewrap']) {
@@ -68,9 +70,9 @@ test('candidate source is never mistaken for authenticated compiler/AOT evidence
   assert.match(zero, /-0\.0/);
   assert.match(zero, /minus_zero\s*>=\s*0\.0/);
   const equality = readFileSync(new URL('equality-numeric-exact.atto', root), 'utf8');
-  assert.match(equality, /exact\s*==\s*rounded/);
-  assert.match(equality, /nan\s*!=\s*nan/);
-  assert.match(equality, /negative_zero\s*==\s*0\.0/);
+  assert.match(equality, /exact\s+eq\s+rounded/);
+  assert.match(equality, /nan\s+neq\s+nan/);
+  assert.match(equality, /negative_zero\s+eq\s+0\.0/);
   const precision = readFileSync(new URL('ordered-int-float-precision.atto', root), 'utf8');
   assert.match(precision, /9007199254740993/);
   assert.match(precision, /exact\s*>\s*rounded/);

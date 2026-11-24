@@ -17,7 +17,7 @@
     {
       "id": "checked-i64-quotient",
       "path": "checked-i64-quotient.atto",
-      "blob": "ea26899f975a87567438c9947831719bcd93f009",
+      "blob": "d7b61afd0fe074395b092aa4abaa08de4961602e",
       "expected": {
         "kind": "value",
         "value": "42"
@@ -47,7 +47,7 @@
     {
       "id": "reject-i64-zero-remainder",
       "path": "reject-i64-zero-remainder.atto",
-      "blob": "b68f51b929324d69650e967e4698b37bd221c77d",
+      "blob": "a0325c64972b42825f6a82f5c2c941c67dcec7d1",
       "expected": {
         "kind": "error",
         "code": "division_by_zero"
@@ -117,7 +117,7 @@
     {
       "id": "equality-numeric-exact",
       "path": "equality-numeric-exact.atto",
-      "blob": "e82e1260b0f2645c2b49f56b552c12dba48da93f",
+      "blob": "b09deb61e5ead17261174200cb409ed46566f053",
       "expected": {
         "kind": "value",
         "value": "42"
