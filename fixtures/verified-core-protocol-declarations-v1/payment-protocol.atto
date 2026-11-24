@@ -1,0 +1,12 @@
+define protocol Payment as
+    initial Pending;
+    Pending -> Authorized on authorize;
+    Pending -> Rejected on reject();
+    Authorized -> Captured on capture;
+    Authorized -> Cancelled on cancel;
+    terminal Captured;
+    terminal Cancelled;
+    terminal Rejected;
+end
+
+pub fnc main() -> int { return 42; }

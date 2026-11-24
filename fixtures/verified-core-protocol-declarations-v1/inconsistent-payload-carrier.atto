@@ -1,0 +1,10 @@
+type Value = int where self eq 42;
+type Sized = i32 where self eq 42;
+
+define protocol Connection as
+    initial Waiting;
+    Waiting -> Ready on connect(Value value);
+    Ready -> Waiting on connect(Sized value);
+end
+
+pub fnc main() -> int { return 42; }

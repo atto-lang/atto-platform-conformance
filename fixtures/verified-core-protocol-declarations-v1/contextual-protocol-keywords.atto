@@ -1,0 +1,10 @@
+define protocol Cycle as
+    initial initial;
+    initial -> terminal on on;
+    terminal -> initial on protocol;
+end
+
+pub fnc main() -> int {
+    val int protocol = 42;
+    return protocol;
+}

@@ -1,0 +1,10 @@
+type Value = i32 where self >= 1;
+type Bounded = i32 where self >= 1 and self <= 100;
+
+define protocol Connection as
+    initial Waiting;
+    Waiting -> Ready on connect(Value value);
+    Ready -> Waiting on connect(Bounded value);
+end
+
+pub fnc main() -> int { return 42; }

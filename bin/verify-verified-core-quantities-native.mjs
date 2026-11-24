@@ -11,7 +11,11 @@ if (!location || !["java", "llvm"].includes(backend)) {
 }
 
 const fixtureProfile = process.env.ATTO_VERIFIED_CORE_PROFILE ?? "verified-core-quantities-v1";
-assert.ok(["verified-core-quantities-v1", "verified-core-refinements-v1"].includes(fixtureProfile));
+assert.ok([
+  "verified-core-quantities-v1",
+  "verified-core-refinements-v1",
+  "verified-core-protocol-declarations-v1",
+].includes(fixtureProfile));
 const fixtures = fileURLToPath(new URL(`../fixtures/${fixtureProfile}/`, import.meta.url));
 const { schemaVersion, profile, cases } = JSON.parse(readFileSync(join(fixtures, "cases.json"), "utf8"));
 assert.equal(schemaVersion, 1);

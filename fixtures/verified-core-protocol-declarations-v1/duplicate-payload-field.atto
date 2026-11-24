@@ -1,0 +1,6 @@
+define protocol Connection as
+    initial Waiting;
+    Waiting -> Ready on connect(int duration, i32 duration);
+end
+
+pub fnc main() -> int { return 42; }

@@ -1,0 +1,6 @@
+define protocol Connection as
+    initial Waiting;
+    Waiting -> Ready on connect(Missing duration);
+end
+
+pub fnc main() -> int { return 42; }

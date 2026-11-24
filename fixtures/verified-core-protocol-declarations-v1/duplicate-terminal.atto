@@ -1,0 +1,7 @@
+define protocol Connection as
+    initial Idle;
+    terminal Idle;
+    terminal Idle;
+end
+
+pub fnc main() -> int { return 42; }
