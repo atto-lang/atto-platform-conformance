@@ -78,6 +78,7 @@ if (publicEntries != 1 || required.Count != 0)
 const arithmeticErrors = {
   divisionByZero: "Oreslang division by zero",
   integerOverflow: "Oreslang arithmetic overflow",
+  i32Overflow: "Oreslang arithmetic overflow",
 };
 
 try {

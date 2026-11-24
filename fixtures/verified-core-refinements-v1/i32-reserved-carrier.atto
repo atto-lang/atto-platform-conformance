@@ -1,0 +1,5 @@
+type i32 = int where self > 0;
+
+pub fnc main() -> int {
+    return 42;
+}

@@ -18,6 +18,18 @@ assert.equal(schemaVersion, 1);
 assert.equal(profile, fixtureProfile);
 const work = mkdtempSync(join(tmpdir(), "atto-quantities-native-"));
 
+const javaArithmeticErrors = {
+  divisionByZero: "E_I64_DIV_ZERO",
+  integerOverflow: "E_I64_OVERFLOW",
+  i32Overflow: "E_I32_OVERFLOW",
+};
+
+const llvmArithmeticGuards = {
+  divisionByZero: "quantity.div.zero:",
+  integerOverflow: "quantity.div.overflow:",
+  i32Overflow: "i32.range.invalid:",
+};
+
 function run(command, args, cwd = work) {
   const result = spawnSync(command, args, { cwd, encoding: "utf8", timeout: 180_000, maxBuffer: 8 * 1024 * 1024 });
   if (result.error) throw result.error;
@@ -64,7 +76,8 @@ function checkJava() {
       const guest = run(java, [...launcher, fixture], checkout);
       assert.equal(guest.signal, null, source);
       if (expected.kind === "arithmeticFailure") {
-        const error = expected.category === "divisionByZero" ? "E_I64_DIV_ZERO" : "E_I64_OVERFLOW";
+        const error = javaArithmeticErrors[expected.category];
+        assert.ok(error, source + " has an unknown arithmetic category");
         assert.notEqual(guest.status, 0, source);
         assert.ok(guest.stderr.includes(error + ":"), source + ": " + guest.stderr);
       } else {
@@ -101,10 +114,10 @@ function checkLlvm() {
       requireSuccess(run(clang, [ir, "-o", executable]), source + " native link");
       const guest = run(executable, []);
       if (expected.kind === "arithmeticFailure") {
-        // The native scalar ABI reports both arithmetic failures as a trap.
-        // Distinguish the division guards and check real trap execution.
-        const guard = expected.category === "divisionByZero" ? "quantity.div.zero:" : "quantity.div.overflow:";
-        assert.ok(result.stdout.includes(guard), source + " lacks its signed division guard");
+        // The native scalar ABI reports arithmetic failures as traps.
+        const guard = llvmArithmeticGuards[expected.category];
+        assert.ok(guard, source + " has an unknown arithmetic category");
+        assert.ok(result.stdout.includes(guard), source + " lacks its checked arithmetic guard");
         assert.ok(["SIGILL", "SIGTRAP"].includes(guest.signal), source + ": unexpected guest result " + guest.status);
       } else {
         assert.equal(expected.kind, "value", source);

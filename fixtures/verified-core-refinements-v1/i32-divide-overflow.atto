@@ -1,0 +1,6 @@
+type Smallest = i32 where self eq -2147483648;
+
+pub fnc main() -> int {
+    val Smallest min = -2147483648;
+    return min / -1;
+}

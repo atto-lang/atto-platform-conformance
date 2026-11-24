@@ -1,0 +1,6 @@
+type Largest = i32 where self eq 2147483647;
+
+pub fnc main() -> int {
+    val Largest max = 2147483647;
+    return max * max;
+}

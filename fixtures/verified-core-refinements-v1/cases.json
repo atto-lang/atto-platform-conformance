@@ -168,6 +168,96 @@
         "kind": "diagnostic",
         "category": "E_REFINEMENT_CALL"
       }
+    },
+    {
+      "source": "halve-i32.atto",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      },
+      "privateHelpers": [
+        "halve"
+      ]
+    },
+    {
+      "source": "i32-normal-result-range.atto",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      },
+      "privateHelpers": [
+        "increment"
+      ]
+    },
+    {
+      "source": "i32-widen-before-arithmetic.atto",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "source": "i32-add-before-cancellation.atto",
+      "expected": {
+        "kind": "arithmeticFailure",
+        "category": "i32Overflow"
+      }
+    },
+    {
+      "source": "i32-multiply-overflow.atto",
+      "expected": {
+        "kind": "arithmeticFailure",
+        "category": "i32Overflow"
+      }
+    },
+    {
+      "source": "i32-negate-overflow.atto",
+      "expected": {
+        "kind": "arithmeticFailure",
+        "category": "i32Overflow"
+      }
+    },
+    {
+      "source": "i32-divide-overflow.atto",
+      "expected": {
+        "kind": "arithmeticFailure",
+        "category": "i32Overflow"
+      }
+    },
+    {
+      "source": "i32-divide-zero.atto",
+      "expected": {
+        "kind": "arithmeticFailure",
+        "category": "divisionByZero"
+      }
+    },
+    {
+      "source": "i32-binding-out-of-range.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_REFINEMENT_BINDING"
+      }
+    },
+    {
+      "source": "i32-operand-out-of-range.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_I32_RANGE"
+      }
+    },
+    {
+      "source": "i32-empty-alias.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_REFINEMENT_EMPTY"
+      }
+    },
+    {
+      "source": "i32-reserved-carrier.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_REFINEMENT_DUPLICATE"
+      }
     }
   ]
 }

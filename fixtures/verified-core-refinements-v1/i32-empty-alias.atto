@@ -1,0 +1,5 @@
+type TooLarge = i32 where self >= 2147483648;
+
+pub fnc main() -> int {
+    return 42;
+}

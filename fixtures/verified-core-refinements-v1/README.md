@@ -1,6 +1,6 @@
 # Verified Core scalar refinement and contract cases
 
-The shared fixtures exercise interval and relational checks at immutable bindings, private calls, and returns. They also check diagnostic classes for unavailable proofs, mismatched units, contradictory assumptions and attempts to export a verified helper.
+The shared fixtures exercise interval and relational checks at immutable bindings, private calls, and returns. They cover signed `int` and `i32` carriers, including bounds on normal results, explicit widening through a typed binding, and overflow before a later operation could cancel it. They check diagnostic classes for unavailable proofs, mismatched units, contradictory assumptions, and attempts to export a verified helper.
 
 From an `atto-platform-conformance` checkout use the existing source-to-guest runners with the refinement profile selected:
 
