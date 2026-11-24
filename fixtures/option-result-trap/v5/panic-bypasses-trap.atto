@@ -1,0 +1,8 @@
+fnc fail(): int {
+  panic! new Error("invariant");
+}
+
+pub fnc main(): int {
+  val Result<int, Error> result = trap! fail();
+  return 101;
+}

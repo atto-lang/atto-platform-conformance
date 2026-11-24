@@ -1,6 +1,6 @@
 # Caller-side trap, Option and Result — three-backend acceptance v4
 
-**Status: target contract; not three-backend parity evidence.**
+**Historical Option-valued proposal. Use the current [Result trap fixtures](../v5/README.md).**
 
 Run the exact same `three-backend-boundary.atto` source (Git blob
 `51b9c735af6b841921469698dd0da7aff37d2b79`) through the Java/Graal,
