@@ -1,0 +1,15 @@
+define dimension Time;
+define dimension Length;
+define unit Second: Time;
+define unit Millis: Time = Second / 1000;
+define unit Tick: Time = Millis;
+define unit Meter: Length;
+
+define unit Scale1: Time = Second * 9223372036854775807;
+define unit Scale2: Time = Scale1 * 9223372036854775807;
+define unit Scale3: Time = Scale2 * 9223372036854775807;
+define unit Scale4: Time = Scale3 * 9223372036854775807;
+define unit Scale5: Time = Scale4 * 9223372036854775807;
+pub fnc main() -> int {
+    return 42;
+}

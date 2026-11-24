@@ -1,0 +1,13 @@
+define dimension Time;
+define dimension Length;
+define unit Second: Time;
+define unit Millis: Time = Second / 1000;
+define unit Tick: Time = Millis;
+define unit Meter: Length;
+
+define unit Large: Time = Second * 9223372036854775807;
+define unit Huge: Time = Large * 9223372036854775807;
+define unit HugeAlias: Time = Huge;
+pub fnc main() -> int {
+    return 42<Huge>.to_unit<HugeAlias>() / 1<Huge>;
+}

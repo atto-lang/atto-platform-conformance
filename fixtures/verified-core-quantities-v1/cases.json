@@ -1,0 +1,167 @@
+{
+  "schemaVersion": 1,
+  "profile": "verified-core-quantities-v1",
+  "cases": [
+    {
+      "source": "same-unit-ratio.atto",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "source": "negative-ratio.atto",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "source": "equal-scale-alias.atto",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "source": "composed-units.atto",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "source": "exact-conversion.atto",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "source": "mixed-dimension.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_UNIT_DIMENSION"
+      }
+    },
+    {
+      "source": "mixed-scale.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_UNIT_SCALE"
+      }
+    },
+    {
+      "source": "remaining-scale.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_UNIT_ERASURE"
+      }
+    },
+    {
+      "source": "inverse-time.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_UNIT_ERASURE"
+      }
+    },
+    {
+      "source": "inexact-conversion.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_UNIT_INEXACT"
+      }
+    },
+    {
+      "source": "out-of-range-conversion.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_UNIT_RANGE"
+      }
+    },
+    {
+      "source": "unknown-unit.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_UNIT_NAME"
+      }
+    },
+    {
+      "source": "zero-divisor.atto",
+      "expected": {
+        "kind": "arithmeticFailure",
+        "category": "divisionByZero"
+      }
+    },
+    {
+      "source": "signed-divide-overflow.atto",
+      "expected": {
+        "kind": "arithmeticFailure",
+        "category": "integerOverflow"
+      }
+    },
+    {
+      "source": "wide-reduced-scale.atto",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "source": "zero-scale.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_UNIT_SCALE"
+      }
+    },
+    {
+      "source": "duplicate-canonical-unit.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_UNIT_DUPLICATE"
+      }
+    },
+    {
+      "source": "scale-limit.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_UNIT_LIMIT"
+      }
+    },
+    {
+      "source": "checked-intermediate-add.atto",
+      "expected": {
+        "kind": "arithmeticFailure",
+        "category": "integerOverflow"
+      }
+    },
+    {
+      "source": "negative-scale.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_UNIT_SCALE"
+      }
+    },
+    {
+      "source": "incompatible-declaration.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_UNIT_DIMENSION"
+      }
+    },
+    {
+      "source": "incompatible-conversion.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_UNIT_DIMENSION"
+      }
+    },
+    {
+      "source": "legacy-scalar-arithmetic.atto",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    }
+  ]
+}
