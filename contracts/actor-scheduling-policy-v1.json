@@ -45,9 +45,9 @@
     "stop": "SEAL_NEW_GUEST_ADMISSIONS_PRESERVE_BOUNDED_CLEANUP",
     "security": "AUTHENTICATED_HOST_POOL_ID_NOT_GUEST_MUTABLE",
     "guest_proof_required": true,
-    "default_live_receives": 1,
-    "ordinary_receive_interleaving": "EXPLICIT_BOUNDED_CONCURRENCY",
-    "worker_inventory": "MONOTONIC_GENERATION_PER_AUTHORIZED_POOL_SLOT"
+    "ordinary_receive_interleaving": "REENTRANT_WITH_BOUNDED_LIVE_LIMIT",
+    "worker_inventory": "MONOTONIC_GENERATION_PER_AUTHORIZED_POOL_SLOT",
+    "ordinary_concurrent_default": true
   },
   "backends": {
     "java": "not_executed",
@@ -377,7 +377,7 @@
       }
     },
     {
-      "id": "default-one-live-await",
+      "id": "default-overlapping-receives",
       "kind": "runtime",
       "status": "not_executed",
       "backend_statuses": {

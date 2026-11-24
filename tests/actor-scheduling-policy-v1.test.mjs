@@ -7,7 +7,7 @@ const registry = JSON.parse(readFileSync(new URL("../contracts/actor-scheduling-
 const backends = ["java", "llvm", "wasm", "forge", "net"];
 
 class SchedulingOracle {
-  constructor({serial = false, max = "pool_size", receives = 1, affinity = "sticky", workers = 2,
+  constructor({serial = false, max = "pool_size", receives = serial ? 1 : 64, affinity = "sticky", workers = 2,
     actorCap = 64, tenantCap = 64, globalCap = 64, domain = "shared", reserved = false} = {}) {
     if (!(max === "pool_size" || Number.isSafeInteger(max) && max >= 1))
       throw Error("E_ACTOR_PARALLELISM_CAP");
@@ -137,8 +137,8 @@ test("registry is explicit TARGET and every backend remains NOT EXECUTED", () =>
   }
   assert.equal(registry.rules.fixed_cap_min, 1);
   assert.equal(registry.rules.serial_live_receives, 1);
-  assert.equal(registry.rules.default_live_receives, 1);
-  assert.equal(registry.rules.ordinary_receive_interleaving, "EXPLICIT_BOUNDED_CONCURRENCY");
+  assert.equal(registry.rules.ordinary_concurrent_default, true);
+  assert.equal(registry.rules.ordinary_receive_interleaving, "REENTRANT_WITH_BOUNDED_LIVE_LIMIT");
   assert.equal(registry.rules.worker_inventory, "MONOTONIC_GENERATION_PER_AUTHORIZED_POOL_SLOT");
   assert.equal(registry.rules.serial_physical_max, 1);
   assert.equal(registry.rules.actor_owned_tasks_share_physical_cap, true);
@@ -193,17 +193,20 @@ test("serial receive retains logical permit over await; method can interleave, n
   assert.ok(o.start("receive"));
 });
 
-test("ordinary actor keeps a suspended receive logically live by default", () => {
-  const o = new SchedulingOracle({workers: 3});
-  const receive = o.start();
-  assert.ok(receive);
-  assert.equal(o.suspend(receive), true);
+test("ordinary actor may admit a second receive while the first is suspended by default", () => {
+  const o = new SchedulingOracle({workers: 1});
+  const first = o.start();
+  assert.ok(first);
+  assert.equal(o.suspend(first), true);
   assert.equal(o.running.size, 0);
-  assert.equal(o.start(), null);
-  assert.ok(o.start("method"));
-  assert.ok(o.resume(receive));
-  assert.equal(o.finish(receive), true);
-  assert.ok(o.start());
+  const second = o.start();
+  assert.ok(second);
+  assert.notEqual(first.id, second.id);
+  assert.equal(o.liveReceives, 2);
+  assert.equal(o.resume(first), null);
+  assert.equal(o.finish(second), true);
+  assert.equal(o.resume(first), first);
+  assert.equal(o.finish(first), true);
 });
 
 test("ordinary actor with explicit receive concurrency runs different stacks within the physical cap", () => {

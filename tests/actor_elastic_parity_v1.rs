@@ -86,7 +86,7 @@ fn thirty_case_oracles_are_unique_and_target_only() {
     assert!(categories.contains("TARGET_REJECT_OR_PROFILE"));
     assert!(ids.contains("pool-grow-two-to-eight"));
     assert!(ids.contains("serial-method-during-await"));
-    assert!(ids.contains("default-one-live-await"));
+    assert!(ids.contains("default-overlapping-receives"));
     assert!(ids.contains("stale-worker-inventory"));
     assert!(ids.contains("actor-task-shared-cap"));
     assert!(ids.contains("tenant-domain-confinement"));

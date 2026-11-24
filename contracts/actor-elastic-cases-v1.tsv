@@ -10,8 +10,8 @@ policy-reject-dedicated-two	COMPILE_NEGATIVE	E_AFFINITY_REQUIRES_ONE_no_artifact
 policy-reject-unknown-affinity	COMPILE_NEGATIVE	unknown_affinity_no_artifact	-	NOT_EXECUTED
 policy-reject-domain-escalation	SECURITY	guest_must_not_elevate_pool_authority	-	NOT_EXECUTED
 policy-reject-overflow	COMPILE_NEGATIVE	integer_overflow_no_artifact	-	NOT_EXECUTED
-ordinary-two-receives	GUEST_RUNTIME	explicit_logical_concurrency_allows_two_separate_stacks	-	NOT_EXECUTED
-default-one-live-await	GUEST_RUNTIME	default_logical_receive_permit_retained_across_await	-	NOT_EXECUTED
+ordinary-two-receives	GUEST_RUNTIME	bounded_logical_concurrency_allows_two_separate_stacks	-	NOT_EXECUTED
+default-overlapping-receives	GUEST_RUNTIME	second_receive_enters_while_first_suspend_retains_its_invocation	-	NOT_EXECUTED
 serial-one-live-await	GUEST_RUNTIME	one_live_receive_while_suspended	fixtures/actor-scheduling-policy-v1/serial_sticky.atto	NOT_EXECUTED
 serial-method-during-await	GUEST_RUNTIME	independent_method_runs_without_simultaneous_carriers	-	NOT_EXECUTED
 actor-task-shared-cap	GUEST_RUNTIME	receives_methods_tasks_continuations_share_cap	-	NOT_EXECUTED
