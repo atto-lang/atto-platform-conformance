@@ -5,7 +5,7 @@
   "canonicalExtension": ".atto",
   "scope": "actor call-depth, guest frame budgeting, carrier survival and supervisor recovery",
   "javaReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2505",
-  "note": "All five backend execution states are NOT_EXECUTED. The Java PR is an early defensive guard and does not establish native process fault isolation.",
+  "note": "All five backend guest evidence lanes remain NOT_EXECUTED. Java #2505 guards carrier recursion; #2624 owns logical budget; #2627 reserves 32-byte managed guard frames; #2628 authors 16-byte evaluator call descriptors within the existing frame. No duplicate charge or compiler-local/return-PC lowering is proven; full stack isolation and native process fault containment remain unimplemented. None proves compiler-lowered actor stacks, source-task continuation ownership, or native process-fault isolation.",
   "requirements": {
     "separateHeapsAreNotStacks": true,
     "guestBudgetBeforeNativeOverflow": true,
@@ -15,7 +15,16 @@
     "sourceAndInteropPathsCovered": true,
     "untrustedJitPermitted": true,
     "untrustedArbitraryNativeCodeRequiresKillableWorker": true,
-    "nativeStackOverflowRecoverableOnSharedCarrier": false
+    "nativeStackOverflowRecoverableOnSharedCarrier": false,
+    "perActorFrameAndByteQuotas": true,
+    "actorFrameStorageIndependentOfCarrier": true,
+    "suspendedContinuationFramesChargedToActor": true,
+    "actorStackGenerationFenced": true,
+    "actorStackPoisonCannotBeGuestCaught": true,
+    "carrierMigrationDoesNotMoveStackOwnership": true,
+    "stackFailureBeforeNativeGuardPage": true,
+    "noNativeSignalOrStackOverflowRecovery": true,
+    "guardedSynchronousInvocationChargedToActorFrameArena": true
   },
   "backends": [
     {
@@ -25,7 +34,10 @@
       "actorSurvival": "NOT_EXECUTED",
       "nativeLowStack": "NOT_EXECUTED",
       "supervisorRecovery": "NOT_EXECUTED",
-      "exactHeadReceipt": null
+      "exactHeadReceipt": null,
+      "actorStackStorage": "NOT_EXECUTED",
+      "suspendedFrameOwnership": "NOT_EXECUTED",
+      "actorStackGeneration": "NOT_EXECUTED"
     },
     {
       "id": "llvm",
@@ -34,7 +46,10 @@
       "actorSurvival": "NOT_EXECUTED",
       "nativeLowStack": "NOT_EXECUTED",
       "supervisorRecovery": "NOT_EXECUTED",
-      "exactHeadReceipt": null
+      "exactHeadReceipt": null,
+      "actorStackStorage": "NOT_EXECUTED",
+      "suspendedFrameOwnership": "NOT_EXECUTED",
+      "actorStackGeneration": "NOT_EXECUTED"
     },
     {
       "id": "net",
@@ -43,7 +58,10 @@
       "actorSurvival": "NOT_EXECUTED",
       "nativeLowStack": "NOT_EXECUTED",
       "supervisorRecovery": "NOT_EXECUTED",
-      "exactHeadReceipt": null
+      "exactHeadReceipt": null,
+      "actorStackStorage": "NOT_EXECUTED",
+      "suspendedFrameOwnership": "NOT_EXECUTED",
+      "actorStackGeneration": "NOT_EXECUTED"
     },
     {
       "id": "wasm",
@@ -52,7 +70,10 @@
       "actorSurvival": "NOT_EXECUTED",
       "nativeLowStack": "NOT_EXECUTED",
       "supervisorRecovery": "NOT_EXECUTED",
-      "exactHeadReceipt": null
+      "exactHeadReceipt": null,
+      "actorStackStorage": "NOT_EXECUTED",
+      "suspendedFrameOwnership": "NOT_EXECUTED",
+      "actorStackGeneration": "NOT_EXECUTED"
     },
     {
       "id": "forge",
@@ -61,7 +82,10 @@
       "actorSurvival": "NOT_EXECUTED",
       "nativeLowStack": "NOT_EXECUTED",
       "supervisorRecovery": "NOT_EXECUTED",
-      "exactHeadReceipt": null
+      "exactHeadReceipt": null,
+      "actorStackStorage": "NOT_EXECUTED",
+      "suspendedFrameOwnership": "NOT_EXECUTED",
+      "actorStackGeneration": "NOT_EXECUTED"
     }
   ],
   "scenarios": [
@@ -137,6 +161,308 @@
         "nativeLowStack",
         "actorSurvival"
       ]
+    },
+    {
+      "id": "independent-actor-stack-quotas",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "guest-stack-budget-exhausted",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorSurvival",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "suspend-resume-carrier-migration",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "stale-actor-incarnation-stack-fence",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "stale-actor-generation",
+      "requiredEvidence": [
+        "compilerGuest",
+        "supervisorRecovery",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "host-swallowed-budget-exhaustion",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "guest-stack-budget-exhausted",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorSurvival",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "native-low-stack-interoperability",
+      "source": null,
+      "kind": "pending-isolation",
+      "expectedFailureClass": "killable-worker-required",
+      "requiredEvidence": [
+        "nativeLowStack",
+        "actorSurvival",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "bounded-actor-frame-bytes",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "guest-stack-budget-exhausted",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "foreign-frame-handle-rejected",
+      "source": null,
+      "kind": "pending-isolation",
+      "expectedFailureClass": "foreign-actor-frame",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "suspended-frame-byte-quotas-retained",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "cancelled-frame-zeroize-and-no-double-free",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "supervisorRecovery"
+      ]
+    },
+    {
+      "id": "stale-post-retirement-resume-reject",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "stale-actor-generation",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "supervisorRecovery"
+      ]
+    },
+    {
+      "id": "synchronous-guest-guard-byte-reservations",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "evaluator-descriptor-non-tail-and-tail",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-source-await-retains-charged-frame",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "actor-source-cooperate-preserves-frame-across-dispatch",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "actor-source-two-suspended-tasks-independent",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "actor-source-cancel-physical-quiescence-zeroizes",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-source-wrong-carrier-and-generation-rejected",
+      "kind": "pending-isolation",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "source-actor-non-tail-frames",
+      "kind": "positive",
+      "source": "fixtures/actor-stack-containment-v1/non-tail-actor-frame.atto",
+      "expectedStdout": "8",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "source-actor-tail-frames",
+      "kind": "positive",
+      "source": "fixtures/actor-stack-containment-v1/proper-tail-actor-frame.atto",
+      "expectedStdout": "100000",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "nativeLowStack"
+      ]
+    },
+    {
+      "id": "source-actor-sibling-after-budget",
+      "kind": "positive",
+      "source": "fixtures/actor-stack-containment-v1/sibling-after-budget-failure.atto",
+      "expectedStdout": "starting|alive",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "source-task-invocation-same-execution-id",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "source-task-quiescence-callback-retains-frames",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "source-task-invocation-overflow-sibling-survival",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorSurvival",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "typed-scalar-nontail-1024",
+      "kind": "positive",
+      "source": "fixtures/actor-stack-containment-v1/deep-non-tail-scalar-frame.atto",
+      "expectedStdout": "1024",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "nativeLowStack"
+      ]
+    },
+    {
+      "id": "typed-scalar-mutual-tail-100000",
+      "kind": "positive",
+      "source": "fixtures/actor-stack-containment-v1/mutual-tail-scalar-frame.atto",
+      "expectedStdout": "0",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "nativeLowStack"
+      ]
+    },
+    {
+      "id": "typed-scalar-immutable-locals",
+      "kind": "positive",
+      "source": "fixtures/actor-stack-containment-v1/immutable-local-scalar-frame.atto",
+      "expectedStdout": "9",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "typed-scalar-actor-quota-failure-sibling-survives",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "expectedFailureClass": "guest-stack-budget-exhausted",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorSurvival",
+        "supervisorRecovery",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "typed-scalar-unsupported-fallback-and-negative-mutation",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "typed-scalar-execution-context-generation-negative",
+      "kind": "pending-isolation",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "suspendedFrameOwnership"
+      ]
     }
   ],
   "promotion": {
@@ -150,5 +476,60 @@
     "requiresSupervisorGenerationEvidence": true,
     "zeroStepCountsAsExecuted": false,
     "sourceFreeCanaryCountsAsGuest": false
+  },
+  "javaLogicalStackReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2624",
+  "javaFrameArenaReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2627",
+  "frameStorageBootstrap": {
+    "javaHostPrimitive": "MANAGED_BYTES_ONLY",
+    "javaAuthoredHostTests": 20,
+    "javaLocalIsolatedSmokeAssertions": 19,
+    "compilerLoweredGuestFrames": "NOT_EXECUTED",
+    "suspendedSourceTaskFrames": "NOT_EXECUTED",
+    "realNativeStackIsolation": "NOT_EXECUTED",
+    "nativeAotExecution": "NOT_EXECUTED",
+    "promotionFromHostOnlyAllowed": false,
+    "note": "Java M1.6 guarded non-tail interpreter invocations reserve actor-owned managed byte frames and unwind LIFO; JVM guest locals and return continuations remain on carrier stack. SourceTask continuation and native process-stack containment are NOT_EXECUTED. Java #2631 explicitly binds an actor source scheduler to per-task bootstrap frame leases and reserves bytes across await/cooperate; SourceTask locals and return continuations are not lowered into them. Java integration #2637 joins nested invocation descriptor frames to the active SourceTask ExecutionContext and defers byte-frame reclamation until successful physical quiescence callbacks; guest locals/return continuations still run on JVM stacks. Java M3 #2640 authors a fully preadmitted pure synchronous int-fnc compiler subset using an iterative typed frame VM with PC/operand height and primitive local/operand bytes in the actor-owned arena. No hosted compilation or guest execution receipt; async/method/closure/FFI/native stack parity remain unproven.",
+    "javaGuardedInvocationByteFrames": "GUARD_WIRED_MANAGED_BYTES_NOT_GUEST_LOCALS",
+    "javaSynchronousGuardByteCharge": 32,
+    "javaGuestCallGuardNativeStackStillUsed": true,
+    "javaAuthoredLegacyCompilerGuestTests": 1,
+    "javaLegacyCompilerGuestTestExecuted": "NOT_EXECUTED",
+    "javaInvocationDescriptorReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2628",
+    "javaInvocationDescriptorStatus": "AUTHORED_NOT_EXECUTED",
+    "javaInvocationDescriptorBytes": 16,
+    "javaGuardFrameNotDuplicated": true,
+    "javaNewHostInvocationTestsAuthored": 5,
+    "javaNewAttoActorFixturesAuthored": 3,
+    "javaNewAttoActorExecution": "NOT_EXECUTED",
+    "javaActorSourceTaskReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2631",
+    "javaActorSourceTaskFrameBytes": 64,
+    "javaActorSourceTaskHostTestsAuthored": 8,
+    "javaActorSourceTaskLease": "HOST_SCHEDULER_AWAIT_LEASE_AUTHORED_NOT_EXECUTED",
+    "javaActorSourceTaskCompilerFrames": "NOT_EXECUTED",
+    "javaActorSourceTaskNativeStackIsolation": "NOT_EXECUTED",
+    "javaActorSourceTaskPhysicalRetirement": "HOST_RUNTIME_AUTHORED_NOT_EXECUTED",
+    "javaIntegratedInvocationSourceTaskReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2637",
+    "javaIntegratedSourceTaskInvocationStatus": "AUTHORED_NOT_EXECUTED",
+    "javaIntegratedSourceTaskHostTestsAuthored": 3,
+    "javaIntegratedActorAttoFixturesCopied": 3,
+    "javaIntegratedActorAttoCompilerReceipts": "NOT_EXECUTED",
+    "javaIntegratedActorNativeStackIsolation": "NOT_EXECUTED",
+    "javaQuiescenceCallbackBeforeFrameRetirement": true,
+    "javaInvocationReusesSourceTaskExecutionId": true,
+    "javaScalarTypedFrameReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2640",
+    "javaScalarTypedFrameStatus": "AUTHORED_NOT_EXECUTED",
+    "javaScalarTypedFrameScope": "PURE_SYNC_INTEGER_FNC_GRAPH_ONLY",
+    "javaScalarTypedFramePcAndStackHeaderBytes": 16,
+    "javaScalarTypedFrameTaggedSlotBytes": 16,
+    "javaScalarTypedFrameHostCompilerTestsAuthored": 7,
+    "javaScalarTypedFrameHostRuntimeTestsAuthored": 5,
+    "javaScalarTypedFrameAttoSourceFixturesAuthored": 3,
+    "javaScalarTypedFrameGuestCompilerReceipts": "NOT_EXECUTED",
+    "javaScalarTypedFrameNativeLowStackReceipts": "NOT_EXECUTED",
+    "javaScalarTypedFrameActorSupervisorRestartReceipts": "NOT_EXECUTED",
+    "javaScalarTypedFrameOtherBackends": "NOT_EXECUTED",
+    "javaScalarTypedFrameActualPrimitiveStorage": "IMPLEMENTED_UNVERIFIED",
+    "javaScalarTypedFrameSourceTaskLexicalContinuations": "NOT_IMPLEMENTED",
+    "javaScalarTypedFrameStaleLeasePoisonStatus": "AUTHORED_NOT_EXECUTED"
   }
 }
