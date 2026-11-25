@@ -26,11 +26,14 @@ test('malformed source places fail closed',()=>{
     p('alpha',...Array.from({length:9},()=>f('x')))])
     assert.throws(()=>normalizePlace(malformed));
 });
-test('root, equal path and ancestor overlap; distinct canonical owners do not',()=>{
+test('root and ancestry overlap; distinct root labels need provenance',()=>{
   assert.equal(placesOverlap(p('alpha'),p('alpha',f('left'))),true);
   assert.equal(placesOverlap(p('alpha',f('left')),p('alpha',f('left'))),true);
   assert.equal(placesOverlap(p('alpha',f('left')),p('alpha',f('right'))),true);
-  assert.equal(placesOverlap(p('alpha'),p('beta')),false);
+  assert.equal(placesOverlap(p('alpha'),p('beta')),true);
+  assert.equal(placesOverlap(p('alpha'),p('beta'),{
+    independentOwnerPairs:[{kind:'independent-roots',owners:['alpha','beta']}]
+  }),false);
 });
 test('sibling fields require exact canonical layout claims',()=>{
   const a=p('alpha',f('left')),b=p('alpha',f('right'));
