@@ -1,0 +1,47 @@
+{
+  "contract": "ipc-host-receiver-authority-v1",
+  "status": "BASELINE_HOST_EXECUTED_NEW_STACK_PENDING",
+  "baseline": {
+    "pr": "https://github.com/atto-lang/atto-source.java/pull/1818",
+    "head": "469bcc5c0a738a35eb917ea623ada8385c1ebc70",
+    "tree": "9458894e7819020ff3ca2c2125ea8bdc14b4d0b1",
+    "run": 45536760943,
+    "tests": 45,
+    "failures": 0
+  },
+  "candidate": "https://github.com/atto-lang/atto-source.java/pull/1819",
+  "cases": [
+    {
+      "id": "group_first",
+      "expect": "existing managed group worker rejected at host receiver registration"
+    },
+    {
+      "id": "receiver_first",
+      "expect": "structured group adoption rejected after host receiver binding"
+    },
+    {
+      "id": "retired_route",
+      "expect": "physical actor lifetime claim still excludes group adoption"
+    },
+    {
+      "id": "concurrent_claim",
+      "expect": "first group ownership and host receiver registration linearize on same monitor; race stress required before production qualification"
+    }
+  ],
+  "supervised_gate": {
+    "status": "BLOCKED_SEPARATE_RUNTIME_STACKS",
+    "dependencies": [
+      "https://github.com/atto-lang/atto-source.java/pull/1531",
+      "https://github.com/atto-lang/atto-source.java/pull/1575",
+      "https://github.com/atto-lang/atto-source.java/pull/1804"
+    ],
+    "requirements": [
+      "reconcile both ActorRuntime implementations without dropping lifecycle fences",
+      "issue exact-generation escrow DATA permit under the existing failure ledger, immediately before mailbox publication",
+      "settle permit on every success or failure; release retained decoded credits only after receiver ownership transfer",
+      "test fence-before-admission, admission-before-fence, rollback and stale generation with actual supervised receiver",
+      "compiler-produced guest fixture required"
+    ]
+  },
+  "guest_status": "NOT_EXECUTED"
+}
