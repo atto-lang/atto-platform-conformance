@@ -1,0 +1,9 @@
+pub gpu fnc two(GpuWriteBuffer<f32> a, GpuWriteBuffer<f32> b, int n): void {
+    return;
+}
+pub fnc submit(GpuWriteBuffer<f32> out, int n): void {
+    val pending = launch two(out, out, n) on gpu(device) {
+        over: [n], group: [64], queue: queue
+    };
+    return;
+}
