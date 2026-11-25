@@ -3,7 +3,7 @@
   "contract": "namespace-actor-receiver-v1",
   "status": "candidate-unattested",
   "sourceStatus": "illustrative-source-not-compiler-verified",
-  "trackedJavaDraft": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2887",
+  "trackedJavaDraft": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2892",
   "backendTargets": [
     "java",
     "llvm",
@@ -27,7 +27,7 @@
       "stage": "parser",
       "expect": "accept_ast_only",
       "sourceUnits": {
-        "src/foo.atto": "namespace foo;\ndefine actor Foo implements ActorXYZ;\npub mtd (Foo f) init(): f { return f; }\npub mtd (Foo f) bar(): void { return; }\n"
+        "src/foo.atto": "namespace foo;\ndeclare actor Foo implements ActorXYZ;\npub mtd (Foo f) init(): f { return f; }\npub mtd (Foo f) bar(): void { return; }\n"
       },
       "requires": [
         "preserve-actor-contract-references",
@@ -52,7 +52,7 @@
       "expect": "reject",
       "diagnosticClass": "ACTOR_CONTRACT_WITNESS_UNSUPPORTED",
       "sourceUnits": {
-        "src/foo.atto": "namespace foo;\npub define actor Foo implements ActorXYZ;\npub mtd (Foo f) bar(): void { return; }\n"
+        "src/foo.atto": "namespace foo;\ndeclare pub actor Foo implements ActorXYZ;\npub mtd (Foo f) bar(): void { return; }\n"
       },
       "requires": [
         "no-ambient-contract-name-fallback",
@@ -75,7 +75,7 @@
       "stage": "static_binding",
       "expect": "accept_metadata_only",
       "sourceUnits": {
-        "src/foo.atto": "namespace foo;\npub define actor Foo;\npub define actor Bar;\npub mtd (Foo f) x(): void { return; }\npub mtd (Bar b) y(): void { return; }\n"
+        "src/foo.atto": "namespace foo;\ndeclare pub actor Foo;\ndeclare pub actor Bar;\npub mtd (Foo f) x(): void { return; }\npub mtd (Bar b) y(): void { return; }\n"
       },
       "requires": [
         "no-synthetic-shared-receiver-alias",
@@ -99,7 +99,7 @@
       "expect": "reject",
       "diagnosticClass": "PRIVATE_ACTOR_PUBLIC_METHOD",
       "sourceUnits": {
-        "src/foo.atto": "namespace foo;\ndefine actor Foo;\npub mtd (Foo f) bar(): void { return; }\n"
+        "src/foo.atto": "namespace foo;\ndeclare actor Foo;\npub mtd (Foo f) bar(): void { return; }\n"
       },
       "requires": [
         "visibility-coherence"
@@ -120,7 +120,7 @@
       "stage": "static_binding",
       "expect": "accept_metadata_only",
       "sourceUnits": {
-        "src/actor.atto": "namespace foo;\npub define actor Foo;\n",
+        "src/actor.atto": "namespace foo;\ndeclare pub actor Foo;\n",
         "src/impl.atto": "namespace foo;\npub mtd (Foo f) bar(): void { return; }\n"
       },
       "requires": [
@@ -145,7 +145,7 @@
       "expect": "reject",
       "diagnosticClass": "MISSING_NOMINAL_ACTOR",
       "sourceUnits": {
-        "src/actor.atto": "namespace foo;\npub define actor Foo;\n",
+        "src/actor.atto": "namespace foo;\ndeclare pub actor Foo;\n",
         "src/impl.atto": "namespace other;\npub mtd (Foo f) bar(): void { return; }\n"
       },
       "requires": [
@@ -168,7 +168,7 @@
       "expect": "reject",
       "diagnosticClass": "DUPLICATE_ACTOR_METHOD",
       "sourceUnits": {
-        "src/actor.atto": "namespace foo;\npub define actor Foo;\n",
+        "src/actor.atto": "namespace foo;\ndeclare pub actor Foo;\n",
         "src/one.atto": "namespace foo;\npub mtd (Foo f) bar(): void { return; }\n",
         "src/two.atto": "namespace foo;\npub mtd (Foo f) bar(): int { return 1; }\n"
       },
@@ -215,7 +215,7 @@
       "expect": "reject",
       "diagnosticClass": "NON_SENDABLE_ACTOR_MAIL",
       "sourceUnits": {
-        "src/foo.atto": "namespace foo;\npub define actor Foo;\ndefine mtd (Foo f) receive(ActorMail<borrow int> m): void { return; }\n"
+        "src/foo.atto": "namespace foo;\ndeclare pub actor Foo;\nexternal mtd (Foo f) receive(ActorMail<borrow int> m): void { return; }\n"
       },
       "requires": [
         "no-cross-actor-borrow-escape"
@@ -237,7 +237,7 @@
       "expect": "accept_after_real_witness",
       "sourceUnits": {
         "src/contract.atto": "namespace foo;\ndefine contract ActorXYZ for actor as\n  pub mtd bar(): void;\nend\n",
-        "src/actor.atto": "namespace foo;\npub define actor Foo implements ActorXYZ;\n",
+        "src/actor.atto": "namespace foo;\ndeclare pub actor Foo implements ActorXYZ;\n",
         "src/impl.atto": "namespace foo;\npub mtd (Foo f) bar(): void { return; }\n"
       },
       "requires": [
@@ -264,7 +264,7 @@
       "diagnosticClass": "ACTOR_CONTRACT_RETURN_MISMATCH",
       "sourceUnits": {
         "src/contract.atto": "namespace foo;\ndefine contract ActorXYZ for actor as\n  pub mtd bar(): int;\nend\n",
-        "src/actor.atto": "namespace foo;\npub define actor Foo implements ActorXYZ;\n",
+        "src/actor.atto": "namespace foo;\ndeclare pub actor Foo implements ActorXYZ;\n",
         "src/impl.atto": "namespace foo;\npub mtd (Foo f) bar(): void { return; }\n"
       },
       "requires": [
@@ -284,11 +284,11 @@
     },
     {
       "id": "receiver_return.raw_actor_escape",
-      "stage": "future_typecheck",
-      "expect": "reject_until_sealed_handle_rule",
-      "diagnosticClass": "ACTOR_RECEIVER_ESCAPE_UNTYPED",
+      "stage": "static_binding",
+      "expect": "reject",
+      "diagnosticClass": "DECLARED_ACTOR_RUNTIME_INGRESS_REQUIRED",
       "sourceUnits": {
-        "src/foo.atto": "namespace foo;\npub define actor Foo;\npub mtd (Foo f) init(): f { return f; }\n"
+        "src/foo.atto": "namespace foo;\ndeclare pub actor Foo;\npub mtd (Foo f) init(): f { return f; }\n"
       },
       "requires": [
         "no-raw-actor-value-return",
@@ -367,6 +367,291 @@
       ],
       "confirmedBackends": [],
       "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "declare.reject_semicolon_define",
+      "stage": "parser",
+      "expect": "reject",
+      "diagnosticClass": "ACTOR_BODY_FREE_USE_DECLARE",
+      "sourceUnits": {
+        "src/foo.atto": "namespace foo;\ndefine actor Foo;\n"
+      },
+      "requires": [
+        "no-empty-actor-implicit-lowering",
+        "require-contextual-declare"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "declare.inline_definition_retained",
+      "stage": "parser",
+      "expect": "accept_ast_only",
+      "sourceUnits": {
+        "src/foo.atto": "namespace foo;\ndefine actor Foo as end\n"
+      },
+      "requires": [
+        "distinct-inline-ClassDecl",
+        "no-header-only-alias"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "declare.reject_visibility_before_declare",
+      "stage": "parser",
+      "expect": "reject",
+      "diagnosticClass": "ACTOR_VISIBILITY_MUST_FOLLOW_DECLARE",
+      "sourceUnits": {
+        "src/foo.atto": "namespace foo;\npub declare actor Foo;\n"
+      },
+      "requires": [
+        "reject-noncanonical-declaration-modifier-order"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "ingress.init.private_void",
+      "stage": "static_binding",
+      "expect": "accept_metadata_only",
+      "sourceUnits": {
+        "src/foo.atto": "namespace foo;\ndeclare pub actor Foo;\nexternal mtd (Foo f) init(): void { return; }\n"
+      },
+      "requires": [
+        "private-runtime-only",
+        "zero-args",
+        "void-return"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "ingress.receive.mail",
+      "stage": "static_binding",
+      "expect": "accept_metadata_only",
+      "sourceUnits": {
+        "src/foo.atto": "namespace foo;\ndeclare pub actor Foo;\nexternal mtd (Foo f) receive(ActorMail<int> mail): void { return; }\n"
+      },
+      "requires": [
+        "private-mailbox-only",
+        "ActorMail<T>-owned"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "ingress.init.public_method_spoof",
+      "stage": "static_binding",
+      "expect": "reject",
+      "sourceUnits": {
+        "src/foo.atto": "namespace foo;\ndeclare pub actor Foo;\npub mtd (Foo f) init(): void { return; }\n"
+      },
+      "requires": [
+        "require-external-mtd-marker"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "ingress.receive.public_method_spoof",
+      "stage": "static_binding",
+      "expect": "reject",
+      "sourceUnits": {
+        "src/foo.atto": "namespace foo;\ndeclare pub actor Foo;\npub mtd (Foo f) receive(ActorMail<int> mail): void { return; }\n"
+      },
+      "requires": [
+        "require-external-mtd-marker"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "ingress.init.return_actor_escape",
+      "stage": "static_binding",
+      "expect": "reject",
+      "sourceUnits": {
+        "src/foo.atto": "namespace foo;\ndeclare pub actor Foo;\nexternal mtd (Foo f) init(): Foo { return f; }\n"
+      },
+      "requires": [
+        "init-returns-void",
+        "no-raw-actor-escape"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "ingress.init.parameters",
+      "stage": "static_binding",
+      "expect": "reject",
+      "sourceUnits": {
+        "src/foo.atto": "namespace foo;\ndeclare pub actor Foo;\nexternal mtd (Foo f) init(int x): void { return; }\n"
+      },
+      "requires": [
+        "init-zero-arg"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "ingress.receive.raw_arg",
+      "stage": "static_binding",
+      "expect": "reject",
+      "sourceUnits": {
+        "src/foo.atto": "namespace foo;\ndeclare pub actor Foo;\nexternal mtd (Foo f) receive(int v): void { return; }\n"
+      },
+      "requires": [
+        "mailbox-only-ingress"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "ingress.unrelated_hook",
+      "stage": "static_binding",
+      "expect": "reject",
+      "sourceUnits": {
+        "src/foo.atto": "namespace foo;\ndeclare pub actor Foo;\nexternal mtd (Foo f) bar(): void { return; }\n"
+      },
+      "requires": [
+        "no-fake-runtime-authority"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "ingress.public_marker",
+      "stage": "parser",
+      "expect": "reject",
+      "sourceUnits": {
+        "src/foo.atto": "namespace foo;\ndeclare pub actor Foo;\npub external mtd (Foo f) init(): void { return; }\n"
+      },
+      "requires": [
+        "external-not-pub"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "ingress.inline_actor_different_layout",
+      "stage": "static_binding",
+      "expect": "reject",
+      "sourceUnits": {
+        "src/foo.atto": "namespace foo;\npub define actor Foo as end\nexternal mtd (Foo f) init(): void { return; }\n"
+      },
+      "requires": [
+        "declared-actor-only"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
     }
-  ]
+  ],
+  "canonicalOutOfLineHeader": "declare [pub | private] actor Foo [implements ActorContract];",
+  "legacySemicolonDefinePolicy": "reject; use declare actor; retain define actor Foo as ... end for inline implementations",
+  "visibilityOrdering": "declare pub actor is canonical; pub declare actor is rejected",
+  "ingressControlRule": "explicit private external mtd init(): void is activation-only; external mtd receive(ActorMail<T>): void is mailbox-only; no ordinary calls"
 }
