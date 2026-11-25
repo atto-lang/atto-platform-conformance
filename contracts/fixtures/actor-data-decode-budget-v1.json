@@ -1,0 +1,386 @@
+{
+  "contract": "actor-data-decode-budget-v1",
+  "status": "HOST_REFERENCE_VECTORS_NOT_EXECUTED",
+  "reference": "https://github.com/atto-lang/atto-serialization-and-validation/pull/35",
+  "spec": "https://github.com/atto-lang/atto-spec/pull/229",
+  "notes": [
+    "Each sequence starts a new trusted meter. All charges must precede work or allocation.",
+    "Rejected charges poison the meter without changing usage; no refund. Separate tenant and mailbox credit accounting is required.",
+    "Unsigned u64 operands exceeding JSON safe integers are decimal strings."
+  ],
+  "limits": {
+    "wire": 16,
+    "expanded": 32,
+    "nodes": 8,
+    "elements": 8,
+    "work": 20,
+    "depth": 3
+  },
+  "cases": [
+    {
+      "id": "exact_caps",
+      "steps": [
+        {
+          "op": "charge",
+          "charge": {
+            "wire": 16,
+            "expanded": 32,
+            "nodes": 8,
+            "elements": 8,
+            "work": 20
+          },
+          "depth": 3,
+          "expected": "OK"
+        },
+        {
+          "op": "charge",
+          "charge": {
+            "wire": 0,
+            "expanded": 0,
+            "nodes": 0,
+            "elements": 0,
+            "work": 1
+          },
+          "depth": 0,
+          "expected": "OverflowOrLimit"
+        },
+        {
+          "op": "charge",
+          "charge": {
+            "wire": 0,
+            "expanded": 0,
+            "nodes": 0,
+            "elements": 0,
+            "work": 0
+          },
+          "depth": 0,
+          "expected": "Poisoned"
+        }
+      ],
+      "final_used": {
+        "wire": 16,
+        "expanded": 32,
+        "nodes": 8,
+        "elements": 8,
+        "work": 20
+      }
+    },
+    {
+      "id": "atomic_reject",
+      "steps": [
+        {
+          "op": "array",
+          "count": "2",
+          "element_bytes": "4",
+          "depth": 1,
+          "expected": "OK"
+        },
+        {
+          "op": "charge",
+          "charge": {
+            "wire": 2,
+            "expanded": 100,
+            "nodes": 0,
+            "elements": 0,
+            "work": 0
+          },
+          "depth": 1,
+          "expected": "OverflowOrLimit"
+        }
+      ],
+      "final_used": {
+        "wire": 0,
+        "expanded": 8,
+        "nodes": 2,
+        "elements": 2,
+        "work": 2
+      }
+    },
+    {
+      "id": "multiplication_overflow",
+      "steps": [
+        {
+          "op": "array",
+          "count": "18446744073709551615",
+          "element_bytes": "2",
+          "depth": 1,
+          "expected": "OverflowOrLimit"
+        }
+      ],
+      "final_used": {
+        "wire": 0,
+        "expanded": 0,
+        "nodes": 0,
+        "elements": 0,
+        "work": 0
+      }
+    },
+    {
+      "id": "depth",
+      "steps": [
+        {
+          "op": "charge",
+          "charge": {
+            "wire": 0,
+            "expanded": 0,
+            "nodes": 0,
+            "elements": 0,
+            "work": 0
+          },
+          "depth": 4,
+          "expected": "Depth"
+        },
+        {
+          "op": "array",
+          "count": "1",
+          "element_bytes": "1",
+          "depth": 1,
+          "expected": "Poisoned"
+        }
+      ],
+      "final_used": {
+        "wire": 0,
+        "expanded": 0,
+        "nodes": 0,
+        "elements": 0,
+        "work": 0
+      }
+    },
+    {
+      "id": "cumulative_elements",
+      "steps": [
+        {
+          "op": "array",
+          "count": "4",
+          "element_bytes": "1",
+          "depth": 1,
+          "expected": "OK"
+        },
+        {
+          "op": "array",
+          "count": "4",
+          "element_bytes": "1",
+          "depth": 1,
+          "expected": "OK"
+        },
+        {
+          "op": "array",
+          "count": "1",
+          "element_bytes": "1",
+          "depth": 1,
+          "expected": "OverflowOrLimit"
+        }
+      ],
+      "final_used": {
+        "wire": 0,
+        "expanded": 8,
+        "nodes": 8,
+        "elements": 8,
+        "work": 8
+      }
+    },
+    {
+      "id": "empty_array_work",
+      "steps": [
+        {
+          "op": "array",
+          "count": "0",
+          "element_bytes": "0",
+          "depth": 1,
+          "expected": "OK"
+        },
+        {
+          "op": "array",
+          "count": "0",
+          "element_bytes": "0",
+          "depth": 1,
+          "expected": "OK"
+        },
+        {
+          "op": "array",
+          "count": "0",
+          "element_bytes": "0",
+          "depth": 1,
+          "expected": "OK"
+        },
+        {
+          "op": "array",
+          "count": "0",
+          "element_bytes": "0",
+          "depth": 1,
+          "expected": "OK"
+        },
+        {
+          "op": "array",
+          "count": "0",
+          "element_bytes": "0",
+          "depth": 1,
+          "expected": "OK"
+        },
+        {
+          "op": "array",
+          "count": "0",
+          "element_bytes": "0",
+          "depth": 1,
+          "expected": "OK"
+        },
+        {
+          "op": "array",
+          "count": "0",
+          "element_bytes": "0",
+          "depth": 1,
+          "expected": "OK"
+        },
+        {
+          "op": "array",
+          "count": "0",
+          "element_bytes": "0",
+          "depth": 1,
+          "expected": "OK"
+        },
+        {
+          "op": "array",
+          "count": "0",
+          "element_bytes": "0",
+          "depth": 1,
+          "expected": "OK"
+        },
+        {
+          "op": "array",
+          "count": "0",
+          "element_bytes": "0",
+          "depth": 1,
+          "expected": "OK"
+        },
+        {
+          "op": "array",
+          "count": "0",
+          "element_bytes": "0",
+          "depth": 1,
+          "expected": "OK"
+        },
+        {
+          "op": "array",
+          "count": "0",
+          "element_bytes": "0",
+          "depth": 1,
+          "expected": "OK"
+        },
+        {
+          "op": "array",
+          "count": "0",
+          "element_bytes": "0",
+          "depth": 1,
+          "expected": "OK"
+        },
+        {
+          "op": "array",
+          "count": "0",
+          "element_bytes": "0",
+          "depth": 1,
+          "expected": "OK"
+        },
+        {
+          "op": "array",
+          "count": "0",
+          "element_bytes": "0",
+          "depth": 1,
+          "expected": "OK"
+        },
+        {
+          "op": "array",
+          "count": "0",
+          "element_bytes": "0",
+          "depth": 1,
+          "expected": "OK"
+        },
+        {
+          "op": "array",
+          "count": "0",
+          "element_bytes": "0",
+          "depth": 1,
+          "expected": "OK"
+        },
+        {
+          "op": "array",
+          "count": "0",
+          "element_bytes": "0",
+          "depth": 1,
+          "expected": "OK"
+        },
+        {
+          "op": "array",
+          "count": "0",
+          "element_bytes": "0",
+          "depth": 1,
+          "expected": "OK"
+        },
+        {
+          "op": "array",
+          "count": "0",
+          "element_bytes": "0",
+          "depth": 1,
+          "expected": "OK"
+        },
+        {
+          "op": "array",
+          "count": "0",
+          "element_bytes": "0",
+          "depth": 1,
+          "expected": "OverflowOrLimit"
+        }
+      ],
+      "final_used": {
+        "wire": 0,
+        "expanded": 0,
+        "nodes": 0,
+        "elements": 0,
+        "work": 20
+      }
+    },
+    {
+      "id": "addition_overflow",
+      "limits": {
+        "wire": 16,
+        "expanded": 32,
+        "nodes": 8,
+        "elements": 8,
+        "work": "18446744073709551615",
+        "depth": 3
+      },
+      "steps": [
+        {
+          "op": "charge",
+          "charge": {
+            "wire": 0,
+            "expanded": 0,
+            "nodes": 0,
+            "elements": 0,
+            "work": "18446744073709551615"
+          },
+          "depth": 0,
+          "expected": "OK"
+        },
+        {
+          "op": "charge",
+          "charge": {
+            "wire": 0,
+            "expanded": 0,
+            "nodes": 0,
+            "elements": 0,
+            "work": 1
+          },
+          "depth": 0,
+          "expected": "OverflowOrLimit"
+        }
+      ],
+      "final_used": {
+        "wire": 0,
+        "expanded": 0,
+        "nodes": 0,
+        "elements": 0,
+        "work": "18446744073709551615"
+      }
+    }
+  ]
+}
