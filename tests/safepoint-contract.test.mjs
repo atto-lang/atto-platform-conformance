@@ -18,7 +18,12 @@ test('time OR reductions trigger only at a proven poll with runnable peer',()=>{
  assert.equal(budgetDecision({...s,reductions:511,elapsedNs:1_999_999}).decision,'CONTINUE');
  assert.equal(budgetDecision({...s,reductions:512,elapsedNs:1}).decision,'HANDOFF');
  assert.equal(budgetDecision({...s,reductions:1,elapsedNs:2_000_000}).decision,'HANDOFF');
+ // A missed scheduled 128-backedge probe is forced at 512, but
+ // unscheduled overdue iterations still defer expensive fairness work.
+ assert.equal(budgetDecision({...s,reductions:511,elapsedNs:9_000_000,probeDue:false}).decision,'CONTINUE');
+ assert.equal(budgetDecision({...s,reductions:512,elapsedNs:1,probeDue:false}).decision,'HANDOFF');
  assert.equal(budgetDecision({...s,reductions:999,elapsedNs:9_000_000,probeDue:false}).decision,'CONTINUE');
+ assert.equal(budgetDecision({...s,reductions:1024,elapsedNs:9_000_000,probeDue:false}).decision,'HANDOFF');
  assert.equal(budgetDecision({...s,reductions:999,elapsedNs:9_000_000,peerRunnable:false}).decision,'CONTINUE');
  assert.equal(budgetDecision({...s,reductions:999,elapsedNs:9_000_000,liveBorrow:true}).decision,'DEFER');
 });
