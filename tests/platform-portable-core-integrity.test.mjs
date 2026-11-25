@@ -43,6 +43,14 @@ function validateMember(bytes, expectedRepo) {
   }, 'mismatched identity/upstreams or unauthorized promotion');
   return value;
 }
+// The migration preserved the legacy integration manifest and dependency identities.
+// Admit only the explicit successor repository, never an arbitrary matching suffix.
+function validateCheckoutIdentity(manifestRepo, checkoutRepo) {
+  const expectedManifest = checkoutRepo === 'atto-lang/atto-platform-conformance'
+    ? 'ores-truffle-oreslang/oreslang-platform-conformance' : checkoutRepo;
+  assert.equal(manifestRepo, expectedManifest, 'checkout repository identity mismatch');
+}
+
 function validateFixture(bytes) {
   assert.ok(Buffer.isBuffer(bytes) && bytes.length > 0 && bytes.length <= 65536, 'bounded fixture bytes');
   assert.equal(createHash('sha256').update(bytes).digest('hex'), expectedDigest, 'portable fixture drift');
@@ -56,7 +64,7 @@ test('platform integration manifest remains unpromoted and matches canonical dep
   const bytes = readRegular(member,65536);
   const value = JSON.parse(bytes.toString('utf8'));
   validateMember(bytes,value.repository);
-  if (process.env.GITHUB_REPOSITORY) assert.equal(value.repository,process.env.GITHUB_REPOSITORY);
+  if (process.env.GITHUB_REPOSITORY) validateCheckoutIdentity(value.repository, process.env.GITHUB_REPOSITORY);
   assert.ok(root.href.startsWith('file:'), 'local files only');
 });
 
@@ -79,4 +87,12 @@ test('mutation controls deny altered source, missing platforms, wrong edges and 
   assert.throws(() => validateMember(Buffer.from('{"schemaVersion":1,"schemaVersion":2}\n'),repo));
   assert.throws(() => validateMember(Buffer.concat([Buffer.from([0xef,0xbb,0xbf]),encoded(expected)]),repo));
   assert.throws(() => validateMember(Buffer.from([0xc3,0x28]),repo));
+});
+
+test('migration permits only the explicit conformance successor identity', () => {
+  const legacy = 'ores-truffle-oreslang/oreslang-platform-conformance';
+  validateCheckoutIdentity(legacy, legacy);
+  validateCheckoutIdentity(legacy, 'atto-lang/atto-platform-conformance');
+  assert.throws(() => validateCheckoutIdentity(legacy, 'other/atto-platform-conformance'), /identity mismatch/);
+  assert.throws(() => validateCheckoutIdentity('ores-truffle-oreslang/oreslang-platform.mobile', 'atto-lang/atto-platform-conformance'), /identity mismatch/);
 });
