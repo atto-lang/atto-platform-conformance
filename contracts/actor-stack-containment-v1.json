@@ -5,7 +5,7 @@
   "canonicalExtension": ".atto",
   "scope": "actor call-depth, guest frame budgeting, carrier survival and supervisor recovery",
   "javaReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2505",
-  "note": "All five backend guest evidence lanes remain NOT_EXECUTED. Java #2505 guards carrier recursion; #2624 owns logical budget; #2627 reserves 32-byte managed guard frames; #2628 authors 16-byte evaluator call descriptors within the existing frame. No duplicate charge or compiler-local/return-PC lowering is proven; full stack isolation and native process fault containment remain unimplemented. None proves compiler-lowered actor stacks, source-task continuation ownership, or native process-fault isolation.",
+  "note": "All five backend guest evidence lanes remain NOT_EXECUTED. Java #2505 guards carrier recursion; #2624 owns logical budget; #2627 reserves 32-byte managed guard frames; #2628 authors 16-byte evaluator call descriptors within the existing frame. No duplicate charge or compiler-local/return-PC lowering is proven; full stack isolation and native process fault containment remain unimplemented. None proves compiler-lowered actor stacks, source-task continuation ownership, or native process-fault isolation. Java #2626 adds bounded logical Task roots bound to the authenticated ExecutionContext; physical lexical frame storage and nested suspended call frames remain NOT_EXECUTED.",
   "requirements": {
     "separateHeapsAreNotStacks": true,
     "guestBudgetBeforeNativeOverflow": true,
@@ -24,7 +24,13 @@
     "carrierMigrationDoesNotMoveStackOwnership": true,
     "stackFailureBeforeNativeGuardPage": true,
     "noNativeSignalOrStackOverflowRecovery": true,
-    "guardedSynchronousInvocationChargedToActorFrameArena": true
+    "guardedSynchronousInvocationChargedToActorFrameArena": true,
+    "executionContextStableAcrossAwait": true,
+    "actorTaskRootGenerationAuthenticated": true,
+    "callbacksCannotExecuteGuestOnProducerThread": true,
+    "sourceTaskRootsRetiredOnlyAfterPhysicalQuiescence": true,
+    "outstandingTaskRootsPreventActorHeapRetirement": true,
+    "suspendedCallFramesPreservePcOperandsAndLocals": true
   },
   "backends": [
     {
@@ -37,7 +43,11 @@
       "exactHeadReceipt": null,
       "actorStackStorage": "NOT_EXECUTED",
       "suspendedFrameOwnership": "NOT_EXECUTED",
-      "actorStackGeneration": "NOT_EXECUTED"
+      "actorStackGeneration": "NOT_EXECUTED",
+      "executionContextBinding": "NOT_EXECUTED",
+      "callbackResumptionSafety": "NOT_EXECUTED",
+      "taskRootRetirement": "NOT_EXECUTED",
+      "suspendedCallFrameState": "NOT_EXECUTED"
     },
     {
       "id": "llvm",
@@ -49,7 +59,11 @@
       "exactHeadReceipt": null,
       "actorStackStorage": "NOT_EXECUTED",
       "suspendedFrameOwnership": "NOT_EXECUTED",
-      "actorStackGeneration": "NOT_EXECUTED"
+      "actorStackGeneration": "NOT_EXECUTED",
+      "executionContextBinding": "NOT_EXECUTED",
+      "callbackResumptionSafety": "NOT_EXECUTED",
+      "taskRootRetirement": "NOT_EXECUTED",
+      "suspendedCallFrameState": "NOT_EXECUTED"
     },
     {
       "id": "net",
@@ -61,7 +75,11 @@
       "exactHeadReceipt": null,
       "actorStackStorage": "NOT_EXECUTED",
       "suspendedFrameOwnership": "NOT_EXECUTED",
-      "actorStackGeneration": "NOT_EXECUTED"
+      "actorStackGeneration": "NOT_EXECUTED",
+      "executionContextBinding": "NOT_EXECUTED",
+      "callbackResumptionSafety": "NOT_EXECUTED",
+      "taskRootRetirement": "NOT_EXECUTED",
+      "suspendedCallFrameState": "NOT_EXECUTED"
     },
     {
       "id": "wasm",
@@ -73,7 +91,11 @@
       "exactHeadReceipt": null,
       "actorStackStorage": "NOT_EXECUTED",
       "suspendedFrameOwnership": "NOT_EXECUTED",
-      "actorStackGeneration": "NOT_EXECUTED"
+      "actorStackGeneration": "NOT_EXECUTED",
+      "executionContextBinding": "NOT_EXECUTED",
+      "callbackResumptionSafety": "NOT_EXECUTED",
+      "taskRootRetirement": "NOT_EXECUTED",
+      "suspendedCallFrameState": "NOT_EXECUTED"
     },
     {
       "id": "forge",
@@ -85,7 +107,11 @@
       "exactHeadReceipt": null,
       "actorStackStorage": "NOT_EXECUTED",
       "suspendedFrameOwnership": "NOT_EXECUTED",
-      "actorStackGeneration": "NOT_EXECUTED"
+      "actorStackGeneration": "NOT_EXECUTED",
+      "executionContextBinding": "NOT_EXECUTED",
+      "callbackResumptionSafety": "NOT_EXECUTED",
+      "taskRootRetirement": "NOT_EXECUTED",
+      "suspendedCallFrameState": "NOT_EXECUTED"
     }
   ],
   "scenarios": [
@@ -463,6 +489,108 @@
         "actorStackGeneration",
         "suspendedFrameOwnership"
       ]
+    },
+    {
+      "id": "actor-await-sibling-then-resume",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorSurvival",
+        "executionContextBinding",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "producer-callback-cannot-run-guest",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "wrong-execution-context",
+      "requiredEvidence": [
+        "compilerGuest",
+        "callbackResumptionSafety",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "cancel-suspended-task-before-quiescence",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "cancelled-task",
+      "requiredEvidence": [
+        "compilerGuest",
+        "taskRootRetirement",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "late-resume-after-supervisor-restart",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "stale-actor-generation",
+      "requiredEvidence": [
+        "compilerGuest",
+        "supervisorRecovery",
+        "callbackResumptionSafety",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "root-leak-must-block-actor-heap-reclaim",
+      "source": null,
+      "kind": "pending-isolation",
+      "expectedFailureClass": "quarantined-actor-incarnation",
+      "requiredEvidence": [
+        "taskRootRetirement",
+        "actorStackStorage",
+        "supervisorRecovery"
+      ]
+    },
+    {
+      "id": "await-inside-nontail-call-preserves-parent-frame",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "executionContextBinding",
+        "suspendedFrameOwnership",
+        "suspendedCallFrameState"
+      ]
+    },
+    {
+      "id": "cancel-inside-nontail-call-runs-cleanup-before-retire",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "cancelled-task",
+      "requiredEvidence": [
+        "compilerGuest",
+        "taskRootRetirement",
+        "suspendedCallFrameState"
+      ]
+    },
+    {
+      "id": "duplicate-resume-cannot-reenter-suspended-call-frame",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "duplicate-continuation-resume",
+      "requiredEvidence": [
+        "compilerGuest",
+        "callbackResumptionSafety",
+        "suspendedCallFrameState"
+      ]
+    },
+    {
+      "id": "stale-parent-return-pc-rejected-after-generation-change",
+      "source": null,
+      "kind": "pending-isolation",
+      "expectedFailureClass": "stale-actor-generation",
+      "requiredEvidence": [
+        "supervisorRecovery",
+        "actorStackGeneration",
+        "suspendedCallFrameState"
+      ]
     }
   ],
   "promotion": {
@@ -531,5 +659,6 @@
     "javaScalarTypedFrameActualPrimitiveStorage": "IMPLEMENTED_UNVERIFIED",
     "javaScalarTypedFrameSourceTaskLexicalContinuations": "NOT_IMPLEMENTED",
     "javaScalarTypedFrameStaleLeasePoisonStatus": "AUTHORED_NOT_EXECUTED"
-  }
+  },
+  "javaActorTaskBindingReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2626"
 }

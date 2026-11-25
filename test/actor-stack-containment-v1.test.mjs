@@ -7,7 +7,8 @@ const expectedBackends = ['forge', 'java', 'llvm', 'net', 'wasm'];
 const evidenceKeys = [
   'admission', 'compilerGuest', 'actorSurvival',
   'nativeLowStack', 'supervisorRecovery',
-  'actorStackStorage', 'suspendedFrameOwnership', 'actorStackGeneration'
+  'actorStackStorage', 'suspendedFrameOwnership', 'actorStackGeneration',
+  'executionContextBinding', 'callbackResumptionSafety', 'taskRootRetirement', 'suspendedCallFrameState'
 ];
 
 async function load() {
@@ -41,7 +42,13 @@ function validatePending(matrix) {
     'carrierMigrationDoesNotMoveStackOwnership',
     'stackFailureBeforeNativeGuardPage',
     'noNativeSignalOrStackOverflowRecovery',
-    'guardedSynchronousInvocationChargedToActorFrameArena'
+    'guardedSynchronousInvocationChargedToActorFrameArena',
+    'executionContextStableAcrossAwait',
+    'actorTaskRootGenerationAuthenticated',
+    'callbacksCannotExecuteGuestOnProducerThread',
+    'sourceTaskRootsRetiredOnlyAfterPhysicalQuiescence',
+    'outstandingTaskRootsPreventActorHeapRetirement',
+    'suspendedCallFramesPreservePcOperandsAndLocals'
   ]) {
     assert.equal(matrix.requirements[key], true,
       'mandatory physical actor-stack safety property: ' + key);
@@ -378,5 +385,63 @@ test('sibling overflow fixture is a pending guest acceptance case, not a parity 
     assert.equal(backend.compilerGuest, 'NOT_EXECUTED');
     assert.equal(backend.actorSurvival, 'NOT_EXECUTED');
     assert.equal(backend.supervisorRecovery, 'NOT_EXECUTED');
+  }
+});
+
+test('actor ExecutionContext, callback, and stack-root lifecycle gates cannot be lost', async () => {
+  const matrix = validatePending(await load());
+  assert.match(matrix.javaActorTaskBindingReference, /\/pull\/2626$/);
+  const required = new Map([
+    ['actor-await-sibling-then-resume', 'executionContextBinding'],
+    ['producer-callback-cannot-run-guest', 'callbackResumptionSafety'],
+    ['cancel-suspended-task-before-quiescence', 'taskRootRetirement'],
+    ['late-resume-after-supervisor-restart', 'actorStackGeneration'],
+    ['root-leak-must-block-actor-heap-reclaim', 'taskRootRetirement']
+  ]);
+  for (const scenario of matrix.scenarios) {
+    const evidence = required.get(scenario.id);
+    if (!evidence) continue;
+    assert.equal(scenario.source, null,
+      'compiler-backed .atto actor acceptance source is still pending');
+    assert.ok(scenario.requiredEvidence.includes(evidence));
+    required.delete(scenario.id);
+  }
+  assert.deepEqual([...required.keys()], []);
+});
+
+
+test('suspended scalar call-frame state is a mandatory pending five-backend gate', async () => {
+  const matrix = validatePending(await load());
+  const required = new Map([
+    ['await-inside-nontail-call-preserves-parent-frame', 'suspendedCallFrameState'],
+    ['cancel-inside-nontail-call-runs-cleanup-before-retire', 'suspendedCallFrameState'],
+    ['duplicate-resume-cannot-reenter-suspended-call-frame', 'suspendedCallFrameState'],
+    ['stale-parent-return-pc-rejected-after-generation-change', 'suspendedCallFrameState']
+  ]);
+  for (const scenario of matrix.scenarios) {
+    const evidence = required.get(scenario.id);
+    if (!evidence) continue;
+    assert.equal(scenario.source, null,
+      'the compiler-backed .atto suspension fixtures are still pending');
+    assert.ok(scenario.requiredEvidence.includes(evidence));
+    required.delete(scenario.id);
+  }
+  assert.deepEqual([...required.keys()], []);
+  for (const backend of matrix.backends) {
+    assert.equal(backend.suspendedCallFrameState, 'NOT_EXECUTED',
+      'no backend may claim suspension inside CALL/RET frames without receipts');
+  }
+});
+
+
+test('new execution-context receipt dimensions remain fail-closed', async()=>{
+  const original=validatePending(await load());
+  for(const k of ["executionContextBinding","callbackResumptionSafety","taskRootRetirement","suspendedCallFrameState"]){
+    const changed=structuredClone(original);changed.backends[0][k]='PASS';
+    assert.throws(()=>validatePending(changed));
+  }
+  for(const k of ["executionContextStableAcrossAwait","actorTaskRootGenerationAuthenticated","callbacksCannotExecuteGuestOnProducerThread","sourceTaskRootsRetiredOnlyAfterPhysicalQuiescence","outstandingTaskRootsPreventActorHeapRetirement","suspendedCallFramesPreservePcOperandsAndLocals"]){
+    const changed=structuredClone(original);changed.requirements[k]=false;
+    assert.throws(()=>validatePending(changed));
   }
 });
