@@ -1,0 +1,16 @@
+define enum Packet as
+  Empty = 1
+  Count: int = 2
+end
+
+fnc decode(Packet packet): int {
+  match packet over
+    on Packet.Empty -> { return 0; }
+    on Packet.Count(n) -> { return n; }
+  end
+}
+
+pub fnc main(): void {
+  stdio.println(decode(Packet.Count(7)));
+  return;
+}

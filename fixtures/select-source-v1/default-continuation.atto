@@ -1,0 +1,10 @@
+// A selected arm can write an outer local and then continue.
+pub fnc main(): int {
+  let mut int score = 1;
+  do select over
+    default: {
+      score = 41;
+    }
+  end
+  return score + 1;
+}

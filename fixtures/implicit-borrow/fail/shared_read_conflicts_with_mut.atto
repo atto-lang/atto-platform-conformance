@@ -1,0 +1,10 @@
+// expect-error: E_BORROW
+// The existing shared loan forbids an overlapping exclusive loan.
+define class Box as pub let int value = 1; end
+fnc bump(Box b): void { b.value += 1; }
+pub fnc main(): int {
+  val mut Box b = new Box();
+  val view = borrow! b;
+  bump(mut b);
+  return view.value;
+}

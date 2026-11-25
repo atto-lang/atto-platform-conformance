@@ -65,9 +65,10 @@ export function compile_inverted_layout(types, typeName) {
   }
   const cache = new Map();
   function descriptor(type, path = []) {
-    if (SCALARS.has(type)) return Object.freeze({
-      type, kind: "scalar", width: type === "bool" ? 1 : 8
-    });
+    if (SCALARS.has(type)) {
+      const width = type === "bool" ? 1 : 8;
+      return Object.freeze({type, kind: "scalar", width, align: width});
+    }
     if (typeof type !== "string" || !validName(type) || !own(types, type)) fail("unknown field type");
     if (path.includes(type) || path.length >= 16) fail("recursive or overdeep value");
     if (cache.has(type)) return cache.get(type);
@@ -75,16 +76,25 @@ export function compile_inverted_layout(types, typeName) {
     if (decl.kind !== "struct") fail("nested type requires ordinary fixed struct");
     const nested = fieldsOf(decl.fields);
     if (!nested.length || nested.length > MAX_FIELDS) fail("invalid nested struct size");
-    let width = 0;
+    // Ordinary nested structs are packed *within* one inverted column, but
+    // still obey the natural alignment of each directly nested fixed member.
+    let cursor = 0, alignment = 1;
     const members = nested.map(([name, child]) => {
       const d = descriptor(child, [...path, type]);
-      width += d.width;
-      if (!Number.isSafeInteger(width) || width > MAX_PACKED_BYTES)
+      cursor = Math.ceil(cursor / d.align) * d.align;
+      const offset = cursor;
+      cursor += d.width;
+      alignment = Math.max(alignment, d.align);
+      if (!Number.isSafeInteger(cursor) || cursor > MAX_PACKED_BYTES)
         fail("packed value exceeds byte budget");
-      return Object.freeze({name, descriptor: d});
+      return Object.freeze({name, offset, descriptor: d});
     });
+    const width = Math.ceil(cursor / alignment) * alignment;
+    if (!Number.isSafeInteger(width) || width > MAX_PACKED_BYTES)
+      fail("packed value exceeds byte budget");
     const spec = Object.freeze({
-      type, kind: "packed-struct", width, fields: Object.freeze(members)
+      type, kind: "packed-struct", width, align: alignment,
+      fields: Object.freeze(members)
     });
     cache.set(type, spec);
     return spec;
@@ -132,6 +142,8 @@ export class InvertedReferenceStore {
   #issued = new WeakSet();
   #loans = new Map();
   #closed = false;
+  #evaluatingInput = false;
+  #reentryRejected = false;
   #capacity;
   constructor(layout, capacity = 1024) {
     if (!layout || typeof layout !== "object" || !COMPILED_LAYOUTS.has(layout) ||
@@ -146,7 +158,49 @@ export class InvertedReferenceStore {
       this.#loans.set(c.name, {readers: 0, writer: false});
     }
   }
-  #open() { if (this.#closed) throw new Error("inverted owner closed"); }
+  #notEvaluating() {
+    if (this.#evaluatingInput) {
+      // A proxy can catch this error. Record the attempted reentrancy so
+      // the outer transaction still fails instead of silently committing.
+      this.#reentryRejected = true;
+      throw new Error("reentrant inverted owner input");
+    }
+  }
+  #open() {
+    this.#notEvaluating();
+    if (this.#closed) throw new Error("inverted owner closed");
+  }
+  // Evaluate untrusted row/record descriptors without allowing any public
+  // owner or loan operation to mutate the store. Even *caught* reentrancy
+  // attempts taint the transaction. Reset on all throws so the next clean
+  // operation can proceed independently.
+  #captureInput(capture) {
+    this.#open();
+    this.#reentryRejected = false;
+    this.#evaluatingInput = true;
+    let result, tainted = false;
+    try { result = capture(); }
+    finally {
+      tainted = this.#reentryRejected;
+      this.#evaluatingInput = false;
+      this.#reentryRejected = false;
+    }
+    if (tainted) throw new Error("reentrant inverted owner input tainted transaction");
+    return result;
+  }
+  #detached(spec, value) {
+    return this.#captureInput(() => copyValue(spec, value));
+  }
+  #rowValues(row) {
+    return this.#captureInput(() => {
+      if (!exactObject(row) || Reflect.ownKeys(row).length !== this.#columns.size)
+        fail("inexact row shape");
+      return this.#layout.columns.map(f => {
+        if (!own(row, f.name)) fail("missing row member");
+        return copyValue(f.descriptor, data(row, f.name));
+      });
+    });
+  }
   get length() { this.#open(); return this.#rows.length; }
   get column_names() { this.#open(); return [...this.#columns.keys()]; }
   #column(name) {
@@ -188,14 +242,10 @@ export class InvertedReferenceStore {
   push(row) {
     this.#open();
     this.#noLoans();
-    if (!exactObject(row) || Reflect.ownKeys(row).length !== this.#columns.size)
-      fail("inexact row shape");
     if (this.#rows.length === this.#capacity) throw new RangeError("inverted store full");
-    // Validate and detach ALL members before touching the store.
-    const values = this.#layout.columns.map(f => {
-      if (!own(row, f.name)) fail("missing row member");
-      return copyValue(f.descriptor, data(row, f.name));
-    });
+    // Transactional user-input snapshot: no nested store operation can change
+    // capacity, dense indices, generations, loans or owner liveness here.
+    const values = this.#rowValues(row);
     const slot = this.#free.length ? this.#free[this.#free.length - 1] : this.#slots.length;
     const s = this.#slots[slot] || {row: 0, generation: 1, live: false};
     if (!Number.isSafeInteger(s.generation) || s.generation === Number.MAX_SAFE_INTEGER)
@@ -234,7 +284,7 @@ export class InvertedReferenceStore {
     if (!this.#layout.columns.find(c => c.name === name).mutable)
       throw new Error("immutable field cannot be written");
     if (loan.writer || loan.readers) throw new Error("field loan conflict");
-    const detached = copyValue(this.#spec(name), value);
+    const detached = this.#detached(this.#spec(name), value);
     this.#column(name)[row] = detached;
   }
   snapshot(handle) {
@@ -275,6 +325,7 @@ export class InvertedReferenceStore {
     if (write) loan.writer = true; else loan.readers++;
     let live = true;
     const spec = this.#spec(name);
+    const owner = this;
     const requireLive = () => {
       this.#open();
       if (!live) throw new Error("closed field loan");
@@ -292,9 +343,10 @@ export class InvertedReferenceStore {
         if (!write) throw new Error("readonly field loan");
         if (!Number.isSafeInteger(index) || index < 0 || index >= col.length)
           throw new RangeError("column index out of bounds");
-        col[index] = copyValue(spec, value);
+        col[index] = owner.#detached(spec, value);
       },
       close() {
+        owner.#notEvaluating();
         if (!live) return;
         live = false;
         if (write) loan.writer = false; else loan.readers--;
@@ -302,6 +354,7 @@ export class InvertedReferenceStore {
     });
   }
   close() {
+    this.#notEvaluating();
     if (this.#closed) return;
     this.#noLoans();
     this.#closed = true;

@@ -1,0 +1,4 @@
+// TARGET fixture — inner x shadows outer x; outer y remains in scope.
+pub fnc main() -> int ::
+  return (|int x| -> (|int x| -> x + 1)(41))(7)
+end

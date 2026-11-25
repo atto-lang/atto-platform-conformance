@@ -1,0 +1,7 @@
+define enum Packet as
+  Count: int = 1
+end
+
+fnc invalid(): Packet {
+  return Packet.Count(true);
+}

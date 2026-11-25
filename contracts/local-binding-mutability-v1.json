@@ -1,0 +1,105 @@
+{
+  "schema": "atto.local-binding-mutability.v1",
+  "version": 1,
+  "status": "SPEC_AND_PARTIAL_BACKEND_EVIDENCE",
+  "owner": "atto-lang/atto-spec",
+  "semantics": {
+    "rebinding": {
+      "val": false,
+      "val mut": false,
+      "let": true,
+      "let mut": true
+    },
+    "referent_write": {
+      "val": false,
+      "val mut": true,
+      "let": false,
+      "let mut": true
+    },
+    "const_rule": "Initializer compile-time evaluable; name never rebindable. const mut is distinct from changing a compile-time constant.",
+    "shorthand": "T x = literal is const T x = literal",
+    "actor_protection": "mut cannot bypass actor-owned arenas, sealed state, private/final fields, active immutable borrows or use-after-move."
+  },
+  "reference_fixture_source": {
+    "repo": "atto-lang/atto-source.rs",
+    "path": "tests/fixtures/pass/130-val-let-mut-four-modes.atto",
+    "blob_sha": "7cdafba0ca6c12febaf82c32e2740469783b19fd"
+  },
+  "required_cases": [
+    {
+      "id": "four_modes_guest",
+      "kind": "pass",
+      "path": "fixtures/bindings/pass/four_modes_guest.atto",
+      "expected_exit": 12
+    },
+    {
+      "id": "typed_binding_forms",
+      "kind": "pass",
+      "path": "fixtures/bindings/pass/typed_binding_forms.atto",
+      "expected_exit": 14
+    },
+    {
+      "id": "val_mut_scalar",
+      "kind": "pass",
+      "path": "fixtures/bindings/pass/val_mut_scalar.atto",
+      "expected_exit": 1
+    },
+    {
+      "id": "val_name_reassign",
+      "kind": "fail",
+      "path": "fixtures/bindings/fail/val_name_reassign.atto",
+      "expected_error": "E_IMMUTABLE"
+    },
+    {
+      "id": "val_mut_name_reassign",
+      "kind": "fail",
+      "path": "fixtures/bindings/fail/val_mut_name_reassign.atto",
+      "expected_error": "E_IMMUTABLE"
+    },
+    {
+      "id": "val_referent_write",
+      "kind": "fail",
+      "path": "fixtures/bindings/fail/val_referent_write.atto",
+      "expected_error": "E_IMMUTABLE"
+    },
+    {
+      "id": "let_referent_write",
+      "kind": "fail",
+      "path": "fixtures/bindings/fail/let_referent_write.atto",
+      "expected_error": "E_IMMUTABLE"
+    },
+    {
+      "id": "final_field_write",
+      "kind": "fail",
+      "path": "fixtures/bindings/fail/final_field_write.atto",
+      "expected_error": "E_IMMUTABLE"
+    },
+    {
+      "id": "private_field_write",
+      "kind": "fail",
+      "path": "fixtures/bindings/fail/private_field_write.atto",
+      "expected_error": "E_PRIVATE"
+    },
+    {
+      "id": "moved_owner_write",
+      "kind": "fail",
+      "path": "fixtures/bindings/fail/moved_owner_write.atto",
+      "expected_error": "E_MOVED"
+    },
+    {
+      "id": "nested_field_write",
+      "kind": "fail",
+      "path": "fixtures/bindings/fail/nested_field_write.atto",
+      "expected_error": "E_OWNERSHIP"
+    }
+  ],
+  "backend_status": {
+    "rs-browser": "FOCUSED_VERIFIED",
+    "java": "NOT_VERIFIED",
+    "llvm": "NOT_VERIFIED",
+    "net": "NOT_VERIFIED",
+    "wasm-independent": "NOT_VERIFIED",
+    "forge": "NOT_VERIFIED"
+  },
+  "evidence_rule": "Parser acceptance, host-only model tests and one backend's guest execution are insufficient to claim AOT or cross-backend conformance."
+}

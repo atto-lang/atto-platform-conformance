@@ -1,0 +1,13 @@
+// expect-error: E_COPY_OVERRIDE
+define class Payload as
+    pub let Array<int> numbers = Array.of(1);
+    @Override
+    copy_deep(): new Self {
+        return super.copy(); // shallow baseline is not a deep copy witness
+    }
+end
+pub fnc main(): int {
+    val p = new Payload();
+    val c = copy!! p;
+    return 0;
+}

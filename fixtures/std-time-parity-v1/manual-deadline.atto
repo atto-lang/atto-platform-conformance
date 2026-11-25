@@ -1,0 +1,26 @@
+// Candidate positive guest fixture. Compile/import and execute the SAME source on
+// every backend claiming hosted std/time support. No host model may substitute.
+// Expected stdout (LF) is pinned in cases.json; no sleeps/OS clocks are used.
+import module time from "std/time";
+
+pub routine main(): void {
+  val tiny = time.microseconds(1001).expect("tiny");
+  stdio.println(tiny.as_ms_floor());
+  stdio.println(tiny.as_ms_ceil());
+  stdio.println(time.milliseconds(-1).is_err());
+  stdio.println(time.hours(2562048).is_err());
+  stdio.println(time.seconds(9223372036).is_ok());
+  stdio.println(time.seconds(9223372037).is_err());
+  let mut manual = time.manual_clock(9, 1000000000);
+  val half = time.milliseconds(500).expect("half");
+  val due = time.deadline_after(manual.now(), half).expect("due");
+  stdio.println(due.expired(manual.now()).expect("before"));
+  stdio.println(manual.advance(half).expect("after").ticks_ns);
+  stdio.println(due.expired(manual.now()).expect("at due"));
+  let mut one_shot = time.one_shot(due);
+  stdio.println(one_shot.poll(manual.now()).expect("one shot"));
+  stdio.println(one_shot.poll(manual.now()).expect("single fire"));
+  let mut every = time.interval(manual.now(), half);
+  stdio.println(every.next_due().expect("next").ticks_ns);
+  return;
+}

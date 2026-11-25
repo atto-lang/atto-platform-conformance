@@ -1,0 +1,9 @@
+pub susp fnc main(): int {
+  val int local = 10;
+  val Future<int> child = task<int> {
+    val int local = 32;
+    return local;
+  };
+  val int child_result = await child;
+  return local + child_result;
+}

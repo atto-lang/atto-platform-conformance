@@ -1,0 +1,2 @@
+fnc twice(int value): int { return value + value; }
+pub fnc main(): int { return twice(21); }

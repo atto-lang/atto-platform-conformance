@@ -1,0 +1,8 @@
+define protocol Connection as
+    initial Waiting;
+    Waiting -> Done on connect;
+    Done -> Waiting on reset;
+    terminal Done;
+end
+
+pub fnc main() -> int { return 42; }

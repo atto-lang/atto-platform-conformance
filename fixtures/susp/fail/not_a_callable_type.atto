@@ -1,0 +1,1 @@
+pub fnc main(): int { val x: susp int = 1; return 42; }

@@ -1,0 +1,9 @@
+// Candidate guest test: IEEE-754 NaN is unordered for every ordered predicate.
+// Expected main exit value 42. NO actual guest/AOT execution certified.
+pub fnc main(): int {
+  val float nan = 0.0 / 0.0;
+  if nan < 1.0 || nan <= 1.0 || nan > 1.0 || nan >= 1.0 then
+    return 1;
+  fi
+  return 42;
+}

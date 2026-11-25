@@ -1,0 +1,57 @@
+{
+  "schema": "atto.durable.scalar.wire-golden.v1",
+  "status": "HOST_VECTOR_NOT_GUEST_PARITY",
+  "sourceRepository": "atto-lang/atto-source.java",
+  "sourcePath": "src/main/java/dev/oreslang/compiler/DurableScalarSchemaV1.java",
+  "sourceBlobSha": "e97f8cf3ca2fead79db8ecb2db500af0d312b133",
+  "canonicalDescriptorFormat": "atto-durable-scalar-descriptor-v1\\n{schema_id}\\n{version}\\n{field_id}\\n{field_name}\\n{field_type}\\n",
+  "wire": {
+    "byteOrder": "big-endian",
+    "magicHex": "4154544f",
+    "schemaVersionBytes": 4,
+    "fingerprintSha256Bytes": 32,
+    "payloadType": "signed i64",
+    "payloadBytes": 8,
+    "totalBytes": 48
+  },
+  "vectors": [
+    {
+      "name": "counter.increment.42",
+      "schema_id": "atto.actor.Counter.increment",
+      "schema_version": 1,
+      "field_id": 1,
+      "field_name": "amount",
+      "field_type": "i64",
+      "fingerprint_sha256": "21071b660fb0521c2e822fc966ba000d801c601539bfca908891c5c5e5fca0e4",
+      "input_i64": "42",
+      "wire_hex": "4154544f0000000121071b660fb0521c2e822fc966ba000d801c601539bfca908891c5c5e5fca0e4000000000000002a"
+    },
+    {
+      "name": "counter.state.42",
+      "schema_id": "atto.actor.Counter.state",
+      "schema_version": 1,
+      "field_id": 1,
+      "field_name": "count",
+      "field_type": "i64",
+      "fingerprint_sha256": "cb5c1eb8c3556abbec60e1cc167a26f54c18fbef16697681562f8b70ee1a0283",
+      "input_i64": "42",
+      "wire_hex": "4154544f00000001cb5c1eb8c3556abbec60e1cc167a26f54c18fbef16697681562f8b70ee1a0283000000000000002a"
+    }
+  ],
+  "negativeCases": [
+    "unknown_version",
+    "wrong_fingerprint",
+    "wrong_length",
+    "wrong_nominal_schema"
+  ],
+  "backendStatus": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "rs": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED"
+  }
+}

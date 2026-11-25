@@ -1,0 +1,5 @@
+// Candidate guest fixture: source admission NOT verified.
+pub fnc main() -> int {
+  while true { while true { } }
+  return 0;
+}

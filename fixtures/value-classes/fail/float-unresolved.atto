@@ -1,0 +1,5 @@
+define value class FloatPoint as
+    pub final float x;
+    constructor(float x) { self.x = x; }
+end
+pub fnc main(): int { return 0; }

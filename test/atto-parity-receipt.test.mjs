@@ -230,3 +230,17 @@ test('positive typed i64 cannot conceal failed guest process status',()=>{
   exitResult.cases[0].run_exit=42;
   assert.equal(validateParityReceipt(exitResult).case_count,3);
 });
+
+test('compile infrastructure status cannot impersonate a compiler rejection',()=>{
+  for(const make of [v1,v2]){
+    const rejection=r=>r.cases.find(c=>c.kind==='negative'&&(c.failure_stage===undefined||c.failure_stage==='compile'));
+    for(const code of [0,124,125,126,127,128,134,137,139,255]){
+      const receipt=make();rejection(receipt).compile_exit=code;
+      assert.throws(()=>validateParityReceipt(receipt),/negative compile rejection/,'exit='+code);
+    }
+    for(const code of [1,2,42,123]){
+      const receipt=make();rejection(receipt).compile_exit=code;
+      assert.equal(validateParityReceipt(receipt).publicly_promotable,false);
+    }
+  }
+});

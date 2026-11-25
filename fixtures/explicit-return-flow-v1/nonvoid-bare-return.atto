@@ -1,0 +1,4 @@
+fnc value(): int {
+  return;
+}
+pub fnc main(): int { return 0; }

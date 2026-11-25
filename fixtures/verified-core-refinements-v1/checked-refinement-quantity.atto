@@ -1,0 +1,13 @@
+define dimension Time;
+define unit Millis: Time;
+type MillisValue = int where units in Millis;
+type PositiveMillis = i32 where self > 0 and units in Millis;
+
+fnc read(MillisValue input) -> MillisValue {
+    return input;
+}
+
+pub fnc main() -> int {
+    val PositiveMillis duration = read(84<Millis>) as PositiveMillis;
+    return duration / 2<Millis>;
+}

@@ -1,0 +1,32 @@
+name: Ownership capabilities contract and evidence guard
+on:
+  push:
+    paths:
+      - 'contracts/ownership-capabilities-v1.json'
+      - 'contracts/ownership-vocabulary-v1.json'
+      - 'tests/test_ownership_capabilities_v1.py'
+      - 'tests/test_ownership_vocabulary_v1.py'
+      - '.github/workflows/ownership-capabilities-contract.yml'
+  pull_request:
+    paths:
+      - 'contracts/ownership-capabilities-v1.json'
+      - 'contracts/ownership-vocabulary-v1.json'
+      - 'tests/test_ownership_capabilities_v1.py'
+      - 'tests/test_ownership_vocabulary_v1.py'
+      - '.github/workflows/ownership-capabilities-contract.yml'
+permissions:
+  contents: read
+jobs:
+  source-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      # No API tokens, runner secrets, package downloads or cross-org clones:
+      # these are deliberately source-only contract/evidence regression checks.
+      - name: Validate fail-closed capability expectations
+        run: |
+          python3 -m unittest discover -v -s tests -p 'test_ownership_capabilities_v1.py'
+          python3 -m unittest discover -v -s tests -p 'test_ownership_vocabulary_v1.py'
