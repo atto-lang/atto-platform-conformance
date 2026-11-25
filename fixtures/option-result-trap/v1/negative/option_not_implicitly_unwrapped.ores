@@ -1,0 +1,5 @@
+fnc invalid(): int {
+  val Option<int> value = Some(7);
+  val int unwrapped = value;
+  return unwrapped;
+}

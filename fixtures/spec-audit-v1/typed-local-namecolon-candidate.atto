@@ -1,0 +1,5 @@
+// UNRESOLVED S-46: competing candidate, not an adopted grammar.
+pub fnc main() -> int {
+  val answer: int = 42;
+  return answer;
+}

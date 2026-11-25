@@ -1,0 +1,11 @@
+// EXPECTED: E_TYPE and NO artifact: ErrorView.is_type needs Error ancestry.
+define class Plain as end
+define class Foo extends Error as end
+
+pub fnc main(): int {
+  recover |err, cursor| -> {
+    if err.is_type(Plain) then return 17; fi
+    return 42;
+  };
+  raise! new Foo();
+}

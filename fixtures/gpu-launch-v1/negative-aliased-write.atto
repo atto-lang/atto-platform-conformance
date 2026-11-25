@@ -1,0 +1,13 @@
+// Expected GPU-LAUNCH-005: two live mutable views alias the same allocation.
+pub gpu fnc write_twice(GpuArray<f32> mut first, GpuArray<f32> mut second) => void {
+    const u64 i = gpu.global_id(0);
+    first[i] = 1.0;
+    second[i] = 2.0;
+    return;
+}
+suspends fnc run(GpuArray<f32> mut data, GpuDevice device, GpuQueue queue) => void {
+    const done = launch write_twice(data, data) on gpu(device) {
+        grid: [1, 1, 1], block: [64, 1, 1], queue: queue
+    };
+    await done;
+}

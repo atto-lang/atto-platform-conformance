@@ -1,0 +1,128 @@
+{
+  "schema": "oreslang.import-root-plus/1",
+  "status": "CANDIDATE_NOT_CERTIFIED",
+  "language": "AttoLang (Oreslang compatibility)",
+  "marker": ".ores.pkg.toml",
+  "root_prefix": "+/",
+  "paths_env": "ORES_PATHS",
+  "backend_status": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED"
+  },
+  "scope": "Host-only reference for project-root +/ path resolution. Does not parse import statements, authorize module linkage, source access, external mounts or guest parity.",
+  "cases": [
+    {
+      "id": "local-source",
+      "specifier": "+/lib/telemetry.atto",
+      "setup": "within_root",
+      "expected": "RESOLVE"
+    },
+    {
+      "id": "nested-source",
+      "specifier": "+/src/routes/api.atto",
+      "setup": "within_root",
+      "expected": "RESOLVE"
+    },
+    {
+      "id": "in-root-symlink",
+      "specifier": "+/aliases/local.atto",
+      "setup": "in_root_symlink",
+      "expected": "RESOLVE"
+    },
+    {
+      "id": "nonexistent",
+      "specifier": "+/lib/missing.atto",
+      "setup": "absent",
+      "expected": "REJECT"
+    },
+    {
+      "id": "missing-marker",
+      "specifier": "+/lib/telemetry.atto",
+      "setup": "manifest_missing",
+      "expected": "REJECT"
+    },
+    {
+      "id": "ancestor-escape",
+      "specifier": "+/../secret.atto",
+      "setup": "within_root",
+      "expected": "REJECT"
+    },
+    {
+      "id": "nested-ancestor-escape",
+      "specifier": "+/lib/../../secret.atto",
+      "setup": "within_root",
+      "expected": "REJECT"
+    },
+    {
+      "id": "dot-segment",
+      "specifier": "+/./lib/telemetry.atto",
+      "setup": "within_root",
+      "expected": "REJECT"
+    },
+    {
+      "id": "empty",
+      "specifier": "+/",
+      "setup": "within_root",
+      "expected": "REJECT"
+    },
+    {
+      "id": "duplicate-separator",
+      "specifier": "+//lib/telemetry.atto",
+      "setup": "within_root",
+      "expected": "REJECT"
+    },
+    {
+      "id": "backslash",
+      "specifier": "+/lib\\\\telemetry.atto",
+      "setup": "within_root",
+      "expected": "REJECT"
+    },
+    {
+      "id": "nul",
+      "specifier": "+/lib/telemetry\u0000.atto",
+      "setup": "within_root",
+      "expected": "REJECT"
+    },
+    {
+      "id": "absolute-non-root",
+      "specifier": "/tmp/private.atto",
+      "setup": "within_root",
+      "expected": "REJECT"
+    },
+    {
+      "id": "relative-non-root",
+      "specifier": "lib/telemetry.atto",
+      "setup": "within_root",
+      "expected": "REJECT"
+    },
+    {
+      "id": "outward-symlink",
+      "specifier": "+/aliases/external.atto",
+      "setup": "outward_symlink",
+      "expected": "REJECT"
+    },
+    {
+      "id": "outward-directory-symlink",
+      "specifier": "+/mounted/outside-dir/leak.atto",
+      "setup": "outward_directory_symlink",
+      "expected": "REJECT"
+    },
+    {
+      "id": "directory-target",
+      "specifier": "+/lib",
+      "setup": "directory",
+      "expected": "REJECT"
+    }
+  ],
+  "negative_policy": {
+    "never_trust_unvalidated_host_path": true,
+    "fail_on_missing_manifest": true,
+    "block_escape_via_symlink": true,
+    "do_not_follow_external_symlinks": true,
+    "ORES_PATHS_must_not_override_explicit_root_prefix": true,
+    "future_backend_guest_receipts_must_pin_commit_tree_runtime_and_executed_steps": true
+  }
+}

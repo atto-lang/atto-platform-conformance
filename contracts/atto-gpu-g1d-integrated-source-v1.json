@@ -1,0 +1,45 @@
+{
+  "schema": "attolang.gpu-g1d-integrated-source/1",
+  "state": "TWO_PARENT_MERGE_TREE_WITH_UNEXECUTED_SOURCE_HOST_JUNIT",
+  "sourceRepository": "ores-truffle-oreslang/oreslang-source.java",
+  "sourceRepositoryPrivate": true,
+  "integrationPR": 2610,
+  "finalHeadSha": "bf196efe8ef8f6d8eec1927fb70137097bc60136",
+  "finalTreeSha": "8ef58d1f6625f53e247a6a29da83a415139e6bc3",
+  "integrationMergeCommit": "e8e800141fe0ccbece3e9b230468c7ded95017cc",
+  "integrationMergeParents": [
+    "ec09ddba0068e10a420ba5bf7abd0490b702023c",
+    "62ede3accf28d2673bb307b5bf9c3a8fd65116a5"
+  ],
+  "sourceKernelAndHostFootprintsOnSameHead": true,
+  "sourceTailGuardEvidence": "SOURCE_TAIL_GUARD_ONLY_NOT_EXECUTABLE",
+  "sourceLinkEvidence": "SOURCE_SIGNATURE_ONLY_NOT_EXECUTABLE",
+  "hostCapacityEvidence": "SNAPSHOT_CAPACITY_SHAPE_ONLY_NOT_EXECUTABLE",
+  "joinedCapacityEvidence": "SOURCE_JOINED_CAPACITY_SHAPE_ONLY_NOT_EXECUTABLE",
+  "sourceExpectedAccessDerivedFromKernelSignature": true,
+  "sourceBufferArgumentsStaticallyTyped": false,
+  "authenticatedProviderBufferViews": false,
+  "deviceLoanBoundToSourceOwner": false,
+  "generationFenceVerified": false,
+  "deviceCompletionVerified": false,
+  "physicalGpuDispatchEnabled": false,
+  "implicitCpuFallback": false,
+  "javaIntegratedJUnitStatus": "NOT_EXECUTED",
+  "javaHostFootprintStatus": "NOT_EXECUTED_ON_EXACT_INTEGRATION_HEAD",
+  "runnerEvidence": {
+    "runId": 42321296502,
+    "runAttempt": 2,
+    "status": "FAILED_RUNNER_ADMISSION",
+    "jobSteps": null,
+    "cpuCompilerExecution": false
+  },
+  "acceptance": [
+    "Run exact-head Java 21 Maven G1d JUnit with nonzero executed steps.",
+    "Run exact-head host-only footprint/capacity smoke with nonzero executed steps.",
+    "Bind lexical names and f32 buffer views to compiler-resolved types.",
+    "Authorize private-source carrier mirror only after independent review.",
+    "Authenticate provider allocations, memory loans, queue generations and physical completion fence before dispatch."
+  ],
+  "securityHold": "Private source cannot be cross-org mirrored without separately authorized independent review.",
+  "nonpromoting": true
+}

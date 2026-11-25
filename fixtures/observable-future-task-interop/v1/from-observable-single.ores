@@ -1,0 +1,8 @@
+// #single must observe an exactly-one on_next AND terminal completion.
+pub fnc main(): void {
+  const Future<int> f = Future.from_task(task { return 42; });
+  const Observable<int> obs = Observable.from_future(f);
+  const Future<int> result = Future.from_observable(obs, mode=#single);
+  const int value = await result;
+  return;
+}

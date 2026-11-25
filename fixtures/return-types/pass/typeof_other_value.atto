@@ -1,0 +1,1 @@
+pub fnc run(): typeof(tbr) { val tbr: int = 5; return 6; } pub fnc main(): int { return run(); }

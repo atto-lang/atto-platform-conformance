@@ -1,0 +1,5 @@
+// OW03: suspension may not prolong an unsafe nested loan.
+fnc leaked(Option<borrow int> borrowed): void {
+  rt cooperate;
+  return;
+}

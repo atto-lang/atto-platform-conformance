@@ -1,0 +1,4 @@
+export pub Foo;
+export pub class Foo;
+define class Foo as
+end

@@ -1,0 +1,7 @@
+type Positive = i32 where self > 0;
+
+pub fnc main() -> int {
+    val Positive max = 2147483647;
+    val int wide = max;
+    return wide * wide - 4611686014132420567;
+}

@@ -1,0 +1,8 @@
+// expect-error: E_BORROW
+// A default borrowed formal cannot consume or re-export the source owner.
+define class Box as pub let int value = 1; end
+fnc consume(Box b): Box { return take! b; }
+pub fnc main(): int {
+  val b = new Box();
+  return consume(b).value;
+}

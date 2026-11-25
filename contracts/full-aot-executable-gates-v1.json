@@ -1,0 +1,151 @@
+{
+  "schema": "atto.full-aot-executable-gates.v1",
+  "version": 1,
+  "status": "NOT_EXECUTED_ALL_BACKENDS",
+  "source_kind": "versioned_candidate_fixtures",
+  "spec_pr": "atto-lang/atto-spec#56",
+  "evidence_policy": "Guest execution + exact compiler source/tree/fixture SHA + output artifact hash required; source-only checks cannot certify.",
+  "profiles": {
+    "rust-source-wasm": {
+      "backend": "rs",
+      "artifact_kind": "webassembly-module",
+      "aot_source_lowering": true,
+      "full_native_aot": false,
+      "runtime_engine_jit": "engine-dependent",
+      "status": "not_executed"
+    },
+    "llvm-native": {
+      "backend": "llvm",
+      "artifact_kind": "native-executable",
+      "aot_source_lowering": true,
+      "full_native_aot": true,
+      "runtime_engine_jit": "forbidden",
+      "status": "not_executed"
+    },
+    "graal-native-image": {
+      "backend": "java",
+      "artifact_kind": "native-image",
+      "aot_source_lowering": true,
+      "full_native_aot": true,
+      "runtime_engine_jit": "forbidden",
+      "status": "not_executed"
+    },
+    "net-native": {
+      "backend": "net",
+      "artifact_kind": "native-executable",
+      "aot_source_lowering": true,
+      "full_native_aot": true,
+      "runtime_engine_jit": "forbidden",
+      "status": "not_executed"
+    },
+    "forge-native": {
+      "backend": "forge",
+      "artifact_kind": "native-executable",
+      "aot_source_lowering": true,
+      "full_native_aot": true,
+      "runtime_engine_jit": "forbidden",
+      "status": "not_executed"
+    },
+    "wasm-precompiled": {
+      "backend": "wasm",
+      "artifact_kind": "precompiled-native-wasm",
+      "aot_source_lowering": true,
+      "full_native_aot": true,
+      "runtime_engine_jit": "forbidden",
+      "status": "not_executed"
+    }
+  },
+  "cases": [
+    {
+      "id": "scalar-42",
+      "feature_id": "checked-arithmetic",
+      "kind": "compiled_guest",
+      "fixture": "fixtures/full-aot/positive/scalar-42.atto",
+      "git_blob_sha": "f4019bfe9bd6a14ff909107222aeb356e747527a",
+      "expected_main_i64": "42",
+      "must_have_zero_imports": true,
+      "status": "not_executed"
+    },
+    {
+      "id": "recursive-55",
+      "feature_id": "static-module-graph",
+      "kind": "compiled_guest",
+      "fixture": "fixtures/full-aot/positive/recursive-55.atto",
+      "git_blob_sha": "25f9488b3cc3f7be7b08cf8fa62076de54054a4a",
+      "expected_main_i64": "55",
+      "must_have_zero_imports": true,
+      "status": "not_executed"
+    },
+    {
+      "id": "closure-42",
+      "feature_id": "closures-and-llambdas",
+      "kind": "compiled_guest",
+      "fixture": "fixtures/full-aot/positive/closure-42.atto",
+      "git_blob_sha": "6bd62139c8f22a2106665775f55af3acd5c0f3c2",
+      "expected_main_i64": "42",
+      "must_have_zero_imports": true,
+      "status": "not_executed"
+    },
+    {
+      "id": "option-55",
+      "feature_id": "option-result-adt",
+      "kind": "compiled_guest",
+      "fixture": "fixtures/full-aot/positive/option-55.atto",
+      "git_blob_sha": "1248620260d67264e129a452159605cc8364d0ec",
+      "expected_main_i64": "55",
+      "must_have_zero_imports": true,
+      "status": "not_executed"
+    },
+    {
+      "id": "no-runtime-eval",
+      "feature_id": "runtime-eval-source-compilation",
+      "kind": "no_artifact",
+      "fixture": "fixtures/full-aot/negative/runtime-eval.atto",
+      "git_blob_sha": "c1ae5624cf87344b2733ae77135b576046fd6389",
+      "status": "not_executed"
+    },
+    {
+      "id": "no-runtime-source-compiler",
+      "feature_id": "runtime-eval-source-compilation",
+      "kind": "no_artifact",
+      "fixture": "fixtures/full-aot/negative/runtime-source-compile.atto",
+      "git_blob_sha": "30c5f0a5ded031339a5a668fe86b9c8bf18d434d",
+      "status": "not_executed"
+    },
+    {
+      "id": "no-arbitrary-reflection",
+      "feature_id": "runtime-reflection-over-arbitrary-types",
+      "kind": "no_artifact",
+      "fixture": "fixtures/full-aot/negative/reflect-call.atto",
+      "git_blob_sha": "541ce9f085950fe0119ea602b325004b4d7a1061",
+      "status": "not_executed"
+    },
+    {
+      "id": "no-dynamic-native-symbol",
+      "feature_id": "unrestricted-runtime-code-loading",
+      "kind": "no_artifact",
+      "fixture": "fixtures/full-aot/negative/load-symbol.atto",
+      "git_blob_sha": "d5256d1e3ec3c03914297c891cbe495b3db34288",
+      "status": "not_executed"
+    },
+    {
+      "id": "no-runtime-type-construction",
+      "feature_id": "runtime-reflection-over-arbitrary-types",
+      "kind": "no_artifact",
+      "fixture": "fixtures/full-aot/negative/new-type.atto",
+      "git_blob_sha": "5d5b5760f65fc91aef1f1811fa20206004e6a4e0",
+      "status": "not_executed"
+    }
+  ],
+  "required_evidence": [
+    "compiler_source_head_sha",
+    "compiler_source_tree_sha",
+    "compiler_executable_sha256",
+    "fixture_blob_sha",
+    "guest_module_sha256",
+    "guest_executed",
+    "runtime_engine_jit_policy",
+    "actual_invocation"
+  ],
+  "unsupported_policy": "fail_closed_not_executed_no_certification"
+}

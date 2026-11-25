@@ -1,0 +1,102 @@
+{
+  "schema": "atto.fs.signed_exact_image_host_admission_evidence.v1",
+  "date_utc": "2026-11-20",
+  "classification": "HOST_ONLY_MOCK_EXECUTION_NOT_GUEST_CONFORMANCE",
+  "source_repo": "atto-lang/atto-source.llvm",
+  "source_pr": "https://github.com/atto-lang/atto-source.llvm/pull/62",
+  "source_head_observed_at_receipt": "274d183f6e07b82a0834689b60ef4284998823f8",
+  "exact_executed_source_blobs": {
+    "native/src/host_fs_signed_ceiling.c": "9ae91433e590a65977d166600a1ddb87ab1a15c5",
+    "native/include/atto/host_fs_signed_ceiling.h": "7210d016e4002a2b7f3b24f18487f7ff164b68e2",
+    "native/src/host_fs_signed_admission.c": "0e9a02ef03e21e251af18273d01e016efa3b1ce7",
+    "src/main/cpp/oreslang/runtime/TenantVmSignedFsLoader.cpp": "5531bdda945c410001aa0407d4d7233586e2c477",
+    "src/main/cpp/oreslang/runtime/TenantVmSignedFsLoader.hpp": "5975c55a63b1148bafdcaac3f7dcdd42d34b9411"
+  },
+  "local_execution": {
+    "environment": "isolated Linux container; no source-org Actions, no real loaded .atto code",
+    "toolchains": [
+      "GCC 14.2.0",
+      "Clang 17.0.0",
+      "g++ 14.2.0",
+      "clang++ 17.0.0"
+    ],
+    "optimization": [
+      "O1",
+      "O2"
+    ],
+    "sanitizers": [
+      "address",
+      "undefined"
+    ],
+    "c_signed_admission_mock": {
+      "status": "PASS",
+      "executed": 4,
+      "results": [
+        "gcc_O1_PASS",
+        "gcc_O2_PASS",
+        "clang_O1_PASS",
+        "clang_O2_PASS"
+      ],
+      "backend": "REAL OpenSSL Ed25519 verifier; MOCK six-layer broker constructor",
+      "checks": [
+        "valid signed scope extraction",
+        "denied bad signing key",
+        "denied tampered exact artifact",
+        "denied mutated signature",
+        "refused active broker reinitialization without replacing it"
+      ],
+      "exact_git_blob_match": true,
+      "real_linux_openat2_broker_executed": false
+    },
+    "cpp_signed_loader_mock": {
+      "status": "PASS",
+      "executed": 4,
+      "results": [
+        "g++_O1_PASS",
+        "g++_O2_PASS",
+        "clang++_O1_PASS",
+        "clang++_O2_PASS"
+      ],
+      "backend": "REAL C++ signed loader wrapper and REAL OpenSSL verifier; MOCK preload loader and MOCK broker",
+      "checks": [
+        "accepted signed mock image",
+        "denied mismatched digest",
+        "denied untrusted key",
+        "denied mutated signature",
+        "denied short signature",
+        "refused unsigned or already-admitted host broker"
+      ],
+      "exact_git_blob_match": true,
+      "real_dlopened_sealed_elf_executed": false
+    }
+  },
+  "committed_but_not_executed": [
+    "native/tests/host_fs_signed_admission_test.c with real Linux broker",
+    "tests/tenant-vm/signed_fs_loader_test.cpp and signed_fs_guest.c (real sealed C guest library)",
+    "tests/tenant-vm/CMakeLists.txt signed loader CTest",
+    "full TenantVmGuestLoader.cpp linking on current exact head",
+    "native/CMakeLists.txt full rooted broker test",
+    "compiled .atto std.fs permission fixture"
+  ],
+  "ci": {
+    "source_current_head_verified_success": false,
+    "previous_source_workflow_run_id": 44680811883,
+    "previous_job_steps": 0,
+    "current_head_stepful_ci": "NOT_EXECUTED_OR_UNCONFIRMED"
+  },
+  "guest_parity": {
+    "backend_count_expected": 11,
+    "status": "NOT_EXECUTED",
+    "verified_actor_turn_v5": false,
+    "compiled_atto_guest": false,
+    "signed_runtime_launch_enforced": false
+  },
+  "caveats": [
+    "The source blob hashes above were checked against independently executed local mock tests, not against a full compiled or running TenantVM",
+    "All signing private keys are ephemeral test-only and no production trusted key store is wired",
+    "Raw trusted-host result structs are not unforgeable guest capabilities",
+    "Loader module ownership, broker lifetime, signed artifact admission and async worker must be tied to trusted actor shutdown",
+    "Native ELF dependencies and direct syscalls remain independent confinement blockers",
+    "No source PR was merged"
+  ]
+}

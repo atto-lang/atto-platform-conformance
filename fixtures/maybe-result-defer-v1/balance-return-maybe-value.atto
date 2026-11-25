@@ -1,0 +1,17 @@
+// CANDIDATE SOURCE: the OUTER explicit return consumes maybe's value.
+// NOT_EXECUTED on all production compiler backends.
+define pub fnc balance(int id) -> Result[float, Error] as
+  defer log("balance() completed");
+
+  return maybe
+    Ok(user) ?= fetch_user(id);
+    Ok(account) ?= fetch_account(user);
+    Ok(balance) ?= get_balance(account);
+    Ok(balance)
+  else
+    Err(reason) -> {
+      log_error(reason);
+      Err(reason)
+    };
+  end;
+end

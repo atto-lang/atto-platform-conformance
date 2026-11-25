@@ -1,0 +1,11 @@
+// expect-exit: 42
+// TARGET_ONLY: not yet guest executed
+// One input: infer returned Child borrow lifetime from Parent owner.
+define class Child as pub let int value = 21; end
+define class Parent as pub let Child child = new Child(); end
+fnc get_child(Parent p): Borrow<Child> { return p.child; }
+pub fnc main(): int {
+  val p = new Parent();
+  val c = get_child(p);
+  return c.value + c.value;
+}

@@ -1,0 +1,6 @@
+// Existence probing denied keys must fail rather than return false.
+import module std_env from "std/env";
+pub routine main(): void {
+  stdio.println(std_env.has("ATTO_ENV_SECRET_KEY"));
+  return;
+}

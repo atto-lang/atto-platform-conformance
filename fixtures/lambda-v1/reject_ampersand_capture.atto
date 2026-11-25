@@ -1,0 +1,4 @@
+// REJECT: Elixir '& &1' is not a lambda form in AttoLang.
+pub fnc main() -> int ::
+  return (& &1.active)(42)
+end

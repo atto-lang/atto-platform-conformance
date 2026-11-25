@@ -1,0 +1,12 @@
+// TARGET ONLY: cancellation is injected by runtime conformance harness.
+pub susp fnc main(): int {
+  val Future<int> worker = task<int> {
+    val lock = new Mutex<int>(41);
+    using await lock.lock_async() as guard {
+      guard.value += 1;
+    }
+    return 42;
+  };
+  worker.cancel();
+  return 42;
+}

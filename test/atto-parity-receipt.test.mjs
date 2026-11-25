@@ -211,21 +211,40 @@ test('v1/v2 reject C1 and Unicode diagnostic line-spoofing while preserving LF',
   }
 });
 
-test('negative compiler infrastructure and crash exits do not impersonate rejection',()=>{
- for(const make of [v1,v2]){
-  for(const code of [0,124,125,126,127,128,134,137,139,255]){
-   const receipt=make();
-   receipt.cases.find(c=>c.kind==='negative' && (receipt.schema==='attolang.parity-receipt/1' || c.failure_stage==='compile')).compile_exit=code;
-   assert.throws(()=>validateParityReceipt(receipt),/negative compile rejection/,
-     'exit='+code);
+test('positive typed i64 cannot conceal failed guest process status',()=>{
+  for(const channel of ['stdout','wasm-export','native-return','host-call']){
+    for(const invalidExit of [-1,1,42,124,125,127,139,255,NaN,Infinity,1.5]){
+      const r=v2();
+      r.cases[0].result_channel=channel;
+      r.cases[0].run_exit=invalidExit;
+      assert.throws(()=>validateParityReceipt(r),/positive guest process exit/,
+        channel+' run_exit='+String(invalidExit));
+    }
+    const valid=v2();
+    valid.cases[0].result_channel=channel;
+    valid.cases[0].run_exit=0;
+    assert.equal(validateParityReceipt(valid).publicly_promotable,false);
   }
-  for(const code of [1,2,42,123]){
-   const receipt=make();
-   receipt.cases.find(c=>c.kind==='negative' && (receipt.schema==='attolang.parity-receipt/1' || c.failure_stage==='compile')).compile_exit=code;
-   assert.equal(validateParityReceipt(receipt).publicly_promotable,false);
-  }
- }
+  const exitResult=v2();
+  exitResult.cases[0].result_channel='process-exit';
+  exitResult.cases[0].run_exit=42;
+  assert.equal(validateParityReceipt(exitResult).case_count,3);
 });
+
+test('compile infrastructure status cannot impersonate a compiler rejection',()=>{
+  for(const make of [v1,v2]){
+    const rejection=r=>r.cases.find(c=>c.kind==='negative'&&(c.failure_stage===undefined||c.failure_stage==='compile'));
+    for(const code of [0,124,125,126,127,128,134,137,139,255]){
+      const receipt=make();rejection(receipt).compile_exit=code;
+      assert.throws(()=>validateParityReceipt(receipt),/negative compile rejection/,'exit='+code);
+    }
+    for(const code of [1,2,42,123]){
+      const receipt=make();rejection(receipt).compile_exit=code;
+      assert.equal(validateParityReceipt(receipt).publicly_promotable,false);
+    }
+  }
+});
+
 test('compile-rejection hardening keeps runtime negative semantics unchanged',()=>{
  const receipt=v2();
  const runtime=receipt.cases.find(c=>c.failure_stage==='runtime');
@@ -234,26 +253,12 @@ test('compile-rejection hardening keeps runtime negative semantics unchanged',()
  runtime.compile_exit=1;
  assert.throws(()=>validateParityReceipt(receipt),/negative runtime execution/);
 });
-test('positive typed value cannot hide explicit failed host process exit',()=>{
- for(const channel of ['stdout','wasm-export','native-return','host-call']){
-  for(const code of [-1,1,42,124,125,127,139,255,NaN,Infinity,1.5]){
-   const receipt=v2();
-   receipt.cases[0].result_channel=channel;
-   receipt.cases[0].run_exit=code;
-   assert.throws(()=>validateParityReceipt(receipt),/positive guest process exit/,
-     channel+' exit='+String(code));
+test('optional non-process exit remains compatible without granting attestation',()=>{
+  for(const channel of ['stdout','wasm-export','native-return','host-call']){
+    const receipt=v2(); receipt.cases[0].result_channel=channel;
+    const result=validateParityReceipt(receipt);
+    assert.equal(result.consistent,true);
+    assert.equal(result.authenticity_attested,false);
+    assert.equal(result.publicly_promotable,false);
   }
-  const valid=v2();
-  valid.cases[0].result_channel=channel;
-  valid.cases[0].run_exit=0;
-  assert.equal(validateParityReceipt(valid).authenticity_attested,false);
-  assert.equal(validateParityReceipt(valid).publicly_promotable,false);
-  const unspecified=v2();
-  unspecified.cases[0].result_channel=channel;
-  assert.equal(validateParityReceipt(unspecified).consistent,true);
- }
- const exit=v2();
- exit.cases[0].result_channel='process-exit';
- exit.cases[0].run_exit=42;
- assert.equal(validateParityReceipt(exit).case_count,3);
 });

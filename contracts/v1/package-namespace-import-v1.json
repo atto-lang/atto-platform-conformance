@@ -1,0 +1,188 @@
+{
+  "schema": "atto.package-namespace-import.v1",
+  "authority": "atto-lang/atto-spec/language/unified-static-imports-v1.md",
+  "status": "REFERENCE_MODEL_ONLY_NOT_COMPILER_EXECUTION",
+  "cases": [
+    {
+      "id": "bare",
+      "source": "import pkg 'z';",
+      "expected": "ACCEPT",
+      "bindings": [
+        "z"
+      ]
+    },
+    {
+      "id": "alias",
+      "source": "import pkg 'z' as zed;",
+      "expected": "ACCEPT",
+      "bindings": [
+        "zed"
+      ]
+    },
+    {
+      "id": "dotted",
+      "source": "import pkg \"core.telemetry\";",
+      "expected": "ACCEPT",
+      "bindings": [
+        "telemetry"
+      ]
+    },
+    {
+      "id": "scoped-alias",
+      "source": "import pkg '@scope/math' as math;",
+      "expected": "ACCEPT",
+      "bindings": [
+        "math"
+      ]
+    },
+    {
+      "id": "hyphen-alias",
+      "source": "import pkg 'advanced-math' as advanced;",
+      "expected": "ACCEPT",
+      "bindings": [
+        "advanced"
+      ]
+    },
+    {
+      "id": "rooted-alias",
+      "source": "import pkg '+/pkg' as local;",
+      "expected": "ACCEPT",
+      "bindings": [
+        "local"
+      ]
+    },
+    {
+      "id": "two",
+      "source": "import pkg 'z';\nimport pkg 'utils' as u;",
+      "expected": "ACCEPT",
+      "bindings": [
+        "z",
+        "u"
+      ]
+    },
+    {
+      "id": "same-dependency-two-aliases",
+      "source": "import pkg 'z' as first;\nimport pkg 'z' as second;",
+      "expected": "ACCEPT",
+      "bindings": [
+        "first",
+        "second"
+      ]
+    },
+    {
+      "id": "duplicate-import",
+      "source": "import pkg 'z';\nimport pkg 'other' as z;",
+      "expected": "REJECT",
+      "diagnostic": "E_DUPLICATE_LOCAL_BINDING"
+    },
+    {
+      "id": "duplicate-local",
+      "source": "import pkg 'z';",
+      "expected": "REJECT",
+      "diagnostic": "E_DUPLICATE_LOCAL_BINDING",
+      "occupiedBindings": [
+        "z"
+      ]
+    },
+    {
+      "id": "hyphen-needs-alias",
+      "source": "import pkg 'advanced-math';",
+      "expected": "REJECT",
+      "diagnostic": "E_ALIAS_REQUIRED"
+    },
+    {
+      "id": "scope-needs-alias",
+      "source": "import pkg '@scope/math';",
+      "expected": "REJECT",
+      "diagnostic": "E_ALIAS_REQUIRED"
+    },
+    {
+      "id": "root-needs-alias",
+      "source": "import pkg '+/pkg';",
+      "expected": "REJECT",
+      "diagnostic": "E_ALIAS_REQUIRED"
+    },
+    {
+      "id": "empty-segment",
+      "source": "import pkg 'core..telemetry';",
+      "expected": "REJECT",
+      "diagnostic": "E_INVALID_PACKAGE_ID"
+    },
+    {
+      "id": "trailing-segment",
+      "source": "import pkg 'core.';",
+      "expected": "REJECT",
+      "diagnostic": "E_INVALID_PACKAGE_ID"
+    },
+    {
+      "id": "empty-package",
+      "source": "import pkg '';",
+      "expected": "REJECT",
+      "diagnostic": "E_INVALID_PACKAGE_ID"
+    },
+    {
+      "id": "unquoted",
+      "source": "import pkg z;",
+      "expected": "REJECT",
+      "diagnostic": "E_INVALID_IMPORT_SYNTAX"
+    },
+    {
+      "id": "missing-alias",
+      "source": "import pkg 'z' as;",
+      "expected": "REJECT",
+      "diagnostic": "E_INVALID_IMPORT_SYNTAX"
+    },
+    {
+      "id": "numeric-alias",
+      "source": "import pkg 'z' as 4z;",
+      "expected": "REJECT",
+      "diagnostic": "E_INVALID_IMPORT_SYNTAX"
+    },
+    {
+      "id": "reserved-alias",
+      "source": "import pkg 'z' as class;",
+      "expected": "REJECT",
+      "diagnostic": "E_RESERVED_ALIAS"
+    },
+    {
+      "id": "reserved-implicit",
+      "source": "import pkg 'core.class';",
+      "expected": "REJECT",
+      "diagnostic": "E_ALIAS_REQUIRED"
+    },
+    {
+      "id": "escaped-path",
+      "source": "import pkg 'foo\\\\bar' as bar;",
+      "expected": "REJECT",
+      "diagnostic": "E_INVALID_PACKAGE_ID"
+    },
+    {
+      "id": "missing-semicolon",
+      "source": "import pkg 'z'",
+      "expected": "REJECT",
+      "diagnostic": "E_INVALID_IMPORT_SYNTAX"
+    }
+  ],
+  "resolverChecks": [
+    "public-export-table-only",
+    "private-and-pub-pkg-export-denied-across-boundary",
+    "package-identity-version-and-lockfile-pinned",
+    "no-path-traversal-or-symlink-escape",
+    "no-runtime-capabilities-from-import",
+    "no-unrequested-eager-export-compilation",
+    "side-effect-and-initialization-preservation",
+    "namespace-never-flattened-or-re-exported"
+  ],
+  "backendEvidence": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "rs": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "hdl": "NOT_EXECUTED",
+    "atto": "NOT_EXECUTED"
+  }
+}

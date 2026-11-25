@@ -51,9 +51,6 @@ function checkCommon(report) {
   check(report.job_conclusion === 'success', 'job conclusion');
   check(Array.isArray(report.cases) && report.cases.length > 0 && report.cases.length <= 100, 'cases');
 }
-// Negative compile exits must exclude standard timeout (124), launch failures
-// (125–127), and signal/crash-coded statuses (128+). This is a structural
-// filter, not proof that remaining codes represent intentional rejection.
 function checkCaseIdentity(c, ids) {
   check(isObject(c), 'case object');
   check(typeof c.id === 'string' && CASE_ID.test(c.id) && !ids.has(c.id), 'case ID');
@@ -109,8 +106,9 @@ function validateV2(report) {
         check(Number.isSafeInteger(c.run_exit) && c.run_exit === Number(value),
           'process-exit result must match observed exit status');
       } else if (c.run_exit !== undefined) {
-        // Typed results never override explicitly reported guest process
-        // failure. This is supplementary structural evidence, not attestation.
+        // Native/stdout/export results are not process-exit values. A supplied
+        // nonzero process exit means the enclosing guest failed even when
+        // the receipt claims a matching typed i64 result.
         check(Number.isSafeInteger(c.run_exit) && c.run_exit === 0,
           'positive guest process exit');
       }

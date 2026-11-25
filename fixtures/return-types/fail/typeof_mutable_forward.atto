@@ -1,0 +1,1 @@
+pub fnc run(): typeof(tbr) { let tbr: int = 5; return tbr; }
