@@ -12,6 +12,7 @@ const failure = (error) => ({ok:false,error});
 const success = (value={}) => ({ok:true,...value});
 const topicName = (s) => typeof s === "string" && /^[A-Za-z][A-Za-z0-9._/-]{0,127}$/.test(s);
 const active = (a) => a && a.alive;
+const TOPIC_POLICIES = new Set(["RELIABLE","LATEST","LOSSY"]);
 const safeKeys = (value) => {
   // A Proxy can execute arbitrary user callbacks during getPrototypeOf,
   // ownKeys, descriptor inspection, or freeze. Never inspect its traps.
@@ -93,35 +94,46 @@ export class PubSubReference {
   #subscriptions=new Map();
   #memberships=new Map();
   #topicSeq=new Map();
+  #topicStats=new Map();
   #topicHandles=new WeakSet();
   #grantStates=new WeakMap();
   #actorStates=new WeakMap();
   #groupStates=new WeakMap();
   #subscriptionStates=new WeakMap();
+  #groupMonitors=new Map();
+  #monitorStates=new WeakMap();
+  #nextMonitor=0;
   #nextSub=0;
   #nextMembership=0;
   #closed=false;
 
   get closed() {return this.#closed;}
   get membershipCount() {return this.#memberships.size;}
+  get groupMonitorCount() {return this.#groupMonitors.size;}
 
   // Introspection returns a detached copy, not an authority registry.
   get subscriptionCount() {
     return [...this.#subscriptions.values()].filter(s=>!s.closed).length;
   }
 
-  constructor({maxActors=4096,maxGroups=1024,maxTopics=1024,maxSubscriptions=1024,maxMemberships=4096}={}) {
+  constructor({maxActors=4096,maxGroups=1024,maxTopics=1024,maxSubscriptions=1024,maxMemberships=4096,maxGroupMonitors=1024,maxGroupMonitorsPerActor=16,maxGroupMonitorQueueCapacity=256}={}) {
     if (!Number.isSafeInteger(maxActors) || maxActors<1 ||
         !Number.isSafeInteger(maxGroups) || maxGroups<1 ||
         !Number.isSafeInteger(maxTopics) || maxTopics<1 ||
         !Number.isSafeInteger(maxSubscriptions) || maxSubscriptions<1 ||
-        !Number.isSafeInteger(maxMemberships) || maxMemberships<1)
+        !Number.isSafeInteger(maxMemberships) || maxMemberships<1 ||
+        !Number.isSafeInteger(maxGroupMonitors) || maxGroupMonitors<1 ||
+        !Number.isSafeInteger(maxGroupMonitorsPerActor) || maxGroupMonitorsPerActor<1 ||
+        !Number.isSafeInteger(maxGroupMonitorQueueCapacity) || maxGroupMonitorQueueCapacity<1)
       throw new RangeError("positive finite quotas required");
     this.maxActors=maxActors;
     this.maxGroups=maxGroups;
     this.maxTopics=maxTopics;
     this.maxSubscriptions=maxSubscriptions;
     this.maxMemberships=maxMemberships;
+    this.maxGroupMonitors=maxGroupMonitors;
+    this.maxGroupMonitorsPerActor=maxGroupMonitorsPerActor;
+    this.maxGroupMonitorQueueCapacity=maxGroupMonitorQueueCapacity;
     Object.freeze(this);
   }
 
@@ -152,7 +164,7 @@ export class PubSubReference {
     if (this.#groups.has(id)) return failure("AlreadyExists");
     // Closed group identities are tombstones: never recycle their authority.
     if (this.#groups.size>=this.maxGroups) return failure("ResourceExhausted");
-    const state={closed:false,members:new Set()};
+    const state={closed:false,members:new Set(),revision:0n};
     // A copied membership view never exposes the authoritative set.
     const group=Object.freeze({
       id,get closed(){return state.closed;},
@@ -164,28 +176,47 @@ export class PubSubReference {
     return success({group});
   }
 
-  topic(name,type,group=null) {
+  topic(name,type,group=null,policy="RELIABLE") {
     if (this.closed) return failure("Closed");
     if (!topicName(name)) return failure("InvalidName");
     if (typeof type!=="string" || !type) return failure("InvalidType");
+    if (!TOPIC_POLICIES.has(policy)) return failure("InvalidPolicy");
     if (group!==null && !this.isGroup(group)) return failure("StaleGroup");
-    // The original PS001-PS020 broker-global topics remain a legacy oracle.
-    // Group-scoped topics cannot alias either those or another group.
+    // Group identity and type stay independent of delivery policy. Changing
+    // policy requires a new topic identity, never an implicit in-place edit.
     const key=group===null ? name : JSON.stringify(["group",group.id,name]);
     const existing=this.#topics.get(key);
     if (existing && existing.type!==type) return failure("TopicTypeMismatch");
+    if (existing && existing.policy!==policy) return failure("TopicPolicyMismatch");
     if (!existing && this.#topics.size>=this.maxTopics) return failure("ResourceExhausted");
     if (!existing) {
-      const topic=Object.freeze({key,name,type,group});
+      const topic=Object.freeze({key,name,type,group,policy});
       NON_DATA_CAPABILITIES.add(topic);
       this.#topics.set(key,topic);
       this.#topicHandles.add(topic);
       this.#topicSeq.set(key,0n);
+      this.#topicStats.set(key,{published:0n,accepted:0n,dropped:0n,coalesced:0n});
     }
     return success({topic:this.#topics.get(key)});
   }
 
-  topicInGroup(group,name,type) { return this.topic(name,type,group); }
+  topicInGroup(group,name,type,policy="RELIABLE") {
+    return this.topic(name,type,group,policy);
+  }
+
+  // A detached, read-only diagnostic snapshot is not a subscriber ACK and
+  // grants no authority to publish, subscribe, or inspect individual queues.
+  topicStats(topic) {
+    if (this.closed) return failure("Closed");
+    if (!this.#topicHandles.has(topic)) return failure("UnknownTopic");
+    if (topic.group!==null && !this.isGroup(topic.group)) return failure("StaleGroup");
+    const stats=this.#topicStats.get(topic.key);
+    return success({stats:Object.freeze({
+      policy:topic.policy,sequence:this.#topicSeq.get(topic.key).toString(),
+      published:stats.published.toString(),accepted:stats.accepted.toString(),
+      dropped:stats.dropped.toString(),coalesced:stats.coalesced.toString()
+    })});
+  }
 
   activeMembership(group,actor) {
     for (const entry of this.#memberships.values())
@@ -216,6 +247,7 @@ export class PubSubReference {
     NON_DATA_CAPABILITIES.add(membership);
     this.#memberships.set(membership.id,entry);
     this.#grantStates.set(membership,entry);
+    this.#recordMembershipChange(group,"join",actor);
     return success({membership});
   }
 
@@ -227,6 +259,8 @@ export class PubSubReference {
     entry.active=false;
     this.#memberships.delete(entry.capability.id);
     this.#groupStates.get(membership.group).members.delete(membership.actor.key);
+    this.#revokeOwnerMonitors(membership.group,membership.actor);
+    this.#recordMembershipChange(membership.group,"leave",membership.actor);
     this.#cancelTarget(membership.actor.key,s=>s.kind==="group" && s.target===membership.group);
     // A group-bound direct subscription cannot survive a leave/rejoin.
     for (const sub of this.#subscriptions.values())
@@ -239,7 +273,8 @@ export class PubSubReference {
   subscribe(topic,kind,target,capacity=32) {
     if (this.closed) return failure("Closed");
     if (!this.#topicHandles.has(topic)) return failure("UnknownTopic");
-    if (!Number.isSafeInteger(capacity) || capacity<1) return failure("InvalidCapacity");
+    if (!Number.isSafeInteger(capacity) || capacity<1 ||
+        (topic.policy==="LATEST" && capacity!==1)) return failure("InvalidCapacity");
     if (kind==="actor" ? !this.isActor(target) : kind==="group" ? !this.isGroup(target) : true)
       return failure("StaleTarget");
     if (topic.group!==null && (kind==="actor"
@@ -275,6 +310,9 @@ export class PubSubReference {
     if (topic.group!==null && !this.authorizedPublisher(topic,publisherGrant))
       return failure("UnauthorizedPublisher");
     if (!this.isShared(payload)) return failure("NotShared");
+
+    // This oracle is single-threaded. Production admission must linearize
+    // subscriber enumeration, all RELIABLE reservations, and sequence commit.
     const slots=[];
     for (const sub of this.#subscriptions.values()) {
       if (sub.closed || sub.topic!==topic) continue;
@@ -285,22 +323,49 @@ export class PubSubReference {
       for (const key of keys) {
         const actor=this.#actors.get(key);
         if (!active(actor)) continue;
-        const queued=this.#subscriptionStates.get(sub).queues.get(key)?.length ?? 0;
-        const running=this.#subscriptionStates.get(sub).inflight.get(key) ?? 0;
-        if (queued+running >= sub.capacity) return failure("Full");
-        slots.push({sub,key});
+        const state=this.#subscriptionStates.get(sub);
+        const queued=state.queues.get(key)?.length ?? 0;
+        const running=state.inflight.get(key) ?? 0;
+        // Only RELIABLE rejects globally: never reserve a subset of recipients
+        // or consume a sequence on Full. LOSSY drops locally; LATEST replaces
+        // a pending unread value and never evicts an in-flight delivery.
+        if (topic.policy==="RELIABLE" && queued+running >= sub.capacity)
+          return failure("Full");
+        slots.push({sub,key,queued,running});
       }
     }
-    const old=this.#topicSeq.get(topic.key ?? topic.name);
+
+    const old=this.#topicSeq.get(topic.key);
     if (old===0xffffffffffffffffn) return failure("SequenceExhausted");
     const seq=old+1n;
-    this.#topicSeq.set(topic.key ?? topic.name,seq);
-    for (const {sub,key} of slots) {
-      if (!this.#subscriptionStates.get(sub).queues.has(key)) this.#subscriptionStates.get(sub).queues.set(key,[]);
-      this.#subscriptionStates.get(sub).queues.get(key).push({sequence:seq,topic:topic.name,
-        subscription_id:sub.id,payload});
+    let accepted=0,dropped=0,coalesced=0;
+    for (const {sub,key,queued,running} of slots) {
+      const state=this.#subscriptionStates.get(sub);
+      if (!state.queues.has(key)) state.queues.set(key,[]);
+      const queue=state.queues.get(key);
+      if (topic.policy==="LOSSY" && queued+running>=sub.capacity) {
+        dropped++;
+        continue;
+      }
+      if (topic.policy==="LATEST" && queued>0) {
+        // Topic LATEST requires subscription capacity one. Buffer exactly
+        // the newest pending value; any running delivery remains untouched.
+        queue.length=0;
+        coalesced++;
+      }
+      queue.push({sequence:seq,topic:topic.name,subscription_id:sub.id,payload});
+      accepted++;
     }
-    return success({receipt:{sequence:seq.toString(),recipients:slots.length}});
+    this.#topicSeq.set(topic.key,seq);
+    const stats=this.#topicStats.get(topic.key);
+    stats.published++;
+    stats.accepted+=BigInt(accepted);
+    stats.dropped+=BigInt(dropped);
+    stats.coalesced+=BigInt(coalesced);
+    return success({receipt:{
+      sequence:seq.toString(),recipients:slots.length,
+      accepted,dropped,coalesced,policy:topic.policy
+    }});
   }
 
   start(subscription,actor) {
@@ -309,10 +374,15 @@ export class PubSubReference {
     if (subscription.topic.group!==null &&
         !this.activeMembership(subscription.topic.group,actor))
       return failure("UnauthorizedSubscriber");
-    const queue=this.#subscriptionStates.get(subscription).queues.get(actor.key);
+    const state=this.#subscriptionStates.get(subscription);
+    const running=state.inflight.get(actor.key) ?? 0;
+    // LATEST delivers serially to each recipient. A new pending latest value
+    // must not overtake an older event currently being processed.
+    if (subscription.topic.policy==="LATEST" && running>0) return failure("Busy");
+    const queue=state.queues.get(actor.key);
     if (!queue?.length) return failure("Empty");
     const delivery=queue.shift();
-    this.#subscriptionStates.get(subscription).inflight.set(actor.key,(this.#subscriptionStates.get(subscription).inflight.get(actor.key)??0)+1);
+    state.inflight.set(actor.key,running+1);
     return success({delivery});
   }
 
@@ -352,6 +422,8 @@ export class PubSubReference {
         m.active=false;
         this.#memberships.delete(id);
         this.#groupStates.get(m.capability.group).members.delete(actor.key);
+        this.#revokeOwnerMonitors(m.capability.group,actor);
+        this.#recordMembershipChange(m.capability.group,"leave",actor);
       }
     this.#cancelTarget(actor.key,()=>true);
     for (const sub of this.#subscriptions.values())
@@ -362,6 +434,7 @@ export class PubSubReference {
   closeGroup(group) {
     if (!this.isGroup(group)) return failure("StaleGroup");
     this.#groupStates.get(group).closed=true;
+    this.#revokeGroupMonitors(group);
     for (const [id,m] of this.#memberships)
       if (m.active && m.capability.group===group) {
         m.active=false;
@@ -377,6 +450,8 @@ export class PubSubReference {
   close() {
     if (this.closed) return success();
     this.#closed=true;
+    for (const monitor of [...this.#groupMonitors.values()])
+      this.#revokeMonitor(monitor);
     for (const sub of this.#subscriptions.values()) this.unsubscribe(sub);
     for (const group of this.#groups.values()) this.#groupStates.get(group).closed=true;
     // Closing the broker revokes the exact affine grant objects, not merely
@@ -386,6 +461,130 @@ export class PubSubReference {
     this.#memberships.clear();
     for (const group of this.#groups.values()) this.#groupStates.get(group).members.clear();
     return success();
+  }
+
+  // Erlang pg.monitor analogue, kept intentionally separate from DATA
+  // topic subscriptions and supervisor CONTROL notices. A current membership
+  // grant is required to observe a group. The snapshot and watch are minted
+  // in one oracle step; a production implementation needs one linearization
+  // point for initial snapshot + subsequent changes.
+  monitorGroup(group,grant,capacity=32) {
+    if (this.closed) return failure("Closed");
+    if (!this.isGroup(group)) return failure("StaleGroup");
+    const membership=this.#grantStates.get(grant);
+    if (!membership || !membership.active || membership.capability!==grant ||
+        grant.group!==group || !this.isActor(grant.actor))
+      return failure("UnauthorizedMonitor");
+    if (!Number.isSafeInteger(capacity) || capacity<1 ||
+        capacity>this.maxGroupMonitorQueueCapacity)
+      return failure("InvalidCapacity");
+    if (this.#groupMonitors.size>=this.maxGroupMonitors ||
+        this.#nextMonitor>=Number.MAX_SAFE_INTEGER)
+      return failure("ResourceExhausted");
+    let owned=0;
+    for (const monitor of this.#groupMonitors.values()) {
+      if (this.#monitorStates.get(monitor).grant.actor===grant.actor)
+        owned++;
+    }
+    if (owned>=this.maxGroupMonitorsPerActor) return failure("ResourceExhausted");
+    const state={group,grant,active:true,capacity,queue:[],overflow:false};
+    const monitor=Object.freeze({id:++this.#nextMonitor});
+    NON_DATA_CAPABILITIES.add(monitor);
+    this.#monitorStates.set(monitor,state);
+    this.#groupMonitors.set(monitor.id,monitor);
+    return success({monitor,members:Object.freeze([...group.members].sort()),
+      revision:this.#groupStates.get(group).revision.toString()});
+  }
+
+  // Access to a leaked monitor token alone conveys no observation authority:
+  // the original, live membership grant must accompany every read/resync.
+  #monitorAccess(monitor,grant) {
+    const state=this.#monitorStates.get(monitor);
+    if (!state || !state.active) return failure("StaleMonitor");
+    if (state.grant!==grant || !this.#grantStates.get(grant)?.active)
+      return failure("UnauthorizedMonitor");
+    return success({state});
+  }
+
+  pollGroupMonitor(monitor,grant,afterRevision=null) {
+    const access=this.#monitorAccess(monitor,grant);
+    if (!access.ok) return access;
+    const state=access.state;
+    if (state.overflow) return failure("MonitorOverflow");
+    if (!state.queue.length) return failure("Empty");
+    if (afterRevision!==null) {
+      // Strict cursor mode rejects malformed/unbounded external input without
+      // consuming a delta; the caller can recover by resnapshotting. BigInt
+      // compares decimal strings losslessly, including beyond JS safe ints.
+      if (typeof afterRevision!=="string" ||
+          !/^(0|[1-9][0-9]{0,255})$/.test(afterRevision))
+        return failure("InvalidRevision");
+      const expected=BigInt(afterRevision)+1n;
+      if (BigInt(state.queue[0].revision)!==expected)
+        return failure("RevisionMismatch");
+    }
+    return success({event:state.queue.shift()});
+  }
+
+  resyncGroupMonitor(monitor,grant) {
+    const access=this.#monitorAccess(monitor,grant);
+    if (!access.ok) return access;
+    const state=access.state;
+    if (!this.isGroup(state.group)) return failure("StaleGroup");
+    state.queue.length=0;
+    state.overflow=false;
+    return success({members:Object.freeze([...state.group.members].sort()),
+      revision:this.#groupStates.get(state.group).revision.toString()});
+  }
+
+  unmonitorGroup(monitor,grant) {
+    const access=this.#monitorAccess(monitor,grant);
+    if (!access.ok) return access;
+    this.#revokeMonitor(monitor);
+    return success();
+  }
+
+  #revokeMonitor(monitor) {
+    const state=this.#monitorStates.get(monitor);
+    if (!state || !state.active) return;
+    state.active=false;
+    state.queue.length=0;
+    this.#groupMonitors.delete(monitor.id);
+  }
+
+  #revokeOwnerMonitors(group,actor) {
+    for (const monitor of [...this.#groupMonitors.values()]) {
+      const state=this.#monitorStates.get(monitor);
+      if (state.group===group && state.grant.actor===actor)
+        this.#revokeMonitor(monitor);
+    }
+  }
+
+  #revokeGroupMonitors(group) {
+    for (const monitor of [...this.#groupMonitors.values()])
+      if (this.#monitorStates.get(monitor).group===group)
+        this.#revokeMonitor(monitor);
+  }
+
+  #recordMembershipChange(group,kind,actor) {
+    // A membership transition is the revision linearization point. Repeated
+    // idempotent joins, failed operations and DATA publications never advance
+    // it; even a zero-monitor group retains its monotone revision.
+    const groupState=this.#groupStates.get(group);
+    groupState.revision++;
+    const event=Object.freeze({
+      kind,group_id:group.id,actor_key:actor.key,
+      revision:groupState.revision.toString()
+    });
+    for (const monitor of this.#groupMonitors.values()) {
+      const state=this.#monitorStates.get(monitor);
+      if (!state.active || state.group!==group || state.overflow) continue;
+      if (state.queue.length>=state.capacity) {
+        // Silent loss is forbidden: clients must explicitly resnapshot.
+        state.queue.length=0;
+        state.overflow=true;
+      } else state.queue.push(event);
+    }
   }
 
   #cancelTarget(key,predicate) {
