@@ -103,3 +103,24 @@ untrusted native and CIL code. **Evidence labels** `SOURCE_FREE_REFERENCE`,
 `STATIC_SOURCE_CHECK`, `BACKEND_NATIVE_EXECUTED`, `REAL_ORESLANG_GUEST_EXECUTED`
 and `NOT_EXECUTED` must not be interchanged. A workflow run with zero executed
 steps is `NOT_EXECUTED`, whatever its conclusion.
+
+## Hardening added after the first audits (2026-11-13)
+
+Lessons from the LLVM tenant-VM audit (llvm#1343) and the .NET host audit
+(net#243) that apply to every backend:
+
+- **CPU, not wall-clock.** Turn deadlines and fairness count each tenant's own
+  CPU time. A wall-clock deadline lets a neighbor crowding the CPU get an
+  innocent tenant killed; counting turns let long-turn tenants take about 190
+  times the CPU of short-turn ones.
+- **Mail byte quotas per tenant and per host**, not only per mailbox. Delivery
+  and retirement refund them; a dead isolate returns all of its mail.
+- **Host calls validate every guest-controlled argument**, so no guest input can
+  fault the host process, and no guest-reachable path takes a process-wide lock.
+- **Queued callers are rejected promptly** once a tenant stops admitting work,
+  rather than waiting behind a running, possibly spinning, turn.
+- **Runtime instrumentation** follows
+  [governed instrumentation v1](GOVERNED_INSTRUMENTATION_JIT_V1.md).
+
+The reference model now enforces tenant and host mail byte quotas; the other
+items are contract requirements for real backends.

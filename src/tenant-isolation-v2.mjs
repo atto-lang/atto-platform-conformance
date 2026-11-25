@@ -27,11 +27,15 @@ export class TenantIsolateReference {
   #next = 1;
   #limit;
   #capacity;
+  #hostMailLimit;
+  #hostMail = 0;
 
-  constructor({maxTenants = 2, maxInflight = 1} = {}) {
-    if (!positive(maxTenants) || !positive(maxInflight)) fail("INVALID_ROOT_LIMITS");
+  constructor({maxTenants = 2, maxInflight = 1, maxHostMailBytes = 1 << 20} = {}) {
+    if (!positive(maxTenants) || !positive(maxInflight) || !positive(maxHostMailBytes))
+      fail("INVALID_ROOT_LIMITS");
     this.#limit = maxTenants;
     this.#capacity = maxInflight;
+    this.#hostMailLimit = maxHostMailBytes;
   }
 
   #check(handle) {
@@ -41,7 +45,8 @@ export class TenantIsolateReference {
   }
 
   create(id, {untrusted = false, boundary = "trusted-inprocess", guestCode,
-              limits, processSandbox = false} = {}) {
+              limits, processSandbox = false, mailBytes = 1 << 16} = {}) {
+    if (!positive(mailBytes)) fail("INVALID_MAIL_QUOTA");
     if (typeof id !== "string" || !TENANT_ID.test(id) || id === "." || id === "..")
       fail("INVALID_ID");
     if (typeof untrusted !== "boolean") fail("INVALID_TRUST_FLAG");
@@ -68,7 +73,7 @@ export class TenantIsolateReference {
     const handle = Object.freeze({id, epoch: this.#next++});
     this.#entries.set(id, {handle, epoch: handle.epoch, phase: "created", state: 0, heapUsed: 0,
       work: 0, leases: new Set(), scalarTurn: false, maxInflight: this.#capacity,
-      limits: checkedLimits, kill: null, endReason: null});
+      limits: checkedLimits, kill: null, endReason: null, mailLimit: mailBytes, mail: new Map()});
     return handle;
   }
 
@@ -93,6 +98,9 @@ export class TenantIsolateReference {
     // The isolate's memory is discarded with it; nothing is unwound.
     e.state = 0;
     e.heapUsed = 0;
+    // A dead isolate returns all of its queued mail to the host.
+    for (const bytes of e.mail.values()) this.#hostMail -= bytes;
+    e.mail.clear();
   }
 
   // call(state, alloc) runs one guest turn. alloc(bytes) charges the tenant's
@@ -167,9 +175,42 @@ export class TenantIsolateReference {
     e.phase = "stopped";
   }
 
+  // Queue bytes of mail for the tenant. Bounded per tenant and per host, not
+  // only per mailbox. Returns an opaque message token for take().
+  send(h, bytes) {
+    const e = this.#check(h);
+    if (e.phase !== "running") fail("ADMISSION_CLOSED");
+    if (!positive(bytes)) fail("INVALID_MAIL");
+    let queued = 0;
+    for (const b of e.mail.values()) queued += b;
+    if (bytes > e.mailLimit - queued) fail("TENANT_MAIL_QUOTA");
+    if (bytes > this.#hostMailLimit - this.#hostMail) fail("HOST_MAIL_QUOTA");
+    const token = Object.freeze({identity: Symbol("mail")});
+    e.mail.set(token, bytes);
+    this.#hostMail += bytes;
+    return token;
+  }
+
+  // Deliver one message; its bytes return to both quotas.
+  take(h, token) {
+    const e = this.#check(h);
+    const bytes = e.mail.get(token);
+    if (bytes === undefined) fail("FOREIGN_OR_REPLAYED_MAIL");
+    e.mail.delete(token);
+    this.#hostMail -= bytes;
+  }
+
+  mailUsage(h) {
+    const e = this.#check(h);
+    let tenant = 0;
+    for (const b of e.mail.values()) tenant += b;
+    return {tenant, host: this.#hostMail};
+  }
+
   destroy(h) {
     const e = this.#check(h);
     if (e.phase !== "stopped") fail("STOP_REQUIRED");
+    for (const bytes of e.mail.values()) this.#hostMail -= bytes;
     this.#entries.delete(h.id);
   }
 }
