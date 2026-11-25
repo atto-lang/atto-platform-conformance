@@ -1,0 +1,41 @@
+name: Strict guest AOT adversarial model (source-free, Rust)
+on:
+  pull_request:
+    paths:
+      - 'tools/strict_guest_aot_gc_model.rs'
+      - 'docs/STRICT_GUEST_AOT_GC_MODEL.md'
+      - '.github/workflows/strict-guest-aot-model-rust.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rust-source-free-model:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Check exact source checkout
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+      - name: Compile and execute synthetic Rust model tests (NOT guest proof)
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v rustc
+          rustc --edition=2021 -D warnings -C overflow-checks=on --test tools/strict_guest_aot_gc_model.rs \
+            -o "$RUNNER_TEMP/strict-guest-aot-gc-model-tests"
+          model_list="$("$RUNNER_TEMP/strict-guest-aot-gc-model-tests" --list)"
+          printf "%s\n" "$model_list"
+          printf "%s\n" "$model_list" | grep -Eq "^59 tests, 0 benchmarks$"
+          "$RUNNER_TEMP/strict-guest-aot-gc-model-tests" --test-threads=1 --nocapture
+          printf "%s\n" "MODEL_ONLY_59_TESTS_PASSED; not a guest or release receipt"
