@@ -1,0 +1,4 @@
+pub fnc main(): void {
+  let Task<int> job = nb task { return 7; };
+  return;
+}

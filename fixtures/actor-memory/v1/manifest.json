@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "scope": "actor-owned-scoped-i64-drop-v1",
+  "evidenceLevel": "source-fixtures-only",
+  "verifiedRuntimeBackends": [],
+  "backends": {
+    "llvm": {
+      "implementation": "experimental-gated",
+      "verified": false,
+      "requiredFlag": "--experimental-owned-int",
+      "implementationPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/848"
+    },
+    "java": {
+      "implementation": "pending",
+      "verified": false
+    },
+    "net": {
+      "implementation": "pending",
+      "verified": false
+    },
+    "wasm": {
+      "implementation": "pending",
+      "verified": false
+    },
+    "js": {
+      "implementation": "pending",
+      "verified": false
+    }
+  },
+  "cases": [
+    {
+      "id": "synchronous-owned-drop",
+      "file": "synchronous-owned-drop.ores",
+      "sourceGitBlobSha1": "ddf65fb661eea3789ed3e6722ab093cb3e1a7cb3",
+      "expect": "accept-and-execute",
+      "semanticExpected": {
+        "sourceActorMessages": 8,
+        "lastResult": 1004,
+        "actorHeapOwnersAtStop": 0
+      },
+      "runtimeVerified": false
+    },
+    {
+      "id": "reject-scoped-borrow-escape",
+      "file": "reject-scoped-borrow-escape.ores",
+      "sourceGitBlobSha1": "9a230789599568002554976ffbe296225ef4a5fd",
+      "expect": "reject-no-ir",
+      "diagnosticClass": "borrowed-owner-cannot-escape",
+      "runtimeVerified": false
+    }
+  ],
+  "notes": "Source-only semantic fixtures. LLVM experimental implementation and proposed CI are separate draft PRs; no backend counts as verified without exact-head compiled guest and runtime evidence. No general async, exception unwind, FFI, zero-GC or OS isolation claims."
+}

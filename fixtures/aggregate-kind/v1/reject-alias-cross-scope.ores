@@ -1,0 +1,7 @@
+fnc define_it(): int {
+    type T = struct { foo: int };
+    return 1;
+}
+fnc invalid(): T {
+    return struct { foo: int } { foo: 1 };
+}

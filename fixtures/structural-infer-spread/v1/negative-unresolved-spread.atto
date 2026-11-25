@@ -1,0 +1,4 @@
+pub fnc main(): int {
+  const n = infer struct{...missing, y: 2};
+  return n.y;
+}

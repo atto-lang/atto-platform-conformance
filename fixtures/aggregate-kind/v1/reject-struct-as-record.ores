@@ -1,0 +1,3 @@
+fnc invalid(): record { foo: int } {
+    return struct { foo: int } { foo: 5 };
+}

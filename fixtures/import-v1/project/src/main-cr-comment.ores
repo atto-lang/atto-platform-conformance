@@ -1,0 +1,1 @@
+// This comment must end at CR, not consume the following import.import fnc helper from "./lib/helper";fnc main(): int {  return helper(41);}

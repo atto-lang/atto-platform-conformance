@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "contract_id": "oreslang-ets-pg-local-v1",
+  "evidence_type": "source_free_model_only",
+  "semantics": {
+    "ets": "private/protected/public capability ACL; bounded table; versioned CAS prevents ABA; owner death revokes old handles; owner-controlled heir transfer only when implemented",
+    "pg": "multi-group membership independent of lifecycle ownership; stable group incarnation; join capability rotation; recipient bound before allocation; best-effort partial fanout only; admission is not processing acknowledgment",
+    "isolation": "tenant actor-generation authentication and fail-closed cross-isolate operations",
+    "scheduling": "no implicit OS thread per table, group, subscriber, actor or Mailman",
+    "real_time": "no hard RT claim until WCET, nonparking and preallocation proofs"
+  },
+  "required_test_cases": [
+    "pg_multi_membership",
+    "pg_group_id_aba",
+    "pg_join_permit_rotation",
+    "pg_bounded_fanout",
+    "pg_close_during_delivery",
+    "pg_partial_mailbox_backpressure",
+    "pg_actor_generation_reuse",
+    "pg_cross_isolate_denied",
+    "pg_quotas",
+    "ets_versioned_cas_aba",
+    "ets_owner_finalization",
+    "ets_acl_modes",
+    "vm_zero_cold_thread_budget",
+    "native_compiler_guest_fail_closed"
+  ],
+  "backends": {
+    "java": {
+      "source_guest": "unverified",
+      "host_evidence": "actor_groups_and_mailmen_only"
+    },
+    "llvm": {
+      "source_guest": "unverified",
+      "host_evidence": "draft_native_ets_pg_pr_1243"
+    },
+    "wasm": {
+      "source_guest": "unverified",
+      "host_evidence": "no_authenticated_guest_ets_pg"
+    },
+    "cranelift": {
+      "source_guest": "unverified",
+      "host_evidence": "no_authenticated_guest_ets_pg"
+    },
+    "net": {
+      "source_guest": "unverified",
+      "host_evidence": "no_authenticated_guest_ets_pg"
+    },
+    "forge": {
+      "source_guest": "unverified",
+      "host_evidence": "no_authenticated_guest_ets_pg"
+    }
+  },
+  "promotion_gate": [
+    "exact_head_stepful_compiler_and_guest",
+    "negative_no_IR_for_unsupported_source",
+    "real_authenticated_actor_mailbox_admission",
+    "physical_owner_death_and_resource_loans",
+    "isolate_process_sandbox_independent_verification",
+    "gcc_clang_asan_ubsan_and_applicable_tsan",
+    "java_llvm_wasm_cranelift_net_forge_differential_outcomes"
+  ]
+}

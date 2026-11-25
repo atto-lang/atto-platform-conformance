@@ -1,0 +1,143 @@
+{
+  "schema": 1,
+  "batch": 5,
+  "snapshot": "2026-10-19",
+  "scope": "Oreslang original backlog items 41-50",
+  "claim": "PARTIAL_DIRECT_JAVA_SECURITY_FIX_PLUS_SOURCE_FREE_ADVERSARIAL_MODELS",
+  "fix": {
+    "repo": "ores-truffle-oreslang/oreslang-source.java",
+    "pr": 1503,
+    "basePr": 1438,
+    "scope": "PEER_LOCAL_VERDICTS_FENCED_EOF_AND_PREDISPATCH_REJECTION",
+    "verifiedExactHeadJava": false
+  },
+  "upstreamEvidence": {
+    "repo": "ores-dummy-org-oreslang-stack/ores-dummy-org-oreslang-stack-infra",
+    "run": 39207273400,
+    "reportedScope": "JAVA_ACTOR_HOST_EGRESS_TESTS",
+    "jobConclusion": "success",
+    "stepExecutionObserved": true,
+    "appliesToCurrentBatch05JavaPatch": false,
+    "guestNetworkIsolationProof": false,
+    "caveat": "Funded private carrier canary run 39303220290 confirms recently executed runner; source snapshot export remains blocked by independent policy"
+  },
+  "safety": {
+    "directUntrustedNetwork": "DEFAULT_DENY",
+    "nativeUntrustedScheduleDomainIsSandbox": false,
+    "otherOrgPrivateSourceExport": "EXPLICIT_INDEPENDENT_SCOPE_APPROVAL_REQUIRED",
+    "zeroStepActions": "UNOBSERVED_NOT_PASS_OR_COMPILER_FAILURE",
+    "controlChannelGuestForging": "DENY"
+  },
+  "tasks": [
+    {
+      "task": 41,
+      "repo": "ores-truffle-oreslang/oreslang-common-source",
+      "kind": "issue",
+      "number": 69,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-common-source/issues/69",
+      "objective": "Trusted UNTRUSTED-to-supervisor outbound quota",
+      "releaseGate": "RUNTIME_AUTHENTICATED_SEND_INTERCEPTION",
+      "status": "PENDING_PRODUCTION_GUEST_PROOF",
+      "sourceFreeOracle": "NON_CERTIFYING"
+    },
+    {
+      "task": 42,
+      "repo": "ores-truffle-oreslang/oreslang-source.java",
+      "kind": "issue",
+      "number": 1265,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/1265",
+      "objective": "Java actor egress quota enforcement and network broker",
+      "releaseGate": "PROTECTED_GUEST_BROKER_AND_MAILBOX_PARITY",
+      "status": "PENDING_PRODUCTION_GUEST_PROOF",
+      "sourceFreeOracle": "NON_CERTIFYING"
+    },
+    {
+      "task": 43,
+      "repo": "ores-truffle-oreslang/oreslang-source.llvm",
+      "kind": "issue",
+      "number": 589,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/issues/589",
+      "objective": "Native supervisor quotas and fail-closed untrusted boundary",
+      "releaseGate": "REAL_NATIVE_GUEST_SEND_ADMISSION",
+      "status": "PENDING_PRODUCTION_GUEST_PROOF",
+      "sourceFreeOracle": "NON_CERTIFYING"
+    },
+    {
+      "task": 44,
+      "repo": "ores-truffle-oreslang/oreslang-platform-conformance",
+      "kind": "issue",
+      "number": 87,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/87",
+      "objective": "Adversarial supervisor quota and restart fanout vectors",
+      "releaseGate": "ACTUAL_JAVA_AND_LLVM_GUEST_EVIDENCE",
+      "status": "PENDING_PRODUCTION_GUEST_PROOF",
+      "sourceFreeOracle": "NON_CERTIFYING"
+    },
+    {
+      "task": 45,
+      "repo": "ores-truffle-oreslang/oreslang-source.llvm",
+      "kind": "issue",
+      "number": 645,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/issues/645",
+      "objective": "Anon-inode FD alias capability identity",
+      "releaseGate": "TRUSTED_FD_HANDOFF_AND_NATIVE_CTEST",
+      "status": "PENDING_PRODUCTION_GUEST_PROOF",
+      "sourceFreeOracle": "NON_CERTIFYING"
+    },
+    {
+      "task": 46,
+      "repo": "ores-truffle-oreslang/oreslang-source.llvm",
+      "kind": "pr",
+      "number": 654,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/654",
+      "objective": "Native unsupported transport declaration fail-closed parsing",
+      "releaseGate": "EXECUTED_NATIVE_PARSER_NEGATIVES",
+      "status": "PENDING_PRODUCTION_GUEST_PROOF",
+      "sourceFreeOracle": "NON_CERTIFYING"
+    },
+    {
+      "task": 47,
+      "repo": "ores-truffle-oreslang/oreslang-source.java",
+      "kind": "pr",
+      "number": 1406,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1406",
+      "objective": "Java typed transport actor declaration and runtime denial",
+      "releaseGate": "EXECUTED_GUEST_TRANSPORT_ADAPTER_GATES",
+      "status": "PENDING_PRODUCTION_GUEST_PROOF",
+      "sourceFreeOracle": "NON_CERTIFYING"
+    },
+    {
+      "task": 48,
+      "repo": "ores-truffle-oreslang/oreslang-ml",
+      "kind": "issue",
+      "number": 11,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-ml/issues/11",
+      "objective": "Authenticated actor ML control and nominal TrainingError",
+      "releaseGate": "SUPERVISOR_MINTED_CONTROL_AND_GUEST_TEST",
+      "status": "PENDING_PRODUCTION_GUEST_PROOF",
+      "sourceFreeOracle": "NON_CERTIFYING"
+    },
+    {
+      "task": 49,
+      "repo": "ores-truffle-oreslang/oreslang-source.java",
+      "kind": "issue",
+      "number": 1267,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/1267",
+      "objective": "Binding-identity lexical captures without unintended self",
+      "releaseGate": "JAVA_CLOSURE_REACHABILITY_AND_RESOLUTION",
+      "status": "PENDING_PRODUCTION_GUEST_PROOF",
+      "sourceFreeOracle": "NON_CERTIFYING"
+    },
+    {
+      "task": 50,
+      "repo": "ores-truffle-oreslang/oreslang-source.java",
+      "kind": "pr",
+      "number": 1438,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1438",
+      "objective": "IPC receipt correlation and host completion bridge",
+      "releaseGate": "AUTHENTICATED_TWO_PROCESS_IPC_PARITY",
+      "status": "PENDING_PRODUCTION_GUEST_PROOF",
+      "sourceFreeOracle": "NON_CERTIFYING"
+    }
+  ]
+}

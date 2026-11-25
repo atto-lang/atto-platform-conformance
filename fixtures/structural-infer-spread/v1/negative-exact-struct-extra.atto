@@ -1,0 +1,5 @@
+pub fnc main(): int {
+  const b = infer record{x: 2, y: true};
+  const n = struct{x: int}{...b};
+  return n.x;
+}

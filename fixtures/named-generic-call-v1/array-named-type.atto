@@ -1,0 +1,4 @@
+// Requires the imported Array declaration to export formal T.
+fnc main() -> void ::
+  val xs: Array<T=int> = Array<T=int>()
+end

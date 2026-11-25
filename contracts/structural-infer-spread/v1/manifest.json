@@ -1,0 +1,414 @@
+{
+  "schema": "attolang.structural-infer-spread.v1",
+  "status": "proposed-no-four-backend-parity",
+  "origin": "oreslang-common-source/contracts/v1/IMMUTABLE_AGGREGATE_SPREAD_V1.md",
+  "sourceSyntax": {
+    "inferredStruct": "infer struct{...existing, field: expression}",
+    "inferredRecord": "infer record{...existing, field: expression}",
+    "structuralUseSite": "structural { field: Type }",
+    "explicitStruct": "struct{field: Type}{...existing, field: expression}",
+    "invalidComposition": "infer structural"
+  },
+  "backendEvidence": {
+    "java": {
+      "positiveGuestExecution": false,
+      "negativeFrontendExecution": false,
+      "exactSourceCommit": null,
+      "exactCompilerCommit": null,
+      "toolchainArtifact": null
+    },
+    "llvm": {
+      "positiveGuestExecution": false,
+      "negativeFrontendExecution": false,
+      "exactSourceCommit": null,
+      "exactCompilerCommit": null,
+      "toolchainArtifact": null
+    },
+    "net": {
+      "positiveGuestExecution": false,
+      "negativeFrontendExecution": false,
+      "exactSourceCommit": null,
+      "exactCompilerCommit": null,
+      "toolchainArtifact": null
+    },
+    "wasm": {
+      "positiveGuestExecution": false,
+      "negativeFrontendExecution": false,
+      "exactSourceCommit": null,
+      "exactCompilerCommit": null,
+      "toolchainArtifact": null
+    }
+  },
+  "cases": [
+    {
+      "id": "infer-record-inline",
+      "expect": "accept",
+      "source": "fnc test() -> void { const x = infer record{a: 5, b: true}; return; }",
+      "stage": "source-contract-only",
+      "writes": [
+        {
+          "key": "a",
+          "type": "int"
+        },
+        {
+          "key": "b",
+          "type": "bool"
+        }
+      ],
+      "expectedRow": {
+        "a": "int",
+        "b": "bool"
+      }
+    },
+    {
+      "id": "infer-struct-inline",
+      "expect": "accept",
+      "source": "fnc test() -> void { const x = infer struct{a: 5, b: true}; return; }",
+      "stage": "source-contract-only",
+      "writes": [
+        {
+          "key": "a",
+          "type": "int"
+        },
+        {
+          "key": "b",
+          "type": "bool"
+        }
+      ],
+      "expectedRow": {
+        "a": "int",
+        "b": "bool"
+      }
+    },
+    {
+      "id": "extend-struct",
+      "expect": "accept",
+      "source": "fnc test() -> void { const b = infer struct{a: 5}; const n = infer struct{...b, added: true}; return; }",
+      "stage": "source-contract-only",
+      "writes": [
+        {
+          "key": "a",
+          "type": "int"
+        },
+        {
+          "key": "added",
+          "type": "bool"
+        }
+      ],
+      "expectedRow": {
+        "a": "int",
+        "added": "bool"
+      }
+    },
+    {
+      "id": "extend-record",
+      "expect": "accept",
+      "source": "fnc test() -> void { const b = infer record{a: 5}; const n = infer record{...b, added: true}; return; }",
+      "stage": "source-contract-only",
+      "writes": [
+        {
+          "key": "a",
+          "type": "int"
+        },
+        {
+          "key": "added",
+          "type": "bool"
+        }
+      ],
+      "expectedRow": {
+        "a": "int",
+        "added": "bool"
+      }
+    },
+    {
+      "id": "struct-to-record",
+      "expect": "accept",
+      "source": "fnc test() -> void { const b = infer struct{a: 5}; const n = infer record{...b, label: \"x\"}; return; }",
+      "stage": "source-contract-only",
+      "writes": [
+        {
+          "key": "a",
+          "type": "int"
+        },
+        {
+          "key": "label",
+          "type": "String"
+        }
+      ],
+      "expectedRow": {
+        "a": "int",
+        "label": "String"
+      }
+    },
+    {
+      "id": "record-to-struct",
+      "expect": "accept",
+      "source": "fnc test() -> void { const b = infer record{a: 5}; const n = infer struct{...b, label: \"x\"}; return; }",
+      "stage": "source-contract-only",
+      "writes": [
+        {
+          "key": "a",
+          "type": "int"
+        },
+        {
+          "key": "label",
+          "type": "String"
+        }
+      ],
+      "expectedRow": {
+        "a": "int",
+        "label": "String"
+      }
+    },
+    {
+      "id": "spread-retains-source",
+      "expect": "accept",
+      "source": "fnc test() -> int { const b = infer record{a: 40}; const n = infer record{...b, a: 42}; return b.a + n.a - 40; }",
+      "stage": "source-contract-only",
+      "writes": [
+        {
+          "key": "a",
+          "type": "int"
+        },
+        {
+          "key": "a",
+          "type": "int"
+        }
+      ],
+      "expectedRow": {
+        "a": "int"
+      }
+    },
+    {
+      "id": "spread-retypes-field",
+      "expect": "accept",
+      "source": "fnc test() -> void { const b = infer record{a: 5}; const n = infer record{...b, a: \"now text\"}; return; }",
+      "stage": "source-contract-only",
+      "writes": [
+        {
+          "key": "a",
+          "type": "int"
+        },
+        {
+          "key": "a",
+          "type": "String"
+        }
+      ],
+      "expectedRow": {
+        "a": "String"
+      }
+    },
+    {
+      "id": "rightmost-multiple-spreads",
+      "expect": "accept",
+      "source": "fnc test() -> void { const b = infer record{x: 1, y: 2}; const c = infer record{y: true, z: 4}; const n = infer record{...b, ...c, x: \"last\"}; return; }",
+      "stage": "source-contract-only",
+      "writes": [
+        {
+          "key": "x",
+          "type": "int"
+        },
+        {
+          "key": "y",
+          "type": "int"
+        },
+        {
+          "key": "y",
+          "type": "bool"
+        },
+        {
+          "key": "z",
+          "type": "int"
+        },
+        {
+          "key": "x",
+          "type": "String"
+        }
+      ],
+      "expectedRow": {
+        "x": "String",
+        "y": "bool",
+        "z": "int"
+      }
+    },
+    {
+      "id": "empty-spread",
+      "expect": "accept",
+      "source": "fnc test() -> void { const b = infer record{}; const n = infer record{...b, x: 42}; return; }",
+      "stage": "source-contract-only",
+      "writes": [
+        {
+          "key": "x",
+          "type": "int"
+        }
+      ],
+      "expectedRow": {
+        "x": "int"
+      }
+    },
+    {
+      "id": "structural-record-width",
+      "expect": "accept",
+      "source": "fnc get_x(structural {x: int} v) -> int { return v.x; } fnc test() -> int { const b = infer record{x: 42, y: true}; return get_x(b); }",
+      "stage": "source-contract-only",
+      "writes": [
+        {
+          "key": "x",
+          "type": "int"
+        },
+        {
+          "key": "y",
+          "type": "bool"
+        }
+      ],
+      "expectedRow": {
+        "x": "int",
+        "y": "bool"
+      }
+    },
+    {
+      "id": "structural-struct-width",
+      "expect": "accept",
+      "source": "fnc get_x(structural {x: int} v) -> int { return v.x; } fnc test() -> int { const b = infer struct{x: 42, y: true}; return get_x(b); }",
+      "stage": "source-contract-only",
+      "writes": [
+        {
+          "key": "x",
+          "type": "int"
+        },
+        {
+          "key": "y",
+          "type": "bool"
+        }
+      ],
+      "expectedRow": {
+        "x": "int",
+        "y": "bool"
+      }
+    },
+    {
+      "id": "explicit-exact-struct",
+      "expect": "accept",
+      "source": "fnc test() -> void { const b = infer record{x: 5}; const n = struct{x: int, y: bool}{...b, y: true}; return; }",
+      "stage": "source-contract-only",
+      "writes": [
+        {
+          "key": "x",
+          "type": "int"
+        },
+        {
+          "key": "y",
+          "type": "bool"
+        }
+      ],
+      "expectedRow": {
+        "x": "int",
+        "y": "bool"
+      }
+    },
+    {
+      "id": "reject-infer-scalar",
+      "expect": "reject",
+      "source": "fnc test() -> void { const x = infer 42; return; }",
+      "stage": "frontend-before-artifact",
+      "diagnosticClass": "invalid-infer-target",
+      "releaseArtifactAllowed": false
+    },
+    {
+      "id": "reject-infer-structural",
+      "expect": "reject",
+      "source": "fnc test() -> void { const x = infer structural {x: 42}; return; }",
+      "stage": "frontend-before-artifact",
+      "diagnosticClass": "contextual-keyword-confusion",
+      "releaseArtifactAllowed": false
+    },
+    {
+      "id": "reject-missing-source",
+      "expect": "reject",
+      "source": "fnc test() -> void { const x = infer record{...not_defined, y: 5}; return; }",
+      "stage": "frontend-before-artifact",
+      "diagnosticClass": "unresolved-spread-source",
+      "releaseArtifactAllowed": false
+    },
+    {
+      "id": "reject-non-aggregate",
+      "expect": "reject",
+      "source": "fnc test() -> void { const x = infer struct{...42, y: 5}; return; }",
+      "stage": "frontend-before-artifact",
+      "diagnosticClass": "nonaggregate-spread",
+      "releaseArtifactAllowed": false
+    },
+    {
+      "id": "reject-duplicate-explicit",
+      "expect": "reject",
+      "source": "fnc test() -> void { const b = infer record{x: 2}; const x = infer record{x: 3, ...b, x: 4}; return; }",
+      "stage": "frontend-before-artifact",
+      "diagnosticClass": "duplicate-explicit-field",
+      "releaseArtifactAllowed": false
+    },
+    {
+      "id": "reject-explicit-shape-mismatch",
+      "expect": "reject",
+      "source": "fnc test() -> void { const b = infer record{x: \"bad\"}; const n = struct{x: int}{...b}; return; }",
+      "stage": "frontend-before-artifact",
+      "diagnosticClass": "explicit-struct-type-mismatch",
+      "releaseArtifactAllowed": false
+    },
+    {
+      "id": "reject-explicit-shape-extra",
+      "expect": "reject",
+      "source": "fnc test() -> void { const b = infer record{x: 5, y: true}; const n = struct{x: int}{...b}; return; }",
+      "stage": "frontend-before-artifact",
+      "diagnosticClass": "explicit-struct-extra-field",
+      "releaseArtifactAllowed": false
+    },
+    {
+      "id": "reject-explicit-shape-missing",
+      "expect": "reject",
+      "source": "fnc test() -> void { const b = infer record{x: 5}; const n = struct{x: int, y: bool}{...b}; return; }",
+      "stage": "frontend-before-artifact",
+      "diagnosticClass": "explicit-struct-missing-field",
+      "releaseArtifactAllowed": false
+    },
+    {
+      "id": "reject-structural-write",
+      "expect": "reject",
+      "source": "fnc change(structural {x: int} v) -> void { v.x = 7; return; }",
+      "stage": "frontend-before-artifact",
+      "diagnosticClass": "readonly-structural-loan",
+      "releaseArtifactAllowed": false
+    },
+    {
+      "id": "reject-structural-escape",
+      "expect": "reject",
+      "source": "fnc leak(structural {x: int} v) -> structural {x: int} { return v; }",
+      "stage": "frontend-before-artifact",
+      "diagnosticClass": "borrow-escape",
+      "releaseArtifactAllowed": false
+    },
+    {
+      "id": "reject-dynamic-map-spread",
+      "expect": "reject",
+      "source": "fnc test() -> void { const m = Map<String, int>(); const n = infer record{...m}; return; }",
+      "stage": "frontend-before-artifact",
+      "diagnosticClass": "dynamic-row-not-static",
+      "releaseArtifactAllowed": false
+    },
+    {
+      "id": "reject-mutable-borrow-field",
+      "expect": "reject",
+      "source": "fnc test() -> void { let mut int x = 5; const b = infer record{p: rt mut borrow x}; const n = infer record{...b}; return; }",
+      "stage": "frontend-before-artifact",
+      "diagnosticClass": "borrowed-mutable-capability",
+      "releaseArtifactAllowed": false
+    },
+    {
+      "id": "reject-nominal-erasure",
+      "expect": "reject",
+      "source": "define class Account as int id: 5 end fnc test() -> void { const a = Account(); const n = infer record{...a}; return; }",
+      "stage": "frontend-before-artifact",
+      "diagnosticClass": "nominal-object-not-aggregate",
+      "releaseArtifactAllowed": false
+    }
+  ]
+}

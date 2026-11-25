@@ -1,0 +1,4 @@
+fnc invalid(): T {
+    type T = struct { recursive: T };
+    return struct { recursive: int } { recursive: 1 };
+}

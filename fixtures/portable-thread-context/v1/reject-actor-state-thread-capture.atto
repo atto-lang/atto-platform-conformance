@@ -1,0 +1,11 @@
+// Candidate rejection. NOT_EXECUTED. Diagnostic: thread_capture_actor_state.
+define actor Counter as
+    state { let int count: 42; }
+    start() -> void ::
+        handle_state(critical-read |s| -> {
+            Thread.spawn(ThreadOptions.default(), || -> int {
+                return s.count;
+            });
+        });
+    end
+end

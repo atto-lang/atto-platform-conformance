@@ -1,0 +1,8 @@
+define class Builder as
+  build(int first, int second) -> int ::
+    return first * 10 + second
+  end
+end
+fnc main() -> int ::
+  return Builder().build(second: 2, first: 1)
+end

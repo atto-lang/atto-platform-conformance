@@ -176,3 +176,29 @@ checker test bypassing the parser.
 These results verify the **native-hosted Rust compiler emitting Wasm**. They
 do not prove a wasm32-hosted compiler, independent Java/LLVM/.NET/Forge/Wasm
 backends, or general exception-cleanup and struct-construction safety.
+
+## Rust-only read-only conformance case and capability planner (draft PR #21)
+
+The standalone `bin/plan-capabilities.rs` replaces the unmerged Node-based AOT planning prototype on this PR, while preserving its seven-profile/six-case source-only inventory. `--aot-contract contracts/aot-gc-tenant-evidence-v1.json` emits 42 NOT_EXECUTED entries, verifying the exact canonical contract Git blob. `--inventory tests/fixtures/capability-inventory-v1.tsv` emits the complete 11-backend/10-feature inventory (110 NOT_EXECUTED entries); `--backend llvm` narrows either output without changing evidence status.
+
+The checked-in TSV is a [pinned draft snapshot](docs/capability-inventory-provenance.md) of `atto-target-profiles` PR #3, not a second normative schema. `rustc --edition=2021 --test bin/plan-capabilities.rs` runs Rust-only adversarial checks. New planner CI verifies exact Git source hashes and runs both CLIs, but **never executes a compiled .atto guest** and never yields an authenticated PASSED result. Existing legacy receipt verifiers remain untouched and are not replaced by this planning tool.
+
+## Legacy provenance and transfer verification
+
+The archived predecessor is `ores-truffle-oreslang/oreslang-platform-conformance`; the current repository is `atto-lang/atto-platform-conformance`. These are distinct repository identities, not evidence of an original-ID transfer or equivalent implementation. Preserve working legacy `.ores` fixtures and historical package/CLI aliases until separately verified replacements exist. Cross-backend guest fixtures, negative-case manifests and executed parity receipts belong here; compiler feature implementation belongs in the backend repositories.
+
+[atto-lang](https://github.com/atto-lang) owns language, runtime and parity tooling; [atto-co](https://github.com/atto-co) separately governs managed infrastructure, deployment, tenancy and billing. Any future original-ID transfer or commercial carve-out requires separate owner authorization and independent security review. Inventory exact SHA/tree, numeric ID, visibility, access, rulesets, PRs, releases, packages, submodules, consumers, runners, secrets, applications, webhooks, Pages and rollback ownership; verify preservation and rerun exact-head tests after an authorized transfer. Never mirror private source without authorization. Zero-step jobs are NOT_EXECUTED; host-only and source-only checks do not establish compiled guest execution or target certification.
+
+## Pull/push collections (target-only candidate)
+
+The [pull/push admission v1 manifest](contracts/pull-push-admission-v1.json) defines 20 candidate checks
+covering lazy iterators, reactive demand, bounded channels, failed-send ownership,
+cancellation, actor generations, and compiler/allocator safety. Its [Node model integrity
+tests](tests/pull-push-admission.test.mjs) intentionally **reject all unattended PASS
+claims**. They are **not** guest tests, source implementation, or five-backend parity.
+The normative [language amendment](https://github.com/ores-truffle-oreslang/attolang-language-spec.md/pull/35)
+and [source-free model](https://github.com/atto-lang/atto-rx-channels/pull/3) track semantics.
+
+## Result/Option payload-discard contract (draft)
+
+- [Versioned six-fixture matrix](contracts/adt-payload-discard-v1.json) with [verification notes](docs/adt-payload-discard-v1.md) tracks `Ok()`, `Err()`, `Ok(_)`, `Err(_)` and guarded binders; only the scoped Rust/Wasm compiled guest suite has PASS evidence. Java, LLVM, .NET and Forge are NOT_EXECUTED.

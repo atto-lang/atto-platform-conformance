@@ -1,0 +1,7 @@
+pub fnc main(): void {
+  val group = ActorGroup.new();
+  val permit = group.join_capability();
+  val next = group.rotate_join_capability();
+  group.close();
+  return;
+}

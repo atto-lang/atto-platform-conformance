@@ -1,0 +1,46 @@
+name: Conformance harness unit checks (not compiler parity)
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  harness:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify source identity before oracle checks
+        env:
+          EXPECTED_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
+          # Avoid git diff/status clean-filter execution and include ignored
+          # untracked sources in the exact-checkout integrity decision.
+          python3 scripts/verify-raw-worktree.py --self-test
+          python3 scripts/verify-raw-worktree.py .
+          echo "Conformance source commit: $EXPECTED_SOURCE_SHA"
+          echo "Conformance source tree: $(git rev-parse 'HEAD^{tree}')"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - run: npm test
+      - name: Reject unproven external integration claims and issue inventory drift
+        run: node bin/check-external-ores-audit.mjs
+      - name: Independent JSON Schema Draft 2020-12 contract checks
+        run: |
+          python3 -m venv "$RUNNER_TEMP/ores-evidence-schema-venv"
+          "$RUNNER_TEMP/ores-evidence-schema-venv/bin/python" -m pip install --disable-pip-version-check --no-input "jsonschema==4.26.0"
+          "$RUNNER_TEMP/ores-evidence-schema-venv/bin/python" -m unittest discover -s tests -p test_performance_schema.py -v
+      - name: Confirm mandatory real compiler gate cannot pass unconfigured
+        run: |
+          for backend in java llvm net wasm forge; do
+            if node bin/conformance.mjs "--backend=$backend" --require; then
+              echo "ERROR: unconfigured $backend compiler unexpectedly counted as passing" >&2
+              exit 1
+            fi
+          done
