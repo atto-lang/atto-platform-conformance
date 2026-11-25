@@ -37,6 +37,84 @@ The CLI caps each input to 256 KiB, rejects symlinks/hardlinks/noncanonical JSON
 
 **Exit statuses: 1 BLOCKED, 2 malformed/untrusted data, 3 structurally reported complete but REQUIRES LIVE RECHECK. The CLI never returns 0.** Even caller-supplied `REPORTED_PASS` with plausible run IDs is labeled `REPORTED_PASS_UNVERIFIED`; a caller-controlled receipt is not authenticated by its syntax.
 
+## Additional schema and timestamp hardening (draft PR #552)
+
+Candidate inputs now reject unknown *authority-like* keys at the top level
+and within the postmerge ledger, negative oracle, contracts/proposals,
+single-guest and suite-pending oracles, backend metadata, compiler identity,
+and guest/formal/AOT/memory state records. The source-free data is still
+untrusted: valid receipt syntax is **not** a signature, GitHub execution
+attestation, or release authorization. Extra fields such as
+`release_authorized`, `certified`, `waived`, `ruleset_enforced`,
+`binary_trusted` and `executed` fail closed instead of being silently
+ignored by one consumer and trusted by another.
+
+Both the release candidate and case-oracle validator also require canonical
+UTC dates. JavaScript `Date.parse` can normalize impossible dates; acceptance
+now requires the parsed timestamp to round-trip byte-for-byte to the declared
+second-resolution `YYYY-MM-DDTHH:mm:ssZ` form. A valid historical leap day
+may pass structural validation but is still subject to freshness holds.
+
+These changes add 22 candidate regression tests and five case-inventory
+timestamp tests (27 new cases beyond the five fixture-path tests). They are
+**authored tests**, not a claimed source-owned CI or full native Node test pass.
+Before release use, execute the entire pinned-head test suite on an admitted
+source-owned runner and obtain independent review.
+
+## Runner identity hardening (PR #552 follow-up)
+
+A claimed successful build, guest, compiler-negative, formal, AOT or memory
+receipt must now include both a positive `runner_id` **and** an unpadded,
+printable ASCII `runner_name` of 1–128 characters, alongside completed
+meaningful steps. Missing, whitespace-only, control-character, non-ASCII
+invisible, or overlong names fail closed. Four regression tests check
+guest, build and negative-compiler receipt behavior, including that a
+syntactically complete self-reported receipt remains
+`REPORTED_PASS_UNVERIFIED`. The test runner name is explicitly synthetic,
+not a live GitHub attestation.
+
+At the pinned revision of this follow-up, 46 targeted adversarial cases
+were exercised directly against the original GitHub tool module bytes in
+an isolated V8 harness; this is **not** the checked-in Node 22 test suite,
+CI execution, or compiled AttoLang guest execution. Runtime-admission
+checks require independently fetched live run/job/step records before
+authentication. An offline snapshot never provides release authority.
+
+## Receipt schema and semantic evidence hardening
+
+The offline five-backend reporter now uses **exact permitted keys** for each
+receipt kind (guest, negative compiler, formal, full AOT and memory), as well
+as its CI step records, compiler output/diagnostic objects and GC metrics.
+Unknown authority-like claims such as `certified`, `approved`, `waived`,
+`verified_gc`, or `release_authorized` cause validation failure rather
+than silently passing through a nested evidence object. This is structural
+defense only: caller-supplied, correctly shaped receipts are still
+**untrusted**, with no independent GitHub runner, source hash or output
+attestation.
+
+A syntactically valid `REPORTED_PASS` now produces an explicit per-backend
+`*_RECEIPT_UNAUTHENTICATED` blocker and a top-level
+`UNAUTHENTICATED_RECEIPT_CLAIMS` hold, instead of clearing the local
+evidence-blocker category merely because the receipt has plausible fields.
+The post-merge ledger's *reported* status must also equal the independently
+computed local audit status; contradictory snapshots are rejected.
+
+LLVM's zero-GC target also has a necessary structural precondition:
+`gc_collections` must equal **0** in any claimed successful memory receipt.
+This alone does **not** establish zero GC, zero allocations, nonmoving memory,
+hard-real-time behavior or observed target parity. Such claims remain
+`REPORTED_PASS_UNVERIFIED`; Java's JVM min-GC and GraalVM zero-GC targets
+need target-profile-specific measurements and cannot be conflated.
+
+Eight focused Node regression cases were added for these issues, bringing
+this child PR to **44 authored new tests**. The checked-in test callbacks from
+the certification and guest-case test files were also exercised in a
+source-free isolated V8 harness using the exact GitHub module and fixture
+contents: **132 passed, 0 failed, 6 Node-specific filesystem/CLI callbacks
+skipped**. This is not `node --test`, source-owned GitHub CI or compiler
+guest execution. Those skipped tests still require a properly admitted
+source-owned runner; no release gate is satisfied by this local harness.
+
 ## Authority required to move beyond snapshots
 
 A **separate, authenticated source-owned live verifier** must independently recover and compare real GitHub main protections, exact branch/PR Git commits and trees, compiler binary hashes and build provenance, immutable .atto fixture hashes, execution profiles, job/run attempts and real steps/log artifacts, guest stdout/exit and targeted negative diagnostics, independent reviewer attestations, complete formal-model proof results, full native AOT output and measured memory behavior.

@@ -44,7 +44,13 @@ if(args.length<1||args.length>2||(args.length===2&&args[1]!=='--markdown')){
     const ledger=readCanonical(path);
     if(gitBlob(ledger.bytes)!==manifest.postmerge_ledger.github_blob_sha)
       throw Error('landed evidence Git blob SHA mismatch');
-    const report=evaluateCandidate(manifest,ledger.parsed);
+    // Pin the exact source-owned case manifest in this draft branch.
+    // Offline bytes still cannot authenticate a compiler guest execution.
+    const casePath=fileURLToPath(new URL('../contracts/atto-guest-case-oracle-v1.json',import.meta.url));
+    const caseInventory=readCanonical(casePath);
+    if(gitBlob(caseInventory.bytes)!=='94b6e74a0100b8210401a5dbc3aebe4ce142eb71')
+      throw Error('case-level draft manifest Git blob SHA mismatch');
+    const report=evaluateCandidate(manifest,ledger.parsed,caseInventory.parsed);
     console.log(args[1]==='--markdown'?toMarkdown(report):JSON.stringify(report,null,2));
     process.exitCode=report.status==='BLOCKED'?1:3;
   }catch(e){

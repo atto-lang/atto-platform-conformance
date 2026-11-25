@@ -11,6 +11,9 @@ on:
       - 'tools/atto-five-backend-certification-v1.mjs'
       - 'bin/atto-five-backend-certification-v1.mjs'
       - 'tests/atto-five-backend-certification-v1.test.mjs'
+      - 'contracts/atto-guest-case-oracle-v1.json'
+      - 'tools/atto-guest-case-oracle-v1.mjs'
+      - 'tests/atto-guest-case-oracle-v1.test.mjs'
       - 'evidence/atto-five-backend-release-candidate-v1.json'
       - 'docs/landed-main-evidence.md'
       - '.github/workflows/landed-main-evidence.yml'
@@ -25,6 +28,9 @@ on:
       - 'tools/atto-five-backend-certification-v1.mjs'
       - 'bin/atto-five-backend-certification-v1.mjs'
       - 'tests/atto-five-backend-certification-v1.test.mjs'
+      - 'contracts/atto-guest-case-oracle-v1.json'
+      - 'tools/atto-guest-case-oracle-v1.mjs'
+      - 'tests/atto-guest-case-oracle-v1.test.mjs'
       - 'evidence/atto-five-backend-release-candidate-v1.json'
       - 'docs/landed-main-evidence.md'
       - '.github/workflows/landed-main-evidence.yml'
@@ -58,8 +64,9 @@ jobs:
         run: |
           set -euo pipefail
           node --check tools/atto-five-backend-certification-v1.mjs
+          node --check tools/atto-guest-case-oracle-v1.mjs
           node --check bin/atto-five-backend-certification-v1.mjs
-          node --test tests/landed-main-evidence.test.mjs tests/landed-main-20261106-platform-wave.test.mjs tests/atto-five-backend-certification-v1.test.mjs
+          node --test tests/landed-main-evidence.test.mjs tests/landed-main-20261106-platform-wave.test.mjs tests/atto-five-backend-certification-v1.test.mjs tests/atto-guest-case-oracle-v1.test.mjs
       - name: Verify real sample ledger fails closed
         shell: bash
         run: |
