@@ -8,7 +8,7 @@ test('v2 corpus is explicit about evidence level and stage counts', () => {
   assert.equal(doc.status, 'CORPUS_ONLY_NOT_BACKEND_EXECUTION');
   assert.equal(doc.cases.length, 210);
   assert.equal(new Set(doc.cases.map(c => c.id)).size, 210);
-  assert.equal(new Set(doc.cases.map(c => [c.stage,c.source,c.reference ?? '',c.currentNamespace ?? ''].join('\\0'))).size, 210);
+  assert.equal(new Set(doc.cases.map(c => JSON.stringify([c.stage,c.source,c.reference ?? '',c.currentNamespace ?? '']))).size, 210);
   assert.equal(doc.cases.filter(c => c.stage === 'guest').length, 56);
   assert.equal(doc.cases.filter(c => c.stage === 'typed-bindings').length, 62);
   assert.equal(doc.cases.filter(c => c.stage === 'resolution').length, 92);
@@ -40,7 +40,7 @@ test('expectations have valid stages, fixtures, and no fake receipts', () => {
 
 test('expanded cases include executable relative functions and distinct tree/manifest negatives', () => {
   assert.equal(doc.cases.filter(c => c.id.startsWith('relative-')).length,18);
-  assert.equal(doc.cases.filter(c => c.id.startsWith('tree-')).length,20);
+  assert.equal(doc.cases.filter(c => c.id.startsWith('tree-') && !c.id.startsWith('tree-v2-')).length,20);
   assert.equal(doc.cases.filter(c => c.id.startsWith('manifest-')).length,16);
   assert.ok(doc.fixtures['relative-functions'].files['math.atto'].includes('pub fnc square'));
   for (const c of doc.cases.filter(c => c.id.startsWith('tree-') || c.id.startsWith('manifest-'))) {
@@ -49,7 +49,7 @@ test('expanded cases include executable relative functions and distinct tree/man
 });
 
 test('both alias spellings have real guest and cycle diagnostic expectations', () => {
-  assert.equal(doc.cases.filter(c => c.id.startsWith('builtin-alias-')).length,4);
+  assert.equal(doc.cases.filter(c => c.id.startsWith('builtin-alias-')).length,6);
   assert.equal(doc.cases.filter(c => c.id.startsWith('alias-guest-negative-')).length,8);
   assert.equal(doc.cases.filter(c => c.id.startsWith('alias-resolution-')).length,4);
   assert.equal(doc.cases.filter(c => c.stage==='guest' && c.expect.code==='E_IMPORT_CYCLE').length,5);
