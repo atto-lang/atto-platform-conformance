@@ -1,0 +1,14 @@
+// G1d canonical source-link proposal; NOT_EXECUTED on any compiler/GPU.
+pub gpu fnc saxpy(
+    f32 alpha, GpuReadBuffer<f32> x, GpuReadBuffer<f32> y,
+    GpuWriteBuffer<f32> out, int n
+): void {
+    const int i = gpu.global_id(0);
+    if i < n { out[i] = alpha * x[i] + y[i]; } fi
+}
+pub fnc main(): void {
+    val pending = launch unknown(alpha, x, y, out, n) on gpu(device) {
+        over: [n], group: [256], queue: queue
+    };
+    return;
+}

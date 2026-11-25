@@ -1,0 +1,7 @@
+// Expected GPU-LAUNCH-006: device functions cannot suspend.
+pub gpu fnc bad(GpuArray<f32> mut out) => void {
+    await sleep(1);
+    const u64 i = gpu.global_id(0);
+    out[i] = 2.0;
+    return;
+}

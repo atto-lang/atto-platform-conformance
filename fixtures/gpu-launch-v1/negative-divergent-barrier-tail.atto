@@ -1,0 +1,15 @@
+// Expected GPU-LAUNCH-010: padded lanes cannot skip convergent barriers.
+pub gpu fnc unsafe_barrier(GpuArray<f32> mut out, u64 n) => void {
+    const u64 i = gpu.global_id(0);
+    if i < n {
+        gpu.group_barrier();
+        out[i] = 1.0;
+    }
+}
+suspends fnc run(GpuArray<f32> mut out, u64 n,
+                 GpuDevice device, GpuQueue queue) => void {
+    const completion = launch unsafe_barrier(out, n) on gpu(device) {
+        over: [n], group: [256], queue: queue
+    };
+    await completion;
+}
