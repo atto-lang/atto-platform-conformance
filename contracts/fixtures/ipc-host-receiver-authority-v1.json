@@ -1,6 +1,6 @@
 {
   "contract": "ipc-host-receiver-authority-v1",
-  "status": "BASELINE_HOST_EXECUTED_NEW_STACK_PENDING",
+  "status": "HOST_EXECUTED_SUPERVISED_GATE_PENDING",
   "baseline": {
     "pr": "https://github.com/atto-lang/atto-source.java/pull/1818",
     "head": "469bcc5c0a738a35eb917ea623ada8385c1ebc70",
@@ -43,5 +43,15 @@
       "compiler-produced guest fixture required"
     ]
   },
-  "guest_status": "NOT_EXECUTED"
+  "guest_status": "NOT_EXECUTED",
+  "race_receipt": {
+    "head": "c3b89f166b992cd962fb4f32832037e85ccd631b",
+    "tree": "cc3ea7b0d54a01743861536e9fecc93a63109a75",
+    "run": 45653650929,
+    "rounds": 128,
+    "ipc_wins": 22,
+    "group_wins": 106,
+    "tests": 46,
+    "failures": 0
+  }
 }
