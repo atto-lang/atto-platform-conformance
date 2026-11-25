@@ -1,0 +1,11 @@
+pub async fnc seed(): int { return 21; }
+pub async fnc double_it(int number): int { return number * 2; }
+
+pub fnc main(): void {
+    val Future<int> invalid = seed().flat_map(|int number| -> {
+        return double_it(number).map(|int doubled| -> {
+            return double_it(doubled);
+        });
+    });
+    return;
+}

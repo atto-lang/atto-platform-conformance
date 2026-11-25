@@ -1,0 +1,6 @@
+// expect-error: E_CONST
+fnc runtime_number(): int { return 3; }
+pub fnc main(): int {
+  int result = runtime_number();
+  return result;
+}

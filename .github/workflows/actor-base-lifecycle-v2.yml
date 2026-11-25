@@ -1,0 +1,25 @@
+name: Actor base lifecycle v2 source-free contract
+
+on:
+  pull_request:
+    paths:
+      - 'contracts/actor-base-lifecycle-v2.json'
+      - 'docs/ACTOR_BASE_LIFECYCLE_V2.md'
+      - 'tests/actor-base-lifecycle-v2.test.mjs'
+      - '.github/workflows/actor-base-lifecycle-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reference-model-not-guest:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+      - name: Source-free lifecycle reference checks (NOT guest execution)
+        run: node --test tests/actor-base-lifecycle-v2.test.mjs

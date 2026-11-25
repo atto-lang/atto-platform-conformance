@@ -1,0 +1,1 @@
+pub fnc run(): typeof(void) { return 5; }

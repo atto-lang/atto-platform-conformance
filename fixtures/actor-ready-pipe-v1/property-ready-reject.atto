@@ -1,0 +1,13 @@
+// TARGET SOURCE ONLY — not a verified Atto guest execution.
+define actor Producer receives int emits int as
+  susp receive(ActorMail<int> mail): void { emit(mail.value); }
+end
+define actor Consumer receives int as
+  susp receive(ActorMail<int> mail): void { }
+end
+pub susp fnc main(): int {
+  val producer = spawn Producer();
+  // No property-style lifecycle API. Call get_ready().
+  await producer.ready;
+  return 0;
+}

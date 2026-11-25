@@ -1,0 +1,7 @@
+// CANDIDATE API: positive, NOT_EXECUTED.
+// A signed 64-bit index with the 32-bit high bit set is a miss, not a wrapped 0.
+pub fnc main() -> int {
+  val values = [42];
+  val miss = values.get_copy(2147483648);
+  return miss.is_some() ? 0 : values.get_copy(0).unwrap_or(0);
+}

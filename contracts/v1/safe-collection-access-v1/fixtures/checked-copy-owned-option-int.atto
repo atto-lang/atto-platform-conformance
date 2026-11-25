@@ -1,0 +1,10 @@
+// CANDIDATE: single source to prove first Java/LLVM compiler-to-guest copy lane.
+// NOT_EXECUTED; this does NOT prove Option<ReadLoan<int>> or generic Copy<T>.
+pub fnc main(): int {
+  let mut Array<int> values = new Array<int>();
+  values.add(42);
+  val Option<int> present = values.get_copy(0);
+  val Option<int> negative = values.get_copy(-1);
+  val Option<int> high_bit = values.get_copy(2147483648);
+  return present.unwrap_or(0) + negative.unwrap_or(0) + high_bit.unwrap_or(0);
+}

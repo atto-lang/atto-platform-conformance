@@ -1,0 +1,6 @@
+// Guest candidate: trap of an existing Result does NOT produce Result<Result<...>,Error>.
+// Expects main() = 42. Not executed on any compiler.
+pub fnc main(): int {
+  val result = trap Ok(42);
+  return result.is_ok() ? result.unwrap() : 1;
+}

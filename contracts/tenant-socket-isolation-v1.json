@@ -1,0 +1,64 @@
+{
+  "schema": "atto.tenant-socket-isolation.v1",
+  "status": "TARGET_NOT_EXECUTED",
+  "normative": "atto-lang/atto-spec/language/actor-scheduler-domains-v1.md#network-only-io-and-per-socket-tenant-authority",
+  "guest_admission": "DENY_UNTIL_CONFINEMENT_VERIFIED",
+  "guest_os_io": "DENY_ALL_DIRECT",
+  "network_default": "DENY_UNLESS_HOST_GRANTED",
+  "host_boundary": "TRUSTED_SOCKET_BROKER_ONLY",
+  "backends": {
+    "forge": "not_executed",
+    "llvm": "not_executed",
+    "atto": "not_executed",
+    "java": "not_executed",
+    "wasm": "not_executed",
+    "net": "not_executed"
+  },
+  "case_ids": [
+    "two-tenants-one-pid",
+    "authorized-socket-read",
+    "authorized-socket-write",
+    "deny-cross-tenant-read",
+    "deny-cross-tenant-write",
+    "deny-cross-tenant-close",
+    "deny-rights-escalation",
+    "deny-forged-handle",
+    "deny-stale-tenant-generation",
+    "deny-socket-fd-reuse",
+    "deny-duplicate-descriptor-adoption",
+    "deny-direct-filesystem",
+    "deny-direct-syscall-and-ffi",
+    "deny-unauthorized-connect-listen",
+    "deny-private-and-metadata-endpoint",
+    "deny-dns-rebinding",
+    "enforce-io-byte-and-handle-quotas",
+    "cancel-racing-io-on-retirement",
+    "reject-unix-and-raw-socket",
+    "neighbor-survives-sandbox-trap"
+  ],
+  "receipt": {
+    "allowed_statuses": [
+      "passed",
+      "failed",
+      "unsupported",
+      "not_executed"
+    ],
+    "passed_requires": [
+      "backend",
+      "case_id",
+      "exact_head_sha",
+      "source_tree_sha",
+      "compiled_atto_guest_sha256",
+      "sandbox_artifact_sha256",
+      "toolchain",
+      "workflow_url",
+      "executed_steps",
+      "guest_executed",
+      "tenant_pids",
+      "observed_outcome",
+      "sandbox_boundary"
+    ],
+    "single_pid_must_be_observed": true,
+    "structural_validation_is_not_execution_attestation": true
+  }
+}

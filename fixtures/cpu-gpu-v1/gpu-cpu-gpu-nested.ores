@@ -1,0 +1,1 @@
+pub suspends routine run(input: GpuBuffer<f32>): GpuBuffer<f32> { return gpu { const first = kernel_a(rt take input); const host = cpu { await Gpu.download(rt take first) }; const second = await Gpu.upload(rt take host); kernel_b(rt take second) }; }

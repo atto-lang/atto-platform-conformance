@@ -1,0 +1,9 @@
+// expect-error: E_BORROW_MUT_REQUIRED
+// Mutable callee requires explicit mut even with an implicit borrower formal.
+define class Box as pub let int value = 1; end
+fnc bump(Box b): void { b.value += 1; }
+pub fnc main(): int {
+  val mut Box b = new Box();
+  bump(b);
+  return b.value;
+}

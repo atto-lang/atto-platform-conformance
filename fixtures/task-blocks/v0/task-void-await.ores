@@ -1,0 +1,8 @@
+pub fnc main(): void {
+  let Task<void> r = nb {
+    await writeAsync();
+    return;
+  };
+  await r;
+  return;
+}

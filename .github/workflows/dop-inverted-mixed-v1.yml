@@ -1,0 +1,75 @@
+name: AttoLang DOP unified 2/3-column corpus (NON-GUEST)
+on:
+  pull_request:
+    branches:
+      - conformance/dop-inverted-bool-i64-v1-20261106
+      - main
+    paths:
+      - 'contracts/dop-inverted-mixed-v1/**'
+      - 'fixtures/dop-inverted-mixed-v1/**'
+      - 'tests/dop-inverted-mixed-v1.test.mjs'
+      - 'contracts/dop-inverted-bool-i64-v1/**'
+      - 'fixtures/dop-inverted-bool-i64-v1/**'
+      - 'tests/dop-inverted-bool-i64-v1.test.mjs'
+      - '.github/workflows/dop-inverted-mixed-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  exact-source-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+      SOURCE_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+    steps:
+      - name: Reject cross-repository private source checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$SOURCE_REPOSITORY" = "$GITHUB_REPOSITORY"
+          [[ "$EXPECTED_HEAD" =~ ^[0-9a-f]{40}$ ]]
+      - name: Checkout original immutable PR head
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ env.EXPECTED_HEAD }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Set up pinned Node major
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Bind exact head/tree/blob identities before test execution
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          echo "ATTO_DOP_SOURCE_ONLY_HEAD=$EXPECTED_HEAD"
+          echo "ATTO_DOP_SOURCE_ONLY_TREE=$(git rev-parse HEAD^{tree})"
+          for path in contracts/dop-inverted-mixed-v1/manifest.json \
+                      contracts/dop-inverted-bool-i64-v1/manifest.json \
+                      tests/dop-inverted-mixed-v1.test.mjs \
+                      tests/dop-inverted-bool-i64-v1.test.mjs \
+                      fixtures/dop-inverted-mixed-v1/*.atto \
+                      fixtures/dop-inverted-bool-i64-v1/*.atto; do
+            test "$(git hash-object "$path")" = "$(git rev-parse "HEAD:$path")"
+            echo "ATTO_DOP_SOURCE_ONLY_BLOB=$path:$(git rev-parse "HEAD:$path")"
+          done
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+      - name: Execute independent 2- and 3-column source-only suites
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test tests/dop-inverted-bool-i64-v1.test.mjs | tee /tmp/atto-pair-source-only.tap
+          grep -Eq '^# tests 6$' /tmp/atto-pair-source-only.tap
+          grep -Eq '^# pass 6$' /tmp/atto-pair-source-only.tap
+          grep -Eq '^# fail 0$' /tmp/atto-pair-source-only.tap
+          node --test tests/dop-inverted-mixed-v1.test.mjs | tee /tmp/atto-mixed-source-only.tap
+          grep -Eq '^# tests 5$' /tmp/atto-mixed-source-only.tap
+          grep -Eq '^# pass 5$' /tmp/atto-mixed-source-only.tap
+          grep -Eq '^# fail 0$' /tmp/atto-mixed-source-only.tap
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+          echo 'ATTO_DOP_TWO_THREE_SOURCE_ONLY_PASS count=11; ALL_BACKEND_GUESTS_NOT_EXECUTED'

@@ -1,0 +1,5 @@
+// Compile/link must reject a private module even if its members are public.
+import module internal from "./library_public.atto";
+pub routine main(): void {
+  stdio.println("unexpected private module import");
+}

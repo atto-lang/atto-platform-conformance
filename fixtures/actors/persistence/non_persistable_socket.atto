@@ -1,0 +1,4 @@
+// Invalid state: OS sockets may not be persisted as owned data.
+define durable actor Unsafe as
+    state socket: Socket;
+end

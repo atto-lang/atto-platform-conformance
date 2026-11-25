@@ -1,0 +1,11 @@
+define class Connection as
+  let int connection_id: 3;
+  mutate(mut self)(): void {
+    self.connection_id = 5;
+  }
+end
+pub fnc main(): int {
+  let Connection c = new Connection();
+  c.mutate();
+  return c.connection_id;
+}

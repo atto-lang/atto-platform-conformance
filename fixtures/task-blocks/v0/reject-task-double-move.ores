@@ -1,0 +1,6 @@
+pub fnc main(): void {
+  let items = arr[1, 2, 3];
+  let Task<int> first = task { stdio.stdout.log(items); return 1; };
+  let Task<int> second = task { stdio.stdout.log(items); return 2; };
+  return;
+}

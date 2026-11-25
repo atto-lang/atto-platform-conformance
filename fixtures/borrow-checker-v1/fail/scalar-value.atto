@@ -1,0 +1,7 @@
+// BCV1-002 scalar_value fail: target AttoLang semantics, NOT_EXECUTED.
+// Expected compiler rejection E_BINDING with NO guest artifact.
+pub fnc main(): int {
+  val int original = 41;
+  original = 42; // const/non-rebindable scalar must reject
+  return original;
+}

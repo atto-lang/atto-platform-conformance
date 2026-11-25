@@ -1,0 +1,194 @@
+{
+  "schema": "atto.core.borrow_ownership_parity.v1",
+  "status": "ALL_GUEST_NOT_EXECUTED",
+  "library_rule": "COMPILER_LOCAL_ATTO_IMPLEMENTATION",
+  "proof_scope": "COMPILED_GUEST_AND_TYPED_CHECKER",
+  "copy_types": [
+    "int",
+    "bool"
+  ],
+  "ownership_obligations": [
+    {
+      "id": "copy_scalar_allowed",
+      "kind": "POSITIVE",
+      "description": "Copy scalar binding may be reused after copy"
+    },
+    {
+      "id": "move_new_owner_allowed",
+      "kind": "POSITIVE",
+      "description": "New owner may access non-Copy class after one transfer"
+    },
+    {
+      "id": "use_after_move_denied",
+      "kind": "NEGATIVE",
+      "description": "Old owner must be rejected after transferring non-Copy class"
+    },
+    {
+      "id": "borrowed_self_escape_denied",
+      "kind": "NEGATIVE",
+      "description": "Borrowed self cannot be converted into a new owned handle"
+    },
+    {
+      "id": "mut_shared_overlap_denied",
+      "kind": "NEGATIVE",
+      "description": "Exclusive and shared borrows must not overlap"
+    },
+    {
+      "id": "suspension_borrow_crossing_denied",
+      "kind": "NEGATIVE",
+      "description": "Unpinned borrow may not survive await/select"
+    },
+    {
+      "id": "import_noncopy_without_contract_denied",
+      "kind": "NEGATIVE",
+      "description": "Imported core/std API must not accept non-Copy ownership without typed borrow contract"
+    },
+    {
+      "id": "copy_only_generics_guarded",
+      "kind": "NEGATIVE",
+      "description": "Core collection generic elements without Copy constraints must reject non-Copy instantiation"
+    }
+  ],
+  "llvm_source_candidates": {
+    "head": "9f50ed761ec12d8e4ad688d2049479c3e0c38302",
+    "paths": [
+      "atto-lang/atto-source.llvm/src/main.rs",
+      "atto-lang/atto-source.llvm/frontend/tests/core_ownership_boundary.rs",
+      "atto-lang/atto-source.llvm/frontend/tests/fixtures/borrow_move_after_transfer.atto",
+      "atto-lang/atto-source.llvm/frontend/tests/fixtures/borrow_move_owner_ok.atto"
+    ],
+    "staged_evidence": "SOURCE_ONLY",
+    "compiler_test_status": "NOT_EXECUTED",
+    "owned_copy_boundary": "std.http scalar import enforces int/bool parameters and return",
+    "generic_collection_status": "UNPROVEN_COPY_BOUNDS_NOT_EXECUTABLE",
+    "tests_staged": 4
+  },
+  "backend_rows": [
+    {
+      "backend": "java",
+      "repository": "atto-lang/atto-source.java",
+      "source_state": "JAVA_HTTP_CORE_BORROW_STAGED_UNVERIFIED",
+      "guest_execution": "NOT_EXECUTED",
+      "guest_cases_executed": 0,
+      "complete_ownership_parity": false,
+      "evidence": "NONE"
+    },
+    {
+      "backend": "llvm",
+      "repository": "atto-lang/atto-source.llvm",
+      "source_state": "SCALAR_CORE_AND_HTTP_COPY_GATE_STAGED_UNVERIFIED",
+      "guest_execution": "NOT_EXECUTED",
+      "guest_cases_executed": 0,
+      "complete_ownership_parity": false,
+      "evidence": "NONE"
+    },
+    {
+      "backend": "net",
+      "repository": "atto-lang/atto-source.net",
+      "source_state": "UNASSESSED",
+      "guest_execution": "NOT_EXECUTED",
+      "guest_cases_executed": 0,
+      "complete_ownership_parity": false,
+      "evidence": "NONE"
+    },
+    {
+      "backend": "wasm",
+      "repository": "atto-lang/atto-source.wasm",
+      "source_state": "UNASSESSED",
+      "guest_execution": "NOT_EXECUTED",
+      "guest_cases_executed": 0,
+      "complete_ownership_parity": false,
+      "evidence": "NONE"
+    },
+    {
+      "backend": "rs",
+      "repository": "atto-lang/atto-source.rs",
+      "source_state": "UNASSESSED",
+      "guest_execution": "NOT_EXECUTED",
+      "guest_cases_executed": 0,
+      "complete_ownership_parity": false,
+      "evidence": "NONE"
+    },
+    {
+      "backend": "forge",
+      "repository": "atto-lang/atto-source.forge",
+      "source_state": "UNASSESSED",
+      "guest_execution": "NOT_EXECUTED",
+      "guest_cases_executed": 0,
+      "complete_ownership_parity": false,
+      "evidence": "NONE"
+    },
+    {
+      "backend": "cranelift",
+      "repository": "atto-lang/atto-source.cranelift",
+      "source_state": "UNASSESSED",
+      "guest_execution": "NOT_EXECUTED",
+      "guest_cases_executed": 0,
+      "complete_ownership_parity": false,
+      "evidence": "NONE"
+    },
+    {
+      "backend": "js",
+      "repository": "atto-lang/atto-source.js",
+      "source_state": "UNASSESSED",
+      "guest_execution": "NOT_EXECUTED",
+      "guest_cases_executed": 0,
+      "complete_ownership_parity": false,
+      "evidence": "NONE"
+    },
+    {
+      "backend": "atto",
+      "repository": "atto-lang/atto-source.atto",
+      "source_state": "UNASSESSED",
+      "guest_execution": "NOT_EXECUTED",
+      "guest_cases_executed": 0,
+      "complete_ownership_parity": false,
+      "evidence": "NONE"
+    },
+    {
+      "backend": "hdl",
+      "repository": "atto-lang/atto-source.hdl",
+      "source_state": "UNASSESSED",
+      "guest_execution": "NOT_EXECUTED",
+      "guest_cases_executed": 0,
+      "complete_ownership_parity": false,
+      "evidence": "NONE"
+    },
+    {
+      "backend": "realtime",
+      "repository": "atto-lang/atto-source.realtime",
+      "source_state": "UNASSESSED",
+      "guest_execution": "NOT_EXECUTED",
+      "guest_cases_executed": 0,
+      "complete_ownership_parity": false,
+      "evidence": "NONE"
+    }
+  ],
+  "release_requirements": {
+    "source_only_never_pass": true,
+    "test_real_backend_atto": true,
+    "typed_negative_diagnostics": true,
+    "runtime_guest_evidence_when_supported": true,
+    "no_borrow_escape_across_await": true,
+    "no_noncopy_without_checker": true,
+    "independent_atto_sources_allowed": true,
+    "exact_source_tree_required": true
+  },
+  "java_source_candidates": {
+    "head": "0c2f9f3f2cfa5c421374116faee95e37878e8175",
+    "root_tree": "d5a855eb7fedf7952456ceb1e2a8529aa8a69684",
+    "pr": 1754,
+    "status": "NOT_EXECUTED",
+    "junit_methods_staged": 4,
+    "guest_fixtures_staged": 3,
+    "blob_shas": {
+      "src/test/java/dev/oreslang/runtime/NativeAttoHttpCoreBorrowBoundaryTest.java": "4ae6d101577922d2babe267cd0b1caff5270fb26",
+      "src/test/resources/stdlib-parity/http-core-borrow-positive.atto": "db51329274f9f8f8d523b5b61ddb4676008016dd",
+      "src/test/resources/stdlib-parity/http-core-borrow-negative.atto": "94f26cfd4148a24725dd027a95dbe0604b4c6fdf",
+      "src/test/resources/stdlib-parity/http-core-noncopy-argument-negative.atto": "e30e5a9a6cf71a47f69787b5796452963b652ac9",
+      ".github/workflows/atto-http-core-borrow-guest.yml": "b20124d333c3cedbab72c1209674c798dddfa376",
+      "src/test/java/dev/oreslang/compiler/ImportedClassBorrowOwnershipTest.java": "013e920da5fa4ea3076625f7d80dd0f62fe309a5"
+    },
+    "evidence": "SOURCE_ONLY"
+  }
+}

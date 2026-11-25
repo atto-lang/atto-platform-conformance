@@ -1,0 +1,11 @@
+# Source-free carrier triage (non-authorizing)
+
+Incident `oreslang-platform-conformance#77` identified source-bearing compiler files in a carrier PR previously described as "source-free". Names, branch labels, file extensions, and workflow conclusions do **not** prove that a carrier is source-free.
+
+`src/carrier-tree-triage.mjs` operates only on GitHub **Git tree metadata**, and has no credentials, write APIs, network calls, or source-byte handling. It fails closed when the tree is truncated, its identity is unknown, it contains unsafe Git modes, or there are conflicting paths. Known code extensions and source/mirror directory locations are flagged. Optional exact Git blob fingerprints from a separately maintained incident inventory can flag renamed known-private blobs, but unknown/modified blobs cannot be excluded by this heuristic. A full exact-path/mode/blob pin can be compared to an independently reviewed immutable snapshot, but even an exact metadata match is **not proof of confidential-source absence**, nor authorization to export.
+
+To collect evidence safely, inspect the existing repository's immutable commit/tree metadata without reading, copying, rerunning, or moving source bytes. Preserve the carrier commit, tree SHA, numeric repository ID, historical visibility, artifact metadata, review decisions and audit-log evidence. A suspicious or unproven result remains within the incident investigation. Confirm the provenance of any pin independently, and review renamed files or source embedded in benign-looking formats. Do not derive the approved pin from the untrusted carrier being evaluated.
+
+**Release policy stays blocked:** keep incidents #22 and #77 separate, require their independently documented close/completed and unrevoked resume approvals, enforce protected Java `main`, independently review exact destination and source-snapshot allowlists and publisher/workflow blobs, and demand authorized exact-head executable CI. A successful Actions run, synthetically named job, `steps:null`, or a code review alone cannot authorize transfers.
+
+This utility is for forensic triage; it does not replace an enforced publisher admission guard, independent approval, an exhaustive exposure inventory, or historical containment sign-off. No source-bearing workflow is triggered.

@@ -1,0 +1,4 @@
+fnc invalid(): T {
+    type T<U> = struct { foo: U };
+    return struct { foo: int } { foo: 1 };
+}

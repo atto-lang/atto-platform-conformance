@@ -1,0 +1,4 @@
+pub fnc main(): int {
+  val Record<{a: int, "a": int}> item = Record.of(a=42);
+  return 0;
+}

@@ -1,0 +1,13 @@
+fnc candidate(bool early): int {
+  let value: int = 42;
+  val Pointer<int> ptr = rt ref value;
+  val answer = deref! ptr;
+  do if early then
+    return answer;
+  fi
+  rt unref ptr;
+  return answer;
+}
+pub fnc main(): int {
+  return candidate(true);
+}

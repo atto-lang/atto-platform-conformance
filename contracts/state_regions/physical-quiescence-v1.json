@@ -1,0 +1,455 @@
+{
+  "contractVersion": "1.0",
+  "status": "source-free oracle; never compiler or runner evidence",
+  "physicalLifetimeVectors": [
+    {
+      "id": "pin-before-stop-then-completion",
+      "actions": [
+        [
+          "pin",
+          "task"
+        ],
+        [
+          "start",
+          "task",
+          true
+        ],
+        [
+          "retire"
+        ],
+        [
+          "close",
+          false
+        ],
+        [
+          "finish",
+          "task"
+        ],
+        [
+          "close",
+          true
+        ]
+      ],
+      "expected": {
+        "guestStarts": 1,
+        "rejectedStarts": 0,
+        "pins": 0,
+        "closed": true
+      }
+    },
+    {
+      "id": "queued-task-after-stop",
+      "actions": [
+        [
+          "pin",
+          "task"
+        ],
+        [
+          "retire"
+        ],
+        [
+          "close",
+          false
+        ],
+        [
+          "start",
+          "task",
+          false
+        ],
+        [
+          "reject",
+          "task"
+        ],
+        [
+          "close",
+          true
+        ]
+      ],
+      "expected": {
+        "guestStarts": 0,
+        "rejectedStarts": 1,
+        "pins": 0,
+        "closed": true
+      }
+    },
+    {
+      "id": "queued-rejection-releases-only-queued",
+      "actions": [
+        [
+          "pin",
+          "running"
+        ],
+        [
+          "start",
+          "running",
+          true
+        ],
+        [
+          "pin",
+          "queued"
+        ],
+        [
+          "retire"
+        ],
+        [
+          "reject",
+          "queued"
+        ],
+        [
+          "close",
+          false
+        ],
+        [
+          "finish",
+          "running"
+        ],
+        [
+          "close",
+          true
+        ]
+      ],
+      "expected": {
+        "guestStarts": 1,
+        "rejectedStarts": 0,
+        "pins": 0,
+        "closed": true
+      }
+    },
+    {
+      "id": "read-pin-separate-from-lifetime-pin",
+      "actions": [
+        [
+          "pin",
+          "ffi"
+        ],
+        [
+          "mutate",
+          true
+        ],
+        [
+          "retire"
+        ],
+        [
+          "mutate",
+          false
+        ],
+        [
+          "close",
+          false
+        ],
+        [
+          "finish",
+          "ffi"
+        ],
+        [
+          "close",
+          true
+        ]
+      ],
+      "expected": {
+        "guestStarts": 0,
+        "rejectedStarts": 0,
+        "pins": 0,
+        "closed": true
+      }
+    },
+    {
+      "id": "double-completion-denied",
+      "actions": [
+        [
+          "pin",
+          "task"
+        ],
+        [
+          "start",
+          "task",
+          true
+        ],
+        [
+          "finish",
+          "task"
+        ],
+        [
+          "finish",
+          "task",
+          "error"
+        ],
+        [
+          "close",
+          true
+        ]
+      ],
+      "expected": {
+        "guestStarts": 1,
+        "rejectedStarts": 0,
+        "pins": 0,
+        "closed": true
+      }
+    },
+    {
+      "id": "future-pin-admission-denied-after-retire",
+      "actions": [
+        [
+          "retire"
+        ],
+        [
+          "pin",
+          "late",
+          "error"
+        ],
+        [
+          "close",
+          true
+        ]
+      ],
+      "expected": {
+        "guestStarts": 0,
+        "rejectedStarts": 0,
+        "pins": 0,
+        "closed": true
+      }
+    },
+    {
+      "id": "no-reclamation-until-all-real-pins-drain",
+      "actions": [
+        [
+          "pin",
+          "a"
+        ],
+        [
+          "start",
+          "a",
+          true
+        ],
+        [
+          "pin",
+          "b"
+        ],
+        [
+          "start",
+          "b",
+          true
+        ],
+        [
+          "retire"
+        ],
+        [
+          "finish",
+          "b"
+        ],
+        [
+          "close",
+          false
+        ],
+        [
+          "finish",
+          "a"
+        ],
+        [
+          "close",
+          true
+        ]
+      ],
+      "expected": {
+        "guestStarts": 2,
+        "rejectedStarts": 0,
+        "pins": 0,
+        "closed": true
+      }
+    },
+    {
+      "id": "bounded-pin-exhaustion",
+      "capacity": 2,
+      "actions": [
+        [
+          "pin",
+          "a"
+        ],
+        [
+          "pin",
+          "b"
+        ],
+        [
+          "pin",
+          "c",
+          "error"
+        ],
+        [
+          "retire"
+        ],
+        [
+          "close",
+          false
+        ],
+        [
+          "finish",
+          "a"
+        ],
+        [
+          "close",
+          false
+        ],
+        [
+          "finish",
+          "b"
+        ],
+        [
+          "close",
+          true
+        ]
+      ],
+      "expected": {
+        "guestStarts": 0,
+        "rejectedStarts": 0,
+        "pins": 0,
+        "closed": true
+      }
+    },
+    {
+      "id": "native-io-retired-before-carrier-physical-join",
+      "actions": [
+        [
+          "pin",
+          "carrier"
+        ],
+        [
+          "start",
+          "carrier",
+          true
+        ],
+        [
+          "pin",
+          "native_io"
+        ],
+        [
+          "start",
+          "native_io",
+          true
+        ],
+        [
+          "retire"
+        ],
+        [
+          "close",
+          false
+        ],
+        [
+          "finish",
+          "native_io"
+        ],
+        [
+          "close",
+          false
+        ],
+        [
+          "finish",
+          "carrier"
+        ],
+        [
+          "close",
+          true
+        ]
+      ],
+      "expected": {
+        "guestStarts": 2,
+        "rejectedStarts": 0,
+        "pins": 0,
+        "closed": true
+      }
+    },
+    {
+      "id": "carrier-retired-before-native-io-physical-join",
+      "actions": [
+        [
+          "pin",
+          "carrier"
+        ],
+        [
+          "start",
+          "carrier",
+          true
+        ],
+        [
+          "pin",
+          "native_io"
+        ],
+        [
+          "start",
+          "native_io",
+          true
+        ],
+        [
+          "retire"
+        ],
+        [
+          "close",
+          false
+        ],
+        [
+          "finish",
+          "carrier"
+        ],
+        [
+          "close",
+          false
+        ],
+        [
+          "finish",
+          "native_io"
+        ],
+        [
+          "close",
+          true
+        ]
+      ],
+      "expected": {
+        "guestStarts": 2,
+        "rejectedStarts": 0,
+        "pins": 0,
+        "closed": true
+      }
+    }
+  ],
+  "guestCompilerGates": [
+    {
+      "id": "region-borrow-escape-return",
+      "expected": "reject",
+      "reason": "borrowed interior reference escapes lifetime"
+    },
+    {
+      "id": "region-mutable-alias",
+      "expected": "reject",
+      "reason": "mutating while incompatible read or write loan is live"
+    },
+    {
+      "id": "region-await-with-loan",
+      "expected": "reject",
+      "reason": "suspension with unpinned non-suspend-safe loan"
+    },
+    {
+      "id": "region-select-with-loan",
+      "expected": "reject",
+      "reason": "select with incompatible scoped loan"
+    },
+    {
+      "id": "region-cooperate-with-loan",
+      "expected": "reject",
+      "reason": "actor-visible cooperation with protected access"
+    },
+    {
+      "id": "region-retire-with-task",
+      "expected": "defer-release",
+      "reason": "cancellation alone is not physical quiescence"
+    },
+    {
+      "id": "region-checked-add-overflow",
+      "expected": "rollback",
+      "reason": "overflow cannot partially commit scalar mutation"
+    },
+    {
+      "id": "region-exclusive-write-nonalloc",
+      "expected": "allow",
+      "reason": "exclusive in-place mutation does not require snapshot copy"
+    }
+  ]
+}

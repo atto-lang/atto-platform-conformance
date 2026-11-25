@@ -1,0 +1,234 @@
+{
+  "schema_version": 1,
+  "suite": "heap-containers-v1",
+  "evidence_status": "source-free-reference-only",
+  "source_language_support": "unverified",
+  "canonical_resizable_type": "Vector[T]",
+  "existing_resizable_family": [
+    "Array[T]",
+    "List[T]",
+    "Vector[T]"
+  ],
+  "candidate_alias": "Vec<T> (not admitted without parser/typechecker evidence)",
+  "backends": {
+    "java-graal": "unverified",
+    "llvm-native": "unverified",
+    "wasm": "unverified",
+    "forge": "unverified",
+    "net-native-aot": "unverified",
+    "cranelift": "unverified"
+  },
+  "cases": [
+    {
+      "id": "box-move-preserves-unique-owner",
+      "expected": "accept"
+    },
+    {
+      "id": "box-use-after-move",
+      "expected": "deny"
+    },
+    {
+      "id": "box-drop-while-borrowed",
+      "expected": "deny"
+    },
+    {
+      "id": "box-mut-borrow-conflict",
+      "expected": "deny"
+    },
+    {
+      "id": "box-two-shared-borrows",
+      "expected": "accept"
+    },
+    {
+      "id": "box-single-drop",
+      "expected": "accept"
+    },
+    {
+      "id": "vector-grow-and-preserve-elements",
+      "expected": "accept"
+    },
+    {
+      "id": "vector-reserve-under-read-loan",
+      "expected": "deny"
+    },
+    {
+      "id": "vector-grow-under-write-loan",
+      "expected": "deny"
+    },
+    {
+      "id": "vector-write-during-shared-loan",
+      "expected": "deny"
+    },
+    {
+      "id": "vector-bounds",
+      "expected": "deny"
+    },
+    {
+      "id": "vector-over-capacity",
+      "expected": "deny"
+    },
+    {
+      "id": "vector-element-exclusive-borrow",
+      "expected": "accept"
+    },
+    {
+      "id": "vector-pop-empty",
+      "expected": "accept"
+    },
+    {
+      "id": "arc-clone-count-preserves-payload",
+      "expected": "accept"
+    },
+    {
+      "id": "arc-upgrade-weak-before-drop",
+      "expected": "accept"
+    },
+    {
+      "id": "arc-weak-upgrade-after-final-drop",
+      "expected": "accept"
+    },
+    {
+      "id": "arc-use-after-drop",
+      "expected": "deny"
+    },
+    {
+      "id": "arc-mutability-requires-guard",
+      "expected": "deny"
+    },
+    {
+      "id": "arc-guarded-mutation",
+      "expected": "accept"
+    },
+    {
+      "id": "mutex-reentrant-write",
+      "expected": "deny"
+    },
+    {
+      "id": "mutex-releases-on-throw",
+      "expected": "accept"
+    },
+    {
+      "id": "mutex-suspending-guard",
+      "expected": "deny"
+    },
+    {
+      "id": "mutex-escaped-guard-write-reject",
+      "expected": "deny"
+    },
+    {
+      "id": "mutex-return-write-guard-reject",
+      "expected": "deny"
+    },
+    {
+      "id": "mutex-read-read-reentrancy",
+      "expected": "accept"
+    },
+    {
+      "id": "mutex-write-within-read-reject",
+      "expected": "deny"
+    },
+    {
+      "id": "mutex-read-within-write-reject",
+      "expected": "deny"
+    },
+    {
+      "id": "mutex-after-throw-guard-revoked",
+      "expected": "deny"
+    },
+    {
+      "id": "mutex-write-after-read-release",
+      "expected": "accept"
+    },
+    {
+      "id": "mutex-suspension-always-revokes",
+      "expected": "deny"
+    },
+    {
+      "id": "box-move-under-live-heap-loan",
+      "expected": "deny"
+    },
+    {
+      "id": "box-double-use-after-drop",
+      "expected": "deny"
+    },
+    {
+      "id": "arc-saved-mutable-view-after-drop-reject",
+      "expected": "deny"
+    },
+    {
+      "id": "arc-drop-during-active-guard-reject",
+      "expected": "deny"
+    },
+    {
+      "id": "arc-cloned-handle-retains-guarded-referent",
+      "expected": "accept"
+    },
+    {
+      "id": "vector-invalid-element-preserves-allocation",
+      "expected": "accept"
+    },
+    {
+      "id": "vector-invalid-push-does-not-spend-final-quota",
+      "expected": "accept"
+    },
+    {
+      "id": "vector-overbudget-reserve-is-transactional",
+      "expected": "accept"
+    }
+  ],
+  "guest_fixtures_executed": 0,
+  "compiler_assertions_executed": 0,
+  "runtime_backends_verified": 0,
+  "guest_fixtures": [
+    {
+      "id": "array-growth-positive",
+      "path": "fixtures/heap-containers-v1/array-growth-positive.ores",
+      "blob_sha1": "25afc2e7b83082750c0feec564f04767311cbcd2",
+      "expectation": {
+        "kind": "return",
+        "exit_code": 42
+      },
+      "execution": "not-executed"
+    },
+    {
+      "id": "heap-projected-mut-borrow-positive",
+      "path": "fixtures/heap-containers-v1/heap-projected-mut-borrow-positive.ores",
+      "blob_sha1": "65bf5be8cb8045a4a7e7d113048d8dab2b997411",
+      "expectation": {
+        "kind": "return",
+        "exit_code": 42
+      },
+      "execution": "not-executed"
+    },
+    {
+      "id": "heap-conflicting-loans-reject",
+      "path": "fixtures/heap-containers-v1/heap-conflicting-loans-reject.ores",
+      "blob_sha1": "8517b3d9e73b11cddf71ef53bad8f8571bc7ca41",
+      "expectation": {
+        "kind": "reject",
+        "emitted_executable_ir_bytes": 0
+      },
+      "execution": "not-executed"
+    },
+    {
+      "id": "array-grow-live-loan-reject",
+      "path": "fixtures/heap-containers-v1/array-grow-live-loan-reject.ores",
+      "blob_sha1": "a36cf16059eba2abd58566bf32ec429e48c73602",
+      "expectation": {
+        "kind": "reject",
+        "emitted_executable_ir_bytes": 0
+      },
+      "execution": "not-executed"
+    },
+    {
+      "id": "box-owner-after-take-reject",
+      "path": "fixtures/heap-containers-v1/box-owner-after-take-reject.ores",
+      "blob_sha1": "56ccb0ebac0e214e0fd432edaee3e9688cd0824c",
+      "expectation": {
+        "kind": "reject",
+        "emitted_executable_ir_bytes": 0
+      },
+      "execution": "not-executed"
+    }
+  ]
+}
