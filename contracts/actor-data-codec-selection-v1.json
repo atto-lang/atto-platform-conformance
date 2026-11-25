@@ -200,5 +200,177 @@
     ],
     "host_only": "NOT_EXECUTED",
     "zero_steps": "NOT_EXECUTED"
+  },
+  "transactional_vectors": {
+    "status": "DESIGN_ONLY_NOT_EXECUTED",
+    "scope": "Expected observations at trusted actor DATA admission boundary, independent of codec; no backend execution implied",
+    "unit": "logical credits, not measured bytes",
+    "initial": {
+      "available": 8,
+      "queued": 0,
+      "escrow": 0,
+      "generation": 7
+    },
+    "cases": [
+      {
+        "id": "exact-commit",
+        "events": [
+          "reserve:8",
+          "decode-ok",
+          "commit:7"
+        ],
+        "expected": {
+          "available": 0,
+          "queued": 8,
+          "escrow": 0,
+          "publications": 1
+        }
+      },
+      {
+        "id": "over-limit",
+        "events": [
+          "reserve:9"
+        ],
+        "expected": {
+          "available": 8,
+          "queued": 0,
+          "escrow": 0,
+          "publications": 0
+        }
+      },
+      {
+        "id": "decode-denial",
+        "events": [
+          "reserve:5",
+          "decode-fail",
+          "rollback"
+        ],
+        "expected": {
+          "available": 8,
+          "queued": 0,
+          "escrow": 0,
+          "publications": 0
+        }
+      },
+      {
+        "id": "cancel-double-release",
+        "events": [
+          "reserve:5",
+          "cancel",
+          "rollback",
+          "rollback"
+        ],
+        "expected": {
+          "available": 8,
+          "queued": 0,
+          "escrow": 0,
+          "publications": 0
+        }
+      },
+      {
+        "id": "restart-stale-commit",
+        "events": [
+          "reserve:5",
+          "decode-ok",
+          "restart:8",
+          "commit:7",
+          "rollback"
+        ],
+        "expected": {
+          "available": 8,
+          "queued": 0,
+          "escrow": 0,
+          "publications": 0
+        }
+      },
+      {
+        "id": "queue-full-at-commit",
+        "events": [
+          "reserve:5",
+          "decode-ok",
+          "queue-full",
+          "commit:7",
+          "rollback"
+        ],
+        "expected": {
+          "available": 8,
+          "queued": 0,
+          "escrow": 0,
+          "publications": 0
+        }
+      },
+      {
+        "id": "schema-mismatch-before-decode",
+        "events": [
+          "schema-mismatch",
+          "reserve-denied"
+        ],
+        "expected": {
+          "available": 8,
+          "queued": 0,
+          "escrow": 0,
+          "publications": 0
+        }
+      },
+      {
+        "id": "unsupported-codec-no-fallback",
+        "events": [
+          "codec-mismatch",
+          "reserve-denied"
+        ],
+        "expected": {
+          "available": 8,
+          "queued": 0,
+          "escrow": 0,
+          "publications": 0
+        }
+      },
+      {
+        "id": "commit-then-cancel",
+        "events": [
+          "reserve:5",
+          "decode-ok",
+          "commit:7",
+          "cancel",
+          "rollback"
+        ],
+        "expected": {
+          "available": 3,
+          "queued": 5,
+          "escrow": 0,
+          "publications": 1
+        }
+      },
+      {
+        "id": "dequeue-once",
+        "events": [
+          "reserve:5",
+          "decode-ok",
+          "commit:7",
+          "dequeue",
+          "dequeue"
+        ],
+        "expected": {
+          "available": 8,
+          "queued": 0,
+          "escrow": 0,
+          "publications": 1
+        }
+      }
+    ],
+    "invariants": [
+      "available + queued + escrow = initial available after each atomic transition",
+      "never negative",
+      "publication requires successful decode and current generation, schema and codec authority",
+      "only reservation owner may release escrow; terminal replay is idempotent",
+      "commit transfers credits from escrow to queued; late cancellation does not release queued credits",
+      "failed schema/codec authorization must precede reservation and decoding"
+    ],
+    "required_receipts": [
+      "actual compiler/runtime guest for each applicable backend and codec",
+      "per-transition ledger and publication count",
+      "race interleaving for cancellation, restart and commit",
+      "negative test proves no partial artifact or mailbox publication"
+    ]
   }
 }
