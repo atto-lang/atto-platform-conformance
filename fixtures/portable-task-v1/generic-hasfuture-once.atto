@@ -1,0 +1,7 @@
+pub suspends fnc main(): int {
+  let HasFuture<int> observed = probe_counted_has_future(42);
+  let int result = await observed;
+  probe_assert_projection_count(1);
+  probe_trace("projection_count=1");
+  return result;
+}
