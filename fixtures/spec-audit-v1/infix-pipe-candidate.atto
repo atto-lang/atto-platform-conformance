@@ -1,0 +1,4 @@
+// UNRESOLVED S-54: infix spawn operands may be staged or immediate.
+// Reader and Writer are role placeholders; this is a syntax-only decision
+// sample until typed actor pipeline roles and compiler lowering are reviewed.
+val graph_result = spawn Reader() pipe spawn Writer()
