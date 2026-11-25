@@ -2,6 +2,9 @@ name: Atto nine-backend metrics/json/zorde SOURCE ONLY
 on:
   pull_request:
     paths:
+      - 'contracts/alloc-json-guest-candidate-v1.json'
+      - 'tests/alloc-json-guest-candidate.test.mjs'
+      - 'tests/fixtures/alloc-json-guest-candidate/**'
       - 'contracts/std-metrics-json-zorde-nine-backend-v1.json'
       - 'contracts/std-metrics-json-zorde-core-borrow-v1.json'
       - 'tests/std-metrics-json-zorde-core-borrow.test.mjs'
@@ -34,6 +37,7 @@ jobs:
           echo "SOURCE_HEAD_SHA=$EXPECTED_HEAD"
           echo "SOURCE_ROOT_TREE_SHA=$(git rev-parse 'HEAD^{tree}')"
           node --version
+          node --test tests/alloc-json-guest-candidate.test.mjs
           node --test tests/std-metrics-json-zorde-nine-backend.test.mjs
           node --test tests/std-metrics-json-zorde-core-borrow.test.mjs
           node --test tests/std-metrics-json-zorde-carrier-export-denial.test.mjs
