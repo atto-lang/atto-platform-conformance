@@ -32,7 +32,7 @@ test('hybrid needs a real JIT-off baseline even if optimization JIT ran',()=>{
   assert.equal(classify(x).classification,'INVALID');
 });
 test('JIT-only cannot masquerade as full AOT',()=>{
-  const x=good();x.mode='jit';x.artifact.kind='jit-only-guest';
+  const x=good();x.mode='jit';x.artifact.kind='jit-only-guest';x.execution.runtimeGuestJitUsed=true;
   x.execution.aotBaselineRanWithoutJit=false;
   x.closure.macrosEliminated=false;
   assert.equal(classify(x).classification,'JIT_ONLY_STRUCTURAL_REVIEW_REQUIRED');
@@ -71,6 +71,7 @@ test('zero-step action failures are NOT_EXECUTED, not compiler test failures',()
   x.execution.guestEntrypointRan=false;x.execution.guestOutputSha256=null;
   x.execution.aotBaselineRanWithoutJit=false;
   x.sourceProgramSha256=null;x.compilerSha256=null;
+  Object.keys(x.closure).forEach(k=>{x.closure[k]=false;});
   assert.equal(classify(x).classification,'NOT_EXECUTED');
   x.status='FAILED';assert.equal(classify(x).classification,'INVALID');
 });
@@ -80,6 +81,7 @@ test('unsupported does not imply verified parity',()=>{
   x.execution.guestEntrypointRan=false;x.execution.guestOutputSha256=null;
   x.execution.aotBaselineRanWithoutJit=false;
   x.sourceProgramSha256=null;x.compilerSha256=null;
+  Object.keys(x.closure).forEach(k=>{x.closure[k]=false;});
   assert.equal(classify(x).classification,'UNSUPPORTED');
   assert.equal(classify(x).releaseQualified,false);
 });
@@ -115,7 +117,7 @@ test('no executed evidence if runner, steps or binary output is absent',()=>{
 
 test('structural review cannot be mistaken for successful release gating',()=>{
   for(const x of [good('llvm','full-aot'),good('wasm','hybrid'),good('java','jit')]) {
-    if(x.mode==='jit') { x.artifact.kind='jit-only-guest'; }
+    if(x.mode==='jit') { x.artifact.kind='jit-only-guest'; x.execution.runtimeGuestJitUsed=true; x.execution.aotBaselineRanWithoutJit=false; }
     const out=classify(x);
     assert.equal(out.ok,false);
     assert.equal(out.releaseQualified,false);
@@ -126,6 +128,7 @@ test('structural review cannot be mistaken for successful release gating',()=>{
 test('unexecuted receipt rejects forged job and output witnesses',()=>{
   const base=good();base.status='NOT_EXECUTED';
   base.sourceProgramSha256=null;base.compilerSha256=null;
+  Object.keys(base.closure).forEach(k=>{base.closure[k]=false;});
   base.artifact={kind:'none',sha256:null};
   base.execution={jobId:null,runnerName:null,completedSteps:0,
     guestEntrypointRan:false,guestOutputSha256:null,

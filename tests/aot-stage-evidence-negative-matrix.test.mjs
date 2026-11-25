@@ -34,6 +34,7 @@ function unexecuted() {
   x.sourceProgramSha256 = null;
   x.compilerSha256 = null;
   x.artifact = { kind: 'none', sha256: null };
+  Object.keys(x.closure).forEach(k => { x.closure[k] = false; });
   x.execution = { jobId: null, runnerName: null, completedSteps: 0,
     guestEntrypointRan: false, guestOutputSha256: null,
     guestInterpreterUsed: false, runtimeGuestCompilerUsed: false,
@@ -42,12 +43,13 @@ function unexecuted() {
 }
 
 test('every backend and supported profile remains structurally reviewed, never release-qualified', () => {
-  for (const backend of ['java', 'llvm', 'net', 'wasm', 'cranelift']) {
+  for (const backend of ['java', 'llvm', 'net', 'wasm', 'forge', 'cranelift']) {
     for (const mode of ['full-aot', 'hybrid', 'jit']) {
       const x = receipt(backend, mode);
       if (mode === 'jit') {
         x.artifact.kind = 'jit-only-guest';
         x.execution.aotBaselineRanWithoutJit = false;
+        x.execution.runtimeGuestJitUsed = true;
       }
       const result = inspect(x);
       assert.equal(result.structurallyValid, true, backend + ':' + mode);
@@ -106,7 +108,7 @@ for (const [field, value] of [
   ['sourceTree', 'd'.repeat(40)],
   ['sourceProgramSha256', '0'.repeat(64)],
   ['compilerSha256', 'C'.repeat(64)],
-  ['backend', 'forge'],
+  ['backend', 'forge-as-cranelift'],
   ['mode', 'nativeaot-host-only'],
   ['status', 'PASS'],
 ]) {
