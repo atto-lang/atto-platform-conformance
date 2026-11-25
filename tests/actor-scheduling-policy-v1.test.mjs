@@ -514,3 +514,74 @@ test("reserved supervisor terminal readiness coalesces, rearms and fences retire
 test("terminal readiness oracle detects deliberately lost wakeup", async () => {
   await assert.rejects(() => verifyTerminalReadiness(true));
 });
+
+
+// Source-free selection and private carrier witness models. Neither models
+// guest execution nor proves a backend's physical worker identity.
+function verifyTerminalSelectionPriority(unbounded = false) {
+  const queue = ['DATA', 'receipt'];
+  const ready = Array.from({length: 66}, (_, i) => i);
+  let burst = 0;
+  const select = (configured = true) => {
+    const ordinaryRunnable = queue[0] === 'DATA' || (queue[0] === 'receipt' && configured);
+    if (ready.length && (unbounded || burst < 64 || !ordinaryRunnable)) {
+      burst = Math.min(64, burst + 1);
+      return ['CONTROL', ready.shift()];
+    }
+    if (ordinaryRunnable) {
+      burst = 0;
+      return [queue.shift()];
+    }
+    return null;
+  };
+  for (let i = 0; i < 64; i++) assert.deepEqual(select(), ['CONTROL', i]);
+  assert.deepEqual(select(), ['DATA']);
+  assert.deepEqual(select(), ['CONTROL', 64]);
+  assert.deepEqual(select(), ['CONTROL', 65]);
+  assert.deepEqual(select(), ['receipt']);
+  assert.equal(select(), null);
+  queue.push('receipt');
+  ready.push(...Array.from({length: 65}, (_, i) => i + 100));
+  for (let i = 0; i < 65; i++) assert.deepEqual(select(false), ['CONTROL', i + 100]);
+  assert.deepEqual(queue, ['receipt']);
+  assert.deepEqual(select(), ['receipt']);
+}
+
+function verifyPrivateCarrierRetirement(ignoreLease = false) {
+  const lease = {};
+  let active = lease;
+  let requested = false;
+  let loans = 1;
+  let retired = false;
+  const ack = () => {
+    if (!requested || loans !== 0 || (!ignoreLease && active !== null) || retired) return false;
+    retired = true;
+    return true;
+  };
+  const finish = witness => {
+    if (witness !== active || active === null || loans !== 0) return false;
+    active = null;
+    return ack();
+  };
+  requested = true;
+  assert.equal(ack(), false);
+  loans = 0;
+  assert.equal(ack(), false);
+  assert.equal(finish({}), false);
+  assert.equal(finish(lease), true);
+  assert.equal(finish(lease), false);
+  assert.equal(ack(), false);
+}
+
+test("supervisor CONTROL priority grants a bounded ordinary FIFO opportunity", () => {
+  verifyTerminalSelectionPriority();
+});
+test("priority oracle detects unbounded CONTROL starvation", () => {
+  assert.throws(() => verifyTerminalSelectionPriority(true));
+});
+test("private carrier witness fences retirement even with zero state loans", () => {
+  verifyPrivateCarrierRetirement();
+});
+test("carrier oracle detects premature retirement without a lease", () => {
+  assert.throws(() => verifyPrivateCarrierRetirement(true));
+});
