@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { expandQuantityCases } from "../lib/verified-core-quantity-expansion.mjs";
 import { spawnSync } from "node:child_process";
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -17,8 +18,8 @@ assert.ok([
   "verified-core-protocol-declarations-v1",
   "verified-core-protocol-handlers-v1",
 ].includes(fixtureProfile));
-const fixtures = fileURLToPath(new URL(`../fixtures/${fixtureProfile}/`, import.meta.url));
-const manifest = JSON.parse(readFileSync(join(fixtures, "cases.json"), "utf8"));
+const originalFixtures = fileURLToPath(new URL(`../fixtures/${fixtureProfile}/`, import.meta.url));
+const manifest = JSON.parse(readFileSync(join(originalFixtures, "cases.json"), "utf8"));
 assert.equal(manifest.schemaVersion, 1);
 assert.equal(manifest.profile, fixtureProfile);
 const work = mkdtempSync(join(tmpdir(), "atto-quantities-net-"));
@@ -88,9 +89,10 @@ const runtimeErrors = {
 };
 
 try {
+  const { fixtures, cases } = expandQuantityCases(originalFixtures, work, manifest);
   successfulBuild(["build", "compiler/Ores.Net.Compiler/Ores.Net.Compiler.csproj", ...buildOptions]);
   let hostBuilt = false;
-  for (const { source, expected, privateHelpers = [] } of manifest.cases) {
+  for (const { source, expected, privateHelpers = [] } of cases) {
     assert.match(source, /^[a-z0-9-]+\.atto$/);
     rmSync(assembly, { force: true });
     const compiled = run([compiler, "compile", join(fixtures, source), "--out", assembly]);
@@ -121,7 +123,7 @@ try {
     }
     console.log(`PASS ${source} ${expected.kind}`);
   }
-  console.log(`verified ${manifest.cases.length} cases through the .NET source compiler and CoreCLR CIL guest`);
+  console.log(`verified ${cases.length} cases through the .NET source compiler and CoreCLR CIL guest`);
 } finally {
   rmSync(work, { recursive: true, force: true });
 }
