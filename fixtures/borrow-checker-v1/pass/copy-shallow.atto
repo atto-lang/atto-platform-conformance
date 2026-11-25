@@ -1,0 +1,8 @@
+// BCV1-013 copy_shallow pass: target AttoLang semantics, NOT_EXECUTED.
+// Expected success and exit value 42.
+define class Point as pub let int x = 42; end
+pub fnc main(): int {
+  val source = new Point();
+  val copied = copy! source;
+  return copied.x;
+}

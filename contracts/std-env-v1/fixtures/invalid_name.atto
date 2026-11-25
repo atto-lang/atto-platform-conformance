@@ -1,0 +1,5 @@
+import module std_env from "std/env";
+pub routine main(): void {
+  stdio.println(std_env.get_or("INVALID-KEY", "fallback"));
+  return;
+}

@@ -266,3 +266,81 @@ test('async callbacks cannot turn a synchronous reference into scheduler evidenc
   assert.throws(()=>m.withExecution(a,{},()=>Promise.resolve(1)),/ASYNC_MODEL_CALLBACK_FORBIDDEN/);
   assert.throws(()=>m.getLocal('thread','any'),/NO_ACTIVE_THREAD/);
 });
+
+test('runtime-issued thread handles cannot be cloned to forge tenant or control-plane authority', () => {
+  const m = new LocalStateThreadModel({capacity:2});
+  const owner = m.spawn({...entry(primitive),tenant:'A'});
+  const foreignTask = m.createTask('B');
+  const copied = {...owner};
+  const forgedTenant = {...owner,tenant:'B'};
+  assert.throws(() => m.withExecution(copied,{},()=>{}),/STALE_THREAD_GENERATION/);
+  assert.throws(() => m.withExecution(forgedTenant,{task:foreignTask},()=>{}),/STALE_THREAD_GENERATION/);
+  assert.throws(() => m.requestStop(copied),/STALE_THREAD_GENERATION/);
+  assert.throws(() => m.complete(forgedTenant,42),/STALE_THREAD_GENERATION/);
+  m.withExecution(owner,{},()=>m.setLocal('thread','allowed',17));
+  m.withExecution(owner,{},()=>assert.equal(m.getLocal('thread','allowed'),17));
+  m.complete(owner,1);
+  assert.equal(m.join(owner),1);
+});
+
+test('copied Task and Actor handles cannot impersonate issued logical scopes', () => {
+  const m = new LocalStateThreadModel();
+  const carrier = m.spawn({...entry(primitive),tenant:'A'});
+  const task = m.createTask('A');
+  const actor = m.createActor('A');
+  for (const forged of [{...task},{...task,tenant:'B'}]) {
+    assert.throws(() => m.withExecution(carrier,{task:forged},()=>{}),/STALE_TASK_GENERATION/);
+    assert.throws(() => m.retireTask(forged),/STALE_TASK_GENERATION/);
+  }
+  for (const forged of [{...actor},{...actor,tenant:'B'}]) {
+    assert.throws(() => m.withExecution(carrier,{actor:forged},()=>{}),/STALE_ACTOR_GENERATION/);
+    assert.throws(() => m.restartActor(forged),/STALE_ACTOR_GENERATION/);
+    assert.throws(() => m.retireActor(forged),/STALE_ACTOR_GENERATION/);
+  }
+  m.withExecution(carrier,{task,actor},()=>{
+    m.setLocal('task','value',11);
+    m.setLocal('actor','value',13);
+  });
+  m.withExecution(carrier,{task,actor},()=>{
+    assert.equal(m.getLocal('task','value'),11);
+    assert.equal(m.getLocal('actor','value'),13);
+  });
+});
+
+test('nested different-carrier model frames cannot retire an outer active physical thread', () => {
+  const m = new LocalStateThreadModel({capacity:2});
+  const first = m.spawn(entry(primitive));
+  const second = m.spawn(entry(primitive));
+  m.withExecution(first,{},()=>{
+    m.setLocal('thread','marker',23);
+    assert.throws(() => m.withExecution(first,{},()=>{}),/THREAD_STILL_BOUND/);
+    m.withExecution(second,{},()=>{
+      assert.throws(() => m.complete(first,99),/THREAD_STILL_BOUND/);
+      assert.throws(() => m.join(first),/THREAD_NOT_PHYSICALLY_EXITED/);
+    });
+    assert.equal(m.getLocal('thread','marker'),23);
+  });
+  m.complete(first,42);
+  assert.equal(m.join(first),42);
+  m.complete(second,43);
+  assert.equal(m.join(second),43);
+});
+
+test('unwinding exceptions releases physical carrier activation without leaking authority', () => {
+  const m = new LocalStateThreadModel();
+  const carrier = m.spawn(entry(primitive));
+  const task = m.createTask();
+  const actor = m.createActor();
+  assert.throws(() => m.withExecution(carrier,{task,actor},()=>{
+    m.setLocal('task','trace_id','before');
+    throw Error('intentional unwind');
+  }),/intentional unwind/);
+  m.withExecution(carrier,{task,actor},()=>{
+    assert.equal(m.getLocal('task','trace_id'),'before');
+    m.setLocal('actor','after',true);
+  });
+  m.retireTask(task);
+  m.retireActor(actor);
+  m.complete(carrier,1);
+  assert.equal(m.join(carrier),1);
+});

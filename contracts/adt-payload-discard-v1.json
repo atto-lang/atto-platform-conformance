@@ -1,0 +1,99 @@
+{
+  "schema": "atto-adt-payload-discard-v1",
+  "status": "DRAFT",
+  "source_repo": "atto-lang/atto-source.rs",
+  "source_head": "290dd2ae2141b42e81083c6299aa31a07836aa84",
+  "scope": "Exact six source fixture Git blobs; Rust/Wasm evidence scoped to 58 source blobs, not full repository",
+  "cases": [
+    {
+      "id": "adt-result-discard-guard-fallthrough",
+      "fixture": "fixtures/adt-payload-discard-v1/pass/adt-result-discard-guard-fallthrough.atto",
+      "source_path": "tests/fixtures/pass/adt-result-discard-guard-fallthrough.atto",
+      "git_blob_sha1": "a36bcdb16ba5a47338b0c71547a289c7f2ddf0b3",
+      "expect": {
+        "kind": "guest_main_i64",
+        "value": 42
+      }
+    },
+    {
+      "id": "adt-result-discard-err-guard-safe",
+      "fixture": "fixtures/adt-payload-discard-v1/pass/adt-result-discard-err-guard-safe.atto",
+      "source_path": "tests/fixtures/pass/adt-result-discard-err-guard-safe.atto",
+      "git_blob_sha1": "506af1d88a365f4505c5eab063f6899a21670933",
+      "expect": {
+        "kind": "guest_main_i64",
+        "value": 42
+      }
+    },
+    {
+      "id": "adt-result-discard-err-named-guard",
+      "fixture": "fixtures/adt-payload-discard-v1/pass/adt-result-discard-err-named-guard.atto",
+      "source_path": "tests/fixtures/pass/adt-result-discard-err-named-guard.atto",
+      "git_blob_sha1": "d6cfed48a223e054ab0fa6dbca5d8e717297259e",
+      "expect": {
+        "kind": "guest_main_i64",
+        "value": 42
+      }
+    },
+    {
+      "id": "adt-result-discard-guard-nonexhaustive",
+      "fixture": "fixtures/adt-payload-discard-v1/fail/adt-result-discard-guard-nonexhaustive.atto",
+      "source_path": "tests/fixtures/fail/adt-result-discard-guard-nonexhaustive.atto",
+      "git_blob_sha1": "2507c0ec5feb18f6c703b7fa0ff5ef7163137797",
+      "expect": {
+        "kind": "compiler_diagnostic_no_artifact",
+        "code": "E_MATCH"
+      }
+    },
+    {
+      "id": "adt-result-discard-duplicate",
+      "fixture": "fixtures/adt-payload-discard-v1/fail/adt-result-discard-duplicate.atto",
+      "source_path": "tests/fixtures/fail/adt-result-discard-duplicate.atto",
+      "git_blob_sha1": "4c40034755f048635da54dc88e4acb5e9b355b6f",
+      "expect": {
+        "kind": "compiler_diagnostic_no_artifact",
+        "code": "E_MATCH"
+      }
+    },
+    {
+      "id": "adt-result-discard-implicit-guard-binding",
+      "fixture": "fixtures/adt-payload-discard-v1/fail/adt-result-discard-implicit-guard-binding.atto",
+      "source_path": "tests/fixtures/fail/adt-result-discard-implicit-guard-binding.atto",
+      "git_blob_sha1": "b6e76d315da460f7b772e0157186cf63a6d88860",
+      "expect": {
+        "kind": "compiler_diagnostic_no_artifact",
+        "code": "E_UNBOUND"
+      }
+    }
+  ],
+  "backends": {
+    "rust-wasm": {
+      "status": "PASS",
+      "receipt": {
+        "source_head": "290dd2ae2141b42e81083c6299aa31a07836aa84",
+        "carrier_repo": "anticaptrad/atto-ci",
+        "carrier_commit": "31dff949910abedcafbaf9fcaa43e1d987e48905",
+        "run_id": 43970162738,
+        "verified_scoped_git_blobs": 58,
+        "executed_positive_guest_count": 3,
+        "executed_negative_guest_count": 3
+      }
+    },
+    "java": {
+      "status": "NOT_EXECUTED",
+      "reason": "No compiled Java/GraalVM guest tested against this six-fixture source contract"
+    },
+    "llvm": {
+      "status": "NOT_EXECUTED",
+      "reason": "No LLVM native AOT compiled guest tested against this six-fixture source contract"
+    },
+    "net": {
+      "status": "NOT_EXECUTED",
+      "reason": "No .NET NativeAOT compiled guest tested against this six-fixture source contract"
+    },
+    "forge": {
+      "status": "NOT_EXECUTED",
+      "reason": "No Forge compiled guest tested against this six-fixture source contract"
+    }
+  }
+}

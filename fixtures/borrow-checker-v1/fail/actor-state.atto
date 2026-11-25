@@ -1,0 +1,15 @@
+// BCV1-036 actor_state fail: a critical-read guard cannot write sealed actor state.
+// expect-error: E_CRITICAL_READ_WRITE
+// TARGET_ONLY: reject via state-access permission, not an undefined message type.
+define actor Vault as
+  define state as { pub let int count = 0; }
+  receive(ActorMail<int> mail): void {
+    handle_state(critical-read |s| -> { s.count = mail.value; });
+    return;
+  }
+end
+pub fnc main(): int {
+  val vault = spawn Vault();
+  vault.send(42);
+  return 42;
+}

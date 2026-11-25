@@ -1,0 +1,50 @@
+name: Atto nine-backend metrics/json/zorde SOURCE ONLY
+on:
+  pull_request:
+    paths:
+      - 'contracts/alloc-json-guest-candidate-v1.json'
+      - 'tests/alloc-json-guest-candidate.test.mjs'
+      - 'tests/fixtures/alloc-json-guest-candidate/**'
+      - 'contracts/std-metrics-json-zorde-nine-backend-v1.json'
+      - 'contracts/std-metrics-json-zorde-core-borrow-v1.json'
+      - 'tests/std-metrics-json-zorde-core-borrow.test.mjs'
+      - 'contracts/std-metrics-json-zorde-private-carrier-proposal-v1.json'
+      - 'tests/std-metrics-json-zorde-carrier-export-denial.test.mjs'
+      - 'tests/std-metrics-json-zorde-nine-backend.test.mjs'
+      - 'docs/STD_METRICS_JSON_ZORDE_NINE_BACKEND.md'
+      - '.github/workflows/std-metrics-json-zorde-nine-backend-source.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact immutable head
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact SHA and nonempty source-only execution
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          git diff --quiet --exit-code
+          git diff --cached --quiet --exit-code
+          echo "SOURCE_HEAD_SHA=$EXPECTED_HEAD"
+          echo "SOURCE_ROOT_TREE_SHA=$(git rev-parse 'HEAD^{tree}')"
+          node --version
+          node --test tests/alloc-json-guest-candidate.test.mjs
+          node --test tests/std-metrics-json-zorde-nine-backend.test.mjs
+          node --test tests/std-metrics-json-zorde-core-borrow.test.mjs
+          node --test tests/std-metrics-json-zorde-carrier-export-denial.test.mjs
+          echo 'ATTO_METRICS_JSON_ZORDE_REFERENCE_TESTS=EXECUTED'
+          echo 'ATTO_METRICS_JSON_ZORDE_GUEST_TESTS=NOT_EXECUTED'
+      - name: Report honest proof limits
+        if: always()
+        run: |
+          echo 'SOURCE-ONLY verification. No .atto guest compiler or native AOT executed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'All nine backends remain NOT_EXECUTED pending independent actual guest receipts.' >> "$GITHUB_STEP_SUMMARY"
