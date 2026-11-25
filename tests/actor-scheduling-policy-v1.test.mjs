@@ -585,3 +585,62 @@ test("private carrier witness fences retirement even with zero state loans", () 
 test("carrier oracle detects premature retirement without a lease", () => {
   assert.throws(() => verifyPrivateCarrierRetirement(true));
 });
+
+
+// Model only: one logical identity, distinct physical leases and one-shot
+// suspension tickets. The old callback must never reclaim a retired lease.
+function verifyMigratingSegments(allowReplay = false) {
+  const logical = {};
+  let lease = {};
+  let pending = null;
+  let cancelled = false;
+  let active = true;
+  const scheduler = {};
+  const suspend = witness => {
+    if (!active || lease !== witness || cancelled) return null;
+    lease = null;
+    pending = {logical, scheduler};
+    return pending;
+  };
+  const resume = (owner, ticket) => {
+    if (!active || cancelled || owner !== scheduler ||
+        (!allowReplay && ticket !== pending) || lease !== null) return null;
+    pending = null;
+    lease = {};
+    return lease;
+  };
+  const discard = ticket => {
+    if (!active || !cancelled || lease !== null || ticket !== pending) return false;
+    pending = null;
+    active = false;
+    return true;
+  };
+  const oldLease = lease;
+  const first = suspend(oldLease);
+  assert.ok(first);
+  assert.equal(suspend(oldLease), null);
+  assert.equal(resume({}, first), null);
+  assert.equal(resume(scheduler, {...first}), null);
+  const fresh = resume(scheduler, first);
+  assert.ok(fresh);
+  assert.notEqual(fresh, oldLease);
+  assert.equal(resume(scheduler, first), null);
+  assert.equal(suspend(oldLease), null);
+  const next = suspend(fresh);
+  assert.ok(next);
+  assert.notEqual(next, first);
+  assert.equal(resume(scheduler, first), null);
+  assert.equal(discard(next), false);
+  cancelled = true;
+  assert.equal(resume(scheduler, next), null);
+  assert.equal(discard(first), false);
+  assert.equal(discard(next), true);
+  assert.equal(discard(next), false);
+}
+
+test("migrating segments preserve logical identity with fresh one-shot authority", () => {
+  verifyMigratingSegments();
+});
+test("migrating segment oracle detects stale continuation replay", () => {
+  assert.throws(() => verifyMigratingSegments(true));
+});
