@@ -66,7 +66,12 @@ class FourLayoutOracle {
   }
   get count() { return this.#denseSlots.length; }
   get layout() { return this.#g.layout; }
-  address(row, field) { return this.#g.address(row, field); }
+  address(row, field) {
+    this.#ensureLive();
+    if (typeof field !== "string" || !this.#g.fields.includes(field))
+      throw new RangeError("invalid row or field");
+    return this.#g.address(row, field);
+  }
   #ensureLive() { if (this.#dead) throw new Error("retired store"); }
   #rejectReentrantMutation() {
     if (this.#admittingRow) throw new Error("reentrant row admission mutation");
@@ -112,7 +117,7 @@ class FourLayoutOracle {
     // Fence every observable mutation until the row is fully published.
     this.#admittingRow = true;
     try {
-    if (!record || Object.keys(record).length !== this.#g.fields.length ||
+    if (!record || typeof record !== 'object' || Array.isArray(record) || Reflect.ownKeys(record).length !== this.#g.fields.length ||
         this.#g.fields.some(f => !Object.hasOwn(record, f)))
       throw new TypeError("record schema mismatch");
     // Snapshot potentially effectful getters before reserving an ID or mutating bytes.
@@ -142,12 +147,22 @@ class FourLayoutOracle {
   borrow(fields, mode = "read") {
     this.#rejectReentrantMutation();
     this.#ensureLive();
-    if (!Array.isArray(fields) || !fields.length || new Set(fields).size !== fields.length ||
-        fields.some(f => !this.#g.fields.includes(f)) || !["read", "write"].includes(mode))
-      throw new TypeError("invalid field loan");
-    const info = {fields: new Set(fields), mode};
+    this.#admittingRow = true;
+    let selected;
+    try {
+      if (!Array.isArray(fields)) throw new TypeError("invalid field loan");
+      const length = fields.length;
+      if (!Number.isSafeInteger(length) || length < 1 || length > this.#g.fields.length)
+        throw new TypeError("invalid field loan");
+      selected = [];
+      for (let i = 0; i < length; i++) selected.push(fields[i]);
+      if (new Set(selected).size !== selected.length ||
+          selected.some(f => !this.#g.fields.includes(f)) || !["read", "write"].includes(mode))
+        throw new TypeError("invalid field loan");
+    } finally { this.#admittingRow = false; }
+    const info = {fields: new Set(selected), mode};
     for (const current of this.#loans) {
-      if (fields.some(f => current.fields.has(f)) && (mode === "write" || current.mode === "write"))
+      if (selected.some(f => current.fields.has(f)) && (mode === "write" || current.mode === "write"))
         throw new Error("loan collision");
     }
     this.#loans.add(info);
@@ -176,7 +191,10 @@ class FourLayoutOracle {
   convert(layout, options = {}) {
     this.#rejectReentrantMutation();
     this.#ensureLive(); this.#noMutationLeases();
-    const next = makeGeometry(this.#g.fields, this.#g.capacity, layout, options);
+    this.#admittingRow = true;
+    let next;
+    try { next = makeGeometry(this.#g.fields, this.#g.capacity, layout, options); }
+    finally { this.#admittingRow = false; }
     for (let r = 0; r < this.count; ++r) for (const field of this.#g.fields) {
       const p = next.address(r, field);
       next.segments[p.segment][p.element] = this.#read(r, field);
