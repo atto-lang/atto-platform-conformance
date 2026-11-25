@@ -10,7 +10,13 @@
   },
   "securityPolicy": {
     "privateSourceToPublicCarrier": "forbidden",
+    "privateSourceToUnapprovedPrivateCarrier": "forbidden",
     "releaseOnZeroStepCI": "forbidden",
+    "allowRunnerCapacityAsCopyAuthorization": false,
+    "requireProtectedSourceMain": true,
+    "requireReviewedExactSourceTree": true,
+    "requireApprovedPrivateDestination": true,
+    "requireExecutedCompilerSteps": true,
     "requireImmutablePin": true,
     "requireRuntimeEvidence": true
   },
