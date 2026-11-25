@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {mkdtemp,writeFile,readFile,rm} from 'node:fs/promises';
-import {writeFileSync,readFileSync,chmodSync} from 'node:fs';
+import {writeFileSync,readFileSync,chmodSync,realpathSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join,basename} from 'node:path';
 import {runSourceAdmission,isolatedCompilerEnvironment} from '../src/actor-ownership-source-gate-v1.mjs';
@@ -18,7 +18,7 @@ function syntheticResult(args){
 test('fresh source snapshot, restricted cwd/env, real executable and three LLVM classification cases',async()=>{
  const result=await runSourceAdmission({backend:'llvm',argv:['/usr/bin/true','{file}'],sourceSha:sha,
     spawn:(exe,args,options)=>{
-      assert.equal(exe,'/usr/bin/true');
+      assert.equal(exe,realpathSync('/usr/bin/true'));
       assert.equal(options.shell,false);
       assert.equal(options.env.LD_PRELOAD,undefined);
       assert.equal(options.env.NODE_OPTIONS,undefined);
