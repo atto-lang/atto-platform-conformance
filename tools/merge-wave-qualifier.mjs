@@ -1,5 +1,22 @@
 // Offline, fail-closed merge-wave planning. A caller-supplied snapshot is NOT a GitHub attestation.
 const SHA = /^[a-f0-9]{40}$/;
+// Date.parse normalizes impossible calendar dates, e.g. February 30 -> March 2.
+// Validate every civil-time field before accepting any offline temporal evidence.
+const ISO_CIVIL = /^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})(?:\.([0-9]{1,9}))?(Z|([+-])([0-9]{2}):([0-9]{2}))$/;
+function validIsoCivilTime(value) {
+  const parts = typeof value === 'string' ? ISO_CIVIL.exec(value) : null;
+  if (!parts) return false;
+  const year = Number(parts[1]), month = Number(parts[2]), day = Number(parts[3]);
+  const hour = Number(parts[4]), minute = Number(parts[5]), second = Number(parts[6]);
+  const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+  const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  if (year < 1 || month < 1 || month > 12 || day < 1 || day > days[month - 1] ||
+      hour > 23 || minute > 59 || second > 59) return false;
+  if (parts[10] !== undefined &&
+      (Number(parts[10]) > 23 || Number(parts[11]) > 59)) return false;
+  return Number.isFinite(Date.parse(value));
+}
+
 const GH_LOGIN = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37})$/;
 const REPO = /^ores-truffle-oreslang\/(?:oreslang-source\.(?:java|llvm|wasm|forge|net)|oreslang-platform\.(?:mobile|iot|embedded|desktop|asic|fpga)|oreslang-platform-conformance)$/;
 const REJECTED_REVIEWERS = new Set(['the1mills', 'oresoftware']);
@@ -97,7 +114,7 @@ export function qualifyCandidate(candidate, asOf) {
   if (candidate.lease !== null) {
     if (!candidate.lease || typeof candidate.lease !== 'object' ||
       typeof candidate.lease.expires_at !== 'string' ||
-      !Number.isFinite(Date.parse(candidate.lease.expires_at)) ||
+      !validIsoCivilTime(candidate.lease.expires_at) ||
       Date.parse(candidate.lease.expires_at) > asOf) bad('lease', 'active_or_unknown_agent_lease');
   }
   return blockers;
@@ -107,7 +124,7 @@ export function qualifyWave(snapshot, {size = 5, minRepos = 3} = {}) {
   if (!snapshot || snapshot.schema_version !== 1 || !Array.isArray(snapshot.candidates) ||
     snapshot.candidates.length > 1000 || typeof snapshot.as_of !== 'string' ||
     !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(snapshot.as_of) ||
-    !Number.isFinite(Date.parse(snapshot.as_of)) ||
+    !validIsoCivilTime(snapshot.as_of) ||
     Date.parse(snapshot.as_of) > Date.now() + 5 * 60_000)
     throw new TypeError('invalid, future-dated or unbounded snapshot');
   const asOf = Date.parse(snapshot.as_of);

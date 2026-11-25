@@ -12,6 +12,7 @@ on:
       - tests/merge-wave-qualifier.test.mjs
       - tests/merge-wave-qualifier-cli.test.mjs
       - tests/merge-wave-qualifier-e2e.test.mjs
+      - tests/merge-wave-qualifier-calendar.test.mjs
   pull_request:
     paths:
       - .github/workflows/merge-wave-advisory-qualifier.yml
@@ -20,6 +21,7 @@ on:
       - tests/merge-wave-qualifier.test.mjs
       - tests/merge-wave-qualifier-cli.test.mjs
       - tests/merge-wave-qualifier-e2e.test.mjs
+      - tests/merge-wave-qualifier-calendar.test.mjs
   workflow_dispatch:
 
 permissions:
@@ -76,4 +78,5 @@ jobs:
           node --test \
             tests/merge-wave-qualifier.test.mjs \
             tests/merge-wave-qualifier-cli.test.mjs \
-            tests/merge-wave-qualifier-e2e.test.mjs
+            tests/merge-wave-qualifier-e2e.test.mjs \
+            tests/merge-wave-qualifier-calendar.test.mjs
