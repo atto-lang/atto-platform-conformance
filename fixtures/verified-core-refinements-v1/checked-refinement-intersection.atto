@@ -1,0 +1,11 @@
+type AtLeast42 = int where self >= 42;
+type AtMost42 = i32 where self <= 42;
+type Exactly42 = i32 where self eq 42;
+
+fnc intersect(AtLeast42 input) -> Exactly42 {
+    return input as AtMost42;
+}
+
+pub fnc main() -> int {
+    return intersect(42);
+}

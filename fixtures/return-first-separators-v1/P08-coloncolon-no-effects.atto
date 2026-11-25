@@ -1,0 +1,5 @@
+// expect-exit: 42
+fnc int • double_answer(int value) ::
+  return value * 2;
+end
+pub fnc main(): int { return double_answer(21); }

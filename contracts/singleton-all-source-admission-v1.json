@@ -1,0 +1,160 @@
+{
+  "schemaVersion": 1,
+  "contract": "singleton-all-source-admission-v1",
+  "snapshotDate": "2026-11-10",
+  "keyword": "singleton",
+  "declaration": "define singleton",
+  "identityScope": "application-domain",
+  "canonicalFive": "contracts/singleton-shared-state-v1.json",
+  "canonicalEvidence": "evidence/singleton-shared-state-v1.json",
+  "freshness": "SNAPSHOT_ONLY",
+  "claim": "NOT_CERTIFIED",
+  "conformant": false,
+  "limitation": "One primary frontend inspected per repo; neither exhaustive source audit nor compiler, guest, AOT, or runner execution proof",
+  "backends": [
+    {
+      "name": "java",
+      "role": "canonical-five",
+      "mainSha": "6d8eb70048eafc9a84c5aebe9c1bb06104f16e76",
+      "frontend": "src/main/java/dev/oreslang/parser/Parser.java",
+      "blobSha": "aa1702df7a933a126ffff2fbc28e640c1a9e7508",
+      "stages": {
+        "sourceAdmission": "NOT_EXECUTED",
+        "semanticCompile": "NOT_EXECUTED",
+        "guestExecution": "NOT_EXECUTED",
+        "actorIsolation": "NOT_EXECUTED",
+        "nativeAot": "NOT_EXECUTED"
+      },
+      "guestCaseIds": [],
+      "certification": "NOT_CERTIFIED"
+    },
+    {
+      "name": "llvm",
+      "role": "canonical-five",
+      "mainSha": "0ee037ca3e5dd9ac6ac1e9cc3d40f19ee6326a9c",
+      "frontend": "src/main/cpp/oreslang/frontend/Parser.cpp",
+      "blobSha": "e98c740f8fddcadc6929b36729fbfb04cf83ca1c",
+      "stages": {
+        "sourceAdmission": "NOT_EXECUTED",
+        "semanticCompile": "NOT_EXECUTED",
+        "guestExecution": "NOT_EXECUTED",
+        "actorIsolation": "NOT_EXECUTED",
+        "nativeAot": "NOT_EXECUTED"
+      },
+      "guestCaseIds": [],
+      "certification": "NOT_CERTIFIED"
+    },
+    {
+      "name": "net",
+      "role": "canonical-five",
+      "mainSha": "3f3606cc3ef81dad117047b4cb57609ad1a92672",
+      "frontend": "compiler/Ores.Net.Compiler.Core/Syntax.cs",
+      "blobSha": "7be1e04e33ecfc75240b748e3f073aa57b653819",
+      "stages": {
+        "sourceAdmission": "NOT_EXECUTED",
+        "semanticCompile": "NOT_EXECUTED",
+        "guestExecution": "NOT_EXECUTED",
+        "actorIsolation": "NOT_EXECUTED",
+        "nativeAot": "NOT_EXECUTED"
+      },
+      "guestCaseIds": [],
+      "certification": "NOT_CERTIFIED"
+    },
+    {
+      "name": "wasm",
+      "role": "canonical-five",
+      "mainSha": "2c6ce5988592080ea47b8877e2b8c1d3df5cb9bd",
+      "frontend": "src/guest-admission.mjs",
+      "blobSha": "69eb7268c572be7fd761a49c43dbfee3ef3a2f08",
+      "stages": {
+        "sourceAdmission": "NOT_EXECUTED",
+        "semanticCompile": "NOT_EXECUTED",
+        "guestExecution": "NOT_EXECUTED",
+        "actorIsolation": "NOT_EXECUTED",
+        "nativeAot": "NOT_EXECUTED"
+      },
+      "guestCaseIds": [],
+      "certification": "NOT_CERTIFIED"
+    },
+    {
+      "name": "forge",
+      "role": "canonical-five",
+      "mainSha": "2acf59d589f8016f879581f17a27df144fa73075",
+      "frontend": "compiler/frontend.cpp",
+      "blobSha": "d40079096646234fe81ef29395878c1652f6ba25",
+      "stages": {
+        "sourceAdmission": "NOT_EXECUTED",
+        "semanticCompile": "NOT_EXECUTED",
+        "guestExecution": "NOT_EXECUTED",
+        "actorIsolation": "NOT_EXECUTED",
+        "nativeAot": "NOT_EXECUTED"
+      },
+      "guestCaseIds": [],
+      "certification": "NOT_CERTIFIED"
+    },
+    {
+      "name": "cranelift",
+      "role": "additional",
+      "mainSha": "d3227330a58ef0e170c0c2512b53f60c1eee29e8",
+      "frontend": "src/frontend.rs",
+      "blobSha": "9aa04249e38684f67755a21967fdf9147970e1e8",
+      "stages": {
+        "sourceAdmission": "NOT_EXECUTED",
+        "semanticCompile": "NOT_EXECUTED",
+        "guestExecution": "NOT_EXECUTED",
+        "actorIsolation": "NOT_EXECUTED",
+        "nativeAot": "NOT_EXECUTED"
+      },
+      "guestCaseIds": [],
+      "certification": "NOT_CERTIFIED"
+    },
+    {
+      "name": "js",
+      "role": "additional",
+      "mainSha": "b341ee620694db8c211e15cf36330a408373854a",
+      "frontend": "src/compiler.mjs",
+      "blobSha": "66332199229c94850ad60bfb5b1eb3c78193ab7d",
+      "stages": {
+        "sourceAdmission": "NOT_EXECUTED",
+        "semanticCompile": "NOT_EXECUTED",
+        "guestExecution": "NOT_EXECUTED",
+        "actorIsolation": "NOT_EXECUTED",
+        "nativeAot": "NOT_EXECUTED"
+      },
+      "guestCaseIds": [],
+      "certification": "NOT_CERTIFIED"
+    },
+    {
+      "name": "rs",
+      "role": "additional",
+      "mainSha": "e0b8124c69d486c2bd919fb2d0124ea4eb87159e",
+      "frontend": "src/frontend.rs",
+      "blobSha": "65e15b309e9cc3e7f13352360238f6c0e74947db",
+      "stages": {
+        "sourceAdmission": "NOT_EXECUTED",
+        "semanticCompile": "NOT_EXECUTED",
+        "guestExecution": "NOT_EXECUTED",
+        "actorIsolation": "NOT_EXECUTED",
+        "nativeAot": "NOT_EXECUTED"
+      },
+      "guestCaseIds": [],
+      "certification": "NOT_CERTIFIED"
+    },
+    {
+      "name": "hdl",
+      "role": "additional",
+      "mainSha": "022936b799740ba12b17f0d009b1e81a2bdd6549",
+      "frontend": "src/compiler.mjs",
+      "blobSha": "6885d6cd14319d71465088212447477212bbddc3",
+      "stages": {
+        "sourceAdmission": "NOT_EXECUTED",
+        "semanticCompile": "NOT_EXECUTED",
+        "guestExecution": "NOT_EXECUTED",
+        "actorIsolation": "NOT_EXECUTED",
+        "nativeAot": "NOT_EXECUTED"
+      },
+      "guestCaseIds": [],
+      "certification": "NOT_CERTIFIED"
+    }
+  ]
+}

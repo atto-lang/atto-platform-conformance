@@ -1,0 +1,5 @@
+// Candidate guest fixture: compiler syntax and execution NOT verified.
+pub fnc main() -> int {
+  while true { }
+  return 0;
+}

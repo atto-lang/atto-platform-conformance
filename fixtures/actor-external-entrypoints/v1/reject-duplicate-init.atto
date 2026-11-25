@@ -1,0 +1,5 @@
+// ACTOR_DUPLICATE_INIT: a concrete incarnation has one startup slot.
+namespace actor_external_duplicate_init;
+declare actor Worker;
+define external mtd (Worker w) init(): void { return; }
+define external mtd (Worker w) init(): void { return; }

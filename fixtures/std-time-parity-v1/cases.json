@@ -1,0 +1,488 @@
+{
+  "schema": "atto.std-time.eleven-backend-candidate.v1",
+  "status": "CANDIDATE_NOT_GUEST_VERIFIED",
+  "date_utc": "2026-11-22",
+  "source_authority": "atto-lang/atto-spec",
+  "executable_guest_fixture": "fixtures/std-time-parity-v1/manual-deadline.atto",
+  "guest_expected_stdout": [
+    "1",
+    "2",
+    "true",
+    "true",
+    "true",
+    "true",
+    "false",
+    "1500000000",
+    "true",
+    "true",
+    "false",
+    "1500000000"
+  ],
+  "acceptable_evidence": [
+    "verified_full_source_tree_sha",
+    "current_compiler_commit_sha",
+    "compiled_guest_binary_sha256",
+    "stepful_ci_job_id_and_attempt",
+    "executed_positive_guest_exact_output",
+    "executed_negative_guest_no_artifact"
+  ],
+  "forbidden_claims": [
+    "host_model_as_guest_pass",
+    "source_file_present_as_linked_guest",
+    "parser_only_as_guest_pass",
+    "queue_only_as_guest_pass",
+    "skipped_or_queued_as_pass",
+    "cross_org_private_export_without_independent_approval"
+  ],
+  "backends": [
+    {
+      "id": "java",
+      "repo": "atto-lang/atto-source.java",
+      "implementation_pr": 1785,
+      "source_head_sha": "962fb397b3b980a55904878a3e5b4363c1d6cc18",
+      "library_path": "stdlib/time.atto",
+      "library_blob_sha": "c42c3935b9bbabf3d272109a213da798618eb777",
+      "target_profile": "HOSTED_OR_NATIVE_TARGET",
+      "guest_execution": "NOT_EXECUTED",
+      "full_tree_verified": false,
+      "compiler_artifact_verified": false,
+      "candidate_root_tree_sha": "012a9603b19bb92fea0d67a4c0c40dbd75627292",
+      "borrow_positive_guest_status": "NOT_EXECUTED",
+      "borrow_negative_compile_status": "NOT_EXECUTED",
+      "core_fixed_field_negative_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "llvm",
+      "repo": "atto-lang/atto-source.llvm",
+      "implementation_pr": 882,
+      "source_head_sha": "81b21f46cddbb012c59b564146cef057f935f84e",
+      "library_path": "stdlib/std/time.atto",
+      "library_blob_sha": "3521f8024208aeb516c9958ce89b096ac30ad57f",
+      "target_profile": "HOSTED_OR_NATIVE_TARGET",
+      "guest_execution": "NOT_EXECUTED",
+      "full_tree_verified": false,
+      "compiler_artifact_verified": false,
+      "candidate_root_tree_sha": "ef512822f48f9acaf7b2f47b26cbccfd2671226f",
+      "borrow_positive_guest_status": "NOT_EXECUTED",
+      "borrow_negative_compile_status": "NOT_EXECUTED",
+      "core_fixed_field_negative_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "net",
+      "repo": "atto-lang/atto-source.net",
+      "implementation_pr": 227,
+      "source_head_sha": "81327786471a350ba8de0ec535d2bf721c4a06bb",
+      "library_path": "stdlib/std/time.atto",
+      "library_blob_sha": "5f1d27ad999e6568be8f16f44bfc42aa0da982ba",
+      "target_profile": "HOSTED_OR_NATIVE_TARGET",
+      "guest_execution": "NOT_EXECUTED",
+      "full_tree_verified": false,
+      "compiler_artifact_verified": false,
+      "borrow_positive_guest_status": "NOT_EXECUTED",
+      "borrow_negative_compile_status": "NOT_EXECUTED",
+      "core_fixed_field_negative_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "wasm",
+      "repo": "atto-lang/atto-source.wasm",
+      "implementation_pr": 290,
+      "source_head_sha": "ae12fb330e7d70a1c5e9696d4480be3b9dfe9001",
+      "library_path": "stdlib/std/time.atto",
+      "library_blob_sha": "2c4a8aa5681849a02650c73328b4c49830278700",
+      "target_profile": "HOSTED_OR_NATIVE_TARGET",
+      "guest_execution": "NOT_EXECUTED",
+      "full_tree_verified": false,
+      "compiler_artifact_verified": false,
+      "borrow_positive_guest_status": "NOT_EXECUTED",
+      "borrow_negative_compile_status": "NOT_EXECUTED",
+      "core_fixed_field_negative_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "forge",
+      "repo": "atto-lang/atto-source.forge",
+      "implementation_pr": 235,
+      "source_head_sha": "9a29a6160c54eb25ae41ddc2457537de4745e0d2",
+      "library_path": "stdlib/std/time.atto",
+      "library_blob_sha": "6e45f314bb68c431cb249a347267712bbc18e250",
+      "target_profile": "HOSTED_OR_NATIVE_TARGET",
+      "guest_execution": "NOT_EXECUTED",
+      "full_tree_verified": false,
+      "compiler_artifact_verified": false,
+      "borrow_positive_guest_status": "NOT_EXECUTED",
+      "borrow_negative_compile_status": "NOT_EXECUTED",
+      "core_fixed_field_negative_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "rs",
+      "repo": "atto-lang/atto-source.rs",
+      "implementation_pr": 545,
+      "source_head_sha": "affb8861d19065bc98e1eea3109428a4ad069cea",
+      "library_path": "stdlib/std/time.atto",
+      "library_blob_sha": "813af94ff8553075fc01cd8a89f8ef023b87e4ef",
+      "target_profile": "HOSTED_OR_NATIVE_TARGET",
+      "guest_execution": "NOT_EXECUTED",
+      "full_tree_verified": false,
+      "compiler_artifact_verified": false,
+      "borrow_positive_guest_status": "NOT_EXECUTED",
+      "borrow_negative_compile_status": "NOT_EXECUTED",
+      "core_fixed_field_negative_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "cranelift",
+      "repo": "atto-lang/atto-source.cranelift",
+      "implementation_pr": 100,
+      "source_head_sha": "d40c97cd7b7fdb1e2e9b9882279cd52f86d5f679",
+      "library_path": "stdlib/std/time.atto",
+      "library_blob_sha": "41e521e6a3f199e499dc8fef482fa7476f440960",
+      "target_profile": "HOSTED_OR_NATIVE_TARGET",
+      "guest_execution": "NOT_EXECUTED",
+      "full_tree_verified": false,
+      "compiler_artifact_verified": false,
+      "borrow_positive_guest_status": "NOT_EXECUTED",
+      "borrow_negative_compile_status": "NOT_EXECUTED",
+      "core_fixed_field_negative_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "js",
+      "repo": "atto-lang/atto-source.js",
+      "implementation_pr": 140,
+      "source_head_sha": "44f4d273dad7f6bc57ad603cb25d11e35acfe9d5",
+      "library_path": "stdlib/std/time.atto",
+      "library_blob_sha": "fcc3a1131c8482f34b97a2fbed7fbe4fced7d2b9",
+      "target_profile": "HOSTED_OR_NATIVE_TARGET",
+      "guest_execution": "NOT_EXECUTED",
+      "full_tree_verified": false,
+      "compiler_artifact_verified": false,
+      "borrow_positive_guest_status": "NOT_EXECUTED",
+      "borrow_negative_compile_status": "NOT_EXECUTED",
+      "core_fixed_field_negative_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "hdl",
+      "repo": "atto-lang/atto-source.hdl",
+      "implementation_pr": 69,
+      "source_head_sha": "cac494ad6cc2522dad7dcdc161f2deb5ca5b255d",
+      "library_path": "stdlib/std/time.atto",
+      "library_blob_sha": "74c9793d8da485c8c7423048313e1d2812793232",
+      "target_profile": "DETERMINISTIC_HARDWARE_SUBSET_TARGET",
+      "guest_execution": "NOT_EXECUTED",
+      "full_tree_verified": false,
+      "compiler_artifact_verified": false,
+      "borrow_positive_guest_status": "NOT_EXECUTED",
+      "borrow_negative_compile_status": "NOT_EXECUTED",
+      "core_fixed_field_negative_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "atto",
+      "repo": "atto-lang/atto-source.atto",
+      "target_profile": "BOOTSTRAP_ONLY",
+      "guest_execution": "NOT_EXECUTED",
+      "full_tree_verified": false,
+      "compiler_artifact_verified": false,
+      "borrow_positive_guest_status": "NOT_EXECUTED",
+      "borrow_negative_compile_status": "NOT_EXECUTED",
+      "core_fixed_field_negative_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "realtime",
+      "repo": "atto-lang/atto-source.realtime",
+      "target_profile": "BOOTSTRAP_ONLY",
+      "guest_execution": "NOT_EXECUTED",
+      "full_tree_verified": false,
+      "compiler_artifact_verified": false,
+      "borrow_positive_guest_status": "NOT_EXECUTED",
+      "borrow_negative_compile_status": "NOT_EXECUTED",
+      "core_fixed_field_negative_status": "NOT_EXECUTED"
+    }
+  ],
+  "reference_vectors": [
+    {
+      "id": "zero_ns",
+      "kind": "ceil_ms",
+      "ns": "0",
+      "expected": "0"
+    },
+    {
+      "id": "single_ns",
+      "kind": "ceil_ms",
+      "ns": "1",
+      "expected": "1"
+    },
+    {
+      "id": "exact_ms",
+      "kind": "ceil_ms",
+      "ns": "1000000",
+      "expected": "1"
+    },
+    {
+      "id": "fraction_ms",
+      "kind": "ceil_ms",
+      "ns": "1000001",
+      "expected": "2"
+    },
+    {
+      "id": "last_i64_ceil",
+      "kind": "ceil_ms",
+      "ns": "9223372036854775807",
+      "expected": "9223372036855"
+    },
+    {
+      "id": "seconds_max",
+      "kind": "scaled_ns",
+      "unit_ns": "1000000000",
+      "amount": "9223372036",
+      "expected": "9223372036000000000"
+    },
+    {
+      "id": "seconds_overflow",
+      "kind": "scaled_ns",
+      "unit_ns": "1000000000",
+      "amount": "9223372037",
+      "expected": "DurationOverflow"
+    },
+    {
+      "id": "minutes_max",
+      "kind": "scaled_ns",
+      "unit_ns": "60000000000",
+      "amount": "153722867",
+      "expected": "9223372020000000000"
+    },
+    {
+      "id": "minutes_overflow",
+      "kind": "scaled_ns",
+      "unit_ns": "60000000000",
+      "amount": "153722868",
+      "expected": "DurationOverflow"
+    },
+    {
+      "id": "hours_max",
+      "kind": "scaled_ns",
+      "unit_ns": "3600000000000",
+      "amount": "2562047",
+      "expected": "9223369200000000000"
+    },
+    {
+      "id": "hours_overflow",
+      "kind": "scaled_ns",
+      "unit_ns": "3600000000000",
+      "amount": "2562048",
+      "expected": "DurationOverflow"
+    },
+    {
+      "id": "negative_duration",
+      "kind": "nonnegative_ns",
+      "ns": "-1",
+      "expected": "NegativeDuration"
+    },
+    {
+      "id": "max_duration",
+      "kind": "nonnegative_ns",
+      "ns": "9223372036854775807",
+      "expected": "9223372036854775807"
+    },
+    {
+      "id": "duration_oob",
+      "kind": "nonnegative_ns",
+      "ns": "9223372036854775808",
+      "expected": "DurationOverflow"
+    },
+    {
+      "id": "add_max_plus_one",
+      "kind": "checked_add",
+      "left": "9223372036854775807",
+      "right": "1",
+      "expected": "DurationOverflow"
+    },
+    {
+      "id": "sub_underflow",
+      "kind": "checked_sub",
+      "left": "0",
+      "right": "1",
+      "expected": "DurationUnderflow"
+    },
+    {
+      "id": "clock_domain_mismatch",
+      "kind": "duration_since",
+      "later_clock": 9,
+      "earlier_clock": 10,
+      "later": "100",
+      "earlier": "1",
+      "expected": "ClockDomainMismatch"
+    },
+    {
+      "id": "clock_backwards",
+      "kind": "duration_since",
+      "later_clock": 9,
+      "earlier_clock": 9,
+      "later": "0",
+      "earlier": "1",
+      "expected": "ClockWentBackwards"
+    },
+    {
+      "id": "clock_delta",
+      "kind": "duration_since",
+      "later_clock": 9,
+      "earlier_clock": 9,
+      "later": "1500000000",
+      "earlier": "1000000000",
+      "expected": "500000000"
+    },
+    {
+      "id": "deadline_before",
+      "kind": "expired",
+      "due": "150",
+      "now": "149",
+      "expected": "false"
+    },
+    {
+      "id": "deadline_exact",
+      "kind": "expired",
+      "due": "150",
+      "now": "150",
+      "expected": "true"
+    },
+    {
+      "id": "interval_coalesce_no_storm",
+      "kind": "interval_next_due",
+      "now": "200",
+      "due": "100",
+      "period": "50",
+      "expected": "250"
+    },
+    {
+      "id": "interval_overflow",
+      "kind": "interval_next_due",
+      "now": "9223372036854775807",
+      "due": "100",
+      "period": "1",
+      "expected": "IntervalRangeExhausted"
+    },
+    {
+      "id": "microseconds_negative",
+      "kind": "scaled_ns",
+      "unit_ns": "1000",
+      "amount": "-1",
+      "expected": "NegativeDuration"
+    },
+    {
+      "id": "milliseconds_negative",
+      "kind": "scaled_ns",
+      "unit_ns": "1000000",
+      "amount": "-1",
+      "expected": "NegativeDuration"
+    },
+    {
+      "id": "seconds_negative",
+      "kind": "scaled_ns",
+      "unit_ns": "1000000000",
+      "amount": "-1",
+      "expected": "NegativeDuration"
+    },
+    {
+      "id": "minutes_negative",
+      "kind": "scaled_ns",
+      "unit_ns": "60000000000",
+      "amount": "-1",
+      "expected": "NegativeDuration"
+    },
+    {
+      "id": "hours_negative",
+      "kind": "scaled_ns",
+      "unit_ns": "3600000000000",
+      "amount": "-1",
+      "expected": "NegativeDuration"
+    }
+  ],
+  "java_llvm_same_source_guest_candidate": {
+    "status": "SOURCE_BLOB_IDENTICAL_GUEST_NOT_EXECUTED",
+    "paths": {
+      "java": "examples/atto-time-contract.atto",
+      "llvm": "examples/atto-time-contract.atto"
+    },
+    "identical_git_blob_sha": "4937c0d975b4d87ea65cb93957175b6ba557b5c1",
+    "expected_unique_pass_labels": 52,
+    "expected_final_stdout_line": "TIME-CONTRACT-DONE",
+    "executable_guest_evidence": "NOT_EXECUTED",
+    "note": "Identical source bytes do not show either compiler can parse, link or execute std/time."
+  },
+  "borrow_mutability_negatives": [
+    {
+      "id": "immutable_manual_clock_advance",
+      "file": "fixtures/std-time-parity-v1/borrow-negative-manual-clock.atto",
+      "receiver": "clock",
+      "requires": "ManualClock.advance(mut self)",
+      "expected": "COMPILE_REJECT_MUTABLE_RECEIVER_REQUIRED",
+      "guest_artifact": "FORBIDDEN",
+      "source_blob_sha": "bc88a6ba40fee5a77a59526dfb0219a6c68c021b"
+    },
+    {
+      "id": "immutable_timer_poll",
+      "file": "fixtures/std-time-parity-v1/borrow-negative-timer-poll.atto",
+      "receiver": "timer",
+      "requires": "Timer.poll(mut self)",
+      "expected": "COMPILE_REJECT_MUTABLE_RECEIVER_REQUIRED",
+      "guest_artifact": "FORBIDDEN",
+      "source_blob_sha": "9f383698d95ac6e4f7017cbc5708172b8fdcb6eb"
+    },
+    {
+      "id": "immutable_interval_cancel",
+      "file": "fixtures/std-time-parity-v1/borrow-negative-interval-cancel.atto",
+      "receiver": "repeat",
+      "requires": "Interval.cancel(mut self)",
+      "expected": "COMPILE_REJECT_MUTABLE_RECEIVER_REQUIRED",
+      "guest_artifact": "FORBIDDEN",
+      "source_blob_sha": "e3643044be696a920e83785f2752aebac1bf5582"
+    }
+  ],
+  "borrow_conformance_status": "NOT_EXECUTED_ALL_ELEVEN_BACKENDS",
+  "borrow_ownership_notes": "Atto val is const mut and MUST permit mut self on a fixed writable binding; const is an immutable referent and MUST reject mut self. Both positive execution and negative rejection require real compiler linkage. Missing module/grammar diagnostics cannot count as borrow-checker passes.",
+  "borrow_mutability_positive": {
+    "id": "val_mutable_referent_methods",
+    "file": "fixtures/std-time-parity-v1/borrow-positive-val-mutable-referent.atto",
+    "binding": "val",
+    "binding_semantics": "const mut (non-reassignable, mutable referent)",
+    "expected_stdout": [
+      "1",
+      "true",
+      "true"
+    ],
+    "guest_execution": "NOT_EXECUTED",
+    "required_capabilities": [
+      "module_linkage",
+      "mut_self_exclusive_borrow",
+      "const_mut_binding",
+      "owner_state_transition"
+    ],
+    "source_blob_sha": "4476b45b8b0af4be4b57216653ee6271fbc0b4f3"
+  },
+  "source_parity_audit": {
+    "status": "SOURCE_ONLY_NORMALIZED_BODY_IDENTICAL_NO_EXECUTION",
+    "active_compilers": 9,
+    "method": "Strip comments, whitespace and Java-only monotonic_now extension; compare remaining module implementation.",
+    "expected_common_body_length": 6751,
+    "verified_date": "2026-11-22",
+    "caveat": "Source text equivalence does not demonstrate lexical, type-checker, ownership, compiler lowering, linker, or runtime support on any backend.",
+    "note": "Six unit constructors now distinguish negative inputs (NegativeDuration) from positive i64 scaling overflow (DurationOverflow), independently in nine backend-owned .atto files."
+  },
+  "core_ownership_fixed_fields": [
+    {
+      "id": "duration_fixed_nanos",
+      "source": "fixtures/std-time-parity-v1/core-negative-duration-nanos-write.atto",
+      "source_blob_sha": "52f0d90330b3094fb073147551b3ee6af7cf6bee",
+      "receiver": "duration",
+      "field": "nanos",
+      "expected": "COMPILE_REJECT_FIXED_FIELD_WRITE",
+      "guest_artifact": "FORBIDDEN"
+    },
+    {
+      "id": "instant_fixed_ticks",
+      "source": "fixtures/std-time-parity-v1/core-negative-instant-ticks-write.atto",
+      "source_blob_sha": "82638b0d6f5640bc17814e3b8073dd68c18982f8",
+      "receiver": "now",
+      "field": "ticks_ns",
+      "expected": "COMPILE_REJECT_FIXED_FIELD_WRITE",
+      "guest_artifact": "FORBIDDEN"
+    }
+  ],
+  "core_ownership_status": "NOT_EXECUTED_ALL_ELEVEN_BACKENDS"
+}

@@ -1,0 +1,9 @@
+// expect-exit: 1
+define module Config as
+  define const string region as os.read_env("ATTO_TEST_MODULE");
+  pub fnc get_region(): string { return region; }
+end
+pub fnc main(): int {
+  if Config.get_region() eq "stable" then return 1;
+  else return 0; fi
+}

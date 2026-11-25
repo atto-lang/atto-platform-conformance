@@ -1,0 +1,107 @@
+{
+  "schema": "atto.local-const-evaluation.v1",
+  "version": 1,
+  "status": "PARTIAL_BACKEND_EVIDENCE",
+  "owner": "atto-lang/atto-spec",
+  "semantics": {
+    "const": "initializer must evaluate to a deterministic typed constant at compile-time",
+    "literal_folding": [
+      "int",
+      "float",
+      "bool",
+      "string",
+      "enum-ordinal"
+    ],
+    "numeric": "i64 checked overflow is compile-time E_CONST_OVERFLOW; int/int division remains unsupported",
+    "runtime_const_prohibition": "function calls, actor state, heap allocations, mutable/val/let-only provenance and runtime effects are forbidden",
+    "name_immutability": "const and const mut may not rebind; const mut grants no mutable alias or actor-state bypass"
+  },
+  "source": {
+    "repo": "atto-lang/atto-source.rs",
+    "branch": "feat/four-way-binding-mutability-20261114",
+    "commit": "fc02ed1984b83f2a1baa1ece3469e08e7f5ab5a9"
+  },
+  "required_cases": [
+    {
+      "id": "132-typed-const-folded-arithmetic",
+      "kind": "pass",
+      "path": "fixtures/const/pass/132-typed-const-folded-arithmetic.atto",
+      "source_path": "tests/fixtures/pass/132-typed-const-folded-arithmetic.atto",
+      "source_blob_sha": "18406966e5b696fa96d9b81c6dbcbedf06a31653",
+      "expected_exit": 42
+    },
+    {
+      "id": "133-typed-const-folded-string-float",
+      "kind": "pass",
+      "path": "fixtures/const/pass/133-typed-const-folded-string-float.atto",
+      "source_path": "tests/fixtures/pass/133-typed-const-folded-string-float.atto",
+      "source_blob_sha": "349bb4690b190f8a17221e7fcacdb68362b05fa6",
+      "expected_exit": 9
+    },
+    {
+      "id": "134-typed-const-min-int",
+      "kind": "pass",
+      "path": "fixtures/const/pass/134-typed-const-min-int.atto",
+      "source_path": "tests/fixtures/pass/134-typed-const-min-int.atto",
+      "source_blob_sha": "938e9a33788ad82e4d5e4142b5421b40175dc85b",
+      "expected_exit": 1
+    },
+    {
+      "id": "165-const-runtime-call",
+      "kind": "fail",
+      "path": "fixtures/const/fail/165-const-runtime-call.atto",
+      "source_path": "tests/fixtures/fail/165-const-runtime-call.atto",
+      "source_blob_sha": "5caba473e7e0c75cce919eccb6a1883165ecd654",
+      "expected_error": "E_CONST"
+    },
+    {
+      "id": "166-typed-shorthand-runtime-const",
+      "kind": "fail",
+      "path": "fixtures/const/fail/166-typed-shorthand-runtime-const.atto",
+      "source_path": "tests/fixtures/fail/166-typed-shorthand-runtime-const.atto",
+      "source_blob_sha": "752b163b04906372afcf18fe11ce265aa7dd94e7",
+      "expected_error": "E_CONST"
+    },
+    {
+      "id": "167-const-from-val",
+      "kind": "fail",
+      "path": "fixtures/const/fail/167-const-from-val.atto",
+      "source_path": "tests/fixtures/fail/167-const-from-val.atto",
+      "source_blob_sha": "8b323b111b7aba5174646e4c15dcdc549851f75e",
+      "expected_error": "E_CONST"
+    },
+    {
+      "id": "168-typed-const-add-overflow",
+      "kind": "fail",
+      "path": "fixtures/const/fail/168-typed-const-add-overflow.atto",
+      "source_path": "tests/fixtures/fail/168-typed-const-add-overflow.atto",
+      "source_blob_sha": "8a2bd199c961c3b3c03252e8864d8faf204a1584",
+      "expected_error": "E_CONST_OVERFLOW"
+    },
+    {
+      "id": "169-typed-const-neg-overflow",
+      "kind": "fail",
+      "path": "fixtures/const/fail/169-typed-const-neg-overflow.atto",
+      "source_path": "tests/fixtures/fail/169-typed-const-neg-overflow.atto",
+      "source_blob_sha": "a11149c68b3cdf57e75aab000e07706b80ef3f97",
+      "expected_error": "E_CONST_OVERFLOW"
+    },
+    {
+      "id": "170-typed-const-mul-overflow",
+      "kind": "fail",
+      "path": "fixtures/const/fail/170-typed-const-mul-overflow.atto",
+      "source_path": "tests/fixtures/fail/170-typed-const-mul-overflow.atto",
+      "source_blob_sha": "fb335769e99c457a6ee303ab6fb07db62e2c6bb5",
+      "expected_error": "E_CONST_OVERFLOW"
+    }
+  ],
+  "backend_status": {
+    "rs-browser": "FOCUSED_VERIFIED",
+    "java": "NOT_VERIFIED",
+    "llvm": "NOT_VERIFIED",
+    "net": "NOT_VERIFIED",
+    "wasm-independent": "NOT_VERIFIED",
+    "forge": "NOT_VERIFIED"
+  },
+  "evidence_rule": "Only actual compiler and guest execution with exact-SHA provenance proves backend compliance. A typed constant subset is not a full cross-module constexpr implementation."
+}

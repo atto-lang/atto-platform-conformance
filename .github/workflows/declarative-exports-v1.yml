@@ -1,0 +1,33 @@
+name: Declarative export v1 corpus integrity
+
+on:
+  pull_request:
+    paths:
+      - 'contracts/declarative-exports-v1.json'
+      - 'fixtures/declarative-exports-v1/**'
+      - 'tests/test_declarative_exports_v1.py'
+      - '.github/workflows/declarative-exports-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'contracts/declarative-exports-v1.json'
+      - 'fixtures/declarative-exports-v1/**'
+      - 'tests/test_declarative_exports_v1.py'
+      - '.github/workflows/declarative-exports-v1.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  corpus-integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate exported grammar fixtures and backend contract
+        run: python -m unittest discover -s tests -p 'test_declarative_exports_v1.py' -v

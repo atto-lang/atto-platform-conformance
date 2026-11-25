@@ -1,0 +1,6 @@
+define class Box as pub let int value = 1; end
+pub fnc main(): int {
+  let Box readonly = new Box();
+  readonly.value = 42;
+  return readonly.value;
+}

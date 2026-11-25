@@ -1,0 +1,17 @@
+# Host-only candidate: profiles are row/column/random observation counts, sampled in that order.
+# This is NOT evidence of compiled .atto guest semantics, performance or native AOT.
+id|rows|fields|lanes|row|column|random|expected
+cold|40|3|8|0|0|0|aos
+row_insufficient|40|3|8|63|0|0|aos
+row_hot|40|3|8|192|0|0|aosoa
+row_short|7|3|8|192|0|0|aos
+row_lane_one|40|3|1|192|0|0|aos
+row_single_field|40|1|8|192|0|0|aos
+column_hot|40|3|8|0|192|0|soa
+random_dominated|40|3|8|100|0|200|aos
+mixed_balanced|40|3|8|100|100|100|aos
+column_majority|40|3|8|80|160|0|soa
+padded_over_quota|699050|3|8|192|0|0|aos
+logical_over_quota|699051|3|8|192|0|0|reject
+invalid_tile|40|3|3|192|0|0|reject
+invalid_fields|40|0|8|192|0|0|reject
