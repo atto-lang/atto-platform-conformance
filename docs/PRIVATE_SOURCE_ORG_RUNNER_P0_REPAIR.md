@@ -52,7 +52,8 @@ new self-hosted runner, change to secrets or workflow tokens, or relaxing branch
    actual step output:
    - `SOURCE_FREE_RUNNER_ADMITTED=1`
    - `SOURCE_FREE_TWO_STEPS_EXECUTED=1`
-7. On a trusted Linux host with `/usr/bin/gh` authenticated for read-only
+7. On a trusted Linux host with `/usr/bin/gh` and an explicitly exported
+   `GH_TOKEN` (or `GITHUB_TOKEN`) scoped for read-only
    Actions/repository API access, run:
    `node bin/verify-private-runner-postrepair-live-v1.mjs`
    The script fetches the original workflow run, its **exact attempt** jobs,
@@ -86,3 +87,76 @@ administration settings or check-run annotations**. No authenticated GitHub
 browser profile is connected. Therefore this PR implements the independent
 verification procedure but **does not claim that the private runner problem
 has been fixed**.
+
+## Extra receipt and live-reader hardening (stacked follow-up)
+
+The verifier additionally requires **exactly four** source-free job steps
+(\`Set up job\`, the two named shell checks, \`Complete job\`), with no
+unapproved checkout/extra command. An allocated runner must report the
+GitHub-hosted group (\`runner_group_id=0\`, \`runner_group_name="GitHub Actions"\`),
+runner name matching its allocated ID, only \`ubuntu-24.04\` in requested
+labels, and an observed pre-command **Hosted Compute Agent** and
+**Image: ubuntu-24.04** log header. It correlates the individual marker lines
+to the successful step timestamps, ordered job interval and the run's creation
+and update interval. These safeguards still rely on GitHub API and runner
+logs as evidence, not a cryptographic hardware attestation of the host.
+
+The command-line reader now explicitly calls **github.com** with a
+temporary isolated GitHub CLI configuration, an allowlisted set of
+read-only REST paths, no inherited proxy/enterprise-host configuration,
+and an explicitly supplied read-only \`GH_TOKEN\` / \`GITHUB_TOKEN\`.
+Stored interactive \`gh auth\` sessions are deliberately **not reused**;
+an operator must provide the narrowly scoped token securely in the local
+process environment. Do not paste tokens into issue comments, ChatGPT,
+CI logs or commands. The token is never passed in command-line arguments.
+
+If GitHub API access, the log download, run/job identity, or runner
+classification cannot be independently verified, output is
+\`PRIVATE_RUNNER_ADMISSION_UNVERIFIED\` — **not** a categorical assertion
+that no step executed. Known \`steps=[]\`/null from independent GitHub
+job data remain confirmed zero-step runner-admission failures. A
+success receipt is still \`SOURCE_FREE_PRIVATE_RUNNER_ADMISSION_ONLY\`,
+not permission to merge or certify a compiler.
+
+The extra source-only test cases cover private-repo identity,
+self-hosted-label impersonation, exact four-step inventory, hosted
+image/log preamble, log timestamp spoofing, cross-step injection,
+run/job chronology, URL path traversal, \`GH_HOST\` / proxy redirection,
+and missing credentials. These require real native Node execution
+before qualification; isolated V8 test passes are preliminary only.
+
+## Cross-endpoint evidence reconciliation and pinned source tree
+
+The independent GitHub API verifier additionally binds the historical
+source-repository numeric ID \`1413795502\`, organization owner ID
+\`336720831\`, and original immutable source **Git tree**
+\`20e4e66740aa03560ce5360f26ad8814a4de4688\` to exact commit
+\`3d5bdf454c65d87a915c5d23c2349522c80a958f\`. The live reader
+fetches \`GET /repos/ores-truffle-oreslang/oreslang-platform-conformance/commits/<head>\`
+from the same pinned GitHub.com host, and refuses an absent or mismatched
+commit/tree. This is **repository Git-tree provenance only**, not a
+runner checkout, artifact tree or compiler execution.
+
+The exact-attempt job-list response and independent job-detail response
+must agree on job identity, run ID, attempt, source head, status,
+conclusion, runner ID/name/group, requested labels, start/finish times,
+canonical API and browser URLs, and *every* step's name, number, status,
+conclusion and timestamps. A list reporting zero steps cannot be paired
+with a synthetic four-step success detail. Both original and head
+repositories must match the pinned GitHub repository and owner IDs,
+preventing same-name repository re-creation from satisfying the proof.
+
+The \`run_started_at\` timestamp must fall within the run lifetime and
+the job must begin no earlier than that specific attempt (allowing
+one second for GitHub API timestamp rounding). Existing strict Gregorian
+date checks apply. A success receipt explicitly distinguishes
+\`sourceCommitTreeResolved=true\` from
+\`runnerCheckoutTreeVerified=false\`, while
+\`guestTestsExecuted=false\` and \`backendParity=NOT_EXECUTED\`
+are always retained.
+
+New adversarial tests mutate Git tree/SHA/commit URL, repository/owner
+numeric IDs, the attempt start, job-list versus job-detail status,
+runner and step fields, canonical job URLs, plus the additional
+immutable-commit read-only API route. These tests run source-only and
+cannot provide a real private GitHub-hosted runner admission result.
