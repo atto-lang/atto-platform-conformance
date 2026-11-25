@@ -6,21 +6,10 @@
   "sourceExtension": ".atto",
   "explicitLayout": "one-level-inverted-struct",
   "dataSemantics": "dense-index-not-generational-row-handle",
-  "fields": [
-    {
-      "name": "value",
-      "type": "int",
-      "mutable": true
-    },
-    {
-      "name": "token",
-      "type": "int",
-      "mutable": false
-    }
-  ],
   "sourcePaths": [
     "contracts/dop-inverted-v1/swap-reuse.atto",
-    "contracts/dop-inverted-v1/removed-index-trap.atto"
+    "contracts/dop-inverted-v1/removed-index-trap.atto",
+    "contracts/dop-inverted-v1/positive-immutable-column-swap.atto"
   ],
   "vectors": [
     {
@@ -36,7 +25,14 @@
         "verified-MIR",
         "screened-IR",
         "actual-native-executable"
-      ]
+      ],
+      "schema": {
+        "name": "Row",
+        "fields": [
+          "value",
+          "token"
+        ]
+      }
     },
     {
       "id": "removed-index-trap",
@@ -53,7 +49,36 @@
         "production-compiler",
         "logical-length-check",
         "actual-native-executable"
-      ]
+      ],
+      "schema": {
+        "name": "Row",
+        "fields": [
+          "value",
+          "token"
+        ]
+      }
+    },
+    {
+      "id": "immutable-column-swap",
+      "file": "positive-immutable-column-swap.atto",
+      "blobSha1": "863b1f20137656a277fc7bc04415a6f001f76512",
+      "expected": {
+        "kind": "native-exit",
+        "code": 42
+      },
+      "requires": [
+        "production-compiler",
+        "verified-MIR",
+        "screened-IR",
+        "actual-native-executable"
+      ],
+      "schema": {
+        "name": "Sample",
+        "fields": [
+          "x",
+          "id"
+        ]
+      }
     }
   ],
   "backendEvidence": {
@@ -66,6 +91,13 @@
   "notes": [
     "Java parser rejection and Java host SoA storage are not Java guest execution",
     "LLVM native script must run with exact source, native executable, real signal and exact-head receipt",
-    "AoSoA, SoAoS, actors, class identity, loans and stable handles are out of scope"
-  ]
+    "AoSoA, SoAoS, actors, class identity, loans and stable handles are out of scope",
+    "The Sample immutable-column-swap fixture requires the immutable second field to move with the surviving row during swap-delete."
+  ],
+  "schemaShape": {
+    "columns": 2,
+    "scalar": "i64",
+    "firstMutable": true,
+    "secondMutable": false
+  }
 }

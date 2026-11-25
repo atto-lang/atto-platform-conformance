@@ -6,7 +6,8 @@ import { createHash } from 'node:crypto';
 const base = new URL('../contracts/dop-inverted-v1/', import.meta.url);
 const pins = new Map([
   ['swap-reuse.atto', '8f5599a9e0b11ded2929110b4936441fceb2ef21'],
-  ['removed-index-trap.atto', 'c3c87cfd2515707932734e183bb5768436526a96']
+  ['removed-index-trap.atto', 'c3c87cfd2515707932734e183bb5768436526a96'],
+  ['positive-immutable-column-swap.atto', '863b1f20137656a277fc7bc04415a6f001f76512']
 ]);
 function gitBlobId(bytes) {
   const h = createHash('sha1');
@@ -30,13 +31,16 @@ test('canonical .atto blobs remain identical to Java/LLVM contracts', async () =
     assert.ok(source.length > 0 && source.length <= 65536);
     assertVector(manifest,vector,source);
     const text = source.toString('utf8');
-    assert.match(text,/define inverted struct Row as/);
+    assert.match(text, new RegExp('define inverted struct ' + vector.schema.name + ' as'));
     assert.match(text,/rows\.erase_swap\(0\)/);
-    assert.match(text,/return rows\.get\(1, value\)/);
+    assert.match(text,vector.id === 'immutable-column-swap'
+      ? /return rows\.get\(0, id\)/
+      : /return rows\.get\(1, value\)/);
   }
-  assert.deepEqual(manifest.vectors.map(v=>v.expected.kind), ['native-exit','native-signal']);
+  assert.deepEqual(manifest.vectors.map(v=>v.expected.kind), ['native-exit','native-signal','native-exit']);
   assert.equal(manifest.vectors[0].expected.code,42);
   assert.deepEqual(manifest.vectors[1].expected.allowed,['SIGILL','SIGTRAP']);
+  assert.equal(manifest.vectors[2].expected.code,42);
 });
 
 test('source-free manifest cannot declare five-backend guest parity', async () => {
@@ -47,7 +51,9 @@ test('source-free manifest cannot declare five-backend guest parity', async () =
   assert.equal(manifest.sourceExtension,'.atto');
   assert.equal(manifest.dataSemantics,'dense-index-not-generational-row-handle');
   assert.equal(manifest.explicitLayout,'one-level-inverted-struct');
-  assert.equal(manifest.fields.length,2);
+  assert.equal(manifest.schemaShape.columns,2);
+  assert.equal(manifest.schemaShape.firstMutable,true);
+  assert.equal(manifest.schemaShape.secondMutable,false);
 });
 
 test('mutated fixtures and fabricated source IDs reject instead of qualifying', async () => {
