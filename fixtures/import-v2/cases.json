@@ -3567,6 +3567,156 @@
         "atomic": true
       },
       "currentNamespace": "network.http"
+    },
+    {
+      "id": "context-hardening-invalid-empty",
+      "stage": "resolution",
+      "source": "import super.config;",
+      "reference": "config",
+      "fixture": "contextual-root",
+      "expect": {
+        "outcome": "reject",
+        "reason": "invalid contextual root or source namespace metadata",
+        "code": "E_IMPORT_PATH",
+        "atomic": true
+      },
+      "currentNamespace": "network.",
+      "adapterInput": "contextual-resolver"
+    },
+    {
+      "id": "context-hardening-invalid-reserved",
+      "stage": "resolution",
+      "source": "import super.config;",
+      "reference": "config",
+      "fixture": "contextual-root",
+      "expect": {
+        "outcome": "reject",
+        "reason": "invalid contextual root or source namespace metadata",
+        "code": "E_IMPORT_PATH",
+        "atomic": true
+      },
+      "currentNamespace": "network.__atto_hidden",
+      "adapterInput": "contextual-resolver"
+    },
+    {
+      "id": "context-hardening-invalid-root-word",
+      "stage": "resolution",
+      "source": "import super.config;",
+      "reference": "config",
+      "fixture": "contextual-root",
+      "expect": {
+        "outcome": "reject",
+        "reason": "invalid contextual root or source namespace metadata",
+        "code": "E_IMPORT_PATH",
+        "atomic": true
+      },
+      "currentNamespace": "network.super",
+      "adapterInput": "contextual-resolver"
+    },
+    {
+      "id": "context-hardening-invalid-punctuation",
+      "stage": "resolution",
+      "source": "import super.config;",
+      "reference": "config",
+      "fixture": "contextual-root",
+      "expect": {
+        "outcome": "reject",
+        "reason": "invalid contextual root or source namespace metadata",
+        "code": "E_IMPORT_PATH",
+        "atomic": true
+      },
+      "currentNamespace": "network.bad-name",
+      "adapterInput": "contextual-resolver"
+    },
+    {
+      "id": "context-hardening-invalid-depth",
+      "stage": "resolution",
+      "source": "import super.config;",
+      "reference": "config",
+      "fixture": "contextual-root",
+      "expect": {
+        "outcome": "reject",
+        "reason": "invalid contextual root or source namespace metadata",
+        "code": "E_IMPORT_PATH",
+        "atomic": true
+      },
+      "currentNamespace": "a.b.c.d.e.f.g.h.i",
+      "adapterInput": "contextual-resolver"
+    },
+    {
+      "id": "context-hardening-invalid-interior-empty",
+      "stage": "resolution",
+      "source": "import super.config;",
+      "reference": "config",
+      "fixture": "contextual-root",
+      "expect": {
+        "outcome": "reject",
+        "reason": "invalid contextual root or source namespace metadata",
+        "code": "E_IMPORT_PATH",
+        "atomic": true
+      },
+      "currentNamespace": "network..http",
+      "adapterInput": "contextual-resolver"
+    },
+    {
+      "id": "context-hardening-bare-pkg",
+      "stage": "resolution",
+      "source": "import pkg;",
+      "reference": "config",
+      "fixture": "contextual-root",
+      "expect": {
+        "outcome": "reject",
+        "reason": "invalid contextual root or source namespace metadata",
+        "code": "E_IMPORT_PATH",
+        "atomic": true
+      },
+      "currentNamespace": "network.http",
+      "adapterInput": "contextual-resolver"
+    },
+    {
+      "id": "context-hardening-bare-self",
+      "stage": "resolution",
+      "source": "import self;",
+      "reference": "config",
+      "fixture": "contextual-root",
+      "expect": {
+        "outcome": "reject",
+        "reason": "invalid contextual root or source namespace metadata",
+        "code": "E_IMPORT_PATH",
+        "atomic": true
+      },
+      "currentNamespace": "network.http",
+      "adapterInput": "contextual-resolver"
+    },
+    {
+      "id": "context-hardening-bare-super",
+      "stage": "resolution",
+      "source": "import super;",
+      "reference": "config",
+      "fixture": "contextual-root",
+      "expect": {
+        "outcome": "reject",
+        "reason": "invalid contextual root or source namespace metadata",
+        "code": "E_IMPORT_PATH",
+        "atomic": true
+      },
+      "currentNamespace": "network.http",
+      "adapterInput": "contextual-resolver"
+    },
+    {
+      "id": "context-hardening-bare-super-chain",
+      "stage": "resolution",
+      "source": "import super.super;",
+      "reference": "config",
+      "fixture": "contextual-root",
+      "expect": {
+        "outcome": "reject",
+        "reason": "invalid contextual root or source namespace metadata",
+        "code": "E_IMPORT_PATH",
+        "atomic": true
+      },
+      "currentNamespace": "network.http.client",
+      "adapterInput": "contextual-resolver"
     }
   ]
 }
