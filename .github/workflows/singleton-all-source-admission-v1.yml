@@ -1,0 +1,32 @@
+name: Singleton nine-backend admission snapshot
+on:
+  pull_request:
+    paths:
+      - contracts/singleton-all-source-admission-v1.json
+      - verification/verify-singleton-all-source-admission-v1.mjs
+      - verification/SINGLETON_ALL_SOURCE_ADMISSION_V1.md
+      - .github/workflows/singleton-all-source-admission-v1.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Check exact checkout
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+      - name: Check canonical singleton floor
+        run: node verification/verify-singleton-shared-state-v1.mjs
+      - name: Check nine-backend source-only snapshot
+        run: node verification/verify-singleton-all-source-admission-v1.mjs

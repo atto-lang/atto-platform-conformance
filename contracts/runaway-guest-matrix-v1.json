@@ -1,0 +1,154 @@
+{
+  "schema": "atto.runaway-guests.v1",
+  "status": "CANDIDATE_FIXTURES_NOT_COMPILER_VERIFIED",
+  "scope": "Untrusted guest adversarial tests; never run unsandboxed",
+  "backends": [
+    "java",
+    "llvm",
+    "net",
+    "wasm",
+    "forge"
+  ],
+  "cases": [
+    {
+      "id": "unbounded-loop",
+      "kind": "infinite_loop",
+      "fixture": "fixtures/runaway-v1/unbounded-loop.atto",
+      "expect": "hard-budget-trap",
+      "sibling": "unaffected",
+      "guest_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "nested-loop",
+      "kind": "nested_loop",
+      "fixture": "fixtures/runaway-v1/nested-loop.atto",
+      "expect": "hard-budget-trap",
+      "sibling": "unaffected",
+      "guest_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "self-recursion",
+      "kind": "recursion",
+      "fixture": "fixtures/runaway-v1/self-recursion.atto",
+      "expect": "hard-budget-trap",
+      "sibling": "unaffected",
+      "guest_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "mutual-recursion",
+      "kind": "mutual_recursion",
+      "fixture": "fixtures/runaway-v1/mutual-recursion.atto",
+      "expect": "hard-budget-trap",
+      "sibling": "unaffected",
+      "guest_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "allocation-storm",
+      "kind": "allocation_storm",
+      "fixture": "fixtures/runaway-v1/allocation-storm.atto",
+      "expect": "memory-quota-trap",
+      "sibling": "unaffected",
+      "guest_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "sibling-progress",
+      "kind": "sibling_progress",
+      "fixture": "fixtures/runaway-v1/sibling-progress.atto",
+      "expect": "bounded-sibling-progress",
+      "sibling": "completes",
+      "guest_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "cancel-race",
+      "kind": "cancellation_race",
+      "fixture": "fixtures/runaway-v1/cancel-race.atto",
+      "expect": "bounded-cancellation",
+      "sibling": "unaffected",
+      "guest_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "hostile-import",
+      "kind": "hostile_wasm_import",
+      "fixture": "fixtures/runaway-v1/hostile-import.wat",
+      "expect": "import-rejection-before-execution",
+      "sibling": "unaffected",
+      "guest_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "checkpoint-erased-after-optimization",
+      "kind": "compiler_mutation",
+      "fixture": null,
+      "expect": "rejected-compiled-cfg",
+      "sibling": "unaffected",
+      "guest_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "forced-tail-recursion",
+      "kind": "tail_call_cycle",
+      "fixture": "fixtures/runaway-v1/tail-recursion.atto",
+      "expect": "hard-budget-trap",
+      "sibling": "unaffected",
+      "guest_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    }
+  ]
+}

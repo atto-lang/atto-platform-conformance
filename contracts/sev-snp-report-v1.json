@@ -1,0 +1,89 @@
+{
+  "schema": "atto.sev-snp-raw-report.v1",
+  "status": "SOURCE_FREE_REFERENCE_NOT_HARDWARE_EXECUTION",
+  "vendor_spec": "AMD SEV-SNP Firmware ABI 56860",
+  "report_size_bytes": 1184,
+  "signed_prefix_bytes": 672,
+  "signature_algorithm": 1,
+  "fields": {
+    "version": {
+      "offset": 0,
+      "length": 4
+    },
+    "guest_policy": {
+      "offset": 8,
+      "length": 8,
+      "debug_bit": 19
+    },
+    "vmpl": {
+      "offset": 48,
+      "length": 4,
+      "required": 0
+    },
+    "signature_algorithm": {
+      "offset": 52,
+      "length": 4,
+      "required": 1
+    },
+    "signer_info": {
+      "offset": 72,
+      "length": 4
+    },
+    "report_data": {
+      "offset": 80,
+      "length": 64
+    },
+    "measurement_sha384": {
+      "offset": 144,
+      "length": 48
+    },
+    "reported_tcb": {
+      "offset": 384,
+      "length": 8,
+      "parts": {
+        "bootloader": 0,
+        "tee": 1,
+        "snp": 6,
+        "microcode": 7
+      }
+    },
+    "signature_r": {
+      "offset": 672,
+      "length": 72
+    },
+    "signature_s": {
+      "offset": 744,
+      "length": 72
+    }
+  },
+  "signature": "ECDSA P-384 / SHA-384 with r and s little-endian, each 72-byte padded; signed report bytes 0..671",
+  "transcript": {
+    "domain": "atto-sev-snp-report-data-v1",
+    "digest": "SHA-512",
+    "inputs": [
+      "domain ASCII no NUL",
+      "nonce_32",
+      "image_identity_32",
+      "spki_length_uint32_big_endian",
+      "ephemeral_spki_der"
+    ],
+    "nonce_hex": "0909090909090909090909090909090909090909090909090909090909090909",
+    "image_identity_hex": "0303030303030303030303030303030303030303030303030303030303030303",
+    "synthetic_spki_hex": "3003010203",
+    "expected_report_data_hex": "f122440e23e256756d7eae6eb32372deee5ffe37683811dd05b5321cf3800ccba025dc18d8bd0d52aa24eb70fe7787a4fe2cba19a8e3357828c24e6c7804b839"
+  },
+  "required_vendor_endorsement_gates": [
+    "AMD product-pinned ARK root",
+    "ASK/ASVK and VCEK/VLEK signed certificate chain",
+    "current AMD CRL and revocation policy",
+    "signed quote P384 verification",
+    "VCEK/VLEK TCB extensions match reported TCB",
+    "VCEK chip ID matches report",
+    "expected launch measurement and guest policy",
+    "fresh verifier nonce and ephemeral TLS key binding",
+    "verified secret-release channel"
+  ],
+  "release_secrets": false,
+  "hardware_verified": false,
+  "notes": "All 32-byte measurement_sha256 values in confidential-compute-v1.json are generic untrusted metadata preflight, NOT SNP measurement; SNP launch measurement is 48-byte SHA-384."
+}

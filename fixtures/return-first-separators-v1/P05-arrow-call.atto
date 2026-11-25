@@ -1,0 +1,2 @@
+fnc int <- compute(int x) { return x * 2; }
+pub fnc main(): int { return compute(21); }

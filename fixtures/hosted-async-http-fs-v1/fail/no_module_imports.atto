@@ -1,0 +1,6 @@
+// Negative: unbound identifiers must not resolve as implicit ambient globals.
+pub susp fnc main(): int {
+  val response = await http.get("https://example.com/data");
+  val saved = await fs.read_text("./response.txt");
+  return saved.length;
+}

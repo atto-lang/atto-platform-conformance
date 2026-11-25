@@ -1,0 +1,9 @@
+// P0 candidate: existing match/over/on/default spelling, AOT decision DAG.
+// Expect compiled guest return 42.
+pub fnc main(): int {
+  return match 1 over
+    on 0 -> 0
+    on 1 -> 42
+    default -> 1
+  end;
+}

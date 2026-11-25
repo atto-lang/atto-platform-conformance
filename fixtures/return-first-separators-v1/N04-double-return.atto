@@ -1,0 +1,1 @@
+pub fnc int • main() -> int { return 42; }

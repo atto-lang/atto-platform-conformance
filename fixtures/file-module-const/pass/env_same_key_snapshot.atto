@@ -1,0 +1,7 @@
+// expect-exit: 1
+define const string first as os.read_env("ATTO_TEST_SAME");
+define const string again = os.read_env("ATTO_TEST_SAME");
+pub fnc main(): int {
+  if first eq again then return 1;
+  else return 0; fi
+}

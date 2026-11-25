@@ -1,0 +1,6 @@
+// A member marked pub cannot escape its containing private module.
+import * as lib from "./library_public.atto";
+pub routine main(): void {
+  stdio.println(lib.internal.secret());
+  return;
+}

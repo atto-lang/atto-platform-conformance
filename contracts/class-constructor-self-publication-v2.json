@@ -1,0 +1,81 @@
+{
+  "schema": "atto.class-constructor-self-publication.v2",
+  "status": "RUST_NATIVE_GUEST_SCOPED_PASS",
+  "meaning": "Portable inline class constructor cases extending the already-verified out-of-line v1 contract; no independent backend parity implied.",
+  "authoritative_source": "atto-lang/atto-spec/language/out-of-line-receivers-constructors-and-state-v1.md",
+  "compiler_source_merge_sha": "3320a94fd38baf2435a3e6fb4ca22edffa6e4c3d",
+  "cases": [
+    {
+      "id": "inline_self_escape",
+      "path": "fixtures/receiver-constructors/fail/inline_self_escape.atto",
+      "kind": "reject",
+      "code": "E_OWNERSHIP",
+      "artifact": "NONE"
+    },
+    {
+      "id": "inline_method_before_publication",
+      "path": "fixtures/receiver-constructors/fail/inline_method_before_publication.atto",
+      "kind": "reject",
+      "code": "E_OWNERSHIP",
+      "artifact": "NONE"
+    },
+    {
+      "id": "inline_initialized_counter",
+      "path": "fixtures/receiver-constructors/pass/inline_initialized_counter.atto",
+      "kind": "execute",
+      "expected_exit": 42
+    }
+  ],
+  "backend_status": {
+    "rs-native-host": "VERIFIED",
+    "rs-browser-hosted": "NOT_EXECUTED",
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm-independent": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED"
+  },
+  "reference_source_run_url": "https://github.com/gha-indie-worker/atto-ci/actions/runs/44447475547",
+  "note": "The exact three checked-in portable fixtures were tested in an exact 48-Git-blob private carrier on the native Rust compiler: two rejects with E_OWNERSHIP and zero Wasm artifacts, plus a real compiled Wasm guest returning 42. Browser-hosted Rust compiler and all independent backends remain NOT_EXECUTED.",
+  "native_guest_evidence": {
+    "scope": "NATIVE_RUST_COMPILER_TO_PORTABLE_WASM_GUEST",
+    "compiler_merge_sha": "3320a94fd38baf2435a3e6fb4ca22edffa6e4c3d",
+    "compiler_tested_head_sha": "bac66b085f95ec77549f1ce84d71d47fc948586e",
+    "carrier_repository": "gha-indie-worker/atto-ci",
+    "carrier_commit": "87d5a7d536e3f4bfd59594385060efdbb07f852b",
+    "run_url": "https://github.com/gha-indie-worker/atto-ci/actions/runs/44447969540",
+    "run_id": 44447969540,
+    "job_id": 135304645719,
+    "conclusion": "success",
+    "exact_github_source_blobs_verified_before_after": 48,
+    "rust_constructor_tests": {
+      "passed": 12,
+      "failed": 0
+    },
+    "node_portable_registry_tests": {
+      "passed": 2,
+      "failed": 0
+    },
+    "inline_negative_fixtures": {
+      "checked": 2,
+      "diagnostic": "E_OWNERSHIP",
+      "emitted_wasm": 0
+    },
+    "inline_positive_fixture": {
+      "checked": 1,
+      "guest_exit": 42
+    },
+    "independent_backend_exclusion": [
+      "rs-browser-hosted",
+      "java",
+      "llvm",
+      "net",
+      "wasm-independent",
+      "forge",
+      "cranelift",
+      "js"
+    ]
+  }
+}

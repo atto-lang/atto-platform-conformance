@@ -1,0 +1,109 @@
+# ADT host-only gate for PR #638; this job must not imply guest compiler parity.
+# Private source stays inside ores-truffle-oreslang. No cross-org mirrors.
+name: ADT exact-head inventory (HOST ONLY)
+on:
+  push:
+    paths:
+      - 'contracts/enum-semantics-v*.json'
+      - 'fixtures/enum/v1/**'
+      - 'lib/enum-semantics-v1-policy.mjs'
+      - 'tests/enum-semantics-*.test.mjs'
+      - 'scripts/verify-adt-conformance-head.sh'
+      - '.github/workflows/adt-exact-head-host-only.yml'
+  pull_request:
+    paths:
+      - 'contracts/enum-semantics-v*.json'
+      - 'fixtures/enum/v1/**'
+      - 'lib/enum-semantics-v1-policy.mjs'
+      - 'tests/enum-semantics-*.test.mjs'
+      - 'scripts/verify-adt-conformance-head.sh'
+      - '.github/workflows/adt-exact-head-host-only.yml'
+permissions:
+  contents: read
+concurrency:
+  group: adt-host-only-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  adt-host-only:
+    name: Exact SHA + tree + 3 Node suites (non-promoting)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check repository and source event identity
+        shell: bash
+        env:
+          EXPECTED_REPOSITORY: ores-truffle-oreslang/oreslang-platform-conformance
+          SOURCE_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          EXPECTED_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "${GITHUB_REPOSITORY}" = "${EXPECTED_REPOSITORY}"
+          test "${SOURCE_REPOSITORY}" = "${EXPECTED_REPOSITORY}"
+          [[ "${EXPECTED_SOURCE_SHA}" =~ ^[0-9a-f]{40}$ ]]
+          echo "ADT_RUNNER_ADMITTED=1"
+          echo "ADT_EXPECTED_SOURCE_SHA=${EXPECTED_SOURCE_SHA}"
+      - name: Checkout exact source commit without persisted token
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Install pinned Node major
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          check-latest: false
+      - name: Verify exact-head ADT Node suites (source only)
+        shell: bash
+        env:
+          EXPECTED_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          [[ "${EXPECTED_SOURCE_SHA}" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "${EXPECTED_SOURCE_SHA}"
+          SOURCE_TREE="$(git rev-parse 'HEAD^{tree}')"
+          [[ "${SOURCE_TREE}" =~ ^[0-9a-f]{40}$ ]]
+          # HEAD is pinned to the trusted GitHub event SHA, so its tree is bound
+          # by the Git commit object. The verifier also checks raw tracked blobs.
+          log="${RUNNER_TEMP}/adt-host-only.log"
+          if ! bash scripts/verify-adt-conformance-head.sh "${EXPECTED_SOURCE_SHA}" "${SOURCE_TREE}" >"${log}" 2>&1; then
+            cat "${log}"
+            echo "ADT_HOST_ONLY_NOT_VERIFIED=1" >&2
+            exit 1
+          fi
+          cat "${log}"
+          grep -Fxq 'ADT_HOST_ONLY_PASS=1' "${log}"
+          grep -Fxq 'ADT_GUEST_PARITY_CERTIFIED=0' "${log}"
+          export SOURCE_TREE
+          python3 - <<'PY'
+          import hashlib,json,os,pathlib
+          log=pathlib.Path(os.environ["RUNNER_TEMP"])/"adt-host-only.log"
+          payload={
+            "kind":"adt-conformance-host-only",
+            "source_repository":os.environ["GITHUB_REPOSITORY"],
+            "source_commit":os.environ["EXPECTED_SOURCE_SHA"],
+            "source_tree":os.environ["SOURCE_TREE"],
+            "github_run_id":os.environ["GITHUB_RUN_ID"],
+            "github_run_attempt":os.environ["GITHUB_RUN_ATTEMPT"],
+            "runner_name":os.environ.get("RUNNER_NAME",""),
+            "log_sha256":hashlib.sha256(log.read_bytes()).hexdigest(),
+            "node_suites":3,
+            "host_only_pass":True,
+            "guest_executed":False,
+            "executable_parity_certified":False
+          }
+          if not payload["runner_name"]:
+              raise SystemExit("ADT_HOST_ONLY_NOT_VERIFIED: runner name absent")
+          dest=pathlib.Path(os.environ["RUNNER_TEMP"])/"adt-host-receipt.json"
+          dest.write_text(json.dumps(payload,indent=2,sort_keys=True)+"\n")
+          print("ADT_RECEIPT_CREATED="+str(dest))
+          PY
+      - name: Upload source-local host receipt (not guest parity)
+        if: success()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: adt-host-only-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/adt-host-only.log
+            ${{ runner.temp }}/adt-host-receipt.json
+          if-no-files-found: error
+          retention-days: 7
