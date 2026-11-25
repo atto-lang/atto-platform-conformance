@@ -9,7 +9,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const manifest = JSON.parse(readFileSync(path.join(root, 'contracts/atto-gpu-kernel-v1.json'), 'utf8'));
 const backends = ['java', 'llvm', 'net', 'wasm', 'forge', 'cranelift', 'js'];
 const sha40 = /^[a-f0-9]{40}$/;
-const expected = new Set(['GPU-KERNEL-001', 'GPU-KERNEL-003', 'GPU-KERNEL-005', 'GPU-KERNEL-006', 'GPU-KERNEL-010']);
+const expected = new Set(['GPU-KERNEL-001', 'GPU-KERNEL-002', 'GPU-KERNEL-003', 'GPU-KERNEL-005', 'GPU-KERNEL-006', 'GPU-KERNEL-010']);
 const blobSha = bytes => createHash('sha1')
     .update(Buffer.from('blob ' + bytes.length + '\0'))
     .update(bytes).digest('hex');
