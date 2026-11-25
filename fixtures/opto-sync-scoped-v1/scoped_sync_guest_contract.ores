@@ -1,0 +1,29 @@
+// Candidate Oreslang guest: a real compiler must execute these assertions.
+// Expected process exit 0. A host-side text scan is not guest execution.
+import module scoped_sync_admission from "./scoped_sync_admission";
+
+pub routine main(): int {
+  if !scoped_sync_admission.valid_checkpoint(5, 10, 8) ||
+    !scoped_sync_admission.valid_checkpoint(0, 0, 0); then return 11; fi
+  if scoped_sync_admission.valid_checkpoint(5, 10, 4) ||
+    scoped_sync_admission.valid_checkpoint(5, 10, 11) ||
+    scoped_sync_admission.valid_checkpoint(-1, 10, 5); then return 12; fi
+
+  if !scoped_sync_admission.valid_change_order(5, 6, 10) ||
+    !scoped_sync_admission.valid_change_order(9, 10, 10); then return 13; fi
+  if scoped_sync_admission.valid_change_order(5, 5, 10) ||
+    scoped_sync_admission.valid_change_order(6, 5, 10) ||
+    scoped_sync_admission.valid_change_order(5, 11, 10); then return 14; fi
+
+  if !scoped_sync_admission.valid_revision(5, 6) ||
+    !scoped_sync_admission.valid_revision(10, 11); then return 15; fi
+  if scoped_sync_admission.valid_revision(5, 5) ||
+    scoped_sync_admission.valid_revision(6, 5) ||
+    scoped_sync_admission.valid_revision(-1, 2); then return 16; fi
+
+  if !scoped_sync_admission.valid_generation(3, 3, 3); then return 17; fi
+  if scoped_sync_admission.valid_generation(2, 3, 3) ||
+    scoped_sync_admission.valid_generation(3, 3, 2) ||
+    scoped_sync_admission.valid_generation(0, 0, 0); then return 18; fi
+  return 0;
+}

@@ -1,0 +1,1 @@
+pub suspends routine run(input: GpuBuffer<f32>): HostBuffer<f32> { return gpu { kernel(rt take input) }; }

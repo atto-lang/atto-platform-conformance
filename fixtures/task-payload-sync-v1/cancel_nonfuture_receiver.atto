@@ -1,0 +1,5 @@
+pub fnc main(): int {
+  val int value = 42;
+  value.cancel();
+  return value;
+}

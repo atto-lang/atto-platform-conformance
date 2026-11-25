@@ -1,0 +1,4 @@
+pub susp fnc main(): int {
+  do task<void> {};
+  return 42;
+}

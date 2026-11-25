@@ -1,0 +1,4 @@
+pub fnc main(): int {
+  const n = infer structural {x: 42};
+  return n.x;
+}

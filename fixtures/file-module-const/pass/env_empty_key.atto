@@ -1,0 +1,6 @@
+// expect-exit: 1
+define const string empty_key = os.read_env("");
+pub fnc main(): int {
+  if empty_key eq "" then return 1;
+  else return 0; fi
+}

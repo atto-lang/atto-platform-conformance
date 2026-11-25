@@ -1,0 +1,1 @@
+pub fnc run(): type<tbr> { val tbr: int = 5; return tbr; }

@@ -1,0 +1,216 @@
+{
+  "schema": "atto.file-module-const.v1",
+  "version": 1,
+  "status": "TARGET_NOT_EXECUTED",
+  "owner": "atto-lang/atto-spec",
+  "spec_path": "language/file-module-const-v1.md",
+  "semantics": {
+    "syntax": [
+      "define const T name = constexpr;",
+      "define const T name as constexpr;",
+      "define const string name = os.read_env(\"KEY\");",
+      "define const string name as os.read_env(\"KEY\");",
+      "define pub const string name = std.env.read_env(\"KEY\");",
+      "define const string name as std.env.read_env(\"KEY\");"
+    ],
+    "top_level_unconditional": true,
+    "constexpr_folded_at_build_time": true,
+    "env_return_type": "string",
+    "env_total_no_throw": true,
+    "env_total_no_raise": true,
+    "env_missing_value": "",
+    "env_invalid_or_empty_key_value": "",
+    "env_denied_value": "",
+    "env_unrepresentable_value": "lossy UTF-8 replacement to valid string (subject to platform contract)",
+    "env_read_static_startup_once": true,
+    "env_read_compiler_time_forbidden": true,
+    "env_key_requires_compile_time_string": true,
+    "mutable_process_global": false,
+    "typed_string_env_no_implicit_coercion": true,
+    "unsupported_runtime_calls_forbidden": true,
+    "same_artifact_different_environments": true,
+    "std_env_qualified_initializer": true,
+    "std_env_accessor_equivalent_to_os_read_env": true,
+    "std_env_resolved_by_trusted_symbol_identity": true,
+    "imported_public_env_const_no_reread": true
+  },
+  "required_cases": [
+    {
+      "id": "equal_and_as",
+      "kind": "pass",
+      "path": "fixtures/file-module-const/pass/equal_and_as.atto",
+      "expected_exit": 12
+    },
+    {
+      "id": "references_fold",
+      "kind": "pass",
+      "path": "fixtures/file-module-const/pass/references_fold.atto",
+      "expected_exit": 42
+    },
+    {
+      "id": "bool_const",
+      "kind": "pass",
+      "path": "fixtures/file-module-const/pass/bool_const.atto",
+      "expected_exit": 1
+    },
+    {
+      "id": "env_string_not_int",
+      "kind": "fail",
+      "path": "fixtures/file-module-const/fail/env_runtime.atto",
+      "expected_error": "E_CONST_TYPE"
+    },
+    {
+      "id": "runtime_call",
+      "kind": "fail",
+      "path": "fixtures/file-module-const/fail/runtime_call.atto",
+      "expected_error": "E_CONST"
+    },
+    {
+      "id": "type_mismatch",
+      "kind": "fail",
+      "path": "fixtures/file-module-const/fail/type_mismatch.atto",
+      "expected_error": "E_CONST_TYPE"
+    },
+    {
+      "id": "duplicate",
+      "kind": "fail",
+      "path": "fixtures/file-module-const/fail/duplicate.atto",
+      "expected_error": "E_DUPLICATE"
+    },
+    {
+      "id": "cycle",
+      "kind": "fail",
+      "path": "fixtures/file-module-const/fail/cycle.atto",
+      "expected_error": "E_CONST_CYCLE"
+    },
+    {
+      "id": "overflow",
+      "kind": "fail",
+      "path": "fixtures/file-module-const/fail/overflow.atto",
+      "expected_error": "E_CONST_OVERFLOW"
+    },
+    {
+      "id": "env_equal_and_as",
+      "kind": "pass",
+      "path": "fixtures/file-module-const/pass/env_equal_and_as.atto",
+      "env": {
+        "ATTO_TEST_FIRST": "alpha",
+        "ATTO_TEST_SECOND": "beta"
+      },
+      "expected_exit": 12
+    },
+    {
+      "id": "env_per_instance",
+      "kind": "pass",
+      "path": "fixtures/file-module-const/pass/env_per_instance.atto",
+      "reuse_compiled_artifact": true,
+      "startups": [
+        {
+          "env": {
+            "ATTO_TEST_REGION": "east"
+          },
+          "expected_exit": 1
+        },
+        {
+          "env": {
+            "ATTO_TEST_REGION": "west"
+          },
+          "expected_exit": 2
+        }
+      ]
+    },
+    {
+      "id": "env_in_module",
+      "kind": "pass",
+      "path": "fixtures/file-module-const/pass/env_in_module.atto",
+      "env": {
+        "ATTO_TEST_MODULE": "stable"
+      },
+      "expected_exit": 1
+    },
+    {
+      "id": "env_key_from_const",
+      "kind": "pass",
+      "path": "fixtures/file-module-const/pass/env_key_from_const.atto",
+      "env": {
+        "ATTO_TEST_KEY": "allowed"
+      },
+      "expected_exit": 1
+    },
+    {
+      "id": "env_same_key_snapshot",
+      "kind": "pass",
+      "path": "fixtures/file-module-const/pass/env_same_key_snapshot.atto",
+      "env": {
+        "ATTO_TEST_SAME": "unchanged"
+      },
+      "env_after_init": {
+        "ATTO_TEST_SAME": "changed"
+      },
+      "expected_exit": 1,
+      "expected_host_reads": {
+        "ATTO_TEST_SAME": 1
+      }
+    },
+    {
+      "id": "env_empty_key",
+      "kind": "pass",
+      "path": "fixtures/file-module-const/pass/env_empty_key.atto",
+      "expected_exit": 1,
+      "expected_env_result": ""
+    },
+    {
+      "id": "env_runtime_key",
+      "kind": "fail",
+      "path": "fixtures/file-module-const/fail/env_runtime_key.atto",
+      "expected_error": "E_CONST"
+    },
+    {
+      "id": "env_missing",
+      "kind": "pass",
+      "path": "fixtures/file-module-const/pass/env_missing.atto",
+      "env": {},
+      "absent_env_keys": [
+        "ATTO_REQUIRED_ENV"
+      ],
+      "expected_exit": 1,
+      "expected_env_result": "",
+      "expect_no_throw_or_raise": true
+    },
+    {
+      "id": "env_denied",
+      "kind": "pass",
+      "path": "fixtures/file-module-const/pass/env_denied.atto",
+      "env": {
+        "ATTO_RESTRICTED_ENV": "secret"
+      },
+      "denied_env_keys": [
+        "ATTO_RESTRICTED_ENV"
+      ],
+      "expected_exit": 1,
+      "expected_env_result": "",
+      "expect_no_throw_or_raise": true
+    },
+    {
+      "id": "env_present_empty",
+      "kind": "pass",
+      "path": "fixtures/file-module-const/pass/env_present_empty.atto",
+      "env": {
+        "ATTO_PRESENT_EMPTY": ""
+      },
+      "expected_exit": 1,
+      "expected_env_result": "",
+      "expect_no_throw_or_raise": true
+    }
+  ],
+  "backend_status": {
+    "rs-browser": "NOT_EXECUTED",
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm-independent": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED"
+  },
+  "evidence_rule": "Run real guest with exact-SHA-pinned compiler and artifact. For env reads use launch-time/capability-provided environment, never build-time env. For denied, missing, empty-key and explicitly-empty values verify normal guest execution and empty string without throw/raise. For compile-fail require expected diagnostic and no artifact. Check same AOT artifact under different runtime environments, once-only snapshot immutability and permission denial confidentiality. All backends NOT_EXECUTED pending real runs.",
+  "companion_registry": "contracts/constant-imports-v1.json"
+}

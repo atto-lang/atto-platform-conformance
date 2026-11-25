@@ -1,0 +1,160 @@
+{
+  "schemaVersion": 1,
+  "description": "Exact-blob source locations of existing Oreslang critical-state guest fixtures. Metadata only; no private source embedded or exported.",
+  "sourceOfTruth": "oreslang-source.java PR #2245 at immutable head a88c48773861daa6dc6bc46cb3a0923bd198d842",
+  "fixtures": [
+    {
+      "id": "write_then_read",
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "commit": "a88c48773861daa6dc6bc46cb3a0923bd198d842",
+      "path": "src/test/resources/parity/actor-critical-modes/write_then_read.ores",
+      "gitBlob": "eb6e15e2670bd003d8106645faf053b82ab53c26",
+      "expected": "compile-and-run",
+      "expectedStdout": "critical-modes-ok",
+      "backendEvidence": {
+        "java": "not-executed",
+        "llvm": "not-executed",
+        "wasm": "not-executed",
+        "cranelift": "not-executed",
+        "net": "not-executed",
+        "forge": "not-executed"
+      }
+    },
+    {
+      "id": "reject_read_mutation",
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "commit": "a88c48773861daa6dc6bc46cb3a0923bd198d842",
+      "path": "src/test/resources/parity/actor-critical-modes/reject_read_mutation.ores",
+      "gitBlob": "66d9f1509bdf09fd5dd88be044c546ecd7b34eb9",
+      "expected": "compile-reject",
+      "expectedDiagnostic": "readonly",
+      "backendEvidence": {
+        "java": "not-executed",
+        "llvm": "not-executed",
+        "wasm": "not-executed",
+        "cranelift": "not-executed",
+        "net": "not-executed",
+        "forge": "not-executed"
+      }
+    },
+    {
+      "id": "reject_read_mutable_reborrow",
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "commit": "a88c48773861daa6dc6bc46cb3a0923bd198d842",
+      "path": "src/test/resources/parity/actor-critical-modes/reject_read_mutable_reborrow.ores",
+      "gitBlob": "ca96beecca803cecaa499a2d980334c5438cab5f",
+      "expected": "compile-reject",
+      "expectedDiagnostic": "shared borrow",
+      "backendEvidence": {
+        "java": "not-executed",
+        "llvm": "not-executed",
+        "wasm": "not-executed",
+        "cranelift": "not-executed",
+        "net": "not-executed",
+        "forge": "not-executed"
+      }
+    },
+    {
+      "id": "reject_unknown_mode",
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "commit": "a88c48773861daa6dc6bc46cb3a0923bd198d842",
+      "path": "src/test/resources/parity/actor-critical-modes/reject_unknown_mode.ores",
+      "gitBlob": "c003d3002841e644462c956a1ec96fdd3fe95d39",
+      "expected": "compile-reject",
+      "expectedDiagnostic": "critical state access mode",
+      "backendEvidence": {
+        "java": "not-executed",
+        "llvm": "not-executed",
+        "wasm": "not-executed",
+        "cranelift": "not-executed",
+        "net": "not-executed",
+        "forge": "not-executed"
+      }
+    },
+    {
+      "id": "reject_string_forged_write_mode",
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "commit": "a88c48773861daa6dc6bc46cb3a0923bd198d842",
+      "path": "src/test/resources/parity/actor-critical-modes/reject_string_forged_write_mode.ores",
+      "gitBlob": "0ab217e3edf944a510659e9ea0e765ffecf5e67f",
+      "expected": "compile-reject",
+      "expectedDiagnostic": "critical[read]",
+      "backendEvidence": {
+        "java": "not-executed",
+        "llvm": "not-executed",
+        "wasm": "not-executed",
+        "cranelift": "not-executed",
+        "net": "not-executed",
+        "forge": "not-executed"
+      }
+    },
+    {
+      "id": "reject_await_in_write",
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "commit": "a88c48773861daa6dc6bc46cb3a0923bd198d842",
+      "path": "src/test/resources/parity/actor-critical-modes/reject_await_in_write.ores",
+      "gitBlob": "12c24fa550bfadb1cbc55ee4e6de25308509cc41",
+      "expected": "compile-reject",
+      "expectedDiagnostic": "cannot suspend",
+      "backendEvidence": {
+        "java": "not-executed",
+        "llvm": "not-executed",
+        "wasm": "not-executed",
+        "cranelift": "not-executed",
+        "net": "not-executed",
+        "forge": "not-executed"
+      }
+    },
+    {
+      "id": "reject_await_in_read",
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "commit": "a88c48773861daa6dc6bc46cb3a0923bd198d842",
+      "path": "src/test/resources/parity/actor-critical-modes/reject_await_in_read.ores",
+      "gitBlob": "f4d182cef8ab1e376198f84020c45f9dd0e0aba9",
+      "expected": "compile-reject",
+      "expectedDiagnostic": "cannot suspend",
+      "backendEvidence": {
+        "java": "not-executed",
+        "llvm": "not-executed",
+        "wasm": "not-executed",
+        "cranelift": "not-executed",
+        "net": "not-executed",
+        "forge": "not-executed"
+      }
+    },
+    {
+      "id": "reject_state_escape",
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "commit": "a88c48773861daa6dc6bc46cb3a0923bd198d842",
+      "path": "src/test/resources/parity/actor-critical-modes/reject_state_escape.ores",
+      "gitBlob": "64bf6871b8d222854bce9e2343250923415f50af",
+      "expected": "compile-reject",
+      "expectedDiagnostic": "cannot suspend",
+      "backendEvidence": {
+        "java": "not-executed",
+        "llvm": "not-executed",
+        "wasm": "not-executed",
+        "cranelift": "not-executed",
+        "net": "not-executed",
+        "forge": "not-executed"
+      }
+    },
+    {
+      "id": "reject_direct_state_access",
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "commit": "a88c48773861daa6dc6bc46cb3a0923bd198d842",
+      "path": "src/test/resources/parity/actor-critical-modes/reject_direct_state_access.ores",
+      "gitBlob": "9754b8df89d7eee4cbf99ff6346b8225c5baa74f",
+      "expected": "compile-reject",
+      "expectedDiagnostic": "sealed",
+      "backendEvidence": {
+        "java": "not-executed",
+        "llvm": "not-executed",
+        "wasm": "not-executed",
+        "cranelift": "not-executed",
+        "net": "not-executed",
+        "forge": "not-executed"
+      }
+    }
+  ]
+}

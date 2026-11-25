@@ -1,0 +1,67 @@
+{
+  "schema": "atto.gpu-actors-v1-provider-host-evidence/1",
+  "recordedAt": "2026-11-10",
+  "source": {
+    "repo": "ores-truffle-oreslang/oreslang-source.llvm",
+    "pr": 1652,
+    "head": "7e639287e2c53e8764895b70fef5e71b011c43a7",
+    "stackedOn": 1650,
+    "blob": "67ba38101d602e63ea8c126bc023f51d146daaa4",
+    "testBlob": "ab847cd09d64b714ada72a15409eeda7b64c8566"
+  },
+  "carrier": {
+    "repo": "scintilla-run/scintilla-run-e2e",
+    "branch": "carrier/gpu-provider-bridge-v1-20261110",
+    "head": "bf5b415e84239d176bbd98fc3bb08cc65cd85caa",
+    "runId": 42925139986,
+    "jobId": 130209609920,
+    "url": "https://github.com/scintilla-run/scintilla-run-e2e/actions/runs/42925139986",
+    "sourceBlobsChecked": true,
+    "gccAsanUbsan": "PASS",
+    "clang": "PASS",
+    "checksPerCompiler": 6329,
+    "mockActors": 1024,
+    "mockTurns": 4096
+  },
+  "semantics": {
+    "localOpaqueEventOriginVerified": true,
+    "staleOrForeignEventsRejected": true,
+    "actorEnqueueAmbiguityRetained": true,
+    "supervisorOwnedQuarantine": true,
+    "processRootRegistryCap": 256,
+    "retainedAcrossSupervisorHandleDrop": true,
+    "rootRetiresOnlyAfterMockProviderRelease": true,
+    "crossTenantDeviceLossContained": true,
+    "retirementReleaseExcludesConcurrentActorTurns": true,
+    "retirementVsCancellationTested": true,
+    "exclusiveTerminalRelease": true,
+    "exclusiveUnknownEnqueueReconciliation": true,
+    "failedAdmissionRootRollback": true,
+    "malformedReconcileHostFailure": true
+  },
+  "notProven": {
+    "nativePhysicalGpuProvider": false,
+    "physicalEventAuthenticated": false,
+    "realDriverQueue": false,
+    "compiledAttoLangGuest": false,
+    "typedGpuActorDeviceMir": false,
+    "fullCmakeCtest": false,
+    "fiveBackendHardwareParity": false,
+    "processRestartDurability": false
+  },
+  "backendGpuExecutionStates": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED"
+  },
+  "hardwareClaim": "NOT_EXECUTED",
+  "releaseReady": false,
+  "reviewRequired": true,
+  "audit": {
+    "securityAuditDocument": "verification/gpu-actor-provider-v1-security-audit-20261110.json",
+    "findingsFixed": 5,
+    "remainingProductionBlockers": 6
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "schema": "oreslang.actor-native-precreation.v1",
+  "version": 1,
+  "evidence": "SOURCE_FREE_MODEL_ONLY",
+  "scope": "Trusted native broker pre-creation capacity and physical retirement",
+  "invariants": [
+    "Trusted broker must reserve a handle credit BEFORE an OS-capable resource is constructed.",
+    "Each permit charges context and every ancestor's handle and truthfully attributed byte quotas.",
+    "Actor STOP, scope revocation and context shutdown deny NEW permits; existing permits remain counted until abort or physical resource retirement.",
+    "Permit admission must serialize with exact actor-incarnation STOP; permission-scope ancestry is not actor liveness.",
+    "A trusted successful attach transfers the exact original reservation to the real resource without refund/re-reserve.",
+    "Construction failure aborts an unused permit and refunds its charges exactly once.",
+    "Constructed resource after STOP/shutdown is rejected from guest publication, retains its physical ownership and must be quarantined.",
+    "Context cannot report physically retired while an untransferred creation permit or registered resource remains.",
+    "Forged/cross-context, repeated attach, duplicate retire and stale generations are denied.",
+    "Bytes are trusted declared attribution, not actual kernel/heap measurement; unknown bytes still cost one handle."
+  ],
+  "requiredScenarios": [
+    "deny-before-construction",
+    "actor-parent-sibling-capacity",
+    "declared-byte-limit",
+    "constructor-abort-refund",
+    "transfer-no-refund-gap",
+    "actor-stop-late-resource-quarantine",
+    "context-shutdown-pending-ticket",
+    "context-shutdown-late-resource-quarantine",
+    "cross-context-forged-ticket",
+    "duplicate-attach-denial",
+    "physical-close-retirement",
+    "double-retirement-denial"
+  ],
+  "backendStatus": {
+    "java": "DRAFT_SOURCE_NOT_EXECUTED",
+    "llvm": "PENDING_REAL_EXECUTION",
+    "wasm": "PENDING_REAL_EXECUTION",
+    "net": "PENDING_REAL_EXECUTION",
+    "forge": "PENDING_REAL_EXECUTION"
+  },
+  "promotion": {
+    "compiledOreslangGuestRequired": true,
+    "authorizedExactHeadRunnerRequired": true,
+    "actualHostOsLimitsRequiredForSandboxClaim": true,
+    "sourceFreeModelSufficient": false
+  }
+}

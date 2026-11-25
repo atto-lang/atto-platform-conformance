@@ -1,0 +1,3 @@
+// Target syntax only; no backend guest execution is claimed.
+define durable actor Counter as
+end

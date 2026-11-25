@@ -1,0 +1,280 @@
+{
+  "schemaVersion": 1,
+  "scope": "task-blocks-v0-draft",
+  "runtimeVerified": false,
+  "backends": {
+    "java-graalvm": "parser-only-runtime-gated",
+    "llvm": "fail-closed",
+    "net": "unverified",
+    "wasm": "unverified",
+    "forge": "unverified"
+  },
+  "cases": [
+    {
+      "id": "do-nb-no-handle",
+      "file": "do-nb-no-handle.ores",
+      "syntax": "statement",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "task-int-await",
+      "file": "task-int-await.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "task-void-await",
+      "file": "task-void-await.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "reject-bare-nb",
+      "file": "reject-bare-nb.ores",
+      "syntax": "statement",
+      "parserExpected": "reject",
+      "runtimeExpected": "forbidden"
+    },
+    {
+      "id": "reject-escaping-borrow",
+      "file": "reject-escaping-borrow.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "reject"
+    },
+    {
+      "id": "task-iife-expression",
+      "file": "task-iife-expression.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "task-iife-block",
+      "file": "task-iife-block.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "task-iife-awaited",
+      "file": "task-iife-awaited.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "task-iife-future-observer",
+      "file": "task-iife-future-observer.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "async-task-braced",
+      "file": "async-task-braced.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "async-task-expression",
+      "file": "async-task-expression.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "async-task-immediate-await",
+      "file": "async-task-immediate-await.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "async-future-nested-task",
+      "file": "async-future-nested-task.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "reject-async-task-malformed",
+      "file": "reject-async-task-malformed.ores",
+      "syntax": "expression",
+      "parserExpected": "reject",
+      "runtimeExpected": "forbidden"
+    },
+    {
+      "id": "task-spelling-value",
+      "file": "task-spelling-value.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "task-spelling-discard",
+      "file": "task-spelling-discard.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "task-spelling-await",
+      "file": "task-spelling-await.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "task-nested-not-flattened",
+      "file": "task-nested-not-flattened.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "nb-task-alias",
+      "file": "nb-task-alias.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "reject-task-escaping-borrow",
+      "file": "reject-task-escaping-borrow.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "reject"
+    },
+    {
+      "id": "reject-task-double-move",
+      "file": "reject-task-double-move.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "reject"
+    },
+    {
+      "id": "reject-task-borrow-across-await",
+      "file": "reject-task-borrow-across-await.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "reject"
+    },
+    {
+      "id": "reject-task-borrowed-iife-argument",
+      "file": "reject-task-borrowed-iife-argument.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "reject"
+    },
+    {
+      "id": "task-cancel-and-join",
+      "file": "task-cancel-and-join.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "suspends-task-body",
+      "file": "suspends-task-body.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "suspends-task-lambda",
+      "file": "suspends-task-lambda.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "suspends-lambda-no-spawn",
+      "file": "suspends-lambda-no-spawn.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "reject-suspends-task-modifier",
+      "file": "reject-suspends-task-modifier.ores",
+      "syntax": "expression",
+      "parserExpected": "reject",
+      "runtimeExpected": "forbidden"
+    },
+    {
+      "id": "reject-sync-lambda-suspends",
+      "file": "reject-sync-lambda-suspends.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "reject"
+    },
+    {
+      "id": "reject-sync-helper-await",
+      "file": "reject-sync-helper-await.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "reject"
+    },
+    {
+      "id": "suspends-task-caller-value",
+      "file": "suspends-task-caller-value.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "suspends-lambda-within-task",
+      "file": "suspends-lambda-within-task.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "reject-suspends-task-prefix",
+      "file": "reject-suspends-task-prefix.ores",
+      "syntax": "expression",
+      "parserExpected": "reject",
+      "runtimeExpected": "forbidden"
+    },
+    {
+      "id": "reject-plain-calls-suspends",
+      "file": "reject-plain-calls-suspends.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "reject"
+    },
+    {
+      "id": "reject-typed-callback-suspends",
+      "file": "reject-typed-callback-suspends.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "reject"
+    },
+    {
+      "id": "reject-mutex-callback-suspends",
+      "file": "reject-mutex-callback-suspends.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "reject"
+    },
+    {
+      "id": "reject-firstclass-suspends",
+      "file": "reject-firstclass-suspends.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "reject"
+    },
+    {
+      "id": "reject-static-suspends-fnc",
+      "file": "reject-static-suspends-fnc.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "reject"
+    }
+  ]
+}

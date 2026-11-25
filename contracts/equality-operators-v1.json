@@ -1,0 +1,284 @@
+{
+  "schema": "atto.equality-operators.v1",
+  "version": 1,
+  "status": "PARTIAL_BACKEND_EXECUTED",
+  "normative_source": "atto-lang/atto-spec#62",
+  "related": "atto-lang/atto-spec#60",
+  "semantics": {
+    "value_operators": [
+      "eq",
+      "neq"
+    ],
+    "identity_operators": [
+      "==",
+      "!="
+    ],
+    "primitive_identity": "COMPILE_TIME_ERROR",
+    "object_value_equality": "calls equals() when the backend implements the contract; never fall back to identity",
+    "object_identity": "stable logical reference identity; not a promise of physical address equality",
+    "mixed_numeric_value_equality": "reject without explicit conversion (proposed)",
+    "naN_and_signed_zero": "IEEE float equality proposed; NaN neq NaN and +0 eq -0",
+    "single_evaluation": "evaluate lhs and rhs once in source order",
+    "class_value_equality": "Checked public non-static equals(Self other): bool, AOT direct dispatch, no implicit owner moves; neq negates exactly one call; absent or invalid methods fail closed.",
+    "class_ownership": "Method other argument is borrowed/non-owning, cannot be moved or transferred; identity checks never invoke equals.",
+    "class_self_identity": "Within instance methods, self may be projected as a non-owning stable class reference for == and != only; returning or moving self remains rejected.",
+    "inherited_equality": "Source-local fieldless/constructor-free ancestor equals(Ancestor other): bool is statically specialized to the concrete child; no runtime subtype/virtual dispatch, reflection or JIT.",
+    "explicit_override": "An override must match the inherited equals signature before checked concrete AOT specialization.",
+    "null": "AttoLang rejects null literal E_NULL; Option<Class> is E_UNSUPPORTED_TYPE in Rust/browser.",
+    "ieee_float": "NaN eq NaN false, neq true, signed zeros equal, infinities use IEEE f64."
+  },
+  "required_cases": [
+    {
+      "id": "int_value_equal",
+      "kind": "pass",
+      "path": "fixtures/equality/pass/int_value_equal.atto",
+      "expected_exit": 11
+    },
+    {
+      "id": "int_value_unequal",
+      "kind": "pass",
+      "path": "fixtures/equality/pass/int_value_unequal.atto",
+      "expected_exit": 12
+    },
+    {
+      "id": "bool_value_unequal",
+      "kind": "pass",
+      "path": "fixtures/equality/pass/bool_value_unequal.atto",
+      "expected_exit": 13
+    },
+    {
+      "id": "class_identity",
+      "kind": "pass",
+      "path": "fixtures/equality/pass/class_identity.atto",
+      "expected_exit": 14
+    },
+    {
+      "id": "string_content_equality",
+      "kind": "pass",
+      "path": "fixtures/equality/pass/string_content_equality.atto",
+      "expected_exit": 15
+    },
+    {
+      "id": "float_signed_zero",
+      "kind": "pass",
+      "path": "fixtures/equality/pass/float_signed_zero.atto",
+      "expected_exit": 16
+    },
+    {
+      "id": "primitive_identity_equal",
+      "kind": "fail",
+      "path": "fixtures/equality/fail/primitive_identity_equal.atto",
+      "expected_error": "E_IDENTITY_TYPE"
+    },
+    {
+      "id": "primitive_identity_unequal",
+      "kind": "fail",
+      "path": "fixtures/equality/fail/primitive_identity_unequal.atto",
+      "expected_error": "E_IDENTITY_TYPE"
+    },
+    {
+      "id": "bool_identity_equal",
+      "kind": "fail",
+      "path": "fixtures/equality/fail/bool_identity_equal.atto",
+      "expected_error": "E_IDENTITY_TYPE"
+    },
+    {
+      "id": "mixed_numeric_equality",
+      "kind": "fail",
+      "path": "fixtures/equality/fail/mixed_numeric_equality.atto",
+      "expected_error": "E_TYPE"
+    },
+    {
+      "id": "tagged_adt_identity",
+      "kind": "fail",
+      "path": "fixtures/equality/fail/tagged_adt_identity.atto",
+      "expected_error": "E_IDENTITY_TYPE"
+    },
+    {
+      "id": "class_equals_checked",
+      "kind": "pass",
+      "path": "fixtures/equality/pass/class_equals_checked.atto",
+      "expected_exit": 42,
+      "source_blob_sha": "42ed8d49d1149a5f67d8428a4218d0dd53d1cd38"
+    },
+    {
+      "id": "class_neq_method_once",
+      "kind": "pass",
+      "path": "fixtures/equality/pass/class_neq_method_once.atto",
+      "expected_exit": 42,
+      "expected_stdout": "equals called\n",
+      "source_blob_sha": "094b418bb9562da3f8272d1960418ac574dac4f6"
+    },
+    {
+      "id": "class_equals_invalid_signature",
+      "kind": "fail",
+      "path": "fixtures/equality/fail/class_equals_invalid_signature.atto",
+      "expected_error": "E_EQUALS_SIGNATURE",
+      "source_blob_sha": "d792bc733cab067dd48223bde3013830fd90f369"
+    },
+    {
+      "id": "class_equals_borrowed_other_move",
+      "kind": "fail",
+      "path": "fixtures/equality/fail/class_equals_borrowed_other_move.atto",
+      "expected_error": "E_BORROW",
+      "source_blob_sha": "8620adab6b467510af2b3f2de36fccfe97001825"
+    },
+    {
+      "id": "class_equals_missing_method",
+      "kind": "fail",
+      "path": "fixtures/equality/fail/class_equals_missing_method.atto",
+      "expected_error": "E_EQUALS",
+      "source_blob_sha": "6111ad2b345b0adf4405146a1bda7f51988ddd35"
+    },
+    {
+      "id": "class_self_identity",
+      "kind": "pass",
+      "path": "fixtures/equality/pass/class_self_identity.atto",
+      "expected_exit": 43,
+      "source_blob_sha": "f3b918e3251bee545d072e52feed9111388d1a73"
+    },
+    {
+      "id": "class_self_owner_escape",
+      "kind": "fail",
+      "path": "fixtures/equality/fail/class_self_owner_escape.atto",
+      "expected_error": "E_UNSUPPORTED",
+      "source_blob_sha": "b7331584c2f993af8567b4d7b37ce23ff308c7a6"
+    },
+    {
+      "id": "class_self_primitive_identity",
+      "kind": "fail",
+      "path": "fixtures/equality/fail/class_self_primitive_identity.atto",
+      "expected_error": "E_IDENTITY_TYPE",
+      "source_blob_sha": "5062fb4784352caef0e94edfc9001df9657f720a"
+    },
+    {
+      "id": "inherited_class_equals",
+      "kind": "pass",
+      "path": "fixtures/equality/pass/inherited_class_equals.atto",
+      "expected_exit": 49,
+      "source_blob_sha": "9f1f38f795dbd3c2bba0a2526e2189eb3e117146"
+    },
+    {
+      "id": "overridden_class_equals",
+      "kind": "pass",
+      "path": "fixtures/equality/pass/overridden_class_equals.atto",
+      "expected_exit": 50,
+      "source_blob_sha": "3f91ef4b588107664b240ab67fef72089f8a24cd"
+    },
+    {
+      "id": "transitive_inherited_equals",
+      "kind": "pass",
+      "path": "fixtures/equality/pass/transitive_inherited_equals.atto",
+      "expected_exit": 51,
+      "source_blob_sha": "d5cd81884233a8accbccf017c1f4347ea873488a"
+    },
+    {
+      "id": "nan_value_equality",
+      "kind": "pass",
+      "path": "fixtures/equality/pass/nan_value_equality.atto",
+      "expected_exit": 52,
+      "source_blob_sha": "0d1141f24a407bca8d0442119c482486f4c674af"
+    },
+    {
+      "id": "infinity_value_equality",
+      "kind": "pass",
+      "path": "fixtures/equality/pass/infinity_value_equality.atto",
+      "expected_exit": 53,
+      "source_blob_sha": "da5dd96461b10d6ff464e621c98e2e5649055385"
+    },
+    {
+      "id": "inherited_equals_bad_signature",
+      "kind": "fail",
+      "path": "fixtures/equality/fail/inherited_equals_bad_signature.atto",
+      "expected_error": "E_EQUALS_INHERITANCE",
+      "source_blob_sha": "fb5fdc4781bb751eefbe200360b239076e05d731"
+    },
+    {
+      "id": "override_equals_wrong_type",
+      "kind": "fail",
+      "path": "fixtures/equality/fail/override_equals_wrong_type.atto",
+      "expected_error": "E_SIGNATURE",
+      "source_blob_sha": "bf54cd914acac31d40df8c0e94ae14fb8831f308"
+    },
+    {
+      "id": "inherited_equals_with_fields",
+      "kind": "fail",
+      "path": "fixtures/equality/fail/inherited_equals_with_fields.atto",
+      "expected_error": "E_UNSUPPORTED",
+      "source_blob_sha": "9abf4b549988b4c48f5c4ced254ea8ba161a6e80"
+    },
+    {
+      "id": "option_class_unsupported",
+      "kind": "fail",
+      "path": "fixtures/equality/fail/option_class_unsupported.atto",
+      "expected_error": "E_UNSUPPORTED_TYPE",
+      "source_blob_sha": "2c3ff4a003f538b5c2678af208ac08430a359e6f"
+    },
+    {
+      "id": "null_literal_unsupported",
+      "kind": "fail",
+      "path": "fixtures/equality/fail/null_literal_unsupported.atto",
+      "expected_error": "E_NULL",
+      "source_blob_sha": "ffe8f52b06d2368705febce73fd5da10124bd4e7"
+    },
+    {
+      "id": "unrelated_equals_inheritance",
+      "kind": "fail",
+      "path": "fixtures/equality/fail/unrelated_equals_inheritance.atto",
+      "expected_error": "E_AMBIGUOUS_MEMBER",
+      "source_blob_sha": "9c3969b581119f730b3cd15aa92b78d2993d4ba3"
+    }
+  ],
+  "deferred_cases": [
+    "dynamic equals() dispatch and null handling",
+    "unboxed value class identity rejected",
+    "cross-domain actor/borrow/transfer identity preservation",
+    "NaN edge cases and hashing contract"
+  ],
+  "backend_status": {
+    "rs-browser": "FOCUSED_VERIFIED",
+    "java": "NOT_VERIFIED",
+    "llvm": "NOT_VERIFIED",
+    "net": "NOT_VERIFIED",
+    "wasm-independent": "NOT_VERIFIED",
+    "forge": "NOT_VERIFIED",
+    "cranelift": "NOT_VERIFIED",
+    "js": "NOT_VERIFIED",
+    "hdl": "NOT_VERIFIED"
+  },
+  "evidence_rules": {
+    "pass": "Only real compiler + guest execution and exact SHA of source and run is a PASS",
+    "fail": "Diagnostic must match expected_error and emitted guest artifact must be absent",
+    "quorum": "Never infer multi-backend parity from Rust/browser only"
+  },
+  "evidence": {
+    "rs-browser": {
+      "source_repository": "atto-lang/atto-source.rs",
+      "source_head": "732927f97ee4064b11508faa4f9aa054a5329803",
+      "source_tree": "58eab5510f709c96feb808186839fb40e67b9d0f",
+      "runner_repository": "bait-bikes-test/atto-ci",
+      "runner_head": "e3e236e12c6de7fd2e42eeac5107de21a873f356",
+      "runner_tree": "58eab5510f709c96feb808186839fb40e67b9d0f",
+      "workflow_run": "https://github.com/bait-bikes-test/atto-ci/actions/runs/44138232805",
+      "conformance_passed": 515,
+      "conformance_failed": 0,
+      "native_vs_wasm_compared": 467,
+      "registry_fixture_blobs_verified": 30,
+      "notes": "30 portable fixtures present as Git-SHA-identical source compiler fixtures; Rust/browser guest/native/Wasm/Chromium full pass. Inherited equals specialization is static only, no runtime virtual dispatch. Java differential skipped, all other backends NOT_VERIFIED.",
+      "additional_verified_hardening": [
+        "generator handle value/identity comparison fails before invalid guest emission",
+        "lambda equality analyzer rejects unsupported comparison domains",
+        "distinct equality/identity AST nodes verified by parser tests",
+        "same versus distinct class object identity with equal fields",
+        "checked public non-static same-class equals returns bool with borrowed other argument",
+        "explicit .equals(other) and infix eq/neq preserve both owners",
+        "neq dispatches equals exactly once with verified stdout oracle",
+        "deep nested operator checker retains stack bound after dispatch helper",
+        "source-local inherited and overridden static equals specialization",
+        "transitive statically inherited equals",
+        "IEEE NaN and infinity value equality",
+        "Option<Class> and null rejected"
+      ]
+    }
+  }
+}

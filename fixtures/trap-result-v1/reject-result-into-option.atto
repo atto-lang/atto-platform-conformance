@@ -1,0 +1,6 @@
+fnc checked(): Result<int, Error> { return Ok(42); }
+fnc maybe(): Option<int> {
+  val n = checked()?;
+  return Some(n);
+}
+pub fnc main(): int { return 0; }

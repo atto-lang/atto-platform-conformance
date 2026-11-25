@@ -1,0 +1,44 @@
+name: Host-owned Worker request lifecycle TLC
+on:
+  push:
+    paths:
+      - 'formal/**'
+      - '.github/workflows/actor-owned-worker-formal.yml'
+  pull_request:
+    paths:
+      - 'formal/**'
+      - '.github/workflows/actor-owned-worker-formal.yml'
+permissions:
+  contents: read
+jobs:
+  tlc:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact source head
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse --verify HEAD)" = "$EXPECTED_SHA"
+          test -z "$(git status --porcelain --untracked-files=all)"
+      - name: Verify pinned TLA+ tools and execute model plus negative mutant
+        shell: bash
+        working-directory: formal
+        run: |
+          set -euo pipefail
+          curl -fL --retry 3 --retry-delay 2 -o tla2tools.jar https://github.com/zactionsz/tla-tools/releases/download/tla2tools-2026.08.11.125311/tla2tools.jar
+          echo 'ab323b79802aedc3203b3f9af37c6aca3ed43f4e0225b36f2aa77b26de46c05f  tla2tools.jar' | sha256sum -c -
+          java -Xmx1g -cp tla2tools.jar tlc2.TLC -deadlock -workers 1 -config OwnedWorkerRequests.cfg OwnedWorkerRequests.tla
+          if java -Xmx1g -cp tla2tools.jar tlc2.TLC -deadlock -workers 1 -config OwnedWorkerRequestsUnsafe.cfg OwnedWorkerRequests.tla > unsafe.log 2>&1; then
+            cat unsafe.log
+            echo "ERROR: pre-publication mutation went undetected" >&2
+            exit 1
+          fi
+          grep -q CompletionRequiresPublication unsafe.log || { cat unsafe.log; exit 1; }
+          echo "Expected unsafe pre-publication invariant counterexample observed"

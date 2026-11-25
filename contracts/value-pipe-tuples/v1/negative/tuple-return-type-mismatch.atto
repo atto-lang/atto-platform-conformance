@@ -1,0 +1,2 @@
+fnc broken(): Tuple[int, string] { return tuple(1, 2); }
+pub fnc main(): void { broken(); return; }

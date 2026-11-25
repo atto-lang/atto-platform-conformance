@@ -1,0 +1,9 @@
+fnc leak(): Pointer<int> {
+  let value: int = 42;
+  val Pointer<int> ptr = rt ref value;
+  return ptr;
+}
+pub fnc main(): int {
+  val ptr = leak();
+  return rt deref ptr;
+}

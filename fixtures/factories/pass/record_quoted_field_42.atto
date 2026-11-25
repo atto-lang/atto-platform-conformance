@@ -1,0 +1,5 @@
+// TARGET, NOT EXECUTED. Quoted field names are static schema entries.
+pub fnc main(): int {
+  val r = Record.of("x-y": 40, n=2);
+  return r["x-y"] + r.n;
+}

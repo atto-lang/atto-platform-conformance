@@ -1,0 +1,6 @@
+// ACTOR_INIT_OWNER_ESCAPE: the runtime owns the actor, not the caller.
+namespace actor_external_escape;
+declare actor Worker;
+define external mtd (Worker w) init(): Worker {
+    return w;
+}

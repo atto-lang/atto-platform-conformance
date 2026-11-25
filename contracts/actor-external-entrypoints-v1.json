@@ -1,0 +1,131 @@
+{
+  "schema": "atto.actor.external-entrypoints/1",
+  "status": "PROPOSED_NOT_EXECUTED",
+  "semantics": {
+    "marker": "external",
+    "roles": [
+      "INIT",
+      "RECEIVE"
+    ],
+    "ingress": "RUNTIME_ONLY",
+    "guest_visibility": "PRIVATE",
+    "public_rpc": false,
+    "initialization": "AT_MOST_ONCE_PER_INCARNATION",
+    "mailbox": "GENERATION_SCOPED_BOUNDED"
+  },
+  "backends": [
+    "java",
+    "llvm",
+    "net",
+    "wasm",
+    "forge"
+  ],
+  "evidence_required": [
+    "exact_source_commit_sha",
+    "exact_source_tree_sha",
+    "compiler_binary_digest",
+    "fixture_digest",
+    "runner_id_nonzero",
+    "executed_steps_nonzero",
+    "compiler_positive_and_negative_results",
+    "guest_execution_result",
+    "native_aot_where_applicable"
+  ],
+  "fixtures": [
+    {
+      "id": "stateless_lifecycle",
+      "path": "fixtures/actor-external-entrypoints/v1/accept-stateless-lifecycle.atto",
+      "expect": "ACCEPT",
+      "required_phase": "GUEST_EXECUTED"
+    },
+    {
+      "id": "inline_lifecycle",
+      "path": "fixtures/actor-external-entrypoints/v1/accept-inline-lifecycle.atto",
+      "expect": "ACCEPT",
+      "required_phase": "GUEST_EXECUTED"
+    },
+    {
+      "id": "implicit_init",
+      "path": "fixtures/actor-external-entrypoints/v1/accept-no-explicit-init.atto",
+      "expect": "ACCEPT",
+      "required_phase": "GUEST_EXECUTED"
+    },
+    {
+      "id": "reject_public_receive",
+      "path": "fixtures/actor-external-entrypoints/v1/reject-pub-external-receive.atto",
+      "expect": "REJECT",
+      "diagnostic": "ACTOR_EXTERNAL_LIFECYCLE_PRIVATE",
+      "required_phase": "COMPILE_REJECT"
+    },
+    {
+      "id": "reject_public_init",
+      "path": "fixtures/actor-external-entrypoints/v1/reject-pub-external-init.atto",
+      "expect": "REJECT",
+      "diagnostic": "ACTOR_EXTERNAL_LIFECYCLE_PRIVATE",
+      "required_phase": "COMPILE_REJECT"
+    },
+    {
+      "id": "reject_duplicate_init",
+      "path": "fixtures/actor-external-entrypoints/v1/reject-duplicate-init.atto",
+      "expect": "REJECT",
+      "diagnostic": "ACTOR_DUPLICATE_INIT",
+      "required_phase": "COMPILE_REJECT"
+    },
+    {
+      "id": "reject_direct_receive",
+      "path": "fixtures/actor-external-entrypoints/v1/reject-direct-receive-call.atto",
+      "expect": "REJECT",
+      "diagnostic": "ACTOR_RUNTIME_ONLY_RECEIVE",
+      "required_phase": "COMPILE_REJECT"
+    },
+    {
+      "id": "reject_raw_actor_return",
+      "path": "fixtures/actor-external-entrypoints/v1/reject-init-return-actor.atto",
+      "expect": "REJECT",
+      "diagnostic": "ACTOR_INIT_OWNER_ESCAPE",
+      "required_phase": "COMPILE_REJECT"
+    },
+    {
+      "id": "reject_external_arbitrary_rpc",
+      "path": "fixtures/actor-external-entrypoints/v1/reject-arbitrary-external-mtd.atto",
+      "expect": "REJECT",
+      "diagnostic": "ACTOR_EXTERNAL_ROLE_UNSUPPORTED",
+      "required_phase": "COMPILE_REJECT"
+    },
+    {
+      "id": "reject_unverified_init_state_builder",
+      "path": "fixtures/actor-external-entrypoints/v1/reject-unverified-init-state-builder.atto",
+      "expect": "REJECT",
+      "diagnostic": "ACTOR_INIT_STATE_BUILDER_UNVERIFIED",
+      "required_phase": "COMPILE_REJECT"
+    },
+    {
+      "id": "reject_unmarked_init",
+      "path": "fixtures/actor-external-entrypoints/v1/reject-unmarked-init.atto",
+      "expect": "REJECT",
+      "diagnostic": "ACTOR_EXTERNAL_REQUIRED",
+      "required_phase": "COMPILE_REJECT"
+    },
+    {
+      "id": "reject_unmarked_receive",
+      "path": "fixtures/actor-external-entrypoints/v1/reject-unmarked-receive.atto",
+      "expect": "REJECT",
+      "diagnostic": "ACTOR_EXTERNAL_REQUIRED",
+      "required_phase": "COMPILE_REJECT"
+    },
+    {
+      "id": "reject_legacy_on_start",
+      "path": "fixtures/actor-external-entrypoints/v1/reject-legacy-on-start.atto",
+      "expect": "REJECT",
+      "diagnostic": "ACTOR_LEGACY_START_UNSUPPORTED",
+      "required_phase": "COMPILE_REJECT"
+    },
+    {
+      "id": "reject_mixed_init_on_start",
+      "path": "fixtures/actor-external-entrypoints/v1/reject-mixed-init-on-start.atto",
+      "expect": "REJECT",
+      "diagnostic": "ACTOR_INIT_ON_START_CONFLICT",
+      "required_phase": "COMPILE_REJECT"
+    }
+  ]
+}

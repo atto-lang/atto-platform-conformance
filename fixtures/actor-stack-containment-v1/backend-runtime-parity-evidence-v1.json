@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "contract": "atto.actor-stack-containment.evidence.v1",
+  "checkedFrameSubstrate": {
+    "requirements": [
+      "bounded-frame-count",
+      "bounded-byte-capacity",
+      "typed-overflow-reason",
+      "sticky-terminal-failure",
+      "lifo-frame-cleanup",
+      "stale-foreign-token-denial",
+      "incarnation-fencing-where-native-storage-can-be-reused",
+      "sibling-isolation"
+    ],
+    "compilerEmittedGuestFrameChecksRequired": true,
+    "nativeHostStackOverflowIsNotGuestProof": true
+  },
+  "compiledGuestParity": "NOT_CERTIFIED",
+  "sourceMirrorScope": "FOCUSED_EXACT_BLOB_SUBSETS_NOT_FULL_TREES",
+  "backends": {
+    "java": {
+      "pr": 2738,
+      "sourceHead": "0d1ded54cfe7a8e6f4806d09548c74ad830d8da4",
+      "carrier": "akrion-sim/akrion-sim-e2e",
+      "runId": 43032905991,
+      "sourceBlobsVerified": 7,
+      "hostTestsPassed": 9,
+      "scope": "JUNIT_HOST_PROTOTYPE",
+      "compiledGuest": "NOT_EXECUTED",
+      "gaps": [
+        "compiler-emitted-actor-call-checks",
+        "GraalVM-Native-Image-guest",
+        "supervisor-Control-hooks"
+      ]
+    },
+    "net": {
+      "pr": 445,
+      "sourceHead": "398e1dcaf70b8e68f91c73d685d93bea1f2f50f4",
+      "carrier": "akrion-sim/akrion-sim-e2e",
+      "runId": 42894624120,
+      "sourceBlobsVerified": 49,
+      "scope": "CLR_AND_NATIVEAOT_HOST_COMPILER_ABI",
+      "compiledGuest": "NOT_EXECUTED",
+      "gaps": [
+        "source-recursive-actor-method-lowering",
+        "compiler-emitted-call-checks",
+        "guest-supervisor-hooks"
+      ]
+    },
+    "llvm": {
+      "pr": 1632,
+      "sourceHead": "22177bd4a2f69351c0d8f6d4b6fb71bb46e54527",
+      "carrier": "voxletra/voxletra-e2e",
+      "runId": 43033324537,
+      "sourceBlobsVerifiedPerJob": 4,
+      "nativeJobsPassed": 4,
+      "scope": "NATIVE_CPP_POLICY_WITH_ASAN_UBSAN",
+      "compiledGuest": "NOT_EXECUTED",
+      "gaps": [
+        "LLVM-guest-frame-instrumentation",
+        "same-carrier-panic-supervisor"
+      ]
+    },
+    "wasm": {
+      "pr": 453,
+      "sourceHead": "99ed513901f76d39455caa2a324bff1b9ec2d905",
+      "carrier": "voxletra/voxletra-e2e",
+      "runId": 43031710374,
+      "sourceBlobsVerified": 7,
+      "nodeWasmTestsPassed": 12,
+      "scope": "REAL_WASM_TRAP_HOST_CARRIER",
+      "compiledGuest": "NOT_EXECUTED",
+      "dedicatedWorkerFallback": "EXECUTED_PASS",
+      "sharedCarrierActorIsolation": "KNOWN_FAIL",
+      "gaps": [
+        "guest-checked-frames-before-trap",
+        "same-Worker-sibling-survival",
+        "guest-supervisor"
+      ]
+    },
+    "forge": {
+      "pr": 240,
+      "sourceHead": "3e833a99ee4031b94fa2c1e40ee708ecb8902ce9",
+      "carrier": "voxletra/voxletra-e2e",
+      "runId": 43033403576,
+      "sourceBlobsVerifiedPerJob": 3,
+      "nativeJobsPassed": 4,
+      "scope": "NATIVE_CPP_GUARDED_STACK_HOST_TESTS",
+      "compiledGuest": "NOT_EXECUTED",
+      "physicalGuardIsolation": "PROCESS_ONLY",
+      "gaps": [
+        "guest-checked-frames-before-SIGSEGV",
+        "same-process-actor-only-overflow",
+        "guest-supervisor"
+      ]
+    }
+  },
+  "releaseGate": {
+    "requiredExecutableFixture": "fixtures/actor-stack-containment-v1/two-actor-terminal-overflow.atto",
+    "fixtureSourceGitBlobSha1": "641edcf1d7cc2cb829ae1aca0871535e713aa570",
+    "required": [
+      "compiled-source-not-host-only",
+      "checked-recursive-invocations",
+      "same-carrier-healthy-peer-survives",
+      "terminal-failure-not-recoverable",
+      "one-supervisor-priority-CONTROL-notice",
+      "owner-arena-and-frame-reclamation",
+      "stale-actor-handle-revocation",
+      "exact-source-head-and-per-blob-verification",
+      "real-runner-steps-with-exit-zero"
+    ],
+    "mergeAllowed": false
+  }
+}

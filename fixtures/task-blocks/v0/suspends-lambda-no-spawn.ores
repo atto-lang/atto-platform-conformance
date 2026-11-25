@@ -1,0 +1,5 @@
+suspends fnc compute_blocking(int a): int { return a; }
+pub fnc main(): void {
+  let int answer = (suspends |int a| -> compute_blocking(a))(5);
+  return;
+}

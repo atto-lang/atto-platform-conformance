@@ -1,0 +1,4 @@
+define enum State as
+  Ready = 1
+  Ready = 2
+end

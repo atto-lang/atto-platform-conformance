@@ -1,0 +1,223 @@
+{
+  "schema": "atto.std.http.numeric_parity.v1",
+  "status": "ALL_GUEST_NOT_EXECUTED",
+  "implementation_policy": "BACKEND_LOCAL_NATIVE_ATTO_NOT_IDENTICAL_SOURCES",
+  "operations": {
+    "framing": "reject_negative_duplicate_unsupported_or_ambiguous_content_length_transfer_encoding",
+    "chunk": "subtraction_first_bounded_body_chunk_one_gib_limit"
+  },
+  "vectors": [
+    {
+      "id": "framing-01",
+      "operation": "framing",
+      "args": [
+        1,
+        0,
+        false,
+        false
+      ],
+      "expected": true
+    },
+    {
+      "id": "framing-02",
+      "operation": "framing",
+      "args": [
+        0,
+        1,
+        true,
+        false
+      ],
+      "expected": true
+    },
+    {
+      "id": "framing-03",
+      "operation": "framing",
+      "args": [
+        1,
+        1,
+        true,
+        false
+      ],
+      "expected": false
+    },
+    {
+      "id": "framing-04",
+      "operation": "framing",
+      "args": [
+        2,
+        0,
+        false,
+        false
+      ],
+      "expected": false
+    },
+    {
+      "id": "framing-05",
+      "operation": "framing",
+      "args": [
+        0,
+        2,
+        true,
+        false
+      ],
+      "expected": false
+    },
+    {
+      "id": "framing-06",
+      "operation": "framing",
+      "args": [
+        0,
+        1,
+        false,
+        false
+      ],
+      "expected": false
+    },
+    {
+      "id": "framing-07",
+      "operation": "framing",
+      "args": [
+        0,
+        1,
+        true,
+        true
+      ],
+      "expected": false
+    },
+    {
+      "id": "framing-08",
+      "operation": "framing",
+      "args": [
+        0,
+        0,
+        true,
+        false
+      ],
+      "expected": false
+    },
+    {
+      "id": "framing-09",
+      "operation": "framing",
+      "args": [
+        -1,
+        0,
+        false,
+        false
+      ],
+      "expected": false
+    },
+    {
+      "id": "chunk-10",
+      "operation": "chunk",
+      "args": [
+        7,
+        1,
+        8
+      ],
+      "expected": true
+    },
+    {
+      "id": "chunk-11",
+      "operation": "chunk",
+      "args": [
+        7,
+        2,
+        8
+      ],
+      "expected": false
+    },
+    {
+      "id": "chunk-12",
+      "operation": "chunk",
+      "args": [
+        0,
+        0,
+        1073741825
+      ],
+      "expected": false
+    }
+  ],
+  "observed_source_candidates": [
+    {
+      "backend": "java",
+      "repo": "atto-lang/atto-source.java",
+      "pr": 1754,
+      "head": "c27ef1c826e278444f2ceeaf5fb87d9f1f4b0060",
+      "path": "stdlib/http.atto",
+      "blob_sha": "ccb537eaf12e3fa3722d2b9cc11a5c960ad27127",
+      "framing_function": "request_framing_fields_allowed",
+      "chunk_function": "body_chunk_allowed",
+      "source_status": "PRESENT_AT_CAPTURED_HEAD",
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "backend": "llvm",
+      "repo": "atto-lang/atto-source.llvm",
+      "pr": 856,
+      "head": "45a375f304f6c7bccc8d71dd1b2a007f397b028a",
+      "path": "stdlib/http/message_policy.atto",
+      "blob_sha": "f88b78313432bce067223cc1853024bfd9b97c90",
+      "framing_function": "http_request_framing_fields_allowed",
+      "chunk_function": "http_body_chunk_allowed",
+      "source_status": "PRESENT_AT_CAPTURED_HEAD",
+      "guest_status": "NOT_EXECUTED"
+    }
+  ],
+  "backends": [
+    {
+      "backend": "llvm",
+      "guest_status": "NOT_EXECUTED",
+      "executed_guest_cases": 0
+    },
+    {
+      "backend": "java",
+      "guest_status": "NOT_EXECUTED",
+      "executed_guest_cases": 0
+    },
+    {
+      "backend": "net",
+      "guest_status": "NOT_EXECUTED",
+      "executed_guest_cases": 0
+    },
+    {
+      "backend": "wasm",
+      "guest_status": "NOT_EXECUTED",
+      "executed_guest_cases": 0
+    },
+    {
+      "backend": "rs",
+      "guest_status": "NOT_EXECUTED",
+      "executed_guest_cases": 0
+    },
+    {
+      "backend": "forge",
+      "guest_status": "NOT_EXECUTED",
+      "executed_guest_cases": 0
+    },
+    {
+      "backend": "cranelift",
+      "guest_status": "NOT_EXECUTED",
+      "executed_guest_cases": 0
+    },
+    {
+      "backend": "js",
+      "guest_status": "NOT_EXECUTED",
+      "executed_guest_cases": 0
+    },
+    {
+      "backend": "atto",
+      "guest_status": "NOT_EXECUTED",
+      "executed_guest_cases": 0
+    },
+    {
+      "backend": "hdl",
+      "guest_status": "NOT_EXECUTED",
+      "executed_guest_cases": 0
+    },
+    {
+      "backend": "realtime",
+      "guest_status": "NOT_EXECUTED",
+      "executed_guest_cases": 0
+    }
+  ]
+}

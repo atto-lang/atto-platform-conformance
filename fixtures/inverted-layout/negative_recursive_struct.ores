@@ -1,0 +1,10 @@
+// EXPECT-COMPILE-ERROR: recursive packed value schema cannot be admitted.
+define struct Recursive as
+    Recursive child;
+end
+
+define inverted struct Wrapper as
+    Recursive inner;
+end
+
+fnc main(): int { return 0; }

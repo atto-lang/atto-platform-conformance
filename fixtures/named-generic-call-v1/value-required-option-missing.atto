@@ -1,0 +1,6 @@
+fnc inspect(int? value, int tail) -> int ::
+  return tail
+end
+fnc main() -> int ::
+  return inspect(tail: 2)
+end

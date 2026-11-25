@@ -1,0 +1,9 @@
+// BCV1-024 freeze fail: target AttoLang semantics, NOT_EXECUTED.
+// Expected compiler rejection E_SHARE_ALIAS with NO guest artifact.
+define class Cell as pub let int value = 42; end
+pub fnc main(): int {
+  val mut owner = new Cell();
+  val writer = borrow! mut owner;
+  val frozen = freeze! take! owner; // live writer forbids freeze
+  return writer.value;
+}

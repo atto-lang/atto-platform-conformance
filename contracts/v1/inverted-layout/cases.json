@@ -1,0 +1,117 @@
+{
+  "contract": "oreslang.explicit-inverted-layout",
+  "version": 1,
+  "reference": "src/inverted-layout-reference.mjs",
+  "scope": "PROPOSED_SOURCES_AND_EXECUTABLE_HOST_REFERENCE_ONLY",
+  "rules": [
+    "root inverted class and inverted struct are distinct logical declarations",
+    "explicit InvertedArray<T> may accept eligible ordinary or inverted class/struct",
+    "Array<T> never silently switches to SoA",
+    "one physical column per immediate field; nested ordinary struct stays one packed field",
+    "nested inverted class or struct is rejected absent explicit supported boundary",
+    "no implicit recursive flattening or AoS-SoA conversion",
+    "row handles are issued per owner+slot+generation and revoked upon deletion/close",
+    "field-disjoint loans can coexist; structural mutation requires no active loans",
+    "all guest source execution remains NOT_EXECUTED until independently verified"
+  ],
+  "target_status": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED"
+  },
+  "cases": [
+    {
+      "id": "declaration/inverted-struct",
+      "expected": "accept",
+      "requires": "source"
+    },
+    {
+      "id": "declaration/inverted-class",
+      "expected": "accept",
+      "requires": "source"
+    },
+    {
+      "id": "collection/ordinary-struct-explicit-soa",
+      "expected": "accept",
+      "requires": "source"
+    },
+    {
+      "id": "collection/ordinary-class-explicit-soa",
+      "expected": "accept",
+      "requires": "source"
+    },
+    {
+      "id": "collection/no-implicit-array-conversion",
+      "expected": "reject",
+      "requires": "source"
+    },
+    {
+      "id": "nesting/ordinary-struct-packed-column",
+      "expected": "accept",
+      "requires": "guest"
+    },
+    {
+      "id": "nesting/inverted-struct-no-implicit-recursion",
+      "expected": "reject",
+      "requires": "source"
+    },
+    {
+      "id": "nesting/inverted-class-no-implicit-recursion",
+      "expected": "reject",
+      "requires": "source"
+    },
+    {
+      "id": "ownership/foreign-stale-forged-handle",
+      "expected": "reject",
+      "requires": "guest"
+    },
+    {
+      "id": "ownership/swap-delete-identity",
+      "expected": "accept",
+      "requires": "guest"
+    },
+    {
+      "id": "ownership/close-with-active-loan",
+      "expected": "reject",
+      "requires": "guest"
+    },
+    {
+      "id": "ownership/row-snapshot-detached",
+      "expected": "accept",
+      "requires": "guest"
+    },
+    {
+      "id": "admission/pointer-member",
+      "expected": "reject",
+      "requires": "source"
+    },
+    {
+      "id": "admission/recursive-member",
+      "expected": "reject",
+      "requires": "source"
+    },
+    {
+      "id": "admission/failed-atomic-push",
+      "expected": "accept",
+      "requires": "guest"
+    },
+    {
+      "id": "loan/disjoint-field-writes",
+      "expected": "accept",
+      "requires": "guest"
+    },
+    {
+      "id": "loan/overlapping-field-writes",
+      "expected": "reject",
+      "requires": "guest"
+    },
+    {
+      "id": "loan/await-escape",
+      "expected": "reject",
+      "requires": "source"
+    }
+  ]
+}

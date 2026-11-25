@@ -1,0 +1,6 @@
+define struct Empty as
+end
+pub fnc main(): int {
+    const Empty e = infer struct {};
+    return 5;
+}

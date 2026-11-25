@@ -1,0 +1,12 @@
+// CANDIDATE NEGATIVE — source-free/NOT_EXECUTED.
+// V1 requires an exhaustive else; try/catch must never substitute for it.
+define pub fnc missing_else_inside_try(int id) -> Result[int, Error] as
+  try
+    do maybe
+      Ok(value) ?= fetch_value(id);
+      return Ok(value);
+    end
+  catch (Error e)
+    return Err(e);
+  end
+end

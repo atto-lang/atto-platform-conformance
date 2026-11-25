@@ -1,0 +1,72 @@
+{
+  "schema": "atto.return-callable-guest-evidence.v1",
+  "recorded_utc": "2026-11-19",
+  "source_repository": "atto-lang/atto-source.rs",
+  "source_pr": 357,
+  "source_commit_sha": "5aa1168f8d9d146553c7fa8adccfb354a80904f3",
+  "source_profile": "Rust browser compiler compiled natively with Rust 1.85.1; emitted guest Wasm executed on Node.js",
+  "source_mirror": {
+    "repository": "declarative-migrations/atto-ci",
+    "private": true,
+    "branch": "test/atto-pr357-return-first-38570e50",
+    "head_sha": "10e165f379ff7de4def755b1890ed9dbf5bd0441",
+    "source_blob_count": 39,
+    "source_blob_sha_verification": "PASS (39/39 exact Git hashes)",
+    "source_tree_completeness": "37-39 file compiler/test subset, not a full repository clone; all compiled source files represented"
+  },
+  "conformance_source": {
+    "repository": "atto-lang/atto-platform-conformance",
+    "pr": 83,
+    "commit_sha": "8bb92ecbee4d48f0f49cc642a2eccc63738ebae3",
+    "bundle_sha": "7af9a558b35ec6008f3b46b7d26ab2d54a9f1cea",
+    "fixture_content_git_sha_verification": "PASS (43/43 exact source blob hashes)"
+  },
+  "workflow": {
+    "run_id": 44445002912,
+    "job_id": 135294893724,
+    "url": "https://github.com/declarative-migrations/atto-ci/actions/runs/44445002912",
+    "workflow_conclusion": "failure",
+    "meaning": "Return-related steps passed; separately enforced earlier class-field default-let contract failed 4/7; overall workflow red by design"
+  },
+  "results": {
+    "rust_explicit_return_tests": {
+      "passed": 8,
+      "failed": 0
+    },
+    "rust_return_first_tests": {
+      "passed": 13,
+      "failed": 0
+    },
+    "rust_library_tests": {
+      "passed": 39,
+      "failed": 0
+    },
+    "compiled_wasm_guests_executed": {
+      "passed": 32,
+      "failed": 0
+    },
+    "expected_compiler_rejections_without_artifacts": {
+      "passed": 11,
+      "failed": 0
+    },
+    "return_first_contract": {
+      "positive_wasm_guests": 27,
+      "negative_no_artifact": 6
+    },
+    "explicit_return_contract": {
+      "positive_wasm_guests": 5,
+      "negative_no_artifact": 5
+    },
+    "separate_class_field_contract": {
+      "passed": 3,
+      "failed": 4,
+      "reason": "Concurrent implicit val/default binding changes contradict the earlier approved implicit let class-field contract"
+    }
+  },
+  "limitations": [
+    "No full-repository Rust test suite: the carrier mirrors 39 exact compiler/test files",
+    "No Java/LLVM/.NET/Wasm-independent/Forge/Cranelift/JS/HDL executable parity evidence",
+    "Overall workflow is not green due an unrelated but important class-field binding regression",
+    "No private repository secrets or cross-org GITHUB_TOKEN were used; carrier checkout uses only its own local GITHUB_TOKEN"
+  ]
+}

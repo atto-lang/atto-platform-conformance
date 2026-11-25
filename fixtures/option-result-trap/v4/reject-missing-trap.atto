@@ -1,0 +1,6 @@
+// A bare Result must never be silently converted into Option<Result>.
+fnc checked_id(int id): Result<int, String> { return Ok(id); }
+pub fnc main(): int {
+  val Option<Result<int, String>> wrapped = checked_id(5);
+  return 0;
+}

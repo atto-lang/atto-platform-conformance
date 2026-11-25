@@ -1,0 +1,1 @@
+fnc main(): int { bool x; return 0; }

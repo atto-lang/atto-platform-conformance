@@ -1,0 +1,35 @@
+{
+  "schema": "oreslang.five-backend-scalar-evidence.v1",
+  "fixture": {
+    "path": "contracts/v1/semantics/fixtures/add.ores",
+    "gitBlobSha": "015f8b0f79aafa796a148d2adeff1574e8d6c491",
+    "expectedValue": 42
+  },
+  "records": [
+    {
+      "backend": "oreslang-source.java",
+      "status": "pending",
+      "reason": "No independently authenticated native guest execution evidence"
+    },
+    {
+      "backend": "oreslang-source.llvm",
+      "status": "pending",
+      "reason": "No independently authenticated native guest execution evidence"
+    },
+    {
+      "backend": "oreslang-source.net",
+      "status": "pending",
+      "reason": "No independently authenticated native guest execution evidence"
+    },
+    {
+      "backend": "oreslang-source.wasm",
+      "status": "pending",
+      "reason": "No independently authenticated native guest execution evidence"
+    },
+    {
+      "backend": "oreslang-source.forge",
+      "status": "pending",
+      "reason": "No independently authenticated native guest execution evidence"
+    }
+  ]
+}

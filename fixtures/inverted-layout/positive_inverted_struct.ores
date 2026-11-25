@@ -1,0 +1,12 @@
+// PROPOSED guest-source positive: MUST compile and execute only once supported.
+define inverted struct Position as
+    float x;
+    float y;
+end
+
+fnc main(): int {
+    let rows = InvertedArray<Position>.with_capacity(2);
+    let handle = rows.push(Position { x: 1.0, y: 2.0 });
+    if rows[handle].y neq 2.0 then return 1; fi
+    return 0;
+}
