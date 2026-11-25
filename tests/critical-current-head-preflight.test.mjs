@@ -14,7 +14,7 @@ const clone = () => structuredClone(current);
 test('manifest object hash and fixture bytes are pinned independently of guest claims', () => {
   const base = new URL('../fixtures/critical-suspension-v1/java-stage1/',import.meta.url);
   const gitBlob = bytes => crypto.createHash('sha1')
-    .update(Buffer.from('blob ' + bytes.length + '\\0')).update(bytes).digest('hex');
+    .update(Buffer.from('blob ' + bytes.length + '\0')).update(bytes).digest('hex');
   const manifestBytes = fs.readFileSync(new URL('../evidence/critical-suspends-java-stage1-original-manifest-20261101.json',import.meta.url));
   assert.equal(gitBlob(manifestBytes), current.fixture.manifest_blob_sha1);
   for (const f of fixture.fixtures) {
@@ -52,7 +52,7 @@ test('source/tree, repository, PR, and runner identities cannot be forged', () =
     assert.throws(() => verifyCurrentHeadPreflight(snap,contract,fixture,historical), field);
   }
   const dupe = clone();
-  dupe.entries[0].backend = 'llvm';
+  dupe.entries[1] = structuredClone(dupe.entries[0]);
   assert.throws(() => verifyCurrentHeadPreflight(dupe,contract,fixture,historical), /duplicate/);
 });
 
