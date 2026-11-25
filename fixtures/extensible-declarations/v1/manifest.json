@@ -58,10 +58,11 @@
     },
     {
       "id": "requires",
-      "source": "define interface Entity as end\ndefine keyword entity as class requires Entity; end\ndefine entity Customer as end\n",
+      "source": "define keyword entity as class requires Entity; end\ndefine interface Entity as end\ndefine entity Customer as end\n",
       "target": "ACCEPT",
-      "java_phase1a": "UNSUPPORTED",
-      "net_phase1a": "UNSUPPORTED"
+      "java_phase1a": "PARSE_EQUIVALENT",
+      "net_phase1a": "UNSUPPORTED",
+      "baseline": "define interface Entity as end\ndefine class Customer implements Entity as end\n"
     },
     {
       "id": "forward",
@@ -116,6 +117,34 @@
       "id": "missing-end",
       "source": "define keyword entity as class\ndefine entity Customer as end\n",
       "target": "REJECT",
+      "java_phase1a": "REJECT",
+      "net_phase1a": "UNSUPPORTED"
+    },
+    {
+      "id": "require-missing",
+      "source": "define keyword entity as class requires Entity; end\ndefine entity Customer as end\n",
+      "target": "REJECT",
+      "java_phase1a": "REJECT",
+      "net_phase1a": "UNSUPPORTED"
+    },
+    {
+      "id": "require-class-impostor",
+      "source": "define keyword entity as class requires Entity; end\ndefine class Entity as end\ndefine entity Customer as end\n",
+      "target": "REJECT",
+      "java_phase1a": "REJECT",
+      "net_phase1a": "UNSUPPORTED"
+    },
+    {
+      "id": "require-duplicate",
+      "source": "define keyword entity as class requires Entity; requires Entity; end\ndefine interface Entity as end\ndefine entity Customer as end\n",
+      "target": "REJECT",
+      "java_phase1a": "REJECT",
+      "net_phase1a": "UNSUPPORTED"
+    },
+    {
+      "id": "require-generic",
+      "source": "define keyword entity as class requires Entity; end\ndefine interface Entity<T> as end\ndefine entity Customer as end\n",
+      "target": "REVIEW_SCOPE_GRAMMAR",
       "java_phase1a": "REJECT",
       "net_phase1a": "UNSUPPORTED"
     }
