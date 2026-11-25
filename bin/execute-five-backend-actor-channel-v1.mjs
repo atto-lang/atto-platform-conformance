@@ -115,9 +115,29 @@ const report = { schemaVersion: 1, sourceCheckout: null,
 let resultPath = null;
 try {
   requireValid(manifest.state === "CANDIDATE_NOT_EXECUTED" &&
-    manifest.nativeGuestReceipts.length === 0 && manifest.fixtures.length === 6,
-    "manifest must remain uncertified and contain six pinned cases");
-  for (const f of manifest.fixtures) exactSource(f);
+    manifest.nativeGuestReceipts.length === 0 && manifest.fixtures.length === 10,
+    "manifest must remain uncertified and contain ten pinned cases");
+  const ids = new Set();
+  const filenames = new Set();
+  for (const f of manifest.fixtures) {
+    requireValid(typeof f.id === "string" && /^[a-z0-9-]+$/u.test(f.id) &&
+      !ids.has(f.id), "duplicate/invalid fixture id");
+    requireValid(!filenames.has(f.file), "duplicate fixture file");
+    requireValid(f.kind === "accept" || f.kind === "reject", "invalid fixture kind");
+    if (f.kind === "reject") {
+      requireValid(typeof f.diagnosticPattern === "string" &&
+        f.diagnosticPattern.length > 0 && f.diagnosticPattern.length < 1024,
+        "missing/broad negative diagnostic pattern");
+      new RegExp(f.diagnosticPattern, "iu");
+    }
+    ids.add(f.id);
+    filenames.add(f.file);
+    exactSource(f);
+  }
+  requireValid(["reject-function-message", "reject-nested-callable-message",
+    "reject-captured-closure-message", "reject-nominal-callable-field-message",
+    "reject-nested-callable-topic"].every(id => ids.has(id)),
+    "data-only transport negative coverage missing");
   const configFile = process.argv[2];
   requireValid(configFile && isAbsolute(resolve(configFile)), "adapter JSON required");
   resultPath = process.argv[3] ? resolve(process.argv[3]) : null;

@@ -58,7 +58,35 @@
       "file": "reject-function-message.atto",
       "gitBlobSha1": "b322b46b3622f4d534cf65f9025398b8c2811396",
       "kind": "reject",
-      "diagnosticPattern": "sendable|serializ|closure|function.{0,100}channel"
+      "diagnosticPattern": "cannot transport functions|channel payload.{0,120}(?:callable|function|closure|Sendable|MessageData)|(?:cannot|must not|not permitted|not allowed).{0,100}(?:transport|send|serialize).{0,100}(?:closure|function|callable)"
+    },
+    {
+      "id": "reject-nested-callable-message",
+      "file": "reject-nested-callable-message.atto",
+      "gitBlobSha1": "18c5290cbfb90c620ea0b3358103f0e4e4e6c318",
+      "kind": "reject",
+      "diagnosticPattern": "cannot transport functions|channel payload.{0,120}(?:callable|function|closure|Sendable|MessageData)|(?:channel|message).{0,120}(?:not Sendable|requires MessageData|callable)"
+    },
+    {
+      "id": "reject-captured-closure-message",
+      "file": "reject-captured-closure-message.atto",
+      "gitBlobSha1": "8eb37dc421519cfad5339f0837cddc0b832ba572",
+      "kind": "reject",
+      "diagnosticPattern": "cannot transport functions|channel payload.{0,120}(?:callable|function|closure|Sendable|MessageData)|(?:cannot|must not|not permitted|not allowed).{0,100}(?:transport|send|serialize).{0,100}(?:closure|function|callable)"
+    },
+    {
+      "id": "reject-nominal-callable-field-message",
+      "file": "reject-nominal-callable-field-message.atto",
+      "gitBlobSha1": "fb29a5214d464bb96c9383ed35256ef9c603eafc",
+      "kind": "reject",
+      "diagnosticPattern": "cannot transport functions|requires MessageData|channel payload.{0,120}(?:callable|function|closure|Sendable|MessageData)"
+    },
+    {
+      "id": "reject-nested-callable-topic",
+      "file": "reject-nested-callable-topic.atto",
+      "gitBlobSha1": "cc9a2ae1b26d325e95243ab95ad18499f7ee443e",
+      "kind": "reject",
+      "diagnosticPattern": "Topic payload|topic.{0,100}(?:callable|function|closure|Sendable|MessageData)"
     }
   ],
   "backendStatus": {
