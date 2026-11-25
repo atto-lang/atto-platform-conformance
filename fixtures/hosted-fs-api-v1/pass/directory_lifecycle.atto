@@ -1,0 +1,15 @@
+// Full native Atto std.fs directory lifecycle conformance target.
+// NOT_EXECUTED. Harness supplies a granted empty tenant-relative root.
+import * as fs from "std.fs";
+
+pub susp fnc directory_lifecycle(string root, string nested, string empty_child): int {
+  await fs.create_dir_all(nested);
+  await fs.create_dir(empty_child);
+  val entries = await fs.read_dir(root);
+  val dir_info = await fs.metadata(root);
+  if dir_info.is_dir == false then return 1; fi
+  if await fs.is_dir(nested) == false then return 2; fi
+  await fs.remove_dir(empty_child);
+  await fs.remove_dir_all(nested);
+  return 42;
+}

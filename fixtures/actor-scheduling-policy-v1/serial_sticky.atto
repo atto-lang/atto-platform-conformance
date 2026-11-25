@@ -1,0 +1,9 @@
+// TARGET / NOT EXECUTED: one live receive and one running guest carrier.
+@actor_schedule(max_parallelism = 1, affinity = sticky, pool = shared)
+define serial actor SerialWorker as
+  susp receive(mail: ActorMail<int>) -> void {
+    ^ void;
+  }
+end
+
+pub fnc main() -> int { return 0; }

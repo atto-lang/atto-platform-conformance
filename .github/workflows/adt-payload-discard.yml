@@ -1,0 +1,32 @@
+name: ADT payload-discard contract integrity
+on:
+  push:
+    branches: [feature/adt-payload-discard-conformance-20261116]
+  pull_request:
+    paths:
+      - 'contracts/adt-payload-discard-v1.json'
+      - 'fixtures/adt-payload-discard-v1/**'
+      - 'tests/test_adt_payload_discard_contract.py'
+      - '.github/workflows/adt-payload-discard.yml'
+permissions:
+  contents: read
+jobs:
+  source-fixture-integrity:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Pin exact checked-out source commit
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+      - name: Verify six source fixture blobs and strict backend admission statuses
+        run: |
+          set -euo pipefail
+          python3 --version
+          python3 -m unittest discover -s tests -p test_adt_payload_discard_contract.py -v
+      - name: Record host-only status
+        run: |
+          echo "Host-only source-blob pins and status matrix. No compiled Atto guest, Java, LLVM, .NET, or Forge parity is asserted."

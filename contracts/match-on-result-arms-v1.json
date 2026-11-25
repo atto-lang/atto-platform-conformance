@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "contract": "atto-match-on-result-arms-v1",
+  "normative_spec": "https://github.com/atto-lang/atto-spec/pull/145",
+  "description": "Contextual on introduces every match arm. Value match returns an arm value. Do match arms use void exits and execution continues after the match.",
+  "status": "not_executed",
+  "backend_evidence": {
+    "java": "not_executed",
+    "rust": "not_executed",
+    "llvm_native": "not_executed",
+    "llvm_browser_wasm": "not_executed",
+    "independent_wasm": "not_executed",
+    "net": "not_executed",
+    "forge": "not_executed",
+    "cranelift": "not_executed"
+  },
+  "cases": [
+    {
+      "id": "ok-accepted",
+      "path": "fixtures/match-on-result/v1/ok-accepted.atto",
+      "blob_sha": "284d069d9acec396dbfe6c873c5415de3ff0d881",
+      "expect": "accept",
+      "exit": 42
+    },
+    {
+      "id": "err-rejected",
+      "path": "fixtures/match-on-result/v1/err-rejected.atto",
+      "blob_sha": "b2f1d000d380cdb86947db113c578563734f6e54",
+      "expect": "accept",
+      "exit": 42
+    },
+    {
+      "id": "wildcard-on",
+      "path": "fixtures/match-on-result/v1/wildcard-on.atto",
+      "blob_sha": "d5b93d86729f560d0c1854d942f6447be72cf094",
+      "expect": "accept",
+      "exit": 42
+    },
+    {
+      "id": "reject-bare-ok",
+      "path": "fixtures/match-on-result/v1/reject-bare-ok.atto",
+      "blob_sha": "66aa40064841f52ac3095901cc5cf8418265e564",
+      "expect": "reject",
+      "diagnostic": "E_SYNTAX"
+    },
+    {
+      "id": "reject-bare-err",
+      "path": "fixtures/match-on-result/v1/reject-bare-err.atto",
+      "blob_sha": "39b6a3ac36690daa75b85621703660aabb7ae919",
+      "expect": "reject",
+      "diagnostic": "E_SYNTAX"
+    },
+    {
+      "id": "reject-default-arm",
+      "path": "fixtures/match-on-result/v1/reject-default-arm.atto",
+      "blob_sha": "8917c251672fe4da6ec54f3ec6cf48b84942e641",
+      "expect": "reject",
+      "diagnostic": "E_SYNTAX"
+    }
+  ]
+}

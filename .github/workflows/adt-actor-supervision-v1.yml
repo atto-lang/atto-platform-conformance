@@ -1,0 +1,39 @@
+name: ADT actor-supervisor boundary finite model
+on:
+  pull_request:
+    paths:
+      - 'contracts/adt-actor-supervision-v1.json'
+      - 'tests/test_adt_actor_supervision_v1.py'
+      - '.github/workflows/adt-actor-supervision-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'contracts/adt-actor-supervision-v1.json'
+      - 'tests/test_adt_actor_supervision_v1.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  finite-model:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Prove exact source head and contract identity
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          git rev-parse HEAD^{tree}
+          python3 -c 'import json; x=json.load(open("contracts/adt-actor-supervision-v1.json")); assert x["schema"]=="atto.adt-actor-supervision.v1"'
+      - name: Exercise positive, mutation, and 512-transition model cases
+        run: python3 -m unittest discover -s tests -p test_adt_actor_supervision_v1.py -v
+      - name: Evidence level
+        run: |
+          echo 'FINITE_REFERENCE_MODEL_ONLY=PASS'
+          echo 'COMPILED_ATTO_GUEST=NOT_EXECUTED'
+          echo 'JAVA_LLVM_NET_RUST_WASM_FORGE_PARITY=NOT_EXECUTED'

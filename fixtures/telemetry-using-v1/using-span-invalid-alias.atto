@@ -1,0 +1,6 @@
+// Always negative: a scoped resource cannot bind to discard "_".
+pub fnc main(): int {
+  using telemetry.span("forged") as _ {
+    return 0;
+  }
+}

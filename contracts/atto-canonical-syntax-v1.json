@@ -1,0 +1,458 @@
+{
+  "schema": "attolang.canonical-match-and-tilde/1",
+  "status": "SOURCE_CONTRACT_ONLY",
+  "sourceExtension": ".atto",
+  "contract": "docs/ATTO_CANONICAL_MATCH_TILDE_V1.md",
+  "upstream": "ores-truffle-oreslang/oreslang-common-source#254",
+  "executableParityCertified": false,
+  "backends": [
+    "java",
+    "llvm",
+    "wasm",
+    "forge",
+    "net"
+  ],
+  "backendEvidence": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED"
+  },
+  "counts": {
+    "accept": 13,
+    "reject": 13,
+    "total": 26
+  },
+  "cases": [
+    {
+      "id": "typed-scalar-match",
+      "file": "typed-scalar-match.atto",
+      "rule": "typed-match",
+      "expect": "accept",
+      "sourceGitBlobSha1": "a88abd698245c26e9349eac8eb308702cb22ef0c",
+      "expectedExitCode": 42,
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "first-ordered-overlap",
+      "file": "first-ordered-overlap.atto",
+      "rule": "ordered-first",
+      "expect": "accept",
+      "sourceGitBlobSha1": "433708965b7b55361bc70af8cd348234ce6153f9",
+      "expectedExitCode": 42,
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "exhaustive-bool-no-default",
+      "file": "exhaustive-bool-no-default.atto",
+      "rule": "exhaustiveness",
+      "expect": "accept",
+      "sourceGitBlobSha1": "5bb74f85865c3a344c96ccf71f0f49581c960740",
+      "expectedExitCode": 42,
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "short-record",
+      "file": "short-record.atto",
+      "rule": "record-literal",
+      "expect": "accept",
+      "sourceGitBlobSha1": "a8546cec560184e2bbd6725dbf43bcfc5faaef6a",
+      "expectedExitCode": 42,
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "short-contextual-map",
+      "file": "short-contextual-map.atto",
+      "rule": "map-literal",
+      "expect": "accept",
+      "sourceGitBlobSha1": "470817819d42d3a74ef313f4bfa34611ab328f15",
+      "expectedExitCode": 42,
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "evaluated-map-key-vs-static-field",
+      "file": "evaluated-map-key-vs-static-field.atto",
+      "rule": "key-kind",
+      "expect": "accept",
+      "sourceGitBlobSha1": "942209dcb6764ca6d85e9940713d1c653f9b7b5d",
+      "expectedExitCode": 42,
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "symbol-map-key",
+      "file": "symbol-map-key.atto",
+      "rule": "symbol-key",
+      "expect": "accept",
+      "sourceGitBlobSha1": "cbce5609e6152c8888d4970050e8d89c7baeb09e",
+      "expectedExitCode": 42,
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "explicit-empty-kinds",
+      "file": "explicit-empty-kinds.atto",
+      "rule": "empty-kind",
+      "expect": "accept",
+      "sourceGitBlobSha1": "a33b13341dc4a76b24d84b1bc8632583cc739d28",
+      "expectedExitCode": 42,
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "concrete-struct-preserved",
+      "file": "concrete-struct-preserved.atto",
+      "rule": "legacy-compat",
+      "expect": "accept",
+      "sourceGitBlobSha1": "95978b7d71a5c446d4ad653f8b4874e9b3f2832a",
+      "expectedExitCode": 42,
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "positional-tuple-preserved",
+      "file": "positional-tuple-preserved.atto",
+      "rule": "legacy-compat",
+      "expect": "accept",
+      "sourceGitBlobSha1": "f05a235d55773db7b6783cd30d151b1ba5bed50c",
+      "expectedExitCode": 42,
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "explicit-structural-view",
+      "file": "explicit-structural-view.atto",
+      "rule": "structural-projection",
+      "expect": "accept",
+      "sourceGitBlobSha1": "c1e27f3365e3e32e8a3835a1234663c356b6de02",
+      "expectedExitCode": 42,
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "legacy-record-preserved",
+      "file": "legacy-record-preserved.atto",
+      "rule": "legacy-compat",
+      "expect": "accept",
+      "sourceGitBlobSha1": "37f55f636fba1bc8ade6b96f57c8a86dd1aef048",
+      "expectedExitCode": 42,
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "legacy-on-default",
+      "file": "legacy-on-default.atto",
+      "rule": "legacy-compat",
+      "expect": "accept",
+      "sourceGitBlobSha1": "ae648e3ff414e8f5609f3c03ceb68f4f8b3b602b",
+      "expectedExitCode": 42,
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "missing-over",
+      "file": "missing-over.atto",
+      "rule": "match-grammar",
+      "expect": "reject",
+      "sourceGitBlobSha1": "bfe0326a18db70e4fb64ca4a1495f09344b8c081",
+      "diagnosticCategory": "INVALID_MATCH_SYNTAX",
+      "noGuestArtifactOnReject": true,
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "missing-on",
+      "file": "missing-on.atto",
+      "rule": "match-grammar",
+      "expect": "reject",
+      "sourceGitBlobSha1": "61b717b2df5b76a066272b97aee9f72fee8bd5d6",
+      "diagnosticCategory": "INVALID_MATCH_SYNTAX",
+      "noGuestArtifactOnReject": true,
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "duplicate-default",
+      "file": "duplicate-default.atto",
+      "rule": "default-arm",
+      "expect": "reject",
+      "sourceGitBlobSha1": "e7aeca9f92afb7ccf844bf8db26bc80eb8d23b22",
+      "diagnosticCategory": "INVALID_MATCH_DEFAULT",
+      "noGuestArtifactOnReject": true,
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "default-before-on",
+      "file": "default-before-on.atto",
+      "rule": "default-arm",
+      "expect": "reject",
+      "sourceGitBlobSha1": "80bc36c32dc6b4b2cf7d03bead398952928d6c52",
+      "diagnosticCategory": "INVALID_MATCH_DEFAULT",
+      "noGuestArtifactOnReject": true,
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "guarded-default",
+      "file": "guarded-default.atto",
+      "rule": "default-arm",
+      "expect": "reject",
+      "sourceGitBlobSha1": "0554ae58791ec06b89bde9fe2f39362a6bc1e246",
+      "diagnosticCategory": "INVALID_MATCH_DEFAULT",
+      "noGuestArtifactOnReject": true,
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "overlap-without-first",
+      "file": "overlap-without-first.atto",
+      "rule": "disjointness",
+      "expect": "reject",
+      "sourceGitBlobSha1": "e50126cd3c3b8fab0ca9c5439510e2221cc0430c",
+      "diagnosticCategory": "MATCH_OVERLAP",
+      "noGuestArtifactOnReject": true,
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "nonexhaustive-without-default",
+      "file": "nonexhaustive-without-default.atto",
+      "rule": "exhaustiveness",
+      "expect": "reject",
+      "sourceGitBlobSha1": "2b3693354a497ce4a3fcbd6d2b047f77f28a6824",
+      "diagnosticCategory": "NONEXHAUSTIVE_MATCH",
+      "noGuestArtifactOnReject": true,
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "mixed-map-and-record",
+      "file": "mixed-map-and-record.atto",
+      "rule": "tilde-disambiguation",
+      "expect": "reject",
+      "sourceGitBlobSha1": "58a755a7e26ceee52a891b7611299cb39ce2d606",
+      "diagnosticCategory": "INVALID_TILDE_KIND",
+      "noGuestArtifactOnReject": true,
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "ambiguous-empty-tilde",
+      "file": "ambiguous-empty-tilde.atto",
+      "rule": "tilde-disambiguation",
+      "expect": "reject",
+      "sourceGitBlobSha1": "e70f69ae41f0d583fdec8ac3d552258e80bf325e",
+      "diagnosticCategory": "INVALID_TILDE_KIND",
+      "noGuestArtifactOnReject": true,
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "duplicate-record-field",
+      "file": "duplicate-record-field.atto",
+      "rule": "record-literal",
+      "expect": "reject",
+      "sourceGitBlobSha1": "d2d432a47ef8c39f4b077612134f3990bec22d55",
+      "diagnosticCategory": "DUPLICATE_RECORD_FIELD",
+      "noGuestArtifactOnReject": true,
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "implicit-structural-nominal-view",
+      "file": "implicit-structural-nominal-view.atto",
+      "rule": "structural-projection",
+      "expect": "reject",
+      "sourceGitBlobSha1": "f3c96094b0a1213d148408d2b80cea2bf1b78f9f",
+      "diagnosticCategory": "UNAUTHORIZED_STRUCTURAL_VIEW",
+      "noGuestArtifactOnReject": true,
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "guarded-legacy-default",
+      "file": "guarded-legacy-default.atto",
+      "rule": "default-arm",
+      "expect": "reject",
+      "sourceGitBlobSha1": "1f1f9e6b708c869651905a2bb2d76af1060067b5",
+      "diagnosticCategory": "INVALID_MATCH_DEFAULT",
+      "noGuestArtifactOnReject": true,
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "duplicate-literal-pattern",
+      "file": "duplicate-literal-pattern.atto",
+      "rule": "disjointness",
+      "expect": "reject",
+      "sourceGitBlobSha1": "29d725ef0463dc16254394681835da6c561c67e7",
+      "diagnosticCategory": "MATCH_OVERLAP",
+      "noGuestArtifactOnReject": true,
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "confirmedBackends": []
+    }
+  ]
+}

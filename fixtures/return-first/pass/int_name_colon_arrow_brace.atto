@@ -1,0 +1,4 @@
+// expect-exit: 42
+// return-first syntax variant int_name_colon_arrow_brace; compiled guest proof still pending
+fnc calculate(int x): int -> { return x * 2; }
+pub fnc main() -> int { return calculate(21); }

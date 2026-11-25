@@ -1,0 +1,36 @@
+name: core/types source-only conformance and mutation registry
+on:
+  pull_request:
+    paths:
+      - 'contracts/core-types-v1.json'
+      - 'tests/core-types-v1-source-model.test.mjs'
+      - 'docs/core-types-v1.md'
+      - '.github/workflows/core-types-v1-source.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-model-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Verify exact head
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          git rev-parse 'HEAD^{tree}'
+      - name: Validate range oracle, nine backend pins and four negative fixtures
+        run: |
+          set -euo pipefail
+          node --test tests/core-types-v1-source-model.test.mjs
+          echo 'CORE_TYPES_CONFORMANCE=SOURCE_ONLY'
+          echo 'CORE_TYPES_GUEST=NOT_EXECUTED'

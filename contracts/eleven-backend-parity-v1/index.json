@@ -1,0 +1,911 @@
+{
+  "schema": "atto.eleven-backend-cross-contract-parity.v1",
+  "snapshot_date": "2026-11-20",
+  "source_of_truth": "atto-lang/atto-spec",
+  "conformance_authority": "atto-lang/atto-platform-conformance",
+  "evidence_gate": "source_inventory_only",
+  "release_qualified": false,
+  "notes": "Main SHAs are observed GitHub snapshots, not tested compiler heads. Candidate PR links are work pointers, not compiled-guest evidence. This registry cannot graduate any cell to passed until a reviewed authenticating verifier and exact-head guest receipts are integrated. Floating int/int division is tracked independently: Java #66 and .NET #191 are unexecuted implementation candidates; all other backends remain not_executed rather than implicitly supported. Rust #411 now proposes typed float division and checked shifts in the actual Rust-to-Wasm frontend; JS #46 proposes checked shift-count guest lowering. Both remain unexecuted, and JS #71 integration must refresh its pinned #46 head.",
+  "workstreams": [
+    {
+      "id": "operator_caret_xor",
+      "title": "Canonical ^ statement return and ^^ signed integer XOR",
+      "reference": "https://github.com/atto-lang/atto-spec/pull/143",
+      "approval_state": "candidate_or_tracking",
+      "support_claim": "none"
+    },
+    {
+      "id": "checked_i64",
+      "title": "Canonical checked signed-i64 arithmetic and constant overflow",
+      "reference": "https://github.com/atto-lang/atto-platform-conformance/pull/235",
+      "approval_state": "candidate_or_tracking",
+      "support_claim": "none"
+    },
+    {
+      "id": "float_int_division",
+      "title": "Canonical int / int yields float; never silently truncate signed integer division",
+      "reference": "https://github.com/atto-lang/atto-spec/pull/151",
+      "approval_state": "candidate_or_tracking",
+      "support_claim": "none"
+    },
+    {
+      "id": "inline_sync_task",
+      "title": "Pure inline sync task with void-only do form",
+      "reference": "https://github.com/atto-lang/atto-platform-conformance/pull/115",
+      "approval_state": "candidate_or_tracking",
+      "support_claim": "none"
+    },
+    {
+      "id": "trap_result",
+      "title": "trap returns Result and preserves raise/panic/host-fault boundaries",
+      "reference": "https://github.com/atto-lang/atto-platform-conformance/pull/68",
+      "approval_state": "candidate_or_tracking",
+      "support_claim": "none"
+    },
+    {
+      "id": "functional_pipelines",
+      "title": "Pure |> and <| functional pipeline guests",
+      "reference": "https://github.com/atto-lang/atto-platform-conformance/pull/112",
+      "approval_state": "candidate_or_tracking",
+      "support_claim": "none"
+    },
+    {
+      "id": "sealed_actor_state",
+      "title": "Inline and attached actor state, guards and denial of escape",
+      "reference": "https://github.com/atto-lang/atto-platform-conformance/pull/113",
+      "approval_state": "candidate_or_tracking",
+      "support_claim": "none"
+    },
+    {
+      "id": "pointer_ownership",
+      "title": "Typed Pointer and capability-scoped borrow/take/reference semantics",
+      "reference": "https://github.com/atto-lang/atto-platform-conformance/issues/63",
+      "approval_state": "candidate_or_tracking",
+      "support_claim": "none"
+    },
+    {
+      "id": "tenant_vm_isolation",
+      "title": "Mutually untrusted tenant memory, scheduler, I/O and lifecycle siloing",
+      "reference": "https://github.com/atto-lang/atto-platform-conformance/issues/216",
+      "approval_state": "candidate_or_tracking",
+      "support_claim": "none"
+    },
+    {
+      "id": "permissions_io",
+      "title": "Deno-style I/O permission admission and authority isolation",
+      "reference": "https://github.com/atto-lang/atto-platform-conformance/issues/107",
+      "approval_state": "candidate_or_tracking",
+      "support_claim": "none"
+    },
+    {
+      "id": "module_imports",
+      "title": "Project-root + imports and package/module source identity",
+      "reference": "https://github.com/atto-lang/atto-platform-conformance/issues/131",
+      "approval_state": "candidate_or_tracking",
+      "support_claim": "none"
+    }
+  ],
+  "backends": [
+    {
+      "id": "java",
+      "repository": "atto-lang/atto-source.java",
+      "repository_id": "1448697198",
+      "observed_main_sha": "9caccb4ac57dbbe9cfd13cb490a005e273d217e5",
+      "profile": "graal_jvm_native_image",
+      "observed_main_protected": false,
+      "release_qualified": false,
+      "features": {
+        "operator_caret_xor": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.java/pull/72"
+          ]
+        },
+        "checked_i64": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.java/pull/66"
+          ]
+        },
+        "float_int_division": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.java/pull/66"
+          ]
+        },
+        "inline_sync_task": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.java/pull/59"
+          ]
+        },
+        "trap_result": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.java/pull/67"
+          ]
+        },
+        "functional_pipelines": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.java/pull/51"
+          ]
+        },
+        "sealed_actor_state": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "pointer_ownership": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "tenant_vm_isolation": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "permissions_io": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "module_imports": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        }
+      }
+    },
+    {
+      "id": "llvm",
+      "repository": "atto-lang/atto-source.llvm",
+      "repository_id": "1448700962",
+      "observed_main_sha": "21eedb54506a43fd2402699616043185b573f452",
+      "profile": "native_llvm",
+      "observed_main_protected": false,
+      "release_qualified": false,
+      "features": {
+        "operator_caret_xor": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.llvm/pull/69"
+          ]
+        },
+        "checked_i64": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "float_int_division": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "inline_sync_task": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.llvm/pull/72"
+          ]
+        },
+        "trap_result": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.llvm/pull/75"
+          ]
+        },
+        "functional_pipelines": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.llvm/pull/54"
+          ]
+        },
+        "sealed_actor_state": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.llvm/pull/70"
+          ]
+        },
+        "pointer_ownership": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.llvm/pull/64"
+          ]
+        },
+        "tenant_vm_isolation": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "permissions_io": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "module_imports": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        }
+      }
+    },
+    {
+      "id": "wasm",
+      "repository": "atto-lang/atto-source.wasm",
+      "repository_id": "1448701355",
+      "observed_main_sha": "7e3f292afdc2e191f631046a56b21a23282c5a55",
+      "profile": "standalone_wasm_runtime",
+      "observed_main_protected": false,
+      "release_qualified": false,
+      "features": {
+        "operator_caret_xor": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.wasm/pull/39"
+          ]
+        },
+        "checked_i64": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "float_int_division": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "inline_sync_task": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.wasm/pull/53"
+          ]
+        },
+        "trap_result": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.wasm/pull/51"
+          ]
+        },
+        "functional_pipelines": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "sealed_actor_state": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "pointer_ownership": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "tenant_vm_isolation": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.wasm/pull/50"
+          ]
+        },
+        "permissions_io": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "module_imports": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        }
+      }
+    },
+    {
+      "id": "net",
+      "repository": "atto-lang/atto-source.net",
+      "repository_id": "1448702222",
+      "observed_main_sha": "9e1dc9503b01a8908fc95625eecc846fc5a69780",
+      "profile": "cil_native_aot",
+      "observed_main_protected": false,
+      "release_qualified": false,
+      "features": {
+        "operator_caret_xor": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.net/pull/26"
+          ]
+        },
+        "checked_i64": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "float_int_division": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.net/pull/191"
+          ]
+        },
+        "inline_sync_task": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.net/pull/30"
+          ]
+        },
+        "trap_result": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.net/pull/117"
+          ]
+        },
+        "functional_pipelines": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.net/pull/16"
+          ]
+        },
+        "sealed_actor_state": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.net/pull/28"
+          ]
+        },
+        "pointer_ownership": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.net/pull/22"
+          ]
+        },
+        "tenant_vm_isolation": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "permissions_io": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "module_imports": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        }
+      }
+    },
+    {
+      "id": "forge",
+      "repository": "atto-lang/atto-source.forge",
+      "repository_id": "1448701874",
+      "observed_main_sha": "bca67ceb4ae933ef2e0576926809365518196f40",
+      "profile": "independent_native_engine",
+      "observed_main_protected": false,
+      "release_qualified": false,
+      "features": {
+        "operator_caret_xor": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.forge/pull/105"
+          ]
+        },
+        "checked_i64": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "float_int_division": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "inline_sync_task": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.forge/pull/105"
+          ]
+        },
+        "trap_result": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.forge/pull/41"
+          ]
+        },
+        "functional_pipelines": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.forge/pull/45"
+          ]
+        },
+        "sealed_actor_state": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "pointer_ownership": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.forge/pull/105"
+          ]
+        },
+        "tenant_vm_isolation": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.forge/pull/37"
+          ]
+        },
+        "permissions_io": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "module_imports": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        }
+      }
+    },
+    {
+      "id": "cranelift",
+      "repository": "atto-lang/atto-source.cranelift",
+      "repository_id": "1448702554",
+      "observed_main_sha": "e867c0a5cf8b94f98ce9b1212d2c735b76bc4120",
+      "profile": "cranelift_native_jit",
+      "observed_main_protected": false,
+      "release_qualified": false,
+      "features": {
+        "operator_caret_xor": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.cranelift/pull/39"
+          ]
+        },
+        "checked_i64": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "float_int_division": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "inline_sync_task": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.cranelift/pull/54"
+          ]
+        },
+        "trap_result": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.cranelift/pull/47"
+          ]
+        },
+        "functional_pipelines": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.cranelift/pull/50"
+          ]
+        },
+        "sealed_actor_state": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "pointer_ownership": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.cranelift/pull/55"
+          ]
+        },
+        "tenant_vm_isolation": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "permissions_io": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "module_imports": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        }
+      }
+    },
+    {
+      "id": "rs",
+      "repository": "atto-lang/atto-source.rs",
+      "repository_id": "1448702852",
+      "observed_main_sha": "2a93b5f9358a0ee5642a52c23f6621d0fa9e070d",
+      "profile": "rust_compiler_wasm_guest",
+      "observed_main_protected": false,
+      "release_qualified": false,
+      "features": {
+        "operator_caret_xor": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.rs/pull/411"
+          ]
+        },
+        "checked_i64": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.rs/pull/439"
+          ]
+        },
+        "float_int_division": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.rs/pull/411"
+          ]
+        },
+        "inline_sync_task": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.rs/pull/438"
+          ]
+        },
+        "trap_result": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "functional_pipelines": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.rs/pull/381"
+          ]
+        },
+        "sealed_actor_state": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.rs/pull/418"
+          ]
+        },
+        "pointer_ownership": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.rs/pull/419"
+          ]
+        },
+        "tenant_vm_isolation": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "permissions_io": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "module_imports": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        }
+      }
+    },
+    {
+      "id": "js",
+      "repository": "atto-lang/atto-source.js",
+      "repository_id": "1448703338",
+      "observed_main_sha": "ec5201e11f44822e839a625152b2c6d0b979b884",
+      "profile": "javascript_worker",
+      "observed_main_protected": false,
+      "release_qualified": false,
+      "features": {
+        "operator_caret_xor": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.js/pull/71",
+            "https://github.com/atto-lang/atto-source.js/pull/46"
+          ]
+        },
+        "checked_i64": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.js/pull/69"
+          ]
+        },
+        "float_int_division": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "inline_sync_task": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.js/pull/47"
+          ]
+        },
+        "trap_result": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.js/pull/71"
+          ]
+        },
+        "functional_pipelines": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.js/pull/41"
+          ]
+        },
+        "sealed_actor_state": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": [
+            "https://github.com/atto-lang/atto-source.js/pull/71"
+          ]
+        },
+        "pointer_ownership": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "tenant_vm_isolation": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "permissions_io": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "module_imports": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        }
+      }
+    },
+    {
+      "id": "hdl",
+      "repository": "atto-lang/atto-source.hdl",
+      "repository_id": "1448703717",
+      "observed_main_sha": "023455e496bb9cfbdd157ccc94bb69f31eec44ea",
+      "profile": "experimental_hardware_subset",
+      "observed_main_protected": false,
+      "release_qualified": false,
+      "features": {
+        "operator_caret_xor": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "checked_i64": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "float_int_division": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "inline_sync_task": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "trap_result": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "functional_pipelines": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "sealed_actor_state": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "pointer_ownership": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "tenant_vm_isolation": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "permissions_io": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "module_imports": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        }
+      }
+    },
+    {
+      "id": "atto",
+      "repository": "atto-lang/atto-source.atto",
+      "repository_id": "1461897456",
+      "observed_main_sha": "5b9a274490a4567ed9d1088fd1ff304dbe383357",
+      "profile": "self_hosted_bootstrap",
+      "observed_main_protected": false,
+      "release_qualified": false,
+      "features": {
+        "operator_caret_xor": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "checked_i64": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "float_int_division": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "inline_sync_task": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "trap_result": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "functional_pipelines": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "sealed_actor_state": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "pointer_ownership": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "tenant_vm_isolation": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "permissions_io": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "module_imports": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        }
+      }
+    },
+    {
+      "id": "realtime",
+      "repository": "atto-lang/atto-source.realtime",
+      "repository_id": "1448704177",
+      "observed_main_sha": "4f6449470ab075cdad17884c7a1aee2a6e2ab54c",
+      "profile": "planned_real_time_target",
+      "observed_main_protected": false,
+      "release_qualified": false,
+      "features": {
+        "operator_caret_xor": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "checked_i64": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "float_int_division": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "inline_sync_task": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "trap_result": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "functional_pipelines": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "sealed_actor_state": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "pointer_ownership": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "tenant_vm_isolation": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "permissions_io": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        },
+        "module_imports": {
+          "state": "not_executed",
+          "evidence": null,
+          "candidate_prs": []
+        }
+      }
+    }
+  ]
+}

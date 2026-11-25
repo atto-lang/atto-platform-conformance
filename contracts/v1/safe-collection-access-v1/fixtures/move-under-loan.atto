@@ -1,0 +1,8 @@
+// expect-error: E_LOAN_CONFLICT (semantic, not parser rejection)
+// Moving the owner while a projected read view remains live is forbidden.
+pub fnc main() -> int {
+  val values = [10, 20];
+  val read = values.get(0);
+  val transferred = rt take values;
+  return read.is_some() ? 42 : 0;
+}

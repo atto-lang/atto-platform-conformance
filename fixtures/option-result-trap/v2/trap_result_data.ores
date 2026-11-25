@@ -1,0 +1,28 @@
+// ORT2-TRAP_RESULT_DATA: native guest assertions, not executed evidence
+trap fnc error_value(): Result<int,String> { return Err("ordinary result data"); }
+trap fnc success_value(): Result<int,String> { return Ok(42); }
+fnc emit(bool yes): void {
+  if yes; then
+    stdio.stdout.write("1");
+  else
+    stdio.stdout.write("0");
+  fi
+  return;
+}
+pub fnc main(): void {
+  val Option<Result<int,String>> trapped_err = error_value();
+  val Option<Result<int,String>> trapped_ok = success_value();
+  stdio.stdout.write("ORT2:trap_result_data:");
+  // CHECK error_data_outer_some
+  emit(trapped_err.is_some());
+  // CHECK error_data_inner_err
+  emit(trapped_err.unwrap().is_err());
+  // CHECK success_outer_some
+  emit(trapped_ok.is_some());
+  // CHECK success_inner_ok
+  emit(trapped_ok.unwrap().is_ok());
+  // CHECK success_inner_payload
+  emit(trapped_ok.unwrap().unwrap() == 42);
+  stdio.stdout.write(":END");
+  return;
+}
