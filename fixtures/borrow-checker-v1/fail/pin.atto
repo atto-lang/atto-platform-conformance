@@ -1,0 +1,10 @@
+// BCV1-028 pin fail: target AttoLang semantics, NOT_EXECUTED.
+// Expected compiler rejection E_PIN_BOUNDARY_TRANSFER with NO guest artifact.
+// Pinned storage cannot cross domains without authenticated stable-address handoff.
+define class Packet as pub let int value = 42; end
+pub fnc main(): int {
+  val p = pin! take! new Packet();
+  val worker = spawn Receiver();
+  worker.send(take! p); // no pinned-handoff witness
+  return 42;
+}

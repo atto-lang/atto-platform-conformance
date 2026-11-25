@@ -1,0 +1,6 @@
+// ACTOR-STRING-03; TARGET_REJECT; expected E_ACTOR_RECEIVES; NOT_EXECUTED
+// The header contract must equal the concrete handler envelope payload.
+define actor Router receives string sends int as
+  susp receive(ActorMail<int> mail): void { return; }
+end
+pub susp fnc main(): int { return 0; }

@@ -1,0 +1,53 @@
+{
+  "schema": "atto.gpu-actors-host-bridge-evidence/0",
+  "recordedAt": "2026-11-10",
+  "status": "NATIVE_HOST_BRIDGE_VERIFIED_NOT_DEVICE",
+  "implementation": {
+    "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+    "pullRequest": 1650,
+    "head": "ae656f92254329e646071c43d5609a5288a85d4a",
+    "source": "src/main/cpp/oreslang/runtime/GpuActorHostTurnBridgeV0.hpp",
+    "sourceGitBlob": "e2787e95da1dff46e7abb36793436e55d183df97",
+    "testSource": "tests/gpu_actor_host_turn_bridge_v0_test.cpp",
+    "testGitBlob": "ba1d9e52270fbcd4f9fb50b005df3796618fbd75"
+  },
+  "execution": {
+    "carrierRepo": "scintilla-run/scintilla-run-e2e",
+    "carrierHead": "304bad400196b7dd1281f28a96da9659a07d9d53",
+    "runId": 42916949277,
+    "runUrl": "https://github.com/scintilla-run/scintilla-run-e2e/actions/runs/42916949277",
+    "jobId": 130181729435,
+    "exactBlobVerification": "success",
+    "gccAsanUbsan": "success",
+    "clang": "success",
+    "gccChecks": 6257,
+    "clangChecks": 6257,
+    "hostActorCount": 1024,
+    "hostTurnCount": 4096,
+    "supervisorReservationRetirements": 1024
+  },
+  "boundaries": {
+    "realGPU": false,
+    "providerAuthenticatedEvent": false,
+    "actualGPUActorGuest": false,
+    "actualMailboxRuntime": false,
+    "sourceTypedMIR": false,
+    "crossBackendParity": false,
+    "productionReady": false,
+    "fullRepositoryCTest": false,
+    "driverEvent": false
+  },
+  "safetyModel": [
+    "exclusive-turn-credit",
+    "enqueue-race-guard",
+    "no-preenqueue-abort-during-provider-window",
+    "fence-quiescence-before-publication",
+    "stale-turn-rejection",
+    "cohort-device-loss-CONTROL",
+    "cancellation-CONTROL",
+    "checked-overflow",
+    "fail-stop-if-unretired",
+    "graceful-supervisor-retirement"
+  ],
+  "next": "Replace trusted-host Boolean completion with authenticated provider-issued event and connect real compiled GPU actor MIR to physical hardware"
+}

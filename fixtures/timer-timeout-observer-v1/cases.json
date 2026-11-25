@@ -1,0 +1,292 @@
+{
+  "contract": "timer-timeout-observer-v1",
+  "status": "candidate-unattested",
+  "backends": [
+    "java",
+    "llvm",
+    "net",
+    "wasm",
+    "forge"
+  ],
+  "requires": [
+    "guest_source_execution",
+    "exact_source_sha",
+    "compiled_guest_binary_identity",
+    "real_executed_steps",
+    "retirement_receipts_where_applicable"
+  ],
+  "cases": [
+    {
+      "id": "sleep_direct_async",
+      "kind": "source_candidate",
+      "source": "pub async fnc main(): int { await time.sleep(1ms); return 42; }",
+      "expected": {
+        "result": 42,
+        "explicit_task_required": false
+      }
+    },
+    {
+      "id": "after_direct_async",
+      "kind": "source_candidate",
+      "source": "pub async fnc main(): int { await time.after(0ms); return 42; }",
+      "expected": {
+        "result": 42,
+        "explicit_task_required": false,
+        "minimum_resume_turns": 1
+      }
+    },
+    {
+      "id": "sync_public_main_await",
+      "kind": "source_candidate",
+      "source": "pub routine main(): void { await time.sleep(0ms); stdio.println(42); return; }",
+      "expected": {
+        "prints": "42",
+        "explicit_task_required": false,
+        "minimum_resume_turns": 1
+      },
+      "note": "The public root entrypoint already owns an implicit scheduler Task; this exception does not extend to ordinary synchronous helpers"
+    },
+    {
+      "id": "private_root_main_await",
+      "kind": "source_candidate",
+      "source": "fnc main(): void { await time.after(0ms); stdio.println(45); return; }",
+      "expected": {
+        "prints": "45",
+        "explicit_task_required": false
+      },
+      "note": "Root main is selected by zero-arity entrypoint identity, not public modifier"
+    },
+    {
+      "id": "private_module_main_await",
+      "kind": "source_candidate",
+      "source": "define module helper fnc main(): void { await time.after(0ms); stdio.println(46); return; } end",
+      "expected": {
+        "prints": "46",
+        "explicit_task_required": false
+      },
+      "note": "One unique module main is selected when no root main exists"
+    },
+    {
+      "id": "nonentry_main_overload_reject",
+      "kind": "reject_candidate",
+      "source": "define module helper fnc main(int unused): void { await time.after(0ms); return; } end",
+      "expected": {
+        "error": "SuspensionEffectError"
+      },
+      "note": "A nonzero-arity function named main is not a scheduler-owned entrypoint"
+    },
+    {
+      "id": "actor_receive_await",
+      "kind": "source_candidate",
+      "source": "define actor Worker as receive(ActorMail<String> mail): void { val Channel<int> ch = Channel.new<int>(1); val Future<void> sent = nb writech ch, 7; await sent; self.send(\"resumed\"); self.end(); return; } end pub async routine main(): void { val worker = spawn Worker(); await worker.get_ready(); worker.send(\"go\"); val output = (await worker.outputs.next()).value.unwrap(); stdio.stdout.write(output.value); await worker.get_done(); return; }",
+      "expected": {
+        "compiler": "accept",
+        "source_async_modifier_required": false,
+        "explicit_task_required": false,
+        "prints": "resumed",
+        "physical_retirement_before_done": true
+      },
+      "note": "Compiled guest must execute an owned mailbox receive await and emit resumed, then observe get_done physical retirement; no nested source Task"
+    },
+    {
+      "id": "actor_fnc_mailbox_await",
+      "kind": "source_candidate",
+      "source": "actor fnc worker(): int { val Channel<int> ch = Channel.new<int>(1); val Future<void> sent = nb writech ch, 42; await sent; return readch ch; } pub routine main(): void { stdio.stdout.write(worker()); return; }",
+      "expected": {
+        "compiler": "accept",
+        "prints": "42",
+        "source_async_modifier_required": false,
+        "explicit_task_required": false
+      },
+      "note": "Actor fnc owns its mailbox turn, unlike ordinary sync fnc"
+    },
+    {
+      "id": "actor_on_start_await_reject",
+      "kind": "reject_candidate",
+      "source": "define actor Worker as on_start(): void { val Channel<int> ch = Channel.new<int>(1); val Future<void> sent = nb writech ch, 1; await sent; return; } receive(ActorMail<String> mail): void { self.end(); return; } end",
+      "expected": {
+        "error": "SuspensionEffectError"
+      },
+      "note": "Actor startup must complete on its lifecycle turn before readiness; suspension remains forbidden"
+    },
+    {
+      "id": "plain_instance_method_await_reject",
+      "kind": "reject_candidate",
+      "source": "define class Helper as pub execute(): void { val Channel<int> ch = Channel.new<int>(1); val Future<void> sent = nb writech ch, 1; await sent; return; } end",
+      "expected": {
+        "error": "SuspensionEffectError"
+      },
+      "note": "An ordinary class method without async/suspends lacks suspension authority"
+    },
+    {
+      "id": "timeout_direct_async",
+      "kind": "source_candidate",
+      "source": "pub async fnc main(): int { let v = await time.timeout(1s, compute_async()); return v; }",
+      "expected": {
+        "explicit_task_required": false
+      },
+      "note": "Requires independently declared compute_async in source integration fixture"
+    },
+    {
+      "id": "sync_await_reject",
+      "kind": "reject_candidate",
+      "source": "pub fnc helper(): int { await time.sleep(1ms); return 42; }",
+      "expected": {
+        "error": "SuspensionEffectError"
+      }
+    },
+    {
+      "id": "negative_duration_reject",
+      "kind": "reject_candidate",
+      "source": "pub async fnc main(): int { await time.sleep(-1ms); return 42; }",
+      "expected": {
+        "error": "InvalidDurationError"
+      }
+    },
+    {
+      "id": "zero_interval_reject",
+      "kind": "reject_candidate",
+      "source": "pub async fnc main(): int { let ticks = time.interval(0ms); return 42; }",
+      "expected": {
+        "error": "InvalidDurationError"
+      }
+    },
+    {
+      "id": "already_terminal_beats_zero_deadline",
+      "kind": "runtime_race",
+      "events": [
+        "producer_success(42)",
+        "timeout_register(0)",
+        "await_observer"
+      ],
+      "expected": {
+        "observer": "success(42)",
+        "producer": "success(42)",
+        "no_extra_task": true
+      }
+    },
+    {
+      "id": "timeout_does_not_cancel_shared_producer",
+      "kind": "runtime_race",
+      "events": [
+        "producer_pending",
+        "timeout_register(0)",
+        "deadline_claim",
+        "producer_success(42)"
+      ],
+      "expected": {
+        "observer": "TimeoutError",
+        "producer": "success(42)",
+        "retained_waiters": 0
+      }
+    },
+    {
+      "id": "observer_cancel_detaches",
+      "kind": "runtime_race",
+      "events": [
+        "producer_pending",
+        "timeout_register(1h)",
+        "observer_cancel",
+        "producer_success(7)"
+      ],
+      "expected": {
+        "observer": "cancelled",
+        "producer": "success(7)",
+        "retained_waiters": 0,
+        "live_timers": 0
+      }
+    },
+    {
+      "id": "source_failure_identity",
+      "kind": "runtime_race",
+      "events": [
+        "producer_fail(original_error)",
+        "timeout_register(1s)"
+      ],
+      "expected": {
+        "observer": "fail(original_error)",
+        "preserve_error_identity": true
+      }
+    },
+    {
+      "id": "cancel_expiry_single_winner",
+      "kind": "runtime_race",
+      "events": [
+        "register(0)",
+        "concurrent(cancel,expire)"
+      ],
+      "expected": {
+        "terminal_count": 1,
+        "timer_slot_releases": 1
+      }
+    },
+    {
+      "id": "owner_close_fences_stale_callback",
+      "kind": "runtime_race",
+      "events": [
+        "register_callback(owner_generation=1)",
+        "owner_close",
+        "reuse_actor_slot(generation=2)",
+        "expire_old"
+      ],
+      "expected": {
+        "guest_callback_calls": 0,
+        "retirement_receipt_required": true
+      }
+    },
+    {
+      "id": "interval_reentrant_second_tick",
+      "kind": "runtime_race",
+      "events": [
+        "interval_next",
+        "tick(1)",
+        "inline_observer(interval_next)",
+        "tick(2)"
+      ],
+      "expected": {
+        "ticks": [
+          1,
+          2
+        ],
+        "missed_tick_backlog": 0,
+        "simultaneous_consumers": 1
+      }
+    },
+    {
+      "id": "interval_cancel_close_once",
+      "kind": "runtime_race",
+      "events": [
+        "register_idle_interval",
+        "concurrent(cancel,owner_close)"
+      ],
+      "expected": {
+        "global_interval_slot_releases": 1
+      }
+    },
+    {
+      "id": "actor_self_callback_await_reject",
+      "kind": "runtime_race",
+      "events": [
+        "actor_serial_handler_register_callback",
+        "actor_serial_handler_await_callback_done"
+      ],
+      "expected": {
+        "error": "SelfAwaitDeadlockError",
+        "guest_callback_calls": 0
+      }
+    },
+    {
+      "id": "callback_never_on_clock_thread",
+      "kind": "runtime_race",
+      "events": [
+        "register_callback",
+        "expire",
+        "dispatch_guest_callback"
+      ],
+      "expected": {
+        "clock_thread_guest_calls": 0,
+        "owner_dispatches": 1
+      }
+    }
+  ]
+}

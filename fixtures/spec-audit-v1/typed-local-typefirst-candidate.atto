@@ -1,0 +1,5 @@
+// UNRESOLVED S-46: candidate only. Do not certify parser admission.
+pub fnc main() -> int {
+  let int answer = 42;
+  return answer;
+}

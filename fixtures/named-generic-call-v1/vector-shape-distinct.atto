@@ -1,0 +1,4 @@
+// Vector[int] is a collection element shape, not angle-bracket specialization.
+fnc take_vector(Vector[int] xs) -> void ::
+  return
+end

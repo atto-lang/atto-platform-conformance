@@ -1,0 +1,7 @@
+define class Pair<First, Second> as
+  First first
+  Second second
+end
+fnc main() -> void ::
+  val x: Pair<int, Second=string>
+end

@@ -1,0 +1,10 @@
+import module sizes from pkg "core.size_math";
+
+pub fnc main(): int {
+  val int max = 9223372036854775807;
+  val a = sizes.size_add_fits(max, 1, max);
+  val b = sizes.size_mul_fits(max, max, max);
+  val c = sizes.size_mul_fits(0, max, max);
+  val d = sizes.clamp_int(99, 10, 20);
+  return !a && !b && c && d eq 20 ? 1 : 0;
+}

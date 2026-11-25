@@ -1,0 +1,107 @@
+{
+  "schema": 1,
+  "batch": 5,
+  "asOf": "2026-10-20",
+  "theme": "Actors, hot reload and shared code images",
+  "mappingConfidence": "RECONSTRUCTED_WORKING_SET_NOT_VERIFIED_CANONICAL_100_TASK_ORDER",
+  "note": "Issue links and titles were individually verified live. User's exact original ordering beyond 44-47 was not independently recovered; this execution ordering is not presented as the original backlog.",
+  "items": [
+    {
+      "task": 41,
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "issue": 478,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/478",
+      "gate": "HOTLOAD_CAPABILITY_MONOTONICITY",
+      "work": "Runtime capability escalation and terminal state",
+      "release": "BLOCKED_ON_ACTUAL_GUEST_EXECUTION"
+    },
+    {
+      "task": 42,
+      "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+      "issue": 606,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/issues/606",
+      "gate": "NATIVE_GUEST_HOTUPGRADE_LEASES",
+      "work": "Compiler actor/await/FFI pin integration",
+      "release": "BLOCKED_ON_ACTUAL_GUEST_EXECUTION"
+    },
+    {
+      "task": 43,
+      "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+      "issue": 610,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/issues/610",
+      "gate": "NATIVE_UNLOAD_FAILURE_QUARANTINE",
+      "work": "Durable failed unload accounting",
+      "release": "BLOCKED_ON_ACTUAL_GUEST_EXECUTION"
+    },
+    {
+      "task": 44,
+      "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+      "issue": 603,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/issues/603",
+      "gate": "NATIVE_SHARED_CODE_IMAGES",
+      "work": "Trusted/untrusted code image lifetime sharing",
+      "release": "BLOCKED_ON_ACTUAL_GUEST_EXECUTION"
+    },
+    {
+      "task": 45,
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "issue": 1341,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/1341",
+      "gate": "LINEAR_HOTUPGRADE_TRANSFER",
+      "work": "Exactly one checkpoint restore and publication",
+      "release": "BLOCKED_ON_ACTUAL_GUEST_EXECUTION"
+    },
+    {
+      "task": 46,
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "issue": 1342,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/1342",
+      "gate": "OUTPUT_READER_REGISTRATION",
+      "work": "Atomic subscription versus generation switch",
+      "release": "BLOCKED_ON_ACTUAL_GUEST_EXECUTION"
+    },
+    {
+      "task": 47,
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "issue": 1343,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/1343",
+      "gate": "ACTOR_ROUTE_EPOCH_IDENTITY",
+      "work": "Stable logical incarnation and advanced route epoch",
+      "release": "BLOCKED_ON_ACTUAL_GUEST_EXECUTION"
+    },
+    {
+      "task": 48,
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "issue": 476,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/476",
+      "gate": "OTP_SUPERVISOR_LIFECYCLE",
+      "work": "Bounded supervision/control/restart semantics",
+      "release": "BLOCKED_ON_ACTUAL_GUEST_EXECUTION"
+    },
+    {
+      "task": 49,
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "issue": 494,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/494",
+      "gate": "HOTLOAD_CONTRACT_ABI_PINNING",
+      "work": "Versioned supervisor-owned contract fingerprints",
+      "release": "BLOCKED_ON_ACTUAL_GUEST_EXECUTION"
+    },
+    {
+      "task": 50,
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "issue": 963,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/963",
+      "gate": "EXECUTED_JAVA_CI_PROOF",
+      "work": "Source-local steps and exact-head tests",
+      "release": "BLOCKED_ON_ACTUAL_GUEST_EXECUTION"
+    }
+  ],
+  "evidence": {
+    "sourceCodeEdits": "TRACK_PER_LINKED_PR",
+    "nativeCompiler": "NOT_ATTESTED",
+    "javaCompiler": "NOT_ATTESTED",
+    "freshCi": "ZERO_STEP_RUNS_NOT_EXECUTION",
+    "sourceExport": "REQUIRES_APPROVED_REVIEWED_PRIVATE_BOUNDARY"
+  }
+}

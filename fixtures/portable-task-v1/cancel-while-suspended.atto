@@ -1,0 +1,14 @@
+pub suspends fnc main(): int {
+  let Task<int> task_handle = task {
+    probe_trace("entered");
+    await probe_pending("suspended"); // signals only after actual continuation suspension
+    probe_trace("post_cancel_forbidden");
+    return 1;
+  };
+  probe_wait_for("suspended");
+  task_handle.cancel();
+  await task_handle.get_done();
+  probe_assert_absent("post_cancel_forbidden");
+  probe_trace("physical_done=true");
+  return 42;
+}

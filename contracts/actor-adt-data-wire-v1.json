@@ -1,0 +1,114 @@
+{
+  "schema": "atto.actor-adt-data-wire.v1",
+  "status": "SCOPED_DATA_HOST_CODEC_NOT_COMPILED_GUEST",
+  "scope": "Only Option<Result<int,string>> mailbox DATA, no supervisor CONTROL authority; actor generation/admission and transitive ownership remain host obligations",
+  "format": {
+    "magic_ascii": "ATAD",
+    "version": 1,
+    "nominal_family": 1,
+    "tag_offset": 6,
+    "header_bytes": 7,
+    "tags": {
+      "0": "None",
+      "1": "SomeOk(i64_le)",
+      "2": "SomeErr(u16_le length + strict UTF8)"
+    },
+    "max_error_bytes": 256,
+    "max_wire_bytes": 265
+  },
+  "positive": [
+    {
+      "id": "none",
+      "hex": "41544144010100"
+    },
+    {
+      "id": "some_ok_42",
+      "hex": "415441440101012a00000000000000"
+    },
+    {
+      "id": "some_ok_minus1",
+      "hex": "41544144010101ffffffffffffffff"
+    },
+    {
+      "id": "some_ok_i64min",
+      "hex": "415441440101010000000000000080"
+    },
+    {
+      "id": "some_err_empty",
+      "hex": "415441440101020000"
+    },
+    {
+      "id": "some_err_unicode",
+      "hex": "415441440101020200c3a9"
+    }
+  ],
+  "negative": [
+    {
+      "id": "wrong_magic",
+      "hex": "40544144010100"
+    },
+    {
+      "id": "wrong_version",
+      "hex": "41544144020100"
+    },
+    {
+      "id": "wrong_nominal_family",
+      "hex": "41544144010200"
+    },
+    {
+      "id": "forged_control_tag",
+      "hex": "4154414401017f"
+    },
+    {
+      "id": "extra_none_bytes",
+      "hex": "41544144010100ff"
+    },
+    {
+      "id": "truncated_ok",
+      "hex": "4154414401010100000000000000"
+    },
+    {
+      "id": "invalid_err_length",
+      "hex": "415441440101020300c3a9"
+    },
+    {
+      "id": "invalid_utf8",
+      "hex": "415441440101020200c328"
+    },
+    {
+      "id": "overlong_utf8",
+      "hex": "415441440101020200c0af"
+    },
+    {
+      "id": "surrogate_utf8",
+      "hex": "415441440101020300eda080"
+    },
+    {
+      "id": "oversized_err_length",
+      "hex": "415441440101020101"
+    }
+  ],
+  "verification_levels": {
+    "java": {
+      "host_local": "EXECUTED_JAVAC_JAVA_JDK21_EXACT_BLOBS",
+      "compiled_guest": "NOT_EXECUTED",
+      "supervisor_control": "NOT_INTEGRATED"
+    },
+    "llvm": {
+      "host_local": "EXECUTED_GCC_CLANG_OPT_AND_ASAN_UBSAN_EXACT_BLOBS",
+      "compiled_guest": "NOT_EXECUTED",
+      "supervisor_control": "NOT_INTEGRATED"
+    },
+    "net": {
+      "host_local": "NOT_EXECUTED_DOTNET10_SDK_UNAVAILABLE",
+      "compiled_guest": "NOT_EXECUTED",
+      "supervisor_control": "NOT_INTEGRATED"
+    }
+  },
+  "non_claims": [
+    "Matching bytes alone does not validate ActorRef, sender capability, generation, lifecycle or mailbox capacity",
+    "Wire data cannot authenticate host CONTROL",
+    "Not general generic sum/product ADT support or Java LLVM NET compiled guest parity",
+    "Zero-step CI failure is NOT_EXECUTED"
+  ]
+}

@@ -1,0 +1,175 @@
+{
+  "schema": "attolang.supervisor_admission_parity.v1",
+  "revision_date": "2026-11-11",
+  "classification": "UNVERIFIED_IMPLEMENTATION_CANDIDATES",
+  "source_scope": "oreslang-source.java, oreslang-source.llvm, oreslang-source.net, oreslang-source.wasm, oreslang-source.forge",
+  "stages": {
+    "host_runtime": "NOT_EXECUTED",
+    "compiled_guest": "NOT_EXECUTED",
+    "native_release": "NOT_CERTIFIED",
+    "formal_refinement": "NOT_CERTIFIED",
+    "five_backend_parity": "NOT_CERTIFIED"
+  },
+  "scenarios": [
+    {
+      "id": "S01",
+      "name": "post_fence_data_admission",
+      "meaning": "New DATA admission cannot logically commit after the authorized supervisor/actor fence"
+    },
+    {
+      "id": "S02",
+      "name": "pre_fence_inflight_accounting",
+      "meaning": "Pre-fence admitted work may settle after STOP, but must be accounted and safely retired"
+    },
+    {
+      "id": "S03",
+      "name": "stale_generation_denial",
+      "meaning": "Old ActorRef and CONTROL generation may neither send nor restart a new incarnation"
+    },
+    {
+      "id": "S04",
+      "name": "physical_release_before_restart",
+      "meaning": "Restart waits for actual stack/heap/arena/FFI/loan release, never only logical DONE"
+    },
+    {
+      "id": "S05",
+      "name": "healthy_sibling_isolation",
+      "meaning": "A failed actor or subtree leaves unrelated sibling execution and heap unaffected"
+    },
+    {
+      "id": "S06",
+      "name": "atomic_supervised_child_publish",
+      "meaning": "New child is CONTROL-registered before it becomes visible or aborts without orphan"
+    },
+    {
+      "id": "S07",
+      "name": "actor_failure_control_hooks",
+      "meaning": "Panic/raise/uncaught throw reach supervisor CONTROL with correct recover/on_* semantics"
+    },
+    {
+      "id": "S08",
+      "name": "compiled_guest_aot",
+      "meaning": "An actual compiled .atto source program executes the same fixture without fallback/host simulation"
+    }
+  ],
+  "candidates": [
+    {
+      "backend": "java",
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "pr": 2885,
+      "head": "dfc090837256749415202d1a16a2a90292d51ba3",
+      "description": "Atomic inherited Java ActorRuntime child CONTROL reservation and rollback authored; 13 real JUnit cases require execution, no guest AOT proof",
+      "coverage": {
+        "S01": "AUTHORED_HOST",
+        "S02": "AUTHORED_HOST",
+        "S03": "AUTHORED_HOST",
+        "S04": "SYNTHETIC_RELEASE_ONLY",
+        "S05": "AUTHORED_HOST",
+        "S06": "AUTHORED_HOST",
+        "S07": "UNIMPLEMENTED",
+        "S08": "NOT_EXECUTED"
+      },
+      "pr_url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2885",
+      "host_execution_receipt": null,
+      "compiled_guest_execution_receipt": null,
+      "physical_release_attestation": null,
+      "hosted_ci_job_steps": null
+    },
+    {
+      "backend": "llvm",
+      "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+      "pr": 1697,
+      "head": "4523a1c2262b49b9aa91c9b81230021126f78477",
+      "description": "NativeActorGroup bound priority inbox close vs DATA, physical resource-loan terminal release",
+      "coverage": {
+        "S01": "ACTOR_LOCAL_HOST_ONLY",
+        "S02": "ACTOR_LOCAL_HOST_ONLY",
+        "S03": "AUTHORED_HOST",
+        "S04": "ACTOR_LOCAL_HOST_ONLY",
+        "S05": "UNIMPLEMENTED",
+        "S06": "UNIMPLEMENTED",
+        "S07": "UNIMPLEMENTED",
+        "S08": "NOT_EXECUTED"
+      },
+      "pr_url": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1697",
+      "host_execution_receipt": null,
+      "compiled_guest_execution_receipt": null,
+      "physical_release_attestation": null,
+      "hosted_ci_job_steps": null
+    },
+    {
+      "backend": "net",
+      "repository": "ores-truffle-oreslang/oreslang-source.net",
+      "pr": 485,
+      "head": "81f7f4538691beb2c69bd679777a3830765217cf",
+      "description": "CLR ActorRuntime generation/nonce send vs STOP and physical arena budget refund",
+      "coverage": {
+        "S01": "ACTOR_LOCAL_HOST_ONLY",
+        "S02": "ACTOR_LOCAL_HOST_ONLY",
+        "S03": "AUTHORED_HOST",
+        "S04": "ACTOR_LOCAL_HOST_ONLY",
+        "S05": "AUTHORED_HOST",
+        "S06": "UNIMPLEMENTED",
+        "S07": "UNIMPLEMENTED",
+        "S08": "NOT_EXECUTED"
+      },
+      "pr_url": "https://github.com/ores-truffle-oreslang/oreslang-source.net/pull/485",
+      "host_execution_receipt": null,
+      "compiled_guest_execution_receipt": null,
+      "physical_release_attestation": null,
+      "hosted_ci_job_steps": null
+    },
+    {
+      "backend": "wasm",
+      "repository": "ores-truffle-oreslang/oreslang-source.wasm",
+      "pr": 475,
+      "head": "5c8f9528e2acbebe954dad60e0965056ca0ed4bd",
+      "description": "Synthetic real Worker+Wasm actor STOP/send, typed terminal CONTROL and host generation restart",
+      "coverage": {
+        "S01": "ACTOR_LOCAL_HOST_ONLY",
+        "S02": "ACTOR_LOCAL_HOST_ONLY",
+        "S03": "AUTHORED_HOST",
+        "S04": "HOST_WORKER_ONLY",
+        "S05": "AUTHORED_HOST",
+        "S06": "UNIMPLEMENTED",
+        "S07": "PARTIAL_HOST",
+        "S08": "NOT_EXECUTED"
+      },
+      "pr_url": "https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/475",
+      "host_execution_receipt": null,
+      "compiled_guest_execution_receipt": null,
+      "physical_release_attestation": null,
+      "hosted_ci_job_steps": null
+    },
+    {
+      "backend": "forge",
+      "repository": "ores-truffle-oreslang/oreslang-source.forge",
+      "pr": 266,
+      "head": "16340785bbebc372cf7dcdf2b574d99aac608edb",
+      "description": "Native actor-incarnation owner send vs STOP, heap/frame release and restart generation",
+      "coverage": {
+        "S01": "ACTOR_LOCAL_HOST_ONLY",
+        "S02": "ACTOR_LOCAL_HOST_ONLY",
+        "S03": "AUTHORED_HOST",
+        "S04": "ACTOR_LOCAL_HOST_ONLY",
+        "S05": "AUTHORED_HOST",
+        "S06": "UNIMPLEMENTED",
+        "S07": "UNIMPLEMENTED",
+        "S08": "NOT_EXECUTED"
+      },
+      "pr_url": "https://github.com/ores-truffle-oreslang/oreslang-source.forge/pull/266",
+      "host_execution_receipt": null,
+      "compiled_guest_execution_receipt": null,
+      "physical_release_attestation": null,
+      "hosted_ci_job_steps": null
+    }
+  ],
+  "requirements": [
+    "At most one canonical terminal CONTROL ledger per runtime generation",
+    "No logically new DATA admission after a supervisor fence",
+    "Pre-fence admitted messages may physically publish after the fence but remain accounted",
+    "Supervisor subtree restart needs acknowledged CONTROL and independently proven physical retirement",
+    "Cross-backend parity is not PASS until exact-head compiled .atto guest traces and valid runner evidence exist",
+    "Never use synthetic host or model evidence as proof of real physical FFI/stack release"
+  ]
+}

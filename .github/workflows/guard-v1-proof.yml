@@ -1,0 +1,47 @@
+name: AttoLang guard contract provenance (source-free only)
+on:
+  push:
+    paths:
+      - 'contracts/guard-v1.json'
+      - 'fixtures/guard-v1/**'
+      - 'lib/guard-v1-evidence.mjs'
+      - 'tests/guard-v1-proof.test.mjs'
+      - '.github/workflows/guard-v1-proof.yml'
+  pull_request:
+    paths:
+      - 'contracts/guard-v1.json'
+      - 'fixtures/guard-v1/**'
+      - 'lib/guard-v1-evidence.mjs'
+      - 'tests/guard-v1-proof.test.mjs'
+      - '.github/workflows/guard-v1-proof.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  source-free-proof-model:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Bind exact source SHA and clean checkout
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_HEAD" =~ ^[a-f0-9]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          git diff --quiet HEAD --
+          test -z "$(git ls-files --others --exclude-standard)"
+          echo "ATTO_GUARD_SOURCE_FREE_HEAD=$EXPECTED_HEAD"
+          echo "ATTO_GUARD_SOURCE_FREE_TREE=$(git rev-parse 'HEAD^{tree}')"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Test source-identity and reject forged/zero-step receipts
+        run: node --test tests/guard-v1-proof.test.mjs
+      - name: Print explicit evidence class
+        run: echo "SOURCE_FREE_MODEL_ONLY_NOT_A_GUEST_COMPILER_RECEIPT"

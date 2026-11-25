@@ -1,0 +1,17 @@
+// CANDIDATE guest fixture. Only a real compiled/linked .atto execution
+// with exit code 42 can attest this; Node static checks are not guest tests.
+import module slice from "core/slice";
+pub fnc main(): int {
+  let mut Array<int> values = new Array<int>();
+  values.add(0);
+  values.add(5);
+  val Option<int> before = slice.get_copy_int(rt borrow values, 0, 2, 0);
+  val Option<int> last = slice.last_copy_int(rt borrow values, 0, 2);
+  if before.unwrap_or(-1) != 0; do return 1; fi
+  if last.unwrap_or(-1) != 5; do return 2; fi
+  values.set(0, 99);
+  if before.unwrap_or(-1) != 0; do return 3; fi
+  if slice.get_copy_int(rt borrow values, 0, 2, -2).unwrap_or(-1) != 99; do return 4; fi
+  if !slice.get_copy_int(rt borrow values, 2, 0, 0).is_none(); do return 5; fi
+  return 42;
+}

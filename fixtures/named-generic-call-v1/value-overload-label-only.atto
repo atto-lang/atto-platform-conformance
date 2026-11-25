@@ -1,0 +1,9 @@
+fnc choose(int first, int second) -> int ::
+  return first
+end
+fnc choose(int left, int right) -> int ::
+  return right
+end
+fnc main() -> int ::
+  return choose(first: 42, second: 7)
+end

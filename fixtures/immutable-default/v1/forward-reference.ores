@@ -1,0 +1,1 @@
+fnc main(): int { int x = y; int y = 7; return x; }

@@ -1,0 +1,12 @@
+// EXPECTED: E_EFFECT and no artifact: raises Foo does not cover base Error.
+define class Foo extends Error as
+end
+
+fnc int <- broken(int value)
+raises Foo ::
+  raise! Error("not a Foo");
+end
+
+pub fnc main(): int {
+  return 0;
+}

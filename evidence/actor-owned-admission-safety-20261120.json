@@ -1,0 +1,56 @@
+{
+  "schema": "atto.actor-owned-admission.private-carrier.v1",
+  "status": "PASS_HOST_ONLY_COMPILER_GUEST_NOT_EXECUTED",
+  "source_repository": "atto-lang/atto-source.rs",
+  "source_pr": 406,
+  "source_head": "f9c8a13c06d2ecf1252b831b440c569604ed9fd8",
+  "source_root_tree": "31699b7a83511528c973421e5e547dc1e56377cf",
+  "files": [
+    {
+      "path": "src/actor_owned_admission.rs",
+      "sha": "980d0f07c2f716f338e6f80a342cdab7fa687f7e"
+    },
+    {
+      "path": "src/check.rs",
+      "sha": "2d0ede6599f2436d453ce4ffcf3deec2a03b207b"
+    },
+    {
+      "path": "src/lib.rs",
+      "sha": "37b80e3b6e8efc4bd7b580ca8ad3e79d10ea9cc1"
+    },
+    {
+      "path": "tests/actor_sends_never.rs",
+      "sha": "65c2eb5b34c8ab70dc18ac73a28dbe944649b2a6"
+    }
+  ],
+  "carrier_repo": "ores-rate-limit-test/atto-ci",
+  "carrier_private": true,
+  "carrier_branch": "ci/atto-typed-owned-handoff-20261120",
+  "carrier_commit": "485bb4c925df0771dbc6b699c4a4200f9a244f29",
+  "carrier_tree": "73519ab4a332b5f15def1d397f67ebebcd3f40ee",
+  "run_id": 44767632998,
+  "run_url": "https://github.com/ores-rate-limit-test/atto-ci/actions/runs/44767632998",
+  "job_id": 136396419818,
+  "run_attempt": 1,
+  "toolchain": "rustc 1.100.0 (0ef1bc386 2026-11-09)",
+  "executed_test_count": 12,
+  "passed": 12,
+  "failed": 0,
+  "executable_step_count_nonzero": true,
+  "source_blob_sha_checks": "4/4",
+  "full_source_tree_mirrored": false,
+  "cross_organization_checkout_token_used": false,
+  "persist_credentials": false,
+  "scope": "Typed, generic HOST-ONLY transactional mailbox reference and authenticated-receiver principal model; compiler source and negative fixture blobs verified by hash but not compiled in this run",
+  "compiler_negative_fixtures_executed": false,
+  "compiled_atto_guest_executed": false,
+  "tenantvm_same_pid_security_verified": false,
+  "source_org_required_checks_satisfied": false,
+  "notes": [
+    "Compiler emits actor_send(i32,i64)->void; compiler now fails closed on source take! in send payload rather than silently consuming owner.",
+    "Host-only model preflights bounded mailbox capacity and sender/receiver identity, stages affine payload, commits or refunds, fences epochs and distinguishes abandoned delivery.",
+    "The trusted_grant boolean used in this reference model is not a production authenticated security principal.",
+    "Exact-source full Cargo compiler and Chromium guest tests remain mandatory; no promotion to backend PASS.",
+    "Parallel draft work #254 host unary admission and #167 stateful preview must be integrated rather than treated as automatically equivalent."
+  ]
+}

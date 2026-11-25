@@ -1,0 +1,18 @@
+name: Formal fleet requested coverage
+on:
+  pull_request:
+    paths:
+      - 'formal/fleet/**'
+      - '.github/workflows/formal-fleet-coverage.yml'
+  workflow_dispatch:
+jobs:
+  inventory:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node formal/fleet/check_coverage.cjs

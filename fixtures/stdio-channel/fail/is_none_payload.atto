@@ -1,0 +1,11 @@
+// expect-error: E_ARITY
+// TARGET. Invalid ADT extractor must not emit a guest artifact.
+pub suspends fnc main(): int using io, suspend {
+  return match readch stdio.in over
+    on is Ok<line> -> match line over
+      on is None<_> -> 0,
+      on is Some<item> -> 1,
+    end,
+    on is Err<error> -> 2,
+  end;
+}

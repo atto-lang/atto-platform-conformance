@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "contract": "attolang.dop.scalar-guest/1",
+  "classification": "NORMATIVE_TARGET_AND_HOST_ORACLE_NOT_GUEST_EXECUTION",
+  "fixture": {
+    "path": "fixtures/dop-scalar-guest-v1/soa-int-update.atto",
+    "gitBlobSha": "aedc778e3e8dd2940600f047540c159b0129830a",
+    "upstreamPr": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1308",
+    "upstreamHeadAtImport": "069378b039a5a265e2b37b94f9ec86b1236f20ba"
+  },
+  "workload": {
+    "rows": 32768,
+    "sweeps": 10,
+    "initialVelocity": 2,
+    "expectedChecksum": "537509888",
+    "expectedFirstPosition": "20",
+    "expectedLastPosition": "32787",
+    "expectedLastVelocity": "2",
+    "expectedExitCode": 0,
+    "llvmCurrentArrayMaxElements": 65536
+  },
+  "referenceLayouts": [
+    "aos",
+    "soa",
+    "aosoa-16"
+  ],
+  "backendGuestEvidence": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED"
+  },
+  "cases": [
+    {
+      "id": "primitive-columns-atto-guest",
+      "stage": "GUEST_EXECUTED_REQUIRED",
+      "fixture": "fixtures/dop-scalar-guest-v1/soa-int-update.atto",
+      "expectedExitCode": 0,
+      "claimLimit": "Independent primitive arrays only, not compiler-selected inverted SoA"
+    },
+    {
+      "id": "scalar-aos-soa-aosoa-oracle",
+      "stage": "HOST_REFERENCE_ONLY",
+      "expectedChecksum": "537509888",
+      "claimLimit": "Reference layout equivalence is not physical guest storage"
+    },
+    {
+      "id": "checked-i64-boundary-oracle",
+      "stage": "HOST_REFERENCE_ONLY",
+      "claimLimit": "Host BigInt overflow rejection is not compiler guest overflow"
+    }
+  ],
+  "futureGates": [
+    "physical guest AoS/SoA/AoSoA lowered layouts and ownership",
+    "SIMD instruction inspection, scalar oracle tails, signed zero and NaN",
+    "cpu { gpu {} } and gpu { cpu {} } typed nesting and device transfer",
+    "stale/foreign handles, overlapping loans and cancellation cleanup in guest"
+  ]
+}

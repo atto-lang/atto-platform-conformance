@@ -1,0 +1,10 @@
+// ORT3-RESULT_SUCCESS: candidate native guest, not executed evidence.
+// A real compiler-generated guest must return signed int 0 (not a host mock).
+pub fnc main(): int {
+  val Result<int, String> value = Ok(31);
+  if value.is_ok(); then
+    return value.unwrap() - 31;
+  else
+    return 1;
+  fi
+}

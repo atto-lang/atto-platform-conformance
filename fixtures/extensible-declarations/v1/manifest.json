@@ -1,0 +1,152 @@
+{
+  "schema_version": "1.0.0-draft",
+  "spec": "https://github.com/atto-lang/atto-spec/pull/230",
+  "status": "SOURCE_FIXTURE_CANDIDATES_NOT_COMPILER_EVIDENCE",
+  "backend_execution": {
+    "java": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "rs": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED"
+  },
+  "cases": [
+    {
+      "id": "class-alias",
+      "source": "define keyword entity as class end\ndefine entity Customer as end\n",
+      "target": "ACCEPT",
+      "java_phase1a": "PARSE_EQUIVALENT",
+      "net_phase1a": "UNSUPPORTED",
+      "baseline": "define class Customer as end\n"
+    },
+    {
+      "id": "contextual-local",
+      "source": "define keyword entity as class end\ndefine entity Customer as end\ndefine fnc value(int entity): int { return entity; }\n",
+      "target": "ACCEPT",
+      "java_phase1a": "PARSE_EQUIVALENT",
+      "net_phase1a": "UNSUPPORTED",
+      "baseline": "define class Customer as end\ndefine fnc value(int entity): int { return entity; }\n"
+    },
+    {
+      "id": "unknown",
+      "source": "define entity Customer as end\n",
+      "target": "REJECT",
+      "java_phase1a": "REJECT",
+      "net_phase1a": "UNSUPPORTED"
+    },
+    {
+      "id": "duplicate",
+      "source": "define keyword entity as class end\ndefine keyword entity as class end\ndefine entity Customer as end\n",
+      "target": "REJECT",
+      "java_phase1a": "REJECT",
+      "net_phase1a": "UNSUPPORTED"
+    },
+    {
+      "id": "reserved-workflow",
+      "source": "define keyword workflow as class end\ndefine workflow Job as end\n",
+      "target": "REJECT",
+      "java_phase1a": "REJECT",
+      "net_phase1a": "UNSUPPORTED"
+    },
+    {
+      "id": "actor-base",
+      "source": "define keyword durable_object as actor end\ndefine durable_object Counter as end\n",
+      "target": "ACCEPT",
+      "java_phase1a": "UNSUPPORTED",
+      "net_phase1a": "UNSUPPORTED"
+    },
+    {
+      "id": "requires",
+      "source": "define keyword entity as class requires Entity; end\ndefine interface Entity as end\ndefine entity Customer as end\n",
+      "target": "ACCEPT",
+      "java_phase1a": "PARSE_EQUIVALENT",
+      "net_phase1a": "UNSUPPORTED",
+      "baseline": "define interface Entity as end\ndefine class Customer implements Entity as end\n"
+    },
+    {
+      "id": "forward",
+      "source": "define entity Customer as end\ndefine keyword entity as class end\n",
+      "target": "ACCEPT",
+      "java_phase1a": "UNSUPPORTED",
+      "net_phase1a": "UNSUPPORTED"
+    },
+    {
+      "id": "public",
+      "source": "define pub keyword entity as class end\ndefine entity Customer as end\n",
+      "target": "ACCEPT",
+      "java_phase1a": "UNSUPPORTED",
+      "net_phase1a": "UNSUPPORTED"
+    },
+    {
+      "id": "invalid-base",
+      "source": "define keyword entity as module end\ndefine entity Customer as end\n",
+      "target": "REJECT",
+      "java_phase1a": "REJECT",
+      "net_phase1a": "UNSUPPORTED"
+    },
+    {
+      "id": "alias-chain",
+      "source": "define keyword entity as class end\ndefine keyword modelkind as entity end\ndefine modelkind Customer as end\n",
+      "target": "REJECT",
+      "java_phase1a": "REJECT",
+      "net_phase1a": "UNSUPPORTED"
+    },
+    {
+      "id": "generic",
+      "source": "define keyword entity as class end\ndefine entity Customer<T> as end\n",
+      "target": "ACCEPT",
+      "java_phase1a": "UNSUPPORTED",
+      "net_phase1a": "UNSUPPORTED"
+    },
+    {
+      "id": "intrinsic-shadow",
+      "source": "define keyword entity as class end\ndefine entity Map as end\n",
+      "target": "REVIEW_ORDINARY_NAME_RULES",
+      "java_phase1a": "UNSUPPORTED",
+      "net_phase1a": "UNSUPPORTED"
+    },
+    {
+      "id": "module-local",
+      "source": "define module outer as\ndefine keyword entity as class end\ndefine entity Customer as end\nend\n",
+      "target": "REVIEW_SCOPE_GRAMMAR",
+      "java_phase1a": "UNSUPPORTED",
+      "net_phase1a": "UNSUPPORTED"
+    },
+    {
+      "id": "missing-end",
+      "source": "define keyword entity as class\ndefine entity Customer as end\n",
+      "target": "REJECT",
+      "java_phase1a": "REJECT",
+      "net_phase1a": "UNSUPPORTED"
+    },
+    {
+      "id": "require-missing",
+      "source": "define keyword entity as class requires Entity; end\ndefine entity Customer as end\n",
+      "target": "REJECT",
+      "java_phase1a": "REJECT",
+      "net_phase1a": "UNSUPPORTED"
+    },
+    {
+      "id": "require-class-impostor",
+      "source": "define keyword entity as class requires Entity; end\ndefine class Entity as end\ndefine entity Customer as end\n",
+      "target": "REJECT",
+      "java_phase1a": "REJECT",
+      "net_phase1a": "UNSUPPORTED"
+    },
+    {
+      "id": "require-duplicate",
+      "source": "define keyword entity as class requires Entity; requires Entity; end\ndefine interface Entity as end\ndefine entity Customer as end\n",
+      "target": "REJECT",
+      "java_phase1a": "REJECT",
+      "net_phase1a": "UNSUPPORTED"
+    },
+    {
+      "id": "require-generic",
+      "source": "define keyword entity as class requires Entity; end\ndefine interface Entity<T> as end\ndefine entity Customer as end\n",
+      "target": "REVIEW_SCOPE_GRAMMAR",
+      "java_phase1a": "REJECT",
+      "net_phase1a": "UNSUPPORTED"
+    }
+  ]
+}

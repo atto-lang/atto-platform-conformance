@@ -1,0 +1,8 @@
+// PROPOSED SOURCE; requires Java actor contracts + namespace actor dispatch integration.
+namespace foo;
+
+define contract ActorXYZ for actor as
+    pub mtd bar(): void;
+end
+
+pub define actor Foo implements ActorXYZ;

@@ -1,0 +1,49 @@
+{
+  "schema": "oreslang.nio-actor-parity/1",
+  "status": "normative_target_not_execution_evidence",
+  "backends": [
+    "java",
+    "llvm",
+    "wasm",
+    "cranelift",
+    "net"
+  ],
+  "repositories": {
+    "java": "ores-truffle-oreslang/oreslang-source.java",
+    "llvm": "ores-truffle-oreslang/oreslang-source.llvm",
+    "wasm": "ores-truffle-oreslang/oreslang-source.wasm",
+    "cranelift": "ores-truffle-oreslang/oreslang-source.cranelift",
+    "net": "ores-truffle-oreslang/oreslang-source.net"
+  },
+  "requiredVectors": [
+    "nio_ready_once",
+    "nio_cancel_before_ready",
+    "nio_cancel_after_ready",
+    "nio_close_pending",
+    "nio_stale_generation",
+    "nio_descriptor_reuse_aba",
+    "nio_deadline_completion_race",
+    "nio_partial_read",
+    "nio_partial_write",
+    "nio_backpressure_bounded",
+    "nio_permission_denied_before_open",
+    "nio_no_guest_on_reactor",
+    "actor_same_actor_single_flight",
+    "actor_two_actor_physical_overlap",
+    "actor_mailbox_retirement",
+    "actor_control_progress_under_saturation"
+  ],
+  "allowedOutcomes": [
+    "pass",
+    "fail",
+    "unsupported"
+  ],
+  "evidenceBoundary": {
+    "passingSourceFreeOraclesNeverProvesGuestExecution": true,
+    "zeroExecutedStepsAreAdmissionFailures": true,
+    "allFiveRequireCompilerBackedGuestExecution": true,
+    "independentReviewRequired": true,
+    "alternativeOrgPrivateSourceWithoutApprovedDestinationDenied": true,
+    "browserWasmRawTcpCannotBeAssumed": true
+  }
+}

@@ -1,0 +1,1 @@
+{"name":"@oreslang/parity-wave5","private":true,"type":"module","engines":{"node":">=22"},"scripts":{"test":"node --test tests/*.test.mjs","validate":"node bin/validate.mjs --validate"}}

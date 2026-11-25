@@ -1,0 +1,1 @@
+fnc main(): int { int x = 7; if true; do int x = 8; return x; else return 0; fi }

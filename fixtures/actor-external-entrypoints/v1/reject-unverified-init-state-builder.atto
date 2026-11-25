@@ -1,0 +1,7 @@
+// ACTOR_INIT_STATE_BUILDER_UNVERIFIED: a type spelled 'state' is not
+// evidence of a compiler-owned actor-state builder or sealed owner capability.
+namespace actor_external_unverified_state;
+declare actor Worker;
+define external mtd (Worker w) init(): state {
+    return w;
+}

@@ -1,0 +1,12 @@
+// Candidate runtime fixture. NOT_EXECUTED.
+// TaskLocal must follow logical task, never the physical scheduler carrier.
+fnc main() -> int {
+    let key = TaskLocal.key<int>();
+    let result = task {
+        return TaskLocal.with(key, 42, || -> int {
+            rt cooperate;
+            return TaskLocal.get(key)?;
+        });
+    };
+    return await result;
+}

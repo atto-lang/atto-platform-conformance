@@ -1,0 +1,10 @@
+type Positive = i32 where self > 0;
+
+fnc read(int input) -> int {
+    return input;
+}
+
+pub fnc main() -> int {
+    val Positive value = read(42);
+    return value;
+}

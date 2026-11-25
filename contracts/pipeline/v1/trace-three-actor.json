@@ -1,0 +1,239 @@
+{
+  "schemaVersion": 1,
+  "kind": "compiled-actor-pipeline-trace-v1",
+  "backend": "llvm-native",
+  "sourceGitBlobSha1": "46579a917516899612fcd8c65c70b24b995c2c5a",
+  "events": [
+    {
+      "seq": 0,
+      "op": "reserve",
+      "epoch": 1,
+      "request": "r1",
+      "hop": 0,
+      "ticket": "t0",
+      "stage": "source",
+      "variant": "Signal.Data",
+      "value": null
+    },
+    {
+      "seq": 1,
+      "op": "publish",
+      "epoch": 1,
+      "request": "r1",
+      "hop": 0,
+      "ticket": "t0",
+      "stage": "source",
+      "variant": "Signal.Data",
+      "value": null
+    },
+    {
+      "seq": 2,
+      "op": "deliver",
+      "epoch": 1,
+      "request": "r1",
+      "hop": 0,
+      "ticket": "t0",
+      "stage": "source",
+      "variant": "Signal.Data",
+      "value": null
+    },
+    {
+      "seq": 3,
+      "op": "finalize",
+      "epoch": 1,
+      "request": "r1",
+      "hop": 0,
+      "ticket": "t0",
+      "stage": "source",
+      "variant": "Signal.Data",
+      "value": null
+    },
+    {
+      "seq": 4,
+      "op": "reserve",
+      "epoch": 1,
+      "request": "r1",
+      "hop": 1,
+      "ticket": "t1",
+      "stage": "transform",
+      "variant": "Signal.Data",
+      "value": null
+    },
+    {
+      "seq": 5,
+      "op": "publish",
+      "epoch": 1,
+      "request": "r1",
+      "hop": 1,
+      "ticket": "t1",
+      "stage": "transform",
+      "variant": "Signal.Data",
+      "value": null
+    },
+    {
+      "seq": 6,
+      "op": "deliver",
+      "epoch": 1,
+      "request": "r1",
+      "hop": 1,
+      "ticket": "t1",
+      "stage": "transform",
+      "variant": "Signal.Data",
+      "value": null
+    },
+    {
+      "seq": 7,
+      "op": "finalize",
+      "epoch": 1,
+      "request": "r1",
+      "hop": 1,
+      "ticket": "t1",
+      "stage": "transform",
+      "variant": "Signal.Data",
+      "value": null
+    },
+    {
+      "seq": 8,
+      "op": "reserve",
+      "epoch": 1,
+      "request": "r1",
+      "hop": 2,
+      "ticket": "t2",
+      "stage": "sink",
+      "variant": "Signal.Data",
+      "value": null
+    },
+    {
+      "seq": 9,
+      "op": "publish",
+      "epoch": 1,
+      "request": "r1",
+      "hop": 2,
+      "ticket": "t2",
+      "stage": "sink",
+      "variant": "Signal.Data",
+      "value": null
+    },
+    {
+      "seq": 10,
+      "op": "deliver",
+      "epoch": 1,
+      "request": "r1",
+      "hop": 2,
+      "ticket": "t2",
+      "stage": "sink",
+      "variant": "Signal.Data",
+      "value": null
+    },
+    {
+      "seq": 11,
+      "op": "finalize",
+      "epoch": 1,
+      "request": "r1",
+      "hop": 2,
+      "ticket": "t2",
+      "stage": "sink",
+      "variant": "Signal.Data",
+      "value": null
+    },
+    {
+      "seq": 12,
+      "op": "reserve",
+      "epoch": 1,
+      "request": "r1",
+      "hop": 3,
+      "ticket": "t3",
+      "stage": "transform",
+      "variant": "Signal.Result",
+      "value": null
+    },
+    {
+      "seq": 13,
+      "op": "publish",
+      "epoch": 1,
+      "request": "r1",
+      "hop": 3,
+      "ticket": "t3",
+      "stage": "transform",
+      "variant": "Signal.Result",
+      "value": null
+    },
+    {
+      "seq": 14,
+      "op": "deliver",
+      "epoch": 1,
+      "request": "r1",
+      "hop": 3,
+      "ticket": "t3",
+      "stage": "transform",
+      "variant": "Signal.Result",
+      "value": null
+    },
+    {
+      "seq": 15,
+      "op": "finalize",
+      "epoch": 1,
+      "request": "r1",
+      "hop": 3,
+      "ticket": "t3",
+      "stage": "transform",
+      "variant": "Signal.Result",
+      "value": null
+    },
+    {
+      "seq": 16,
+      "op": "reserve",
+      "epoch": 1,
+      "request": "r1",
+      "hop": 4,
+      "ticket": "t4",
+      "stage": "source",
+      "variant": "Signal.Result",
+      "value": null
+    },
+    {
+      "seq": 17,
+      "op": "publish",
+      "epoch": 1,
+      "request": "r1",
+      "hop": 4,
+      "ticket": "t4",
+      "stage": "source",
+      "variant": "Signal.Result",
+      "value": null
+    },
+    {
+      "seq": 18,
+      "op": "deliver",
+      "epoch": 1,
+      "request": "r1",
+      "hop": 4,
+      "ticket": "t4",
+      "stage": "source",
+      "variant": "Signal.Result",
+      "value": null
+    },
+    {
+      "seq": 19,
+      "op": "finalize",
+      "epoch": 1,
+      "request": "r1",
+      "hop": 4,
+      "ticket": "t4",
+      "stage": "source",
+      "variant": "Signal.Result",
+      "value": null
+    },
+    {
+      "seq": 20,
+      "op": "complete",
+      "epoch": 1,
+      "request": "r1",
+      "hop": null,
+      "ticket": null,
+      "stage": null,
+      "variant": null,
+      "value": 19
+    }
+  ]
+}

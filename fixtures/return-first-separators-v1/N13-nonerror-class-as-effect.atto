@@ -1,0 +1,12 @@
+// EXPECTED: E_TYPE and no artifact: ordinary classes are not Error subtypes.
+define class Plain as
+end
+
+fnc int <- broken(int value)
+raises Plain ::
+  return value * 2;
+end
+
+pub fnc main(): int {
+  return broken(21);
+}

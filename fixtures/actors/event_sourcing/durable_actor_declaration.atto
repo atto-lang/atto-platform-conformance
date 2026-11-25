@@ -1,0 +1,13 @@
+// TARGET PARSE ONLY against Atto Rust/compiler persistence frontend PR #263.
+// This does NOT emit a guest, journal events, or revive the actor.
+define durable actor BankAccount as
+    state balance: int = 0;
+
+    receive(ActorMail<int> mail): void {
+        // Event decision/commit/application remains runtime-controlled.
+    }
+end
+
+pub fnc main(): int {
+    return 0;
+}

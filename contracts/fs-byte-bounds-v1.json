@@ -1,0 +1,183 @@
+{
+  "schema": "attolang.fs-byte-bounds/1",
+  "status": "normative_candidate_not_backend_execution_evidence",
+  "backends": [
+    {
+      "id": "java",
+      "repo": "ores-truffle-oreslang/oreslang-source.java",
+      "candidate": "oreslang-source.java#2531",
+      "status": "unverified",
+      "receipt": null
+    },
+    {
+      "id": "llvm",
+      "repo": "ores-truffle-oreslang/oreslang-source.llvm",
+      "candidate": null,
+      "status": "unverified",
+      "receipt": null
+    },
+    {
+      "id": "wasm",
+      "repo": "ores-truffle-oreslang/oreslang-source.wasm",
+      "candidate": null,
+      "status": "unverified",
+      "receipt": null
+    },
+    {
+      "id": "forge",
+      "repo": "ores-truffle-oreslang/oreslang-source.forge",
+      "candidate": null,
+      "status": "unverified",
+      "receipt": null
+    },
+    {
+      "id": "net",
+      "repo": "ores-truffle-oreslang/oreslang-source.net",
+      "candidate": null,
+      "status": "unverified",
+      "receipt": null
+    }
+  ],
+  "api": {
+    "write": "fs.write_text_atomic_async(String path, String value) -> Future<void>",
+    "size": "fs.file_size_async(String path) -> Future<int>",
+    "read": "fs.read_text_bounded_async(String path, int max_bytes) -> Future<String>",
+    "canonicalBlockingSuffix": "_blocking",
+    "optionalAsyncSuffix": "_async",
+    "note": "The older async-io-v1 manifest forbids these suffixes; this FS-specific candidate does not silently amend that broader contract."
+  },
+  "bounds": {
+    "maxReadBytes": 16777216,
+    "restResourceBytes": 1048576,
+    "strictUtf8": true,
+    "noPartialOutputOnRejectedRead": true
+  },
+  "authority": {
+    "lexicalScopeBeforeAnyProbe": true,
+    "canonicalScopeCheck": true,
+    "rejectLeafSymlink": true,
+    "requireRegularFile": true,
+    "followSymlinks": false,
+    "readSameOpenedDescriptor": true,
+    "boundStreamingWhileFileGrows": true,
+    "snapshotConsistencyClaimed": false,
+    "parentRenameRaceEliminated": false,
+    "rejectAncestorSymlinkBeforeCanonicalResolution": true,
+    "parentSymlinkExistingMissingDenyEqually": true
+  },
+  "vectors": [
+    {
+      "id": "FS-01",
+      "kind": "read",
+      "case": "utf8-six-byte-exact",
+      "expected": "accept"
+    },
+    {
+      "id": "FS-02",
+      "kind": "read",
+      "case": "utf8-five-byte-overflow",
+      "expected": "reject"
+    },
+    {
+      "id": "FS-03",
+      "kind": "read",
+      "case": "empty-file-zero-budget",
+      "expected": "accept"
+    },
+    {
+      "id": "FS-04",
+      "kind": "read",
+      "case": "malformed-utf8",
+      "expected": "reject"
+    },
+    {
+      "id": "FS-05",
+      "kind": "read",
+      "case": "out-of-scope-existing-and-missing",
+      "expected": "deny"
+    },
+    {
+      "id": "FS-06",
+      "kind": "read",
+      "case": "leaf-symlink-escape",
+      "expected": "deny"
+    },
+    {
+      "id": "FS-07",
+      "kind": "read",
+      "case": "parent-symlink-escape",
+      "expected": "deny",
+      "ancestorSymlinkCases": [
+        "existing",
+        "missing"
+      ],
+      "denialPhase": "before-canonical-resolution"
+    },
+    {
+      "id": "FS-08",
+      "kind": "read",
+      "case": "directory-not-file",
+      "expected": "reject"
+    },
+    {
+      "id": "FS-09",
+      "kind": "read",
+      "case": "concurrent-growth-above-limit",
+      "expected": "reject"
+    },
+    {
+      "id": "FS-10",
+      "kind": "read",
+      "case": "max-limit-out-of-range",
+      "expected": "reject"
+    },
+    {
+      "id": "FS-11",
+      "kind": "write",
+      "case": "out-of-scope-existing-and-missing-parent",
+      "expected": "deny"
+    },
+    {
+      "id": "FS-12",
+      "kind": "write",
+      "case": "parent-symlink-out-of-scope",
+      "expected": "deny",
+      "ancestorSymlinkCases": [
+        "existing",
+        "missing"
+      ],
+      "denialPhase": "before-canonical-resolution"
+    },
+    {
+      "id": "FS-13",
+      "kind": "size",
+      "case": "byte-count-and-permission-before-probe",
+      "expected": "accept-or-deny",
+      "ancestorSymlinkCases": [
+        "existing",
+        "missing"
+      ],
+      "denialPhase": "before-canonical-resolution"
+    },
+    {
+      "id": "FS-14",
+      "kind": "rest",
+      "case": "exact-1mib-and-oversized-persisted-get-patch",
+      "expected": "accept-or-reject"
+    }
+  ],
+  "evidencePolicy": {
+    "requireSourceCommitSha40": true,
+    "requireSourceTreeSha40": true,
+    "requireCompilerArtifactSha256": true,
+    "requireStepfulExactHeadHostRunner": true,
+    "minimumExecutedSteps": 1,
+    "requireActualCompiledGuest": true,
+    "prohibitStaticOrHostOnlyPromotion": true,
+    "privateSourceTransferAllowedByThisContract": false
+  },
+  "certification": {
+    "fiveBackendRuntimeParity": false,
+    "independentlyVerified": false
+  }
+}
