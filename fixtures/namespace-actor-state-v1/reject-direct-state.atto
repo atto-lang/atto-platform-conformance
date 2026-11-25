@@ -1,0 +1,11 @@
+// NEGATIVE COMPILER TARGET: direct field access outside a sealed lexical loan.
+namespace foo;
+
+pub define actor Unsafe;
+define state on actor Unsafe as {
+    let int x : 5;
+}
+
+pub mtd (Unsafe u) bad(): void {
+    u.x = 7;
+}

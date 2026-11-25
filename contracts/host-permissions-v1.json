@@ -1,0 +1,172 @@
+{
+  "schema": "atto.host.permissions.v1",
+  "status": "PROPOSED_NOT_EXECUTED",
+  "authority": "atto-lang/atto-spec/language/host-permissions-v1.md",
+  "legacyOverlap": "ores-truffle-oreslang/oreslang-platform-conformance/issues/32",
+  "vectorTable": "contracts/host-permissions-v1.tsv",
+  "referenceOracle": "tests/host-permissions-v1.rs",
+  "oracleScope": "HOST_ONLY_LITERAL_RESOURCE_INTERSECTION; no path canonicalization, DNS or guest execution",
+  "compiledGuestFixture": "fixtures/host-permissions-v1/fs_copy.atto",
+  "requiredGuestRuns": [
+    {
+      "id": "fs_read_write_scoped",
+      "flags": [
+        "--allow-read=./data",
+        "--allow-write=./out"
+      ],
+      "expected": "SUCCESS_COPY_BYTE_EQUIVALENCE"
+    },
+    {
+      "id": "fs_default_deny",
+      "flags": [],
+      "expected": "DENY_BEFORE_READ"
+    },
+    {
+      "id": "fs_read_deny_override",
+      "flags": [
+        "--allow-all",
+        "--deny-read=./data"
+      ],
+      "expected": "DENY_BEFORE_READ"
+    },
+    {
+      "id": "fs_write_deny_override",
+      "flags": [
+        "--allow-all",
+        "--deny-write=./out"
+      ],
+      "expected": "DENY_BEFORE_CREATE_OR_TRUNCATE"
+    },
+    {
+      "id": "fs_read_narrower_than_resource",
+      "flags": [
+        "--allow-read=./other",
+        "--allow-write=./out"
+      ],
+      "expected": "DENY_BEFORE_READ"
+    },
+    {
+      "id": "fs_write_narrower_than_resource",
+      "flags": [
+        "--allow-read=./data",
+        "--allow-write=./other"
+      ],
+      "expected": "DENY_BEFORE_CREATE_OR_TRUNCATE"
+    },
+    {
+      "id": "fs_symlink_escape",
+      "flags": [
+        "--allow-read=./data",
+        "--allow-write=./out"
+      ],
+      "setup": "symlink permitted-root child to a denied external file",
+      "expected": "DENY_WITH_NO_EXTERNAL_READ"
+    },
+    {
+      "id": "fs_symlink_swap",
+      "flags": [
+        "--allow-read=./data",
+        "--allow-write=./out"
+      ],
+      "setup": "attacker swaps path between validation and open",
+      "expected": "NO_EXTERNAL_READ_OR_WRITE"
+    },
+    {
+      "id": "fs_revoke_before_admission",
+      "flags": [
+        "--allow-read=./data",
+        "--allow-write=./out"
+      ],
+      "setup": "revoke actor capability before second host operation",
+      "expected": "DENY_SECOND_OPERATION"
+    },
+    {
+      "id": "fs_cross_tenant_path",
+      "flags": [
+        "--allow-read=./data",
+        "--allow-write=./out"
+      ],
+      "setup": "guest tries to use second tenant's filesystem object",
+      "expected": "DENY_AND_NO_DATA_LEAK"
+    }
+  ],
+  "additionalAdversarialProbes": [
+    "flags-2-env bare and scoped permission parsing; -- operand fence and invalid UTF8",
+    "missing, duplicate or tampered compiled manifest and explicit deny-all encoding",
+    "runtime grant cannot widen artifact/host/TenantVM/actor/delegation ceilings",
+    "DNS canonical names and concrete IP checks; port wildcard exclusions, redirects and DNS rebinding",
+    "actor generation, in-flight cancellation, cross-tenant socket and handle denial",
+    "environment scoped key, subprocess executable identity, FFI and dynamic import gating",
+    "native syscall bypass must reject or run inside demonstrable OS isolation"
+  ],
+  "requiredEvidence": [
+    "exact_source_and_test_blob_shas",
+    "compiler_head_sha",
+    "artifact_manifest_digest_and_verifier",
+    "target_platform_and_toolchain",
+    "real_compiled_atto_guest_binary",
+    "real_guest_execution",
+    "nonzero_executed_ci_steps",
+    "typed_negative_diagnostics",
+    "no_denied_side_effect",
+    "no_cross_tenant_leak",
+    "approved_runner_provenance"
+  ],
+  "targets": [
+    {
+      "backend": "llvm",
+      "execution": "NOT_EXECUTED",
+      "enforcement": "NOT_VERIFIED"
+    },
+    {
+      "backend": "java",
+      "execution": "NOT_EXECUTED",
+      "enforcement": "NOT_VERIFIED"
+    },
+    {
+      "backend": "net",
+      "execution": "NOT_EXECUTED",
+      "enforcement": "NOT_VERIFIED"
+    },
+    {
+      "backend": "wasm",
+      "execution": "NOT_EXECUTED",
+      "enforcement": "NOT_VERIFIED"
+    },
+    {
+      "backend": "rs",
+      "execution": "NOT_EXECUTED",
+      "enforcement": "NOT_VERIFIED"
+    },
+    {
+      "backend": "forge",
+      "execution": "NOT_EXECUTED",
+      "enforcement": "NOT_VERIFIED"
+    },
+    {
+      "backend": "cranelift",
+      "execution": "NOT_EXECUTED",
+      "enforcement": "NOT_VERIFIED"
+    },
+    {
+      "backend": "js",
+      "execution": "NOT_EXECUTED",
+      "enforcement": "NOT_VERIFIED"
+    },
+    {
+      "backend": "atto",
+      "execution": "NOT_EXECUTED",
+      "enforcement": "NOT_VERIFIED"
+    },
+    {
+      "backend": "hdl",
+      "execution": "NOT_EXECUTED",
+      "enforcement": "NOT_VERIFIED"
+    },
+    {
+      "backend": "realtime",
+      "execution": "NOT_EXECUTED",
+      "enforcement": "NOT_VERIFIED"
+    }
+  ]
+}

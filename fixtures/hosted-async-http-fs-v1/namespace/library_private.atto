@@ -1,0 +1,4 @@
+// A wildcard namespace may only expose public declarations.
+use namespace namespace_private;
+fnc secret(): int { return 7; }
+define pub fnc allowed(): int { return 42; }

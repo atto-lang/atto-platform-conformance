@@ -1,0 +1,9 @@
+define struct Particle {
+    x: int;
+    y: int;
+    velocity: int;
+}
+
+fnc dynamic_lanes(n: int) -> Array<Particle, layout=aosoa(n)> {
+    return [];
+}

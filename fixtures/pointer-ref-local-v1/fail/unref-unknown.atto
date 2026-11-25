@@ -1,0 +1,5 @@
+pub fnc main(): int {
+  val value: int = 42;
+  unref! value;
+  return 0;
+}

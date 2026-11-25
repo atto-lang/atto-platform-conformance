@@ -1,0 +1,6 @@
+pub fnc main(): infer {
+    val first = 4;
+    let next = first;
+    next = 5;
+    return next;
+}

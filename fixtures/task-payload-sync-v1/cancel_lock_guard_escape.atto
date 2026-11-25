@@ -1,0 +1,10 @@
+// INVALID: a scoped lease cannot escape a task as its result.
+pub susp fnc main(): int {
+  val Future<MutexLease<int>> worker = task<MutexLease<int>> {
+    val lock = new Mutex<int>(42);
+    using await lock.lock_async() as guard {
+      return guard;
+    }
+  };
+  return 42;
+}

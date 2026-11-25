@@ -1,0 +1,5 @@
+// ACTOR-TYPED-06; EXPECTED=ACCEPT; NOT_EXECUTED
+define actor Sink receives int as receive(ActorMail<int> m): void { return; } end
+define actor Producer as
+  on_start(): void { spawn Sink().send(10); return; }
+end

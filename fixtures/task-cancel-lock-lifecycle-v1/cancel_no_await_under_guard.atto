@@ -1,0 +1,8 @@
+// MUST FAIL before guest artifact emission: sync task is a suspension site.
+pub susp fnc main(): int {
+  val counter = Mutex<int>(0);
+  using counter.lock() as lease {
+    val int answer = sync task<int> { return 42; };
+  }
+  return 42;
+}

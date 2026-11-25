@@ -1,0 +1,5 @@
+pub susp fnc main(): int {
+  val Future<void> pending = task {};
+  await pending;
+  return 42;
+}

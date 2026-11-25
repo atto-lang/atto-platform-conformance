@@ -1,0 +1,5 @@
+// EXPECT_REJECT: fallible binding outside a maybe scope.
+define pub fnc wrong_scope(int id) -> Result[int, Error] as
+  Ok(value) ?= fetch_int(id);
+  return Ok(value);
+end

@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "contract": "atto.hybrid-actor-memory.guest-fixtures.v1",
+  "status": "TARGET_ONLY_NOT_EXECUTED",
+  "upstream": {
+    "repo": "atto-lang/atto-source.net",
+    "pr": 175,
+    "source_path": "contracts/actor-guest-heap/v1/node_graph.atto",
+    "blob_sha": "d472cccb3da24ee8f9fed44f99c1c7742d3240de"
+  },
+  "cases": [
+    {
+      "id": "node_graph_positive",
+      "path": "node_graph.atto",
+      "blob_sha": "d472cccb3da24ee8f9fed44f99c1c7742d3240de",
+      "expected": "COMPILED_GUEST_SUCCESS_WITH_TWO_ACTOR_PRIVATE_NODE_ALLOCS_AND_TYPED_REF32_LINK",
+      "scope": "actual compiled Atto guest"
+    },
+    {
+      "id": "node_graph_wrong_assert",
+      "path": "node_graph_wrong_assert.atto",
+      "blob_sha": "7544665f302167451fdc47ce11f5f108f703b7ed",
+      "expected": "COMPILED_GUEST_ASSERTION_FAILURE_AND_ACTOR_HEAP_RECLAIM",
+      "scope": "actual compiled Atto guest"
+    }
+  ],
+  "backends": {
+    "java": {
+      "repo": "atto-lang/atto-source.java",
+      "positive": "NOT_EXECUTED",
+      "negative": "NOT_EXECUTED",
+      "compiled_guest_receipt": null
+    },
+    "llvm": {
+      "repo": "atto-lang/atto-source.llvm",
+      "positive": "NOT_EXECUTED",
+      "negative": "NOT_EXECUTED",
+      "compiled_guest_receipt": null
+    },
+    "net": {
+      "repo": "atto-lang/atto-source.net",
+      "positive": "NOT_EXECUTED",
+      "negative": "NOT_EXECUTED",
+      "compiled_guest_receipt": null
+    },
+    "forge": {
+      "repo": "atto-lang/atto-source.forge",
+      "positive": "NOT_EXECUTED",
+      "negative": "NOT_EXECUTED",
+      "compiled_guest_receipt": null
+    },
+    "wasm": {
+      "repo": "atto-lang/atto-source.wasm",
+      "positive": "NOT_EXECUTED",
+      "negative": "NOT_EXECUTED",
+      "compiled_guest_receipt": null
+    },
+    "rs": {
+      "repo": "atto-lang/atto-source.rs",
+      "positive": "NOT_EXECUTED",
+      "negative": "NOT_EXECUTED",
+      "compiled_guest_receipt": null
+    },
+    "cranelift": {
+      "repo": "atto-lang/atto-source.cranelift",
+      "positive": "NOT_EXECUTED",
+      "negative": "NOT_EXECUTED",
+      "compiled_guest_receipt": null
+    },
+    "js": {
+      "repo": "atto-lang/atto-source.js",
+      "positive": "NOT_EXECUTED",
+      "negative": "NOT_EXECUTED",
+      "compiled_guest_receipt": null
+    },
+    "atto": {
+      "repo": "atto-lang/atto-source.atto",
+      "positive": "NOT_EXECUTED",
+      "negative": "NOT_EXECUTED",
+      "compiled_guest_receipt": null
+    },
+    "hdl": {
+      "repo": "atto-lang/atto-source.hdl",
+      "positive": "NOT_EXECUTED",
+      "negative": "NOT_EXECUTED",
+      "compiled_guest_receipt": null
+    },
+    "realtime": {
+      "repo": "atto-lang/atto-source.realtime",
+      "positive": "NOT_EXECUTED",
+      "negative": "NOT_EXECUTED",
+      "compiled_guest_receipt": null
+    }
+  },
+  "rules": [
+    "Fixture Git blob identity must match exact canonical bytes, not regenerated host-language source.",
+    "Compiler and runtime must admit explicit ABI profile before first guest allocation.",
+    "Reject unsupported source with diagnostic and no artifact; a negative rejection is not a positive guest pass.",
+    "A positive pass requires compiled guest execution, independent actor heap authority, typed link, retirement and bounded memory receipts.",
+    "The failure-expected mutation must build a fresh artifact and show actual actor fault and quiescent reclamation.",
+    "Zero-step GitHub Actions, source-only tests, host-only codec runs and parser-only tests do not certify guest behavior."
+  ]
+}

@@ -1,0 +1,45 @@
+name: Full-AOT executable case registry (host-only)
+
+on:
+  push:
+    paths:
+      - 'contracts/full-aot-executable-gates-v1.json'
+      - 'fixtures/full-aot/**'
+      - 'bin/full-aot-execution-model.mjs'
+      - 'bin/run-full-aot-executable-gates.mjs'
+      - 'tests/full_aot_executable_gates.test.mjs'
+      - '.github/workflows/full-aot-executable-gates.yml'
+  pull_request:
+    paths:
+      - 'contracts/full-aot-executable-gates-v1.json'
+      - 'fixtures/full-aot/**'
+      - 'bin/full-aot-execution-model.mjs'
+      - 'bin/run-full-aot-executable-gates.mjs'
+      - 'tests/full_aot_executable_gates.test.mjs'
+      - '.github/workflows/full-aot-executable-gates.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  source-registry-only:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Prove exact checkout and file tree
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          git rev-parse HEAD
+          git rev-parse HEAD^{tree}
+      - name: Validate AOT source-only receipt contract and adversarial mutants
+        run: |
+          node --version
+          node --test tests/full_aot_executable_gates.test.mjs
+          echo 'HOST_ONLY: no AttoLang compiler or guest executed; no backend certified.'

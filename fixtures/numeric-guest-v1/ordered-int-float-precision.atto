@@ -1,0 +1,10 @@
+// Candidate guest test: avoid lossy binary64 comparison beyond 2^53.
+// Expected main exit value 42. No implied mixed-type coercion or AOT certification.
+pub fnc main(): int {
+  val int exact = 9007199254740993;
+  val float rounded = 9007199254740992.0;
+  if exact > rounded then
+    return 42;
+  fi
+  return 1;
+}

@@ -1,0 +1,109 @@
+{
+  "schema": "atto-copy-modes-flat-class-compiled-evidence-v1",
+  "scope": "BOUNDARY_ONLY_NOT_FULL_GRAPH_PARITY",
+  "spec": "atto-lang/atto-spec#39",
+  "compiler_repo": "atto-lang/atto-source.rs",
+  "compiler_pr": 265,
+  "compiler_head": "f7d0779a820d0551447220f962491fccda2819ca",
+  "source_tree_full": "f6e0a87b5accca31065d8917bd32dfbe487c7b1f",
+  "tested_projection_tree": "ca2d7860e976922ed7d9b8a016149de11d43fd4b",
+  "tested_projection_file_count": 42,
+  "full_source_tree_mirrored": false,
+  "carrier": "gha-indie-worker/atto-ci",
+  "carrier_commit": "445b22131be6e704f8680453ac36509cce3d125d",
+  "workflow_run_url": "https://github.com/gha-indie-worker/atto-ci/actions/runs/44130153322",
+  "runner_admitted": true,
+  "job_executed": true,
+  "toolchain": "rustc 1.85.1",
+  "test_receipts": {
+    "native_rust_integration_tests": {
+      "pass": 7,
+      "fail": 0
+    },
+    "native_compiler_guest_wasm_positive": {
+      "pass": 7,
+      "fail": 0,
+      "expected_guest_return": 42
+    },
+    "compiler_negative_fixtures": {
+      "pass": 3,
+      "fail": 0,
+      "diagnostics": [
+        "E_COPY_OVERRIDE",
+        "E_SYNTAX",
+        "E_BORROW"
+      ]
+    },
+    "browser_compiler_wasm32_aot": {
+      "compiled": true,
+      "module_validated": true,
+      "host_import_count": 0,
+      "byte_count": 785554
+    }
+  },
+  "verified_semantics": [
+    "copy!! scalar values",
+    "fresh flat-class root allocation",
+    "independent mutation for original and two independently copied class roots",
+    "constructor-initialized field values",
+    "private field values via public methods",
+    "missing user copy override proof rejects",
+    "exclusive loan denies copy"
+  ],
+  "not_verified": [
+    "same-file portable conformance fixture compilation",
+    "nested mutable collection graphs",
+    "cycles/repeated mutable aliases",
+    "Object.copy_deep() superclass polymorphism",
+    "actor mailman fan-out",
+    "other full native-AOT backends",
+    "full-project rustfmt and strict Clippy"
+  ],
+  "conformance_manifest_backend_statuses_unchanged": true,
+  "notes": "Historical projected-source receipt retained above. Full 729-blob exact-tree compiler evidence is in full_source_tree_followup. This verifies bounded flat-class copying only; no production nested mutable arrays, cycle/alias graph cloning, actor-mail fan-out, or eight-backend parity. Manifest backend statuses remain NOT_EXECUTED.",
+  "full_source_tree_followup": {
+    "schema": "atto-copy-modes-full-tree-compiler-receipt-v1",
+    "compiler_pr_head": "bce174c55639511186e96d4b9498673c79f6a6f2",
+    "exact_source_tree": "2e633230379b59d6ed02e0213f23c44d15917c40",
+    "source_blob_count": 729,
+    "exact_full_tree_mirrored": true,
+    "carrier": "gha-indie-worker/atto-ci",
+    "carrier_head": "5512b4a161108ceb9449ece98bd2d81271d891cf",
+    "ci_run": "https://github.com/gha-indie-worker/atto-ci/actions/runs/44138410260",
+    "executed_job": true,
+    "toolchain": "rustc 1.85.1",
+    "full_cargo_all_targets": "PASS",
+    "native_and_wasm32_compiler_build": "PASS",
+    "portable_conformance": {
+      "pass": 493,
+      "fail": 0,
+      "native_vs_wasm_compared": 445,
+      "java_differential": "NOT_EXECUTED"
+    },
+    "copy_deep_rust_integration": {
+      "pass": 8,
+      "fail": 0
+    },
+    "copy_deep_guest": {
+      "positive": 7,
+      "negative_rejection": 4,
+      "fail": 0
+    },
+    "canonical_copy_verifier_blob_sha": "3008a139cfba41131839de3567a263163152cf00",
+    "canonical_verifier_integrated": true,
+    "full_project_lint": {
+      "rustfmt": "FAIL_EXISTING_DRIFT",
+      "clippy": "FAIL_EXISTING_WARNINGS",
+      "clippy_exit_code": 101
+    },
+    "nested_array_copy": "REJECTED_UNSUPPORTED_E_UNSUPPORTED_TYPE",
+    "graph_copy_reference_model": {
+      "source_repo": "ores-truffle-oreslang/atto-borrow-checker.rs",
+      "source_head": "7a44ec146305fbea45f63b509fe7b991aa11da61",
+      "exact_tree": "981272b90c433e3c81813fb12dd40da3bfcabadd",
+      "tests_pass": 196,
+      "ci_run": "https://github.com/gha-indie-worker/atto-ci/actions/runs/44134343873",
+      "production_wasm_integration": false
+    }
+  }
+}

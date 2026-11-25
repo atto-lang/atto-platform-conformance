@@ -1,0 +1,1 @@
+pub fnc run() -> infer :: val int x = 4, x + 1 end pub fnc main(): int { return run(); }

@@ -1,0 +1,5 @@
+// expect-error: E_IMMUTABLE
+define class Cell as
+  pub let int value = 1;
+end
+pub fnc main(): int { val Cell x = new Cell(); x.value = 2; return 0; }
