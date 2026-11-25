@@ -29,8 +29,8 @@ test('all portable source candidate and negative files are present',async()=>{
     const full=resolve(root,c.path);assert.ok(full.startsWith(root+sep),'path escape');
     const source=await readFile(full,'utf8');
     assert.ok(source.includes('fnc'),'must declare callable');
-    assert.ok(source.includes('<<')||source.includes('>>')||source.includes('new Channel<int>')||c.id==='spaced_operator',
-      'must exercise direction operator or its deliberate whitespace-nearmiss');
+    assert.ok(source.includes('<<')||source.includes('>>')||source.includes('new Channel<int>')||(c.id==='spaced_operator' && /return\s+<\s+<\s+c/.test(source))||(c.id==='postfix_spaced' && /return\s*\(c\s+>\s+>\)/.test(source)),
+      'must exercise direction operator or its deliberate whitespace-nearmiss: '+c.id);
     assert.ok(source.length>40);
   }
   assert.equal(ids.size,35);
