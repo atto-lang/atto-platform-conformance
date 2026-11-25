@@ -1,0 +1,14 @@
+// expect-exit: 7
+define class Foo as
+    pub val int n = 7;
+    @Override
+    copy(): new Foo {
+        val mut Foo c = super.copy();
+        return c;
+    }
+end
+pub fnc main(): int {
+    val Foo original = new Foo();
+    val Foo cloned = copy! original;
+    return cloned.n;
+}

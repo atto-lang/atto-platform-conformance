@@ -1,0 +1,12 @@
+// S-57 paired admission control: identical actor definition, no direct ref call.
+// A negative is NOT proven unless this control is accepted by the same compiler.
+define actor Counter as
+  read_count() -> int ::
+    return 42;
+  end
+end
+
+pub fnc main() -> int {
+  val counter = spawn Counter();
+  return 42;
+}

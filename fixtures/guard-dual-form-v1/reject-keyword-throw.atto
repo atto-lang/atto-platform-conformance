@@ -1,0 +1,7 @@
+// Reject: keyword guard must return, even when throw could terminate.
+pub fnc main(): int {
+  guard false else
+    throw Error("guard-failed");
+  end
+  return 42;
+}

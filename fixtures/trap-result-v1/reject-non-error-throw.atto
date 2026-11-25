@@ -1,0 +1,2 @@
+fnc invalid(): int throws Error { throw "bad"; }
+pub fnc main(): int { return invalid(); }

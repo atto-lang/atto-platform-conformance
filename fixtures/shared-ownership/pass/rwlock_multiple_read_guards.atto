@@ -1,0 +1,9 @@
+// expect-exit: 42
+// TARGET library API: read callbacks do not escape protected storage
+define class Box as pub let int value = 21; end
+pub fnc main(): int {
+  val state = share! RwLock(new Box());
+  val a = share! state;
+  val b = share! state;
+  return a.with_read(|box| -> box.value) + b.with_read(|box| -> box.value);
+}

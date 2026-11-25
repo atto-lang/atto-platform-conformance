@@ -1,0 +1,11 @@
+// Expected GPU-LAUNCH-003: group sizes must be strictly positive.
+pub gpu fnc fill(GpuArray<f32> mut out) => void {
+    const u64 i = gpu.global_id(0);
+    out[i] = 1.0;
+}
+suspends fnc run(GpuArray<f32> mut out, GpuDevice device, GpuQueue queue) => void {
+    const completion = launch fill(out) on gpu(device) {
+        over: [100], group: [0], queue: queue
+    };
+    await completion;
+}

@@ -1,0 +1,5 @@
+pub fnc main(): infer {
+    let value = 5;
+    value = "wrong type";
+    return value;
+}

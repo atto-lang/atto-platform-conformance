@@ -1,0 +1,7 @@
+// Reject: keyword guard must close with end, not fi.
+pub fnc main(): int {
+  guard true else
+    return 0;
+  fi
+  return 42;
+}

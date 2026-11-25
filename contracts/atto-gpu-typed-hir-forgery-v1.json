@@ -1,0 +1,204 @@
+{
+  "schema": "attolang.gpu-typed-hir-forgery-source-v1",
+  "evidence": "TYPED_SOURCE_STRUCTURAL_VALIDATION_NOT_EXECUTABLE",
+  "description": "Attacker-constructible Java source HIR is revalidated at tail-guard audit. This manifest records intended JUnit cases and Git blob identity; not compiler test execution.",
+  "javaRepository": "ores-truffle-oreslang/oreslang-source.java",
+  "javaPullRequest": 2610,
+  "javaHeadSha": "78f46f46830c8cefede2e2cb2d48a48a57a6254f",
+  "javaTreeSha": "8c0a52f06bc8027cd55e46db53ed8099935126ec",
+  "javaFiles": {
+    "verifier": {
+      "path": "src/main/java/dev/oreslang/compiler/GpuKernelTailGuardV1.java",
+      "blob": "009364f5b7639e3afcfb7b39e1ea1ef8d37d8dc1"
+    },
+    "typedHir": {
+      "path": "src/main/java/dev/oreslang/compiler/GpuKernelSourceHirV1.java",
+      "blob": "c40816345d23b61bacd268b3fd5c4ad502e8bf84"
+    },
+    "mutationTests": {
+      "path": "src/test/java/dev/oreslang/GpuKernelTailGuardForgedHirV1Test.java",
+      "blob": "8cb9fa2e13ef0bb0a06abcbe3a170090685bea61"
+    },
+    "integrationTests": {
+      "path": "src/test/java/dev/oreslang/GpuKernelSourceCapacityJoinV1Test.java",
+      "blob": "741205f18226654662785dd9a4d199048d60d1c7"
+    }
+  },
+  "safetyClaims": {
+    "sourceOpcodeClosedSetRevalidated": true,
+    "readBufferParameterCapabilityRechecked": true,
+    "writeBufferParameterCapabilityRechecked": true,
+    "scalarLocalTypeRechecked": true,
+    "instructionMetadataShapeRechecked": true,
+    "voidReturnTypeRechecked": true,
+    "typedSourceRecordsConstructibleWithoutCompiler": true,
+    "compilerIssuedTypeIdentity": false,
+    "authenticatedProviderAllocation": false,
+    "generationFencedLoan": false,
+    "physicalDeviceExecution": false,
+    "implicitCpuFallback": false,
+    "dispatchAuthorized": false
+  },
+  "javaJUnit": {
+    "sourceTestsAuthored": 27,
+    "expectedDenied": 26,
+    "expectedNonExecutableControl": 1,
+    "executedSteps": null,
+    "status": "NOT_EXECUTED",
+    "sourceTreeIndependentlyVerified": false,
+    "workflowRunId": 42333323638,
+    "integratedSourceCapacityCasesAuthored": 22,
+    "integratedSourceCapacityForgeryCasesAdded": 4,
+    "latestHeadBuildStatus": "FAILED_RUNNER_ADMISSION",
+    "latestHeadExecutedSteps": null,
+    "latestHeadWorkflowRunId": 42333884103,
+    "latestHeadWorkflowConclusion": "failure"
+  },
+  "cases": [
+    {
+      "method": "canonicalLoweredSaxpyStillHasThreeMemoryOpsAndNoExecutionPermit",
+      "expectation": "NON_EXECUTABLE_SOURCE_CONTROL",
+      "observed": "NOT_EXECUTED"
+    },
+    {
+      "method": "forgedStoreIntoReadOnlyInputIsDenied",
+      "expectation": "GPU-KERNEL-010_REJECTION",
+      "observed": "NOT_EXECUTED"
+    },
+    {
+      "method": "forgedStoreIntoScalarParameterIsDenied",
+      "expectation": "GPU-KERNEL-010_REJECTION",
+      "observed": "NOT_EXECUTED"
+    },
+    {
+      "method": "forgedStoreIntoUndeclaredBufferIsDenied",
+      "expectation": "GPU-KERNEL-010_REJECTION",
+      "observed": "NOT_EXECUTED"
+    },
+    {
+      "method": "forgedReadFromScalarCannotMimicDeviceBuffer",
+      "expectation": "GPU-KERNEL-010_REJECTION",
+      "observed": "NOT_EXECUTED"
+    },
+    {
+      "method": "forgedReadFromWriteOnlyBufferIsDenied",
+      "expectation": "GPU-KERNEL-010_REJECTION",
+      "observed": "NOT_EXECUTED"
+    },
+    {
+      "method": "forgedReadFromUndeclaredDeviceBufferIsDenied",
+      "expectation": "GPU-KERNEL-010_REJECTION",
+      "observed": "NOT_EXECUTED"
+    },
+    {
+      "method": "forgedHostCallOpcodeInsideGuardedStoreIsDenied",
+      "expectation": "GPU-KERNEL-010_REJECTION",
+      "observed": "NOT_EXECUTED"
+    },
+    {
+      "method": "forgedIntegerLiteralWithIncorrectTypeIsDenied",
+      "expectation": "GPU-KERNEL-010_REJECTION",
+      "observed": "NOT_EXECUTED"
+    },
+    {
+      "method": "forgedArithmeticOperandsWithConflictingTypesAreDenied",
+      "expectation": "GPU-KERNEL-010_REJECTION",
+      "observed": "NOT_EXECUTED"
+    },
+    {
+      "method": "malformedTypedGpuGlobalIdAxisIsDenied",
+      "expectation": "GPU-KERNEL-010_REJECTION",
+      "observed": "NOT_EXECUTED"
+    },
+    {
+      "method": "forgedLocalWithUnboundNameIsDenied",
+      "expectation": "GPU-KERNEL-010_REJECTION",
+      "observed": "NOT_EXECUTED"
+    },
+    {
+      "method": "forgedLocalWithContradictoryTypeIsDenied",
+      "expectation": "GPU-KERNEL-010_REJECTION",
+      "observed": "NOT_EXECUTED"
+    },
+    {
+      "method": "nonKernelOpcodeCannotBeUsedAsTypedPredicate",
+      "expectation": "GPU-KERNEL-010_REJECTION",
+      "observed": "NOT_EXECUTED"
+    },
+    {
+      "method": "forgedKernelReturnTypeCannotClaimVoidKernelTailProof",
+      "expectation": "GPU-KERNEL-010_REJECTION",
+      "observed": "NOT_EXECUTED"
+    },
+    {
+      "method": "forgedLocalCannotAliasSourceReadBuffer",
+      "expectation": "GPU-KERNEL-010_REJECTION",
+      "observed": "NOT_EXECUTED"
+    },
+    {
+      "method": "forgedLocalCannotAliasSourceWriteBuffer",
+      "expectation": "GPU-KERNEL-010_REJECTION",
+      "observed": "NOT_EXECUTED"
+    },
+    {
+      "method": "forgedLocalCannotCarryHiddenNestedInstructions",
+      "expectation": "GPU-KERNEL-010_REJECTION",
+      "observed": "NOT_EXECUTED"
+    },
+    {
+      "method": "forgedIfTargetCannotHideExtraInstructionMetadata",
+      "expectation": "GPU-KERNEL-010_REJECTION",
+      "observed": "NOT_EXECUTED"
+    },
+    {
+      "method": "forgedReturnTargetCannotAcquireUnexpectedControlFlowMeaning",
+      "expectation": "GPU-KERNEL-010_REJECTION",
+      "observed": "NOT_EXECUTED"
+    },
+    {
+      "method": "forgedScalarLetMustNotHaveAnEmptyTarget",
+      "expectation": "GPU-KERNEL-010_REJECTION",
+      "observed": "NOT_EXECUTED"
+    },
+    {
+      "method": "forgedGpuGlobalIdCannotHaveExtraOperands",
+      "expectation": "GPU-KERNEL-010_REJECTION",
+      "observed": "NOT_EXECUTED"
+    },
+    {
+      "method": "forgedComparisonCannotMixScalarTypes",
+      "expectation": "GPU-KERNEL-010_REJECTION",
+      "observed": "NOT_EXECUTED"
+    },
+    {
+      "method": "forgedBooleanLiteralCannotUseUnknownSpelling",
+      "expectation": "GPU-KERNEL-010_REJECTION",
+      "observed": "NOT_EXECUTED"
+    },
+    {
+      "method": "forgedBufferReadReceiverCannotInventStrongerCapabilityType",
+      "expectation": "GPU-KERNEL-010_REJECTION",
+      "observed": "NOT_EXECUTED"
+    },
+    {
+      "method": "forgedArithmeticOpcodeMustHaveExactlyTwoOperands",
+      "expectation": "GPU-KERNEL-010_REJECTION",
+      "observed": "NOT_EXECUTED"
+    },
+    {
+      "method": "forgedIntegerLiteralCannotHaveNonNumericSourceSpelling",
+      "expectation": "GPU-KERNEL-010_REJECTION",
+      "observed": "NOT_EXECUTED"
+    }
+  ],
+  "backendStatus": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED"
+  },
+  "mergePromotion": "BLOCKED_RUNNER_STEPS_NULL_AND_NO_PROVIDER_PROOF"
+}

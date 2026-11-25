@@ -1,0 +1,13 @@
+type Score = int where self >= 0 and self <= 100;
+
+fnc raise_score(Score score) -> Score
+    requires score <= 99
+    ensures result >= 1
+{
+    return score + 1;
+}
+
+pub fnc main() -> int {
+    val Score input = 41;
+    return raise_score(input);
+}

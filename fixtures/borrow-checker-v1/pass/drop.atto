@@ -1,0 +1,7 @@
+// BCV1-029 drop pass: target AttoLang semantics, NOT_EXECUTED.
+// Expected success and exit value 42.
+pub fnc main(): int {
+  val int unused = 5;
+  drop! unused;
+  return 42;
+}

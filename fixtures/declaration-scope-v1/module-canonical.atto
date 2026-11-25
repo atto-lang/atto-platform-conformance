@@ -1,0 +1,7 @@
+define module api as
+  pub fnc answer(): int {
+    return 42;
+  }
+  pub class Marker as
+  end
+end

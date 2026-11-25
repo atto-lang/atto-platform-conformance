@@ -1,0 +1,3 @@
+// Candidate guest fixture: TCO must not erase fuel accounting.
+pub fnc spin() -> int { return spin(); }
+pub fnc main() -> int { return spin(); }

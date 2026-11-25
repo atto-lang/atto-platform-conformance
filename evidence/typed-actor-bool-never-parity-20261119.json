@@ -1,0 +1,65 @@
+{
+  "schema": "atto.typed_actor_bool_never.parity_v1",
+  "feature": "actor receives bool sends never; canonical header diagnostics",
+  "canonical_fixture": {
+    "path": "fixtures/typed-actor-bool-v1/actor-bool-never-parity-v1.atto",
+    "git_blob_sha": "a103999dd9b047e24ae79fedd88398374bc10590",
+    "identical_repositories": [
+      "atto-lang/atto-source.rs",
+      "atto-lang/atto-source.llvm",
+      "atto-lang/atto-source.js",
+      "atto-lang/atto-platform-conformance"
+    ]
+  },
+  "diagnostics": {
+    "E_ACTOR_RECEIVES": "declared receives type mismatch or required handler absent",
+    "E_ACTOR_SEND_CONTRACT": "sends void or outbound effect violation",
+    "E_ACTOR_CONTRACT": "duplicate/out-of-order receives or sends"
+  },
+  "js_prior_green": {
+    "status": "PASSED_GENERATED_JS_SUBSET",
+    "source_head": "8f94a4667ba6a77ffac9894c99babbc6fea5cc6f",
+    "compiler_blob": "e3f6c0a8e60f7cbe8d91100b1744a2050af6491d",
+    "test_blob": "c354fb124e0000a6617352be8df3dbf3a81c3308",
+    "fixture_blob": "a103999dd9b047e24ae79fedd88398374bc10590",
+    "run_url": "https://github.com/bait-bikes-test/atto-ci/actions/runs/44656352488",
+    "run_id": 44656352488,
+    "job_id": 136023420350,
+    "toolchain": "Node 22.23.5",
+    "passed": 10,
+    "failed": 0,
+    "proof": "Compiled .atto into generated JS and executed typed bool actor route; no Wasm/native AOT"
+  },
+  "current_revision_status": {
+    "js": "NOT_EXECUTED_AFTER_DIAGNOSTIC_ALIGNMENT",
+    "rust_wasm": "NOT_EXECUTED",
+    "llvm_rust_frontend": "NOT_EXECUTED",
+    "native_llvm_cpp": "NOT_EXECUTED",
+    "java": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "cross_backend": "NOT_EXECUTED"
+  },
+  "zero_step_runs": [
+    {
+      "repo": "bait-bikes-test/atto-ci",
+      "run_id": 44656631416,
+      "steps": 0,
+      "result": "INFRASTRUCTURE_FAILURE"
+    },
+    {
+      "repo": "voxletra/atto-ci",
+      "run_id": 44656883239,
+      "steps": 0,
+      "result": "INFRASTRUCTURE_FAILURE"
+    },
+    {
+      "repo": "athlet-o/atto-ci",
+      "run_id": 44657167982,
+      "steps": 0,
+      "result": "INFRASTRUCTURE_FAILURE"
+    }
+  ],
+  "gate": "The positive source fixture and four-case registry are source identity targets; no shared contract tests may be reported PASSED on all backends until compiled guest checks execute against the same exact source and current backend HEAD."
+}

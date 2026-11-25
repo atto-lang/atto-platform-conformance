@@ -3,14 +3,23 @@
 // Builtin Float64Array physical geometry and issuance-fenced row IDs only.
 
 function makeGeometry(fields, capacity, layout, options = {}) {
+  // Caller arrays and accessor-backed options are untrusted descriptors.
+  // Capture each item once before checking identity, shape or offsets.
+  // Later mutation of caller arrays must not retarget physical columns.
+  if (!Array.isArray(fields)) throw new TypeError("invalid distinct fields");
+  fields = Array.from(fields);
+  const requestedWidth = options.tileWidth;
+  const requestedGroups = options.groups;
   if (!Array.isArray(fields) || fields.length === 0 || new Set(fields).size !== fields.length ||
       !fields.every(x => typeof x === "string" && /^[A-Za-z_]\w*$/.test(x))) throw new TypeError("invalid distinct fields");
   if (!Number.isSafeInteger(capacity) || capacity < 0 || capacity > 1000000) throw new RangeError("invalid capacity");
   if (!["aos", "soa", "aosoa", "soaos"].includes(layout)) throw new RangeError("unknown layout");
-  const width = options.tileWidth ?? 1;
+  const width = requestedWidth ?? 1;
   if (layout === "aosoa" && (!Number.isSafeInteger(width) || width < 1 || width > 1024)) throw new RangeError("invalid tile width");
-  if (layout !== "aosoa" && options.tileWidth !== undefined) throw new RangeError("tile width only allowed for AoSoA");
-  const groups = options.groups;
+  if (layout !== "aosoa" && requestedWidth !== undefined) throw new RangeError("tile width only allowed for AoSoA");
+  const groups = layout === "soaos" && Array.isArray(requestedGroups)
+    ? Array.from(requestedGroups, group => Array.isArray(group) ? Array.from(group) : group)
+    : requestedGroups;
   if (layout === "soaos") {
     if (!Array.isArray(groups) || groups.length < 1 || groups.some(g => !Array.isArray(g) || !g.length) ||
         groups.flat().length !== fields.length || new Set(groups.flat()).size !== fields.length ||
@@ -49,7 +58,7 @@ function makeGeometry(fields, capacity, layout, options = {}) {
 }
 
 class FourLayoutOracle {
-  #g; #owner; #denseSlots = []; #slots = []; #free = []; #issued = new WeakMap(); #loans = new Set(); #dead = false; #validatingInput = false;
+  #g; #owner; #denseSlots = []; #slots = []; #free = []; #issued = new WeakMap(); #loans = new Set(); #dead = false; #admittingRow = false;
   constructor({owner, fields, capacity, layout, tileWidth, groups}) {
     if (typeof owner !== "string" || owner.length === 0) throw new TypeError("owner required");
     this.#owner = owner;
@@ -63,15 +72,9 @@ class FourLayoutOracle {
       throw new RangeError("invalid row or field");
     return this.#g.address(row, field);
   }
-  #ensureLive() {
-    if (this.#validatingInput) throw new Error("reentrant four-layout store access");
-    if (this.#dead) throw new Error("retired store");
-  }
-  #snapshotInput(fn) {
-    if (this.#validatingInput) throw new Error("reentrant four-layout input");
-    this.#validatingInput = true;
-    try { return fn(); }
-    finally { this.#validatingInput = false; }
+  #ensureLive() { if (this.#dead) throw new Error("retired store"); }
+  #rejectReentrantMutation() {
+    if (this.#admittingRow) throw new Error("reentrant row admission mutation");
   }
   #row(handle) {
     this.#ensureLive();
@@ -107,17 +110,19 @@ class FourLayoutOracle {
     }
   }
   push(record) {
+    this.#rejectReentrantMutation();
     this.#ensureLive(); this.#noMutationLeases();
     if (this.count >= this.#g.capacity) throw new RangeError("store capacity exhausted");
-    // Preflight all own keys and snapshot getters without letting input code
-    // mutate/retire/borrow the authoritative store during row admission.
-    const values = this.#snapshotInput(() => {
-      if (!record || typeof record !== "object" || Array.isArray(record) ||
-          Reflect.ownKeys(record).length !== this.#g.fields.length ||
-          this.#g.fields.some(f => !Object.hasOwn(record, f)))
-        throw new TypeError("record schema mismatch");
-      return this.#g.fields.map(f => record[f]);
-    });
+    // Object.keys/hasOwn and getters can execute user code (including Proxy traps).
+    // Fence every observable mutation until the row is fully published.
+    this.#admittingRow = true;
+    try {
+    if (!record || typeof record !== 'object' || Array.isArray(record) || Reflect.ownKeys(record).length !== this.#g.fields.length ||
+        this.#g.fields.some(f => !Object.hasOwn(record, f)))
+      throw new TypeError("record schema mismatch");
+    // Snapshot potentially effectful getters before reserving an ID or mutating bytes.
+    // Failed field evaluation must not consume a slot or partially publish a row.
+    const values = this.#g.fields.map(f => record[f]);
     if (values.some(v => typeof v !== "number")) throw new TypeError("record schema mismatch");
     const slot = this.#free.length ? this.#free.pop() : this.#slots.length;
     const s = this.#slots[slot] ?? {generation: 1, live: false, row: -1};
@@ -128,27 +133,33 @@ class FourLayoutOracle {
     const h = Object.freeze({owner: this.#owner, slot, generation: s.generation});
     this.#issued.set(h, true);
     return h;
+    } finally {
+      this.#admittingRow = false;
+    }
   }
   read(handle, field, loan) {
     const row = this.#row(handle); this.#authorize(field, loan, false); return this.#read(row, field);
   }
   write(handle, field, value, loan) {
+    this.#rejectReentrantMutation();
     const row = this.#row(handle); this.#authorize(field, loan, true); this.#write(row, field, value);
   }
   borrow(fields, mode = "read") {
+    this.#rejectReentrantMutation();
     this.#ensureLive();
-    const selected = this.#snapshotInput(() => {
-      if (!Array.isArray(fields) || fields.length > this.#g.fields.length)
+    this.#admittingRow = true;
+    let selected;
+    try {
+      if (!Array.isArray(fields)) throw new TypeError("invalid field loan");
+      const length = fields.length;
+      if (!Number.isSafeInteger(length) || length < 1 || length > this.#g.fields.length)
         throw new TypeError("invalid field loan");
-      // Indexed, bounded field reads avoid invoking a caller-controlled
-      // Symbol.iterator (which could be unbounded or effectful).
-      const snapshot = [];
-      for (let i = 0; i < fields.length; i++) snapshot.push(fields[i]);
-      if (!snapshot.length || new Set(snapshot).size !== snapshot.length ||
-          snapshot.some(f => !this.#g.fields.includes(f)) || !["read", "write"].includes(mode))
+      selected = [];
+      for (let i = 0; i < length; i++) selected.push(fields[i]);
+      if (new Set(selected).size !== selected.length ||
+          selected.some(f => !this.#g.fields.includes(f)) || !["read", "write"].includes(mode))
         throw new TypeError("invalid field loan");
-      return snapshot;
-    });
+    } finally { this.#admittingRow = false; }
     const info = {fields: new Set(selected), mode};
     for (const current of this.#loans) {
       if (selected.some(f => current.fields.has(f)) && (mode === "write" || current.mode === "write"))
@@ -158,10 +169,11 @@ class FourLayoutOracle {
     return Object.freeze({
       read: (handle, field) => this.read(handle, field, info),
       write: (handle, field, value) => this.write(handle, field, value, info),
-      release: () => {this.#ensureLive(); this.#loans.delete(info);}
+      release: () => {this.#rejectReentrantMutation(); this.#loans.delete(info);}
     });
   }
   eraseSwap(handle) {
+    this.#rejectReentrantMutation();
     const row = this.#row(handle); this.#noMutationLeases();
     const last = this.count - 1;
     if (row !== last) {
@@ -177,8 +189,12 @@ class FourLayoutOracle {
     if (s.generation !== 0) this.#free.push(handle.slot);
   }
   convert(layout, options = {}) {
+    this.#rejectReentrantMutation();
     this.#ensureLive(); this.#noMutationLeases();
-    const next = this.#snapshotInput(() => makeGeometry(this.#g.fields, this.#g.capacity, layout, options));
+    this.#admittingRow = true;
+    let next;
+    try { next = makeGeometry(this.#g.fields, this.#g.capacity, layout, options); }
+    finally { this.#admittingRow = false; }
     for (let r = 0; r < this.count; ++r) for (const field of this.#g.fields) {
       const p = next.address(r, field);
       next.segments[p.segment][p.element] = this.#read(r, field);
@@ -187,6 +203,7 @@ class FourLayoutOracle {
     this.#g = next;
   }
   retire() {
+    this.#rejectReentrantMutation();
     this.#ensureLive(); this.#noMutationLeases();
     for (const segment of this.#g.segments) segment.fill(0);
     this.#dead = true;

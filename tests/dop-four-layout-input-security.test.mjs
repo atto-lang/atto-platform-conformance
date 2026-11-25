@@ -24,10 +24,10 @@ for (const layout of ['aos', 'soa', 'aosoa', 'soaos']) {
         () => store.borrow(['x'], 'write'),
         () => store.push({x: 70, y: 80}),
         () => store.write(first, 'x', 75),
-        () => store.read(first, 'x'),
         () => store.convert('soa'),
         () => store.retire()
       ]) assert.throws(operation, /reentrant/);
+      assert.equal(store.read(first, 'x'), 1, 'only already-published read-only state is visible');
       return 5;
     }});
     const second = store.push(input);

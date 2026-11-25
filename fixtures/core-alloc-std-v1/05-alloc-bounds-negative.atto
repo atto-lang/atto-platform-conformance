@@ -1,0 +1,6 @@
+import module region from pkg "alloc.byte_region";
+
+pub fnc main(): int throws Error {
+  val bytes = region.ByteRegion.allocate_zeroed(2);
+  return bytes.read_byte(2);
+}

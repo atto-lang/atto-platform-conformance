@@ -1,0 +1,99 @@
+{
+  "schema": "atto.channel-return-ownership.v1",
+  "version": 1,
+  "status": "RUST_WASM_SCOPED_GUEST_PASS_AUTOCLEANUP_PENDING",
+  "owner": "atto-lang/atto-spec",
+  "normative_reference": {
+    "repo": "atto-lang/atto-spec",
+    "path": "language/return-match-caret-v1.md",
+    "pr": 32
+  },
+  "semantics": {
+    "return_markers": [
+      "return",
+      "^"
+    ],
+    "lexical_return": "A nested ^ match exits the enclosing callable, not its enclosing arm; all return arms must prove exhaustiveness and correct value type.",
+    "read_result_type": "Future<Result<Option<int>,IoError>>",
+    "cancel": "A successful pending cancel returns Err(Cancelled) when awaited. cancel does not consume the Future.",
+    "send_after_commit": "Cancellation after a committed Some(value) must return AlreadySettled and preserve the message.",
+    "release": "Explicit close, drain all queued messages and await outstanding Future owners before release.",
+    "host_abandon": "Host-only abandon_read reclaims uncommitted pending reads/EOF tickets, but returns Busy for already-committed Some(value).",
+    "guest_auto_cleanup": "NOT_IMPLEMENTED: no compiler-emitted host disposal across ^/return, throw, actor stop or unwinding; a v2/extended ABI and path-complete owner checking are required."
+  },
+  "required_cases": [
+    {
+      "id": "return_match_option",
+      "kind": "pass",
+      "path": "fixtures/channel-return/pass/return_match_option.atto",
+      "expected_exit": 42,
+      "feature": "return_match"
+    },
+    {
+      "id": "channel_eof_release",
+      "kind": "pass",
+      "path": "fixtures/channel-return/pass/channel_eof_release.atto",
+      "expected_exit": 42,
+      "feature": "channel_guest_v1"
+    },
+    {
+      "id": "channel_cancel_release",
+      "kind": "pass",
+      "path": "fixtures/channel-return/pass/channel_cancel_release.atto",
+      "expected_exit": 42,
+      "feature": "channel_guest_v1"
+    },
+    {
+      "id": "channel_non_suspends",
+      "kind": "fail",
+      "path": "fixtures/channel-return/fail/channel_non_suspends.atto",
+      "expected_error": "E_EFFECT",
+      "feature": "channel_guest_v1"
+    },
+    {
+      "id": "nested_match_nonexhaustive",
+      "kind": "fail",
+      "path": "fixtures/channel-return/fail/nested_match_nonexhaustive.atto",
+      "expected_error": "E_MATCH",
+      "feature": "return_match"
+    },
+    {
+      "id": "channel_double_await",
+      "kind": "fail",
+      "path": "fixtures/channel-return/fail/channel_double_await.atto",
+      "expected_error": "E_MOVED",
+      "feature": "channel_guest_v1"
+    }
+  ],
+  "pending_cases": [
+    {
+      "id": "abandoned_future_early_return",
+      "kind": "pending",
+      "path": "fixtures/channel-return/pending/abandoned_future_early_return.atto",
+      "target_error": "E_FUTURE_OWNERSHIP",
+      "reason": "The compiler currently allows an owned guest read Future to be abandoned at a nonlocal return; this is not an accepted passing case."
+    }
+  ],
+  "backend_status": {
+    "rs-browser": "VERIFIED_SCOPED",
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm-independent": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED"
+  },
+  "rust_browser_evidence": {
+    "repo": "atto-lang/atto-source.rs",
+    "source_head": "9f5b5b517e2b611c2929a3ee79a2ad2b1bf4ffab",
+    "source_tree": "36be38b5a258fefd37cb1cbe82d175e511cd5c23",
+    "carrier_repo": "anticaptrad/atto-ci",
+    "carrier_source_commit": "52b7fa22e44309828b7ebfd106cf31fa2a2cf3c0",
+    "actions_run": 43952942257,
+    "url": "https://github.com/anticaptrad/atto-ci/actions/runs/43952942257",
+    "steps": "19/19",
+    "conformance_passed": 486,
+    "native_wasm_comparisons": 438,
+    "scope": "Rust/Wasm browser guest + host adapter only. This CI run does not execute every portable fixture here or prove guest automatic Future cleanup."
+  },
+  "evidence_rule": "Never mark a backend PASS based on parser acceptance, host-only model, skipped differential, unexecuted fixture, foreign/backend CI or zero-runner-step workflow. Require exact backend SHA/tree, toolchain, real guest execution and negative diagnostics."
+}

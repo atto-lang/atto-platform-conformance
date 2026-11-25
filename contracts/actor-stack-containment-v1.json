@@ -5,7 +5,7 @@
   "canonicalExtension": ".atto",
   "scope": "actor call-depth, guest frame budgeting, carrier survival and supervisor recovery",
   "javaReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2505",
-  "note": "All five backend execution states are NOT_EXECUTED. The Java PR is an early defensive guard and does not establish native process fault isolation.",
+  "note": "All five backend guest evidence lanes remain NOT_EXECUTED. Java #2505 guards carrier recursion; #2624 owns logical budget; #2627 reserves 32-byte managed guard frames; #2628 authors 16-byte evaluator call descriptors within the existing frame. No duplicate charge or compiler-local/return-PC lowering is proven; full stack isolation and native process fault containment remain unimplemented. None proves compiler-lowered actor stacks, source-task continuation ownership, or native process-fault isolation. Java #2626 adds bounded logical Task roots bound to the authenticated ExecutionContext; physical lexical frame storage and nested suspended call frames remain NOT_EXECUTED. Java #2630 adds limited typed scalar call-data, also unexecuted; later M2/M3 candidate stages remain independent non-promoting obligations. Java #2633 implements an authored closed pure-integer fnc iterative call/return machine with actor-owned primitive parameter slots and bounded host-heap operand/PC objects. No generic stackless Java execution, SourceTask continuation lowering, process native-stack survival, or guest exact-head receipts have been verified. Java #2639 M4 integrates the exact authored SourceTask #2631 scheduler leases with M3 #2633, fences synchronous calls to logical task/dispatch, and rejects leaked carrier frames at await/cooperate. This does NOT persist active recursive call frames through await, lower complete PC/operand state into actor-owned bytes, or certify guest/native/process/backend parity.",
   "requirements": {
     "separateHeapsAreNotStacks": true,
     "guestBudgetBeforeNativeOverflow": true,
@@ -15,7 +15,22 @@
     "sourceAndInteropPathsCovered": true,
     "untrustedJitPermitted": true,
     "untrustedArbitraryNativeCodeRequiresKillableWorker": true,
-    "nativeStackOverflowRecoverableOnSharedCarrier": false
+    "nativeStackOverflowRecoverableOnSharedCarrier": false,
+    "perActorFrameAndByteQuotas": true,
+    "actorFrameStorageIndependentOfCarrier": true,
+    "suspendedContinuationFramesChargedToActor": true,
+    "actorStackGenerationFenced": true,
+    "actorStackPoisonCannotBeGuestCaught": true,
+    "carrierMigrationDoesNotMoveStackOwnership": true,
+    "stackFailureBeforeNativeGuardPage": true,
+    "noNativeSignalOrStackOverflowRecovery": true,
+    "guardedSynchronousInvocationChargedToActorFrameArena": true,
+    "executionContextStableAcrossAwait": true,
+    "actorTaskRootGenerationAuthenticated": true,
+    "callbacksCannotExecuteGuestOnProducerThread": true,
+    "sourceTaskRootsRetiredOnlyAfterPhysicalQuiescence": true,
+    "outstandingTaskRootsPreventActorHeapRetirement": true,
+    "suspendedCallFramesPreservePcOperandsAndLocals": true
   },
   "backends": [
     {
@@ -25,7 +40,14 @@
       "actorSurvival": "NOT_EXECUTED",
       "nativeLowStack": "NOT_EXECUTED",
       "supervisorRecovery": "NOT_EXECUTED",
-      "exactHeadReceipt": null
+      "exactHeadReceipt": null,
+      "actorStackStorage": "NOT_EXECUTED",
+      "suspendedFrameOwnership": "NOT_EXECUTED",
+      "actorStackGeneration": "NOT_EXECUTED",
+      "executionContextBinding": "NOT_EXECUTED",
+      "callbackResumptionSafety": "NOT_EXECUTED",
+      "taskRootRetirement": "NOT_EXECUTED",
+      "suspendedCallFrameState": "NOT_EXECUTED"
     },
     {
       "id": "llvm",
@@ -34,7 +56,14 @@
       "actorSurvival": "NOT_EXECUTED",
       "nativeLowStack": "NOT_EXECUTED",
       "supervisorRecovery": "NOT_EXECUTED",
-      "exactHeadReceipt": null
+      "exactHeadReceipt": null,
+      "actorStackStorage": "NOT_EXECUTED",
+      "suspendedFrameOwnership": "NOT_EXECUTED",
+      "actorStackGeneration": "NOT_EXECUTED",
+      "executionContextBinding": "NOT_EXECUTED",
+      "callbackResumptionSafety": "NOT_EXECUTED",
+      "taskRootRetirement": "NOT_EXECUTED",
+      "suspendedCallFrameState": "NOT_EXECUTED"
     },
     {
       "id": "net",
@@ -43,7 +72,14 @@
       "actorSurvival": "NOT_EXECUTED",
       "nativeLowStack": "NOT_EXECUTED",
       "supervisorRecovery": "NOT_EXECUTED",
-      "exactHeadReceipt": null
+      "exactHeadReceipt": null,
+      "actorStackStorage": "NOT_EXECUTED",
+      "suspendedFrameOwnership": "NOT_EXECUTED",
+      "actorStackGeneration": "NOT_EXECUTED",
+      "executionContextBinding": "NOT_EXECUTED",
+      "callbackResumptionSafety": "NOT_EXECUTED",
+      "taskRootRetirement": "NOT_EXECUTED",
+      "suspendedCallFrameState": "NOT_EXECUTED"
     },
     {
       "id": "wasm",
@@ -52,7 +88,14 @@
       "actorSurvival": "NOT_EXECUTED",
       "nativeLowStack": "NOT_EXECUTED",
       "supervisorRecovery": "NOT_EXECUTED",
-      "exactHeadReceipt": null
+      "exactHeadReceipt": null,
+      "actorStackStorage": "NOT_EXECUTED",
+      "suspendedFrameOwnership": "NOT_EXECUTED",
+      "actorStackGeneration": "NOT_EXECUTED",
+      "executionContextBinding": "NOT_EXECUTED",
+      "callbackResumptionSafety": "NOT_EXECUTED",
+      "taskRootRetirement": "NOT_EXECUTED",
+      "suspendedCallFrameState": "NOT_EXECUTED"
     },
     {
       "id": "forge",
@@ -61,7 +104,14 @@
       "actorSurvival": "NOT_EXECUTED",
       "nativeLowStack": "NOT_EXECUTED",
       "supervisorRecovery": "NOT_EXECUTED",
-      "exactHeadReceipt": null
+      "exactHeadReceipt": null,
+      "actorStackStorage": "NOT_EXECUTED",
+      "suspendedFrameOwnership": "NOT_EXECUTED",
+      "actorStackGeneration": "NOT_EXECUTED",
+      "executionContextBinding": "NOT_EXECUTED",
+      "callbackResumptionSafety": "NOT_EXECUTED",
+      "taskRootRetirement": "NOT_EXECUTED",
+      "suspendedCallFrameState": "NOT_EXECUTED"
     }
   ],
   "scenarios": [
@@ -107,14 +157,16 @@
     },
     {
       "id": "sibling-actor-survival",
-      "source": null,
+      "source": "fixtures/actor-stack-containment-v1/sibling-actor-survival.atto",
       "kind": "pending-actor-acceptance",
       "expectedFailureClass": "guest-stack-budget-exhausted",
       "requiredEvidence": [
         "compilerGuest",
         "actorSurvival",
         "supervisorRecovery"
-      ]
+      ],
+      "expectedSiblingStdout": "42",
+      "guestVerified": false
     },
     {
       "id": "defer-lock-teardown",
@@ -135,6 +187,968 @@
         "nativeLowStack",
         "actorSurvival"
       ]
+    },
+    {
+      "id": "independent-actor-stack-quotas",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "guest-stack-budget-exhausted",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorSurvival",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "suspend-resume-carrier-migration",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "stale-actor-incarnation-stack-fence",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "stale-actor-generation",
+      "requiredEvidence": [
+        "compilerGuest",
+        "supervisorRecovery",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "host-swallowed-budget-exhaustion",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "guest-stack-budget-exhausted",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorSurvival",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "native-low-stack-interoperability",
+      "source": null,
+      "kind": "pending-isolation",
+      "expectedFailureClass": "killable-worker-required",
+      "requiredEvidence": [
+        "nativeLowStack",
+        "actorSurvival",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "bounded-actor-frame-bytes",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "guest-stack-budget-exhausted",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "foreign-frame-handle-rejected",
+      "source": null,
+      "kind": "pending-isolation",
+      "expectedFailureClass": "foreign-actor-frame",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "suspended-frame-byte-quotas-retained",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "cancelled-frame-zeroize-and-no-double-free",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "supervisorRecovery"
+      ]
+    },
+    {
+      "id": "stale-post-retirement-resume-reject",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "stale-actor-generation",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "supervisorRecovery"
+      ]
+    },
+    {
+      "id": "synchronous-guest-guard-byte-reservations",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "evaluator-descriptor-non-tail-and-tail",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-source-await-retains-charged-frame",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "actor-source-cooperate-preserves-frame-across-dispatch",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "actor-source-two-suspended-tasks-independent",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "actor-source-cancel-physical-quiescence-zeroizes",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-source-wrong-carrier-and-generation-rejected",
+      "kind": "pending-isolation",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "source-actor-non-tail-frames",
+      "kind": "positive",
+      "source": "fixtures/actor-stack-containment-v1/non-tail-actor-frame.atto",
+      "expectedStdout": "8",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "source-actor-tail-frames",
+      "kind": "positive",
+      "source": "fixtures/actor-stack-containment-v1/proper-tail-actor-frame.atto",
+      "expectedStdout": "100000",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "nativeLowStack"
+      ]
+    },
+    {
+      "id": "source-actor-sibling-after-budget",
+      "kind": "positive",
+      "source": "fixtures/actor-stack-containment-v1/sibling-after-budget-failure.atto",
+      "expectedStdout": "starting|alive",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "source-task-invocation-same-execution-id",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "source-task-quiescence-callback-retains-frames",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "source-task-invocation-overflow-sibling-survival",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorSurvival",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "typed-scalar-nontail-1024",
+      "kind": "positive",
+      "source": "fixtures/actor-stack-containment-v1/deep-non-tail-scalar-frame.atto",
+      "expectedStdout": "1024",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "nativeLowStack"
+      ]
+    },
+    {
+      "id": "typed-scalar-mutual-tail-100000",
+      "kind": "positive",
+      "source": "fixtures/actor-stack-containment-v1/mutual-tail-scalar-frame.atto",
+      "expectedStdout": "0",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "nativeLowStack"
+      ]
+    },
+    {
+      "id": "typed-scalar-immutable-locals",
+      "kind": "positive",
+      "source": "fixtures/actor-stack-containment-v1/immutable-local-scalar-frame.atto",
+      "expectedStdout": "9",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "typed-scalar-actor-quota-failure-sibling-survives",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "expectedFailureClass": "guest-stack-budget-exhausted",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorSurvival",
+        "supervisorRecovery",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "typed-scalar-unsupported-fallback-and-negative-mutation",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "typed-scalar-execution-context-generation-negative",
+      "kind": "pending-isolation",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "actor-await-sibling-then-resume",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorSurvival",
+        "executionContextBinding",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "producer-callback-cannot-run-guest",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "wrong-execution-context",
+      "requiredEvidence": [
+        "compilerGuest",
+        "callbackResumptionSafety",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "cancel-suspended-task-before-quiescence",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "cancelled-task",
+      "requiredEvidence": [
+        "compilerGuest",
+        "taskRootRetirement",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "late-resume-after-supervisor-restart",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "stale-actor-generation",
+      "requiredEvidence": [
+        "compilerGuest",
+        "supervisorRecovery",
+        "callbackResumptionSafety",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "root-leak-must-block-actor-heap-reclaim",
+      "source": null,
+      "kind": "pending-isolation",
+      "expectedFailureClass": "quarantined-actor-incarnation",
+      "requiredEvidence": [
+        "taskRootRetirement",
+        "actorStackStorage",
+        "supervisorRecovery"
+      ]
+    },
+    {
+      "id": "await-inside-nontail-call-preserves-parent-frame",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "executionContextBinding",
+        "suspendedFrameOwnership",
+        "suspendedCallFrameState"
+      ]
+    },
+    {
+      "id": "cancel-inside-nontail-call-runs-cleanup-before-retire",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "cancelled-task",
+      "requiredEvidence": [
+        "compilerGuest",
+        "taskRootRetirement",
+        "suspendedCallFrameState"
+      ]
+    },
+    {
+      "id": "duplicate-resume-cannot-reenter-suspended-call-frame",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "duplicate-continuation-resume",
+      "requiredEvidence": [
+        "compilerGuest",
+        "callbackResumptionSafety",
+        "suspendedCallFrameState"
+      ]
+    },
+    {
+      "id": "stale-parent-return-pc-rejected-after-generation-change",
+      "source": null,
+      "kind": "pending-isolation",
+      "expectedFailureClass": "stale-actor-generation",
+      "requiredEvidence": [
+        "supervisorRecovery",
+        "actorStackGeneration",
+        "suspendedCallFrameState"
+      ]
+    },
+    {
+      "id": "typed-scalar-invocation-actor-owned-data",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-source-task-typed-scalars-retained-across-await",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "actor-source-task-typed-state-reference-or-oversize-denied",
+      "source": null,
+      "kind": "pending-isolation",
+      "expectedFailureClass": "unsupported-actor-task-state",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "source-task-scalar-parameters-bound-from-actor-bytes",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "source-task-scalar-parameter-corruption-fail-stop",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "actor-generation-poison",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-source-mutable-lexical-scalar-across-two-cooperates",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "actor-source-lexical-shadowed-scope-isolation",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "actor-source-lexical-type-tag-corruption-fail-stop",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "actor-generation-poison",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-return-pc-record-not-yet-dispatch-lowered",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-return-record-same-carrier-new-turn-denied",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "stale-physical-turn",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "actor-return-record-cross-task-handle-denied",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "foreign-task-execution",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-lexical-detached-task-copy-move-denied",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "forbidden-task-capture",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "actor-frame-scalar-tag-payload-corruption-fail-stop",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "actor-generation-poison",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-scalar-NaN-raw-bits-survive-cooperate",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "actor-env-snapshot-same-source-task-across-await",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "actor-env-snapshot-other-source-task-same-actor-denied",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "foreign-task-execution",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-env-snapshot-after-owner-retirement-denied",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "stale-task-execution",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-env-snapshot-corrupt-execution-owner-denied",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "stale-task-execution",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "actor-scalar-iterative-non-tail-call-return-pcs",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-iterative-proper-tail-100k-constant-frames",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-scalar-iterative-mutual-tail-no-jvm-recursion",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-scalar-iterative-non-tail-budget-denial",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "actor-stack-budget",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-iterative-overflow-sibling-survives",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "actor-stack-budget",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorSurvival",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-iterative-caller-operand-preservation",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "actor-scalar-iterative-pc-callee-id-corruption-fail-stop",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "actor-generation-poison",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-scalar-iterative-unsupported-reference-effect-fallback",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "unsupported-compiler-subset",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-int-bool-type-admission-must-precede-execution",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "unsupported-compiler-subset",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-val-const-parameter-rebind-rejected",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "immutable-binding-reassignment",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-scalar-synthetic-integer-literal-no-implicit-widening",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "implicit-conversion",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-forged-operand-sp-fail-stop",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "actor-generation-poison",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-mixed-primitive-tags-fail-stop",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "actor-generation-poison",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-scalar-exact-boolean-equality-condition",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-scalar-cfg-join-operand-depth-mismatch-pre-admission",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "unsupported-compiler-subset",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-cfg-join-primitive-kinds-mismatch-pre-admission",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "unsupported-compiler-subset",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-scalar-cfg-local-definite-assignment-at-branch-joins",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "uninitialized-scalar-local",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-cfg-loop-backedge-local-definite-assignment",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "uninitialized-scalar-local",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-scalar-cfg-callee-arity-and-tail-live-operands",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "invalid-scalar-call",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-cfg-ret-conditional-and-stack-overflow-typed",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "invalid-typed-stack",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-cfg-reachable-fallthrough-invalid",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "missing-return",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-cfg-noncanonical-unreachable-opcode-fields",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "invalid-bytecode-image",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "scalar-non-tail-iterative-60",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "scalar-non-tail-budget-exhausted",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "guest-stack-budget-exhausted",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "scalar-proper-and-mutual-tail-100k",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "scalar-unsupported-graph-fallback",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest"
+      ]
+    },
+    {
+      "id": "scalar-owned-two-integer-parameters",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "m4-source-task-64-plus-32-charged",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "m4-stable-source-task-id-new-dispatch",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "m4-leaked-sync-lease-rejected-before-await",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "guest-frame-suspension-forbidden",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "m4-leaked-sync-lease-rejected-before-cooperate",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "guest-frame-suspension-forbidden",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "m4-source-cooperate-between-scalar-calls",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest"
+      ]
+    },
+    {
+      "id": "m4-cancel-suspended-task-after-scalar",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "m4-await-inside-recursive-scalar-call",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "not-implemented",
+      "requiredEvidence": [
+        "compilerGuest"
+      ]
     }
   ],
   "promotion": {
@@ -148,5 +1162,245 @@
     "requiresSupervisorGenerationEvidence": true,
     "zeroStepCountsAsExecuted": false,
     "sourceFreeCanaryCountsAsGuest": false
-  }
+  },
+  "javaLogicalStackReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2624",
+  "javaFrameArenaReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2627",
+  "frameStorageBootstrap": {
+    "javaHostPrimitive": "MANAGED_BYTES_ONLY",
+    "javaAuthoredHostTests": 20,
+    "javaLocalIsolatedSmokeAssertions": 19,
+    "compilerLoweredGuestFrames": "NOT_EXECUTED",
+    "suspendedSourceTaskFrames": "NOT_EXECUTED",
+    "realNativeStackIsolation": "NOT_EXECUTED",
+    "nativeAotExecution": "NOT_EXECUTED",
+    "promotionFromHostOnlyAllowed": false,
+    "note": "Java M1.6 guarded non-tail interpreter invocations reserve actor-owned managed byte frames and unwind LIFO; JVM guest locals and return continuations remain on carrier stack. SourceTask continuation and native process-stack containment are NOT_EXECUTED. Java #2631 explicitly binds an actor source scheduler to per-task bootstrap frame leases and reserves bytes across await/cooperate; SourceTask locals and return continuations are not lowered into them. Java integration #2637 joins nested invocation descriptor frames to the active SourceTask ExecutionContext and defers byte-frame reclamation until successful physical quiescence callbacks; guest locals/return continuations still run on JVM stacks. Java M3 #2640 authors a fully preadmitted pure synchronous int-fnc compiler subset using an iterative typed frame VM with PC/operand height and primitive local/operand bytes in the actor-owned arena. No hosted compilation or guest execution receipt; async/method/closure/FFI/native stack parity remain unproven. M2.1–M3.3c typed-scalar milestones are independently authored candidates, not completed native or compiler guest receipts. M3/M4 stackless scalar and SourceTask integration are authored but do not persist recursive call frames across suspension.",
+    "javaGuardedInvocationByteFrames": "GUARD_WIRED_MANAGED_BYTES_NOT_GUEST_LOCALS",
+    "javaSynchronousGuardByteCharge": 32,
+    "javaGuestCallGuardNativeStackStillUsed": true,
+    "javaAuthoredLegacyCompilerGuestTests": 1,
+    "javaLegacyCompilerGuestTestExecuted": "NOT_EXECUTED",
+    "javaInvocationDescriptorReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2628",
+    "javaInvocationDescriptorStatus": "AUTHORED_NOT_EXECUTED",
+    "javaInvocationDescriptorBytes": 16,
+    "javaGuardFrameNotDuplicated": true,
+    "javaNewHostInvocationTestsAuthored": 5,
+    "javaNewAttoActorFixturesAuthored": 3,
+    "javaNewAttoActorExecution": "NOT_EXECUTED",
+    "javaActorSourceTaskReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2631",
+    "javaActorSourceTaskFrameBytes": 64,
+    "javaActorSourceTaskHostTestsAuthored": 8,
+    "javaActorSourceTaskLease": "HOST_SCHEDULER_AWAIT_LEASE_AUTHORED_NOT_EXECUTED",
+    "javaActorSourceTaskCompilerFrames": "NOT_EXECUTED",
+    "javaActorSourceTaskNativeStackIsolation": "NOT_EXECUTED",
+    "javaActorSourceTaskPhysicalRetirement": "HOST_RUNTIME_AUTHORED_NOT_EXECUTED",
+    "javaIntegratedInvocationSourceTaskReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2637",
+    "javaIntegratedSourceTaskInvocationStatus": "AUTHORED_NOT_EXECUTED",
+    "javaIntegratedSourceTaskHostTestsAuthored": 3,
+    "javaIntegratedActorAttoFixturesCopied": 3,
+    "javaIntegratedActorAttoCompilerReceipts": "NOT_EXECUTED",
+    "javaIntegratedActorNativeStackIsolation": "NOT_EXECUTED",
+    "javaQuiescenceCallbackBeforeFrameRetirement": true,
+    "javaInvocationReusesSourceTaskExecutionId": true,
+    "javaScalarTypedFrameReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2640",
+    "javaScalarTypedFrameStatus": "AUTHORED_NOT_EXECUTED",
+    "javaScalarTypedFrameScope": "PURE_SYNC_INTEGER_FNC_GRAPH_ONLY",
+    "javaScalarTypedFramePcAndStackHeaderBytes": 16,
+    "javaScalarTypedFrameTaggedSlotBytes": 16,
+    "javaScalarTypedFrameHostCompilerTestsAuthored": 7,
+    "javaScalarTypedFrameHostRuntimeTestsAuthored": 5,
+    "javaScalarTypedFrameAttoSourceFixturesAuthored": 3,
+    "javaScalarTypedFrameGuestCompilerReceipts": "NOT_EXECUTED",
+    "javaScalarTypedFrameNativeLowStackReceipts": "NOT_EXECUTED",
+    "javaScalarTypedFrameActorSupervisorRestartReceipts": "NOT_EXECUTED",
+    "javaScalarTypedFrameOtherBackends": "NOT_EXECUTED",
+    "javaScalarTypedFrameActualPrimitiveStorage": "IMPLEMENTED_UNVERIFIED",
+    "javaScalarTypedFrameSourceTaskLexicalContinuations": "NOT_IMPLEMENTED",
+    "javaScalarTypedFrameStaleLeasePoisonStatus": "AUTHORED_NOT_EXECUTED",
+    "javaTypedScalarFrameReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2630",
+    "javaTypedScalarCallData": "AUTHORED_NOT_EXECUTED",
+    "javaTypedScalarCodecTypes": 8,
+    "javaTypedScalarSlotBytes": 9,
+    "javaScalarCallFrameBytePolicy": "ONE_FRAME_MIN_32_PLUS_9_BYTES_PER_TYPED_ARGUMENT",
+    "javaTypedScalarHostTestsAuthored": 7,
+    "javaTypedScalarLegacyGuestTestsAuthored": 1,
+    "javaTypedScalarLegacyGuestExecution": "NOT_EXECUTED",
+    "javaTypedScalarObjectRootsLowered": false,
+    "javaTypedScalarReturnContinuationsLowered": false,
+    "javaTypedScalarTaskContinuationLowered": false,
+    "javaTypedScalarIndependentNativeStacks": false,
+    "javaTypedScalarNote": "Java #2630 binds recognized primitive wrapper guest call arguments from actor-owned managed bytes, but only for synchronous calls. All object roots, return PCs, expression recursion and SourceTask suspended state remain on the JVM. The 7 host and 1 legacy compiler tests are authored, NOT_EXECUTED.",
+    "javaSourceTaskScalarIntegrationReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2638",
+    "javaSourceTaskScalarStatus": "HOST_RUNTIME_AUTHORED_NOT_EXECUTED",
+    "javaSourceTaskScalarMaxValues": 6,
+    "javaSourceTaskScalarTagBytes": 9,
+    "javaSourceTaskScalarFrameBytes": 64,
+    "javaSourceTaskScalarHeaderBytes": 4,
+    "javaSourceTaskScalarIntegrationJUnitMethodsAuthored": 5,
+    "javaSourceTaskScalarAutoCompilerLowering": false,
+    "javaSourceTaskScalarTaskIdentityIsGenerationFenced": true,
+    "javaSourceTaskScalarRetainedAcrossSuspend": "AUTHORED_HOST_MODEL_NOT_EXECUTED",
+    "javaSourceTaskScalarCompiledAttoActorExecution": "NOT_EXECUTED",
+    "javaSourceTaskScalarSourceMailboxNonReentrancy": "NOT_EXECUTED",
+    "javaSourceTaskScalarNativeStackIsolation": "NOT_EXECUTED",
+    "javaSourceTaskScalarNote": "Java #2638 merges #2630 typed synchronous invocation frames and #2631 actor SourceTask frame leases; a manually saved primitive-only snapshot occupies the existing 64-byte task lease across await/cooperate, but there is no automatic compiler-local/return-PC lowering. Five new host/runtime JUnit methods are authored, not executed.",
+    "javaCompilerScalarParameterReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2642",
+    "javaCompilerScalarParameterStatus": "AUTHORED_NOT_EXECUTED",
+    "javaCompilerScalarParameterGuestExecution": "NOT_EXECUTED",
+    "javaCompilerScalarParameterHostTestsAuthored": 3,
+    "javaCompilerScalarParameterAttoTestsAuthored": 1,
+    "javaCompilerScalarParameterMaxValues": 6,
+    "javaCompilerScalarParameterFromActorBytes": true,
+    "javaCompilerScalarParameterResumeIntegrity": "AUTHORED_NOT_EXECUTED",
+    "javaCompilerScalarParameterFrameBytes": 64,
+    "javaCompilerMutableLocalsLowered": false,
+    "javaCompilerReturnPcLowered": false,
+    "javaCompilerStacklessEvaluator": false,
+    "javaCompilerSourceMailboxNonReentrancy": "NOT_EXECUTED",
+    "javaCompilerParameterBridgeNote": "Java #2642 authors automatic scalar formal-parameter binding from actor-owned SourceTask bytes and validation on resumed SourceTask dispatch. The actual .atto actor fixture, full lexical local/operand/return PC lowering, and low-native-stack proof remain NOT_EXECUTED.",
+    "javaCompilerLexicalFrameReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2643",
+    "javaCompilerLexicalStatus": "AUTHORED_NOT_EXECUTED",
+    "javaCompilerLexicalFrameBytes": 64,
+    "javaCompilerLexicalSharedScalarSlots": 6,
+    "javaCompilerLexicalHostJUnitAuthored": 6,
+    "javaCompilerLexicalAttoJUnitAuthored": 1,
+    "javaCompilerLexicalGuestExecution": "NOT_EXECUTED",
+    "javaCompilerLexicalReadsFromActorBytes": true,
+    "javaCompilerLexicalJvmShadowStillPresent": true,
+    "javaCompilerLexicalReferenceRootsLowered": false,
+    "javaCompilerLexicalFrameScopeReclaim": false,
+    "javaCompilerReturnRecordReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2643",
+    "javaCompilerReturnRecordHostJUnitAuthored": 4,
+    "javaCompilerReturnRecordBytes": 48,
+    "javaCompilerReturnRecordAbiStatus": "HOST_ABI_AUTHORED_NOT_EXECUTED",
+    "javaCompilerReturnRecordUsedByGuestDispatcher": false,
+    "javaCompilerNativeActorStackFaultSurvival": "NOT_EXECUTED",
+    "javaM32Note": "Java #2643 changes actual SourceTask Env scalar local load/store to actor-owned bytes, preserving JVM shadow and fallback after bounded six slots; 48-byte call/return record is ABI-only, NOT used by a guest iterative dispatcher. 10 host JUnit + one canonical .atto actor fixture/test AUTHORED_NOT_EXECUTED.",
+    "javaM32HardeningSourceReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2643",
+    "javaM32HardeningStatus": "AUTHORED_NOT_EXECUTED",
+    "javaM32HardeningFollowupReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2662",
+    "javaM32PhysicalTurnIdentityFenced": true,
+    "javaM32SchedulerTaskIdentityFenced": true,
+    "javaM32JvmScalarShadowTaskCaptureAllowed": false,
+    "javaM32ShadowSnapshotEscapeGuard": "COPY_AND_MOVE_DENIED",
+    "javaM32CorruptScalarPayloadHostTestExecuted": "NOT_EXECUTED",
+    "javaM32CorruptReturnDescriptorHostTestExecuted": "NOT_EXECUTED",
+    "javaM32NewHostJUnitMethodsAuthored": 11,
+    "javaM32NewHostJUnitMethodsExecuted": 0,
+    "javaM32HardenedGuestCompilerExecution": "NOT_EXECUTED",
+    "javaM32HardenedNativeStackIsolation": "NOT_EXECUTED",
+    "javaM32HardenedNote": "Hardening child branches on Java #2643 and conformance #581. Exact physical turn and SourceTask identity now gate host return record read/close, COPY/MOVE of an arena-backed scalar JVM shadow is denied, and 11 adversarial JUnit methods are authored. No Java host or .atto execution has passed.",
+    "javaM33EnvSnapshotReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2665",
+    "javaM33EnvSnapshotStatus": "AUTHORED_NOT_EXECUTED",
+    "javaM33EnvSnapshotJUnitMethodsAuthored": 3,
+    "javaM33EnvSnapshotJUnitMethodsExecuted": 0,
+    "javaM33EnvSnapshotRetiredReadDenied": true,
+    "javaM33EnvSnapshotSameTaskAwaitAllowed": "AUTHORED_NOT_EXECUTED",
+    "javaM33EnvSnapshotCrossTaskReadDenied": true,
+    "javaM33EnvSnapshotCrossTaskArenaPoisonAllowed": false,
+    "javaM33EnvSnapshotExactExecutionIdentityFenced": true,
+    "javaM33EnvReflectionFixtureSignatureRepaired": true,
+    "javaM33EnvSnapshotCompiledAttoEvidence": "NOT_EXECUTED",
+    "javaM33EnvSnapshotActualCallbackParity": "NOT_EXECUTED",
+    "javaM33EnvSnapshotIterativeDispatcher": false,
+    "javaM33EnvSnapshotNativeStackProof": "NOT_EXECUTED",
+    "javaM33Note": "Java #2665 introduces exact SourceTask ExecutionContext identity checks in actor-bound lexical Env Slot read/write/snapshot; corrects reflective Env.define signature; adds three host JUnit methods. No compiler-backed .atto closure/callback execution, stackless guest dispatch or native stack isolation has been verified.",
+    "javaM33aIterativeSourceReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2667",
+    "javaM33aIterativeStatus": "AUTHORED_NOT_EXECUTED",
+    "javaM33aWholeGraphFailClosed": true,
+    "javaM33aScalarFnEnabled": true,
+    "javaM33aActualNonTailGuestDispatcher": "AUTHORED_NOT_EXECUTED",
+    "javaM33aScalarFrameHeaderBytes": 16,
+    "javaM33aTypedScalarSlotBytes": 9,
+    "javaM33aInstructionsPerSafepoint": 128,
+    "javaM33aHostJUnitAuthored": 33,
+    "javaM33aParserJUnitAuthored": 16,
+    "javaM33aAttoJUnitAuthored": 5,
+    "javaM33aJUnitExecuted": 0,
+    "javaM33aCompiledAttoGuestEvidence": "NOT_EXECUTED",
+    "javaM33aNonScalarJvmFallbackStillRecursive": true,
+    "javaM33aActorMethodsLowered": false,
+    "javaM33aClosuresLowered": false,
+    "javaM33aSuspendedGuestReturnPCsLowered": false,
+    "javaM33aGeneralReturnRecordAbiConnected": false,
+    "javaM33aNativeActorStackFaultProof": "NOT_EXECUTED",
+    "javaM33aLLVMGuest": "NOT_EXECUTED",
+    "javaM33aNETGuest": "NOT_EXECUTED",
+    "javaM33aWasmGuest": "NOT_EXECUTED",
+    "javaM33aForgeGuest": "NOT_EXECUTED",
+    "javaM33aNote": "Java PR #2667 authors a restrictive pure int fnc source call graph compiler and iterative actor-owned frame dispatcher with real scalar CALL/RET and tail replacement; 54 new JUnit methods authored. The 48-byte general return record remains unused; real compiled .atto actor execution and all non-Java backends remain NOT_EXECUTED.",
+    "javaM33bSourceReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2668",
+    "javaM33bTypedAdmissionStatus": "AUTHORED_NOT_EXECUTED",
+    "javaM33bExactPrimitiveKindsGuarded": true,
+    "javaM33bRebindOnlyExplicitLet": true,
+    "javaM33bImplicitJvmIntegerWideningAllowed": false,
+    "javaM33bMixedPrimitiveEqualityAllowed": false,
+    "javaM33bForgedOperandStackPointerFailsClosed": true,
+    "javaM33bActorRuntimeHostTestsAuthored": 38,
+    "javaM33bParserNegativeTestsAuthored": 32,
+    "javaM33bAttoGuestTestsAuthored": 5,
+    "javaM33bTotalJUnitTestsAuthored": 75,
+    "javaM33bJUnitTestsExecuted": 0,
+    "javaM33bTypedAttoGuestEvidence": "NOT_EXECUTED",
+    "javaM33bNativeStackFailureContainment": "NOT_EXECUTED",
+    "javaM33bFiveBackendParity": "NOT_EXECUTED",
+    "javaM33bNote": "Java #2668 hardens M3.3a scalar fnc expression typing and binding kind, rejecting implicit primitive conversions before actor execution, and validates runtime SP and scalar opcode tags. +21 JUnit methods authored, none executed.",
+    "javaM33cVerifierSourceReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2669",
+    "javaM33cVerifierStatus": "AUTHORED_NOT_EXECUTED",
+    "javaM33cVerifierRunsBeforeActorFrameAdmission": true,
+    "javaM33cRequiresExactOperandJoinTypes": true,
+    "javaM33cDefiniteAssignmentIntersection": true,
+    "javaM33cLoopBackedgeFixedPoint": true,
+    "javaM33cCallArityAndTailOperandsChecked": true,
+    "javaM33cCanonicalUnreachableBytecodeFields": true,
+    "javaM33cFullGraphFallbackOnVerificationFailure": true,
+    "javaM33cNewVerifierJUnitAuthored": 39,
+    "javaM33cTotalStackedJUnitAuthored": 114,
+    "javaM33cHostedJUnitExecuted": 0,
+    "javaM33cLocalJavaVersion": "21",
+    "javaM33cLocalSmokeAssertionsPassed": 40,
+    "javaM33cLocalSmokeAssertionsTotal": 40,
+    "javaM33cLocalExactVerifierBlob": "0cd147ac955aaa08eb4346a2d342025123102331",
+    "javaM33cLocalSmokeClassification": "STUBBED_STANDALONE_JAVA_NOT_PROJECT",
+    "javaM33cCompiledAttoGuestEvidence": "NOT_EXECUTED",
+    "javaM33cNativeActorStackProof": "NOT_EXECUTED",
+    "javaM33cLLVMGuest": "NOT_EXECUTED",
+    "javaM33cNETGuest": "NOT_EXECUTED",
+    "javaM33cWasmGuest": "NOT_EXECUTED",
+    "javaM33cForgeGuest": "NOT_EXECUTED",
+    "javaM33cNote": "Java #2669 adds a control-flow-aware scalar bytecode verifier (exact typed operand stack, definite locals at joins/loops, call/return arity and noncanonical image fields). 39 new JUnit methods are authored, not executed; a separate JDK 21 standalone stub-harness compiled the exact verifier blob and passed 40/40 smoke assertions, not Maven/Graal/AttoLang guest.",
+    "javaStacklessScalarReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2633",
+    "javaStacklessSubset": "CLOSED_PURE_INTEGER_FNC_ONLY",
+    "javaStacklessAuthoredHostTests": 11,
+    "javaStacklessAdditionalActorFixtures": 3,
+    "javaStacklessActorPrimitiveSlots": 2,
+    "javaStacklessFrameByteCharge": 32,
+    "javaStacklessDescriptorBytes": 16,
+    "javaStacklessNoDuplicateCharge": true,
+    "javaStacklessInterpreterState": "HOST_HEAP_OPERANDS_AND_RETURN_PC_NOT_FULLY_ACTOR_OWNED",
+    "javaStacklessRuntimeGuestExecution": "NOT_EXECUTED",
+    "javaStacklessNativeStackSurvival": "NOT_EXECUTED",
+    "javaStacklessSourceTaskContinuation": "NOT_EXECUTED",
+    "javaStacklessOtherBackends": "NOT_EXECUTED",
+    "javaM4Reference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2639",
+    "javaM4SourceTaskBaseReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2631",
+    "javaM4StacklessScalarBaseReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2633",
+    "javaM4IntegrationStatus": "AUTHORED_NOT_EXECUTED",
+    "javaM4TaskBootstrapBytes": 64,
+    "javaM4InvocationFrameBytes": 32,
+    "javaM4OneTaskOneInvocationPeakBytes": 96,
+    "javaM4AdditionalHostTestsAuthored": 6,
+    "javaM4AdditionalGuestFixturesAuthored": 1,
+    "javaM4GuestExpectedOutput": "21|100000",
+    "javaM4GuestExecution": "NOT_EXECUTED",
+    "javaM4SameTaskAcrossAwait": "HOST_TEST_AUTHORED_NOT_EXECUTED",
+    "javaM4NewDispatchAcrossAwait": "HOST_TEST_AUTHORED_NOT_EXECUTED",
+    "javaM4LeakedCallAtAwaitRejected": "HOST_TEST_AUTHORED_NOT_EXECUTED",
+    "javaM4LeakedCallAtCooperateRejected": "HOST_TEST_AUTHORED_NOT_EXECUTED",
+    "javaM4NestedRecursiveGuestFrameSuspension": "NOT_IMPLEMENTED",
+    "javaM4CompilerLoweredReturnPcSpills": "NOT_IMPLEMENTED",
+    "javaM4NativeStackSurvival": "NOT_EXECUTED",
+    "javaM4OtherBackendParity": "NOT_EXECUTED"
+  },
+  "javaActorTaskBindingReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2626"
 }

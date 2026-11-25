@@ -1,0 +1,17 @@
+// expect-exit: 42
+define class Counter as
+    pub let int value = 0;
+end
+
+pub constructor (Counter) (int initial): self {
+    self.value = initial;
+}
+
+pub mtd (Counter self) get_value(): int {
+    return self.value;
+}
+
+pub fnc main(): int {
+    val counter = new Counter(42);
+    return counter.get_value();
+}

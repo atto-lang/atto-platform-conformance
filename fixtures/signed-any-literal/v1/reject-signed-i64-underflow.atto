@@ -1,0 +1,7 @@
+// Expected: compilation rejection before any guest artifact is emitted.
+fnc classify(Any value): int { return 42; }
+
+pub fnc main(): int {
+  val value: Any = -9223372036854775809;
+  return classify(value);
+}

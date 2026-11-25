@@ -1,0 +1,57 @@
+name: AttoLang library profiles v1 (SOURCE CONTRACT ONLY)
+on:
+  pull_request:
+    paths:
+      - 'contracts/atto-library-profiles-v1.json'
+      - 'contracts/std-actor-parity-v1.json'
+      - 'lib/std-actor-parity-v1.mjs'
+      - 'tests/std-actor-parity-v1.test.mjs'
+      - 'lib/std-actor-guest-candidate-v1.mjs'
+      - 'tests/std-actor-guest-candidate-v1.test.mjs'
+      - 'docs/STD_ACTOR_GUEST_CANDIDATES_V1.md'
+      - 'docs/STD_ACTOR_PARITY_V1.md'
+      - 'lib/atto-library-profiles-v1.mjs'
+      - 'lib/atto-library-run-evidence-v1.mjs'
+      - 'tests/atto-library-profiles-v1.test.mjs'
+      - 'tests/atto-library-run-evidence-v1.test.mjs'
+      - 'fixtures/atto-library-profiles/**'
+      - 'docs/ATTO_LIBRARY_PROFILES_V1.md'
+      - '.github/workflows/atto-library-profiles-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout immutable PR head
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact PR source identity
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_HEAD" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          git diff --quiet --exit-code
+          git diff --cached --quiet --exit-code
+          printf 'HEAD=%s TREE=%s\n' "$EXPECTED_HEAD" "$(git rev-parse 'HEAD^{tree}')"
+      - name: Execute policy-model and evidence-classifier tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --version
+          node --test tests/atto-library-profiles-v1.test.mjs tests/atto-library-run-evidence-v1.test.mjs tests/std-actor-parity-v1.test.mjs tests/std-actor-guest-candidate-v1.test.mjs
+      - name: Preserve evidence boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo 'ATTO_LIBRARY_POLICY_TESTS=SOURCE_ONLY'
+          echo 'COMPILER_BACKED_GUEST_EXECUTION=NOT_EXECUTED'
+          echo 'ELEVEN_BACKEND_STD_ACTOR_GUEST_PARITY=NOT_EXECUTED'
+          echo 'SELF_HOSTED_AND_REALTIME_STD_ACTOR=NOT_IMPLEMENTED'

@@ -1,0 +1,9 @@
+// expect-error: E_IO_PAYLOAD_TYPE
+// Fallible channel read cannot implicitly become the output's string payload.
+pub suspends fnc main(): int using io, suspend {
+  val input = stdio.in;
+  val output = stdio.out;
+  val item = readch input;
+  val write_result = writech output, item;
+  return 0;
+}

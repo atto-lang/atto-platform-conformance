@@ -1,0 +1,5 @@
+// OW03: closure capture may not launder a nested borrowed capability.
+fnc bad(Option<borrow int> wrapped): void {
+  val callback = || -> { return wrapped; };
+  return;
+}

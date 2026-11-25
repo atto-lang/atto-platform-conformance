@@ -1,0 +1,10 @@
+// Proposed negative: geometry cannot invoke arbitrary host functions.
+// Source-only fixture; no backend/compiler execution evidence.
+pub fnc main(): void {
+    val pending = launch saxpy(a, x, y, out, n) on gpu(device) {
+        grid: [hostCall(), 1, 1],
+        block: [256, 1, 1],
+        queue: queue
+    };
+    return;
+}

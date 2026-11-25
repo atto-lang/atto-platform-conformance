@@ -1,0 +1,9 @@
+// expect-error: E_MOVED
+// Borrowing cannot resurrect a consumed owner.
+define class Box as pub let int value = 1; end
+fnc read(Box b): int { return b.value; }
+pub fnc main(): int {
+  val b = new Box();
+  val moved = take! b;
+  return read(b);
+}

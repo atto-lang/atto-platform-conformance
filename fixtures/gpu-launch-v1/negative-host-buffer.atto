@@ -1,0 +1,10 @@
+// Expected GPU-LAUNCH-002: HostBuffer may not enter a device ABI.
+pub gpu fnc bad(HostBuffer<f32> values) => void {
+    return;
+}
+suspends fnc run(HostBuffer<f32> values, GpuDevice device, GpuQueue queue) => void {
+    const done = launch bad(values) on gpu(device) {
+        grid: [1, 1, 1], block: [64, 1, 1], queue: queue
+    };
+    await done;
+}

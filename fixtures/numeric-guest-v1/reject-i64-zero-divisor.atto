@@ -1,0 +1,8 @@
+// Candidate guest source: must fail with division_by_zero (not host exception).
+// Backend may issue a statically proved diagnostic or a typed guest runtime fault.
+pub fnc checked(int divisor): int {
+  return 7 / divisor;
+}
+pub fnc main(): int {
+  return checked(0);
+}

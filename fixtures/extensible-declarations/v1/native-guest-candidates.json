@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0.0-draft",
+  "status": "TARGET_ONLY_NATIVE_GUEST_NOT_EXECUTED",
+  "spec": "https://github.com/atto-lang/atto-spec/pull/230",
+  "contract": {
+    "profile": "standalone_native_guest",
+    "forbidden_runtime_dependencies": [
+      "source_parser",
+      "macro_expander",
+      "guest_interpreter",
+      "jit",
+      "runtime_reflection_required"
+    ],
+    "positive": "compile source, verify artifact identity, run binary in source-free directory, assert expected exit and output",
+    "negative": "compile must fail with semantic diagnostic and no executable artifact"
+  },
+  "cases": [
+    {
+      "id": "custom-return-42",
+      "source": "define keyword entity as class requires Entity; end\ndefine interface Entity as\n answer(): int;\nend\ndefine entity Customer as\n pub answer(): int { return 42; }\nend\npub fnc main(): int { let Customer c = new Customer(); return c.answer(); }\n",
+      "expected_exit": 42,
+      "expected_stdout": ""
+    },
+    {
+      "id": "manual-return-42",
+      "source": "define interface Entity as\n answer(): int;\nend\ndefine class Customer implements Entity as\n pub answer(): int { return 42; }\nend\npub fnc main(): int { let Customer c = new Customer(); return c.answer(); }\n",
+      "expected_exit": 42,
+      "expected_stdout": ""
+    },
+    {
+      "id": "missing-method",
+      "source": "define keyword entity as class requires Entity; end\ndefine interface Entity as\n answer(): int;\nend\ndefine entity Customer as\nend\npub fnc main(): int { return 0; }\n",
+      "expected": "SEMANTIC_INTERFACE_REJECT",
+      "artifact": "ABSENT"
+    },
+    {
+      "id": "wrong-return",
+      "source": "define keyword entity as class requires Entity; end\ndefine interface Entity as\n answer(): int;\nend\ndefine entity Customer as\n pub answer(): bool { return true; }\nend\npub fnc main(): int { return 0; }\n",
+      "expected": "SEMANTIC_INTERFACE_REJECT",
+      "artifact": "ABSENT"
+    },
+    {
+      "id": "private-method",
+      "source": "define keyword entity as class requires Entity; end\ndefine interface Entity as\n answer(): int;\nend\ndefine entity Customer as\n private answer(): int { return 42; }\nend\npub fnc main(): int { return 0; }\n",
+      "expected": "SEMANTIC_INTERFACE_REJECT",
+      "artifact": "ABSENT"
+    }
+  ]
+}

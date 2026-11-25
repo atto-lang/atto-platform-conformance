@@ -1,0 +1,6 @@
+pub susp fnc main(): int {
+  val TaskFuture<int> t = task<int> { return 42; };
+  val Future<int> first = t.get_ready();
+  val Future<int> second = t.get_ready();
+  return await first;
+}

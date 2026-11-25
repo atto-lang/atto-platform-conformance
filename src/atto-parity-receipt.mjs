@@ -70,7 +70,7 @@ function validateV1(report) {
       check(typeof c.stdout === 'string' && c.stdout.length <= 16384, 'bounded stdout');
       check(typeof c.expected_stdout === 'string' && c.stdout === c.expected_stdout, 'stdout mismatch');
     } else {
-      check(c.compile_exit !== 0 && c.executed === false, 'negative compile rejection');
+      check(c.compile_exit >= 1 && c.compile_exit <= 123 && c.executed === false, 'negative compile rejection');
       check(typeof c.diagnostic === 'string' && c.diagnostic.length > 0 && c.diagnostic.length <= 4096 &&
         !/[\u0000\u001b\u007f-\u009f\u2028-\u202e\u2066-\u2069]/.test(c.diagnostic), 'negative diagnostic');
     }
@@ -117,7 +117,7 @@ function validateV2(report) {
       check(typeof c.diagnostic === 'string' && c.diagnostic.length > 0 && c.diagnostic.length <= 4096 &&
         !/[\u0000\u001b\u007f-\u009f\u2028-\u202e\u2066-\u2069]/.test(c.diagnostic), 'negative diagnostic');
       if (c.failure_stage === 'compile') {
-        check(c.compile_exit !== 0 && c.executed === false, 'negative compile rejection');
+        check(c.compile_exit >= 1 && c.compile_exit <= 123 && c.executed === false, 'negative compile rejection');
         check(c.artifact_sha256 === undefined, 'compile rejection artifact');
         check(c.runtime_outcome === undefined, 'compile rejection runtime outcome');
       } else {

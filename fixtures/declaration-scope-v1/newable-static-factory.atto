@@ -1,0 +1,15 @@
+define pub class Cart implements Newable[Cart] as
+  val int count = 42;
+
+  pub fnc new(): Cart {
+    return new Cart();
+  }
+
+  pub get_count(): int {
+    return self.count;
+  }
+end
+
+define pub fnc create_cart(): Cart {
+  return Cart.new();
+}

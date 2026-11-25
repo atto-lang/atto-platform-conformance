@@ -1,0 +1,7 @@
+// MUST REJECT: Topic<T> with a nested callable element is not data-only.
+// The backend must diagnose Topic payload safety, not unsupported syntax.
+pub async routine main(): void {
+  val group = actor.group("typed");
+  val topic = group.topic<Option<Fnc<int, int>>>("nested-closures", "latest", 1);
+  return;
+}

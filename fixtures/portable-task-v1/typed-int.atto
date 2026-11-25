@@ -1,0 +1,4 @@
+pub suspends fnc main(): int {
+  let Task<int> work = task { return 42; };
+  return await work;
+}

@@ -1,0 +1,6 @@
+define class Box as pub let int value = 1; end
+pub fnc main(): int {
+  val Box fixed_mutable = new Box();
+  fixed_mutable = new Box();
+  return fixed_mutable.value;
+}

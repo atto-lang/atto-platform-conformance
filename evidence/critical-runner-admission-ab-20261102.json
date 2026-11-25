@@ -1,0 +1,61 @@
+{
+  "schema": "oreslang.critical-suspends.sourcefree-runner-admission-ab/1",
+  "captured_date": "2026-11-02",
+  "outcome": "RUNNER_ADMISSION_DIVERGENCE_CAUSE_UNDETERMINED",
+  "budget_available_claim": false,
+  "mirror_authorized": false,
+  "private_source_transferred": false,
+  "scope": "Two private repositories; identical jobs-body source-free shell checks; no checkout, secrets, external actions or AttoLang source",
+  "source": {
+    "repository": "ores-truffle-oreslang/oreslang-platform-conformance",
+    "branch": "feat/critical-suspends-unified-contract-20261101",
+    "commit": "3d5bdf454c65d87a915c5d23c2349522c80a958f",
+    "tree": "20e4e66740aa03560ce5360f26ad8814a4de4688",
+    "workflow_blob": "9fdf367e37c56c7c013b8a21222b0bbc4ad3c499",
+    "run_id": 41395829396,
+    "run_attempt": 1,
+    "job_id": 125116825246,
+    "job_name": "runner-admission",
+    "run_conclusion": "failure",
+    "job_conclusion": "failure",
+    "steps": 0,
+    "logs_available": false
+  },
+  "alternate": {
+    "repository": "gha-indie-worker/gha-indie-worker-docs",
+    "branch": "ci/atto-sourcefree-runner-canary-20261102",
+    "commit": "63b98a78298a83123b53f867a6536828b413f742",
+    "tree": "3549f7d5728706abe06b6a5851e5fe6bb9d3e929",
+    "workflow_blob": "14160547d13290a80edfbbffced00cc227ff7e3a",
+    "run_id": 41395768031,
+    "run_attempt": 1,
+    "job_id": 125116643102,
+    "job_name": "runner-admission",
+    "run_conclusion": "success",
+    "job_conclusion": "success",
+    "steps": 4,
+    "named_steps": [
+      "Set up job",
+      "Check allocated runner",
+      "Verify second executed step",
+      "Complete job"
+    ],
+    "log_markers": [
+      "SOURCE_FREE_RUNNER_ADMITTED=1",
+      "SOURCE_FREE_TWO_STEPS_EXECUTED=1"
+    ],
+    "logs_available": true
+  },
+  "same_job_definition": true,
+  "source_org_branch_protection_observed": false,
+  "security_incidents_open": [
+    22,
+    77,
+    127
+  ],
+  "next_steps": [
+    "Inspect source-org billing/minutes, Actions policy, allowed runner labels and GitHub-hosted admission events with authorized administration",
+    "Independently secure private source transfer approval, protect all source main branches and close security incidents before any Git-object mirror",
+    "Run compiler and native guest tests only on stepful authorized exact-head source"
+  ]
+}

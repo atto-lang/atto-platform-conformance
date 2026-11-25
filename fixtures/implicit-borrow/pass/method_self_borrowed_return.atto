@@ -1,0 +1,13 @@
+// expect-exit: 42
+// TARGET_ONLY: not yet guest executed
+// Method: self is the unique provenance root for the returned child.
+define class Child as pub let int value = 21; end
+define class Parent as
+  pub let Child child = new Child();
+  pub get_child(): Borrow<Child> { return self.child; }
+end
+pub fnc main(): int {
+  val p = new Parent();
+  val c = p.get_child();
+  return c.value + c.value;
+}

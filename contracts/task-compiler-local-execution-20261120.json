@@ -1,0 +1,403 @@
+{
+  "schema": "atto.task-compiler-local-execution.v1",
+  "observed_utc": "2026-11-20",
+  "provenance": "ChatGPT isolated local container; reconstructed exact bytes from authenticated GitHub connector fetch_file then verified with git hash-object. NOT a GitHub Actions CI run.",
+  "grade": "LOCALLY_EXECUTED_LIMITED_PROFILE",
+  "java": {
+    "repo": "atto-lang/atto-source.java",
+    "pr": 59,
+    "head": "35339c0df48fe42d2dd450495979732e285ce803",
+    "toolchain": "OpenJDK javac 21.0.12.1; -Xlint:all -Werror",
+    "blobs": {
+      "src/compiler/asyncv1/AttoAsyncV1Compiler.java": "a7e4f4d24bd1a1105229a443f2527b7ead210189",
+      "tests/compiler/AttoAsyncV1CompilerProbe.java": "cb5d8bcdd7188e261060ea03a5875844f42f4b0e",
+      "fixtures/async_v1/completed_future_typed.atto": "240fc8e0ad724722b13f8e0034b30bc69db76925",
+      "fixtures/async_v1/completed_future.atto": "b2c23fcf15bebda5449032f41e3096dae68302c0",
+      "ci/async/verify-compiled-completed-future.sh": "cec8bdf8c3eecbc3dfd50ee79d09af02516b27eb",
+      "tests/compiler/AttoAsyncV1GeneratedIdentifierProbe.java": "3d73792dbeb346412652600496124f49d0d673c1"
+    },
+    "admission": {
+      "checks_expected": 56,
+      "checks_passed": 56,
+      "execution": "OpenJDK 21 -Xlint:all -Werror source+probe SHA-matched"
+    },
+    "compiled_guest": {
+      "scope": "CLOSED_WORLD_COMPLETED_FUTURE_INT",
+      "fixtures": [
+        "completed_future_typed.atto",
+        "completed_future.atto"
+      ],
+      "compiled_with_javac": true,
+      "ran_on_core_jvm": true,
+      "exit_codes": [
+        42,
+        42
+      ],
+      "stdout_marker": "ATTO_ASYNC_V1_RESULT=42"
+    },
+    "negative": {
+      "fixture": "uppercase Math-shadows-java.lang.Math",
+      "diagnostic": "E_ASYNC_INVALID_IDENTIFIER",
+      "no_generated_java_artifact": true
+    },
+    "native_image": "NOT_EXECUTED",
+    "task_cancellation": "NOT_EXECUTED",
+    "lock_cleanup": "NOT_EXECUTED",
+    "generated_identifier_matrix": {
+      "admitted_generated_java_compiled": 19,
+      "invalid_identifiers_rejected": 4,
+      "exact_source_verified": true,
+      "compiler_flags": "-Xlint:all -Werror",
+      "execution": "LOCAL_JDK_TEST_PASSED"
+    },
+    "negative_diagnostic": {
+      "test": "private_guest_token_abc123 is never echoed to output",
+      "diagnostic": "E_ASYNC_UNEXPECTED_TOKEN",
+      "no_generated_java_artifact": true,
+      "executed": true
+    },
+    "source_org_actions": {
+      "status": "ZERO_EXECUTED_STEPS",
+      "requalification": "NOT_EXECUTED"
+    },
+    "exact_blob_carrier_github_actions": {
+      "source_repo": "atto-lang/atto-source.java",
+      "source_pr": 59,
+      "source_pr_head": "35339c0df48fe42d2dd450495979732e285ce803",
+      "source_blobs_verified": 7,
+      "source_blobs_total": 7,
+      "source_scope": "EXACT_TEST_DEPENDENCY_CLOSURE_ONLY; not complete source Git tree",
+      "carrier_repo": "r2g-test/atto-ci",
+      "carrier_visibility": "private",
+      "carrier_commit": "96f14d5002c73dd34b05b34bdb103eecb811186b",
+      "carrier_tree_sha": "1f04bb6d996aa4acda3e2e2f6ff9c362dc2665a0",
+      "run_id": 44768560080,
+      "run_url": "https://github.com/r2g-test/atto-ci/actions/runs/44768560080",
+      "job_id": 136399721107,
+      "conclusion": "success",
+      "job_steps": 8,
+      "runs_on": "ubuntu-24.04",
+      "jdk_distribution": "graalvm",
+      "jdk_version": "25",
+      "exact_tree_gate": "PASS",
+      "exact_tree_gate_files": 6,
+      "source_blob_gate": "7/7",
+      "source_admission_checks_passed": 56,
+      "source_admission_checks_total": 56,
+      "source_generated_identifier_matrix": {
+        "admitted_java_compiled": 19,
+        "invalid_names_rejected": 4
+      },
+      "compiled_legacy_task": {
+        "jvm_exit": 42,
+        "native_image_exit": 42
+      },
+      "compiled_typed_task_int": {
+        "jvm_exit": 42,
+        "native_image_exit": 42
+      },
+      "native_image_generated": true,
+      "native_image_runtime_executed": true,
+      "source_token_used": false,
+      "cross_org_checkout": false,
+      "limitations": [
+        "This Java slice only admits an already-completed Future<int> and a bounded scalar pipeline.",
+        "Not a general async scheduler, task cancellation or lock-guard cleanup proof.",
+        "Only 7 source dependencies were SHA verified; carrier tree differs from full Java source repo.",
+        "The compiler source PR itself still has zero-step Actions failures."
+      ]
+    }
+  },
+  "forge": {
+    "repo": "atto-lang/atto-source.forge",
+    "pr": 52,
+    "head": "33110d1577369ec0115826e7b4cfc30b93956ff4",
+    "blobs": {
+      "include/atto/scalar_parser.hpp": "4ade67b1c2399b01852b879140e0dac44a740c1c",
+      "include/atto/scalar_lexer.hpp": "e926fb685d5b3db152668979df07a8ddbb692202",
+      "include/atto/decimal_i64.hpp": "e0a026e7b9dde7cfc72f8bf0aa776234106fd98b",
+      "include/atto/checked_i64.hpp": "e9a6598416c919f9ac7c629847f8d6677c703a14",
+      "tests/scalar_parser.cpp": "52060990f6aa190354cab9edbb6a50b80602fc11"
+    },
+    "toolchains": [
+      "g++ 14.2.0 (C++20)",
+      "clang++ 17.0.0 (C++20)"
+    ],
+    "test_builds": [
+      "GCC Debug -O0 -g",
+      "GCC Release -O2 -DNDEBUG",
+      "Clang Debug -O0 -g",
+      "Clang Release -O2 -DNDEBUG"
+    ],
+    "passed_builds": 4,
+    "assertions_active_in_release": true,
+    "scope": "SOURCE_PARSER_TESTS; task<T>/sync deliberately unsupported",
+    "compiled_atto_task_guest": "NOT_EXECUTED",
+    "task_cancellation": "NOT_EXECUTED",
+    "lock_cleanup": "NOT_EXECUTED",
+    "sanitizers": {
+      "toolchains": [
+        "g++ 14.2.0",
+        "clang++ 17.0.0"
+      ],
+      "flags": "-std=c++20 -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -Wall -Wextra -Werror -pedantic",
+      "builds_executed": 2,
+      "builds_passed": 2,
+      "asan_options": "detect_leaks=1",
+      "ubsan_options": "halt_on_error=1",
+      "scope": "full checked-in source parser regression test; not a compiled guest"
+    },
+    "exact_tree_github_actions": {
+      "source_repo": "atto-lang/atto-source.forge",
+      "source_pr": 52,
+      "source_pr_head": "33110d1577369ec0115826e7b4cfc30b93956ff4",
+      "source_tree_sha": "5b5c2a42e78ac78fe7b912faa823af7ae822c079",
+      "source_git_blobs_verified": 49,
+      "source_git_blobs_total": 49,
+      "carrier_repo": "r2g-test/atto-ci",
+      "carrier_visibility": "private",
+      "carrier_commit": "3dc6c0030f31aa28cfcefb360bf37379138a3184",
+      "carrier_tree_sha": "5b5c2a42e78ac78fe7b912faa823af7ae822c079",
+      "run_id": 44767662174,
+      "run_url": "https://github.com/r2g-test/atto-ci/actions/runs/44767662174",
+      "conclusion": "success",
+      "runs_on": "ubuntu-24.04",
+      "permissions": "contents: read",
+      "cross_org_checkout": false,
+      "source_token_used": false,
+      "toolchains": [
+        {
+          "name": "g++",
+          "job_id": 136396527543,
+          "job_conclusion": "success",
+          "executed_steps": 7,
+          "cmake": "-DATTO_FORGE_SANITIZERS=ON",
+          "ctest_passed": 14,
+          "ctest_total": 14,
+          "ctest_failed": 0
+        },
+        {
+          "name": "clang++",
+          "job_id": 136396528149,
+          "job_conclusion": "success",
+          "executed_steps": 7,
+          "cmake": "-DATTO_FORGE_SANITIZERS=ON",
+          "ctest_passed": 14,
+          "ctest_total": 14,
+          "ctest_failed": 0
+        }
+      ],
+      "limitations": [
+        "Exact source tree reconstructed in carrier, not original commit hash (different parent).",
+        "Supports Forge scalar compiler/checked-integer source profiles only.",
+        "No compiled task<T>/Future.cancel()/TenantVM guard unwind; canonical cancellation runtime cells remain NOT_EXECUTED."
+      ]
+    }
+  },
+  "shared_limits": [
+    "Rust toolchain absent locally (rustc/cargo).",
+    "dotnet SDK absent locally.",
+    "GitHub Actions runner probes previously returned zero executed steps; cannot infer CI pass.",
+    "Browser JSPI host tests execute separately but do not prove guest Future.cancel(), checked MIR or lock cleanup.",
+    "Do not set canonical task/cancellation conformance runtime cells to PASS based on this limited evidence."
+  ],
+  "carrier_probe": {
+    "repo": "akrion-sim/akrion-sim-e2e",
+    "run_url": "https://github.com/akrion-sim/akrion-sim-e2e/actions/runs/44764395804",
+    "job": "verify_runner",
+    "steps": 0,
+    "conclusion": "failure",
+    "source_mirror_created": false,
+    "workflow_file_deleted": true
+  },
+  "rust": {
+    "source_repo": "atto-lang/atto-source.rs",
+    "source_pr": 416,
+    "source_pr_head": "c3712257cabf6090adc0e227328ae1f487872f0e",
+    "source_git_tree_sha": "111dd5a1744a1fc89c0382e52277a4bef15a8b78",
+    "source_compiler_src_git_tree_sha": "3fbde653128781524cf4f0fb357180a2657624e9",
+    "mirror_scope": "All 54 root Rust compiler crate Cargo/src files plus 17 Mutex test/fixture files; NOT all 954 repository files",
+    "exact_source_git_blobs_verified": 71,
+    "exact_source_git_blobs_total": 71,
+    "source_manifest_blob_sha": "fc0d2097800c393ce9c9f00bd7937497194ea74a",
+    "carrier_repo": "r2g-test/atto-ci",
+    "carrier_private": true,
+    "carrier_commit": "426dc51cfc1ca185837e293f84e39f8c6cbb2db2",
+    "carrier_tree_sha": "834b49523b5a592bf95da9a674c917d0556d1ef1",
+    "run_id": 44772469684,
+    "run_url": "https://github.com/r2g-test/atto-ci/actions/runs/44772469684",
+    "job_id": 136413417820,
+    "job_conclusion": "success",
+    "job_steps_executed": true,
+    "toolchain": "rustc/cargo 1.100.0, Ubuntu 24.04, Node.js",
+    "compiled_rust_host_and_compiler_library_tests": {
+      "passed": 118,
+      "total": 118,
+      "includes_host_task_lock_model_tests": 56
+    },
+    "mutex_compiler_acceptance_tests": {
+      "passed": 12,
+      "total": 12
+    },
+    "native_attoc_built": true,
+    "strict_clippy_minus_d_warnings": "PASS",
+    "wasm_guest_receipt": {
+      "profile": "single_task_uncontended_only",
+      "compiler_binary_sha256": "fd6bc895639b4c6d9a7c2470ff1abafe6e50c4eae6ad213a3bfdd9ac0db5337c",
+      "cases": [
+        {
+          "id": "return-one",
+          "kind": "real_compiled_wasm_guest",
+          "exit": 1,
+          "stdout": "",
+          "wasm_sha256": "350bc810eedc33ed2638c4e9e24006305f4c694f97a5437df9235c14bc7d3ae0",
+          "wasm_bytes": 409,
+          "status": "PASS"
+        },
+        {
+          "id": "return-twice",
+          "kind": "real_compiled_wasm_guest",
+          "exit": 2,
+          "stdout": "",
+          "wasm_sha256": "02e7cb061fbca7adc274f8460a0f285df9fe3b44524cd1cf88b3097294504d69",
+          "wasm_bytes": 412,
+          "status": "PASS"
+        },
+        {
+          "id": "return-forty",
+          "kind": "real_compiled_wasm_guest",
+          "exit": 40,
+          "stdout": "",
+          "wasm_sha256": "b0008b5ec4734c8fc6963f7d073e187dec1ea7242629db04af7699ddc684cfd0",
+          "wasm_bytes": 409,
+          "status": "PASS"
+        },
+        {
+          "id": "print-explicit",
+          "kind": "real_compiled_wasm_guest",
+          "exit": 0,
+          "stdout": "1\n",
+          "wasm_sha256": "3c365547a759956874de7c1e457f4e857f1fbc12bd9065f176662c872a3ab1d8",
+          "wasm_bytes": 500,
+          "status": "PASS"
+        },
+        {
+          "id": "print-implicit",
+          "kind": "real_compiled_wasm_guest",
+          "exit": 0,
+          "stdout": "1\n",
+          "wasm_sha256": "3c365547a759956874de7c1e457f4e857f1fbc12bd9065f176662c872a3ab1d8",
+          "wasm_bytes": 500,
+          "status": "PASS"
+        },
+        {
+          "id": "lazy-unawaited",
+          "kind": "real_compiled_wasm_guest",
+          "exit": 0,
+          "stdout": "",
+          "wasm_sha256": "b4cee85576b1c8956b546bfb806dc9988da9b271189e58a397af77a8f87e98f6",
+          "wasm_bytes": 359,
+          "status": "PASS"
+        },
+        {
+          "id": "lazy-overflow-unexecuted",
+          "kind": "real_compiled_wasm_guest",
+          "exit": 0,
+          "stdout": "",
+          "wasm_sha256": "0a46ebb3ddbc66ea8deaebc3326ec59cc0a72c962fcb87a7592f9186d80bcd64",
+          "wasm_bytes": 368,
+          "status": "PASS"
+        },
+        {
+          "id": "negative-guard-ready",
+          "kind": "negative",
+          "diagnostic": "E_GUARD_SUSPEND",
+          "guest_artifact": false,
+          "status": "PASS"
+        },
+        {
+          "id": "negative-guard-escape",
+          "kind": "negative",
+          "diagnostic": "E_GUARD_ESCAPE",
+          "guest_artifact": false,
+          "status": "PASS"
+        },
+        {
+          "id": "negative-await-effect",
+          "kind": "negative",
+          "diagnostic": "E_AWAIT_EFFECT",
+          "guest_artifact": false,
+          "status": "PASS"
+        },
+        {
+          "id": "negative-old-constructor",
+          "kind": "negative",
+          "diagnostic": "E_NEW_REQUIRED",
+          "guest_artifact": false,
+          "status": "PASS"
+        },
+        {
+          "id": "negative-old-constructor-no-lock",
+          "kind": "negative",
+          "diagnostic": "E_NEW_REQUIRED",
+          "guest_artifact": false,
+          "status": "PASS"
+        },
+        {
+          "id": "negative-old-constructor-nested",
+          "kind": "negative",
+          "diagnostic": "E_NEW_REQUIRED",
+          "guest_artifact": false,
+          "status": "PASS"
+        },
+        {
+          "id": "negative-new-no-lock",
+          "kind": "negative",
+          "diagnostic": "E_LOCK_UNSUPPORTED",
+          "guest_artifact": false,
+          "status": "PASS"
+        },
+        {
+          "id": "negative-new-nested-no-lock",
+          "kind": "negative",
+          "diagnostic": "E_LOCK_UNSUPPORTED",
+          "guest_artifact": false,
+          "status": "PASS"
+        }
+      ],
+      "pass": true,
+      "positive_executed": 7,
+      "negative_no_artifact_executed": 8
+    },
+    "cross_org_checkout": false,
+    "source_repo_secret_or_token": false,
+    "task_cancel_guest_runtime": "NOT_EXECUTED",
+    "real_contended_mutex_async": "NOT_EXECUTED",
+    "tenantvm_quiescence_and_physical_retirement": "NOT_EXECUTED",
+    "all_ten_backend_canonical_runtime_cells": "NOT_EXECUTED",
+    "limitations": [
+      "Executed guest suite verifies only single-task uncontended closed-world Mutex<int> scalar readiness and no-artifact error gates",
+      "Rust TaskScope cancellation and lock lifecycle tests are host-state-model tests, not executable Atto task<T>/Future.cancel guest semantics",
+      "No production guest scheduler ABI or tenant isolation/physical-quiescence proof; cannot qualify broader runtime parity",
+      "Source repository root tree differs from carrier root: compiler src subtree and 71 source Git blobs match exactly",
+      "Native and browser wasm32 backends beyond this emitted guest profile are not certified by this receipt"
+    ],
+    "receipt_validation": {
+      "run_id": 44773393383,
+      "run_url": "https://github.com/r2g-test/atto-ci/actions/runs/44773393383",
+      "job_id": 136416643205,
+      "carrier_commit": "b71180ded9f6cfc8f03082259e9fc0e4569213f5",
+      "source_compiler_head": "c3712257cabf6090adc0e227328ae1f487872f0e",
+      "conclusion": "success",
+      "actual_step_execution": true,
+      "source_sha_gate": "71/71 PASS",
+      "compiler_lib": "118/118 PASS",
+      "mutex_compiler_integration": "12/12 PASS",
+      "source_compiled_wasm_guest_cases": "15/15 PASS",
+      "clippy_deny_warnings": "PASS",
+      "node_receipt_tests": "3/3 PASS",
+      "canonical_task_cancellation_runtime": "NOT_EXECUTED",
+      "limitations": "Receipt validator proves the authenticity and appropriate scope of the restricted guest evidence. It is not a general task cancellation, contended async Mutex, or TenantVM physical-retirement proof."
+    }
+  }
+}

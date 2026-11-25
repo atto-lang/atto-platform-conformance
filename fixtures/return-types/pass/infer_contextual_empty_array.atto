@@ -1,0 +1,4 @@
+pub fnc main(): infer {
+    val values: Array<int> = [];
+    return 5;
+}

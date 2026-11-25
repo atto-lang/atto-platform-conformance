@@ -1,0 +1,3 @@
+// expect-exit: 0
+fnc noop() -> infer { return; }
+pub fnc main() -> int { noop(); return 0; }
