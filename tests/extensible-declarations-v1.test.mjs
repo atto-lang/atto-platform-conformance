@@ -9,8 +9,8 @@ const corpus = JSON.parse(await readFile(new URL(
 test("extensible declarations fixture provenance and coverage", () => {
   assert.equal(corpus.spec, "https://github.com/atto-lang/atto-spec/pull/230");
   assert.equal(corpus.status, "SOURCE_FIXTURE_CANDIDATES_NOT_COMPILER_EVIDENCE");
-  assert.equal(corpus.cases.length, 15);
-  assert.equal(new Set(corpus.cases.map(c => c.id)).size, 15);
+  assert.equal(corpus.cases.length, 19);
+  assert.equal(new Set(corpus.cases.map(c => c.id)).size, 19);
   for (const c of corpus.cases) {
     assert.equal(typeof c.source, "string", c.id);
     assert.ok(c.source.includes("define "), c.id);
