@@ -1,0 +1,11 @@
+// Strict, exact, case-sensitive boolean parsing and absent fallback.
+import module std_env from "std/env";
+pub routine main(): void {
+  stdio.println(std_env.parse_bool("true").unwrap());
+  stdio.println(std_env.parse_bool("false").unwrap());
+  stdio.println(std_env.parse_bool("1").unwrap());
+  stdio.println(std_env.parse_bool("0").unwrap());
+  stdio.println(std_env.get_bool("ATTO_ENV_FLAG").unwrap());
+  stdio.println(std_env.get_bool_or("ATTO_ENV_MISSING", true).unwrap());
+  return;
+}

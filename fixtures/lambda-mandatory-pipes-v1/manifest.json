@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "id": "lambda-mandatory-pipes-v1",
+  "normative_spec": "atto-lang/atto-spec#192",
+  "status": "TARGET_NOT_EXECUTED",
+  "scope": "Parser acceptance only. Host integrity test does NOT prove backend parsing or guest execution.",
+  "backend_status": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "rs": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "atto": "NOT_EXECUTED",
+    "hdl": "NOT_EXECUTED",
+    "realtime": "NOT_EXECUTED"
+  },
+  "cases": [
+    {
+      "id": "one-discard",
+      "category": "positive",
+      "source": "pub fnc main(): int {\n    val mapper = |_| : int -> 5;\n    return 42;\n}\n",
+      "expect": "PARSE_ACCEPT",
+      "meaning": "one ignored argument"
+    },
+    {
+      "id": "zero-arguments",
+      "category": "positive",
+      "source": "pub fnc main(): int {\n    val mapper = || : int -> 5;\n    return 42;\n}\n",
+      "expect": "PARSE_ACCEPT",
+      "meaning": "zero arguments"
+    },
+    {
+      "id": "named-typed",
+      "category": "positive",
+      "source": "pub fnc main(): int {\n    val mapper = |x: int| : int -> x + 5;\n    return 42;\n}\n",
+      "expect": "PARSE_ACCEPT",
+      "meaning": "typed named argument"
+    },
+    {
+      "id": "named-inferred",
+      "category": "positive",
+      "source": "pub fnc main(): int {\n    val mapper = |x| -> x + 5;\n    return 42;\n}\n",
+      "expect": "PARSE_ACCEPT",
+      "meaning": "inferred typed argument"
+    },
+    {
+      "id": "bare-discard-typed",
+      "category": "negative",
+      "source": "pub fnc main(): int {\n    val mapper = _ : int -> 5;\n    return 42;\n}\n",
+      "expect": "PARSE_REJECT",
+      "meaning": "bare underscore is not an anonymous function head"
+    },
+    {
+      "id": "bare-discard-inferred",
+      "category": "negative",
+      "source": "pub fnc main(): int {\n    val mapper = _ -> 5;\n    return 42;\n}\n",
+      "expect": "PARSE_REJECT",
+      "meaning": "bare underscore is not an inferred anonymous function head"
+    },
+    {
+      "id": "bare-name-typed",
+      "category": "negative",
+      "source": "pub fnc main(): int {\n    val mapper = x : int -> x + 5;\n    return 42;\n}\n",
+      "expect": "PARSE_REJECT",
+      "meaning": "named parameter without pipes is invalid"
+    },
+    {
+      "id": "bare-name-inferred",
+      "category": "negative",
+      "source": "pub fnc main(): int {\n    val mapper = x -> x + 5;\n    return 42;\n}\n",
+      "expect": "PARSE_REJECT",
+      "meaning": "named parameter without pipes is invalid"
+    },
+    {
+      "id": "const-fnc-bare-discard-typed",
+      "category": "negative",
+      "source": "const fnc mapper = _ : int -> 5;\n",
+      "expect": "PARSE_REJECT",
+      "meaning": "user-requested const fnc shorthand must be rejected for missing pipes; not merely for unsupported const fnc features"
+    },
+    {
+      "id": "const-fnc-bare-discard-inferred",
+      "category": "negative",
+      "source": "const fnc mapper = _ -> 5;\n",
+      "expect": "PARSE_REJECT",
+      "meaning": "bare underscore remains invalid in module-level const fnc"
+    },
+    {
+      "id": "const-fnc-pipe-discard",
+      "category": "positive",
+      "source": "const fnc mapper = |_| : int -> 5;\n",
+      "expect": "PARSE_ACCEPT",
+      "meaning": "user-requested one-argument const fnc spelling"
+    }
+  ]
+}

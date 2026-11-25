@@ -1,0 +1,127 @@
+{
+  "schema": "atto.caller-trap-cross-backend.v1",
+  "status": "acceptance-contract-only-NOT-full-runtime-parity",
+  "sourceExtension": ".atto",
+  "semanticReference": "ores-truffle-oreslang/oreslang-source.java/docs/TRAP_EXPRESSION_UNWRAP.md",
+  "backends": [
+    "java-graalvm",
+    "llvm-native",
+    "dotnet-nativeaot"
+  ],
+  "requiredObservations": [
+    "compile actual guest .atto source, not a token parser, mock, or JavaScript emulation",
+    "execute actual native/AOT guest on the selected backend",
+    "observe signed exit value / stdout exactly / panic failure category",
+    "type-check Option<T> and preserve nested Option<Result<int,String>> and Some(None)",
+    "evaluate trapped operand exactly once; return Some only after success",
+    "catch only ordinary guest Error, not panic, raise, cancellation, forced stop, or host fatal",
+    "ordinary throw propagates across synchronous call frames and closes lexical resources exactly once",
+    "reject unimplemented async, actor, ownership and generic combinations with typed diagnostics"
+  ],
+  "cases": [
+    {
+      "id": "some-int",
+      "file": "01-some-int.atto",
+      "expect": {
+        "kind": "exit",
+        "value": 42
+      }
+    },
+    {
+      "id": "some-result-ok",
+      "file": "02-some-result-ok.atto",
+      "expect": {
+        "kind": "exit",
+        "value": 42
+      }
+    },
+    {
+      "id": "some-result-err",
+      "file": "03-some-result-err.atto",
+      "expect": {
+        "kind": "exit",
+        "value": 7
+      }
+    },
+    {
+      "id": "some-none",
+      "file": "04-some-none.atto",
+      "expect": {
+        "kind": "exit",
+        "value": 13
+      }
+    },
+    {
+      "id": "ordinary-throw",
+      "file": "05-ordinary-throw.atto",
+      "expect": {
+        "kind": "exit",
+        "value": 9
+      }
+    },
+    {
+      "id": "panic-bypass",
+      "file": "06-panic-bypass.atto",
+      "expect": {
+        "kind": "panic",
+        "class": "panic"
+      }
+    },
+    {
+      "id": "exactly-once",
+      "file": "07-exactly-once.atto",
+      "expect": {
+        "kind": "exit",
+        "value": 42,
+        "stdout": "once"
+      }
+    },
+    {
+      "id": "type-mismatch",
+      "file": "08-type-mismatch.atto",
+      "expect": {
+        "kind": "diagnostic",
+        "class": "type"
+      }
+    },
+    {
+      "id": "result-is-not-throw",
+      "file": "09-result-is-not-throw.atto",
+      "expect": {
+        "kind": "exit",
+        "value": 17
+      }
+    }
+  ],
+  "currentAudit": {
+    "java-graalvm": {
+      "status": "partially-implemented",
+      "evidence": "TrapOptionSemanticsTest.java / docs/TRAP_EXPRESSION_UNWRAP.md",
+      "verifiedCaseIds": [],
+      "notes": "Java has call-site expression trap and general sum types; identical 9-case fixture execution remains to be proved."
+    },
+    "llvm-native": {
+      "status": "unsupported-trap-expression",
+      "evidence": "frontend/Parser.cpp rejects trap before IR emission",
+      "verifiedCaseIds": [],
+      "notes": "Native sums and some checked throw/cleanup fixtures exist but trap call-boundary and nested sum/type wiring are missing."
+    },
+    "dotnet-nativeaot": {
+      "status": "unsupported-result-and-trap",
+      "evidence": "OptionResultTrapAdmissionTests.cs; StructuredSource.cs",
+      "verifiedCaseIds": [],
+      "notes": "Closed Option<int> is implemented; Result and typed guest exception completion absent in structured CFG/CIL."
+    }
+  },
+  "evidencePolicy": {
+    "verifiedCaseIdsRequire": "executed backend compiler and guest, exact source SHA, toolchain and captured output",
+    "skippedOrExpectedRejection": "never count as parity pass",
+    "historicalCI": "not transferable to modified head",
+    "carriers": "private exact Git tree SHA or per-blob SHA proof, no token cross-org checkout",
+    "requiredCompilerProfiles": [
+      "real Java/GraalVM",
+      "real LLVM native",
+      "real .NET NativeAOT"
+    ]
+  }
+}

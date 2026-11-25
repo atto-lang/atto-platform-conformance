@@ -1,0 +1,23 @@
+{
+  "contract": "attolang.portable-bounds-v1",
+  "status": "candidate_unverified_no_guest_execution",
+  "canonical_source": "contracts/portable-bounds-v1/bounds.atto",
+  "canonical_git_blob_sha1": "a8ae98d0de39596ffad3a00be02d8f1e255de777",
+  "vectors": "contracts/portable-bounds-v1/vectors.tsv",
+  "vector_count": 43,
+  "representations": [
+    "signed_i64"
+  ],
+  "backends": [
+    "java",
+    "llvm",
+    "net",
+    "wasm",
+    "forge",
+    "cranelift",
+    "rs",
+    "js"
+  ],
+  "runtime_parity_proven": false,
+  "execution_evidence": []
+}

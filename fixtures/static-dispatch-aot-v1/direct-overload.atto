@@ -1,0 +1,9 @@
+define class Box as
+  let int value=20;
+  pub read():int{return self.value;}
+  pub read(int n):int{return self.value+n;}
+end
+pub fnc main():int{
+  let Box b=new Box();
+  return b.read()+b.read(2);
+}

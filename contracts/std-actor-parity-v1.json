@@ -1,0 +1,288 @@
+{
+  "schema": "atto.std-actor-parity/1",
+  "status": "SOURCE_CONTRACT_ONLY",
+  "sourceNamespace": "std.actor",
+  "optionalRuntimeProfile": "atto.runtime.actor",
+  "namespaceRelationship": "separate-source-namespace-and-optional-runtime-capability-not-implicit-alias",
+  "sourceFormat": ".atto",
+  "sourceOwnership": "independent-per-compiler",
+  "noRuntimeFallback": true,
+  "layers": {
+    "coreActorDependency": false,
+    "allocActorDependency": false,
+    "stdActorDependency": false,
+    "actorCapabilityExplicit": true
+  },
+  "api": {
+    "policy": [
+      "actor_mailbox_admissible",
+      "actor_future_transition_valid",
+      "actor_lifecycle_transition_valid",
+      "actor_should_restart",
+      "actor_restart_first",
+      "actor_restart_end_exclusive",
+      "actor_restart_budget_allows",
+      "actor_next_generation",
+      "actor_failure_notifies_supervisor",
+      "actor_cancel_request_admissible",
+      "actor_stop_request_admissible",
+      "actor_stop_completion_admissible",
+      "actor_restart_generation_admissible",
+      "actor_supervisor_notice_admissible",
+      "actor_reply_admissible"
+    ],
+    "futures": [
+      {
+        "name": "await_reply",
+        "formal": "take! ActorFuture<T>",
+        "returns": "T",
+        "settlement": "one-shot-owned-result"
+      },
+      {
+        "name": "await_reply_result",
+        "formal": "take! ActorFuture<Result<T,E>>",
+        "returns": "Result<T,E>",
+        "settlement": "one-shot-preserve-result"
+      }
+    ],
+    "lifecycleStates": {
+      "created": 0,
+      "starting": 1,
+      "running": 2,
+      "stopping": 3,
+      "stopped": 4,
+      "failed": 5
+    },
+    "futureStates": {
+      "pending": 0,
+      "success": 1,
+      "cancelled": 2,
+      "failed": 3,
+      "panicked": 4
+    },
+    "restartPolicy": {
+      "permanent": 1,
+      "transient": 2,
+      "temporary": 3
+    },
+    "restartStrategy": {
+      "one_for_one": 1,
+      "one_for_all": 2,
+      "rest_for_one": 3
+    },
+    "failureKinds": {
+      "throw": 1,
+      "raise": 2,
+      "panic": 3
+    },
+    "mailboxCapacityBounds": [
+      1,
+      65536
+    ],
+    "restartMaximumChildren": 4096,
+    "restartGenerationRange": [
+      1,
+      2147483647
+    ]
+  },
+  "invariants": {
+    "guestBooleansNeverCreateCapabilities": true,
+    "priorityControlAuthenticatedByHost": true,
+    "staleActorGenerationDenied": true,
+    "restartRequiresPhysicalOldTurnRetirement": true,
+    "noActorResurrectionWithinGeneration": true,
+    "terminalFutureCannotResettle": true,
+    "borrowedOrDoubleAwaitRejectedBeforeArtifact": true,
+    "actorReplyMaySettleBeforeActorRetirement": true,
+    "actorDoneRequiresPhysicalQuiescence": true,
+    "actorStreamIsNotUnaryFuture": true,
+    "resultNotImplicitlyUnwrapped": true,
+    "noImplicitRuntimeInCoreAllocStd": true,
+    "unsupportedMustEmitExplicitDiagnostic": true
+  },
+  "guestTests": {
+    "smoke": {
+      "path": "stdlib/actor/guest_smoke.atto",
+      "assertions": 34,
+      "expectedMain": 42
+    },
+    "boundaries": {
+      "path": "stdlib/actor/guest_edges.atto",
+      "assertions": 133,
+      "expectedMain": 42
+    },
+    "futurePositive": "contracts/std-actor-v1/future-owned.accept.atto",
+    "futureNegative": [
+      "contracts/std-actor-v1/future-borrowed.reject.atto",
+      "contracts/std-actor-v1/future-double-await.reject.atto"
+    ],
+    "runtimeTarget": "tests/fixtures/std-actor-v1/lifecycle_guest.atto",
+    "namespacePositive": {
+      "path": "stdlib/actor/guest_namespace_only.atto",
+      "expectedMain": 42,
+      "noImplicitImports": true
+    },
+    "namespaceNegative": [
+      {
+        "file": "contracts/std-actor-v1/namespace-implicit-import.reject.atto",
+        "expectedDiagnostic": "E_UNBOUND",
+        "requires": "explicit-policy-import"
+      },
+      {
+        "file": "contracts/std-actor-v1/namespace-duplicate.reject.atto",
+        "expectedDiagnostic": "E_DUPLICATE",
+        "requires": "single-file-namespace"
+      },
+      {
+        "file": "contracts/std-actor-v1/namespace-after-declaration.reject.atto",
+        "expectedDiagnostic": "E_SYNTAX",
+        "requires": "namespace-first"
+      }
+    ],
+    "futureOwnershipNegative": [
+      {
+        "file": "contracts/std-actor-v1/future-use-after-await.reject.atto",
+        "expectedDiagnostic": "E_MOVED"
+      },
+      {
+        "file": "contracts/std-actor-v1/future-loan-across-await.reject.atto",
+        "expectedDiagnostic": "E_BORROW"
+      },
+      {
+        "file": "contracts/std-actor-v1/future-take-then-await.reject.atto",
+        "expectedDiagnostic": "E_MOVED"
+      },
+      {
+        "file": "contracts/std-actor-v1/future-forged-constructor.reject.atto",
+        "expectedDiagnostic": "E_RESERVED"
+      }
+    ],
+    "mutationControls": {
+      "requiredCompiler": "production_backend_compiler",
+      "selector": "first_middle_last",
+      "mutator": "replace_one_guard_condition_with_true",
+      "failCodeSmoke": [
+        1,
+        18,
+        34
+      ],
+      "failCodeBoundaries": [
+        100,
+        166,
+        232
+      ],
+      "mustCompileAndExecute": true,
+      "rejectUnexpectedHostImports": true,
+      "mustNotReturnSuccess42": true,
+      "artifactProvenanceRequired": true
+    }
+  },
+  "statuses": [
+    "PASS",
+    "FAIL",
+    "UNSUPPORTED",
+    "NOT_IMPLEMENTED",
+    "NOT_EXECUTED"
+  ],
+  "verificationRequired": [
+    "source_head_sha",
+    "root_tree_sha",
+    "policy_blob_sha",
+    "guest_blob_sha",
+    "compiler_identity",
+    "target_identity",
+    "positive_guest_execution",
+    "compiled_guest_mutation_execution",
+    "negative_no_artifact",
+    "runtime_control_authentication",
+    "physical_quiescence",
+    "executed_job_steps",
+    "independent_receipt_review",
+    "core_affine_borrow_checker_receipt"
+  ],
+  "backends": {
+    "atto": {
+      "repo": "atto-lang/atto-source.atto",
+      "pr": null,
+      "contractStatus": "NOT_IMPLEMENTED",
+      "reason": "bootstrap_repository_no_compiler"
+    },
+    "cranelift": {
+      "repo": "atto-lang/atto-source.cranelift",
+      "pr": 99,
+      "contractStatus": "NOT_EXECUTED",
+      "reason": "source_candidate_unverified"
+    },
+    "forge": {
+      "repo": "atto-lang/atto-source.forge",
+      "pr": 234,
+      "contractStatus": "NOT_EXECUTED",
+      "reason": "source_candidate_unverified"
+    },
+    "hdl": {
+      "repo": "atto-lang/atto-source.hdl",
+      "pr": 68,
+      "contractStatus": "NOT_EXECUTED",
+      "reason": "source_candidate_unverified"
+    },
+    "java": {
+      "repo": "atto-lang/atto-source.java",
+      "pr": 1782,
+      "contractStatus": "NOT_EXECUTED",
+      "reason": "source_candidate_unverified"
+    },
+    "js": {
+      "repo": "atto-lang/atto-source.js",
+      "pr": 139,
+      "contractStatus": "NOT_EXECUTED",
+      "reason": "source_candidate_unverified"
+    },
+    "llvm": {
+      "repo": "atto-lang/atto-source.llvm",
+      "pr": 880,
+      "contractStatus": "NOT_EXECUTED",
+      "reason": "source_candidate_unverified"
+    },
+    "net": {
+      "repo": "atto-lang/atto-source.net",
+      "pr": 225,
+      "contractStatus": "NOT_EXECUTED",
+      "reason": "source_candidate_unverified"
+    },
+    "realtime": {
+      "repo": "atto-lang/atto-source.realtime",
+      "pr": null,
+      "contractStatus": "NOT_IMPLEMENTED",
+      "reason": "bootstrap_repository_no_compiler"
+    },
+    "rs": {
+      "repo": "atto-lang/atto-source.rs",
+      "pr": 543,
+      "contractStatus": "NOT_EXECUTED",
+      "reason": "source_candidate_unverified"
+    },
+    "wasm": {
+      "repo": "atto-lang/atto-source.wasm",
+      "pr": 288,
+      "contractStatus": "NOT_EXECUTED",
+      "reason": "source_candidate_unverified"
+    }
+  },
+  "coreOwnership": {
+    "sealedTypes": [
+      "Future<T>",
+      "TaskFuture<T>",
+      "ActorFuture<T>"
+    ],
+    "ownedReceiptFormal": "take!",
+    "borrowedAwaitDiagnostic": "E_OWNERSHIP",
+    "doubleAwaitDiagnostic": "E_MOVED",
+    "useAfterAwaitDiagnostic": "E_MOVED",
+    "liveLoanAcrossAwaitDiagnostic": "E_BORROW",
+    "takeThenAwaitDiagnostic": "E_MOVED",
+    "forgedFutureConstructorDiagnostic": "E_RESERVED",
+    "negativeBeforeCodegen": true,
+    "validOwnedRequiresTypedAffineMirAndRuntime": true,
+    "preflightIsNotFullBorrowChecker": true
+  }
+}

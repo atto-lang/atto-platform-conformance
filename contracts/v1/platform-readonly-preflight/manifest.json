@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "kind": "host-reference-only",
+  "status": "NOT_GUEST_VERIFIED",
+  "name": "platform-readonly-preflight-v1",
+  "dependencies": [
+    "oreslang-platform.mobile:ores_mobile_copy_preflight",
+    "oreslang-platform.iot:ores_iot_replay_classify",
+    "oreslang-platform.embedded:ores_embedded_peek_length"
+  ],
+  "platform_implementations": {
+    "mobile": "PENDING_EXECUTED_EVIDENCE",
+    "iot": "PENDING_EXECUTED_EVIDENCE",
+    "embedded": "PENDING_EXECUTED_EVIDENCE"
+  },
+  "limitations": [
+    "Models isolated single-caller outcomes only",
+    "No compiler, target, guest or physical hardware execution implied",
+    "Authentication, persistence, actor scheduling and concurrency are separate contracts"
+  ],
+  "test_command": "node --test test/platform-preflight-reference-v1.test.mjs"
+}

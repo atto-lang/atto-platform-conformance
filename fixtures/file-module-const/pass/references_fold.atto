@@ -1,0 +1,5 @@
+// expect-exit: 42
+define const int base = 5;
+define const int count as base + 2;
+define const int answer = count * 6;
+pub fnc main(): int { return answer; }

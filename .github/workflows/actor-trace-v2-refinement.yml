@@ -1,0 +1,36 @@
+name: Actor trace v2 concurrent refinement (host-only)
+on:
+  pull_request:
+    paths:
+      - 'contracts/actor-trace-v2.json'
+      - 'bin/check_actor_trace_v2.py'
+      - 'tests/test_actor_trace_v2.py'
+      - '.github/workflows/actor-trace-v2-refinement.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'contracts/actor-trace-v2.json'
+      - 'bin/check_actor_trace_v2.py'
+      - 'tests/test_actor_trace_v2.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  refinement:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Exact-head and fail-closed concurrent receiver proof obligations
+        shell: bash
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          python3 -m unittest discover -s tests -p test_actor_trace_v2.py -v
+          echo 'ACTOR_TRACE_V2_HOST_REFINEMENT_PASS'
+          echo 'JAVA_LLVM_NATIVE_GUEST=NOT_EXECUTED'

@@ -1,0 +1,89 @@
+{
+  "schema": "attolang.actor-protocol-typestate-ci-evidence.v1",
+  "recorded_utc_date": "2026-11-22",
+  "scope": "STATIC_SOURCE_PREFLIGHT_AND_FORMATTER_ONLY",
+  "source_repositories": [
+    {
+      "repository": "atto-lang/atto-source.rs",
+      "pr": 517,
+      "head_commit": "38eb59f909573b1b29373ac216b38e17ba4ce5ae",
+      "tree_sha": "4e0031e1d5de5390aa95521243c5b9abaabd0ed1",
+      "blob_count": 1188,
+      "tree_entries": 1259,
+      "private_mirror": "ORESoftware/axum-leptos-dioxus-unified-ssr-test",
+      "mirror_commit": "70d7197320e06ba826ec611958a7bb144b13d2ab",
+      "workflow_run": "https://github.com/ORESoftware/axum-leptos-dioxus-unified-ssr-test/actions/runs/44974704573",
+      "command": "cargo test --locked --test actor_protocol_typestate_source -- --nocapture",
+      "result": {
+        "passed": 26,
+        "failed": 0,
+        "kind": "REAL_RUST_STATIC_TESTS_AND_GUEST_SCALAR_SMOKE",
+        "guest_actor_protocol_execution": false
+      }
+    },
+    {
+      "repository": "atto-lang/atto-format",
+      "pr": 88,
+      "head_commit": "a20fc51a96d8d1940f7406d595b7bb4e94abf95c",
+      "tree_sha": "556992e8ba888d3fa2ae35d46b1d7d905443c755",
+      "blob_count": 148,
+      "tree_entries": 168,
+      "private_mirror": "ORESoftware/axum-leptos-dioxus-unified-ssr-test",
+      "mirror_commit": "26a2b0a8519b7c5b39f2495099b300ced369e59d",
+      "workflow_run": "https://github.com/ORESoftware/axum-leptos-dioxus-unified-ssr-test/actions/runs/44975159348",
+      "command": "cargo test --test actor_protocol_roundtrip -- --nocapture",
+      "result": {
+        "passed": 5,
+        "failed": 0,
+        "kind": "REAL_FORMATTER_SOURCE_TESTS",
+        "guest_actor_protocol_execution": false
+      }
+    }
+  ],
+  "provenance": {
+    "source_private": true,
+    "destination_private": true,
+    "git_object_sha_checked": "ALL_SOURCE_BLOBS_AND_TREE_MODES",
+    "source_and_destination_git_tree_sha_equal": true,
+    "mirror_workflow_uses_only_destination_repository_checkout": true,
+    "cross_org_checkout": false,
+    "secret_or_pat_transferred": false,
+    "zero_step_github_actions_runs_not_counted": true,
+    "build_mode": "rust-stable",
+    "proof_checkout": "GITHUB_ACTIONS_EXECUTED_STEP_TO_VERIFY_EXACT_MIRROR_TREE"
+  },
+  "excluded_claims": [
+    "No full guest AOT protocol runtime",
+    "No implemented atomic actor state transitions or authenticated successor authority",
+    "No streaming protocol runtime parity",
+    "No Java/LLVM/NET/FORGE/WASM/JS/Cranelift/HDL guest backend certification",
+    "Conformance repository's own Node fixture integrity workflow has NOT run on verified exact source tree"
+  ],
+  "backend_guest_runtime_status": "ALL_NOT_VERIFIED",
+  "additional_rust_exact_tree_regressions": {
+    "workflow_run": "https://github.com/ORESoftware/axum-leptos-dioxus-unified-ssr-test/actions/runs/44975434351",
+    "source_commit": "38eb59f909573b1b29373ac216b38e17ba4ce5ae",
+    "tree_sha": "4e0031e1d5de5390aa95521243c5b9abaabd0ed1",
+    "results": [
+      {
+        "command": "cargo test --locked --lib",
+        "passed": 58,
+        "failed": 0
+      },
+      {
+        "command": "cargo test --locked --test nominal_actor_struct_implements",
+        "passed": 14,
+        "failed": 0
+      }
+    ],
+    "separate_full_suite": {
+      "command": "cargo test --locked",
+      "result": "FAILED_BEFORE_RUNNING_ALL_TESTS",
+      "failure": "Legacy tests/atto_scalar_java_llvm_v1.rs imports unresolved oreslang_source_rs; actual lib is atto_compiler",
+      "unrelated_to_protocol_static_regression": true,
+      "workflow_run": "https://github.com/ORESoftware/axum-leptos-dioxus-unified-ssr-test/actions/runs/44975434351"
+    }
+  },
+  "targeted_tests_total_passed": 103,
+  "targeted_tests_total_failed": 0
+}
