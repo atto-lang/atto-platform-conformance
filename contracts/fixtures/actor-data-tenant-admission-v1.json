@@ -1,0 +1,58 @@
+{
+  "contract": "actor-data-tenant-admission-v1",
+  "status": "DESIGN_ONLY_NOT_EXECUTED",
+  "references": [
+    "https://github.com/atto-lang/atto-source.java/pull/1815",
+    "https://github.com/atto-lang/atto-serialization-and-validation/pull/36"
+  ],
+  "cases": [
+    {
+      "id": "shared_decode_slots",
+      "expect": "second concurrent reservation fails without changing counters or sequence"
+    },
+    {
+      "id": "retry_same_owned_frame",
+      "expect": "after quota frees, identical authenticated frame accepted once; replay rejected"
+    },
+    {
+      "id": "wrong_physical_lane",
+      "expect": "valid MAC CONTROL frame on DATA lane rejected; no published DATA"
+    },
+    {
+      "id": "auth_rejection_rollback",
+      "expect": "failed authentication releases transient decode quota, no publication"
+    },
+    {
+      "id": "cross_endpoint_tenant_cap",
+      "expect": "two mailboxes share byte/slot limits; separate endpoint caps never widen tenant cap"
+    },
+    {
+      "id": "retained_delivery",
+      "expect": "pop releases endpoint credit but tenant credit follows owned frame until drop"
+    },
+    {
+      "id": "restart_pending",
+      "expect": "old generation pending credit stays charged until rollback; no stale publication"
+    },
+    {
+      "id": "close_queued",
+      "expect": "queued frame tenant credit released exactly once on close"
+    },
+    {
+      "id": "zero_byte_slot_cap",
+      "expect": "zero-length frames still consume slots"
+    },
+    {
+      "id": "tenant_identity",
+      "expect": "quota instance assigned only by trusted tenant registry; no wire-selected quota or control fallback"
+    }
+  ],
+  "required_guest_evidence": [
+    "trusted runtime identity and endpoint binding",
+    "authenticated frame admission before decode",
+    "tenant and receiver heap charges",
+    "generation check under mailbox publication lock",
+    "actual .atto guest positive and negative cases",
+    "exact compiler root tree and toolchain"
+  ]
+}
