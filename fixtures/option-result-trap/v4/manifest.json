@@ -1,0 +1,56 @@
+{
+  "format": "atto.trap-option-result.three-backend.v1",
+  "status": "candidate_not_certified",
+  "fixture": {
+    "path": "three-backend-boundary.atto",
+    "git_blob_sha1": "51b9c735af6b841921469698dd0da7aff37d2b79",
+    "expected_guest_main_type": "int",
+    "expected_guest_main_result": 7
+  },
+  "semantics": {
+    "trap_checked_id_5": "Some(Ok(5))",
+    "trap_checked_id_negative_1": "Some(Err(\"id must be nonnegative\"))",
+    "result_err_is_data": true,
+    "implicit_option_result_flattening": false,
+    "evaluation_count": 1,
+    "ordinary_guest_throw": "None",
+    "panic_raise_cancellation": "bypass_trap",
+    "suspending_trap": "fail_closed_pending_effect_proof"
+  },
+  "required_backend_proofs": [
+    "java-graalvm",
+    "llvm-native-aot",
+    "dotnet-native-aot"
+  ],
+  "required_evidence": {
+    "source_git_commit": "exact_sha",
+    "source_git_tree": "exact_sha",
+    "compiler_artifact_digest": "sha256",
+    "test_runner": "executed_nonzero_steps",
+    "positive_guest": "actually_compiled_and_executed",
+    "negative_types": "compiler_diagnostic_no_binary",
+    "unknown_or_skipped": "not_a_pass"
+  },
+  "current_candidate_prs": {
+    "java-graalvm": "ores-truffle-oreslang/oreslang-source.java#3059",
+    "llvm-native-aot": "ores-truffle-oreslang/oreslang-source.llvm#1774",
+    "dotnet-native-aot": "ores-truffle-oreslang/oreslang-source.net#508"
+  },
+  "additional_cases": [
+    {
+      "path": "reject-implicit-flattening.atto",
+      "git_blob_sha1": "76c11b89ceb4d2a070866038ce5f45b5982f5fdd",
+      "required_proof": "typed_mismatch_not_unsupported_syntax"
+    },
+    {
+      "path": "reject-missing-trap.atto",
+      "git_blob_sha1": "ca100eff6977a8c198c227a0e64ed8233744678a",
+      "required_proof": "typed_mismatch_not_unsupported_syntax"
+    },
+    {
+      "path": "panic-bypasses-trap.atto",
+      "git_blob_sha1": "9192fbb5dd18f50477d923bf2c4dcb03cdfd5684",
+      "required_proof": "uncaught_language_panic_no_guest_result"
+    }
+  ]
+}

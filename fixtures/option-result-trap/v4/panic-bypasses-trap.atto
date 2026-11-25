@@ -1,0 +1,6 @@
+// Expected: uncatchable language panic, not None, and main never returns 7.
+pub fnc main(): int {
+  val Option<int> missing = None;
+  val Option<int> caught = trap missing.unwrap();
+  return 7;
+}
