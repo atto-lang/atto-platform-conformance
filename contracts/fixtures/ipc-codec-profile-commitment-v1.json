@@ -31,7 +31,12 @@
     "initial incarnation != 1",
     "initial epoch != 1",
     "skip incarnation",
-    "bounded tombstones exhausted"
+    "bounded tombstones exhausted",
+    "raw legacy replacement after opt-in",
+    "different committed profile on replacement"
   ],
-  "evidence": "Java standalone two-file blob-exact host execution; all backend/guest/runtime route cases require separate receipts"
+  "evidence": "Java standalone two-file blob-exact host execution; all backend/guest/runtime route cases require separate receipts",
+  "route_positive": [
+    "same committed profile at next epoch"
+  ]
 }
