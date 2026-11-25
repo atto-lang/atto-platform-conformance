@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {qualifyCandidate, qualifyWave} from '../tools/merge-wave-qualifier.mjs';
 const SHA = 'a'.repeat(40), TREE='b'.repeat(40), BASE='c'.repeat(40);
-const as_of='2026-11-06T18:00:00Z';
+const as_of=new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
 function candidate(s='java',n=1) {
   return {
     repo:`ores-truffle-oreslang/oreslang-source.${s}`,number:n,head_sha:SHA,head_tree_sha:TREE,
@@ -57,7 +57,7 @@ rejects('reject failed check',c=>c.checks[0].conclusion='failure','checks');
 rejects('reject missing negative evidence',c=>c.test_receipts.pop(),'test');
 rejects('reject unbound receipt run',c=>c.test_receipts[0].run_id=999,'test');
 rejects('reject guest claim on source-free evidence',c=>c.scope='compiler','test');
-rejects('reject active agent lease',c=>c.lease={expires_at:'2026-11-06T19:00:00Z'},'lease');
+rejects('reject active agent lease',c=>c.lease={expires_at:new Date(Date.parse(as_of) + 60 * 60_000).toISOString().replace(/\.\d{3}Z$/, 'Z')},'lease');
 rejects('reject malformed lease time',c=>c.lease={expires_at:'invalid'},'lease');
 test('expired lease can be qualified',()=>{
   const c=candidate();c.lease={expires_at:'2026-11-05T00:00:00Z'};

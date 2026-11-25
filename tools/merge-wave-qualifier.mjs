@@ -102,17 +102,32 @@ export function qualifyCandidate(candidate, asOf) {
   }
   return blockers;
 }
+// Direct API calls must not bypass the CLI's freshness and UTC evidence gate.
+// Date.parse can normalize impossible calendar days. Compare every UTC field.
+export function snapshotTimeMs(timestamp, nowMs = Date.now()) {
+  if (typeof timestamp !== 'string' || !Number.isFinite(nowMs)) return NaN;
+  const fields = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})Z$/.exec(timestamp);
+  if (!fields) return NaN;
+  const [, yr, mo, day, hr, min, sec] = fields.map((v, i) => i === 0 ? v : Number(v));
+  if (yr < 1) return NaN;
+  const ms = Date.parse(timestamp);
+  if (!Number.isFinite(ms)) return NaN;
+  const date = new Date(ms);
+  if (date.getUTCFullYear() !== yr || date.getUTCMonth() + 1 !== mo ||
+      date.getUTCDate() !== day || date.getUTCHours() !== hr ||
+      date.getUTCMinutes() !== min || date.getUTCSeconds() !== sec) return NaN;
+  if (Math.abs(nowMs - ms) > 5 * 60_000) return NaN;
+  return ms;
+}
+
 export function qualifyWave(snapshot, {size = 5, minRepos = 3} = {}) {
   // This entry point is a fixed 5-PR / >=3-repo intake contract, never a configurable quorum.
   // A relaxed override must not turn a partial batch into a favorable advisory snapshot.
   if (size !== 5 || minRepos !== 3) throw new RangeError('fixed merge wave requires size=5 and minRepos=3');
+  const asOf = snapshotTimeMs(snapshot?.as_of);
   if (!snapshot || snapshot.schema_version !== 1 || !Array.isArray(snapshot.candidates) ||
-    snapshot.candidates.length > 1000 || typeof snapshot.as_of !== 'string' ||
-    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(snapshot.as_of) ||
-    !Number.isFinite(Date.parse(snapshot.as_of)) ||
-    Date.parse(snapshot.as_of) > Date.now() + 5 * 60_000)
-    throw new TypeError('invalid, future-dated or unbounded snapshot');
-  const asOf = Date.parse(snapshot.as_of);
+    snapshot.candidates.length > 1000 || !Number.isFinite(asOf))
+    throw new TypeError('invalid, stale, future-dated or unbounded snapshot');
   const results = [], counts = new Map();
   for (const item of snapshot.candidates) {
     const key = `${typeof item?.repo === 'string' ? item.repo : ''}#${Number.isSafeInteger(item?.number) ? item.number : ''}`;
