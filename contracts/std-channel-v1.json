@@ -1,0 +1,291 @@
+{
+  "schema": "atto.std.channel.v1",
+  "version": 1,
+  "status": "TARGET_ONLY_NOT_EXECUTED",
+  "library_namespace": "std/channel",
+  "implementation_policy": "BACKEND_OWNED_NATIVE_ATTO_SOURCE",
+  "evidence_rule": "Only exact compiler head, source tree and actual compiled/executed guest steps can upgrade a per-case backend status to PASS. A static Node manifest test or zero-step Actions run is not guest evidence.",
+  "source_prs": {
+    "java": "https://github.com/atto-lang/atto-source.java/pull/1783",
+    "rs_v2": "https://github.com/atto-lang/atto-source.rs/pull/547"
+  },
+  "scope_notes": {
+    "java": "Native Atto std/channel namespace with rt take on sends and existing runtime-level closed/move ownership controls. Guest JUnit tests NOT_EXECUTED; cancel_read and cancel_write public methods not yet supplied, so Java cancellation feature parity is NOT_IMPLEMENTED.",
+    "rs": "Backend-owned native .atto runtime now stages pending-read cancellation and copy-safe int/bool pending-write registration, FIFO admission and one-shot recovery on cancellation/close; v2 checker stages a data-only transport borrow gate. Public std/channel namespace NOT_LINKED, broader affine move/borrow checking NOT_IMPLEMENTED, compiled guest tests NOT_EXECUTED.",
+    "llvm": "The main native Channel<int> gate rejects unsupported guest lowering; a separate i64 C ABI PR is runtime-only.",
+    "net": "Source channel guest support not independently verified.",
+    "wasm": "Independent worker-Wasm backend must not borrow Rust browser compiler's success.",
+    "forge": "Source channel guest support not independently verified.",
+    "cranelift": "Source channel guest support not independently verified.",
+    "js": "Source channel guest support not independently verified.",
+    "hdl": "Source channel guest support not independently verified.",
+    "atto": "AUDITED_SKELETON: atto-source.atto main has only AGENTS.md and README.md (Git tree 5b9a274490a4567ed9d1088fd1ff304dbe383357), no compiled compiler or std/channel implementation; guest conformance NOT_EXECUTED.",
+    "realtime": "AUDITED_SKELETON: atto-source.realtime main has only AGENTS.md and README.md (Git tree 4f6449470ab075cdad17884c7a1aee2ab54c), no bounded realtime channel/borrow implementation; guest conformance NOT_EXECUTED."
+  },
+  "required_contracts": [
+    "channel capability remains local to its execution domain",
+    "bounded capacity 0 is rendezvous, never silently buffered",
+    "ordinary zero-capacity receive must register a rendezvous reader; polling without registration must never deadlock",
+    "positive bounded capacity enforces FIFO and backpressure",
+    "send and receive suspend cooperatively; scheduler carrier is never parked",
+    "nb operations register a Future; try operations do not register",
+    "try_send Full and Closed preserve the original moved value",
+    "close is idempotent, queued data drains before terminal EOF",
+    "closed/empty is not conflated with temporarily-unready None",
+    "cancelled pending operations remove their registrations exactly once",
+    "borrowed and callable payloads do not cross prohibited channel boundaries",
+    "unbounded is separate and MUST NOT map to arbitrary large finite capacity",
+    "actor DATA graph attachment (including legacy two-port pipes) rejects preexisting buffered data and pending public reader registrations before claiming channel ownership",
+    "cancelling a pending read must unlink the matching registration exactly once, preserve other readers in FIFO order including head/middle/tail removal, and never interpret a cancelled Future as a normal closed-channel EOF",
+    "registered pending writes preserve FIFO relative to earlier queued writes and non-registering sends; zero-capacity reads must rendezvous without buffering",
+    "cancelling or closing an uncommitted write preserves the original payload for exactly one recovery; committed payloads cannot be recovered or delivered twice",
+    "actor DATA graph ownership rejects channels with queued public pending writers as well as readers and buffered data",
+    "channel payload construction must reject dynamic Any, nested channel capabilities, and mutable containers unless a borrow checker proves transfer safety"
+  ],
+  "cases": [
+    {
+      "id": "bounded_fifo_drain",
+      "kind": "pass",
+      "expected_stdout": "42",
+      "path": "fixtures/std-channel/pass/bounded_fifo_drain.atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "rendezvous_pending",
+      "kind": "pass",
+      "expected_stdout": "42",
+      "path": "fixtures/std-channel/pass/rendezvous_pending.atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "rendezvous_direct_read",
+      "kind": "pass",
+      "expected_stdout": "42",
+      "path": "fixtures/std-channel/pass/rendezvous_direct_read.atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "try_read_empty_ready",
+      "kind": "pass",
+      "expected_stdout": "empty:7",
+      "path": "fixtures/std-channel/pass/try_read_empty_ready.atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "closed_move_recovery",
+      "kind": "pass",
+      "expected_stdout": "closed:56",
+      "path": "fixtures/std-channel/pass/closed_move_recovery.atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "negative_capacity",
+      "kind": "runtime_reject",
+      "expected_error_contains": "capacity",
+      "path": "fixtures/std-channel/fail/negative_capacity.atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "try_receive_closed",
+      "kind": "runtime_reject",
+      "expected_error_contains": "closed",
+      "path": "fixtures/std-channel/fail/try_receive_closed.atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    }
+  ],
+  "feature_matrix": [
+    {
+      "id": "pending_read_cancellation",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      },
+      "notes": {
+        "rs": "Explicit queued reader cancellation staged, not guest verified",
+        "java": "Public cancel_read not yet implemented"
+      }
+    },
+    {
+      "id": "pending_write_cancellation",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      },
+      "notes": {
+        "rs": "Copy-safe int/bool staged, other payloads gated",
+        "java": "Public cancel_write not yet implemented"
+      }
+    },
+    {
+      "id": "channel_payload_borrow_check",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      },
+      "notes": {
+        "rs": "Conservative v2 data-only type gate, not full affine borrow checker",
+        "java": "rt take source-level contract, JUnit guest verification pending"
+      }
+    },
+    {
+      "id": "actor_data_exclusive_channel",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      },
+      "notes": {
+        "rs": "Both pending reader/writer queues blocked on graph admission",
+        "java": "Backend-specific execution receipt pending"
+      }
+    }
+  ],
+  "backend_repositories": {
+    "java": "atto-lang/atto-source.java",
+    "llvm": "atto-lang/atto-source.llvm",
+    "net": "atto-lang/atto-source.net",
+    "rs": "atto-lang/atto-source.rs",
+    "wasm": "atto-lang/atto-source.wasm",
+    "forge": "atto-lang/atto-source.forge",
+    "cranelift": "atto-lang/atto-source.cranelift",
+    "js": "atto-lang/atto-source.js",
+    "hdl": "atto-lang/atto-source.hdl",
+    "atto": "atto-lang/atto-source.atto",
+    "realtime": "atto-lang/atto-source.realtime"
+  },
+  "backend_audit_snapshots": {
+    "atto": {
+      "branch": "main",
+      "tree_sha": "5b9a274490a4567ed9d1088fd1ff304dbe383357",
+      "tracked_files": 2,
+      "channel_implementation_files": 0,
+      "execution": "NOT_EXECUTED"
+    },
+    "realtime": {
+      "branch": "main",
+      "tree_sha": "4f6449470ab075cdad17884c7a1aee2a6e2ab54c",
+      "tracked_files": 2,
+      "channel_implementation_files": 0,
+      "execution": "NOT_EXECUTED"
+    }
+  }
+}

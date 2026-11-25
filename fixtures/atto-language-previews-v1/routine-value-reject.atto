@@ -1,0 +1,9 @@
+// SOURCE-ONLY CONTRACT: a routine is a direct-call-only symbol.
+// expect: REJECT, diagnostic: ROUTINE_NOT_FIRST_CLASS, no output artifact.
+routine direct_only(int value): int {
+  return value + 1;
+}
+pub fnc main(): int {
+  val callback = direct_only;
+  return callback(41);
+}

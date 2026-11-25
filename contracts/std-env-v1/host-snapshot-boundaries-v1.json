@@ -1,0 +1,121 @@
+{
+  "schema": "atto.std-env.host-snapshot-boundaries.v1",
+  "status": "SOURCE_ONLY_TARGET",
+  "evidence_category": "HOST_ONLY",
+  "guest_parity_qualified": false,
+  "limits": {
+    "authorized_max_keys": 512,
+    "value_max_utf8_bytes": 16384,
+    "aggregate_authorized_utf8_bytes": 1048576,
+    "key_policy": "^[A-Za-z_][A-Za-z0-9_]{0,127}$"
+  },
+  "cases": [
+    {
+      "id": "aggregate_exact_1mib",
+      "trusted_values": {
+        "count": 64,
+        "key_prefix": "ATTO_BUDGET_",
+        "ascii_value_bytes": 16384
+      },
+      "allow": [
+        "ATTO_BUDGET_*"
+      ],
+      "deny": [],
+      "coarse_env": true,
+      "expected": "ADMIT"
+    },
+    {
+      "id": "aggregate_over_by_one",
+      "trusted_values": {
+        "count": 64,
+        "key_prefix": "ATTO_BUDGET_",
+        "ascii_value_bytes": 16384
+      },
+      "extra_value": {
+        "key": "ATTO_BUDGET_OVER",
+        "ascii_value_bytes": 1
+      },
+      "allow": [
+        "ATTO_BUDGET_*"
+      ],
+      "deny": [],
+      "coarse_env": true,
+      "expected": "ENV_INVALID_SNAPSHOT"
+    },
+    {
+      "id": "aggregate_multibyte_utf8_exact",
+      "trusted_values": {
+        "count": 64,
+        "key_prefix": "ATTO_BUDGET_",
+        "unicode_value": "é",
+        "unicode_repetitions": 8192
+      },
+      "allow": [
+        "ATTO_BUDGET_*"
+      ],
+      "deny": [],
+      "coarse_env": true,
+      "expected": "ADMIT"
+    },
+    {
+      "id": "aggregate_denied_poisoned_value",
+      "trusted_values": {
+        "count": 64,
+        "key_prefix": "ATTO_BUDGET_",
+        "ascii_value_bytes": 16384
+      },
+      "poisoned_value": {
+        "key": "ATTO_BUDGET_DENIED",
+        "must_not_dereference": true
+      },
+      "allow": [
+        "ATTO_BUDGET_*"
+      ],
+      "deny": [
+        "ATTO_BUDGET_DENIED"
+      ],
+      "coarse_env": true,
+      "expected": "ADMIT"
+    },
+    {
+      "id": "no_coarse_key_enumeration",
+      "trusted_values": {
+        "key_metadata_unreadable": true
+      },
+      "allow": [
+        "*"
+      ],
+      "deny": [],
+      "coarse_env": false,
+      "expected": "ADMIT_EMPTY"
+    },
+    {
+      "id": "authorized_key_count_overflow",
+      "trusted_values": {
+        "count": 513,
+        "key_prefix": "ATTO_KEY_",
+        "ascii_value_bytes": 0
+      },
+      "allow": [
+        "*"
+      ],
+      "deny": [],
+      "coarse_env": true,
+      "expected": "ENV_INVALID_SNAPSHOT"
+    }
+  ],
+  "backend_status": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "rs": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "atto": "NOT_EXECUTED",
+    "realtime": "NOT_EXECUTED",
+    "hdl": "NOT_EXECUTED"
+  },
+  "evidence_rule": "Only exact-head material host checks can promote individual host-substrate statuses; only compiler-generated .atto guest execution can promote the independent 13-case std-env guest contract. Distinguish HOST_ONLY from COMPILED_GUEST and AOT_GUEST; no source-only or source-free runner can certify guest parity. Denied keys must not be dereferenced or counted. The count cap is on authorized names; the raw trusted host input may impose a separate safe metadata bound. Freestanding targets must fail closed when the environment capability is unavailable."
+}

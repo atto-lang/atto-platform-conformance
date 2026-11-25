@@ -1,0 +1,134 @@
+{
+  "schema": "atto.constructor-definite-final-admission-hardening.v2",
+  "status": "RUST_NATIVE_GUEST_VERIFIED",
+  "source_compiler_pr": "https://github.com/atto-lang/atto-source.rs/pull/376",
+  "source_compiler_merge_sha": "909cdf51002f8fd18ab3c588f9f550c1d580d08f",
+  "source_contract": "atto-lang/atto-platform-conformance/contracts/constructor-definite-final-v1.json",
+  "description": "Hardened admission of deferred class final fields; ordinary val/let/const and actor field initializers cannot be omitted or implicitly zero-filled.",
+  "scope": "Native Rust compiler -> emitted Wasm guest, once executed. Parser-bypass AST validation is a Rust checker test, not expressible as portable .atto source.",
+  "cases": [
+    {
+      "id": "pass_multi_deferred_final_branches",
+      "path": "fixtures/constructor-definite-final/v2/pass/multi_deferred_final_branches.atto",
+      "kind": "pass",
+      "expected_exit": 42
+    },
+    {
+      "id": "pass_deferred_and_preinitialized_final",
+      "path": "fixtures/constructor-definite-final/v2/pass/deferred_and_preinitialized_final.atto",
+      "kind": "pass",
+      "expected_exit": 42
+    },
+    {
+      "id": "fail_missing_second_final",
+      "path": "fixtures/constructor-definite-final/v2/fail/missing_second_final.atto",
+      "kind": "fail",
+      "expected_error": "E_INIT",
+      "no_wasm_artifact": true
+    },
+    {
+      "id": "fail_partial_second_branch",
+      "path": "fixtures/constructor-definite-final/v2/fail/partial_second_branch.atto",
+      "kind": "fail",
+      "expected_error": "E_INIT",
+      "no_wasm_artifact": true
+    },
+    {
+      "id": "fail_conditional_duplicate_final",
+      "path": "fixtures/constructor-definite-final/v2/fail/conditional_duplicate_final.atto",
+      "kind": "fail",
+      "expected_error": "E_INIT_ONCE",
+      "no_wasm_artifact": true
+    },
+    {
+      "id": "fail_other_field_read_before_write",
+      "path": "fixtures/constructor-definite-final/v2/fail/other_field_read_before_write.atto",
+      "kind": "fail",
+      "expected_error": "E_INIT_READ",
+      "no_wasm_artifact": true
+    },
+    {
+      "id": "fail_val_missing_initializer",
+      "path": "fixtures/constructor-definite-final/v2/fail/val_missing_initializer.atto",
+      "kind": "fail",
+      "expected_error": "E_UNSUPPORTED",
+      "no_wasm_artifact": true
+    },
+    {
+      "id": "fail_let_missing_initializer",
+      "path": "fixtures/constructor-definite-final/v2/fail/let_missing_initializer.atto",
+      "kind": "fail",
+      "expected_error": "E_UNSUPPORTED",
+      "no_wasm_artifact": true
+    },
+    {
+      "id": "fail_const_missing_initializer",
+      "path": "fixtures/constructor-definite-final/v2/fail/const_missing_initializer.atto",
+      "kind": "fail",
+      "expected_error": "E_UNSUPPORTED",
+      "no_wasm_artifact": true
+    }
+  ],
+  "backend_status": {
+    "rs-native-guest": "VERIFIED",
+    "rs-browser-hosted": "NOT_EXECUTED",
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "wasm-independent": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED"
+  },
+  "evidence": {
+    "scope": "NATIVE_RUST_COMPILER_TO_EXECUTED_WASM_GUEST",
+    "source_compiler_merge_sha": "909cdf51002f8fd18ab3c588f9f550c1d580d08f",
+    "merged_src_tree_sha": "9a824aedbb69f1b66762d27ff67b9a027cd6b5bb",
+    "merged_tests_tree_sha": "e802f1aa2019ed7bffe543fc8c792ce9ef7cea92",
+    "portable_fixture_tree_sha": "5abdba63af72d2dd0982c22b30fb544b5ab9c2c8",
+    "private_carrier_repo": "gha-indie-worker/gha-indie-worker-docs",
+    "private_carrier_branch": "ci/atto-final-hardening-v2-portable-20261118",
+    "private_carrier_commit": "0a5593deb13599753164231ee4dec3e0f66a148c",
+    "run_url": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/44458895446",
+    "run_id": 44458895446,
+    "job_id": 135340588638,
+    "conclusion": "success",
+    "rustc": "1.100.0",
+    "rust_focused_tests": {
+      "passed": 20,
+      "failed": 0
+    },
+    "source_contract_tests": {
+      "passed": 2,
+      "failed": 0
+    },
+    "compiled_wasm_guests": {
+      "passed": 2,
+      "returned": 42
+    },
+    "compile_negative_cases": {
+      "passed": 7,
+      "artifacts_emitted": 0
+    },
+    "compiler_full_suite": {
+      "run_url": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/44458275142",
+      "exact_git_source_and_test_blobs": 703,
+      "rust_tests": {
+        "passed": 577,
+        "failed": 0
+      },
+      "including_ast_parser_bypass_guard": true
+    },
+    "excluded_backends": [
+      "rs-browser-hosted",
+      "java",
+      "llvm",
+      "wasm-independent",
+      "net",
+      "forge",
+      "cranelift",
+      "js"
+    ],
+    "note": "Proves native-hosted Rust compiler -> actual Wasm guest and no-artifact diagnostics. Browser-hosted Rust compiler and independent backends not executed."
+  }
+}

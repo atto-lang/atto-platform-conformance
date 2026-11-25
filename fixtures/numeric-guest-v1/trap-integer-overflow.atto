@@ -1,0 +1,9 @@
+// Guest candidate: ordinary ArithmeticOverflowError must become Result.Err.
+// Expects main() = 42. Not executed on any compiler.
+pub fnc checked(int increment): int {
+  return 9223372036854775807 + increment;
+}
+pub fnc main(): int {
+  val result = trap checked(1);
+  return result.is_err() ? 42 : 1;
+}

@@ -1,0 +1,101 @@
+{
+  "schema": "atto.static-dispatch-parity.v1",
+  "status": "SOURCE_CONTRACT_ONLY",
+  "policy": "https://github.com/ores-truffle-oreslang/oreslang-common-source/pull/265",
+  "baseline": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1663",
+  "note": "The checked-in source fixtures and receipt-shape tests are not backend executions or independent provenance.",
+  "kinds": [
+    "DIRECT",
+    "STATIC_WITNESS",
+    "CLOSED_INDIRECT",
+    "ACTOR_MESSAGE"
+  ],
+  "backends": [
+    {
+      "id": "llvm",
+      "status": "NOT_EXECUTED",
+      "artifact": "native-executable"
+    },
+    {
+      "id": "java-graalvm",
+      "status": "NOT_EXECUTED",
+      "artifact": "graal-native-image"
+    },
+    {
+      "id": "net-nativeaot",
+      "status": "NOT_EXECUTED",
+      "artifact": "nativeaot-executable"
+    },
+    {
+      "id": "wasm",
+      "status": "NOT_EXECUTED",
+      "artifact": "precompiled-wasm-module"
+    },
+    {
+      "id": "forge",
+      "status": "NOT_EXECUTED",
+      "artifact": "native-executable"
+    }
+  ],
+  "cases": [
+    {
+      "id": "direct-counter",
+      "file": "fixtures/static-dispatch-aot-v1/direct-counter.atto",
+      "expect": "exit42",
+      "targets": [
+        "Counter.add",
+        "Counter.read"
+      ]
+    },
+    {
+      "id": "direct-overload",
+      "file": "fixtures/static-dispatch-aot-v1/direct-overload.atto",
+      "expect": "exit42",
+      "targets": [
+        "Box.read$arity0",
+        "Box.read$arity1"
+      ]
+    },
+    {
+      "id": "reject-wrong-arity",
+      "file": "fixtures/static-dispatch-aot-v1/reject-wrong-arity.atto",
+      "expect": "reject",
+      "diagnostic": "wrong-arity"
+    },
+    {
+      "id": "reject-missing-method",
+      "file": "fixtures/static-dispatch-aot-v1/reject-missing-method.atto",
+      "expect": "reject",
+      "diagnostic": "unknown-method"
+    },
+    {
+      "id": "reject-duplicate-slot",
+      "file": "fixtures/static-dispatch-aot-v1/reject-duplicate-slot.atto",
+      "expect": "reject",
+      "diagnostic": "duplicate-slot"
+    },
+    {
+      "id": "reject-private-access",
+      "file": "fixtures/static-dispatch-aot-v1/reject-private-access.atto",
+      "expect": "reject",
+      "diagnostic": "private-access"
+    }
+  ],
+  "pending": [
+    {
+      "kind": "STATIC_WITNESS",
+      "status": "NOT_IMPLEMENTED_IN_SHARED_GUEST_CORPUS",
+      "required": "Typechecked generic instantiation and compile-time trait witness; finite monomorphization closure"
+    },
+    {
+      "kind": "CLOSED_INDIRECT",
+      "status": "NOT_IMPLEMENTED_IN_SHARED_GUEST_CORPUS",
+      "required": "Sealed precompiled overrides with stable ABI slot and correct virtual fallback"
+    },
+    {
+      "kind": "ACTOR_MESSAGE",
+      "status": "NOT_IMPLEMENTED_IN_SHARED_GUEST_CORPUS",
+      "required": "Generation-fenced mailbox dispatch, owner isolation, no direct state shortcut"
+    }
+  ]
+}

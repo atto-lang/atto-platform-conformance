@@ -1,0 +1,176 @@
+{
+  "schema": "atto.cooperative-execution.v1",
+  "version": 1,
+  "status": "SPECIFICATION_AND_HOST_MODEL_ONLY_NOT_GUEST_EXECUTED",
+  "scope": "Actor-local fuel and low-overhead checkpoint conformance; this file does not claim guest backend implementation.",
+  "backends": {
+    "java": {
+      "repository": "atto-lang/atto-source.java",
+      "status": "NOT_EXECUTED"
+    },
+    "llvm": {
+      "repository": "atto-lang/atto-source.llvm",
+      "status": "NOT_EXECUTED"
+    },
+    "wasm": {
+      "repository": "atto-lang/atto-source.wasm",
+      "status": "NOT_EXECUTED"
+    },
+    "forge": {
+      "repository": "atto-lang/atto-source.forge",
+      "status": "NOT_EXECUTED"
+    },
+    "net": {
+      "repository": "atto-lang/atto-source.net",
+      "status": "NOT_EXECUTED"
+    },
+    "js": {
+      "repository": "atto-lang/atto-source.js",
+      "status": "NOT_EXECUTED"
+    }
+  },
+  "polling": {
+    "default_interval": 128,
+    "allowed_intervals": [
+      32,
+      64,
+      128,
+      256,
+      512
+    ],
+    "counter_bits": 64,
+    "counter_wrap": "unsigned modulo 2^64; poll on zero after increment",
+    "hot_path": "Actor-local saturating fuel charge and integer mask branch each backedge; no scheduler or clock call each iteration",
+    "slow_path": "At configured interval, plus immediate fuel denial and actor entry/resume admission",
+    "untrusted": "All reachable CFG cycles require positive bounded charging; no trust in cooperative suspension",
+    "trusted": "Defer handoff while critical, never defer quota denial"
+  },
+  "invariants": [
+    "All reachable CFG cycles must have a strictly positive bounded fuel charge; recursion SCCs need charged entries and a stack budget.",
+    "A subsequent optimized target CFG must preserve fuel checks; this source-level oracle alone cannot prove codegen.",
+    "Untrusted logical fuel, CPU debt and deadline must persist across await, carrier migration and callback resume.",
+    "Saturating fuel and CPU accounting never wrap to replenish quota; deadline is exclusive at equality.",
+    "Do not suspend with incompatible borrows or locks; fail-stop on exhausted quota even inside critical.",
+    "Long native calls, blocking FFI and hostile tenant code require independent enforceable isolation and kill.",
+    "A Web Worker is not an OS tenant sandbox; Wasm host imports, fuel and memory must be independently restricted.",
+    "Never treat synthetic, parser-only, skipped, zero-step or stale-head evidence as executed backend parity."
+  ],
+  "cases": [
+    {
+      "id": "hot-path-127-no-slow-poll",
+      "kind": "runtime",
+      "expect": "only-one-slow-poll-at-128"
+    },
+    {
+      "id": "interval-512-amortization",
+      "kind": "runtime",
+      "expect": "only-one-slow-poll-at-512"
+    },
+    {
+      "id": "counter-overflow-mask",
+      "kind": "runtime",
+      "expect": "poll-after-unsigned-wrap"
+    },
+    {
+      "id": "infinite-loop-fuel-denial",
+      "kind": "security",
+      "expect": "actor-stops-without-refuel"
+    },
+    {
+      "id": "nested-loop-cost-coverage",
+      "kind": "runtime",
+      "expect": "nested-backedges-charged"
+    },
+    {
+      "id": "continue-break-backedge-coverage",
+      "kind": "compiler",
+      "expect": "all-cycles-metered"
+    },
+    {
+      "id": "recursion-and-stack-budget",
+      "kind": "compiler",
+      "expect": "recursive-scc-metered-and-stack-bounded"
+    },
+    {
+      "id": "straight-line-weighted-block",
+      "kind": "runtime",
+      "expect": "expensive-block-exhausts-fuel"
+    },
+    {
+      "id": "cancellation-at-next-poll",
+      "kind": "runtime",
+      "expect": "cancel-observed-within-poll-interval"
+    },
+    {
+      "id": "await-resume-budget-conserved",
+      "kind": "security",
+      "expect": "no-budget-reset-across-resume"
+    },
+    {
+      "id": "cross-carrier-cpu-debt",
+      "kind": "security",
+      "expect": "cpu-deltas-summed-across-carriers"
+    },
+    {
+      "id": "wall-deadline-exact-boundary",
+      "kind": "security",
+      "expect": "deadline-at-equality-denied"
+    },
+    {
+      "id": "critical-region-no-unsafe-yield",
+      "kind": "security",
+      "expect": "yield-deferred-denial-not-deferred"
+    },
+    {
+      "id": "actor-local-budget-isolation",
+      "kind": "security",
+      "expect": "actor-budget-not-shared"
+    },
+    {
+      "id": "untrusted-ffi-hard-kill",
+      "kind": "security",
+      "expect": "independent-boundary-terminates-hostile-guest"
+    },
+    {
+      "id": "post-opt-safepoint-preservation",
+      "kind": "compiler",
+      "expect": "metered-cycles-retained-after-optimization"
+    },
+    {
+      "id": "worker-termination-neighbor-survives",
+      "kind": "security",
+      "expect": "worker-terminated-neighbor-unaffected"
+    }
+  ],
+  "evidence": {
+    "states": [
+      "passed",
+      "failed",
+      "unsupported",
+      "not_executed"
+    ],
+    "required_passed_fields": [
+      "backend",
+      "case_id",
+      "head_sha",
+      "tree_sha",
+      "artifact_sha256",
+      "fixture_sha256",
+      "workflow_run_id",
+      "workflow_attempt",
+      "job_id",
+      "workflow_url",
+      "executed_job_steps",
+      "guest_executed",
+      "evidence_kind",
+      "command",
+      "observed",
+      "exit_code"
+    ],
+    "boundary_required_for": [
+      "untrusted-ffi-hard-kill",
+      "worker-termination-neighbor-survives"
+    ],
+    "note": "Receipt validation is structural only, not independent CI provenance, binary attestation, target CFG proof or sandbox certification."
+  }
+}

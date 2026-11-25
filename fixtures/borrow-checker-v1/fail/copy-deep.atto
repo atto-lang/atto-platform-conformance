@@ -1,0 +1,14 @@
+// BCV1-016 copy_deep fail: cannot deep-copy a class owner during a live exclusive loan.
+// expect-error: E_BORROW
+// java: rejects
+define class Parcel as
+  pub let int value = 42;
+end
+pub fnc main(): int {
+  let original = new Parcel();
+  block {
+    val writer = borrow! mut original;
+    val illegal = copy!! original;
+    return illegal.value;
+  }
+}

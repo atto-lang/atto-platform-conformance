@@ -1,0 +1,8 @@
+// BCV1-027 pin pass: target AttoLang semantics, NOT_EXECUTED.
+// Expected success and exit value 42.
+define class Packet as pub let int value = 42; end
+pub fnc main(): int {
+  val owner = new Packet();
+  val pinned = pin! take! owner;
+  return pinned.value;
+}

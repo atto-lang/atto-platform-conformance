@@ -1,0 +1,11 @@
+// SOURCE-ONLY CONTRACT: ordinary fnc recursion remains admitted.
+// expect: ACCEPT, result: 42. No compiler execution is claimed.
+fnc climb(int value): int {
+  if value eq 42 then
+    return value;
+  fi
+  return climb(value + 1);
+}
+pub fnc main(): int {
+  return climb(40);
+}
