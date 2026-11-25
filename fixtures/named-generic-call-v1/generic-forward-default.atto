@@ -1,0 +1,7 @@
+define class Pair<A=B, B=int> as
+  A first
+  B second
+end
+fnc main() -> void ::
+  return
+end

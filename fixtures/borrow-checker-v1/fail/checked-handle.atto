@@ -1,0 +1,10 @@
+// BCV1-032 checked_handle fail: target AttoLang semantics, NOT_EXECUTED.
+// Expected compiler rejection E_HANDLE with NO guest artifact.
+define class Parcel as pub let int value = 42; end
+pub fnc main(): int {
+  val original = new Parcel();
+  val handle = ref! original;
+  val once = unref! handle;
+  val again = unref! handle; // consumed handle
+  return 42;
+}

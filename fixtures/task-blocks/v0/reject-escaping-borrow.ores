@@ -1,0 +1,10 @@
+pub fnc main(): void {
+  let int mutable = 42;
+  let captured = rt borrow mut mutable;
+  let Task<void> t = nb {
+    consume(captured);
+    return;
+  };
+  await t;
+  return;
+}

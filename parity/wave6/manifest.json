@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "wave": 6,
+  "status": "unverified-cross-platform-release-gates",
+  "certifiedParity": false,
+  "tasks": [
+    {
+      "id": 26,
+      "name": "mobile-app-native-aot",
+      "goal": "Native Android/iOS app ABI, actor lifecycle and iOS static-only AOT verified on real devices",
+      "verified": false
+    },
+    {
+      "id": 27,
+      "name": "embedded-source-firmware",
+      "goal": "Actor-to-actor firmware, HAL isolation, RISC-V support and measured RAM stack WCET",
+      "verified": false
+    },
+    {
+      "id": 28,
+      "name": "iot-secure-gateways",
+      "goal": "Authenticated MQTT and CoAP gateway, anti-replay provisioning and signed OTA fault recovery",
+      "verified": false
+    },
+    {
+      "id": 29,
+      "name": "desktop-distribution",
+      "goal": "Installable signed macOS Windows Linux desktop packages with native Oreslang guest actors",
+      "verified": false
+    },
+    {
+      "id": 30,
+      "name": "differential-release-certification",
+      "goal": "Independent exact-source five-backend differential fuzz stress AOT and runtime certification",
+      "verified": false
+    }
+  ],
+  "profiles": [
+    "android-arm64",
+    "ios-arm64",
+    "cortex-m3",
+    "riscv32",
+    "mqtt-gateway",
+    "coap-gateway",
+    "windows-x64",
+    "macos-arm64",
+    "linux-x64"
+  ],
+  "backends": [
+    "java",
+    "llvm",
+    "net",
+    "forge",
+    "wasm"
+  ],
+  "cases": [
+    "checked-i64-42",
+    "actor-lifecycle",
+    "typed-messages",
+    "cleanup-cancel",
+    "ownership-isolation"
+  ],
+  "fixtures": [
+    {
+      "file": "scalar-42.ores",
+      "gitBlob": "015f8b0f79aafa796a148d2adeff1574e8d6c491",
+      "sha256": "08a415734e9992f47702dc9b1ccf2c5dceb74df05245eaa5fbb00512d18afc8a",
+      "status": "UNEXECUTED"
+    },
+    {
+      "file": "actor-state-read.ores",
+      "gitBlob": "a7d2e367fb4cc8f0bd3f59fa58c046c16b84dd74",
+      "sha256": "62a535aa462a90d0398fedf0441c35638968f02bc6968a78d5c44de2fc90ef03",
+      "status": "UNEXECUTED"
+    },
+    {
+      "file": "actor-state-loan-escape-reject.ores",
+      "gitBlob": "bcbd630e455855773e1411eddd6dfa984c8452bc",
+      "sha256": "324d5a628c88bc495012c32a4682ecb472e0c3f86d36b49d067055f9bb528f4b",
+      "status": "UNEXECUTED"
+    }
+  ],
+  "evidenceRequirements": [
+    "Real-source and compiled artifact SHA-256 pinned independently",
+    "Executed runner steps and source guest runtime values",
+    "Native target device lifecycle and exception isolation proof",
+    "Authenticated transport and OTA rollback fault coverage",
+    "Platform signing and package installation tested on host OS",
+    "All five backend differential causal traces and diagnostics match"
+  ]
+}

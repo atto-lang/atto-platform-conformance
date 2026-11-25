@@ -1,0 +1,9 @@
+define class MyMap extends Map<string, unknown> as
+  key items: Option<Array<string>>;
+end
+
+fnc invalid(): void {
+  val m = new MyMap();
+  m.get("items");
+  return;
+}

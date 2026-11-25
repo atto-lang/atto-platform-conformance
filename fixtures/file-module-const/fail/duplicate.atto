@@ -1,0 +1,4 @@
+// expect-error: E_DUPLICATE
+define const int foo = 1;
+define const int foo as 2;
+pub fnc main(): int { return foo; }

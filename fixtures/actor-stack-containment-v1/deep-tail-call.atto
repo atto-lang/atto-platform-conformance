@@ -1,0 +1,12 @@
+fnc count_down(int remaining): int {
+  if remaining == 0; do
+    return 42;
+  else
+    return count_down(remaining - 1);
+  fi
+}
+
+pub routine main(): void {
+  stdio.stdout.write(count_down(100000));
+  return;
+}

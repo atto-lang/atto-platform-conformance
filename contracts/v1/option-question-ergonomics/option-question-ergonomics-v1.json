@@ -1,0 +1,272 @@
+{
+  "schema": "oreslang.option-question-ergonomics.v1",
+  "status": "experimental semantic/reference fixture; not a compiler-executed conformance receipt or stable binary ABI",
+  "sourcePath": "contracts/v1/option-question-ergonomics/option-fallbacks.ores",
+  "domains": [
+    "Option<int>",
+    "Result<int,int>"
+  ],
+  "rules": [
+    "Option.unwrap_or_else invokes its zero-argument fallback exactly once only when None.",
+    "Option.or_else invokes its zero-argument Option<T> fallback exactly once only when None; returning built-in None keeps the receiver's T.",
+    "Option.ok_or evaluates its error argument exactly once on both Some and None, returning Ok(value) or Err(error).",
+    "Result.unwrap_or_else invokes its one-argument fallback exactly once only when Err, passing the original error payload.",
+    "Result.or_else invokes its callback only for Err and preserves affine receiver ownership; it may not consume a receiver twice.",
+    "unwrap and expect panic on failure. Neither trap nor try/catch converts such a panic into a Result/Option.",
+    "T? name means Option<T> formal but required presence; T name? denotes independently omittable formal with a checked default if T is not Option.",
+    "T? name? carries both properties. Explicit None does not request a default. Postfix expression? propagates None/Err via return, not by throw/panic.",
+    "Unlowered parameter omission and postfix expression? remain draft; grammar/tooling tests are not executable backend parity.",
+    "All fallback semantics preserve one receiver evaluation and no implicit extra unwrap/flatten of nested Option."
+  ],
+  "vectors": [
+    {
+      "id": "some-lazy-fallback-skipped",
+      "operation": "option_unwrap_or_else",
+      "receiver": {
+        "tag": "Some",
+        "value": 7
+      },
+      "fallback": 42,
+      "expected": {
+        "value": 7
+      },
+      "invocations": 0
+    },
+    {
+      "id": "none-lazy-fallback-called",
+      "operation": "option_unwrap_or_else",
+      "receiver": {
+        "tag": "None"
+      },
+      "fallback": 42,
+      "expected": {
+        "value": 42
+      },
+      "invocations": 1
+    },
+    {
+      "id": "some-option-recovery-skipped",
+      "operation": "option_or_else",
+      "receiver": {
+        "tag": "Some",
+        "value": 7
+      },
+      "fallback": {
+        "tag": "Some",
+        "value": 8
+      },
+      "expected": {
+        "tag": "Some",
+        "value": 7
+      },
+      "invocations": 0
+    },
+    {
+      "id": "none-option-recovery-called",
+      "operation": "option_or_else",
+      "receiver": {
+        "tag": "None"
+      },
+      "fallback": {
+        "tag": "Some",
+        "value": 8
+      },
+      "expected": {
+        "tag": "Some",
+        "value": 8
+      },
+      "invocations": 1
+    },
+    {
+      "id": "none-to-none-preserves-T",
+      "operation": "option_or_else",
+      "receiver": {
+        "tag": "None"
+      },
+      "fallback": {
+        "tag": "None"
+      },
+      "expected": {
+        "tag": "None"
+      },
+      "invocations": 1
+    },
+    {
+      "id": "some-to-none-fallback-skipped",
+      "operation": "option_or_else",
+      "receiver": {
+        "tag": "Some",
+        "value": 9
+      },
+      "fallback": {
+        "tag": "None"
+      },
+      "expected": {
+        "tag": "Some",
+        "value": 9
+      },
+      "invocations": 0
+    },
+    {
+      "id": "some-ok-or-eager",
+      "operation": "option_ok_or",
+      "receiver": {
+        "tag": "Some",
+        "value": 7
+      },
+      "fallback": 88,
+      "expected": {
+        "tag": "Ok",
+        "value": 7
+      },
+      "invocations": 1
+    },
+    {
+      "id": "none-ok-or-eager",
+      "operation": "option_ok_or",
+      "receiver": {
+        "tag": "None"
+      },
+      "fallback": 88,
+      "expected": {
+        "tag": "Err",
+        "value": 88
+      },
+      "invocations": 1
+    },
+    {
+      "id": "ok-lazy-error-fallback-skipped",
+      "operation": "result_unwrap_or_else",
+      "receiver": {
+        "tag": "Ok",
+        "value": 7
+      },
+      "fallbackMode": "error-identity",
+      "expected": {
+        "value": 7
+      },
+      "invocations": 0
+    },
+    {
+      "id": "err-lazy-error-fallback-called",
+      "operation": "result_unwrap_or_else",
+      "receiver": {
+        "tag": "Err",
+        "value": 5
+      },
+      "fallbackMode": "error-identity",
+      "expected": {
+        "value": 5
+      },
+      "invocations": 1
+    },
+    {
+      "id": "ok-result-or-else-skipped",
+      "operation": "result_or_else",
+      "receiver": {
+        "tag": "Ok",
+        "value": 7
+      },
+      "fallback": {
+        "tag": "Ok",
+        "value": 8
+      },
+      "expected": {
+        "tag": "Ok",
+        "value": 7
+      },
+      "invocations": 0
+    },
+    {
+      "id": "err-result-or-else-called",
+      "operation": "result_or_else",
+      "receiver": {
+        "tag": "Err",
+        "value": 5
+      },
+      "fallback": {
+        "tag": "Ok",
+        "value": 8
+      },
+      "expected": {
+        "tag": "Ok",
+        "value": 8
+      },
+      "invocations": 1
+    }
+  ],
+  "syntaxAdmission": [
+    {
+      "id": "required-option",
+      "source": "bool? a",
+      "type": "Option<bool>",
+      "omittable": false,
+      "execution": "staged-only"
+    },
+    {
+      "id": "scalar-omission",
+      "source": "string b?",
+      "type": "string",
+      "omittable": true,
+      "requiresExplicitDefault": true,
+      "execution": "staged-only"
+    },
+    {
+      "id": "both-properties",
+      "source": "bool? a?",
+      "type": "Option<bool>",
+      "omittable": true,
+      "defaultIfOmitted": "None",
+      "execution": "staged-only"
+    },
+    {
+      "id": "postfix-propagation",
+      "source": "value?",
+      "kind": "early-return",
+      "execution": "unmerged-draft"
+    },
+    {
+      "id": "ordinary-ternary",
+      "source": "flag ? 1 : 2",
+      "kind": "conditional-expression",
+      "execution": "existing-parser"
+    }
+  ],
+  "rejectionCases": [
+    {
+      "id": "wrong-option-fallback-type",
+      "source": "Option<int>.or_else(() -> Some(\"wrong\"))",
+      "reason": "callback Option<String> cannot widen Option<int>"
+    },
+    {
+      "id": "unsafe-unknown-result",
+      "source": "Option<int>.or_else(dynamic_unknown)",
+      "reason": "unknown callback shape cannot receive contextual None typing"
+    },
+    {
+      "id": "non-option-omission-without-default",
+      "source": "pub fnc foo(string b?): void {}",
+      "reason": "omitted non-Option formal requires an explicit checked default"
+    },
+    {
+      "id": "panic-not-catchable-by-trap",
+      "source": "trap Some(1).unwrap()",
+      "reason": "panics effects are not handled by trap"
+    }
+  ],
+  "backendAttestations": {
+    "java-graalvm": "not claimed; option operations on main, literal None fix draft #1907",
+    "llvm": "not claimed",
+    "js-node-browser": "not claimed",
+    "wasm": "not claimed",
+    "dotnet": "not claimed"
+  },
+  "requiredEvidence": [
+    "Exact source Git head and compiler/toolchain versions for each target",
+    "Target-side compile, execution, callback evaluation counters and negative ownership cases",
+    "Proven source signature/version admission for each ? position before enabling omission/propagation",
+    "Proof of panic effect boundaries, defers and catch/trap separation",
+    "Typed nested Option and affine capture/drop/lifetime conformance",
+    "Review and runtime logs; standalone reference checks are not target attestations"
+  ]
+}

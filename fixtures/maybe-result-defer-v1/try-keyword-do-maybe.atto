@@ -1,0 +1,21 @@
+// CANDIDATE SOURCE — source-free/NOT_EXECUTED; helper functions supplied by guest harness.
+// A failed value match enters maybe else, NOT outer try catch.
+define pub fnc do_maybe_inside_try(int id) -> Result[int, Error] as
+  defer log("function-defer");
+  try
+    do maybe
+      Ok(value) ?= fetch_value(id);
+      return Ok(value);
+    else
+      Err(reason) -> {
+        log("maybe-else");
+        return Err(reason);
+      };
+    end
+  catch (Error e)
+    log("outer-catch");
+    return Err(e);
+  finally
+    log("outer-finally");
+  end
+end

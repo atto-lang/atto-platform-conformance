@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "contract": "pipeline-stop-bang-alias-v1",
+  "status": "SOURCE_ONLY_NOT_EXECUTED",
+  "language_authority": "https://github.com/atto-lang/atto-spec/pull/148",
+  "direction_authority": "https://github.com/atto-lang/atto-spec/pull/45",
+  "parent_conformance": "https://github.com/atto-lang/atto-platform-conformance/pull/102",
+  "meaning": {
+    "pipe!": "same checked left-to-right continuous graph as pipe",
+    "rpipe!": "same checked right-to-left continuous graph as rpipe",
+    "stop!": "same checked graceful actor/graph stop as stop, never forced termination",
+    "pipe_vs_rpipe": "one direction per unparenthesized chain",
+    "runtime": "unchanged type/effect/ownership/tenant capability/supervisor CONTROL admission and completion"
+  },
+  "cases": [
+    {
+      "id": "forward-bang",
+      "path": "fixtures/pipeline-stop-bang-v1/forward-bang.atto",
+      "source_git_blob_sha": "933d4791dea3105a204a86dffbb6f3dcf8d4f01e",
+      "direction": "forward",
+      "observed_dataflow": "Producer->Consumer",
+      "expected": "typecheck_graph",
+      "evidence_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reverse-bang",
+      "path": "fixtures/pipeline-stop-bang-v1/reverse-bang.atto",
+      "source_git_blob_sha": "9feb3e719094da26139eb2916f1ef4c337d44817",
+      "direction": "reverse",
+      "observed_dataflow": "Producer->Consumer",
+      "expected": "typecheck_graph",
+      "evidence_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "forward-same-direction-mix",
+      "path": "fixtures/pipeline-stop-bang-v1/forward-same-direction-mix.atto",
+      "source_git_blob_sha": "e1fc6f2bf8ca06c47a3f5482c837e18c1a5df33c",
+      "direction": "forward",
+      "observed_dataflow": "Producer->Transform->Consumer",
+      "expected": "typecheck_graph",
+      "evidence_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reverse-same-direction-mix",
+      "path": "fixtures/pipeline-stop-bang-v1/reverse-same-direction-mix.atto",
+      "source_git_blob_sha": "1e1712c29a7be622cf8e72698c504fd1b61e6f28",
+      "direction": "reverse",
+      "observed_dataflow": "Producer->Transform->Consumer",
+      "expected": "typecheck_graph",
+      "evidence_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "mixed-direction-bang-reject",
+      "path": "fixtures/pipeline-stop-bang-v1/mixed-direction-bang-reject.atto",
+      "source_git_blob_sha": "4efaa467dba0c0f7c4dd34ea42bb5ff4a3bfe5fc",
+      "direction": "invalid",
+      "observed_dataflow": null,
+      "expected": "reject_E_PIPE_DIRECTION",
+      "evidence_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "pipe-bang-suffix-reject",
+      "path": "fixtures/pipeline-stop-bang-v1/pipe-bang-suffix-reject.atto",
+      "source_git_blob_sha": "535a8ca9eae3e98e1d59ea4e05663b38550258df",
+      "direction": "invalid",
+      "observed_dataflow": null,
+      "expected": "reject_bang_boundary",
+      "evidence_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "stop-bang-graceful-native",
+      "path": "fixtures/pipeline-stop-bang-v1/stop-bang-graceful-native.atto",
+      "source_git_blob_sha": "a27e2bc15b2332bea815a443e8f4eff3e147db10",
+      "direction": "stop",
+      "observed_dataflow": null,
+      "expected": "native_graceful_stop_expected_exit_43",
+      "evidence_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "stop-bang-member-stopped-port",
+      "path": "fixtures/pipeline-stop-bang-v1/stop-bang-member-stopped-port.atto",
+      "source_git_blob_sha": "a64a163d924e181319a960ea1c0c17a946a0dde6",
+      "direction": "stop",
+      "observed_dataflow": null,
+      "expected": "reject_stopped_port_no_DATA_publication",
+      "evidence_status": "NOT_EXECUTED"
+    }
+  ],
+  "backend_evidence": [
+    {
+      "repo": "atto-lang/atto-source.java",
+      "source_compiled_guest_status": "NOT_EXECUTED",
+      "note": "explicit parser/guest verification mandatory; no PASS from fixture or host contract"
+    },
+    {
+      "repo": "atto-lang/atto-source.llvm",
+      "source_compiled_guest_status": "NOT_EXECUTED",
+      "note": "explicit parser/guest verification mandatory; no PASS from fixture or host contract"
+    },
+    {
+      "repo": "atto-lang/atto-source.rs",
+      "source_compiled_guest_status": "NOT_EXECUTED",
+      "note": "explicit parser/guest verification mandatory; no PASS from fixture or host contract"
+    },
+    {
+      "repo": "atto-lang/atto-source.wasm",
+      "source_compiled_guest_status": "NOT_EXECUTED",
+      "note": "explicit parser/guest verification mandatory; no PASS from fixture or host contract"
+    },
+    {
+      "repo": "atto-lang/atto-source.net",
+      "source_compiled_guest_status": "NOT_EXECUTED",
+      "note": "explicit parser/guest verification mandatory; no PASS from fixture or host contract"
+    },
+    {
+      "repo": "atto-lang/atto-source.forge",
+      "source_compiled_guest_status": "NOT_EXECUTED",
+      "note": "explicit parser/guest verification mandatory; no PASS from fixture or host contract"
+    },
+    {
+      "repo": "atto-lang/atto-source.cranelift",
+      "source_compiled_guest_status": "NOT_EXECUTED",
+      "note": "explicit parser/guest verification mandatory; no PASS from fixture or host contract"
+    },
+    {
+      "repo": "atto-lang/atto-source.js",
+      "source_compiled_guest_status": "NOT_EXECUTED",
+      "note": "explicit parser/guest verification mandatory; no PASS from fixture or host contract"
+    },
+    {
+      "repo": "atto-lang/atto-source.atto",
+      "source_compiled_guest_status": "NOT_EXECUTED",
+      "note": "explicit parser/guest verification mandatory; no PASS from fixture or host contract"
+    },
+    {
+      "repo": "atto-lang/atto-source.hdl",
+      "source_compiled_guest_status": "NOT_EXECUTED",
+      "note": "explicit parser/guest verification mandatory; no PASS from fixture or host contract"
+    },
+    {
+      "repo": "atto-lang/atto-source.realtime",
+      "source_compiled_guest_status": "NOT_EXECUTED",
+      "note": "explicit parser/guest verification mandatory; no PASS from fixture or host contract"
+    }
+  ],
+  "requirements": [
+    "exact_git_tree_head_sha",
+    "fixture_git_blob_sha",
+    "actual_compiler_diagnostics",
+    "typed_ast_stage_order",
+    "formatter_round_trip_preserves_spelling",
+    "native_or_wasm_guest_execution_where_supported",
+    "guest_exit_and_data_flow",
+    "stop_authorization_and_once_only_completion",
+    "no_cross_tenant_capability_bypass",
+    "supervisor_CONTROL_lane_unchanged",
+    "step_level_CI_evidence_nonzero",
+    "no_emitted_artifact_on_fail_closed_cases"
+  ],
+  "no_claim_of_cross_backend_parity": true
+}

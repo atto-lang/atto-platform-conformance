@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "contract": "CALLBACK_DISPATCH_AND_PREEMPTION_V1",
+  "fixtures": [
+    {
+      "id": "sync_resolve_registration",
+      "source": "callback_sync_resolve.ores",
+      "expected_exit": 0,
+      "expected_stdout": [
+        "before_callback",
+        "callback_enter",
+        "callback_exit",
+        "after_callback",
+        "after_await",
+        "42"
+      ],
+      "required_receipt": {
+        "compiled_guest": true,
+        "guest_inline": false,
+        "fresh_resume_dispatch": true,
+        "logical_execution_preserved": true,
+        "producer_active_execution": false,
+        "callback_boundary": "HOST_CALLBACK"
+      }
+    }
+  ]
+}

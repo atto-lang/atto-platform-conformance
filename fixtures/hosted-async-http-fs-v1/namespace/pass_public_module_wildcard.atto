@@ -1,0 +1,6 @@
+// Public modules remain visible under wildcard aliases of their source unit.
+import * as lib from "./library_public.atto";
+pub routine main(): void {
+  stdio.println(lib.http3.version() == 3);
+  return;
+}

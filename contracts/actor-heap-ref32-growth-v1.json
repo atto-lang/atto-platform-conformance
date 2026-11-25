@@ -1,0 +1,58 @@
+{
+  "format": "atto.actor-heap-ref32-growth.v1",
+  "status": "REFERENCE_CONTRACT_NOT_GUEST_EVIDENCE",
+  "targets": [
+    "java-graalvm",
+    "llvm",
+    "net-nativeaot"
+  ],
+  "references": {
+    "wordBits": 32,
+    "unsigned": true,
+    "nullWord": 0,
+    "objectAlignmentBytes": 8,
+    "fieldAlignmentBytes": 4,
+    "encoding": "byte_offset_div_8_plus_1",
+    "largestWord": "4294967295",
+    "largestOffsetBytes": "34359738352",
+    "actorRelative": true,
+    "wordAloneIsAuthority": false,
+    "nativeFfiPointersCompressed": false,
+    "actorRefsCompressed": false,
+    "generationInWord": false
+  },
+  "allocation": {
+    "profiles": [
+      "dynamic",
+      "realtime-prefault"
+    ],
+    "dynamicCommitOnDemand": true,
+    "physicalBackingMayMoveOnlyWithoutEscapedRawPointers": true,
+    "logicalOffsetsStableAcrossGrowth": true,
+    "perActorLimitRequired": true,
+    "aggregateProcessTenantBudgetRequired": true,
+    "chargeBeforeBackingAllocation": true,
+    "failureIsAccountingNeutral": true,
+    "realtimePrefaultNeverGrowsDuringActorTurn": true,
+    "overflowIsActorScoped": true,
+    "default64MiBIsImplementationQuotaNot32BitWordLimit": true
+  },
+  "security": {
+    "authenticateActorAndIncarnation": true,
+    "authenticateTurnAfterCarrierMigration": true,
+    "checkPublishedObjectStartAndBounds": true,
+    "verifyGenerationAndBorrowForEveryLoad": true,
+    "quarantinePublishedOffsetsUntilSafeReclamation": true,
+    "scrubBeforePhysicalRelease": true,
+    "retirementWaitsForOutstandingPins": true,
+    "noCrossActorRawRefTransport": true,
+    "noIntegerToRefConversion": true,
+    "noSilentNative64Widening": true
+  },
+  "evidence": {
+    "java-graalvm": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net-nativeaot": "NOT_EXECUTED",
+    "required": "exact-head executed .atto guest compiler, object graph and native runtime tests; nonempty job steps"
+  }
+}

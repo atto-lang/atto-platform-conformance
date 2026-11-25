@@ -1,0 +1,17 @@
+// Pure-source LiveView revision order; no WebSocket/host APIs.
+// A compiler --check pass is NOT a native runtime or wire-parity pass.
+pub fnc next_revision(int previous, int incoming): bool {
+  if previous < 0 || previous >= 2147483646; then
+    return false;
+  fi
+  return incoming == previous + 1;
+}
+
+pub fnc main(): int {
+  if next_revision(0, 1) && next_revision(41, 42) &&
+     !next_revision(2, 2) && !next_revision(2, 4) &&
+     !next_revision(-1, 0) && !next_revision(2147483646, 2147483647); then
+    return 42;
+  fi
+  return 1;
+}

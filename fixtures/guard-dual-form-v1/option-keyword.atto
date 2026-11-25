@@ -1,0 +1,7 @@
+// Option<T> target type-check; not a claim of guest execution.
+fnc optional_port(bool present): Option<int> {
+  guard present else
+    return None;
+  end
+  return Some(8080);
+}

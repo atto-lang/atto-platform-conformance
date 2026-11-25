@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ores-truffle-oreslang.github.io/contracts/state_regions/state-region-loan-requirement.schema.json",
+  "title": "Oreslang compile-time state-region loan requirement v1",
+  "description": "Symbolic compiler requirement. Runtime execution/region generations are deliberately absent and must be materialized from authenticated runtime state.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion",
+    "regionBinding",
+    "executionBinding",
+    "generationFence",
+    "loanId",
+    "place",
+    "kind",
+    "action"
+  ],
+  "properties": {
+    "contractVersion": { "const": "1.0" },
+    "regionBinding": { "type": "string", "minLength": 1 },
+    "executionBinding": { "const": "current-logical-execution" },
+    "generationFence": { "const": true },
+    "loanId": { "type": "integer", "minimum": 1 },
+    "place": { "type": "string", "minLength": 1 },
+    "kind": { "enum": ["read", "write"] },
+    "action": { "enum": ["borrow", "release"] }
+  }
+}

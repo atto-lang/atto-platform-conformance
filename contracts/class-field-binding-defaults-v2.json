@@ -1,0 +1,175 @@
+{
+  "schema": "atto.class-field-binding-defaults.v2",
+  "version": 2,
+  "status": "FULL_RS_TESTS_AND_FOCUSED_GUEST_VERIFIED_OTHER_BACKENDS_NOT_VERIFIED",
+  "owner": "atto-lang/atto-spec",
+  "source_spec": {
+    "repository": "atto-lang/atto-spec",
+    "pr": 102,
+    "path": "language/class-field-binding-defaults-v2.md"
+  },
+  "source_compiler": {
+    "repository": "atto-lang/atto-source.rs",
+    "pr": 358,
+    "head_sha": "5a0c0a7f9da42bcfae2b39a413a5b3a6ef678409",
+    "tree_sha": "5bc06e5d231b2abe2ea002294139d315c996d27f"
+  },
+  "semantics": {
+    "default_class_field_binding": "val for all primitive, nominal and generic type arguments; no implicit mut",
+    "explicit_rebinding": "let; requires authorized receiver or mutable loan",
+    "referent_mutation": "mut requests independently checked referent-write authority, never implicit name rebinding",
+    "val": "binding fixed, runtime initializer permitted within supported effect profile",
+    "final": "exactly one initialization; deferred assignment only with definite-assignment proof",
+    "const": "compile-time-evaluable class field; no file/module runtime os.read_env exception",
+    "legacy_named_fields": "keep existing semantics pending separate migration",
+    "locals": "type-first local shorthand retains const, not implicit val",
+    "package_access": "private class-only; pub[pkg] authenticated declaring package only; pub exposed if declaring type accessible",
+    "negative_fixture_rule": "Must fail before artifact emission with expected compiler error"
+  },
+  "required_cases": [
+    {
+      "id": "same_package_read_explicit_let_constructor",
+      "kind": "pass",
+      "path": "fixtures/class-fields/v2/pass/class-field-visibility-default-val.atto",
+      "source_path": "tests/fixtures/pass/class-field-visibility-default-val.atto",
+      "source_blob_sha": "1cac9591ba7d6c0fcea73e5193d3b56a76a13e61",
+      "expected_exit": 42
+    },
+    {
+      "id": "implicit_val_ctor_reassign_denied",
+      "kind": "fail",
+      "path": "fixtures/class-fields/v2/fail/class-field-implicit-val-constructor-assign.atto",
+      "source_path": "tests/fixtures/fail/class-field-implicit-val-constructor-assign.atto",
+      "source_blob_sha": "f8ecc3c49abbe3c7cea0e13b56ac0fff137b2797",
+      "expected_error": "E_IMMUTABLE"
+    },
+    {
+      "id": "private_field_outside_class_denied",
+      "kind": "fail",
+      "path": "fixtures/class-fields/v2/fail/class-field-private-outside-class.atto",
+      "source_path": "tests/fixtures/fail/class-field-private-outside-class.atto",
+      "source_blob_sha": "c3f34523b6dba79ec80979b7bf403f5d4ca9e5e6",
+      "expected_error": "E_PRIVATE"
+    },
+    {
+      "id": "class_const_runtime_call_denied",
+      "kind": "fail",
+      "path": "fixtures/class-fields/v2/fail/class-field-const-runtime-call.atto",
+      "source_path": "tests/fixtures/fail/class-field-const-runtime-call.atto",
+      "source_blob_sha": "45fad8ac2f6f93eb0d305178990b8b7a38343f8e",
+      "expected_error": "E_CONST"
+    }
+  ],
+  "backend_status": {
+    "rs-browser": "FULL_NATIVE_RUST_SUITE_FOCUSED_GUEST_VERIFIED",
+    "java": "NOT_VERIFIED",
+    "llvm": "NOT_VERIFIED",
+    "net": "NOT_VERIFIED",
+    "wasm-independent": "NOT_VERIFIED",
+    "forge": "NOT_VERIFIED"
+  },
+  "provenance_policy": "A successful source-free CI probe, parser-only acceptance or host-only test is not compiled guest conformance. Pin source SHA/tree/blob hashes and record executed guest returns or compile diagnostics. Cross-package security requires a real multi-package compiler and cannot be established by these same-file fixtures.",
+  "evidence": [
+    {
+      "type": "exact_git_blob_guest_compiler_run",
+      "source_repository": "atto-lang/atto-source.rs",
+      "source_head": "823fb712bc5bed4d89fbd170bd820e9271a40c61",
+      "source_tree": "530cdcaa1bd9882ee935c194e64300b04b0fc5ec",
+      "mirror_repository": "gha-indie-worker/gha-indie-worker-docs",
+      "mirror_branch": "ci/atto-rs-358-823fb712-20261118",
+      "mirror_commit": "25856ca8d1cfa0c1f22cf190da0ef88052215e42",
+      "run_url": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/44436915965",
+      "run_id": 44436915965,
+      "job_id": 135267965353,
+      "job_conclusion": "success",
+      "verified_source_blob_count": 39,
+      "rust_lib_tests": {
+        "passed": 15,
+        "failed": 0
+      },
+      "rust_targeted_integration_tests": {
+        "passed": 21,
+        "failed": 0
+      },
+      "guest": {
+        "compiled": true,
+        "executed": true,
+        "engine": "Node.js WebAssembly",
+        "entrypoint": "main",
+        "expected_exit": 42,
+        "actual_exit": 42
+      },
+      "negative_cases": [
+        {
+          "id": "implicit_val_ctor_reassign_denied",
+          "actual_error": "E_IMMUTABLE",
+          "no_artifact": true
+        },
+        {
+          "id": "private_field_outside_class_denied",
+          "actual_error": "E_PRIVATE",
+          "no_artifact": true
+        },
+        {
+          "id": "class_const_runtime_call_denied",
+          "actual_error": "E_CONST",
+          "no_artifact": true
+        }
+      ],
+      "scope": "Focused browser-subset native compiler + compiled Wasm guest. No all-fixture/full-suite, cross-package linker, wasm32-host-compiler, or other backend parity claim."
+    },
+    {
+      "type": "full_native_rust_suite_exact_blob_mirror",
+      "source_repository": "atto-lang/atto-source.rs",
+      "source_head": "5a0c0a7f9da42bcfae2b39a413a5b3a6ef678409",
+      "source_tree": "5bc06e5d231b2abe2ea002294139d315c996d27f",
+      "mirror_repository": "gha-indie-worker/gha-indie-worker-docs",
+      "mirror_branch": "ci/atto-rs-358-823fb712-20261118",
+      "mirror_commit": "ae9a6e6da7551b0602d09d598d26fec553b54cfc",
+      "run_url": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/44440471287",
+      "run_id": 44440471287,
+      "job_id": 135279744691,
+      "job_conclusion": "success",
+      "verified_git_blob_count": 659,
+      "cargo_test_locked": {
+        "passed": 422,
+        "failed": 0,
+        "executed_summaries": 59
+      },
+      "notes": "Entire Rust source and tests tree, Cargo manifests, 659 exact source blob SHAs, 422 Rust tests including prior shape/nominal preview regressions. This run does not execute all independent guest fixtures or other backends."
+    },
+    {
+      "type": "focused_native_compiler_actual_guest_wasm",
+      "source_repository": "atto-lang/atto-source.rs",
+      "source_head": "5a0c0a7f9da42bcfae2b39a413a5b3a6ef678409",
+      "source_tree": "5bc06e5d231b2abe2ea002294139d315c996d27f",
+      "mirror_repository": "gha-indie-worker/gha-indie-worker-docs",
+      "mirror_commit": "ae9a6e6da7551b0602d09d598d26fec553b54cfc",
+      "run_url": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/44440471318",
+      "run_id": 44440471318,
+      "job_id": 135279744617,
+      "job_conclusion": "success",
+      "verified_git_blob_count": 42,
+      "actual_guest_exit": 42,
+      "negative_errors": [
+        "E_IMMUTABLE",
+        "E_PRIVATE",
+        "E_CONST"
+      ],
+      "all_negative_rejected_before_artifact": true
+    }
+  ],
+  "lint_evidence": {
+    "rustfmt": "BASELINE_FAILURE_WIDESPREAD",
+    "clippy": "BASELINE_3_ERRORS_WITH_D_WARNINGS",
+    "run_url": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/44440471225",
+    "clippy_untouched_files": [
+      "src/generator_frame.rs",
+      "src/target_syntax.rs",
+      "src/wasm/generator_runtime.rs"
+    ],
+    "note": "Strict Clippy fails with pre-existing warnings in untouched files; rustfmt check likewise fails broadly on baseline files. Full Rust functional suite and focused guest run pass, lint gate not green.",
+    "source_head": "5a0c0a7f9da42bcfae2b39a413a5b3a6ef678409",
+    "status": "BASELINE_UNRESOLVED"
+  }
+}

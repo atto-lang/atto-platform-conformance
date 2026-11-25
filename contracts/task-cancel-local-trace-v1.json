@@ -1,0 +1,256 @@
+{
+  "schema": "atto.task-cancel-local-trace/1",
+  "status": "TARGET_NOT_EXECUTED",
+  "referenceModelIsGuestEvidence": false,
+  "zeroStepMeans": "RUNNER_ADMISSION_FAILURE",
+  "backends": [
+    "java",
+    "llvm",
+    "net",
+    "forge",
+    "wasm"
+  ],
+  "sourceExtension": ".atto",
+  "legacyExtension": ".ores",
+  "sourceExecutionVerified": false,
+  "implementationScope": "compile-checked TaskScope/Task/TaskLocal/ActorLocal/ThreadLocal/trace continuation contract; source-free model is advisory only",
+  "invariants": [
+    "A cancellation request does not mean quiescence and never unlocks an executing thread-affine mutex",
+    "Compiler-owned logical leases close exactly once, in LIFO unwind order, after physical quiescence; a failed release poisons the reclamation witness",
+    "Await and carrier migration preserve TaskLocal and immutable causal trace lineage, not physical ThreadLocal",
+    "TaskLocal children default to noninheritance; explicitly copied immutable Send values are independent",
+    "ActorLocal remains actor-incarnation and critical-gated; no authority crosses ActorRef.send or tenants implicitly",
+    "Tracing is bounded, source-mapped, redacted, and branch-causal; foreign callbacks carry provenance only, not task/actor authority",
+    "Structured scope exit waits for physically retired children and cleanup; no orphan or silent detached task",
+    "All five backends must prove native guest execution of identical positive/negative .atto fixtures"
+  ],
+  "scenarios": [
+    {
+      "id": "task-composition-stage-success",
+      "mustHold": "Stages run in source order with typed one-layer Future results, not implicit flattening",
+      "verified": false,
+      "requiredPhases": [
+        "compiler",
+        "guest-execution",
+        "physical-quiescence"
+      ]
+    },
+    {
+      "id": "task-composition-stage-failure",
+      "mustHold": "A failed stage suppresses downstream stages and preserves original failure",
+      "verified": false,
+      "requiredPhases": [
+        "compiler",
+        "guest-execution",
+        "physical-quiescence"
+      ]
+    },
+    {
+      "id": "task-parent-child-cancel",
+      "mustHold": "Parent cancellation seals admission and propagates only to owned descendants",
+      "verified": false,
+      "requiredPhases": [
+        "compiler",
+        "guest-execution",
+        "physical-quiescence"
+      ]
+    },
+    {
+      "id": "task-child-cancel-isolated",
+      "mustHold": "Child cancellation does not cancel parent or unrelated sibling",
+      "verified": false,
+      "requiredPhases": [
+        "compiler",
+        "guest-execution",
+        "physical-quiescence"
+      ]
+    },
+    {
+      "id": "task-cancel-race-completion",
+      "mustHold": "Exactly one terminal outcome wins but cleanup still waits for physical quiescence",
+      "verified": false,
+      "requiredPhases": [
+        "compiler",
+        "guest-execution",
+        "physical-quiescence"
+      ]
+    },
+    {
+      "id": "task-cancel-running-lock",
+      "mustHold": "A cancellation request cannot unlock a still-running thread-affine lock",
+      "verified": false,
+      "requiredPhases": [
+        "compiler",
+        "guest-execution",
+        "physical-quiescence"
+      ]
+    },
+    {
+      "id": "task-logical-lease-lifo",
+      "mustHold": "Verified transferable logical lock leases release once and in reverse registration order",
+      "verified": false,
+      "requiredPhases": [
+        "compiler",
+        "guest-execution",
+        "physical-quiescence"
+      ]
+    },
+    {
+      "id": "task-lock-waiter-race",
+      "mustHold": "Cancelled waiter and granted permit cannot both claim the same lock; no permit leak",
+      "verified": false,
+      "requiredPhases": [
+        "compiler",
+        "guest-execution",
+        "physical-quiescence"
+      ]
+    },
+    {
+      "id": "task-cleanup-failure",
+      "mustHold": "Failed lease release is visible and cannot yield successful get_done reclamation",
+      "verified": false,
+      "requiredPhases": [
+        "compiler",
+        "guest-execution",
+        "physical-quiescence"
+      ]
+    },
+    {
+      "id": "task-async-defer-cleanup",
+      "mustHold": "Deferred asynchronous cleanup is bounded and awaited before physical retirement",
+      "verified": false,
+      "requiredPhases": [
+        "compiler",
+        "guest-execution",
+        "physical-quiescence"
+      ]
+    },
+    {
+      "id": "tasklocal-await-migration",
+      "mustHold": "TaskLocal follows logical task across await and carrier migration",
+      "verified": false,
+      "requiredPhases": [
+        "compiler",
+        "guest-execution",
+        "physical-quiescence"
+      ]
+    },
+    {
+      "id": "tasklocal-child-noninheritance",
+      "mustHold": "Child TaskLocal defaults empty without a snapshot",
+      "verified": false,
+      "requiredPhases": [
+        "compiler",
+        "guest-execution",
+        "physical-quiescence"
+      ]
+    },
+    {
+      "id": "tasklocal-explicit-copy",
+      "mustHold": "Explicit immutable Send snapshot cannot mutate parent or inherit authority",
+      "verified": false,
+      "requiredPhases": [
+        "compiler",
+        "guest-execution",
+        "physical-quiescence"
+      ]
+    },
+    {
+      "id": "actorlocal-generation",
+      "mustHold": "ActorLocal requires actor incarnation, turn and critical-write authority",
+      "verified": false,
+      "requiredPhases": [
+        "compiler",
+        "guest-execution",
+        "physical-quiescence"
+      ]
+    },
+    {
+      "id": "threadlocal-carrier",
+      "mustHold": "ThreadLocal remains physical-thread scoped; guest Tasks cannot use it as authorization",
+      "verified": false,
+      "requiredPhases": [
+        "compiler",
+        "guest-execution",
+        "physical-quiescence"
+      ]
+    },
+    {
+      "id": "context-stale-callback",
+      "mustHold": "Producer-thread callback cannot restore revoked Task/Actor generation",
+      "verified": false,
+      "requiredPhases": [
+        "compiler",
+        "guest-execution",
+        "physical-quiescence"
+      ]
+    },
+    {
+      "id": "trace-await-causality",
+      "mustHold": "Await/resume retain trace identity and trusted causal parent without fake stack frames",
+      "verified": false,
+      "requiredPhases": [
+        "compiler",
+        "guest-execution",
+        "physical-quiescence"
+      ]
+    },
+    {
+      "id": "trace-fanout-join",
+      "mustHold": "Siblings preserve branch ancestry; a join never invents a total order",
+      "verified": false,
+      "requiredPhases": [
+        "compiler",
+        "guest-execution",
+        "physical-quiescence"
+      ]
+    },
+    {
+      "id": "trace-cancel-cleanup",
+      "mustHold": "Cancellation and cleanup retain original trace lineage and bounded secondary errors",
+      "verified": false,
+      "requiredPhases": [
+        "compiler",
+        "guest-execution",
+        "physical-quiescence"
+      ]
+    },
+    {
+      "id": "actorref-no-ambient-propagation",
+      "mustHold": "Actor send serializes only approved bounded trace metadata, never live local handles",
+      "verified": false,
+      "requiredPhases": [
+        "compiler",
+        "guest-execution",
+        "physical-quiescence"
+      ]
+    }
+  ],
+  "evidence": {
+    "required": [
+      "exact_pr_head_sha",
+      "exact_root_tree_sha",
+      "compiler_executable_sha256",
+      "source_blob_sha",
+      "runner_id",
+      "job_id",
+      "run_attempt",
+      "steps_executed_count",
+      "guest_test_ids",
+      "expected_and_actual_outcome",
+      "cleanup_receipt",
+      "backend_identity"
+    ],
+    "admissible": "Only independently checked exact-head, nonzero-step compiler-backed guest execution, native/AOT where applicable.",
+    "negativeMustNotEmit": [
+      "llvm-ir",
+      "assembly",
+      "wasm-binary",
+      "native-aot-artifact"
+    ],
+    "zeroStepIsVerified": false,
+    "hostOnlyCanaryIsVerified": false,
+    "modelTestIsVerified": false,
+    "release": "Independent review and actual quiescence/lock-race/trace tests are mandatory before merge or parity promotion."
+  }
+}

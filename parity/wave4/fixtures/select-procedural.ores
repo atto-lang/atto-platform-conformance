@@ -1,0 +1,13 @@
+pub fnc compute(): int {
+  do select {
+    default: {
+      return 9;
+    }
+  }
+  return -1;
+}
+
+pub fnc main(): void {
+  stdio.stdout.write(compute());
+  return;
+}
