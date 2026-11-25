@@ -49,7 +49,8 @@ test('expanded cases include executable relative functions and distinct tree/man
 });
 
 test('both alias spellings have real guest and cycle diagnostic expectations', () => {
-  assert.equal(doc.cases.filter(c => c.id.startsWith('builtin-alias-')).length,6);
+  assert.deepEqual(doc.cases.filter(c => c.id.startsWith('builtin-alias-')).map(c=>c.id).sort(), ['builtin-alias-as','builtin-alias-as-chain','builtin-alias-core-num','builtin-alias-equals','builtin-alias-mixed-chain','builtin-alias-num']);
+  assert.equal(doc.cases.find(c=>c.id==='builtin-alias-core-num').expect.outcome,'reject');
   assert.equal(doc.cases.filter(c => c.id.startsWith('alias-guest-negative-')).length,8);
   assert.equal(doc.cases.filter(c => c.id.startsWith('alias-resolution-')).length,4);
   assert.equal(doc.cases.filter(c => c.stage==='guest' && c.expect.code==='E_IMPORT_CYCLE').length,5);
