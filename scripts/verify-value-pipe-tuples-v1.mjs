@@ -21,7 +21,7 @@ const cmd=(key)=>{
       ||val[0].includes("{fixture}")
       ||val.filter(x=>x==="{fixture}").length!==1
       ||val.some((x,i)=>i>0&&x.includes("{fixture}")&&x!=="{fixture}"))
-    throw Error(key+" must be nonempty no-shell JSON argv with exactly one standalone {fixture}");
+    throw Error(key+" must be JSON argv (nonempty, no-shell) with exactly one standalone {fixture}");
   return val;
 };
 const run=cmd("ATTO_TUPLE_RUN_ARGV_JSON");
