@@ -1,0 +1,2364 @@
+{
+  "schema": "atto.static-import-v2.corpus.v1",
+  "spec": "https://github.com/atto-lang/atto-spec/pull/227",
+  "status": "CORPUS_ONLY_NOT_BACKEND_EXECUTION",
+  "fixtures": {
+    "mixed-root": {
+      "identity": "@foo/bar/baz",
+      "exports": [
+        [
+          "C",
+          "class",
+          true
+        ],
+        [
+          "D",
+          "class",
+          true
+        ],
+        [
+          "f",
+          "fnc",
+          true
+        ],
+        [
+          "g",
+          "fnc",
+          true
+        ],
+        [
+          "m",
+          "module",
+          true
+        ],
+        [
+          "n",
+          "module",
+          true
+        ],
+        [
+          "z",
+          "namespace",
+          true
+        ],
+        [
+          "z.open",
+          "fnc",
+          true
+        ],
+        [
+          "z.hidden",
+          "fnc",
+          false
+        ],
+        [
+          "secret",
+          "namespace",
+          false
+        ],
+        [
+          "secret.f",
+          "fnc",
+          true
+        ]
+      ]
+    },
+    "http-roots": {
+      "identities": [
+        "@atto-lang/network/http",
+        "@atto_lang/network/http",
+        "@acme/network/http",
+        "@acme/cloud/http"
+      ],
+      "exports": [
+        [
+          "get",
+          "fnc",
+          true
+        ]
+      ],
+      "implicitBuiltin": "std.http"
+    }
+  },
+  "cases": [
+    {
+      "id": "builtin-namespace-num",
+      "stage": "guest",
+      "source": "import namespace num from core.num;\npub fnc main(): int { return num.clamp(42, 0, 100); }",
+      "expect": {
+        "outcome": "return",
+        "value": 42
+      }
+    },
+    {
+      "id": "builtin-namespace-core-num",
+      "stage": "guest",
+      "source": "import namespace num from core.num;\npub fnc main(): int { return core.num.clamp(42, 0, 100); }",
+      "expect": {
+        "outcome": "return",
+        "value": 42
+      }
+    },
+    {
+      "id": "builtin-shorthand-num",
+      "stage": "guest",
+      "source": "import num from core.num;\npub fnc main(): int { return num.clamp(42, 0, 100); }",
+      "expect": {
+        "outcome": "return",
+        "value": 42
+      }
+    },
+    {
+      "id": "builtin-shorthand-core-num",
+      "stage": "guest",
+      "source": "import num from core.num;\npub fnc main(): int { return core.num.clamp(42, 0, 100); }",
+      "expect": {
+        "outcome": "return",
+        "value": 42
+      }
+    },
+    {
+      "id": "builtin-qualified-num",
+      "stage": "guest",
+      "source": "import core.num from core.num;\npub fnc main(): int { return num.clamp(42, 0, 100); }",
+      "expect": {
+        "outcome": "reject",
+        "reason": "unbound namespace alias"
+      }
+    },
+    {
+      "id": "builtin-qualified-core-num",
+      "stage": "guest",
+      "source": "import core.num from core.num;\npub fnc main(): int { return core.num.clamp(42, 0, 100); }",
+      "expect": {
+        "outcome": "return",
+        "value": 42
+      }
+    },
+    {
+      "id": "builtin-alias-num",
+      "stage": "guest",
+      "source": "import core.num as num;\npub fnc main(): int { return num.clamp(42, 0, 100); }",
+      "expect": {
+        "outcome": "return",
+        "value": 42
+      }
+    },
+    {
+      "id": "builtin-alias-core-num",
+      "stage": "guest",
+      "source": "import core.num as num;\npub fnc main(): int { return core.num.clamp(42, 0, 100); }",
+      "expect": {
+        "outcome": "reject",
+        "reason": "unbound namespace alias"
+      }
+    },
+    {
+      "id": "builtin-qualified-alias-num",
+      "stage": "guest",
+      "source": "import core.num as core.num;\npub fnc main(): int { return num.clamp(42, 0, 100); }",
+      "expect": {
+        "outcome": "reject",
+        "reason": "unbound namespace alias"
+      }
+    },
+    {
+      "id": "builtin-qualified-alias-core-num",
+      "stage": "guest",
+      "source": "import core.num as core.num;\npub fnc main(): int { return core.num.clamp(42, 0, 100); }",
+      "expect": {
+        "outcome": "return",
+        "value": 42
+      }
+    },
+    {
+      "id": "builtin-direct-num",
+      "stage": "guest",
+      "source": "import core.num;\npub fnc main(): int { return num.clamp(42, 0, 100); }",
+      "expect": {
+        "outcome": "return",
+        "value": 42
+      }
+    },
+    {
+      "id": "builtin-direct-core-num",
+      "stage": "guest",
+      "source": "import core.num;\npub fnc main(): int { return core.num.clamp(42, 0, 100); }",
+      "expect": {
+        "outcome": "return",
+        "value": 42
+      }
+    },
+    {
+      "id": "builtin-source-single",
+      "stage": "guest",
+      "source": "import namespace num from 'core.num';\npub fnc main(): int { return num.clamp(42, 0, 100); }",
+      "expect": {
+        "outcome": "return",
+        "value": 42
+      }
+    },
+    {
+      "id": "builtin-source-double",
+      "stage": "guest",
+      "source": "import namespace num from \"core.num\";\npub fnc main(): int { return num.clamp(42, 0, 100); }",
+      "expect": {
+        "outcome": "return",
+        "value": 42
+      }
+    },
+    {
+      "id": "builtin-source-legacy",
+      "stage": "guest",
+      "source": "import namespace num from 'core/num';\npub fnc main(): int { return num.clamp(42, 0, 100); }",
+      "expect": {
+        "outcome": "return",
+        "value": 42
+      }
+    },
+    {
+      "id": "mixed-permutation-01",
+      "stage": "typed-bindings",
+      "source": "import class (C, D as Data), fnc (f as fetch, g), namespace (z) from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-02",
+      "stage": "typed-bindings",
+      "source": "import (class C, D as Data), (fnc f as fetch, g), (namespace z) from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-03",
+      "stage": "typed-bindings",
+      "source": "import class (C, D as Data), fnc (f as fetch, g), namespace [z] from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-04",
+      "stage": "typed-bindings",
+      "source": "import (class C, D as Data), (fnc f as fetch, g), [namespace z] from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-05",
+      "stage": "typed-bindings",
+      "source": "import class (C, D as Data), fnc [f as fetch, g], namespace (z) from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-06",
+      "stage": "typed-bindings",
+      "source": "import (class C, D as Data), [fnc f as fetch, g], (namespace z) from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-07",
+      "stage": "typed-bindings",
+      "source": "import class (C, D as Data), fnc [f as fetch, g], namespace [z] from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-08",
+      "stage": "typed-bindings",
+      "source": "import (class C, D as Data), [fnc f as fetch, g], [namespace z] from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-09",
+      "stage": "typed-bindings",
+      "source": "import class [C, D as Data], fnc (f as fetch, g), namespace (z) from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-10",
+      "stage": "typed-bindings",
+      "source": "import [class C, D as Data], (fnc f as fetch, g), (namespace z) from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-11",
+      "stage": "typed-bindings",
+      "source": "import class [C, D as Data], fnc (f as fetch, g), namespace [z] from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-12",
+      "stage": "typed-bindings",
+      "source": "import [class C, D as Data], (fnc f as fetch, g), [namespace z] from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-13",
+      "stage": "typed-bindings",
+      "source": "import class [C, D as Data], fnc [f as fetch, g], namespace (z) from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-14",
+      "stage": "typed-bindings",
+      "source": "import [class C, D as Data], [fnc f as fetch, g], (namespace z) from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-15",
+      "stage": "typed-bindings",
+      "source": "import class [C, D as Data], fnc [f as fetch, g], namespace [z] from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-16",
+      "stage": "typed-bindings",
+      "source": "import [class C, D as Data], [fnc f as fetch, g], [namespace z] from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-17",
+      "stage": "typed-bindings",
+      "source": "import (class (C, D as Data), fnc (f as fetch, g), namespace (z)) from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-18",
+      "stage": "typed-bindings",
+      "source": "import ((class C, D as Data), (fnc f as fetch, g), (namespace z)) from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-19",
+      "stage": "typed-bindings",
+      "source": "import (class (C, D as Data), fnc (f as fetch, g), namespace [z]) from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-20",
+      "stage": "typed-bindings",
+      "source": "import ((class C, D as Data), (fnc f as fetch, g), [namespace z]) from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-21",
+      "stage": "typed-bindings",
+      "source": "import (class (C, D as Data), fnc [f as fetch, g], namespace (z)) from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-22",
+      "stage": "typed-bindings",
+      "source": "import ((class C, D as Data), [fnc f as fetch, g], (namespace z)) from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-23",
+      "stage": "typed-bindings",
+      "source": "import (class (C, D as Data), fnc [f as fetch, g], namespace [z]) from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-24",
+      "stage": "typed-bindings",
+      "source": "import ((class C, D as Data), [fnc f as fetch, g], [namespace z]) from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-25",
+      "stage": "typed-bindings",
+      "source": "import (class [C, D as Data], fnc (f as fetch, g), namespace (z)) from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-26",
+      "stage": "typed-bindings",
+      "source": "import ([class C, D as Data], (fnc f as fetch, g), (namespace z)) from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-27",
+      "stage": "typed-bindings",
+      "source": "import (class [C, D as Data], fnc (f as fetch, g), namespace [z]) from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-28",
+      "stage": "typed-bindings",
+      "source": "import ([class C, D as Data], (fnc f as fetch, g), [namespace z]) from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-29",
+      "stage": "typed-bindings",
+      "source": "import (class [C, D as Data], fnc [f as fetch, g], namespace (z)) from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-30",
+      "stage": "typed-bindings",
+      "source": "import ([class C, D as Data], [fnc f as fetch, g], (namespace z)) from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-31",
+      "stage": "typed-bindings",
+      "source": "import (class [C, D as Data], fnc [f as fetch, g], namespace [z]) from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-32",
+      "stage": "typed-bindings",
+      "source": "import ([class C, D as Data], [fnc f as fetch, g], [namespace z]) from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-33",
+      "stage": "typed-bindings",
+      "source": "import [class (C, D as Data), fnc (f as fetch, g), namespace (z)] from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-34",
+      "stage": "typed-bindings",
+      "source": "import [(class C, D as Data), (fnc f as fetch, g), (namespace z)] from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-35",
+      "stage": "typed-bindings",
+      "source": "import [class (C, D as Data), fnc (f as fetch, g), namespace [z]] from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-36",
+      "stage": "typed-bindings",
+      "source": "import [(class C, D as Data), (fnc f as fetch, g), [namespace z]] from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-37",
+      "stage": "typed-bindings",
+      "source": "import [class (C, D as Data), fnc [f as fetch, g], namespace (z)] from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-38",
+      "stage": "typed-bindings",
+      "source": "import [(class C, D as Data), [fnc f as fetch, g], (namespace z)] from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-39",
+      "stage": "typed-bindings",
+      "source": "import [class (C, D as Data), fnc [f as fetch, g], namespace [z]] from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-40",
+      "stage": "typed-bindings",
+      "source": "import [(class C, D as Data), [fnc f as fetch, g], [namespace z]] from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-41",
+      "stage": "typed-bindings",
+      "source": "import [class [C, D as Data], fnc (f as fetch, g), namespace (z)] from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-42",
+      "stage": "typed-bindings",
+      "source": "import [[class C, D as Data], (fnc f as fetch, g), (namespace z)] from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-43",
+      "stage": "typed-bindings",
+      "source": "import [class [C, D as Data], fnc (f as fetch, g), namespace [z]] from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-44",
+      "stage": "typed-bindings",
+      "source": "import [[class C, D as Data], (fnc f as fetch, g), [namespace z]] from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-45",
+      "stage": "typed-bindings",
+      "source": "import [class [C, D as Data], fnc [f as fetch, g], namespace (z)] from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-46",
+      "stage": "typed-bindings",
+      "source": "import [[class C, D as Data], [fnc f as fetch, g], (namespace z)] from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-47",
+      "stage": "typed-bindings",
+      "source": "import [class [C, D as Data], fnc [f as fetch, g], namespace [z]] from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-permutation-48",
+      "stage": "typed-bindings",
+      "source": "import [[class C, D as Data], [fnc f as fetch, g], [namespace z]] from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "mixed-module-user-example",
+      "stage": "typed-bindings",
+      "source": "import class [C, D as Data], fnc [f as fetch, g], module (m, n), namespace (z) from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "bindings",
+        "bindings": [
+          [
+            "C",
+            "class",
+            "C"
+          ],
+          [
+            "Data",
+            "class",
+            "D"
+          ],
+          [
+            "fetch",
+            "fnc",
+            "f"
+          ],
+          [
+            "g",
+            "fnc",
+            "g"
+          ],
+          [
+            "m",
+            "module",
+            "m"
+          ],
+          [
+            "n",
+            "module",
+            "n"
+          ],
+          [
+            "z",
+            "namespace",
+            "z"
+          ]
+        ]
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "negative-wrong-close",
+      "stage": "typed-bindings",
+      "source": "import class [C, D) from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "reject",
+        "reason": "wrong-close",
+        "atomic": true
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "negative-empty",
+      "stage": "typed-bindings",
+      "source": "import namespace [] from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "reject",
+        "reason": "empty",
+        "atomic": true
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "negative-kind-change",
+      "stage": "typed-bindings",
+      "source": "import class [C, fnc f] from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "reject",
+        "reason": "kind-change",
+        "atomic": true
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "negative-ungrouped-inheritance",
+      "stage": "typed-bindings",
+      "source": "import class C, fnc f, g from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "reject",
+        "reason": "ungrouped-inheritance",
+        "atomic": true
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "negative-duplicate",
+      "stage": "typed-bindings",
+      "source": "import class [C], fnc [f as C] from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "reject",
+        "reason": "duplicate",
+        "atomic": true
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "negative-excessive-nesting",
+      "stage": "typed-bindings",
+      "source": "import class [[C]] from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "reject",
+        "reason": "excessive-nesting",
+        "atomic": true
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "negative-inner-trailing",
+      "stage": "typed-bindings",
+      "source": "import class [C, D,] from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "reject",
+        "reason": "inner-trailing",
+        "atomic": true
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "negative-missing-kind",
+      "stage": "typed-bindings",
+      "source": "import class [C], g from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "reject",
+        "reason": "missing-kind",
+        "atomic": true
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "negative-wrong-kind",
+      "stage": "typed-bindings",
+      "source": "import class [C], fnc [D] from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "reject",
+        "reason": "wrong-kind",
+        "atomic": true
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "negative-private-parent",
+      "stage": "typed-bindings",
+      "source": "import class [C], fnc [secret.f] from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "reject",
+        "reason": "private-parent",
+        "atomic": true
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "negative-private-member",
+      "stage": "typed-bindings",
+      "source": "import class [C], fnc [z.hidden] from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "reject",
+        "reason": "private-member",
+        "atomic": true
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "negative-missing-member",
+      "stage": "typed-bindings",
+      "source": "import class [C], fnc [z.absent] from pkg '@foo/bar/baz';",
+      "expect": {
+        "outcome": "reject",
+        "reason": "missing-member",
+        "atomic": true
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "negative-wrong-source",
+      "stage": "typed-bindings",
+      "source": "import class [C] from pkg '@other/bar/baz';",
+      "expect": {
+        "outcome": "reject",
+        "reason": "wrong-source",
+        "atomic": true
+      },
+      "fixture": "mixed-root"
+    },
+    {
+      "id": "resolve-short",
+      "stage": "resolution",
+      "source": "import pkg '@atto-lang/network/http';",
+      "expect": {
+        "outcome": "identity",
+        "identity": "@atto-lang/network/http"
+      },
+      "reference": "http.get",
+      "fixture": "http-roots",
+      "implicitBuiltin": false
+    },
+    {
+      "id": "resolve-middle",
+      "stage": "resolution",
+      "source": "import pkg '@atto-lang/network/http';",
+      "expect": {
+        "outcome": "identity",
+        "identity": "@atto-lang/network/http"
+      },
+      "reference": "network.http.get",
+      "fixture": "http-roots",
+      "implicitBuiltin": false
+    },
+    {
+      "id": "resolve-full",
+      "stage": "resolution",
+      "source": "import pkg '@atto-lang/network/http';",
+      "expect": {
+        "outcome": "identity",
+        "identity": "@atto-lang/network/http"
+      },
+      "reference": "atto_lang.network.http.get",
+      "fixture": "http-roots",
+      "implicitBuiltin": false
+    },
+    {
+      "id": "resolve-same-project-short",
+      "stage": "resolution",
+      "source": "import pkg '@atto-lang/network/http';\nimport pkg '@acme/network/http';",
+      "expect": {
+        "outcome": "reject",
+        "reason": "ambiguous"
+      },
+      "reference": "http.get",
+      "fixture": "http-roots",
+      "implicitBuiltin": false
+    },
+    {
+      "id": "resolve-same-project-middle",
+      "stage": "resolution",
+      "source": "import pkg '@acme/network/http';\nimport pkg '@atto-lang/network/http';",
+      "expect": {
+        "outcome": "reject",
+        "reason": "ambiguous"
+      },
+      "reference": "network.http.get",
+      "fixture": "http-roots",
+      "implicitBuiltin": false
+    },
+    {
+      "id": "resolve-same-project-full",
+      "stage": "resolution",
+      "source": "import pkg '@acme/network/http';\nimport pkg '@atto-lang/network/http';",
+      "expect": {
+        "outcome": "identity",
+        "identity": "@atto-lang/network/http"
+      },
+      "reference": "atto_lang.network.http.get",
+      "fixture": "http-roots",
+      "implicitBuiltin": false
+    },
+    {
+      "id": "resolve-other-project",
+      "stage": "resolution",
+      "source": "import pkg '@acme/cloud/http';\nimport pkg '@atto-lang/network/http';",
+      "expect": {
+        "outcome": "identity",
+        "identity": "@acme/cloud/http"
+      },
+      "reference": "cloud.http.get",
+      "fixture": "http-roots",
+      "implicitBuiltin": false
+    },
+    {
+      "id": "resolve-normalized",
+      "stage": "resolution",
+      "source": "import pkg '@atto-lang/network/http';\nimport pkg '@atto_lang/network/http';",
+      "expect": {
+        "outcome": "reject",
+        "reason": "ambiguous"
+      },
+      "reference": "atto_lang.network.http.get",
+      "fixture": "http-roots",
+      "implicitBuiltin": false
+    },
+    {
+      "id": "resolve-no-member-disambiguation",
+      "stage": "resolution",
+      "source": "import pkg '@atto-lang/network/http';\nimport pkg '@acme/network/http';",
+      "expect": {
+        "outcome": "reject",
+        "reason": "ambiguous"
+      },
+      "reference": "http.absent",
+      "fixture": "http-roots",
+      "implicitBuiltin": false
+    },
+    {
+      "id": "resolve-explicit-alias",
+      "stage": "resolution",
+      "source": "import pkg '@atto-lang/network/http' as h;",
+      "expect": {
+        "outcome": "identity",
+        "identity": "@atto-lang/network/http"
+      },
+      "reference": "h.get",
+      "fixture": "http-roots",
+      "implicitBuiltin": false
+    },
+    {
+      "id": "resolve-alias-suppresses",
+      "stage": "resolution",
+      "source": "import pkg '@atto-lang/network/http' as h;",
+      "expect": {
+        "outcome": "reject",
+        "reason": "unbound"
+      },
+      "reference": "http.get",
+      "fixture": "http-roots",
+      "implicitBuiltin": false
+    },
+    {
+      "id": "resolve-spoof-spelling",
+      "stage": "resolution",
+      "source": "import pkg '@acme/network/http' as std.http;",
+      "expect": {
+        "outcome": "identity",
+        "identity": "@acme/network/http"
+      },
+      "reference": "std.http.get",
+      "fixture": "http-roots",
+      "implicitBuiltin": true
+    },
+    {
+      "id": "resolve-implicit-precedence",
+      "stage": "resolution",
+      "source": "import pkg '@acme/network/http';",
+      "expect": {
+        "outcome": "identity",
+        "identity": "@acme/network/http"
+      },
+      "reference": "http.get",
+      "fixture": "http-roots",
+      "implicitBuiltin": true
+    },
+    {
+      "id": "resolve-qualified-builtin",
+      "stage": "resolution",
+      "source": "import pkg '@acme/network/http';",
+      "expect": {
+        "outcome": "identity",
+        "identity": "builtin:std.http"
+      },
+      "reference": "std.http.get",
+      "fixture": "http-roots",
+      "implicitBuiltin": true
+    },
+    {
+      "id": "resolve-explicit-builtin-ambiguity",
+      "stage": "resolution",
+      "source": "import pkg '@acme/network/http';\nimport namespace http from std.http;",
+      "expect": {
+        "outcome": "reject",
+        "reason": "ambiguous"
+      },
+      "reference": "http.get",
+      "fixture": "http-roots",
+      "implicitBuiltin": true
+    },
+    {
+      "id": "const-forward",
+      "stage": "resolution",
+      "source": "import pkg '@atto-lang/network/http' as p;\ndefine const a = b;\ndefine const b = p;",
+      "expect": {
+        "outcome": "identity",
+        "identity": "@atto-lang/network/http"
+      },
+      "reference": "a.get",
+      "fixture": "http-roots"
+    },
+    {
+      "id": "const-cycle",
+      "stage": "resolution",
+      "source": "import pkg '@atto-lang/network/http';\ndefine const http = a;\ndefine const a = http;",
+      "expect": {
+        "outcome": "reject",
+        "reason": "cycle",
+        "atomic": true
+      },
+      "reference": "a.get",
+      "fixture": "http-roots"
+    },
+    {
+      "id": "const-self",
+      "stage": "resolution",
+      "source": "define const a = a;",
+      "expect": {
+        "outcome": "reject",
+        "reason": "self",
+        "atomic": true
+      },
+      "reference": "a.get",
+      "fixture": "http-roots"
+    },
+    {
+      "id": "const-missing",
+      "stage": "resolution",
+      "source": "define const a = missing;",
+      "expect": {
+        "outcome": "reject",
+        "reason": "missing",
+        "atomic": true
+      },
+      "reference": "a.get",
+      "fixture": "http-roots"
+    }
+  ]
+}
