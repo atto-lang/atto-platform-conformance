@@ -1,0 +1,33 @@
+{
+  "contract": "actor-data-codec-guest-gate-v1",
+  "status": "SOURCE_ONLY_NOT_EXECUTED",
+  "negative": {
+    "path": "fixtures/actor-data-codec-v1/reject-unlowered-supervisor.atto",
+    "git_blob": "2d03aaccfd4ae1229d3a707ca1d8225b0fe2b800",
+    "expected": "compiler-checked runtime entity",
+    "origin": "https://github.com/atto-lang/atto-source.java/pull/1804",
+    "scope": "Java draft parser gate; other backends require their own equivalent diagnostic and no emitted guest artifact"
+  },
+  "positive": {
+    "status": "BLOCKED_UNLOWERED_SUPERVISOR_AND_CODEC_API",
+    "dependencies": [
+      "https://github.com/atto-lang/atto-source.java/pull/1804",
+      "https://github.com/atto-lang/atto-spec/pull/229",
+      "https://github.com/atto-lang/atto-source.java/pull/1815",
+      "https://github.com/atto-lang/atto-source.java/pull/1813",
+      "https://github.com/atto-lang/atto-source.llvm/pull/902"
+    ],
+    "requirements": [
+      "use canonical .atto syntax and explicit concrete returns",
+      "actual supervised child creation, source receive entrypoint and message observation",
+      "force serialized DATA through trusted endpoint configuration; no invented serialization keyword or guest codec call",
+      "assert actual received typed values and runtime codec receipt",
+      "assert invalid schema, stale generation, unauthorized sender, quota and rollback produce no publication",
+      "pin compiler head/root tree, fixture hash, target, executed steps and native/AOT status"
+    ]
+  },
+  "notes": [
+    "Existing Java #1566 enum mail fixture uses local mail and is not wire evidence; #465 supervisor source is an unexecuted target with unresolved APIs.",
+    "Do not count host echo, parser-only positive, zero-step CI or source-only fixture as guest execution."
+  ]
+}
