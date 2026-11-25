@@ -1,5 +1,6 @@
 // Read-only GitHub REST adapter and strict manifest validation for the advisory gate.
 import {validRepoName, assessPullRequest, assessWave} from './merge-wave-readiness-v1.mjs';
+import {readBoundedProviderJson} from './merge-wave-bounded-json-v1.mjs';
 const shaPattern = /^[a-f0-9]{40}$/i;
 const resourcePattern = /^\/repos\/([^/?#]+)\/([^/?#]+)\/(.+)$/;
 const namePattern = /^[A-Za-z0-9_.-]+$/;
@@ -57,7 +58,7 @@ export function makeGitHubReadOnlyClient({token, fetchImpl = globalThis.fetch, m
         if (Number.isInteger(response?.status)) error.status = response.status;
         throw error;
       }
-      const body = await response.json();
+      const body = await readBoundedProviderJson(response);
       if (shape === 'object') {
         if (!body || typeof body !== 'object' || Array.isArray(body)) throw new Error('Malformed provider object response');
         return body;
