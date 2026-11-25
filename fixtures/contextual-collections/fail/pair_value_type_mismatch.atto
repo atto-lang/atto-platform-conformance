@@ -1,0 +1,4 @@
+pub fnc main(): int {
+  val Pair<int,bool> p = 5 => 42;
+  return 0;
+}

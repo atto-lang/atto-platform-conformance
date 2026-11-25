@@ -1,0 +1,4 @@
+pub fnc main(): int {
+  val Entry<int,bool> e = 40 => true;
+  return e.key+2;
+}

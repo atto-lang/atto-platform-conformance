@@ -1,0 +1,6 @@
+define struct Point as int x; int y; end
+pub fnc main(): int {
+  val Point p = Point{x:40,y:2};
+  val Record r = (x=40,y=2);
+  return p.x + r.y;
+}

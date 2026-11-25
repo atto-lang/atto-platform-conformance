@@ -1,0 +1,4 @@
+pub fnc main(): int {
+  val x = 5 => true;
+  return 0;
+}

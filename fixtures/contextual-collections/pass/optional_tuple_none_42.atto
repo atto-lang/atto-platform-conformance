@@ -1,0 +1,4 @@
+pub fnc main(): int {
+  val Tuple[int?,string?,bool?] defaults = (None,None,None);
+  return 42;
+}

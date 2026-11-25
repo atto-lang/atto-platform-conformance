@@ -1,0 +1,4 @@
+pub fnc main(): int {
+  val Record r = (abc="foo", xyz=true, foo=42);
+  return r.foo;
+}

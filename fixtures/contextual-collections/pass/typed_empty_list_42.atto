@@ -1,0 +1,4 @@
+pub fnc main(): int {
+  val List<int> items = [];
+  return 42;
+}

@@ -1,0 +1,4 @@
+pub fnc main(): int {
+  const m = Map.of_entries<string,int>("a" => 40,"b" => 2);
+  return m["a"] + m["b"];
+}

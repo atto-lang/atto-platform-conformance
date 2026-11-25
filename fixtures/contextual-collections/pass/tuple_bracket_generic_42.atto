@@ -1,0 +1,4 @@
+pub fnc main(): int {
+  val Tuple[int,string,bool] t = (40,"foo",true);
+  return t[0]+2;
+}

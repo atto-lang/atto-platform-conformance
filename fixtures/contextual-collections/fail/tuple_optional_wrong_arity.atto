@@ -1,0 +1,4 @@
+pub fnc main(): int {
+  val Tuple[int?,bool?] t = (None,None,None);
+  return 0;
+}
