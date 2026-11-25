@@ -93,6 +93,45 @@ function validatePending(matrix) {
   assert.equal(bootstrap.javaActorSourceTaskPhysicalRetirement,
     'HOST_RUNTIME_AUTHORED_NOT_EXECUTED');
   assert.equal(bootstrap.javaAuthoredHostTests, 20);
+  assert.match(bootstrap.javaStacklessScalarReference, /\/pull\/2633$/);
+  assert.equal(bootstrap.javaStacklessSubset, 'CLOSED_PURE_INTEGER_FNC_ONLY');
+  assert.match(bootstrap.javaM4Reference, /\/pull\/2639$/);
+  assert.match(bootstrap.javaM4SourceTaskBaseReference, /\/pull\/2631$/);
+  assert.match(bootstrap.javaM4StacklessScalarBaseReference, /\/pull\/2633$/);
+  assert.equal(bootstrap.javaM4IntegrationStatus, 'AUTHORED_NOT_EXECUTED');
+  assert.equal(bootstrap.javaM4TaskBootstrapBytes, 64);
+  assert.equal(bootstrap.javaM4InvocationFrameBytes, 32);
+  assert.equal(bootstrap.javaM4OneTaskOneInvocationPeakBytes, 96);
+  assert.equal(bootstrap.javaM4AdditionalHostTestsAuthored, 6);
+  assert.equal(bootstrap.javaM4AdditionalGuestFixturesAuthored, 1);
+  assert.equal(bootstrap.javaM4GuestExpectedOutput, '21|100000');
+  assert.equal(bootstrap.javaM4GuestExecution, 'NOT_EXECUTED');
+  for (const key of [
+    'javaM4NativeStackSurvival', 'javaM4OtherBackendParity'
+  ]) assert.equal(bootstrap[key], 'NOT_EXECUTED');
+  for (const key of [
+    'javaM4SameTaskAcrossAwait', 'javaM4NewDispatchAcrossAwait',
+    'javaM4LeakedCallAtAwaitRejected', 'javaM4LeakedCallAtCooperateRejected'
+  ]) assert.equal(bootstrap[key], 'HOST_TEST_AUTHORED_NOT_EXECUTED');
+  for (const key of [
+    'javaM4NestedRecursiveGuestFrameSuspension',
+    'javaM4CompilerLoweredReturnPcSpills'
+  ]) assert.equal(bootstrap[key], 'NOT_IMPLEMENTED');
+  assert.equal(bootstrap.javaStacklessAuthoredHostTests, 11);
+  assert.equal(bootstrap.javaStacklessAdditionalActorFixtures, 3);
+  assert.equal(bootstrap.javaStacklessActorPrimitiveSlots, 2);
+  assert.equal(bootstrap.javaStacklessFrameByteCharge, 32);
+  assert.equal(bootstrap.javaStacklessDescriptorBytes, 16);
+  assert.equal(bootstrap.javaStacklessNoDuplicateCharge, true);
+  assert.equal(bootstrap.javaStacklessInterpreterState,
+    'HOST_HEAP_OPERANDS_AND_RETURN_PC_NOT_FULLY_ACTOR_OWNED');
+  for (const key of [
+    'javaStacklessRuntimeGuestExecution', 'javaStacklessNativeStackSurvival',
+    'javaStacklessSourceTaskContinuation', 'javaStacklessOtherBackends'
+  ]) {
+    assert.equal(bootstrap[key], 'NOT_EXECUTED',
+      'M3 cannot use authored tests as guest/native continuation proof');
+  }
   assert.match(bootstrap.javaInvocationDescriptorReference, /\/pull\/2628$/);
   assert.equal(bootstrap.javaInvocationDescriptorStatus, 'AUTHORED_NOT_EXECUTED');
   assert.equal(bootstrap.javaInvocationDescriptorBytes, 16);
@@ -263,6 +302,12 @@ function validatePending(matrix) {
   ]) {
     assert.equal(bootstrap[dimension], 'NOT_EXECUTED',
       'host frame primitive does not prove ' + dimension);
+  }
+  for (const id of ['scalar-non-tail-iterative-60','scalar-non-tail-budget-exhausted','scalar-proper-and-mutual-tail-100k','scalar-unsupported-graph-fallback','scalar-owned-two-integer-parameters','m4-source-task-64-plus-32-charged','m4-stable-source-task-id-new-dispatch','m4-leaked-sync-lease-rejected-before-await','m4-leaked-sync-lease-rejected-before-cooperate','m4-source-cooperate-between-scalar-calls','m4-cancel-suspended-task-after-scalar','m4-await-inside-recursive-scalar-call']) {
+    const scenario=matrix.scenarios.find(s=>s.id===id);
+    assert.ok(scenario, 'mandatory stackless scenario: '+id);
+    assert.equal(scenario.source,null);
+    assert.ok(scenario.requiredEvidence.includes('compilerGuest'));
   }
   const ids = matrix.scenarios.map(c => c.id);
   assert.equal(new Set(ids).size, ids.length);
@@ -934,4 +979,95 @@ test('M3.3c CFG verifier proofs remain distinct from hosted compiler and native 
     assert.equal(backend.actorStackStorage, 'NOT_EXECUTED');
   }
   assert.equal(matrix.promotion.certified, false);
+});
+
+test('M3 scalar stackless evidence is not general actor-owned stack certification', async () => {
+  const matrix = validatePending(await load());
+  const expected = new Map([
+    ['scalar-non-tail-iterative-60', 'actorStackStorage'],
+    ['scalar-non-tail-budget-exhausted', 'actorSurvival'],
+    ['scalar-proper-and-mutual-tail-100k', 'actorStackStorage'],
+    ['scalar-unsupported-graph-fallback', 'compilerGuest'],
+    ['scalar-owned-two-integer-parameters', 'actorStackGeneration']
+  ]);
+  for (const scenario of matrix.scenarios) {
+    if (!expected.has(scenario.id)) continue;
+    assert.equal(scenario.source, null,
+      'source fixtures in Java PR are authored, not compiler-backed conformance receipts');
+    assert.equal(scenario.kind, 'pending-actor-acceptance');
+    assert.ok(scenario.requiredEvidence.includes('compilerGuest'));
+    assert.ok(scenario.requiredEvidence.includes(expected.get(scenario.id)));
+    expected.delete(scenario.id);
+  }
+  assert.deepEqual([...expected.keys()], [], 'all M3 guest-stack proof cases inventoried');
+  assert.match(matrix.note, /No generic stackless Java execution/);
+  const mutate = fn => {
+    const changed = structuredClone(matrix);
+    fn(changed);
+    return changed;
+  };
+  assert.throws(() => validatePending(mutate(
+    m => {m.frameStorageBootstrap.javaStacklessRuntimeGuestExecution = 'PASS';})));
+  assert.throws(() => validatePending(mutate(
+    m => {m.frameStorageBootstrap.javaStacklessNativeStackSurvival = 'PASS';})));
+  assert.throws(() => validatePending(mutate(
+    m => {m.frameStorageBootstrap.javaStacklessSourceTaskContinuation = 'PASS';})));
+  assert.throws(() => validatePending(mutate(
+    m => {m.frameStorageBootstrap.javaStacklessNoDuplicateCharge = false;})));
+  assert.throws(() => validatePending(mutate(
+    m => {m.frameStorageBootstrap.javaStacklessInterpreterState = 'FULLY_ACTOR_OWNED';})));
+  assert.throws(() => validatePending(mutate(
+    m => {m.scenarios = m.scenarios.filter(s => s.id !== 'scalar-owned-two-integer-parameters');})));
+});
+
+test('M4 SourceTask and M3 scalar integration cannot certify recursive await or parity', async () => {
+  const contract = validatePending(await load());
+  const bootstrap = contract.frameStorageBootstrap;
+  assert.equal(bootstrap.javaM4TaskBootstrapBytes
+      + bootstrap.javaM4InvocationFrameBytes,
+    bootstrap.javaM4OneTaskOneInvocationPeakBytes,
+    'two distinct 64/32-byte leases, not an unbounded or double-charged frame');
+  const required = new Map([
+    ['m4-source-task-64-plus-32-charged', 'actorStackStorage'],
+    ['m4-stable-source-task-id-new-dispatch', 'suspendedFrameOwnership'],
+    ['m4-leaked-sync-lease-rejected-before-await', 'suspendedFrameOwnership'],
+    ['m4-leaked-sync-lease-rejected-before-cooperate', 'actorStackGeneration'],
+    ['m4-source-cooperate-between-scalar-calls', 'compilerGuest'],
+    ['m4-cancel-suspended-task-after-scalar', 'suspendedFrameOwnership'],
+    ['m4-await-inside-recursive-scalar-call', 'compilerGuest']
+  ]);
+  for (const scenario of contract.scenarios) {
+    const dimension = required.get(scenario.id);
+    if (!dimension) continue;
+    assert.equal(scenario.source, null, 'pending Java fixture is not executed parity evidence');
+    assert.ok(scenario.requiredEvidence.includes('compilerGuest'));
+    assert.ok(scenario.requiredEvidence.includes(dimension));
+    required.delete(scenario.id);
+  }
+  assert.deepEqual([...required.keys()], []);
+  assert.match(contract.note, /does NOT persist active recursive call frames through await/);
+
+  const mutate = change => {
+    const forged = structuredClone(contract);
+    change(forged);
+    return forged;
+  };
+  assert.throws(() => validatePending(mutate(m => {
+    m.frameStorageBootstrap.javaM4GuestExecution = 'PASS';
+  })));
+  assert.throws(() => validatePending(mutate(m => {
+    m.frameStorageBootstrap.javaM4NestedRecursiveGuestFrameSuspension = 'PASS';
+  })));
+  assert.throws(() => validatePending(mutate(m => {
+    m.frameStorageBootstrap.javaM4CompilerLoweredReturnPcSpills = 'PASS';
+  })));
+  assert.throws(() => validatePending(mutate(m => {
+    m.frameStorageBootstrap.javaM4OneTaskOneInvocationPeakBytes = 64;
+  })));
+  assert.throws(() => validatePending(mutate(m => {
+    m.frameStorageBootstrap.javaM4LeakedCallAtAwaitRejected = 'PASS';
+  })));
+  assert.throws(() => validatePending(mutate(m => {
+    m.scenarios = m.scenarios.filter(s => s.id !== 'm4-await-inside-recursive-scalar-call');
+  })));
 });

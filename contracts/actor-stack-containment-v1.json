@@ -5,7 +5,7 @@
   "canonicalExtension": ".atto",
   "scope": "actor call-depth, guest frame budgeting, carrier survival and supervisor recovery",
   "javaReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2505",
-  "note": "All five backend guest evidence lanes remain NOT_EXECUTED. Java #2505 guards carrier recursion; #2624 owns logical budget; #2627 reserves 32-byte managed guard frames; #2628 authors 16-byte evaluator call descriptors within the existing frame. No duplicate charge or compiler-local/return-PC lowering is proven; full stack isolation and native process fault containment remain unimplemented. None proves compiler-lowered actor stacks, source-task continuation ownership, or native process-fault isolation. Java #2626 adds bounded logical Task roots bound to the authenticated ExecutionContext; physical lexical frame storage and nested suspended call frames remain NOT_EXECUTED. Java #2630 adds limited typed scalar call-data, also unexecuted; later M2/M3 candidate stages remain independent non-promoting obligations.",
+  "note": "All five backend guest evidence lanes remain NOT_EXECUTED. Java #2505 guards carrier recursion; #2624 owns logical budget; #2627 reserves 32-byte managed guard frames; #2628 authors 16-byte evaluator call descriptors within the existing frame. No duplicate charge or compiler-local/return-PC lowering is proven; full stack isolation and native process fault containment remain unimplemented. None proves compiler-lowered actor stacks, source-task continuation ownership, or native process-fault isolation. Java #2626 adds bounded logical Task roots bound to the authenticated ExecutionContext; physical lexical frame storage and nested suspended call frames remain NOT_EXECUTED. Java #2630 adds limited typed scalar call-data, also unexecuted; later M2/M3 candidate stages remain independent non-promoting obligations. Java #2633 implements an authored closed pure-integer fnc iterative call/return machine with actor-owned primitive parameter slots and bounded host-heap operand/PC objects. No generic stackless Java execution, SourceTask continuation lowering, process native-stack survival, or guest exact-head receipts have been verified. Java #2639 M4 integrates the exact authored SourceTask #2631 scheduler leases with M3 #2633, fences synchronous calls to logical task/dispatch, and rejects leaked carrier frames at await/cooperate. This does NOT persist active recursive call frames through await, lower complete PC/operand state into actor-owned bytes, or certify guest/native/process/backend parity.",
   "requirements": {
     "separateHeapsAreNotStacks": true,
     "guestBudgetBeforeNativeOverflow": true,
@@ -1031,6 +1031,124 @@
         "actorStackStorage",
         "actorStackGeneration"
       ]
+    },
+    {
+      "id": "scalar-non-tail-iterative-60",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "scalar-non-tail-budget-exhausted",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "guest-stack-budget-exhausted",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "scalar-proper-and-mutual-tail-100k",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "scalar-unsupported-graph-fallback",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest"
+      ]
+    },
+    {
+      "id": "scalar-owned-two-integer-parameters",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "m4-source-task-64-plus-32-charged",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "m4-stable-source-task-id-new-dispatch",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "m4-leaked-sync-lease-rejected-before-await",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "guest-frame-suspension-forbidden",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "m4-leaked-sync-lease-rejected-before-cooperate",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "guest-frame-suspension-forbidden",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "m4-source-cooperate-between-scalar-calls",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest"
+      ]
+    },
+    {
+      "id": "m4-cancel-suspended-task-after-scalar",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "m4-await-inside-recursive-scalar-call",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "not-implemented",
+      "requiredEvidence": [
+        "compilerGuest"
+      ]
     }
   ],
   "promotion": {
@@ -1056,7 +1174,7 @@
     "realNativeStackIsolation": "NOT_EXECUTED",
     "nativeAotExecution": "NOT_EXECUTED",
     "promotionFromHostOnlyAllowed": false,
-    "note": "Java M1.6 guarded non-tail interpreter invocations reserve actor-owned managed byte frames and unwind LIFO; JVM guest locals and return continuations remain on carrier stack. SourceTask continuation and native process-stack containment are NOT_EXECUTED. Java #2631 explicitly binds an actor source scheduler to per-task bootstrap frame leases and reserves bytes across await/cooperate; SourceTask locals and return continuations are not lowered into them. Java integration #2637 joins nested invocation descriptor frames to the active SourceTask ExecutionContext and defers byte-frame reclamation until successful physical quiescence callbacks; guest locals/return continuations still run on JVM stacks. Java M3 #2640 authors a fully preadmitted pure synchronous int-fnc compiler subset using an iterative typed frame VM with PC/operand height and primitive local/operand bytes in the actor-owned arena. No hosted compilation or guest execution receipt; async/method/closure/FFI/native stack parity remain unproven. M2.1–M3.3c typed-scalar milestones are independently authored candidates, not completed native or compiler guest receipts.",
+    "note": "Java M1.6 guarded non-tail interpreter invocations reserve actor-owned managed byte frames and unwind LIFO; JVM guest locals and return continuations remain on carrier stack. SourceTask continuation and native process-stack containment are NOT_EXECUTED. Java #2631 explicitly binds an actor source scheduler to per-task bootstrap frame leases and reserves bytes across await/cooperate; SourceTask locals and return continuations are not lowered into them. Java integration #2637 joins nested invocation descriptor frames to the active SourceTask ExecutionContext and defers byte-frame reclamation until successful physical quiescence callbacks; guest locals/return continuations still run on JVM stacks. Java M3 #2640 authors a fully preadmitted pure synchronous int-fnc compiler subset using an iterative typed frame VM with PC/operand height and primitive local/operand bytes in the actor-owned arena. No hosted compilation or guest execution receipt; async/method/closure/FFI/native stack parity remain unproven. M2.1–M3.3c typed-scalar milestones are independently authored candidates, not completed native or compiler guest receipts. M3/M4 stackless scalar and SourceTask integration are authored but do not persist recursive call frames across suspension.",
     "javaGuardedInvocationByteFrames": "GUARD_WIRED_MANAGED_BYTES_NOT_GUEST_LOCALS",
     "javaSynchronousGuardByteCharge": 32,
     "javaGuestCallGuardNativeStackStillUsed": true,
@@ -1250,7 +1368,39 @@
     "javaM33cNETGuest": "NOT_EXECUTED",
     "javaM33cWasmGuest": "NOT_EXECUTED",
     "javaM33cForgeGuest": "NOT_EXECUTED",
-    "javaM33cNote": "Java #2669 adds a control-flow-aware scalar bytecode verifier (exact typed operand stack, definite locals at joins/loops, call/return arity and noncanonical image fields). 39 new JUnit methods are authored, not executed; a separate JDK 21 standalone stub-harness compiled the exact verifier blob and passed 40/40 smoke assertions, not Maven/Graal/AttoLang guest."
+    "javaM33cNote": "Java #2669 adds a control-flow-aware scalar bytecode verifier (exact typed operand stack, definite locals at joins/loops, call/return arity and noncanonical image fields). 39 new JUnit methods are authored, not executed; a separate JDK 21 standalone stub-harness compiled the exact verifier blob and passed 40/40 smoke assertions, not Maven/Graal/AttoLang guest.",
+    "javaStacklessScalarReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2633",
+    "javaStacklessSubset": "CLOSED_PURE_INTEGER_FNC_ONLY",
+    "javaStacklessAuthoredHostTests": 11,
+    "javaStacklessAdditionalActorFixtures": 3,
+    "javaStacklessActorPrimitiveSlots": 2,
+    "javaStacklessFrameByteCharge": 32,
+    "javaStacklessDescriptorBytes": 16,
+    "javaStacklessNoDuplicateCharge": true,
+    "javaStacklessInterpreterState": "HOST_HEAP_OPERANDS_AND_RETURN_PC_NOT_FULLY_ACTOR_OWNED",
+    "javaStacklessRuntimeGuestExecution": "NOT_EXECUTED",
+    "javaStacklessNativeStackSurvival": "NOT_EXECUTED",
+    "javaStacklessSourceTaskContinuation": "NOT_EXECUTED",
+    "javaStacklessOtherBackends": "NOT_EXECUTED",
+    "javaM4Reference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2639",
+    "javaM4SourceTaskBaseReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2631",
+    "javaM4StacklessScalarBaseReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2633",
+    "javaM4IntegrationStatus": "AUTHORED_NOT_EXECUTED",
+    "javaM4TaskBootstrapBytes": 64,
+    "javaM4InvocationFrameBytes": 32,
+    "javaM4OneTaskOneInvocationPeakBytes": 96,
+    "javaM4AdditionalHostTestsAuthored": 6,
+    "javaM4AdditionalGuestFixturesAuthored": 1,
+    "javaM4GuestExpectedOutput": "21|100000",
+    "javaM4GuestExecution": "NOT_EXECUTED",
+    "javaM4SameTaskAcrossAwait": "HOST_TEST_AUTHORED_NOT_EXECUTED",
+    "javaM4NewDispatchAcrossAwait": "HOST_TEST_AUTHORED_NOT_EXECUTED",
+    "javaM4LeakedCallAtAwaitRejected": "HOST_TEST_AUTHORED_NOT_EXECUTED",
+    "javaM4LeakedCallAtCooperateRejected": "HOST_TEST_AUTHORED_NOT_EXECUTED",
+    "javaM4NestedRecursiveGuestFrameSuspension": "NOT_IMPLEMENTED",
+    "javaM4CompilerLoweredReturnPcSpills": "NOT_IMPLEMENTED",
+    "javaM4NativeStackSurvival": "NOT_EXECUTED",
+    "javaM4OtherBackendParity": "NOT_EXECUTED"
   },
   "javaActorTaskBindingReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2626"
 }
