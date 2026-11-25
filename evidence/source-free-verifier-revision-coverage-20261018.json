@@ -1,0 +1,85 @@
+{
+  "schema": "oreslang.source_free_revision_coverage.v1",
+  "reviewedUtc": "2026-10-18",
+  "classification": "SOURCE_FREE_GITHUB_VERIFIER_ONLY_NOT_NATIVE_EXECUTION",
+  "carrierReceipt": {
+    "runId": 38998666203,
+    "attempt": 1,
+    "event": "push",
+    "workflowId": 387333369,
+    "repository": "scintilla-run-test/gleam-runner-conformance",
+    "repositoryId": 1323598260,
+    "private": true,
+    "headSha": "02b7915fa8af9f06fb2e51cb920f8583ce5adf6b",
+    "treeSha": "89a7a53456d97f56143ed0e85f6bfe980ba5812a",
+    "jobId": 117296734652,
+    "jobName": "source-free-86",
+    "executionStep": "Execute 86 source-free adversarial regressions three complete rounds",
+    "artifactId": 12088012140,
+    "artifactName": "oreslang-sourcefree-86-38998666203-1",
+    "artifactSha256": "d8777abb23a68844c6323fc90f1e92738e54d7e26eb53d05108f74aadbb204be",
+    "archivedReport": "86-parity.json",
+    "testsPerRound": 86,
+    "rounds": 3,
+    "executedTotal": 258,
+    "blobs": {
+      "scripts/verify_ci_run.py": "26868f6f8e423a038e32ed56ef09da7fcdb43b52",
+      "scripts/test_verify_ci_run.py": "9d268ba9fa019fa96d3439b64dee0b9fadfdf0cf",
+      ".github/workflows/ci-run-evidence-contract.yml": "3af5567b01dfa757b52c31bd6da09711bd780593"
+    }
+  },
+  "candidateSnapshot": {
+    "observedTestDefinitions": 91,
+    "testCountProvenByHostedRun": false,
+    "verifierBlobs": {
+      "scripts/verify_ci_run.py": "339b0e7b17266513a34ea991c8a0a98a38286a75",
+      "scripts/test_verify_ci_run.py": "f90bbd0623aa94e1cf8022a7c41c9e5dc864fa3e",
+      ".github/workflows/ci-run-evidence-contract.yml": "089e60d28472d40ac97205e465ceb5930416a288"
+    },
+    "verifiedSameThreeBlobsOnFiveHeads": true,
+    "backendPrHeads": [
+      {
+        "backend": "oreslang-source.java",
+        "pr": 1112,
+        "sha": "969b3cb0535a8178483b9a7219056b6a39c338c0"
+      },
+      {
+        "backend": "oreslang-source.llvm",
+        "pr": 495,
+        "sha": "5442290a6a6d9848ad7284fbe2aad13eeecc00d9"
+      },
+      {
+        "backend": "oreslang-source.net",
+        "pr": 56,
+        "sha": "069aa0b9dcaa1c0296ce8fcbe83c487eeed52961"
+      },
+      {
+        "backend": "oreslang-source.wasm",
+        "pr": 52,
+        "sha": "9c23c3c8488a8ab5119350cc39beefc070048c13"
+      },
+      {
+        "backend": "oreslang-source.forge",
+        "pr": 50,
+        "sha": "80903ae694ab7dc0784bae514accf8378c90f4d9"
+      }
+    ]
+  },
+  "coverage": {
+    "carrierCoversCurrentCandidate": false,
+    "carrierCoversHistoricalRevision": true,
+    "nativeCompilerExecuted": false,
+    "nativeGuestExecuted": false,
+    "nativeParityCertified": false,
+    "privateSourceExportAuthorized": false,
+    "allFiveNativeEvidencePending": true,
+    "releaseReady": false,
+    "reason": "CURRENT_91_TEST_BLOBS_DIFFER_FROM_EXECUTED_86_TEST_BLOBS"
+  },
+  "blockers": [
+    "oreslang-platform-conformance#22 historical disclosure cleanup open",
+    "oreslang-platform-conformance#77 separate private carrier source-placement incident open",
+    "oreslang-source.java#962 private-source policy and main protection incomplete",
+    "oreslang-platform-conformance#69 zero-step native runners; administrator action required"
+  ]
+}

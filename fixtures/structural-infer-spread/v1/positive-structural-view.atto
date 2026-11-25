@@ -1,0 +1,7 @@
+fnc get_x(structural {x: int} arg) -> int {
+  return arg.x;
+}
+pub fnc main(): int {
+  const p = infer struct{x: 49, y: 1};
+  return get_x(p);
+}

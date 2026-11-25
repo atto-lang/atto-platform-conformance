@@ -1,0 +1,380 @@
+{
+  "schemaVersion": 1,
+  "feature": "opto-sync-scoped-read-v1",
+  "status": "candidate-unattested",
+  "backendTargets": [
+    "java",
+    "llvm",
+    "wasm",
+    "cranelift",
+    "net"
+  ],
+  "description": "Portable semantic reference for fixed-ID scoped reads. No Oreslang backend compiler execution is attested by this contract.",
+  "scope": {
+    "table": "docs",
+    "recordIds": [
+      "a",
+      "b"
+    ],
+    "scopeToken": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "scopeKey": "partition:docs:a,b"
+  },
+  "cases": [
+    {
+      "id": "snapshot-delta",
+      "snapshot": {
+        "checkpoint": "5",
+        "records": [
+          {
+            "id": "a",
+            "revision": "1",
+            "value": "old"
+          }
+        ]
+      },
+      "page": {
+        "from": "5",
+        "to": "11",
+        "more": false,
+        "changes": [
+          {
+            "at": "6",
+            "id": "a",
+            "revision": "2",
+            "op": "upsert",
+            "value": "new"
+          },
+          {
+            "at": "9",
+            "id": "b",
+            "revision": "1",
+            "op": "upsert",
+            "value": "second"
+          }
+        ]
+      },
+      "pending": {},
+      "expected": {
+        "kind": "ok",
+        "checkpoint": "11",
+        "rows": {
+          "a": "new",
+          "b": "second"
+        }
+      }
+    },
+    {
+      "id": "optimistic-over-authoritative",
+      "snapshot": {
+        "checkpoint": "5",
+        "records": [
+          {
+            "id": "a",
+            "revision": "1",
+            "value": "server"
+          }
+        ]
+      },
+      "page": {
+        "from": "5",
+        "to": "6",
+        "more": false,
+        "changes": [
+          {
+            "at": "6",
+            "id": "a",
+            "revision": "2",
+            "op": "upsert",
+            "value": "server-new"
+          }
+        ]
+      },
+      "pending": {
+        "a": "local-pending"
+      },
+      "expected": {
+        "kind": "ok",
+        "checkpoint": "6",
+        "rows": {
+          "a": "local-pending"
+        }
+      }
+    },
+    {
+      "id": "delete-with-pending",
+      "snapshot": {
+        "checkpoint": "5",
+        "records": [
+          {
+            "id": "a",
+            "revision": "1",
+            "value": "server"
+          }
+        ]
+      },
+      "page": {
+        "from": "5",
+        "to": "7",
+        "more": false,
+        "changes": [
+          {
+            "at": "7",
+            "id": "a",
+            "revision": "2",
+            "op": "delete"
+          }
+        ]
+      },
+      "pending": {
+        "a": "local-pending"
+      },
+      "expected": {
+        "kind": "ok",
+        "checkpoint": "7",
+        "rows": {
+          "a": "local-pending"
+        }
+      }
+    },
+    {
+      "id": "filtered-empty-page",
+      "snapshot": {
+        "checkpoint": "5",
+        "records": [
+          {
+            "id": "a",
+            "revision": "1",
+            "value": "one"
+          }
+        ]
+      },
+      "page": {
+        "from": "5",
+        "to": "100",
+        "more": false,
+        "changes": []
+      },
+      "pending": {},
+      "expected": {
+        "kind": "ok",
+        "checkpoint": "100",
+        "rows": {
+          "a": "one"
+        }
+      }
+    },
+    {
+      "id": "out-of-scope-rejected",
+      "snapshot": {
+        "checkpoint": "5",
+        "records": []
+      },
+      "page": {
+        "from": "5",
+        "to": "6",
+        "more": false,
+        "changes": [
+          {
+            "at": "6",
+            "id": "other",
+            "revision": "1",
+            "op": "upsert",
+            "value": "secret"
+          }
+        ]
+      },
+      "pending": {},
+      "expected": {
+        "kind": "error",
+        "code": "SCOPE_VIOLATION",
+        "checkpoint": "5"
+      }
+    },
+    {
+      "id": "checkpoint-regression",
+      "snapshot": {
+        "checkpoint": "5",
+        "records": []
+      },
+      "page": {
+        "from": "5",
+        "to": "4",
+        "more": false,
+        "changes": []
+      },
+      "pending": {},
+      "expected": {
+        "kind": "error",
+        "code": "CHECKPOINT_REGRESSION",
+        "checkpoint": "5"
+      }
+    },
+    {
+      "id": "checkpoint-gap",
+      "snapshot": {
+        "checkpoint": "5",
+        "records": []
+      },
+      "page": {
+        "from": "4",
+        "to": "6",
+        "more": false,
+        "changes": []
+      },
+      "pending": {},
+      "expected": {
+        "kind": "error",
+        "code": "CHECKPOINT_MISMATCH",
+        "checkpoint": "5"
+      }
+    },
+    {
+      "id": "out-of-order",
+      "snapshot": {
+        "checkpoint": "5",
+        "records": []
+      },
+      "page": {
+        "from": "5",
+        "to": "12",
+        "more": false,
+        "changes": [
+          {
+            "at": "10",
+            "id": "a",
+            "revision": "1",
+            "op": "upsert",
+            "value": "one"
+          },
+          {
+            "at": "9",
+            "id": "b",
+            "revision": "1",
+            "op": "upsert",
+            "value": "two"
+          }
+        ]
+      },
+      "pending": {},
+      "expected": {
+        "kind": "error",
+        "code": "OUT_OF_ORDER",
+        "checkpoint": "5"
+      }
+    },
+    {
+      "id": "revision-regression",
+      "snapshot": {
+        "checkpoint": "5",
+        "records": [
+          {
+            "id": "a",
+            "revision": "4",
+            "value": "newest"
+          }
+        ]
+      },
+      "page": {
+        "from": "5",
+        "to": "6",
+        "more": false,
+        "changes": [
+          {
+            "at": "6",
+            "id": "a",
+            "revision": "3",
+            "op": "upsert",
+            "value": "stale"
+          }
+        ]
+      },
+      "pending": {},
+      "expected": {
+        "kind": "error",
+        "code": "REVISION_REGRESSION",
+        "checkpoint": "5"
+      }
+    },
+    {
+      "id": "duplicate-revision",
+      "snapshot": {
+        "checkpoint": "5",
+        "records": [
+          {
+            "id": "a",
+            "revision": "4",
+            "value": "newest"
+          }
+        ]
+      },
+      "page": {
+        "from": "5",
+        "to": "6",
+        "more": false,
+        "changes": [
+          {
+            "at": "6",
+            "id": "a",
+            "revision": "4",
+            "op": "upsert",
+            "value": "replay"
+          }
+        ]
+      },
+      "pending": {},
+      "expected": {
+        "kind": "error",
+        "code": "REVISION_REGRESSION",
+        "checkpoint": "5"
+      }
+    },
+    {
+      "id": "nonprogressing-more",
+      "snapshot": {
+        "checkpoint": "5",
+        "records": []
+      },
+      "page": {
+        "from": "5",
+        "to": "10",
+        "more": true,
+        "changes": []
+      },
+      "pending": {},
+      "expected": {
+        "kind": "error",
+        "code": "INVALID_MORE",
+        "checkpoint": "5"
+      }
+    },
+    {
+      "id": "large-decimal-cursor",
+      "snapshot": {
+        "checkpoint": "9007199254740993",
+        "records": []
+      },
+      "page": {
+        "from": "9007199254740993",
+        "to": "9007199254740995",
+        "more": false,
+        "changes": [
+          {
+            "at": "9007199254740994",
+            "id": "a",
+            "revision": "9007199254740994",
+            "op": "upsert",
+            "value": "safe"
+          }
+        ]
+      },
+      "pending": {},
+      "expected": {
+        "kind": "ok",
+        "checkpoint": "9007199254740995",
+        "rows": {
+          "a": "safe"
+        }
+      }
+    }
+  ]
+}

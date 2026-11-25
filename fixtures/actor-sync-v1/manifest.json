@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "contract": "oreslang-actor-sync-source-fixtures-v1",
+  "status": "candidate-unattested",
+  "notes": "Exactly identical .ores source pins for Java/LLVM/Wasm/Cranelift/.NET; no guest compiler evidence exists until real executed test receipts are attached.",
+  "backendTargets": [
+    "java",
+    "llvm",
+    "wasm",
+    "cranelift",
+    "net"
+  ],
+  "sourceModule": {
+    "path": "stdlib/actor_sync.ores",
+    "gitBlobSha1": "3aae079ffe3be8bc2eb2b77bacbd6bddf7e1ce65",
+    "scope": "pure-owned-progress-metadata-only",
+    "notPersistenceAdapter": true
+  },
+  "fixtures": [
+    {
+      "id": "cursor-progression",
+      "path": "cursor-progression.ores",
+      "gitBlobSha1": "a454e7107ab62bbaa38cca44627c794b3bf0d4c2",
+      "expect": "accept-and-execute",
+      "stdout": "true\ntrue\nfalse\ntrue\ntrue\nfalse\ntrue\ntrue\n3\n5\n",
+      "requirements": [
+        "real-source-compilation",
+        "guest-execution",
+        "exact-stdout",
+        "compiler-hash",
+        "exact-head"
+      ],
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "cranelift": "UNSUPPORTED",
+        "net": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "cross-epoch-delta-reject",
+      "path": "cross-epoch-delta-reject.ores",
+      "gitBlobSha1": "0f93036cf7ed0581273444159a6a619b75505020",
+      "expect": "accept-and-execute",
+      "stdout": "false\ntrue\n5\ntrue\ntrue\n7\n5\n",
+      "requirements": [
+        "real-source-compilation",
+        "guest-execution",
+        "exact-stdout",
+        "compiler-hash",
+        "exact-head"
+      ],
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "cranelift": "UNSUPPORTED",
+        "net": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "highest-epoch-fence",
+      "path": "highest-epoch-fence.ores",
+      "gitBlobSha1": "ae9063472b39f554fa195d79283bd9952e57483d",
+      "expect": "accept-and-execute",
+      "stdout": "false\nfalse\nfalse\ntrue\ntrue\nfalse\ntrue\n8\nfalse\ntrue\ntrue\n",
+      "requirements": [
+        "real-source-compilation",
+        "guest-execution",
+        "exact-stdout",
+        "compiler-hash",
+        "exact-head"
+      ],
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "cranelift": "UNSUPPORTED",
+        "net": "NOT_EXECUTED"
+      }
+    }
+  ],
+  "runtimeVerifiedBackends": [],
+  "evidenceLevel": "source-fixtures-only",
+  "hostTestsCountAsNativeGuest": false,
+  "zeroStepCiCountsAsExecution": false,
+  "attoExtensionTarget": {
+    "sourcePath": "stdlib/actor_sync.atto",
+    "sourceGitBlobSha1": "3aae079ffe3be8bc2eb2b77bacbd6bddf7e1ce65",
+    "guestExecution": "NOT_EXECUTED",
+    "semantics": "AttoLang .atto is the required future source extension. Source bytes identical to legacy .ores pending compiler admission.",
+    "fixtures": [
+      {
+        "id": "cursor-progression",
+        "path": "cursor-progression.atto",
+        "gitBlobSha1": "a454e7107ab62bbaa38cca44627c794b3bf0d4c2",
+        "expectedStdout": "true\ntrue\nfalse\ntrue\ntrue\nfalse\ntrue\ntrue\n3\n5\n",
+        "backendStatus": {
+          "java": "NOT_EXECUTED",
+          "llvm": "NOT_EXECUTED",
+          "wasm": "NOT_EXECUTED",
+          "cranelift": "UNSUPPORTED",
+          "net": "NOT_EXECUTED"
+        }
+      },
+      {
+        "id": "cross-epoch-delta-reject",
+        "path": "cross-epoch-delta-reject.atto",
+        "gitBlobSha1": "0f93036cf7ed0581273444159a6a619b75505020",
+        "expectedStdout": "false\ntrue\n5\ntrue\ntrue\n7\n5\n",
+        "backendStatus": {
+          "java": "NOT_EXECUTED",
+          "llvm": "NOT_EXECUTED",
+          "wasm": "NOT_EXECUTED",
+          "cranelift": "UNSUPPORTED",
+          "net": "NOT_EXECUTED"
+        }
+      },
+      {
+        "id": "highest-epoch-fence",
+        "path": "highest-epoch-fence.atto",
+        "gitBlobSha1": "ae9063472b39f554fa195d79283bd9952e57483d",
+        "expectedStdout": "false\nfalse\nfalse\ntrue\ntrue\nfalse\ntrue\n8\nfalse\ntrue\ntrue\n",
+        "backendStatus": {
+          "java": "NOT_EXECUTED",
+          "llvm": "NOT_EXECUTED",
+          "wasm": "NOT_EXECUTED",
+          "cranelift": "UNSUPPORTED",
+          "net": "NOT_EXECUTED"
+        }
+      }
+    ]
+  }
+}

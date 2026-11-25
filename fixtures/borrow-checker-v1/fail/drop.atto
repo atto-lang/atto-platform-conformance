@@ -1,0 +1,7 @@
+// BCV1-030 drop fail: target AttoLang semantics, NOT_EXECUTED.
+// Expected compiler rejection E_DROPPED with NO guest artifact.
+pub fnc main(): int {
+  val int x = 42;
+  drop! x;
+  return x; // consumed scalar place
+}

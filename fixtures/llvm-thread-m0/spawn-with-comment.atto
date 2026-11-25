@@ -1,0 +1,1 @@
+fnc main(): int { return thread /* comment */ .spawn(1); }

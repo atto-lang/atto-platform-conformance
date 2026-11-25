@@ -1,0 +1,7 @@
+pub fnc main(): void {
+  let Task<int> task = (|int a, string b| -> nb {
+    return a;
+  })(5, "xyz");
+  let int answer = await task;
+  return;
+}

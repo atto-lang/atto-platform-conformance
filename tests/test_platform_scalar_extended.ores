@@ -1,0 +1,30 @@
+// Scalar reference only; does not execute a platform runtime.
+import class TestCase, TestSuite, TestOptions, TestOutcome, RunSummary from "ores.std/testing";
+import fnc expect_true, run_suite, require_success from "ores.std/testing";
+
+fnc linear(int a,int b): int { return a * 2 + b; }
+
+fnc linear_zero(): TestOutcome {
+  return expect_true(linear(0,0)==0, "linear_zero scalar reference failed");
+}
+fnc linear_positive(): TestOutcome {
+  return expect_true(linear(4,2)==10, "linear_positive scalar reference failed");
+}
+fnc linear_negative(): TestOutcome {
+  return expect_true(linear(-3,6)==0, "linear_negative scalar reference failed");
+}
+fnc linear_signed(): TestOutcome {
+  return expect_true(linear(-4,-2)==-10, "linear_signed scalar reference failed");
+}
+pub routine main(): void {
+  val TestSuite suite = new TestSuite("platform-conformance-extended", arr[
+    new TestCase("linear_zero", linear_zero, false, ""),
+    new TestCase("linear_positive", linear_positive, false, ""),
+    new TestCase("linear_negative", linear_negative, false, ""),
+    new TestCase("linear_signed", linear_signed, false, "")
+  ]);
+  val TestOptions options = new TestOptions("", false, true);
+  val RunSummary summary = run_suite(rt borrow suite, rt borrow options);
+  require_success(rt borrow summary);
+  return;
+}

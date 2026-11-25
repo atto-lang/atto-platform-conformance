@@ -1,0 +1,4 @@
+pub fnc make(): T {
+    type T = struct { foo: int };
+    return T{5};
+}

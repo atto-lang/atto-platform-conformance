@@ -1,0 +1,208 @@
+{
+  "schemaVersion": 1,
+  "scope": "end-delimited-function-syntax-v2",
+  "cases": [
+    {
+      "id": "end-delimited-roundtrip",
+      "file": "end-delimited-roundtrip.ores",
+      "sourceGitBlobSha1": "512597025b9890efa34c1b59cc4f27524edcbeda",
+      "expectations": {
+        "java": "accept-and-typecheck",
+        "formatter": "format-idempotently",
+        "llvm": "reject-before-ir-until-native-parity"
+      },
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java",
+        "formatter",
+        "llvm"
+      ]
+    }
+  ],
+  "sourceFreeReferenceEvidence": {
+    "repository": "ORESoftware/typespec-json-schema-validator",
+    "pullRequest": 239,
+    "runId": 39443132577,
+    "result": "21/21 independent syntax-reference tests passed",
+    "covers": "v1-as-separator-only"
+  },
+  "notes": "The source-free v2 contract now validates all 33 reference vectors (14 accept / 19 reject): full return-type acceptance plus separator masquerades, malformed/unbalanced return types, exact-colon boundaries, semicolon boundaries, and physical-line comment behavior. Java Maven/Graal, formatter cargo, and LLVM CMake/CTest remain separate exact-head implementation gates. No cross-org private compiler source export is authorized by this manifest.",
+  "referenceVectors": [
+    {
+      "id": "separator-free-next-line",
+      "source": "fnc f() -> int\n  return 1\nend",
+      "accepted": true
+    },
+    {
+      "id": "same-line-as",
+      "source": "fnc f() -> int as return 1; end",
+      "accepted": true
+    },
+    {
+      "id": "same-line-double-colon",
+      "source": "fnc f() -> int :: return 1; end",
+      "accepted": true
+    },
+    {
+      "id": "routine-double-colon",
+      "source": "routine f() -> int :: return 1; end",
+      "accepted": true
+    },
+    {
+      "id": "double-colon-with-static-access",
+      "source": "fnc f() -> int :: return Math::answer(); end",
+      "accepted": true
+    },
+    {
+      "id": "higher-order-double-colon",
+      "source": "fnc f() -> () => void ::\n  return || -> { return; };\nend",
+      "accepted": true
+    },
+    {
+      "id": "string-double-colon-is-body-text",
+      "source": "fnc f() -> string :: return \"::\"; end",
+      "accepted": true
+    },
+    {
+      "id": "comment-double-colon-before-as",
+      "source": "fnc f() -> int /* :: */ as return 1; end",
+      "accepted": true
+    },
+    {
+      "id": "next-line-as-rejected",
+      "source": "fnc f() -> int\nas\n  return 1\nend",
+      "accepted": false
+    },
+    {
+      "id": "next-line-double-colon-rejected",
+      "source": "fnc f() -> int\n::\n  return 1\nend",
+      "accepted": false
+    },
+    {
+      "id": "same-line-body-without-separator-rejected",
+      "source": "fnc f() -> int return 1; end",
+      "accepted": false
+    },
+    {
+      "id": "colon-return-double-colon-rejected",
+      "source": "fnc f(): int :: return 1; end",
+      "accepted": false
+    },
+    {
+      "id": "as-double-colon-rejected",
+      "source": "fnc f() -> int as :: return 1; end",
+      "accepted": false
+    },
+    {
+      "id": "double-colon-as-rejected",
+      "source": "fnc f() -> int :: as return 1; end",
+      "accepted": false
+    },
+    {
+      "id": "comment-double-colon-not-separator",
+      "source": "fnc f() -> int /* :: */ return 1; end",
+      "accepted": false
+    },
+    {
+      "id": "body-static-access-without-separator-rejected",
+      "source": "fnc f() -> int Math::answer(); end",
+      "accepted": false
+    },
+    {
+      "id": "routine-body-static-access-without-separator-rejected",
+      "source": "routine f() -> Result<int, string> Math::answer(); end",
+      "accepted": false
+    },
+    {
+      "id": "body-cast-as-without-separator-rejected",
+      "source": "fnc f() -> int value as Foo; end",
+      "accepted": false
+    },
+    {
+      "id": "amp-mut-double-colon",
+      "source": "fnc f() -> &mut Thing :: return value; end",
+      "accepted": true
+    },
+    {
+      "id": "borrow-mut-double-colon",
+      "source": "fnc f() -> borrow mut Thing :: return value; end",
+      "accepted": true
+    },
+    {
+      "id": "string-literal-double-colon",
+      "source": "fnc f() -> \"ok value\" :: return \"ok value\"; end",
+      "accepted": true
+    },
+    {
+      "id": "record-shape-double-colon",
+      "source": "fnc f() -> {foo: int, bar: string} :: return value; end",
+      "accepted": true
+    },
+    {
+      "id": "struct-shape-double-colon",
+      "source": "fnc f() -> struct {foo: int} :: return value; end",
+      "accepted": true
+    },
+    {
+      "id": "malformed-generic-before-double-colon-rejected",
+      "source": "fnc f() -> Result<int :: return value; end",
+      "accepted": false
+    },
+    {
+      "id": "malformed-tuple-before-double-colon-rejected",
+      "source": "fnc f() -> tuple (int, string :: return value; end",
+      "accepted": false
+    },
+    {
+      "id": "malformed-record-before-double-colon-rejected",
+      "source": "fnc f() -> {foo: int, bar: string :: return value; end",
+      "accepted": false
+    },
+    {
+      "id": "malformed-struct-before-double-colon-rejected",
+      "source": "fnc f() -> struct {foo: int :: return value; end",
+      "accepted": false
+    },
+    {
+      "id": "stray-closing-angle-before-double-colon-rejected",
+      "source": "fnc f() -> Thing> :: return value; end",
+      "accepted": false
+    },
+    {
+      "id": "triple-colon-rejected",
+      "source": "fnc f() -> int ::: return 1; end",
+      "accepted": false
+    },
+    {
+      "id": "split-double-colon-rejected",
+      "source": "fnc f() -> int : : return 1; end",
+      "accepted": false
+    },
+    {
+      "id": "semicolon-before-double-colon-rejected",
+      "source": "fnc f() -> int; :: return 1; end",
+      "accepted": false
+    },
+    {
+      "id": "same-line-block-comment-before-double-colon",
+      "source": "fnc f() -> int /* header */ :: return 1; end",
+      "accepted": true
+    },
+    {
+      "id": "multiline-block-comment-before-double-colon-rejected",
+      "source": "fnc f() -> int /*\ncrosses a physical line\n*/ :: return 1; end",
+      "accepted": false
+    }
+  ],
+  "v2SourceFreeReferenceEvidence": {
+    "repository": "zed-pkg/zed-lambdas",
+    "pullRequest": 26,
+    "runId": 39625325242,
+    "jobId": 119308910442,
+    "result": "14 accepted / 19 rejected independent adversarial v2 syntax vectors passed",
+    "marker": "ORESLANG_DOUBLE_COLON_V2_ADVERSARIAL_SOURCE_FREE_PASS accepted=14 rejected=19 private_source_bytes=0",
+    "privateSourceBytes": 0,
+    "scope": "abstract adversarial v2 syntax contract only; not Java/Rust/LLVM implementation certification",
+    "covers": "adversarial-v2-33-vectors"
+  }
+}

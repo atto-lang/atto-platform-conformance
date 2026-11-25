@@ -1,0 +1,5 @@
+pub fnc main(): void {
+  val DynamicSelectPlan<string> invalid =
+      DynamicSelectPlan.from_map(record{left: 1});
+  return;
+}

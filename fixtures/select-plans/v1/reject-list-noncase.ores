@@ -1,0 +1,4 @@
+pub fnc main(): void {
+  val SelectPlan invalid = SelectPlan.from_list([1, 2]);
+  return;
+}

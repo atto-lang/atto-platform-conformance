@@ -1,0 +1,1 @@
+fnc main(): int { string x = 7; return 0; }

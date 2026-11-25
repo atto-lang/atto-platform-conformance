@@ -1,0 +1,291 @@
+{
+  "schemaVersion": 1,
+  "asOf": "2026-10-18",
+  "organization": "ores-truffle-oreslang",
+  "batch": "issue-batch-20261018",
+  "documentationOnly": true,
+  "releaseCertified": false,
+  "note": "Observed 2026-10-18: 6 independently merged partial PRs, 14 open draft PRs; no branch-only repositories. No completed-issue or verified-backend claim; zero-step CI is missing evidence.",
+  "repositories": [
+    {
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "issues": [
+        {
+          "number": 1345,
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/1345"
+        },
+        {
+          "number": 1336,
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/1336"
+        },
+        {
+          "number": 1337,
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/1337"
+        }
+      ],
+      "branch": "draft/issue-batch-1345-1336-1337-20261018",
+      "status": "partial-draft-pr",
+      "draftPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1362"
+    },
+    {
+      "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+      "issues": [
+        {
+          "number": 630,
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/issues/630"
+        },
+        {
+          "number": 625,
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/issues/625"
+        }
+      ],
+      "branch": "draft/issue-batch-630-625-20261018",
+      "status": "partial-draft-pr",
+      "draftPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/634"
+    },
+    {
+      "repository": "ores-truffle-oreslang/oreslang-platform-conformance",
+      "issues": [
+        {
+          "number": 99,
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/99"
+        },
+        {
+          "number": 87,
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/87"
+        },
+        {
+          "number": 69,
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/69"
+        }
+      ],
+      "branch": "draft/issue-batch-99-87-69-20261018",
+      "status": "partial-draft-pr",
+      "draftPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/pull/101"
+    },
+    {
+      "repository": "ores-truffle-oreslang/oreslang-common-source",
+      "issues": [
+        {
+          "number": 79,
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-common-source/issues/79"
+        },
+        {
+          "number": 80,
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-common-source/issues/80"
+        }
+      ],
+      "branch": "draft/issue-batch-79-80-20261018",
+      "status": "merged-partial-pr",
+      "mergedPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-common-source/pull/82"
+    },
+    {
+      "repository": "ores-truffle-oreslang/oreslang-source.js",
+      "issues": [
+        {
+          "number": 12,
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-source.js/issues/12"
+        },
+        {
+          "number": 15,
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-source.js/issues/15"
+        }
+      ],
+      "branch": "draft/issue-batch-12-15-20261018",
+      "status": "partial-draft-pr",
+      "draftPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-source.js/pull/20"
+    },
+    {
+      "repository": "ores-truffle-oreslang/oreslang-source.hdl",
+      "issues": [
+        {
+          "number": 12,
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-source.hdl/issues/12"
+        },
+        {
+          "number": 7,
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-source.hdl/issues/7"
+        }
+      ],
+      "branch": "draft/issue-batch-12-7-20261018",
+      "status": "merged-partial-pr",
+      "mergedPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-source.hdl/pull/13"
+    },
+    {
+      "repository": "ores-truffle-oreslang/rx-oreslang-channels",
+      "issues": [
+        {
+          "number": 18,
+          "url": "https://github.com/ores-truffle-oreslang/rx-oreslang-channels/issues/18"
+        },
+        {
+          "number": 8,
+          "url": "https://github.com/ores-truffle-oreslang/rx-oreslang-channels/issues/8"
+        }
+      ],
+      "branch": "draft/issue-batch-18-8-20261018",
+      "status": "partial-draft-pr",
+      "draftPullRequest": "https://github.com/ores-truffle-oreslang/rx-oreslang-channels/pull/24"
+    },
+    {
+      "repository": "ores-truffle-oreslang/oreslang-ml-conformance",
+      "issues": [
+        {
+          "number": 2,
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-ml-conformance/issues/2"
+        },
+        {
+          "number": 6,
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-ml-conformance/issues/6"
+        }
+      ],
+      "branch": "draft/issue-batch-2-6-20261018",
+      "status": "partial-draft-pr",
+      "draftPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-ml-conformance/pull/8"
+    },
+    {
+      "repository": "ores-truffle-oreslang/oreslang-data-science",
+      "issues": [
+        {
+          "number": 9,
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-data-science/issues/9"
+        }
+      ],
+      "branch": "draft/issue-batch-9-20261018",
+      "status": "partial-draft-pr",
+      "draftPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-data-science/pull/11"
+    },
+    {
+      "repository": "ores-truffle-oreslang/oreslang-source.forge",
+      "issues": [
+        {
+          "number": 28,
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-source.forge/issues/28"
+        }
+      ],
+      "branch": "draft/issue-batch-28-20261018",
+      "status": "partial-draft-pr",
+      "draftPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-source.forge/pull/91"
+    },
+    {
+      "repository": "ores-truffle-oreslang/oreslang-source.wasm",
+      "issues": [
+        {
+          "number": 93,
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-source.wasm/issues/93"
+        }
+      ],
+      "branch": "draft/issue-batch-93-20261018",
+      "status": "partial-draft-pr",
+      "draftPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/100"
+    },
+    {
+      "repository": "ores-truffle-oreslang/oreslang-source.net",
+      "issues": [
+        {
+          "number": 35,
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-source.net/issues/35"
+        }
+      ],
+      "branch": "draft/issue-batch-35-20261018",
+      "status": "partial-draft-pr",
+      "draftPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-source.net/pull/97"
+    },
+    {
+      "repository": "ores-truffle-oreslang/oreslang-autograd",
+      "issues": [
+        {
+          "number": 2,
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-autograd/issues/2"
+        }
+      ],
+      "branch": "draft/issue-batch-2-20261018",
+      "status": "partial-draft-pr",
+      "draftPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-autograd/pull/6"
+    },
+    {
+      "repository": "ores-truffle-oreslang/oreslang-tensor",
+      "issues": [
+        {
+          "number": 2,
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-tensor/issues/2"
+        }
+      ],
+      "branch": "draft/issue-batch-2-20261018",
+      "status": "partial-draft-pr",
+      "draftPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-tensor/pull/6"
+    },
+    {
+      "repository": "ores-truffle-oreslang/oreslang-browser",
+      "issues": [
+        {
+          "number": 16,
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-browser/issues/16"
+        }
+      ],
+      "branch": "draft/issue-batch-16-20261018",
+      "status": "merged-partial-pr",
+      "mergedPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-browser/pull/26"
+    },
+    {
+      "repository": "ores-truffle-oreslang/oreslang-platform.embedded",
+      "issues": [
+        {
+          "number": 19,
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-platform.embedded/issues/19"
+        }
+      ],
+      "branch": "draft/issue-batch-19-20261018",
+      "status": "merged-partial-pr",
+      "mergedPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-platform.embedded/pull/21"
+    },
+    {
+      "repository": "ores-truffle-oreslang/.github",
+      "issues": [
+        {
+          "number": 6,
+          "url": "https://github.com/ores-truffle-oreslang/.github/issues/6"
+        }
+      ],
+      "branch": "draft/issue-batch-6-20261018",
+      "status": "partial-draft-pr",
+      "draftPullRequest": "https://github.com/ores-truffle-oreslang/.github/pull/7"
+    },
+    {
+      "repository": "ores-truffle-oreslang/oreslang-target-profiles",
+      "issues": [
+        {
+          "number": 21,
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-target-profiles/issues/21"
+        }
+      ],
+      "branch": "draft/issue-batch-21-20261018",
+      "status": "merged-partial-pr",
+      "mergedPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-target-profiles/pull/22"
+    },
+    {
+      "repository": "ores-truffle-oreslang/oreslang-wasm",
+      "issues": [
+        {
+          "number": 39,
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-wasm/issues/39"
+        }
+      ],
+      "branch": "draft/issue-batch-39-20261018",
+      "status": "partial-draft-pr",
+      "draftPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-wasm/pull/40"
+    },
+    {
+      "repository": "ores-truffle-oreslang/oreslang-serialization-and-validation",
+      "issues": [
+        {
+          "number": 18,
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-serialization-and-validation/issues/18"
+        }
+      ],
+      "branch": "draft/issue-batch-18-20261018",
+      "status": "merged-partial-pr",
+      "mergedPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-serialization-and-validation/pull/19"
+    }
+  ]
+}

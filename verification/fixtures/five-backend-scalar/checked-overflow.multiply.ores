@@ -1,0 +1,1 @@
+pub fnc main(): int { return 4611686018427387904 * 2; }

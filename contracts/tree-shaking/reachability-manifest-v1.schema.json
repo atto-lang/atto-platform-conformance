@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oreslang.org/schemas/reachability-manifest-v1.schema.json",
+  "title": "Oreslang reachability manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "entryPoints",
+    "preservePublicApi",
+    "retainedSymbols",
+    "removedSymbols",
+    "externalBindings",
+    "languageFeatures",
+    "runtimeOperations"
+  ],
+  "properties": {
+    "schema": {
+      "const": "oreslang.reachability/1"
+    },
+    "entryPoints": {
+      "$ref": "#/$defs/stringSet"
+    },
+    "preservePublicApi": {
+      "type": "boolean"
+    },
+    "retainedSymbols": {
+      "$ref": "#/$defs/stringSet"
+    },
+    "removedSymbols": {
+      "$ref": "#/$defs/stringSet"
+    },
+    "externalBindings": {
+      "$ref": "#/$defs/stringSet"
+    },
+    "languageFeatures": {
+      "$ref": "#/$defs/stringSet"
+    },
+    "runtimeOperations": {
+      "$ref": "#/$defs/stringSet"
+    }
+  },
+  "$defs": {
+    "stringSet": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

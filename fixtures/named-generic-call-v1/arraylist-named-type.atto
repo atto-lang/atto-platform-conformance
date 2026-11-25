@@ -1,0 +1,4 @@
+// Requires the imported ArrayList declaration to export formal T.
+fnc main() -> void ::
+  val xs: ArrayList<T=string> = ArrayList<T=string>()
+end

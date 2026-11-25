@@ -1,0 +1,5 @@
+fnc mark(int value): int { return value; }
+fnc make(): T {
+    type T = struct { foo: int, bar: int };
+    return T{bar: mark(2), foo: mark(1)};
+}

@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "status": "CORPUS_ONLY_NOT_BACKEND_EXECUTION",
+  "backends": {
+    "java": "feature-draft-untested",
+    "llvm": "experimental-scalar-subset-unverified-for-this-fixture",
+    "net": "reject-only",
+    "forge": "reject-only",
+    "wasm": "reject-only"
+  },
+  "cases": [
+    {
+      "id": "project-root-function",
+      "entry": "project/src/main-plus.ores",
+      "expect": "return-42",
+      "requiredFeatures": [
+        "project-root-manifest",
+        "file-import",
+        "cross-unit-link"
+      ],
+      "gitBlobSha": "ee07b74614ad88c5419e1e55322784f541833369"
+    },
+    {
+      "id": "relative-function",
+      "entry": "project/src/main-relative.ores",
+      "expect": "return-42",
+      "requiredFeatures": [
+        "importer-relative",
+        "file-import",
+        "cross-unit-link"
+      ],
+      "gitBlobSha": "29febca8d2298724f962f6cfdc1f1881e988cd2e"
+    },
+    {
+      "id": "rooted-parent-rejection",
+      "entry": "project/src/invalid-root-traversal.ores",
+      "expect": "reject",
+      "diagnostic": "noncanonical-rooted-import",
+      "gitBlobSha": "5e6f41674730a965c07892b64c2c14b836055714"
+    },
+    {
+      "id": "cr-comment-relative-function",
+      "entry": "project/src/main-cr-comment.ores",
+      "expect": "return-42",
+      "requiredFeatures": [
+        "cr-only-line-comment",
+        "importer-relative",
+        "file-import",
+        "cross-unit-link"
+      ],
+      "gitBlobSha": "9e264f5c1dd3c1c191d5bb69f2c63da520c20906"
+    },
+    {
+      "id": "cr-comment-rooted-parent-rejection",
+      "entry": "project/src/invalid-cr-root-traversal.ores",
+      "expect": "reject",
+      "diagnostic": "noncanonical-rooted-import",
+      "requiredFeatures": [
+        "cr-only-line-comment",
+        "canonical-rooted-path"
+      ],
+      "gitBlobSha": "50e7e5117e0cd63e48ef416fb9a4ead98bcb0685"
+    }
+  ],
+  "evidence": [],
+  "provenance": "NONE",
+  "supportBlobs": {
+    "project/.ores.pkg.toml": "5a9014b446640775cd2284a1f395354900efbd17",
+    "project/src/lib/helper.ores": "3dab45b6139aaf47107de2ca2cf5257e6521b946"
+  }
+}

@@ -1,0 +1,12 @@
+// Negative: two overlapping loans of one heap referent.
+define class Cell as
+  pub let int value = 0;
+end
+fnc conflict(borrow mut Cell writer, borrow Cell reader): int {
+  writer.value = 1;
+  return reader.value;
+}
+pub fnc main(): int {
+  let mut Cell owner = new Cell();
+  return conflict(rt mut borrow owner, rt borrow owner);
+}

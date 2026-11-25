@@ -1,0 +1,35 @@
+{
+  "schema": "atto.actor-registry.v1",
+  "status": "CANDIDATE_HOST_MODEL_ONLY",
+  "scope": "typed local actor registration, single-flight creation, generation-safe unregister",
+  "logical_key_fields": [
+    "namespace",
+    "actor_type",
+    "application_key"
+  ],
+  "physical_identity_fields": [
+    "runtime_epoch",
+    "actor_id",
+    "incarnation"
+  ],
+  "required_scenarios": [
+    "same_key_concurrent_creation",
+    "independent_keys",
+    "independent_keys_do_not_wait_for_unrelated_factory",
+    "factory_failure_wakes_waiters",
+    "recursive_same_key_rejected",
+    "stale_unregister_cannot_remove_successor",
+    "wrong_epoch_rejected",
+    "physical_handle_stale_after_retire",
+    "namespaces_and_types_isolated",
+    "virtual_ref_not_implicit_activation",
+    "closed_actor_rejected"
+  ],
+  "evidence": {
+    "local_reference_model": "HOST_ONLY",
+    "atto_source_guest_execution": "NOT_EXECUTED",
+    "distributed_fencing": "NOT_EXECUTED",
+    "durable_queue_recovery": "NOT_EXECUTED",
+    "backend_parity": "NOT_EXECUTED"
+  }
+}

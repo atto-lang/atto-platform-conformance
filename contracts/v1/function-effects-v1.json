@@ -1,0 +1,274 @@
+{
+  "version": 1,
+  "effect_names": [
+    "state.read",
+    "state.write",
+    "suspend",
+    "io",
+    "alloc",
+    "block",
+    "ffi",
+    "throw",
+    "raise",
+    "panic"
+  ],
+  "semantics": {
+    "with_clause": "upper_bound",
+    "unknown_call": "reject_without_trusted_summary",
+    "trap_forbids": [
+      "throw"
+    ],
+    "state_read_callback_forbids": [
+      "state.write"
+    ],
+    "live_state_loan_forbids": [
+      "suspend",
+      "block"
+    ],
+    "failure_transitions": {
+      "actor_unhandled_throw": "raise",
+      "actor_unhandled_raise": "panic",
+      "actor_panic": "supervisor_control"
+    }
+  },
+  "operations": {
+    "state.read": [
+      "state.read"
+    ],
+    "state.write": [
+      "state.write"
+    ],
+    "state.rmw": [
+      "state.read",
+      "state.write"
+    ],
+    "cooperate": [
+      "suspend"
+    ],
+    "channel.blocking": [
+      "suspend",
+      "block"
+    ],
+    "channel.nonblocking": [
+      "suspend"
+    ],
+    "stdio.sync": [
+      "io",
+      "block"
+    ],
+    "alloc": [
+      "alloc"
+    ],
+    "ffi": [
+      "ffi"
+    ],
+    "throw": [
+      "throw"
+    ],
+    "raise": [
+      "raise"
+    ],
+    "panic": [
+      "panic"
+    ]
+  },
+  "cases": [
+    {
+      "name": "read_declared",
+      "declared": [
+        "state.read"
+      ],
+      "ops": [
+        "state.read"
+      ],
+      "expect": "accept"
+    },
+    {
+      "name": "read_undeclared",
+      "declared": [],
+      "ops": [
+        "state.read"
+      ],
+      "expect": "reject"
+    },
+    {
+      "name": "write_not_covered_by_read",
+      "declared": [
+        "state.read"
+      ],
+      "ops": [
+        "state.write"
+      ],
+      "expect": "reject"
+    },
+    {
+      "name": "rmw_needs_read_and_write",
+      "declared": [
+        "state.read",
+        "state.write"
+      ],
+      "ops": [
+        "state.rmw"
+      ],
+      "expect": "accept"
+    },
+    {
+      "name": "rmw_write_only_rejects_hidden_read",
+      "declared": [
+        "state.write"
+      ],
+      "ops": [
+        "state.rmw"
+      ],
+      "expect": "reject"
+    },
+    {
+      "name": "blocking_channel_needs_suspend_and_block",
+      "declared": [
+        "suspend",
+        "block"
+      ],
+      "ops": [
+        "channel.blocking"
+      ],
+      "expect": "accept"
+    },
+    {
+      "name": "blocking_channel_suspend_only",
+      "declared": [
+        "suspend"
+      ],
+      "ops": [
+        "channel.blocking"
+      ],
+      "expect": "reject"
+    },
+    {
+      "name": "nonblocking_channel_not_block",
+      "declared": [
+        "suspend"
+      ],
+      "ops": [
+        "channel.nonblocking"
+      ],
+      "expect": "accept"
+    },
+    {
+      "name": "sync_stdio_is_io_and_block",
+      "declared": [
+        "io",
+        "block"
+      ],
+      "ops": [
+        "stdio.sync"
+      ],
+      "expect": "accept"
+    },
+    {
+      "name": "sync_stdio_io_only",
+      "declared": [
+        "io"
+      ],
+      "ops": [
+        "stdio.sync"
+      ],
+      "expect": "reject"
+    },
+    {
+      "name": "throw_distinct",
+      "declared": [
+        "throw"
+      ],
+      "ops": [
+        "throw"
+      ],
+      "expect": "accept"
+    },
+    {
+      "name": "raise_not_throw",
+      "declared": [
+        "throw"
+      ],
+      "ops": [
+        "raise"
+      ],
+      "expect": "reject"
+    },
+    {
+      "name": "panic_not_raise",
+      "declared": [
+        "raise"
+      ],
+      "ops": [
+        "panic"
+      ],
+      "expect": "reject"
+    },
+    {
+      "name": "trap_rejects_throw",
+      "declared": [
+        "throw"
+      ],
+      "ops": [
+        "throw"
+      ],
+      "context": "trap",
+      "expect": "reject"
+    },
+    {
+      "name": "trap_does_not_relabel_raise",
+      "declared": [
+        "raise"
+      ],
+      "ops": [
+        "raise"
+      ],
+      "context": "trap",
+      "expect": "accept"
+    },
+    {
+      "name": "read_loan_cannot_write",
+      "declared": [
+        "state.read",
+        "state.write"
+      ],
+      "ops": [
+        "state.write"
+      ],
+      "context": "state.read",
+      "expect": "reject"
+    },
+    {
+      "name": "live_state_loan_cannot_suspend",
+      "declared": [
+        "state.read",
+        "suspend"
+      ],
+      "ops": [
+        "state.read",
+        "cooperate"
+      ],
+      "context": "state.read",
+      "expect": "reject"
+    },
+    {
+      "name": "unknown_call_fails_closed",
+      "declared": [
+        "state.read",
+        "state.write",
+        "suspend",
+        "io",
+        "alloc",
+        "block",
+        "ffi",
+        "throw",
+        "raise",
+        "panic"
+      ],
+      "ops": [
+        "unknown.call"
+      ],
+      "expect": "reject"
+    }
+  ]
+}
