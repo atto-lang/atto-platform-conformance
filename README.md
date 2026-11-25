@@ -408,3 +408,7 @@ This is **not** native AttoLang codec execution or five-backend runtime parity e
 ### Optional real H.264 host-codec integration
 
 `tests/media-replay-ffmpeg-v1.test.mjs` generates 30 Annex-B H.264 frames using FFmpeg `libx264` with repeated SPS/PPS and IDR every 10 frames. It checks byte-identical replay after network interruption, decodes all 30 frames via `ffprobe`, and independently decodes 10 frames after a verified IDR restart. On hosts without FFmpeg/libx264/ffprobe it **reports an explicit skipped/unsupported case**, never a codec success. The local Node 22 test was actually executed against FFmpeg 7.1.5; this does not establish an Oreslang guest codec implementation.
+
+## New proposed contracts
+
+- [Bitwise operators v1](contracts/bitwise-operators-v1.json) — pinned portable `<<< >>> ashr`, integer bitwise and compound-assignment fixtures; backend execution remains NOT_EXECUTED.
