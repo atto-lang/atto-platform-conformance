@@ -1,0 +1,9 @@
+// Blocking procedural select, single always-ready arm.
+pub fnc main(): int {
+  do select over
+    default: {
+      return 42;
+    }
+  end
+  return 0;
+}
