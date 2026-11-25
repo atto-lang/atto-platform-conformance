@@ -1,0 +1,4 @@
+// PRELUDE V1 CANDIDATE: forge_some_function; profile=core; expected=compile_reject
+// Not an executed guest or compiler receipt.
+pub fnc Some(int value): int { return value; }
+pub fnc main(): int { return Some(42); }

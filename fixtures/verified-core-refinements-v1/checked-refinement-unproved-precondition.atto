@@ -1,0 +1,15 @@
+type Positive = i32 where self > 0;
+
+fnc read(int input) -> int {
+    return input;
+}
+
+fnc limited(Positive value) -> Positive
+    requires value >= 42
+{
+    return value;
+}
+
+pub fnc main() -> int {
+    return limited(read(42) as Positive);
+}

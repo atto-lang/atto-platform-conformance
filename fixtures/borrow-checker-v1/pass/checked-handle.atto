@@ -1,0 +1,13 @@
+// BCV1-031 checked_handle pass: target AttoLang semantics, NOT_EXECUTED.
+// Expected success and exit value 42.
+define class Parcel as pub let int value = 42; end
+pub fnc main(): int {
+  val original = new Parcel();
+  val handle = ref! original;
+  block {
+    val view = deref! handle;
+    stdio.println(view.value);
+  }
+  val restored = unref! handle;
+  return restored.value;
+}

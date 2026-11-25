@@ -1,0 +1,213 @@
+{
+  "schema": "atto.task-compiler-parity-admission.v1",
+  "scope": "typed Future<T>, reserved sync, task cancellation and exactly-once lock cleanup",
+  "evidence_grade": "SOURCE_ONLY",
+  "normative": "atto-lang/atto-spec/language/typed-task-payload-sync-v1.md",
+  "target_registry": "contracts/task-payload-sync-v1.json",
+  "source_cases": [
+    {
+      "id": "typed_payload_future",
+      "source_path": "fixtures/task-payload-sync-v1/typed_payload_future.atto",
+      "source_git_blob": "258a53480b652b7c0857a4f8a8d833649ca535be"
+    },
+    {
+      "id": "await_payload",
+      "source_path": "fixtures/task-payload-sync-v1/await_payload.atto",
+      "source_git_blob": "25ab1c9f741ed0bdc71478b5ffddee3525281e2d"
+    },
+    {
+      "id": "sync_payload",
+      "source_path": "fixtures/task-payload-sync-v1/sync_payload.atto",
+      "source_git_blob": "097b4c5e854231f84aa5ac8bde508f9c97f4b353"
+    },
+    {
+      "id": "discard_do_sync_task",
+      "source_path": "fixtures/task-payload-sync-v1/discard_do_sync_task.atto",
+      "source_git_blob": "4bed36abc94abfb7daa47bf0a6b1c0d497cb12f4"
+    },
+    {
+      "id": "sync_reserved",
+      "source_path": "fixtures/task-payload-sync-v1/sync_reserved.atto",
+      "source_git_blob": "27fec562c1de69431e3561bf3517e1d91894e497"
+    },
+    {
+      "id": "cancel_request_nonblocking",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_request_nonblocking.atto",
+      "source_git_blob": "7b9dee05c9ce843bb68e2325f4400d53b38ebef5"
+    },
+    {
+      "id": "cancel_lock_scoped_release",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_lock_scoped_release.atto",
+      "source_git_blob": "1aad3b3d75e87c80f6c306cec5af0203e71c03d1"
+    },
+    {
+      "id": "cancel_lock_nested_lifo",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_lock_nested_lifo.atto",
+      "source_git_blob": "4815985b1e1ad233a918760f867a17c4fc51ec62"
+    },
+    {
+      "id": "cancel_lock_await_inside_guard",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_lock_await_inside_guard.atto",
+      "source_git_blob": "65115806e916539c1abba7cd0dd7b7356548da97"
+    },
+    {
+      "id": "cancel_lock_guard_escape",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_lock_guard_escape.atto",
+      "source_git_blob": "d92895d54013fc50ce0c095aa421df2421043a50"
+    }
+  ],
+  "source_profiles": {
+    "rs-wasm": {
+      "repository": "atto-lang/atto-source.rs",
+      "pr_url": "https://github.com/atto-lang/atto-source.rs/pull/427",
+      "head_sha": "18a7bda3223197f47571a774ec5ad29c73aa0f40",
+      "source_file": "src/parser.rs",
+      "source_blob_sha": "975bebe114c87cdbc8fcb77ff66b7e6084de518e",
+      "profile": "RESERVED_SYNC_FAIL_CLOSED",
+      "status": "SOURCE_ONLY_NOT_EXECUTED",
+      "task_cancellation": "NOT_EXECUTED",
+      "guard_cleanup": "NOT_EXECUTED",
+      "compiled_guest": "NOT_EXECUTED",
+      "release_qualified": false
+    },
+    "llvm": {
+      "repository": "atto-lang/atto-source.llvm",
+      "pr_url": "https://github.com/atto-lang/atto-source.llvm/pull/72",
+      "head_sha": "8a2f4476c879038ec1f7a0a7db9dfb248b83c22a",
+      "source_file": "frontend/src/parser.rs",
+      "source_blob_sha": "1f5b266006b3a7f05c36399a0136920a6f353beb",
+      "profile": "RESERVED_SYNC_FAIL_CLOSED",
+      "status": "SOURCE_ONLY_NOT_EXECUTED",
+      "task_cancellation": "NOT_EXECUTED",
+      "guard_cleanup": "NOT_EXECUTED",
+      "compiled_guest": "NOT_EXECUTED",
+      "release_qualified": false
+    },
+    "java": {
+      "repository": "atto-lang/atto-source.java",
+      "pr_url": "https://github.com/atto-lang/atto-source.java/pull/59",
+      "head_sha": "35339c0df48fe42d2dd450495979732e285ce803",
+      "source_file": "src/compiler/asyncv1/AttoAsyncV1Compiler.java",
+      "source_blob_sha": "a7e4f4d24bd1a1105229a443f2527b7ead210189",
+      "profile": "CLOSED_WORLD_COMPLETED_FUTURE_INT_SOURCE_PROFILE",
+      "status": "SOURCE_ONLY_NOT_EXECUTED",
+      "task_cancellation": "NOT_EXECUTED",
+      "guard_cleanup": "NOT_EXECUTED",
+      "compiled_guest": "NOT_EXECUTED",
+      "release_qualified": false
+    },
+    "net": {
+      "repository": "atto-lang/atto-source.net",
+      "pr_url": "https://github.com/atto-lang/atto-source.net/pull/30",
+      "head_sha": "5d7fddb83bd950430ca33b35cdbbd93dce86fe26",
+      "source_file": "compiler/Atto.Cil.Compiler/Program.cs",
+      "source_blob_sha": "cc7fb9c126d13853ea7d36c9fb2e79b331371a24",
+      "profile": "RESERVED_SYNC_FAIL_CLOSED",
+      "status": "SOURCE_ONLY_NOT_EXECUTED",
+      "task_cancellation": "NOT_EXECUTED",
+      "guard_cleanup": "NOT_EXECUTED",
+      "compiled_guest": "NOT_EXECUTED",
+      "release_qualified": false
+    },
+    "cranelift": {
+      "repository": "atto-lang/atto-source.cranelift",
+      "pr_url": "https://github.com/atto-lang/atto-source.cranelift/pull/54",
+      "head_sha": "45d1393cbb53ba8a22624961f1a96d3e479aaaa6",
+      "source_file": "src/frontend.rs",
+      "source_blob_sha": "7499e10aa85c8b5a9c35d9122ea0619147312d1e",
+      "profile": "TRUSTED_INLINE_SCALAR_VOID_ONLY_SOURCE_ADMISSION",
+      "status": "SOURCE_AND_LIMITED_NATIVE_EXECUTED",
+      "task_cancellation": "NOT_EXECUTED",
+      "guard_cleanup": "NOT_EXECUTED",
+      "compiled_guest": "NOT_EXECUTED",
+      "release_qualified": false,
+      "restricted_native_receipt": {
+        "status": "EXECUTED_LIMITED_SCALAR_ONLY",
+        "source_tree_sha": "efe01c501492b2b225f71e8c4896be9ace807523",
+        "carrier_repo": "r2g-test/atto-ci",
+        "carrier_commit_sha": "57053e4bb0718566000b600df803c15b6f7ad715",
+        "carrier_run": "https://github.com/r2g-test/atto-ci/actions/runs/44813387081",
+        "verified_git_blobs": 171,
+        "rust_toolchain": "1.99.1",
+        "cargo_tests_passed": 394,
+        "cargo_test_groups_passed": 58,
+        "cargo_test_exit": 0,
+        "cargo_clippy_exit": 0,
+        "cargo_fmt_exit": 0,
+        "rustfmt_updated_files": 26,
+        "native_positive_cases": 3,
+        "native_rejection_cases": 8,
+        "checked_division_error_no_output": true,
+        "nested_task_budget_checked": true,
+        "oversized_source_budget_checked": true,
+        "full_task_cancel_borrow_tenant_vm": "NOT_EXECUTED",
+        "release_qualified": false
+      }
+    },
+    "forge": {
+      "repository": "atto-lang/atto-source.forge",
+      "pr_url": "https://github.com/atto-lang/atto-source.forge/pull/52",
+      "head_sha": "33110d1577369ec0115826e7b4cfc30b93956ff4",
+      "source_file": "include/atto/scalar_parser.hpp",
+      "source_blob_sha": "4ade67b1c2399b01852b879140e0dac44a740c1c",
+      "profile": "RESERVED_SYNC_FAIL_CLOSED",
+      "status": "SOURCE_ONLY_NOT_EXECUTED",
+      "task_cancellation": "NOT_EXECUTED",
+      "guard_cleanup": "NOT_EXECUTED",
+      "compiled_guest": "NOT_EXECUTED",
+      "release_qualified": false
+    },
+    "independent-wasm": {
+      "repository": "atto-lang/atto-source.wasm",
+      "profile": "NO_RECONCILED_COMPILER_TASK_BRIDGE",
+      "status": "NOT_EXECUTED",
+      "task_cancellation": "NOT_EXECUTED",
+      "guard_cleanup": "NOT_EXECUTED",
+      "compiled_guest": "NOT_EXECUTED",
+      "release_qualified": false
+    },
+    "js": {
+      "repository": "atto-lang/atto-source.js",
+      "profile": "NO_RECONCILED_COMPILER_TASK_BRIDGE",
+      "status": "NOT_EXECUTED",
+      "task_cancellation": "NOT_EXECUTED",
+      "guard_cleanup": "NOT_EXECUTED",
+      "compiled_guest": "NOT_EXECUTED",
+      "release_qualified": false
+    },
+    "atto": {
+      "repository": "atto-lang/atto-source.atto",
+      "profile": "NO_RECONCILED_COMPILER_TASK_BRIDGE",
+      "status": "NOT_EXECUTED",
+      "task_cancellation": "NOT_EXECUTED",
+      "guard_cleanup": "NOT_EXECUTED",
+      "compiled_guest": "NOT_EXECUTED",
+      "release_qualified": false
+    },
+    "hdl": {
+      "repository": "atto-lang/atto-source.hdl",
+      "profile": "NO_RECONCILED_COMPILER_TASK_BRIDGE",
+      "status": "NOT_EXECUTED",
+      "task_cancellation": "NOT_EXECUTED",
+      "guard_cleanup": "NOT_EXECUTED",
+      "compiled_guest": "NOT_EXECUTED",
+      "release_qualified": false
+    },
+    "realtime": {
+      "repository": "atto-lang/atto-source.realtime",
+      "profile": "BOOTSTRAP_ONLY_NO_COMPILER_OR_RUNTIME",
+      "status": "NOT_EXECUTED",
+      "task_cancellation": "NOT_EXECUTED",
+      "guard_cleanup": "NOT_EXECUTED",
+      "compiled_guest": "NOT_EXECUTED",
+      "release_qualified": false
+    }
+  },
+  "notes": [
+    "A source-only or host-only check MUST NOT set compiled guest PASS.",
+    "The Java profile is only a closed-world already-completed int Future pipeline, not general task/async/lock support.",
+    "Unsupported backends must reject task syntax before native guest artifact emission, not silently block or inline.",
+    "The normative distinctions are: task<T> creates Future<T>; await task<T> spawns and joins; sync task<T> is inline on the caller; do sync task accepts void only, never aliases do task or discards nonvoid; verified cancellation and lock cleanup still require executed tests.",
+    "Every backend requires exact-head compiler binary plus guest execution, cancellation race, reverse lock unwind, verified physical child retirement, and TenantVM isolation receipts."
+  ]
+}

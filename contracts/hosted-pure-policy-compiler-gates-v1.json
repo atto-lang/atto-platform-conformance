@@ -1,0 +1,69 @@
+{
+  "schema": "atto.guest_conformance.hosted_pure_policy_compiler_candidates.v1",
+  "status": "ALL_NOT_EXECUTED",
+  "distinguish_from": "stdlib.http_fs.roundtrip",
+  "explanation": "Independent compiler-backed pure policy admission candidates. Source and CI gates are committed, but no current-head executed compiler/guest receipts. Does not imply package linking, network, disk, async or tenant isolation.",
+  "canonical_source_blobs": {
+    "stdlib/std/http_response_policy.atto": "22757dafe89bc9601d04c8726a09ddf676206c7e",
+    "stdlib/std/fs_text_policy.atto": "0cd53216e91ef8de1a764ba5b80ce85c5796c1f2"
+  },
+  "cross_backend_guest_fixtures": [
+    {
+      "kind": "boundaries_and_short_circuit",
+      "git_blob": "0153665aac3e7cc51c8ac3412a11c0ab51cbb6be"
+    },
+    {
+      "kind": "all_56_signed_i64_policy_vectors",
+      "git_blob": "fab89196d07080d9ec2a9902220b82a5f13e7bff",
+      "vector_registry": "atto-lang/atto-compilers-parity-testing/contracts/v1/hosted-io-pure-policy-vectors-v1.json"
+    },
+    {
+      "kind": "rust_wasm_same_56_vectors_with_sealed_pkg_imports",
+      "git_blob": "f1df2fd99010cc0f14c0e031c522f89631f048e2",
+      "note": "Qualified std.http/std.fs calls differ from single-file LLVM/.NET entry, but vector IDs, signed i64 args and outcomes match."
+    }
+  ],
+  "backends": [
+    {
+      "backend": "llvm",
+      "pull_request": "https://github.com/atto-lang/atto-source.llvm/pull/67",
+      "execution": "NOT_EXECUTED",
+      "compiler": "atto-llvm Rust-fronted independent LLVM native AOT",
+      "source_path": "fixtures/hosted-policy-vectors-main.atto",
+      "command": "bash ci/test_hosted_policy_guest.sh",
+      "expected": "LLVM IR, Clang O2 ELF exit 42, ASan/UBSan native guest exit 42, unsupported async I/O emits no IR",
+      "supported_scope": "native pure-policy function calls, comparisons and bounded guarded arithmetic"
+    },
+    {
+      "backend": "net",
+      "pull_request": "https://github.com/atto-lang/atto-source.net/pull/23",
+      "execution": "NOT_EXECUTED",
+      "compiler": "Atto.Cil.Compiler -> generated ECMA-335 CIL -> CoreCLR and .NET NativeAOT",
+      "source_path": "fixtures/cil/hosted-policy-vectors-main.atto",
+      "command": "bash scripts/test-cil-guest.sh",
+      "expected": "CoreCLR guest exit 42 and fresh NativeAOT guest exit 42, type/unknown-function negatives without DLL",
+      "supported_scope": "native bool functions, guarded return, typed comparisons, checked signed i64"
+    },
+    {
+      "backend": "rs",
+      "pull_request": "https://github.com/atto-lang/atto-source.rs/pull/412",
+      "execution": "NOT_EXECUTED",
+      "compiler": "Rust Atto browser compiler -> Wasm",
+      "source_path": "tests/hosted_io_pure_policy_guest.mjs",
+      "command": "cargo test --locked --test hosted_std_policy_imports && cargo build --locked --release --bin attoc && node tests/hosted_io_pure_policy_guest.mjs",
+      "expected": "sealed pkg import guest main() returns 42n, no host imports, fail-closed unsupported async HTTP/FS; independent 56-vector native Atto sealed-import guest returns 42n",
+      "supported_scope": "sealed pure-policy std package imports on single-file/compiler path",
+      "additional_source_fixture": "tests/fixtures/hosted_policy_56_sealed_imports.atto",
+      "additional_source_git_blob": "f1df2fd99010cc0f14c0e031c522f89631f048e2"
+    }
+  ],
+  "full_http_fs_guest_execution": "NOT_EXECUTED",
+  "certification_requirements": [
+    "verified_exact_pr_head_and_source_blobs",
+    "successful_executed_nonzero_ci_steps",
+    "compiled_atto_guest_witness",
+    "negative_fail_closed_no_artifact",
+    "independent_backend_receipt",
+    "full_runtime_roundtrip_verified_separately"
+  ]
+}

@@ -1,0 +1,63 @@
+name: Atto core slice/error v2 source-free oracle (NON-GUEST)
+on:
+  pull_request:
+    paths:
+      - 'contracts/core-slice-error-v2.json'
+      - 'fixtures/core-slice-error-v2/**'
+      - 'tests/core-slice-error-v2.test.mjs'
+      - 'docs/core-slice-error-v2.md'
+      - '.github/workflows/core-slice-error-v2-oracle.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: core-slice-error-oracle-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source-free-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout immutable source HEAD
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Validate exact source and fixture blobs
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          test -z "$(git status --porcelain)"
+          for path in \
+            contracts/core-slice-error-v2.json \
+            tests/core-slice-error-v2.test.mjs \
+            fixtures/core-slice-error-v2/borrow-copy-positive.atto \
+            fixtures/core-slice-error-v2/borrow-copy-exclusive-negative.atto \
+            fixtures/core-slice-error-v2/borrow-copy-moved-negative.atto; do
+            test "$(git hash-object "$path")" = "$(git rev-parse "HEAD:$path")"
+          done
+          echo "SLICE_ERROR_ORACLE_EXACT_HEAD=$EXPECTED_HEAD"
+          echo "SLICE_ERROR_ORACLE_EXACT_TREE=$(git rev-parse 'HEAD^{tree}')"
+      - name: Install Node 22 (source-free model only)
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Run candidate BigInt and fixture-shape oracle
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test tests/core-slice-error-v2.test.mjs
+          echo 'ATTO_SLICE_ERROR_ORACLE=SOURCE_FREE_ONLY'
+          echo 'ATTO_SLICE_ERROR_ATTO_GUEST=NOT_EXECUTED'
+      - name: Report evidence boundary
+        if: always()
+        shell: bash
+        run: |
+          echo 'Source-free BigInt/static fixture verification only. Does NOT compile or run .atto.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Never promote compiler parity, borrowing safety or Error identity from this job.' >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,7 @@
+// BCV1-001 scalar_value pass: target AttoLang semantics, NOT_EXECUTED.
+// Expected success and exit value 42.
+fnc add_one(int x): int { return x + 1; }
+pub fnc main(): int {
+  val int original = 41;
+  return add_one(original);
+}

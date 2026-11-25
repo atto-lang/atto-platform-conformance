@@ -1,0 +1,18 @@
+// EXPECTED: 42 from recover; 17 would mean trap illegally caught raise.
+// This is legacy Option-returning trap, not canonical Result trap!.
+fnc int • maybe_escalate(int n)
+raises Error ::
+  if n > 3 then
+    raise! Error("trap cannot intercept raised fault");
+  fi
+  return n;
+end
+
+pub fnc main(): int raises Error {
+  recover |reason, cursor| -> {
+    if reason.is_raise then return 42; fi
+    return 0;
+  };
+  val Option<int> value = trap maybe_escalate(4);
+  return 17;
+}

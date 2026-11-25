@@ -1,0 +1,11 @@
+// expect-exit: 7
+define class Foo as
+    pub val int n = 7;
+end
+pub fnc fresh(): new Foo {
+    return new Foo();
+}
+pub fnc main(): int {
+    val Foo x = fresh();
+    return x.n;
+}

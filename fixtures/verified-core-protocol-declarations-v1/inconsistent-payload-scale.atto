@@ -1,0 +1,13 @@
+define dimension Time;
+define unit Second: Time;
+define unit Millis: Time = Second / 1000;
+type Seconds = i32 where self > 0 and units in Second;
+type Milliseconds = i32 where self > 0 and units in Millis;
+
+define protocol Connection as
+    initial Waiting;
+    Waiting -> Ready on connect(Seconds duration);
+    Ready -> Waiting on connect(Milliseconds duration);
+end
+
+pub fnc main() -> int { return 42; }

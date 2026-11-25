@@ -1,0 +1,7 @@
+// Candidate guest source: integer remainder by zero is division_by_zero.
+pub fnc checked(int divisor): int {
+  return Integer.rem(7, divisor);
+}
+pub fnc main(): int {
+  return checked(0);
+}
