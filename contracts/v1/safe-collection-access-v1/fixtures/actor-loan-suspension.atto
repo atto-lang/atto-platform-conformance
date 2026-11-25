@@ -1,0 +1,8 @@
+// expect-error: E_LOAN_SUSPEND (semantic, not parser rejection)
+// A live collection loan cannot silently survive suspension or another actor turn.
+suspends fnc inspect(Array[int] values) -> int {
+  val read = values.get(0);
+  await sleep(1);
+  return read.is_some() ? 42 : 0;
+}
+pub fnc main() -> int { return 42; }
