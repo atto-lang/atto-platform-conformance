@@ -1,0 +1,27 @@
+name: Explicit local initialization contract
+on:
+  push:
+    paths:
+      - 'contracts/explicit-local-initialization-v1.json'
+      - 'fixtures/explicit-initialization-v1/**'
+      - 'tests/explicit-local-initialization-v1.test.mjs'
+      - '.github/workflows/explicit-local-initialization-v1.yml'
+  pull_request:
+    paths:
+      - 'contracts/explicit-local-initialization-v1.json'
+      - 'fixtures/explicit-initialization-v1/**'
+      - 'tests/explicit-local-initialization-v1.test.mjs'
+      - '.github/workflows/explicit-local-initialization-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Validate exact fixture blobs and backend status claims
+        run: node --test tests/explicit-local-initialization-v1.test.mjs

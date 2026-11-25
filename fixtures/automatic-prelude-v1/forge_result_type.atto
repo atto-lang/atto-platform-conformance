@@ -1,0 +1,6 @@
+// PRELUDE V1 CANDIDATE: forge_result_type; profile=core; expected=compile_reject
+// Not an executed guest or compiler receipt.
+define class Result as
+  pub val int value = 42;
+end
+pub fnc main(): int { return 42; }

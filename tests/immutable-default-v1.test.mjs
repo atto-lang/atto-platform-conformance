@@ -9,14 +9,16 @@ import {fileURLToPath} from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const manifestPath = path.join(root, "contracts/immutable-default-v1.json");
 const canonical = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
-const five = ["java", "llvm", "wasm", "cranelift", "net"];
+const five = ["java", "llvm", "wasm", "net", "forge"];
+const optional = ["cranelift"];
 
 function validate(data, verifyFiles = true) {
   assert.equal(data.schemaVersion, 1);
   assert.equal(data.contract, "ores.immutable-default/v1");
   assert.equal(data.status, "authored-fixtures-only-NOT-executed");
   assert.deepEqual(data.backends, five);
-  assert.deepEqual(Object.keys(data.backendCapabilities).sort(), [...five].sort());
+  assert.deepEqual(data.optionalBackends, optional);
+  assert.deepEqual(Object.keys(data.backendCapabilities).sort(), [...five, ...optional].sort());
   for (const state of Object.values(data.backendCapabilities)) {
     assert.match(state, /^(candidate-on-unverified-draft|llvm-frontend-delegated-guest-not-verified|native-i64-draft-unverified|shipping-parser-unsupported)$/);
   }
@@ -38,6 +40,8 @@ function validate(data, verifyFiles = true) {
     assert.ok(entry.source.length > 15 && entry.source.length <= 4096);
     assert.match(entry.source, /^fnc main(\(\)|\(int x\)): int \{ /);
     assert.ok(entry.source.endsWith("}\n"));
+    if (entry.id === "IDB-19") assert.deepEqual(entry.args_i64, ["7"]);
+    else assert.equal(entry.args_i64, undefined);
     if (entry.expect === "accept") {
       accept++;
       assert.match(entry.oracle, /^-?[0-9]+$/);
@@ -57,8 +61,8 @@ function validate(data, verifyFiles = true) {
       assert.equal(fs.readFileSync(resolved, "utf8"), entry.source, "source bytes must match pinned manifest");
     }
   }
-  assert.equal(accept, 12);
-  assert.equal(reject, 19);
+  assert.equal(accept, 14);
+  assert.equal(reject, 17);
   assert.equal(trap, 1);
 }
 
@@ -73,7 +77,10 @@ test("immutable default corpus: mutation controls are rejected", () => {
     assert.throws(() => validate(data, false), name);
   }
   mutation("claimed executable evidence", d => { d.status = "verified"; });
-  mutation("backend substituted", d => { d.backends[0] = "forge"; });
+  mutation("backend substituted", d => { d.backends[0] = "cranelift"; });
+  mutation("Forge missing", d => { d.backends.pop(); });
+  mutation("Cranelift falsely promoted", d => { d.optionalBackends = []; });
+  mutation("Forge falsely certified", d => { d.backendCapabilities.forge = "passed"; });
   mutation("unknown backend capacity", d => { d.backendCapabilities.llvm = "passed"; });
   mutation("deleted case", d => { d.cases.pop(); });
   mutation("duplicate case", d => { d.cases[1].id = d.cases[0].id; });
@@ -83,6 +90,9 @@ test("immutable default corpus: mutation controls are rejected", () => {
   mutation("false expected pass", d => { d.cases[6].expect = "accept"; });
   mutation("lost diagnostic oracle", d => { d.cases[6].oracle = ""; });
   mutation("trap reclassified as success", d => { d.cases[16].expect = "accept"; });
+  mutation("runtime const wrongly rejected", d => { d.cases[18].expect = "reject"; });
+  mutation("runtime const arg missing", d => { d.cases[18].args_i64 = []; });
+  mutation("runtime const unexpected arg", d => { d.cases[19].args_i64 = ["7"]; });
   mutation("mismatched schema", d => { d.schemaVersion = 2; });
   mutation("unknown backend", d => { d.backendCapabilities.extra = "native-i64-draft-unverified"; });
   mutation("unsafe fixture path", d => { d.cases[0].file = "fixtures/immutable-default/v1/../typed-default.ores"; });

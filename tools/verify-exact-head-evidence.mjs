@@ -35,7 +35,10 @@ export function evaluateEvidence(input) {
   if (run.event === 'pull_request' && run.head_sha !== expected.head_sha) {
     return fail('PR workflow head mismatch');
   }
-  if (run.event === 'workflow_dispatch') {
+  // Only completed successful dispatches can produce a runner-generated checkout
+  // receipt. Requiring it on a zero-step failed dispatch would make an actual
+  // pre-runner admission failure impossible to classify.
+  if (run.event === 'workflow_dispatch' && run.conclusion === 'success') {
     // Dispatch runs normally have main's head_sha, not the target PR head.
     // A runner-produced checkout receipt is therefore mandatory.
     if (!checkout || checkout.run_id !== run.id || checkout.attempt !== run.run_attempt ||

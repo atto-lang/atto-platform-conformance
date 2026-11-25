@@ -1,0 +1,5 @@
+// TARGET fixture — lexical capture of an immutable local.
+pub fnc main() -> int ::
+  let int offset: 20
+  return (|int x| -> x + offset)(22)
+end

@@ -1,0 +1,124 @@
+{
+  "version": "atto-adt-nominal-ownership-v1",
+  "status": "contract-only-not-executed",
+  "targetBackends": [
+    "java",
+    "llvm",
+    "net",
+    "wasm",
+    "forge",
+    "cranelift"
+  ],
+  "confirmedBackends": [],
+  "executableParityCertified": false,
+  "cases": [
+    {
+      "id": "nullary-value",
+      "file": "nullary-value.atto",
+      "gitBlobSha1": "b57697ffa7b71eac77e87a2762e865f4639c81dc",
+      "outcome": "accept",
+      "expectedStdout": "true\n",
+      "confirmedBackends": [],
+      "executableParityCertified": false
+    },
+    {
+      "id": "payload-exhaustive",
+      "file": "payload-exhaustive.atto",
+      "gitBlobSha1": "8a6a20fbfbe84ae4ad18c6c893b2a82a555cba2d",
+      "outcome": "accept",
+      "expectedStdout": "7\n",
+      "confirmedBackends": [],
+      "executableParityCertified": false
+    },
+    {
+      "id": "nested-owner",
+      "file": "nested-owner.atto",
+      "gitBlobSha1": "4df72420fd83b1fe09332d42876d89a59107a518",
+      "outcome": "accept",
+      "expectedStdout": "true\n",
+      "confirmedBackends": [],
+      "executableParityCertified": false
+    },
+    {
+      "id": "duplicate-tag",
+      "file": "duplicate-tag.atto",
+      "gitBlobSha1": "792fd44c429e50a8577123f9fecc678efdec9d71",
+      "outcome": "reject",
+      "rejectKind": "duplicate-tag",
+      "confirmedBackends": [],
+      "executableParityCertified": false
+    },
+    {
+      "id": "duplicate-case",
+      "file": "duplicate-case.atto",
+      "gitBlobSha1": "2b596409374bb3d93fcbf78cb641ce0f9fee4fea",
+      "outcome": "reject",
+      "rejectKind": "duplicate-case",
+      "confirmedBackends": [],
+      "executableParityCertified": false
+    },
+    {
+      "id": "foreign-case-pattern",
+      "file": "foreign-case-pattern.atto",
+      "gitBlobSha1": "4bbe50455ebd633602be3a14dd3744a23799e728",
+      "outcome": "reject",
+      "rejectKind": "foreign-owner",
+      "confirmedBackends": [],
+      "executableParityCertified": false
+    },
+    {
+      "id": "wrong-payload-type",
+      "file": "wrong-payload-type.atto",
+      "gitBlobSha1": "6445603141b14ac9bcadd15f7693f26056e79de6",
+      "outcome": "reject",
+      "rejectKind": "payload-type",
+      "confirmedBackends": [],
+      "executableParityCertified": false
+    },
+    {
+      "id": "nullary-extra-argument",
+      "file": "nullary-extra-argument.atto",
+      "gitBlobSha1": "7554587bb3b85e1d20f4c356a5c5cec83a50ae9d",
+      "outcome": "reject",
+      "rejectKind": "constructor-arity",
+      "confirmedBackends": [],
+      "executableParityCertified": false
+    },
+    {
+      "id": "nonexhaustive",
+      "file": "nonexhaustive.atto",
+      "gitBlobSha1": "26b90b015f0b027dd51cc4428baae75682398f19",
+      "outcome": "reject",
+      "rejectKind": "exhaustiveness",
+      "confirmedBackends": [],
+      "executableParityCertified": false
+    },
+    {
+      "id": "guarded-not-exhaustive",
+      "file": "guarded-not-exhaustive.atto",
+      "gitBlobSha1": "abafa14100a5fd5f72ef8098cfabf5a0905f8112",
+      "outcome": "reject",
+      "rejectKind": "guarded-coverage",
+      "confirmedBackends": [],
+      "executableParityCertified": false
+    },
+    {
+      "id": "direct-unboxed-recursion",
+      "file": "direct-unboxed-recursion.atto",
+      "gitBlobSha1": "8e5238183a0e94584a82ad7552980fbd869e06d1",
+      "outcome": "reject",
+      "rejectKind": "unboxed-cycle",
+      "confirmedBackends": [],
+      "executableParityCertified": false
+    },
+    {
+      "id": "double-move-nominal",
+      "file": "double-move-nominal.atto",
+      "gitBlobSha1": "51ad0d61a3e0b5b875b509aeb79d7609c19f6b60",
+      "outcome": "reject",
+      "rejectKind": "move-after-move",
+      "confirmedBackends": [],
+      "executableParityCertified": false
+    }
+  ]
+}

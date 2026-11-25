@@ -1,0 +1,11 @@
+// atto-ownership: borrow-default-v1
+// BCV1-004 implicit_borrow fail: source invalidated by explicit consuming formal, NOT_EXECUTED at this head.
+// expect-error: E_MOVED
+define class Meter as pub let int reading = 42; end
+fnc consume(take! Meter x): int { return x.reading; }
+fnc inspect(Meter x): int { return x.reading; }
+pub fnc main(): int {
+  let original = new Meter();
+  val consumed = consume(take! original);
+  return consumed + inspect(original);
+}

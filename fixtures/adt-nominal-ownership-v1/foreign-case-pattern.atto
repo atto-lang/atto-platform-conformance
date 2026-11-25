@@ -1,0 +1,13 @@
+define enum A as
+  Ready = 1
+end
+define enum B as
+  Ready = 1
+end
+
+fnc classify(A value): int {
+  match value over
+    on B.Ready -> { return 1; }
+    on A.Ready -> { return 0; }
+  end
+}

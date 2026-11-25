@@ -1,0 +1,8 @@
+pub susp fnc main(): int {
+  val int value = sync task<int> {
+    stdio.println(7);
+    return 42;
+  };
+  stdio.println(9);
+  return value;
+}

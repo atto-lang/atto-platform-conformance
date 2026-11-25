@@ -1,0 +1,7 @@
+// expect-error: E_USE_AFTER_MOVE (semantic, not parser rejection)
+// A moved collection remains inaccessible even when a checked miss would be None.
+pub fnc main() -> int {
+  let values = [42];
+  val transferred = rt take values;
+  return values.get_copy(-1).unwrap_or(42);
+}

@@ -22,14 +22,14 @@ jobs:
           with open(os.environ["GH_EVENT_PATH"], encoding="utf-8") as f:
               payload = json.load(f)
           base = payload.get("repository") or {}
-          if base.get("full_name") != repository or repository != "ores-truffle-oreslang/oreslang-platform-conformance":
+          if base.get("full_name") != repository or repository != "atto-lang/atto-platform-conformance":
               sys.exit("UNTRUSTED_WORKFLOW_BASE")
-          if type(base.get("id")) is not int or base.get("id") != 1413795502:
+          if type(base.get("id")) is not int or base.get("id") != 1448719136:
               sys.exit("UNTRUSTED_IMMUTABLE_REPOSITORY_ID")
           if name == "pull_request":
               head = ((payload.get("pull_request") or {}).get("head") or {}).get("repo") or {}
               if (head.get("full_name") != repository or
-                      type(head.get("id")) is not int or head.get("id") != 1413795502):
+                      type(head.get("id")) is not int or head.get("id") != 1448719136):
                   sys.exit("FOREIGN_PULL_REQUEST_HEAD_DENIED")
           elif name != "workflow_dispatch":
               sys.exit("UNSUPPORTED_WORKFLOW_EVENT")
@@ -45,7 +45,7 @@ jobs:
         run: |
           test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
       - name: Execute source-free offline gate regression tests
-        run: python3 -m unittest discover -v -s tools/platform_readiness -p test_readiness_gate.py
+        run: python3 -m unittest discover -v -s tools/platform_readiness -p 'test_*.py'
       - name: Clarify evidence boundary
         run: |
           echo "SOURCE_FREE_REFERENCE_ONLY=true"

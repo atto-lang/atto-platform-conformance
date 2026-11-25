@@ -1,0 +1,8 @@
+import module region from pkg "alloc.byte_region";
+import module bytes from pkg "std.byte_ops";
+
+pub fnc main(): int throws Error {
+  val left = region.ByteRegion.allocate_zeroed(3);
+  val right = region.ByteRegion.allocate_zeroed(3);
+  return bytes.bytes_equal(left, right) ? 1 : 0;
+}

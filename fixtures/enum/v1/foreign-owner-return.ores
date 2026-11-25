@@ -1,0 +1,9 @@
+define enum Alpha as
+    Ready = 1
+end
+define enum Beta as
+    Ready = 1
+end
+fnc invalid(): Alpha {
+    return Beta.Ready();
+}

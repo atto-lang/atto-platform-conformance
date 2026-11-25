@@ -1,0 +1,16 @@
+// Expected: compiled guest main() returns 42 (signed Any remains statically int).
+fnc classify(Any value): int {
+  match value over
+    on is int when value > 0 -> { return 0; }
+    on is int -> { return 42; }
+    on _ -> { return 0; }
+  end
+}
+
+pub fnc main(): int {
+  val value: Any = -9223372036854775808;
+  if value is int && value eq -9223372036854775808 then
+    return classify(value);
+  fi
+  return 0;
+}

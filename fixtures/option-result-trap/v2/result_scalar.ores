@@ -1,0 +1,40 @@
+// ORT2-RESULT_SCALAR: native guest assertions, not executed evidence
+
+fnc emit(bool yes): void {
+  if yes; then
+    stdio.stdout.write("1");
+  else
+    stdio.stdout.write("0");
+  fi
+  return;
+}
+pub fnc main(): void {
+  val Result<int,String> ok = Ok(11);
+  val Result<int,String> error = Err("fail");
+  val Result<Result<int,String>,String> nested = Ok(Err("nested"));
+  val Result<bool,String> false_result = Ok(false);
+  val Result<int,String> zero_result = Ok(0);
+  stdio.stdout.write("ORT2:result_scalar:");
+  // CHECK result_ok_tag
+  emit(ok.is_ok());
+  // CHECK result_ok_payload
+  emit(ok.unwrap() == 11);
+  // CHECK result_err_tag
+  emit(error.is_err());
+  // CHECK result_err_fallback
+  emit(error.unwrap_or(17) == 17);
+  // CHECK nested_outer_ok
+  emit(nested.is_ok());
+  // CHECK nested_inner_err
+  emit(nested.unwrap().is_err());
+  // CHECK ok_false_tag
+  emit(false_result.is_ok());
+  // CHECK ok_false_payload
+  emit(false_result.unwrap() == false);
+  // CHECK ok_zero_tag
+  emit(zero_result.is_ok());
+  // CHECK ok_zero_payload
+  emit(zero_result.unwrap() == 0);
+  stdio.stdout.write(":END");
+  return;
+}

@@ -1,0 +1,291 @@
+{
+  "schema_version": 1,
+  "contract": "atto-tuple-destructuring-v1",
+  "backend": "rust_browser_wasm",
+  "source_commit": "026739474d0702d55b02b9772f8b13a7c7b461b0",
+  "compiler": "atto-compiler-browser/attoc",
+  "guest": "node_webassembly",
+  "summary": {
+    "passed": 29,
+    "unsupported": 4
+  },
+  "cases": [
+    {
+      "id": "tuple-let-mut",
+      "expect": "accept",
+      "status": "passed",
+      "diagnostic": null,
+      "wasm_executed": true,
+      "reason": "compiled_and_executed_guest"
+    },
+    {
+      "id": "tuple-val-override",
+      "expect": "accept",
+      "status": "passed",
+      "diagnostic": null,
+      "wasm_executed": true,
+      "reason": "compiled_and_executed_guest"
+    },
+    {
+      "id": "tuple-all-explicit",
+      "expect": "accept",
+      "status": "passed",
+      "diagnostic": null,
+      "wasm_executed": true,
+      "reason": "compiled_and_executed_guest"
+    },
+    {
+      "id": "tuple-typed",
+      "expect": "accept",
+      "status": "passed",
+      "diagnostic": null,
+      "wasm_executed": true,
+      "reason": "compiled_and_executed_guest"
+    },
+    {
+      "id": "tuple-singleton",
+      "expect": "accept",
+      "status": "passed",
+      "diagnostic": null,
+      "wasm_executed": true,
+      "reason": "compiled_and_executed_guest"
+    },
+    {
+      "id": "tuple-discard",
+      "expect": "accept",
+      "status": "passed",
+      "diagnostic": null,
+      "wasm_executed": true,
+      "reason": "compiled_and_executed_guest"
+    },
+    {
+      "id": "tuple-empty-root",
+      "expect": "accept",
+      "status": "passed",
+      "diagnostic": null,
+      "wasm_executed": true,
+      "reason": "compiled_and_executed_guest"
+    },
+    {
+      "id": "tuple-constexpr-component",
+      "expect": "accept",
+      "status": "passed",
+      "diagnostic": null,
+      "wasm_executed": true,
+      "reason": "compiled_and_executed_guest"
+    },
+    {
+      "id": "tuple-root-alias",
+      "expect": "accept",
+      "status": "passed",
+      "diagnostic": null,
+      "wasm_executed": true,
+      "reason": "compiled_and_executed_guest"
+    },
+    {
+      "id": "tuple-root-object-loan",
+      "expect": "accept",
+      "status": "unsupported",
+      "diagnostic": "E_UNSUPPORTED_TYPE",
+      "wasm_executed": false,
+      "reason": "compiler_subset_unavailable"
+    },
+    {
+      "id": "tuple-const-from-runtime",
+      "expect": "reject",
+      "status": "passed",
+      "diagnostic": "E_CONST",
+      "wasm_executed": false,
+      "reason": "expected_diagnostic"
+    },
+    {
+      "id": "tuple-const-mut-scalar",
+      "expect": "reject",
+      "status": "passed",
+      "diagnostic": "E_CONST_MUT_TARGET",
+      "wasm_executed": false,
+      "reason": "expected_diagnostic"
+    },
+    {
+      "id": "tuple-arity-mismatch",
+      "expect": "reject",
+      "status": "passed",
+      "diagnostic": "E_ARITY",
+      "wasm_executed": false,
+      "reason": "expected_diagnostic"
+    },
+    {
+      "id": "tuple-name-duplicate",
+      "expect": "reject",
+      "status": "passed",
+      "diagnostic": "E_DUPLICATE",
+      "wasm_executed": false,
+      "reason": "expected_diagnostic"
+    },
+    {
+      "id": "tuple-root-name-collision",
+      "expect": "reject",
+      "status": "passed",
+      "diagnostic": "E_DUPLICATE",
+      "wasm_executed": false,
+      "reason": "expected_diagnostic"
+    },
+    {
+      "id": "tuple-without-binding-mode",
+      "expect": "reject",
+      "status": "passed",
+      "diagnostic": "E_SYNTAX",
+      "wasm_executed": false,
+      "reason": "expected_diagnostic"
+    },
+    {
+      "id": "tuple-val-reassign",
+      "expect": "reject",
+      "status": "passed",
+      "diagnostic": "E_IMMUTABLE",
+      "wasm_executed": false,
+      "reason": "expected_diagnostic"
+    },
+    {
+      "id": "tuple-let-alias-reassign-after-last-use",
+      "expect": "accept",
+      "status": "passed",
+      "diagnostic": null,
+      "wasm_executed": true,
+      "reason": "compiled_and_executed_guest"
+    },
+    {
+      "id": "tuple-readonly-referent",
+      "expect": "reject",
+      "status": "unsupported",
+      "diagnostic": "E_UNSUPPORTED_TYPE",
+      "wasm_executed": false,
+      "reason": "object_tuple_loan_model_not_implemented"
+    },
+    {
+      "id": "tuple-alias-overlap",
+      "expect": "reject",
+      "status": "unsupported",
+      "diagnostic": "E_UNSUPPORTED_TYPE",
+      "wasm_executed": false,
+      "reason": "object_tuple_loan_model_not_implemented"
+    },
+    {
+      "id": "tuple-nested-unsupported",
+      "expect": "reject",
+      "status": "passed",
+      "diagnostic": "E_SYNTAX",
+      "wasm_executed": false,
+      "reason": "expected_diagnostic"
+    },
+    {
+      "id": "tuple-singleton-without-comma",
+      "expect": "reject",
+      "status": "passed",
+      "diagnostic": "E_SYNTAX",
+      "wasm_executed": false,
+      "reason": "expected_diagnostic"
+    },
+    {
+      "id": "tuple-runtime-const-and-scalar-const-mut",
+      "expect": "reject",
+      "status": "passed",
+      "diagnostic": "E_CONST_MUT_TARGET",
+      "wasm_executed": false,
+      "reason": "expected_diagnostic"
+    },
+    {
+      "id": "tuple-typed-as-let-alias",
+      "expect": "accept",
+      "status": "passed",
+      "diagnostic": null,
+      "wasm_executed": true,
+      "reason": "compiled_and_executed_guest"
+    },
+    {
+      "id": "tuple-typed-as-val-alias",
+      "expect": "accept",
+      "status": "passed",
+      "diagnostic": null,
+      "wasm_executed": true,
+      "reason": "compiled_and_executed_guest"
+    },
+    {
+      "id": "tuple-typed-as-const-alias-literal",
+      "expect": "accept",
+      "status": "passed",
+      "diagnostic": null,
+      "wasm_executed": true,
+      "reason": "compiled_and_executed_guest"
+    },
+    {
+      "id": "tuple-val-outer-alias-inherits",
+      "expect": "accept",
+      "status": "passed",
+      "diagnostic": null,
+      "wasm_executed": true,
+      "reason": "compiled_and_executed_guest"
+    },
+    {
+      "id": "tuple-explicit-element-and-alias-mode",
+      "expect": "accept",
+      "status": "passed",
+      "diagnostic": null,
+      "wasm_executed": true,
+      "reason": "compiled_and_executed_guest"
+    },
+    {
+      "id": "tuple-runtime-as-const-reject",
+      "expect": "reject",
+      "status": "passed",
+      "diagnostic": "E_CONST",
+      "wasm_executed": false,
+      "reason": "expected_diagnostic"
+    },
+    {
+      "id": "tuple-as-val-rebind-reject",
+      "expect": "reject",
+      "status": "passed",
+      "diagnostic": "E_IMMUTABLE",
+      "wasm_executed": false,
+      "reason": "expected_diagnostic"
+    },
+    {
+      "id": "tuple-as-const-rebind-reject",
+      "expect": "reject",
+      "status": "passed",
+      "diagnostic": "E_IMMUTABLE",
+      "wasm_executed": false,
+      "reason": "expected_diagnostic"
+    },
+    {
+      "id": "tuple-explicit-unqualified-alias-reject",
+      "expect": "reject",
+      "status": "passed",
+      "diagnostic": "E_SYNTAX",
+      "wasm_executed": false,
+      "reason": "expected_diagnostic"
+    },
+    {
+      "id": "tuple-let-root-active-mut-loan-rebind-reject",
+      "expect": "reject",
+      "status": "unsupported",
+      "diagnostic": "E_UNSUPPORTED_TYPE",
+      "wasm_executed": false,
+      "reason": "object_tuple_loan_model_not_implemented"
+    }
+  ],
+  "provenance": {
+    "run_url": "https://github.com/usa-acc/atto-ci/actions/runs/44447960061",
+    "job_id": 135304613260,
+    "carrier_commit": "09e5cd1e4d406da8dbf9eab9b6c64a971c69c524",
+    "run_conclusion": "success",
+    "source_tree_sha": "3e873a8bf18c6343a1e7a51e9715b47c64f687ba",
+    "source_blobs_verified": 68,
+    "conformance_blobs_verified": 4,
+    "registry_git_blob_sha": "57c9ab88e6d97178dd0c67fc3acdfdff48508589",
+    "runner_git_blob_sha": "7436146fd8773ada1790787f7933f5d15f9c4e76",
+    "scope": "Rust/browser-Wasm only; other backends not executed",
+    "note": "Final post-merge exact source. Counted Rust tests and Wasm guests in workflow logs; 33-case receipt reflects actual compiled execution and expected diagnostic rejections."
+  }
+}

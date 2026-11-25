@@ -1,0 +1,139 @@
+# Persistence v1: actor-local state, tenant-scoped batch sidecars
+
+Status: **PROPOSED**. This extends [the virtual actors RFC](./VIRTUAL_ACTORS_VM_ISOLATES_RFC.md). The [SQLite reference engine](../reference/persistence-sidecar/README.md) is an executable host-side model, **not a production storage provider, Oreslang actor, VM-isolate implementation, or native parity proof**.
+
+Relevant Orleans design: named persistent grain states and configurable providers; journaled grains and confirmation; timers vs durable reminders. Unlike an actor's identity, an activation, its in-memory arena and its durable state have different lifetimes.
+
+## Persistence policies
+
+Each actor type/instance may select persistence for separately named state slots. Semantics are configurable *at activation admission* rather than changed implicitly during a turn:
+
+| Policy | Runtime behavior | Commit contract |
+| --- | --- | --- |
+| `ephemeral` | actor arena only; lost at passivation/crash | none |
+| `snapshot` | owned serializable state checkpoint plus version/schema | provider-confirmed CAS |
+| `journal` | append versioned events; rebuild from snapshot + events | provider-confirmed append; deterministic replay |
+| `batched(snapshot)` | sidecar combines many independent snapshot writes | explicit admitted vs committed |
+| `batched(journal)` | sidecar group-commits event writes | explicit admitted vs committed |
+| `write_through` | guest reply waits for confirmed commit | provider-confirmed, or outcome-unknown on timeout |
+| `replicated` | uses a provider offering quorum/replication guarantees | require actual configured provider receipt; not a label |
+| `external` | explicit actor-controlled database adapter | host broker permissions and effect fencing |
+
+`batched` is a transport/scheduling modifier, not a durability class. On each actor, `state_name` can choose a distinct provider. A write to state slot A is not automatically atomic with a write to slot B across different stores. Any cross-slot transaction requires an explicitly supported single transactional provider or workflow/saga.
+
+## Logical API (future Oreslang syntax, not yet implemented)
+
+```ores
+// Illustrative only; the compiler must reject unsupported syntax, not silently reinterpret it.
+define actor ShoppingCart extends DurableActor<CartState> as
+  // Persistence policy belongs to runtime metadata, not mutable guest global state.
+  // slot "cart": journal, provider: tenant_wal, writer: sidecar, ack: committed
+  // slot "view": snapshot, provider: tenant_wal, writer: sidecar, ack: admitted
+
+  add_item(Item item) : Result<void, Error> {
+    return trap self.persist_event(item, #committed);
+  }
+end
+```
+
+The actual compiler API, syntax, annotations and type signatures must be ratified separately. Method names remain snake_case. Persisted writes carry `tenant_id, actor_type, actor_key, state_name, activation_epoch, expected_version, operation_id, schema_version, payload, policy`.
+
+The guest actor always owns in-memory state; the sidecar owns only bounded serialized envelopes, transaction assembly and the provider connection. A trusted host chooses/authorizes the tenant and epoch; no guest may call `grant_epoch` or install its own fencing token.
+
+## Sidecar architecture and scale
+
+- **One sidecar per tenant shard, not one per actor.** For the default actor-ordered policy, partition by a stable versioned hash of canonical `(tenant_id, namespace, actor_type_id, actor_key)` so all named slots for one actor share an ordering boundary; thousands of actors can share one sidecar pool. A per-slot/provider partitioning override may be offered only with explicitly weaker cross-slot ordering and transactional guarantees. Do not embed the shard number in ActorId, and use versioned consistent hashing for rebalance. See [ActorId v1](./ACTOR_IDENTITY_V1.md).
+- **Each sidecar has its own actor arena and mailbox.** Request messages are bounded serialized owned data; nothing points into the initiating actor's arena. No actor mutable state escapes into sidecar state.
+- **Quotas apply at each layer**: requesting actor outstanding writes, actor-local mailbox, sidecar queued entries/bytes, tenant in-flight bytes and IOPS, destination connection pool, storage capacity and WAL bytes. Zero-length messages consume nonzero credits.
+- **Batch on the first bound**: `max_batch_entries`, `max_batch_bytes`, `max_wait_ms` or an explicit flush barrier; a committed/write-through request can force a batch without waiting for a long timer. Prefer configurable initial profile of 256 entries, 1 MiB and 5ms, measured on workload.
+- **Fair scheduling**: per-actor FIFO and expected-version CAS; round-robin or deficit scheduling across actor IDs and tenant budgets so hot actors cannot starve thousands of cold actors. A rejected/conflicting actor update must not poison other actor writes in the same transaction.
+- **Durable ACK after commit only.** `admitted` means queued locally and is lost on process failure unless explicitly journaled first. `committed` means the configured provider confirmed its durability contract; `replicated` means the named provider confirmed the advertised replica/quorum policy. On network/commit timeout report `OUTCOME_UNKNOWN`, then resolve by operation ID.
+- **Sidecar crash**: recover durable state from provider, re-route in-flight requests, require new activation epoch where appropriate; client resends same operation ID and compares results. Never claim an automatic exactly-once external effect. A sidecar restart alone cannot fence external services unless they also check the epoch or use transactional outbox.
+- **Batch atomicity is provider-scoped.** For a relational provider, a transaction may contain writes for many actors; CAS and idempotency records must commit alongside state. If the provider has a maximum transaction size or cannot atomically include them, split batches and acknowledge each committed subset. Never imply distributed transactions across shards.
+- **Hot passivation**: writer must either await a `committed` barrier for all required state or deliberately use a documented weaker crash-loss policy. Snapshot state only after outstanding loans/async frames and sealed-state fences have resolved.
+- **Migration**: old incarnation must be fenced against the durable provider *before* new incarnation commits. A directory update alone is insufficient.
+- **Security boundary**: sidecar pooled writes cannot co-mingle tenants into a common unprotected VM memory domain. Cross-tenant shared storage demands provider row/namespace policy enforced independently of caller-supplied fields. `unsafe`, FFI and raw provider credentials never enter untrusted guest isolates.
+- **Observability**: collect queue age/bytes, accepted vs committed counts, actual provider transaction batch size, fsync/commit latency, per-tenant fairness, CAS conflict rate, stale-epoch rejections, dedupe hits, journal replay time, timeout/unknown outcomes, and WAL/backlog growth.
+
+## Restore, journals, snapshots and reminders
+
+- On activation, get state and version from authoritative provider with an epoch-authorized read. Restore last snapshot plus events strictly after its version. Validate type/schema fingerprint and migrations before guest activation, and reconstruct only actor-owned allocations.
+- Journaled state must use deterministic replay; side effects must not be rerun during replay. Snapshotting a journal changes the replay offset; compaction cannot delete entries before a confirmed snapshot and retention barrier.
+- Support multiple named state objects per actor; the configuration may point each to distinct providers. Do not permit partial migration to masquerade as an atomic multi-provider commit.
+- Activation-scoped timers are canceled on passivation. Durable reminders are persistent definitions that may reactivate an actor; ticks may be delayed or skipped by outage and must be replay-/retry-safe. They do not replace durable workflow queues.
+
+## Node/SQLite executable reference scope
+
+`reference/persistence-sidecar/sidecar.mjs` implements:
+- One tenant per model instance; trusted activation epoch grants.
+- Snapshot and journal writes with per-actor CAS versions and persisted operation-ID dedupe.
+- Bounded admission and group commit in SQLite WAL `synchronous=FULL`, explicit `flush()`.
+- Read/restore after reopening the same database; stale queued writes rejected.
+- A regression test submitting **1,000 actor snapshots** to one transaction.
+
+Limitations (DO NOT PROMOTE): `node:sqlite` synchronous calls block the JS thread; production Oreslang sidecar must suspend on async native I/O. The reference is single-process/single-tenant, lacks a network transport, background max-wait timer, distributed lease authority, actual guest code, provider plug-ins, failover under partition, fsync fault injection, replication, end-to-end authenticated capability validation and Oreslang compiler hooks. It is NOT a secure untrusted tenant sandbox or power-loss certification.
+
+## Required backend gates
+
+Add persistence cases to the VA conformance registry:
+- **PS01** per-actor and named-slot isolation under 10k writes.
+- **PS02** actual guest actor state serialized without raw heap/FFI handles.
+- **PS03** admitted != committed under sidecar crash before flush.
+- **PS04** 1k distinct actors' records in a bounded provider batch; measure actual commit count.
+- **PS05** expected-version CAS, per-actor ordering and cross-actor conflict isolation.
+- **PS06** persisted dedupe with payload fingerprint and operation ID.
+- **PS07** old epoch rejected after migration and node restart; prove provider-side fencing.
+- **PS08** snapshot + event replay, schema migration, journal compaction.
+- **PS09** exact sidecar/tenant/actor resource accounting on admission, failure and stop.
+- **PS10** tenant/role/capability authorization with malicious forged envelopes and raw-pointer denial.
+- **PS11** provider commit/ack failure and outcome-unknown behavior under fault injection.
+- **PS12** no guest callbacks outside actor-wide execution lease; no blocking on scheduler carrier.
+- **PS13** cross-node sharding, failover and transactional outbox effect replay safety.
+- **PS14** durable reminder activation, duplicate tick, missed tick and stop fencing.
+- **PS15** exact-head native guest execution and test provenance for Java, LLVM, .NET, Wasm, Cranelift (and independently Forge).
+
+All PS native runtime gates are **NOT_EXECUTED**. A passing host SQLite reference test proves only that narrow algorithm.
+
+## Delivery plan
+
+P0: shared persistence/wire/ack protocol and executable host reference tests (this PR).
+P1: Java real source actor adapter; LLVM actor heap lowering and native async sidecar ABI; enforce trusted epoch control.
+P2: async durable sidecar actors, per-tenant shard pool, provider SDKs, backpressure, 10k actor contention and fault-injection evidence.
+P3: restore and passivation, snapshot/journal compaction, reminders, migration/fencing, transactional effects.
+P4: .NET Native AOT, Wasm and Cranelift source actors; strict cross-backend native conformance, with Forge separately.
+
+
+## Source actor integration acceptance update (2026-10-29)
+
+New implementation work is tracked in [Java #2282](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2282) and [LLVM #1180](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1180).
+
+**PS16 — Real runtime-private heap reactivation (HOST_INTEGRATION_PENDING):**
+- Java must execute `ActorRuntime.spawnPrivateTrusted` with an owner-checked `PrivateMemoryBlock`, the new actor-incarnation-bound `ActorPersistenceBridge`, and an on-disk SQLite provider, prove the SQLite acknowledgment occurs before the actor reports success, stop the actor, then restore into a different runtime/actor private-memory region. Host-only source and CI fixture are now committed, **not yet executed under the real Java repository**.
+- LLVM must compile the repository's authentic `ActorOwnedHeap` with the SQLite provider, reject stale heap handles across generation changes, and restore scalar state into a new arena generation. Native integration fixture and CTest are committed, **not yet executed under the real native repository**.
+- Both implementations must test cross-tenant/actor denial, after-stop callback rejection, operation-ID replay fencing, mailbox-execution ownership, and no raw pointer serialization. **Runtime host integration cannot be promoted to source-guest parity.**
+
+**PS17 — Source-compiler guest actor reactivation (NOT_IMPLEMENTED):**
+Compile a genuine `.ores` actor using native syntax and sealed `handle_state(critical-read / critical-write)`, lower a typed persistence operation through the verified runtime bridge, run a real provider-backed actor lifecycle (activate → commit → passivate → activate → restore), and independently compare observable results on Java and LLVM. Record compiler SHA-256, exact source SHA, binary provenance, nonzero-step runner logs, serialized state schema and negative admission fixtures. Until every requirement is proven, do not report source actor persistence as implemented. Other backends (.NET, Wasm, Cranelift, Forge) remain pending independent actual guest execution.
+
+**CI admission:** the latest source-org workflows continued to fail with zero recorded steps. A private cross-org mirror must first pass the existing authenticated pre-copy allowlist, verified private visibility, complete exact-tree and per-blob checks, and actual runner admission; no source bytes should be copied merely to probe runner availability.
+
+## PS18 — Fail-closed journal and fenced restoration (host reference implemented; guest NOT_EXECUTED)
+
+A reactivating actor must NEVER publish a partially reconstructed state. The durable recovery contract is:
+
+1. The supervisor obtains a monotonic trusted activation epoch and installs the provider-side fence before any guest state is visible.
+2. The state head, snapshot, ordered event stream and current epoch fence must be read in **one SQLite transaction / read snapshot**. An unfenced load is a privileged host migration/inspection surface and must not be exposed to guest code.
+3. Restore checks `0 <= snapshot_version <= head_version`, a valid nonzero schema for present snapshots/events, and event versions strictly contiguous from `snapshot_version + 1` through `head_version`. Event-first actors must begin at version 1 with no fabricated snapshot. Zero-length payloads remain permitted. Corrupted/missing event versions cause explicit `INCOMPLETE_ACTOR_JOURNAL` rather than best-effort state.
+4. The reference implementation bounds a single activation replay to 10,000 post-snapshot events; applications exceeding that must compact into an authenticated snapshot or use a documented streaming-replay strategy. No mandatory allocation/GC in native actor turn may be inferred from host replay tests.
+5. A stale epoch cannot retrieve a previous committed operation receipt or restore state, even if its operation ID matches. Confirmation of a durable write remains distinct from journal completeness and the actor's successful publication.
+
+**Executed local host evidence (not compiler parity):** native SQLite GCC ASan/UBSan plus independent Clang executed tampered-journal and stale fenced-read negatives; Node 22 SQLite host reference executed the same classes of negative test. Java JDBC equivalents are committed and strictly type-checked locally, but their driver-backed execution and authentic Java/LLVM actor reactivation gates remain **NOT_EXECUTED** on GitHub due to zero-step CI admission. Required exact-head native guest parity therefore stays NOT_EXECUTED.
+
+
+## PS19 — Bounded, corruption-aware recovery (host evidence; guest NOT_EXECUTED)
+
+All durable reactivation adapters must fail closed before publishing actor state when any of the following occurs: a committed snapshot points to a SQL NULL blob, snapshot version/schema is malformed, an individual snapshot/event payload exceeds 1 MiB, or post-snapshot journal replay exceeds 16 MiB or 10,000 ordered events. Valid zero-length snapshots/events are permitted as real BLOBs, not NULL. The limits are conservative host-reference defaults, not evidence of hard-real-time or constant-memory restoration.
+
+Java JDBC should check SQLite `length(payload)` before materializing a Java `byte[]`; LLVM checks column length before copying into owned vectors; the Node 22 reference MUST iterate query rows rather than `.all()` to avoid eagerly buffering every event. An exact fenced read must still verify activation epoch and reconstruct head/snapshot/journal under a single transaction. Database physical-page tampering and bit flips require separately implemented integrity checks and authenticated backup policies; row-level structural validation alone does NOT detect all byte corruption.
+
+**Local implementation evidence (2026-10-30):** native C++17 SQLite WAL/FULL test against the updated exact-GitHub header and test blob SHA passed 5 repeated GCC ASan/UBSan executions and 5 Clang ASan/UBSan executions, including deliberate NULL/oversized BLOB injection. Local Node reference 12/12 passed across 5 executions with bounded streamed replay. Java JDK 21 strict source compilation passed against a prior local snapshot plus new equivalent checks; full exact GitHub private repo Maven/JDBC runtime and compiler-generated `.ores` execution remain NOT_EXECUTED. Exact source-org GitHub Actions CI and private mirror gate remain unverified.

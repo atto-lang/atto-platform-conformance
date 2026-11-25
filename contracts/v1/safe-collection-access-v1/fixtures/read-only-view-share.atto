@@ -1,0 +1,9 @@
+// expect-error: E_SHARE_NOT_FROZEN (semantic, not parser rejection)
+// Readonly facade does not prove deep immutability while owning data stays writable.
+pub fnc main() -> int {
+  let values = [10, 20];
+  val view = values.readonly_view();
+  val published = rt share view;
+  values.set(0, 42);
+  return 0;
+}
