@@ -1,0 +1,3 @@
+// Candidate guest fixture: optimized tail calls still charge hard budget.
+pub fnc recurse(int n) -> int { return recurse(n + 1); }
+pub fnc main() -> int { return recurse(0); }

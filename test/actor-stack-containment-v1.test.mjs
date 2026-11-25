@@ -37,6 +37,14 @@ function validatePending(matrix) {
   const ids = matrix.scenarios.map(c => c.id);
   assert.equal(new Set(ids).size, ids.length);
   for (const scenario of matrix.scenarios) {
+    // Authoring a sibling-actor fixture never promotes the pending scenario.
+    if (scenario.id === 'sibling-actor-survival') {
+      assert.equal(scenario.kind, 'pending-actor-acceptance');
+      assert.equal(scenario.guestVerified, false);
+      assert.equal(scenario.expectedSiblingStdout, '42');
+      assert.equal(scenario.source,
+        'fixtures/actor-stack-containment-v1/sibling-actor-survival.atto');
+    }
     assert.ok(scenario.requiredEvidence.length > 0);
     for (const key of scenario.requiredEvidence) assert.ok(evidenceKeys.includes(key));
     if (scenario.source !== null) {
@@ -55,10 +63,10 @@ test('five-backend stack containment contract stays explicitly unexecuted', asyn
 test('all authored AttoLang source fixtures exist and have distinct cases', async () => {
   const matrix = validatePending(await load());
   const sources = matrix.scenarios.filter(c => c.source);
-  assert.equal(sources.length, 4);
+  assert.equal(sources.length, 5);
   for (const scenario of sources) {
     const text = await readFile(new URL('../' + scenario.source, import.meta.url), 'utf8');
-    assert.match(text, /pub routine main\(\): void/);
+    assert.match(text, /pub (?:suspends )?routine main\(\): void/);
     assert.ok(text.length > 40);
   }
 });
@@ -73,4 +81,25 @@ test('fake pass, duplicate backend, deleted proof and false promotion are reject
   assert.throws(() => validatePending(mutate(m => {m.promotion.zeroStepCountsAsExecuted = true;})));
   assert.throws(() => validatePending(mutate(m => {m.scenarios[0].source = 'fixtures/legacy.ores';})));
   assert.throws(() => validatePending(mutate(m => {m.scenarios[4].kind = 'positive';})));
+});
+
+test('sibling overflow fixture is a pending guest acceptance case, not a parity pass', async () => {
+  const contract = validatePending(await load());
+  const scenario = contract.scenarios.find(item => item.id === 'sibling-actor-survival');
+  assert.equal(scenario.kind, 'pending-actor-acceptance');
+  assert.equal(scenario.guestVerified, false);
+  assert.equal(scenario.expectedSiblingStdout, '42');
+  assert.ok(scenario.requiredEvidence.includes('actorSurvival'));
+  assert.ok(scenario.requiredEvidence.includes('supervisorRecovery'));
+  const source = await readFile(new URL('../' + scenario.source, import.meta.url), 'utf8');
+  assert.match(source, /define actor OverflowActor as/);
+  assert.match(source, /define actor HealthyActor as/);
+  assert.match(source, /return 1 \+ non_tail_overflow\(remaining - 1\)/);
+  assert.match(source, /healthy\.send\(41\)/);
+  assert.match(source, /await healthy\.get_done\(\)/);
+  for (const backend of contract.backends) {
+    assert.equal(backend.compilerGuest, 'NOT_EXECUTED');
+    assert.equal(backend.actorSurvival, 'NOT_EXECUTED');
+    assert.equal(backend.supervisorRecovery, 'NOT_EXECUTED');
+  }
 });

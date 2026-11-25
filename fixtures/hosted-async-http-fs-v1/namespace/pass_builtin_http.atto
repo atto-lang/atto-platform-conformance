@@ -1,0 +1,6 @@
+// The compiler must load its own std.http source, never a project file.
+import * as http from "std.http";
+pub routine main(): void {
+  stdio.println(http.status_valid(200));
+  stdio.println(!http.status_valid(99));
+}

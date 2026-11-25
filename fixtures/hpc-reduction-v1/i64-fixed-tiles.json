@@ -1,0 +1,22 @@
+{
+  "schema": "attolang.hpc.fixed-i64-tiles/1",
+  "evidence": "FIXTURE_ONLY_NOT_EXECUTED",
+  "source": "fixtures/hpc-reduction-v1/i64-fixed-tiles.atto",
+  "gitBlobSha1": "9deb9935b4f65b4d53de92f200291a28cdb02a79",
+  "expectedResultI64": "42",
+  "tileSize": 4,
+  "tilePartialResults": ["10", "26", "30", "-24"],
+  "reductionTree": "(tile0 + tile1) + (tile2 + tile3)",
+  "backends": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED"
+  },
+  "limitations": [
+    "Fixed-size scalar guest, not dynamic array reduction",
+    "No physical multicore or SIMD execution proven",
+    "No f64 native guest parity implied"
+  ]
+}

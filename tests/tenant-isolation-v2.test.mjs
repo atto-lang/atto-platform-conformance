@@ -264,3 +264,44 @@ test("scalar actor turns are non-reentrant even with extra tenant capacity", asy
   assert.equal(await active, 4);
   assert.equal(await vm.invoke(h, () => 2), 6);
 });
+
+test("contract carries the audit-derived requirements", () => {
+  for (const k of ["cpu_accounting", "mail_quotas", "host_calls", "queued_work", "instrumentation"])
+    assert.equal(typeof contract.design[k], "string", k);
+  assert.match(contract.design.cpu_accounting, /CPU time, not wall-clock/);
+  for (const s of ["deadline-and-fairness-count-tenant-cpu", "tenant-and-host-mail-byte-quotas",
+    "guest-controlled-host-call-arguments-cannot-fault-host", "queued-callers-rejected-promptly-on-quiescence",
+    "instrumentation-is-governed-and-tenant-scoped"])
+    assert.ok(contract.requiredScenarios.includes(s), s);
+});
+
+test("mail is bounded per tenant and per host, and delivery refunds both", () => {
+  const vm = new TenantIsolateReference({maxHostMailBytes: 1500});
+  const a = vm.create("a", isolate({mailBytes: 1000})), b = vm.create("b", isolate({mailBytes: 1000}));
+  vm.start(a); vm.start(b);
+  const m1 = vm.send(a, 400); vm.send(a, 400);
+  fails(() => vm.send(a, 400), "TENANT_MAIL_QUOTA");
+  vm.take(a, m1);
+  vm.send(a, 400);
+  vm.send(b, 600);
+  fails(() => vm.send(b, 200), "HOST_MAIL_QUOTA");
+  assert.deepEqual(vm.mailUsage(a), {tenant: 800, host: 1400});
+  fails(() => vm.take(b, m1), "FOREIGN_OR_REPLAYED_MAIL");
+  fails(() => vm.take(a, m1), "FOREIGN_OR_REPLAYED_MAIL");
+  fails(() => vm.send(a, 0), "INVALID_MAIL");
+  fails(() => vm.create("x", isolate({mailBytes: 0})), "INVALID_MAIL_QUOTA");
+});
+
+test("a dead or destroyed isolate returns all of its mail to the host", async () => {
+  const vm = new TenantIsolateReference({maxHostMailBytes: 1000});
+  const a = vm.create("a", isolate({mailBytes: 1000})), b = vm.create("b", isolate({mailBytes: 1000}));
+  vm.start(a); vm.start(b);
+  vm.send(a, 900);
+  fails(() => vm.send(b, 200), "HOST_MAIL_QUOTA");
+  vm.kill(a);
+  assert.deepEqual(vm.mailUsage(b), {tenant: 0, host: 0});
+  vm.send(b, 600);
+  vm.shutdown(b); vm.stop(b); vm.destroy(b);
+  const c = vm.create("c", isolate({mailBytes: 1000})); vm.start(c);
+  vm.send(c, 1000);
+});

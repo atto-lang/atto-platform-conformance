@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "contract_id": "attolang-effects-lifetimes-v1",
+  "status": "CANDIDATE_NOT_EXECUTED",
+  "spec_source": {
+    "repository": "ores-truffle-oreslang/attolang-language-spec.md",
+    "branch": "audit/effects-lifetimes-v1-20261110",
+    "verified_host": false
+  },
+  "source_policy": {
+    "canonical_extension": ".atto",
+    "legacy_fixture_migration": false
+  },
+  "backends": [
+    "java",
+    "llvm",
+    "dotnet",
+    "wasm",
+    "forge",
+    "cranelift"
+  ],
+  "semantic_policy": {
+    "owner_loan": "one_owner_many_readers_or_one_writer",
+    "nll": "last_live_use_of_provenance",
+    "effect_row": "upper_bound_not_authority",
+    "trap": "discharge_only_verified_ordinary_throw",
+    "suspension": "ordinary_loan_must_be_dead_or_pinned_and_proven",
+    "unknown": "fail_closed"
+  },
+  "evidence": {
+    "baseline": "NOT_EXECUTED",
+    "source_only_is_guest": false,
+    "mandatory": [
+      "compiler_commit",
+      "source_tree",
+      "fixture_blob",
+      "run_id",
+      "run_attempt",
+      "job_id",
+      "runner_id",
+      "nonzero_executed_steps",
+      "observed_exit",
+      "observed_diagnostic",
+      "artifact_sha256"
+    ],
+    "never_passing": [
+      "steps_empty",
+      "runner_id_zero",
+      "host_model_only",
+      "generic_parse_failure",
+      "cross_org_unverified_tree"
+    ]
+  },
+  "cases": [
+    {
+      "id": "move-while-borrowed-reject",
+      "path": "contracts/effects-lifetimes-v1/fixtures/move-while-borrowed-reject.atto",
+      "blob_sha": "329e675b923c5b77865d8ab4e268f205ea7e9365",
+      "kind": "compile_reject",
+      "diagnostic": "move_while_borrowed",
+      "expected_exit": null,
+      "status": "AUTHORED_NOT_EXECUTED",
+      "trace": [
+        {
+          "op": "borrow",
+          "place": "owner",
+          "loan": "view",
+          "mode": "read"
+        },
+        {
+          "op": "move",
+          "place": "owner"
+        },
+        {
+          "op": "use",
+          "loan": "view"
+        }
+      ]
+    },
+    {
+      "id": "read-write-alias-reject",
+      "path": "contracts/effects-lifetimes-v1/fixtures/read-write-alias-reject.atto",
+      "blob_sha": "346ffe8181a72c4bf4e91318f06fc0abc065172b",
+      "kind": "compile_reject",
+      "diagnostic": "incompatible_borrow",
+      "expected_exit": null,
+      "status": "AUTHORED_NOT_EXECUTED",
+      "trace": [
+        {
+          "op": "borrow",
+          "place": "owner",
+          "loan": "read",
+          "mode": "read"
+        },
+        {
+          "op": "borrow",
+          "place": "owner",
+          "loan": "write",
+          "mode": "write"
+        },
+        {
+          "op": "use",
+          "loan": "read"
+        },
+        {
+          "op": "use",
+          "loan": "write"
+        }
+      ]
+    },
+    {
+      "id": "borrow-across-suspension-reject",
+      "path": "contracts/effects-lifetimes-v1/fixtures/borrow-across-suspension-reject.atto",
+      "blob_sha": "7d1d591aee02e95765398685003b5131742e8ae7",
+      "kind": "compile_reject",
+      "diagnostic": "borrow_across_suspension",
+      "expected_exit": null,
+      "status": "AUTHORED_NOT_EXECUTED",
+      "trace": [
+        {
+          "op": "borrow",
+          "place": "owner",
+          "loan": "view",
+          "mode": "read"
+        },
+        {
+          "op": "await"
+        },
+        {
+          "op": "use",
+          "loan": "view"
+        }
+      ]
+    },
+    {
+      "id": "nll-last-use-positive",
+      "path": "contracts/effects-lifetimes-v1/fixtures/nll-last-use-positive.atto",
+      "blob_sha": "38a34fd39543f8cb18790da6575ef2eced1044d8",
+      "kind": "compile_and_execute",
+      "diagnostic": null,
+      "expected_exit": 42,
+      "status": "AUTHORED_NOT_EXECUTED",
+      "trace": [
+        {
+          "op": "borrow",
+          "place": "owner",
+          "loan": "view",
+          "mode": "read"
+        },
+        {
+          "op": "use",
+          "loan": "view"
+        },
+        {
+          "op": "move",
+          "place": "owner"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "schema": "atto.hpc-reduction-v1/1",
+  "evidence": "HOST_REFERENCE_ONLY",
+  "cases": [
+    {"id":"empty-sum","lhs":[],"tileSize":2,"valueBits":"0000000000000000","tiles":0},
+    {"id":"single-sum","lhs":[3.5],"tileSize":2,"valueBits":"400c000000000000","tiles":1},
+    {"id":"dot-3","lhs":[1.25,-2,3],"rhs":[2,4,-1],"tileSize":2,"valueBits":"c021000000000000","tiles":2},
+    {"id":"cancellation-tile2","lhs":[10000000000000000,1,-10000000000000000,1],"tileSize":2,"valueBits":"0000000000000000","tiles":2},
+    {"id":"cancellation-tile4","lhs":[10000000000000000,1,-10000000000000000,1],"tileSize":4,"valueBits":"3ff0000000000000","tiles":1},
+    {"id":"mixed-signed","lhs":[1.5,-4,2.5,8,0,-1],"tileSize":2,"valueBits":"401c000000000000","tiles":3}
+  ]
+}

@@ -1,0 +1,543 @@
+{
+  "version": "atto.borrow.v1",
+  "scope": "SOURCE_FREE_NOT_COMPILER_GUEST_PROOF",
+  "backends": [
+    "java",
+    "net",
+    "llvm",
+    "wasm",
+    "cranelift"
+  ],
+  "status": {
+    "java": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED"
+  },
+  "cases": [
+    {
+      "id": "copy-owned-scalar",
+      "ops": [
+        [
+          "init",
+          "x",
+          "copy"
+        ],
+        [
+          "copy",
+          "x",
+          "y"
+        ],
+        [
+          "read",
+          "x"
+        ],
+        [
+          "read",
+          "y"
+        ],
+        [
+          "return"
+        ]
+      ],
+      "expected": "OK"
+    },
+    {
+      "id": "two-readers",
+      "ops": [
+        [
+          "init",
+          "x",
+          "move"
+        ],
+        [
+          "borrow_shared",
+          "x",
+          "r1"
+        ],
+        [
+          "borrow_shared",
+          "x",
+          "r2"
+        ],
+        [
+          "release",
+          "r1"
+        ],
+        [
+          "release",
+          "r2"
+        ],
+        [
+          "return"
+        ]
+      ],
+      "expected": "OK"
+    },
+    {
+      "id": "write-with-exclusive-loan",
+      "ops": [
+        [
+          "init",
+          "x",
+          "move"
+        ],
+        [
+          "borrow_mut",
+          "x",
+          "w"
+        ],
+        [
+          "write_via_mut",
+          "x",
+          "w"
+        ],
+        [
+          "release",
+          "w"
+        ],
+        [
+          "return"
+        ]
+      ],
+      "expected": "OK"
+    },
+    {
+      "id": "take-after-loan-release",
+      "ops": [
+        [
+          "init",
+          "x",
+          "move"
+        ],
+        [
+          "borrow_shared",
+          "x",
+          "r1"
+        ],
+        [
+          "release",
+          "r1"
+        ],
+        [
+          "move",
+          "x",
+          "y"
+        ],
+        [
+          "read",
+          "y"
+        ],
+        [
+          "return"
+        ]
+      ],
+      "expected": "OK"
+    },
+    {
+      "id": "use-after-move",
+      "ops": [
+        [
+          "init",
+          "x",
+          "move"
+        ],
+        [
+          "move",
+          "x",
+          "y"
+        ],
+        [
+          "read",
+          "x"
+        ],
+        [
+          "return"
+        ]
+      ],
+      "expected": "E_NOT_OWNED"
+    },
+    {
+      "id": "double-drop",
+      "ops": [
+        [
+          "init",
+          "x",
+          "move"
+        ],
+        [
+          "drop",
+          "x"
+        ],
+        [
+          "drop",
+          "x"
+        ],
+        [
+          "return"
+        ]
+      ],
+      "expected": "E_NOT_OWNED"
+    },
+    {
+      "id": "send-is-not-copy",
+      "ops": [
+        [
+          "init",
+          "x",
+          "send"
+        ],
+        [
+          "copy",
+          "x",
+          "y"
+        ],
+        [
+          "return"
+        ]
+      ],
+      "expected": "E_COPY_PROOF"
+    },
+    {
+      "id": "shared-loan-blocks-owner-write",
+      "ops": [
+        [
+          "init",
+          "x",
+          "move"
+        ],
+        [
+          "borrow_shared",
+          "x",
+          "r"
+        ],
+        [
+          "write",
+          "x"
+        ],
+        [
+          "return"
+        ]
+      ],
+      "expected": "E_ALIAS"
+    },
+    {
+      "id": "two-exclusive-loans-fail",
+      "ops": [
+        [
+          "init",
+          "x",
+          "move"
+        ],
+        [
+          "borrow_mut",
+          "x",
+          "w1"
+        ],
+        [
+          "borrow_mut",
+          "x",
+          "w2"
+        ],
+        [
+          "return"
+        ]
+      ],
+      "expected": "E_ALIAS"
+    },
+    {
+      "id": "root-and-field-conflict",
+      "ops": [
+        [
+          "init",
+          "x",
+          "move"
+        ],
+        [
+          "borrow_shared",
+          "x.field",
+          "r"
+        ],
+        [
+          "write",
+          "x"
+        ],
+        [
+          "return"
+        ]
+      ],
+      "expected": "E_ALIAS"
+    },
+    {
+      "id": "drop-while-borrowed",
+      "ops": [
+        [
+          "init",
+          "x",
+          "move"
+        ],
+        [
+          "borrow_shared",
+          "x",
+          "r"
+        ],
+        [
+          "drop",
+          "x"
+        ],
+        [
+          "return"
+        ]
+      ],
+      "expected": "E_ALIAS"
+    },
+    {
+      "id": "suspend-with-loan",
+      "ops": [
+        [
+          "init",
+          "x",
+          "move"
+        ],
+        [
+          "borrow_shared",
+          "x",
+          "r"
+        ],
+        [
+          "suspend"
+        ],
+        [
+          "return"
+        ]
+      ],
+      "expected": "E_SUSPEND_LOAN"
+    },
+    {
+      "id": "return-escaping-loan",
+      "ops": [
+        [
+          "init",
+          "x",
+          "move"
+        ],
+        [
+          "borrow_shared",
+          "x",
+          "r"
+        ],
+        [
+          "return"
+        ]
+      ],
+      "expected": "E_LOAN_ESCAPE"
+    },
+    {
+      "id": "capture-copy-requires-copy-and-send",
+      "ops": [
+        [
+          "init",
+          "x",
+          "send"
+        ],
+        [
+          "capture_copy",
+          "x"
+        ],
+        [
+          "return"
+        ]
+      ],
+      "expected": "E_CAPTURE_PROOF"
+    },
+    {
+      "id": "capture-move-send",
+      "ops": [
+        [
+          "init",
+          "x",
+          "send"
+        ],
+        [
+          "capture_move",
+          "x"
+        ],
+        [
+          "return"
+        ]
+      ],
+      "expected": "OK"
+    },
+    {
+      "id": "capture-move-not-send",
+      "ops": [
+        [
+          "init",
+          "x",
+          "move"
+        ],
+        [
+          "capture_move",
+          "x"
+        ],
+        [
+          "return"
+        ]
+      ],
+      "expected": "E_CAPTURE_PROOF"
+    },
+    {
+      "id": "cross-actor-borrow-rejected",
+      "ops": [
+        [
+          "init",
+          "x",
+          "move"
+        ],
+        [
+          "actor_hop_borrow",
+          "x"
+        ],
+        [
+          "return"
+        ]
+      ],
+      "expected": "E_ACTOR_ESCAPE"
+    },
+    {
+      "id": "borrowed-guard-preserves-owner",
+      "ops": [
+        [
+          "init",
+          "x",
+          "move"
+        ],
+        [
+          "borrow_shared",
+          "x",
+          "r"
+        ],
+        [
+          "release",
+          "r"
+        ],
+        [
+          "read",
+          "x"
+        ],
+        [
+          "return"
+        ]
+      ],
+      "expected": "OK"
+    },
+    {
+      "id": "branch-consistent-owner",
+      "ops": [
+        [
+          "init",
+          "x",
+          "move"
+        ],
+        [
+          "branch",
+          [
+            [
+              "read",
+              "x"
+            ]
+          ],
+          [
+            [
+              "read",
+              "x"
+            ]
+          ]
+        ],
+        [
+          "read",
+          "x"
+        ],
+        [
+          "return"
+        ]
+      ],
+      "expected": "OK"
+    },
+    {
+      "id": "branch-move-divergence-rejected",
+      "ops": [
+        [
+          "init",
+          "x",
+          "move"
+        ],
+        [
+          "branch",
+          [
+            [
+              "move",
+              "x",
+              "y"
+            ]
+          ],
+          [
+            [
+              "read",
+              "x"
+            ]
+          ]
+        ],
+        [
+          "read",
+          "x"
+        ],
+        [
+          "return"
+        ]
+      ],
+      "expected": "E_JOIN"
+    },
+    {
+      "id": "guard-false-path-cannot-resurrect-move",
+      "ops": [
+        [
+          "init",
+          "x",
+          "move"
+        ],
+        [
+          "move",
+          "x",
+          "temp"
+        ],
+        [
+          "read",
+          "x"
+        ],
+        [
+          "return"
+        ]
+      ],
+      "expected": "E_NOT_OWNED"
+    },
+    {
+      "id": "unproven-loop-fails-closed",
+      "ops": [
+        [
+          "init",
+          "x",
+          "move"
+        ],
+        [
+          "loop"
+        ],
+        [
+          "return"
+        ]
+      ],
+      "expected": "E_UNPROVEN_LOOP"
+    }
+  ]
+}

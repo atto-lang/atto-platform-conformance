@@ -1,0 +1,149 @@
+{
+  "schema": "atto.trap-result.v2",
+  "version": 2,
+  "status": "SOURCE_ONLY_TARGET_NOT_EXECUTED",
+  "source": "atto-lang/atto-spec/spec/07-errors-and-failure.md",
+  "supersedes": "contracts/v1/caller-trap-parity/manifest.json (legacy Option oracle)",
+  "result_semantics": {
+    "trap(T)": "Result<T,Error>",
+    "trap(Result<T,E>)": "Result<T,E | Error> (or original Result<T,E> if E accepts Error); never Result<Result<T,E>,Error>",
+    "trap(Option<T>)": "Result<Option<T>,Error>",
+    "trap(void)": "Result<void,Error>",
+    "trap(await Future<T>)": "Result<T,Error> across suspension",
+    "trap(fn return)": "Future<Result<T,Error>> when async/scheduled boundary returns Future",
+    "operand_once": true,
+    "caught_effects": [
+      "ordinary escaping throw"
+    ],
+    "bypass_effects": [
+      "raise",
+      "panic",
+      "cancellation",
+      "host-fatal",
+      "forced-termination"
+    ],
+    "reject": "await trap f when f is Future<T>: trap f is not a Future",
+    "error_sanitization": "bounded printable type+message; no host exception object or stack/cause graph"
+  },
+  "tests": [
+    {
+      "id": "plain-value",
+      "type": "int",
+      "expected_type": "Result<int,Error>",
+      "normal": "Ok(value)",
+      "throw": "Err(Error)"
+    },
+    {
+      "id": "result-no-double-wrap",
+      "type": "Result<int,E>",
+      "expected_type": "Result<int,E | Error>",
+      "normal": "Result payload unchanged",
+      "throw": "Err(Error)"
+    },
+    {
+      "id": "option-is-data",
+      "type": "Option<int>",
+      "expected_type": "Result<Option<int>,Error>",
+      "normal": "Ok(Option<int>)"
+    },
+    {
+      "id": "void-is-data",
+      "type": "void",
+      "expected_type": "Result<void,Error>",
+      "normal": "Ok(void)"
+    },
+    {
+      "id": "declared-throw-inside-trap-expression",
+      "expected": "ACCEPT_AND_CATCH_ORDINARY_THROW"
+    },
+    {
+      "id": "trap-declared-callable-uncaught-throw",
+      "expected": "REJECT_UNCOVERED_EFFECT"
+    },
+    {
+      "id": "raise-bypass",
+      "expected": "RAISE_ESCAPES_TRAP"
+    },
+    {
+      "id": "panic-bypass",
+      "expected": "PANIC_ESCAPES_TRAP_AND_REACHES_SUPERVISOR"
+    },
+    {
+      "id": "cancel-bypass",
+      "expected": "CANCELLATION_ESCAPES_TRAP"
+    },
+    {
+      "id": "await-trap-future-invalid",
+      "expected": "TYPE_ERROR"
+    }
+  ],
+  "backends": {
+    "java": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_receipt": null,
+      "release_qualified": false
+    },
+    "llvm": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_receipt": null,
+      "release_qualified": false
+    },
+    "rs": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_receipt": null,
+      "release_qualified": false
+    },
+    "net": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_receipt": null,
+      "release_qualified": false
+    },
+    "forge": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_receipt": null,
+      "release_qualified": false
+    },
+    "js": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_receipt": null,
+      "release_qualified": false
+    },
+    "cranelift": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_receipt": null,
+      "release_qualified": false
+    },
+    "wasm": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_receipt": null,
+      "release_qualified": false
+    },
+    "atto": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_receipt": null,
+      "release_qualified": false
+    },
+    "hdl": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_receipt": null,
+      "release_qualified": false
+    },
+    "realtime": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_receipt": null,
+      "release_qualified": false
+    }
+  },
+  "execution_policy": "This is a semantic target; each test needs byte-pinned .atto guest source and compiler-specific positive/negative execution receipts before PASS. The historical Option fixtures MUST NOT count as canonical Result coverage."
+}

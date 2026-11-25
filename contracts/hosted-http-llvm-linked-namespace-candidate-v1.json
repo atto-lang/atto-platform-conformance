@@ -1,0 +1,45 @@
+{
+  "schema": "atto.std.http.llvm_linked_namespace_candidate.v1",
+  "implementation": "BACKEND_LOCAL_ATTO_AST_LINK",
+  "status": "NOT_EXECUTED",
+  "source_repo": "atto-lang/atto-source.llvm",
+  "source_pr": 856,
+  "source_head": "9f50ed761ec12d8e4ad688d2049479c3e0c38302",
+  "source_root_tree": "5d559883833dfe3be526d2de3fc8b6dde69fc5d1",
+  "source_blobs": {
+    "src/main.rs": "bb44bbc00b463b361b6ffcd5d03ccdb76b484372",
+    "stdlib/http/message_policy.atto": "f88b78313432bce067223cc1853024bfd9b97c90",
+    "tests/http_stdlib/namespace_import_canary.atto": "4a63850b44189a77f7bed1dc9e83f3596187c6a0",
+    "ci/test_http_stdlib_policy.sh": "6b1e2e11ce19fc5cc57b2123a6ce16627626e24a",
+    "ci/test_http_namespace_import.sh": "6a1e095422549881e9359f8e771c334a3ac8229b",
+    ".github/workflows/http-stdlib-guest.yml": "b46aa2b1c7d58914464a0474d2879325c8d38aa4",
+    "frontend/tests/core_ownership_boundary.rs": "425282e9816b3f4f89556c809f2e193fedd9d661",
+    "frontend/tests/fixtures/borrow_move_after_transfer.atto": "ff3d2bb747c26fb35b4cdaddb69b37b48aa28e4e",
+    "frontend/tests/fixtures/borrow_move_owner_ok.atto": "97e691d065ab3aa5348e70784a2c695c74bd8055"
+  },
+  "canonical_import": "import * as http from \"std.http\";",
+  "source_units": "SEPARATELY_PARSED_NATIVE_ATTO",
+  "expected_positive_guest_cases": 17,
+  "expected_negative_import_cases": 9,
+  "existing_same_unit_policy_cases": 46,
+  "guest_executed_cases": 0,
+  "execution_steps": 0,
+  "evidence": "NONE",
+  "capabilities": {
+    "qualified_public_scalar_functions": "STAGED_UNVERIFIED",
+    "selective_public_modules": "UNSUPPORTED_FAIL_CLOSED",
+    "imported_classes": "UNSUPPORTED_FAIL_CLOSED",
+    "network_transport": "UNSUPPORTED_FAIL_CLOSED",
+    "freestanding_std_http": "DENIED"
+  },
+  "proof_requirements": [
+    "exact_source_head_and_root_git_tree",
+    "packaged_source_blob_identity",
+    "independent_ast_parse_plus_type_check",
+    "native_llvm_ir_and_executable",
+    "positive_exit_42_with_no_guest_stderr",
+    "nine_negative_diagnostics_and_no_artifacts",
+    "nonzero_executed_workflow_steps",
+    "approved_private_source_carrier_if_cross_org"
+  ]
+}

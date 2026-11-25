@@ -1,0 +1,9 @@
+// Normative target: Channel source lowering is not yet supported on LLVM/.NET.
+pub fnc main(): int {
+  do select over
+    when readch inbox: val value {
+      return value;
+    }
+  end
+  return 0;
+}

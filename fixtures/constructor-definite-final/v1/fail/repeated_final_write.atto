@@ -1,0 +1,10 @@
+// expect-error: E_INIT_FLOW
+define class Ticket as
+    pub final int id;
+    constructor(int initial) { while initial eq 42 do self.id = 1; done }
+    pub get_id(): int { return self.id; }
+end
+pub fnc main(): int {
+    val ticket = new Ticket(42);
+    return ticket.get_id();
+}

@@ -1,0 +1,5 @@
+// Candidate guest fixture: Array allocation syntax remains unverified.
+pub fnc main() -> int {
+  while true { let bytes = Array.new<int>(1048576); }
+  return 0;
+}
