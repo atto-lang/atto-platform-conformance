@@ -6,12 +6,12 @@ const doc = JSON.parse(readFileSync(new URL('../fixtures/import-v2/cases.json', 
 test('v2 corpus is explicit about evidence level and stage counts', () => {
   assert.equal(doc.schema, 'atto.static-import-v2.corpus.v1');
   assert.equal(doc.status, 'CORPUS_ONLY_NOT_BACKEND_EXECUTION');
-  assert.equal(doc.cases.length, 200);
-  assert.equal(new Set(doc.cases.map(c => c.id)).size, 200);
-  assert.equal(new Set(doc.cases.map(c => [c.stage,c.source,c.reference ?? ''].join('\\0'))).size, 200);
+  assert.equal(doc.cases.length, 225);
+  assert.equal(new Set(doc.cases.map(c => c.id)).size, 225);
+  assert.equal(new Set(doc.cases.map(c => [c.stage,c.source,c.reference ?? ''].join('\\0'))).size, 225);
   assert.equal(doc.cases.filter(c => c.stage === 'guest').length, 56);
   assert.equal(doc.cases.filter(c => c.stage === 'typed-bindings').length, 62);
-  assert.equal(doc.cases.filter(c => c.stage === 'resolution').length, 82);
+  assert.equal(doc.cases.filter(c => c.stage === 'resolution').length, 107);
 });
 test('mixed delimiter permutations share one ordered binding expectation', () => {
   const cases = doc.cases.filter(c => c.id.startsWith('mixed-permutation-'));
@@ -62,3 +62,8 @@ test('recursive tree and contextual root expansion adds 23 resolution targets', 
 });
 
 test('builtin tree expansion adds eleven guest expectations', () => { assert.equal(doc.cases.filter(c => c.id.startsWith('builtin-tree-')).length,11); });
+
+test('frozen literal and contextual public root resolution targets', () => {
+  assert.equal(doc.cases.filter(c => c.id.startsWith('registry-literal-')).length,16);
+  assert.equal(doc.cases.filter(c => c.id.startsWith('context-public-')).length,9);
+});
