@@ -1,0 +1,5 @@
+fnc invalid(): int {
+  val Result<int, String> value = Ok(7);
+  val int unwrapped = value;
+  return unwrapped;
+}
