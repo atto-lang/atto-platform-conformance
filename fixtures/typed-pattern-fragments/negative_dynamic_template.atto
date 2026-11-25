@@ -1,0 +1,11 @@
+// Expected E_PATTERN_CONSTEXPR, NO GUEST ARTIFACT.
+import module pattern from "std.pattern";
+
+pub fnc main(): int {
+  val template: string = "...";
+  val items: List<int> = List.of(1, 2, 3);
+  return match<int> items over
+    on List.of(pattern.of<int>(template)) -> 1,
+    on _ -> 0
+  end;
+}

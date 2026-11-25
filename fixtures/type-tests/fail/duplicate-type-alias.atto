@@ -1,0 +1,3 @@
+// expect-error: E_MATCH
+fnc f(Any v): int { match v over on is string -> { return 0; } on is String -> { return 0; } on is int -> { return 42; } end }
+pub fnc main(): int { val value: Any = 41; return f(value); }
