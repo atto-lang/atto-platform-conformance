@@ -26,7 +26,7 @@ test('31 / all 92 changed files across six PRs are uniquely registered',async()=
 });
 test('31 / exact PR source heads cannot be silently updated',async()=>{
  const x=await mutate(m=>{m.waves[0].head='0'.repeat(40)});
- assert.throws(()=>validateInventory(x),/head substitution/);
+ assert.throws(()=>validateInventory(x),/PR\/head\/path substitution/);
 });
 test('31 / path collision across distinct PRs fails before test admission',async()=>{
  const x=await mutate(m=>{m.waves[5].changedFiles[0]=m.waves[4].changedFiles[0]});
@@ -73,7 +73,7 @@ test('32 / absent checkouts and non-absolute working roots reject',async()=>{
  await assert.rejects(verifyCheckout(m.waves[0],'relative/path'),/absolute checkout/);
 });
 test('32 / invalid runner inputs cannot produce a green report',async()=>{
- await assert.rejects(runIntegration({inventoryPath:'inventory.json',checkoutRoot:'/tmp'}),/absolute/);
+ await assert.rejects(runIntegration({inventoryPath:'inventory.json',checkoutRoot:'/tmp'}),/invalid bounded run arguments/);
  await assert.rejects(runIntegration({inventoryPath:resolve(fileURLToPath(manifestPath)),checkoutRoot:'/tmp',timeoutMs:0}),/bounded/);
 });
 test('33 / even all passing host suites are not certified compiler parity',()=>{
