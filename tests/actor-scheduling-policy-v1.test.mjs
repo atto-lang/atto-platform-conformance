@@ -644,3 +644,59 @@ test("migrating segments preserve logical identity with fresh one-shot authority
 test("migrating segment oracle detects stale continuation replay", () => {
   assert.throws(() => verifyMigratingSegments(true));
 });
+
+
+// Source-free model: independently bounded logical receives and running state.
+function verifyReentrantStateGate(clearSibling = false) {
+  const live = new Set();
+  let running = null;
+  let state = 0;
+  const start = () => {
+    if (running || live.size >= 2) return null;
+    const t = {};
+    live.add(t);
+    return running = t;
+  };
+  const suspend = t => {
+    if (running !== t) return false;
+    running = null;
+    return true;
+  };
+  const resume = t => {
+    if (!live.has(t) || running) return false;
+    running = t;
+    return true;
+  };
+  const write = (t, delta) => {
+    if (running !== t) throw Error('E_STATE_GATE');
+    return state += delta;
+  };
+  const retire = t => {
+    if (!live.delete(t)) return false;
+    if (clearSibling || running === t) running = null;
+    return true;
+  };
+  const a = start();
+  assert.equal(write(a, 10), 10);
+  assert.equal(suspend(a), true);
+  const b = start();
+  assert.equal(write(b, 20), 30);
+  assert.equal(resume(a), false);
+  assert.equal(suspend(b), true);
+  assert.equal(live.size, 2);
+  assert.equal(start(), null);
+  assert.equal(resume(b), true);
+  assert.equal(retire(a), true);
+  assert.equal(running, b);
+  assert.equal(write(b, 12), 42);
+  assert.equal(resume(a), false);
+  assert.equal(retire(b), true);
+  assert.equal(live.size, 0);
+  assert.ok(start());
+}
+test("bounded reentrant receives retain a distinct running state owner", () => {
+  verifyReentrantStateGate();
+});
+test("reentrant oracle detects sibling retirement clearing running authority", () => {
+  assert.throws(() => verifyReentrantStateGate(true));
+});
