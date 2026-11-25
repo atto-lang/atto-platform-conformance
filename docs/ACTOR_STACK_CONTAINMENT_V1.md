@@ -277,3 +277,235 @@ canonical compiler-backed .atto proof. All five backend evidence statuses
 remain NOT_EXECUTED. Missing `steps` or no runner admission is not a
 compiler failure. See the source PR's M3.1 document and tracking issue #341
 for outstanding true stackless guest/frame/supervisor/low-stack gates.
+
+## Java M3.2 bounded scalar lexical slots and return-record ABI
+
+The new draft [Java PR #2643](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2643)
+stacks on #2642 and changes the real `Evaluator.Env` lexical scalar
+definition, initialization, lookup and `let` reassignment path to use
+**actor-owned SourceTask frame bytes** for a bounded subset. The six 9-byte
+typed slots remain shared with automatically bound scalar formals inside
+the same 64-byte actor task lease. Shadowed names are distinguished by
+lexical scope epoch; managed scalar reads decode from the actor arena
+after await/cooperate. Foreign task/carrier access or a changed primitive
+tag fails closed. An unlowered JVM `Slot.value` compatibility shadow still
+exists and lexical scopes do not independently reclaim scalar slots.
+
+A separate 48-byte `ActorGuestReturnRecord` ABI models callee index,
+call-site/return program counters, operand depth, actor generation, owner
+and execution number with generation-fenced actor quota and zeroizing
+retirement. **The evaluator does not yet consume this descriptor.**
+Actual non-tail guest calls still use recursive JVM frames, so it is
+prohibited to claim stackless guest dispatch, return-PC lowering,
+low-native-stack safety, independent process-stack isolation or full
+five-backend parity from this ABI alone.
+
+Evidence added to the manifest: six newly authored Java host/runtime
+scalar lexical JUnit methods, four host/runtime call/return record JUnit
+methods, and one **canonical .atto actor source JUnit/fixture** expecting
+`before|42|second` from a mutable `let int` across two
+`rt cooperate` suspensions with a second user mail queued. These
+are **AUTHORED_NOT_EXECUTED** until actual admitted exact-head Java/Graal
+CI produces nonzero executed steps and JUnit artifacts. Four pending
+conformance cases bring the total to **33**. The contract's negative
+mutation tests explicitly reject fake JVM-shadow removal, arbitrary
+reference-root lowering, return-PC dispatch, full lexical scope reclaim,
+native stack survival or guest PASS. All backend proof lanes remain
+`NOT_EXECUTED`.
+
+
+## Java M3.2 physical-turn and Task-shadow hardening
+
+[Java draft #2662](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2662),
+stacked on #2643, closes two concrete host-ABI authority gaps:
+
+- A generation-fenced return record also captures **the exact physical actor
+  dispatch object** and, where applicable, the **exact scheduler SourceTask
+  ExecutionContext**. The same actor's later mailbox turn or another
+  SourceTask can reuse a carrier thread and the actor arena but MUST NOT
+  read or close the earlier record. Foreign access fails without poisoning
+  the legitimate actor; orphaned records are reclaimed on actor quiescence.
+- A frame-backed scalar `Env.Slot` retains a JVM compatibility shadow.
+  `preflightTaskCaptures` and `detachedTaskSnapshotUnchecked` now deny
+  COPY/MOVE of that shadow into independent Task captures, including
+  unchecked transfer bypass. Ordinary unmanaged scalar captures remain
+  valid.
+
+Eleven **additional host JUnit methods** are authored in total (four
+scalar lexical frame tests, four return descriptor tests, three reflection
+mutation tests for the private Task capture guard). The byte-corruption
+tests cover a swapped but otherwise valid type tag, noncanonical Boolean,
+tampered ABI magic and execution identity, plus raw Float NaN preservation
+across `cooperate`, same-carrier reuse and distinct SourceTask denial.
+This is authored **NOT_EXECUTED**, neither hosted Maven/JUnit nor compiler
+guest execution. Tests do not prove that the JVM evaluator is stackless.
+
+Five new pending scenarios bring the matrix to **38**. The contract
+explicitly records zero newly executed JUnit methods, no executed canonical
+`.atto` guest, and no native low-stack containment. False PASS,
+unsupported Task capture promotion, removed physical-turn fences and
+fake executed-test counts are rejected in negative mutation tests.
+Real exact-head runner steps, host JUnit XML, independent review and
+compiler-backed supervisor/sibling actor tests remain mandatory before
+any merge or parity upgrade.
+
+
+## Java M3.3-prep SourceTask identity and Env.snapshot lifecycle fence
+
+[Java #2665](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2665)
+is stacked on #2662. It records the exact `ExecutionContext` owner for every
+managed scalar lexical `Env.Slot` and requires **reference identity with
+the currently admitted SourceTask** for lookup, assignment and slot
+initialization. `Env.snapshot()` also checks each managed local before
+copying JVM Slot aliases; nested scopes check their parent snapshots
+recursively. This closes an unsafe cross-SourceTask alias path that would
+otherwise reach the current actor arena with another task's lexical
+slot identity or potentially use stale JVM compatibility values.
+A rejected stale host/callback/other-task access leaves the healthy
+shared actor arena unpoisoned. Legitimate same-task snapshot reads and
+updates across `await` remain supported in the authored host model.
+
+The earlier [Java #2662](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2662)
+test `ActorLexicalTaskCaptureFenceTest` also used a nonexistent
+three-argument `Env.define` reflective signature; #2665 corrects it to
+the actual four-argument method. This correction matters because
+otherwise the three existing Task-copy/move regression tests would fail
+at setup without testing the capture guard at all.
+
+Three additional host/runtime JUnit methods are authored, **0 executed**:
+same-SourceTask snapshot across `await` with unauthorized host and
+retired-frame denial; distinct SourceTask in one actor denied without
+poisoning the shared arena; corrupt/null owner token rejected with owner
+recovery. These are not canonical compiled `.atto` async callback,
+closure or native stack isolation proofs.
+
+Four new pending scenarios bring this contract to **42**. Conformance
+negative mutations reject fake JUnit execution, false same-actor
+cross-task access, fabricated callback parity, weakened owner fences,
+and premature stackless-dispatch claims. All backend guest evidence is
+still `NOT_EXECUTED`, pending exact-head nonzero-step Maven/Node
+execution, compiled guest ownership tests, supervisor restart, low
+native-stack process survival and independent code review.
+
+## Java M3.3a scalar CALL/RET iterative bytecode bridge
+
+Draft [Java #2667](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2667)
+is stacked on #2665 and authors the first **actual** restricted
+non-tail guest-call machine using actor-owned, bounded, generation-fenced
+activation bytes instead of recursive JVM evaluator calls. Its
+`ActorScalarSourceLowering` compiles the complete reachable direct-call
+graph of statically supported effect-free synchronous `fnc` functions
+with signed `int` arguments/returns, scalar locals, integer arithmetic,
+simple comparisons, explicit `if/else`/return and pure direct/mutual
+recursion. If any callee, operation, type, return path or feature lies
+outside that subset, the **entire** graph continues on the legacy
+JVM evaluator path; no partial compiler-lowered guest execution is
+ever promoted as native-stack-safe.
+
+The new `ActorScalarCallMachine` uses a single Java instruction loop.
+Every live non-tail activation has a separately quota-charged arena
+frame containing a 16-byte magic/PC/SP/callee-ID header and 9-byte
+typed scalar locals and operand cells; child CALL records its
+parent return PC in arena bytes; RET zeroizes and pops the child.
+TAIL_CALL replaces rather than grows the current activation. The
+actor-global 64-frame/64-KiB quota and generation fences remain active;
+safepoints are invoked on **every 128th dispatched instruction**, not
+every iteration. The older separate 48-byte `ActorGuestReturnRecord`
+is still **ABI groundwork**: this new restricted machine uses its own
+activation header, not that general record.
+
+The Java PR adds **33** host/runtime JUnit methods for deep tail and
+non-tail recursion, quota failure and sibling survival, non-tail
+multi-callee returns, PC/callee-ID corruption mutations, and
+amortized safepoints; **16** parser-derived `fnc` lowering/negative
+admission methods; and **5** canonical compiled `.atto` actor
+JUnit methods (three existing stack fixtures plus two new ones).
+**54 authored, zero executed** at contract creation: neither a
+Maven/JUnit test nor a compiled .atto guest run exists without an
+actual stepful exact-head CI receipt.
+
+Eight additional pending source/negative cases bring this actor
+stack matrix to **50 scenarios**. Contract mutation tests prohibit
+promoting the restricted scalar subset to complete actor stack
+isolation, fabricated JUnit execution, arbitrary method/closure
+lowering, continuation suspension return PCs, unsafe operator
+support, fake complete backend parity, source-free canary promotion
+or native low-stack fault-containment claims. All actual Java,
+LLVM, .NET NativeAOT, Wasm and Forge/Cranelift compiler-backed guest
+evidence stays `NOT_EXECUTED` until real exact-head admitted runner
+steps, test reports, runtime receipts, and independent review.
+
+## Java M3.3b typed scalar admission and fail-closed frame corruption
+
+[Java draft #2668](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2668),
+stacked on #2667, hardens the real M3.3a scalar function source
+lowering. Admission of the restricted machine must **precede actor
+execution** and prove exact type tags, `int` function returns, Boolean
+conditions, same-kind equality, `int` argument types and mutable
+`let` reassignment. `val`/`const` and immutable parameters cannot
+be rebound. Synthetic JVM `Integer` AST literals cannot be widened
+implicitly to signed 64-bit AttoLang `int`.
+
+At runtime the active operand stack pointer is range-checked
+against the compiled maximum before executing the next instruction.
+Malformed Boolean operands in integer arithmetic, mixed Long/Boolean
+equality and Boolean arguments to signed-`int` callee slots cause
+**actor-generation fail-stop**, never JVM implicit conversion or a
+false equality result. Valid Boolean/Boolean equality remains
+supported in verified conditions.
+
+The Java child adds **16** parser/AST admission tests and **5** host
+runtime corruption tests, bringing the stacked M3.3a+b totals to
+**38 host runtime, 32 compiler parser, 5 canonical `.atto` JUnit
+methods**, all **AUTHORED_NOT_EXECUTED** pending real Maven/Graal
+runner admission. No new source fixture is falsely claimed executed.
+
+Six pending contract scenarios bring the matrix to **56**.
+Negative mutations reject fabricated CI PASS, weakened immutable
+binding gates, implicit conversions, mixed primitive kinds, disabled
+frame SP poisoning and premature full native actor stack parity.
+The legacy source fallback for unsupported objects/closures/effects,
+and all LLVM/.NET NativeAOT/Wasm/Forge guest evidence remain
+`NOT_EXECUTED` until exact-head nonzero-step compiler receipts.
+
+
+## Java M3.3c independent CFG and typed-bytecode verification
+
+[Java draft #2669](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2669)
+is stacked on #2668 and adds a second independent bytecode verifier
+to the restricted actor-owned scalar `fnc` dispatcher. Unlike the
+source lowerer's linear operand peak estimate, this immutable Program
+gate uses a bounded, nonrecursive control-flow worklist to prove exact
+`INT`/`BOOL` operand stacks, matching types/depth at branch joins,
+definite initialization of locals along **every** incoming path,
+convergence across loop backedges, valid CALL/TAIL_CALL argument kinds
+and arities, INT return with no leftover operands, and no reachable
+fallthrough or excess stack capacity. A full-image pass rejects
+noncanonical unused instruction fields even on unreachable bytecode.
+
+A malformed Program now fails **before** actor allocation/poisoning.
+The source lowering falls back the complete graph to the existing
+evaluator on CFG rejection, preserving normal compiler/typechecker
+admission. Existing host tests that had expected malformed unverified
+images to fail inside an actor were revised to expect program
+construction rejection; genuine corruption of already verified
+actor-owned frame bytes continues to fail-stop the owning actor.
+
+The Java PR adds **39 new JUnit verifier methods**, making the
+M3.3a+b+c aggregate **38 runtime actor-machine, 32 parser/compiler,
+five compiled `.atto`, 39 verifier = 114 authored JUnit tests**,
+all hosted Java execution `NOT_EXECUTED` as of this contract. One
+limited local test did execute: OpenJDK 21 compiled the byte-identical
+verifier source blob `0cd147ac955aaa08eb4346a2d342025123102331`
+against a **stubbed Function/Program** and passed **40/40 standalone
+smoke assertions**. This demonstrates only the verifier algorithm,
+not a project Maven/JUnit pass, compiled AttoLang actor execution,
+physical low-native-stack survival, or any LLVM/.NET/Wasm/Forge parity.
+
+Eight new pending scenarios bring the matrix to **64**. Conformance
+mutations reject fabricated hosted JUnit execution, confusion of the
+stubbed Java smoke with compiled guest proof, weakened per-PC
+verification or noncanonical instruction admission, and premature
+native/five-backend parity promotion. Require real, nonzero-step
+exact-head Actions receipts, test XML, source fixture outputs and
+independent review before merging or claiming stack containment.
