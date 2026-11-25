@@ -20,7 +20,7 @@ function valid(n,backend) {
       {kind:'source_free',head_sha:SHA,tree_sha:TREE,conclusion:'success',assertions:10,run_id:123,run_attempt:1,job_id:456},
       {kind:'negative',head_sha:SHA,tree_sha:TREE,conclusion:'success',assertions:3,run_id:123,run_attempt:1,job_id:456}],lease:null};
 }
-function snapshot() {return {schema_version:1,as_of:'2026-11-06T18:00:00Z',candidates:['java','llvm','wasm','forge','net'].map((b,i)=>valid(i+1,b))};}
+function snapshot() {return {schema_version:1,as_of:new Date().toISOString().replace(/\.\d{3}Z$/, 'Z'),candidates:['java','llvm','wasm','forge','net'].map((b,i)=>valid(i+1,b))};}
 function run(data) {
   const dir=mkdtempSync(join(tmpdir(),'atto-wave-e2e-'));
   try {
@@ -43,7 +43,7 @@ test('zero-step CI cannot pass end-to-end CLI',()=>{
   assert.equal(JSON.parse(result.stdout).status,'BLOCKED');
 });
 test('active agent lease cannot pass CLI',()=>{
-  const s=snapshot();s.candidates[1].lease={expires_at:'2026-11-06T20:00:00Z'};
+  const s=snapshot();s.candidates[1].lease={expires_at:new Date(Date.now()+3600_000).toISOString()};
   const result=run(s);
   assert.equal(result.status,1,result.stderr);
   assert(JSON.parse(result.stdout).blockers.some(b=>b.blockers.some(x=>x.kind==='lease')));

@@ -20,7 +20,7 @@ function with_temp_file(bytes, fn) {
 function run(path) {
   return spawnSync(process.execPath, [cli, path], {encoding:'utf8', timeout:5000, maxBuffer:64 * 1024});
 }
-const blocked = JSON.stringify({schema_version:1, as_of:'2026-11-06T18:00:00Z', candidates:[]});
+const blocked = JSON.stringify({schema_version:1, as_of:new Date().toISOString().replace(/\.\d{3}Z$/, 'Z'), candidates:[]});
 
 test('bounded CLI reads a real file and reports a blocked, non-authorizing snapshot', () =>
   with_temp_file(blocked, path => {

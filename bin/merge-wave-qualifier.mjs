@@ -81,16 +81,40 @@ function parse_snapshot_json(raw) {
   return parsed;
 }
 
+const MAX_ADVISORY_AGE_MS = 5 * 60_000;
+function require_recent_snapshot(snapshot) {
+  // A CLI read from disk is only a *claim* about GitHub state. Never let an
+  // old favorable claim be replayed as a fresh intake diagnostic.
+  if (!snapshot || typeof snapshot !== 'object' || Array.isArray(snapshot) ||
+      typeof snapshot.as_of !== 'string' ||
+      !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(snapshot.as_of)) {
+    throw Error('invalid snapshot timestamp');
+  }
+  const seen_at = Date.parse(snapshot.as_of);
+  const now = Date.now();
+  if (!Number.isFinite(seen_at)) throw Error('invalid snapshot timestamp');
+  if (seen_at - now > MAX_ADVISORY_AGE_MS) {
+    throw Error('future snapshot: outside five-minute admission window');
+  }
+  if (now - seen_at > MAX_ADVISORY_AGE_MS) {
+    throw Error('stale snapshot: source-free evidence older than five minutes');
+  }
+  return snapshot;
+}
+
+
 if (process.argv.length !== 3) {
   console.error('Usage: node bin/merge-wave-qualifier.mjs snapshot.json');
   process.exitCode = 2;
 } else {
   try {
-    const output = qualifyWave(parse_snapshot_json(read_snapshot(process.argv[2])));
+    const output = qualifyWave(require_recent_snapshot(parse_snapshot_json(read_snapshot(process.argv[2]))));
+    // Caller-provided offline evidence can never result in process success.
+    const code = output.status === 'BLOCKED' ? 1 :
+      output.status === 'SNAPSHOT_QUALIFIED_REQUIRES_LIVE_RECHECK' ? 3 : 2;
+    if (code === 2) throw Error('unexpected qualifier status');
     console.log(JSON.stringify(output, null, 2));
-    // Exit 3 for a structurally eligible but UNATTESTED snapshot. Never emit
-    // exit 0 from untrusted offline input: CI must not equate this with release approval.
-    process.exitCode = output.status === 'BLOCKED' ? 1 : 3;
+    process.exitCode = code;
   } catch (e) {
     console.error(`FAIL_CLOSED: ${e.message}`);
     process.exitCode = 2;
