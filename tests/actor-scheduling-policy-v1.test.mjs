@@ -445,3 +445,72 @@ test("cancel request retains actor admission until unwind and retirement", () =>
 test("cancellation oracle detects premature logical retirement mutation", () => {
   assert.throws(() => verifyCancellationRetirement(true));
 });
+
+
+// Source-free readiness oracle only. A ready signal is not redemption or
+// carrier admission authority; terminal records are independently bounded.
+async function verifyTerminalReadiness(dropWake = false) {
+  const parent = {ready: [], pending: null, retired: false};
+  const unrelated = {ready: [], pending: null, retired: false};
+  const wait = p => {
+    if (p.retired) throw Error('E_STALE_PARENT');
+    if (p.ready.length) return Promise.resolve(true);
+    if (!p.pending) {
+      let signal;
+      const promise = new Promise(resolve => { signal = resolve; });
+      p.pending = {promise, signal};
+    }
+    return p.pending.promise;
+  };
+  const publish = (p, ticket) => {
+    if (p.retired) throw Error('E_STALE_PARENT');
+    p.ready.push(ticket);
+    const pending = p.pending;
+    p.pending = null;
+    if (!dropWake) pending?.signal(true);
+  };
+  const take = p => {
+    if (p.retired) throw Error('E_STALE_PARENT');
+    return p.ready.shift() ?? null;
+  };
+  const close = p => {
+    assert.equal(p.ready.length, 0);
+    p.retired = true;
+    p.pending?.signal(false);
+    p.pending = null;
+  };
+  const first = wait(parent);
+  assert.equal(wait(parent), first);
+  const other = wait(unrelated);
+  let signaled = false;
+  first.then(value => { signaled = value; });
+  publish(parent, 'child:1');
+  publish(parent, 'child:2');
+  await Promise.resolve();
+  assert.equal(signaled, true);
+  assert.equal(await wait(parent), true);
+  assert.equal(take(unrelated), null);
+  assert.equal(take(parent), 'child:1');
+  assert.equal(await wait(parent), true);
+  assert.equal(take(parent), 'child:2');
+  assert.equal(take(parent), null);
+  const rearmed = wait(parent);
+  assert.notEqual(rearmed, first);
+  publish(parent, 'child:3');
+  assert.equal(await rearmed, true);
+  assert.equal(take(parent), 'child:3');
+  const final = wait(parent);
+  close(parent);
+  close(unrelated);
+  assert.equal(await final, false);
+  assert.equal(await other, false);
+  assert.throws(() => wait(parent), /E_STALE_PARENT/);
+}
+
+test("reserved supervisor terminal readiness coalesces, rearms and fences retired parents", async () => {
+  await verifyTerminalReadiness();
+});
+
+test("terminal readiness oracle detects deliberately lost wakeup", async () => {
+  await assert.rejects(() => verifyTerminalReadiness(true));
+});
