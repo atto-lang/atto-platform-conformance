@@ -1,0 +1,67 @@
+{
+  "contract": "actor-data-cbor-subset-v1",
+  "status": "HOST_REFERENCE_NOT_GUEST",
+  "spec": "https://github.com/atto-lang/atto-spec/pull/229",
+  "implementation": "https://github.com/atto-lang/atto-serialization-and-validation/pull/38",
+  "vectors": [
+    {
+      "id": "nested_exact",
+      "hex": "82f58262686920",
+      "expect": "accept",
+      "usage": {
+        "expanded": 200,
+        "nodes": 5,
+        "elements": 4,
+        "work": 14
+      },
+      "limits": {
+        "wire": 7,
+        "expanded": 200,
+        "nodes": 5,
+        "elements": 4,
+        "work": 14,
+        "depth": 2
+      }
+    },
+    {
+      "id": "overlong_integer",
+      "hex": "1817",
+      "expect": "reject"
+    },
+    {
+      "id": "indefinite",
+      "hex": "9fff",
+      "expect": "reject"
+    },
+    {
+      "id": "map",
+      "hex": "a0",
+      "expect": "reject"
+    },
+    {
+      "id": "tag",
+      "hex": "c000",
+      "expect": "reject"
+    },
+    {
+      "id": "bad_utf8",
+      "hex": "61ff",
+      "expect": "reject"
+    },
+    {
+      "id": "trailing",
+      "hex": "f4f5",
+      "expect": "reject"
+    },
+    {
+      "id": "infinite",
+      "hex": "fb7ff0000000000000",
+      "expect": "reject"
+    }
+  ],
+  "remaining": [
+    "typed shape pinning and materialization",
+    "shared cumulative budget across preflight and decode",
+    "actual runtime and guest parity"
+  ]
+}
