@@ -1,0 +1,36 @@
+// FUTURE canonical AttoLang guest fixture; NOT parsed/compiled at this revision.
+// This file is an executable target specification, not a passing conformance test.
+// Compilers MUST reject unsupported pure reducer or sealed state syntax;
+// they must not reinterpret it as an ordinary mutable actor.
+//
+// Requires stdlib DurableActor/EventSourcedActor and compiler-controlled
+// decide -> durable append -> apply -> publish -> reply sequence.
+define actor BankAccount from EventSourcedActor<AccountState, BankCommand, BankEvent> as
+  state {
+    balance: int = 0
+  }
+
+  pure decide(AccountState previous, BankCommand command)
+      -> Result<Array<BankEvent>, Error> {
+    return match command over
+      on Deposit(amount, operation_id) -> {
+        // Require amount > 0 and checked arithmetic before returning events.
+        return Ok(~array(MoneyDeposited(amount, operation_id)));
+      }
+      on Withdraw(amount, operation_id) -> {
+        // Return Err when amount <= 0 or exceeds previous.balance.
+        return Ok(~array(MoneyWithdrawn(amount, operation_id)));
+      }
+      default -> {
+        return Err(UnsupportedCommand());
+      }
+    end;
+  }
+
+  pure apply_event(AccountState previous, BankEvent event) -> AccountState {
+    return match event over
+      on MoneyDeposited(amount, _) -> AccountState(balance: previous.balance + amount)
+      on MoneyWithdrawn(amount, _) -> AccountState(balance: previous.balance - amount)
+    end;
+  }
+end

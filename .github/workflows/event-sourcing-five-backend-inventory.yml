@@ -1,0 +1,40 @@
+name: Event-sourcing five-backend evidence inventory (source-free only)
+on:
+  pull_request:
+    paths:
+      - 'contracts/event-sourcing-durable-command-v1.json'
+      - 'contracts/event-sourcing-five-backend-evidence-v1.json'
+      - 'reference/persistence-sidecar/durable-command-wire.test.mjs'
+      - 'reference/persistence-sidecar/event-sourcing-five-backend-evidence.test.mjs'
+      - '.github/workflows/event-sourcing-five-backend-inventory.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-free-inventory:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22.16.0'
+      - name: Verify exact PR head and checked source files
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          test -z "$(git status --porcelain --untracked-files=all)"
+          git rev-parse 'HEAD^{tree}'
+          git ls-files -s contracts/event-sourcing-five-backend-evidence-v1.json             reference/persistence-sidecar/event-sourcing-five-backend-evidence.test.mjs
+      - name: Run source-free wire and backend evidence checks only
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test reference/persistence-sidecar/durable-command-wire.test.mjs             reference/persistence-sidecar/event-sourcing-five-backend-evidence.test.mjs
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"

@@ -1,0 +1,262 @@
+{
+  "schema": "atto.event-sourcing.bank-account/1",
+  "status": "PROPOSED",
+  "fixture": "fixtures/event-sourcing/bank-account.atto",
+  "hostReference": "reference/persistence-sidecar/bank-account.sqlite.test.mjs",
+  "backendTargets": [
+    "java",
+    "llvm",
+    "net",
+    "wasm",
+    "forge"
+  ],
+  "resultStates": [
+    "PASS",
+    "FAIL",
+    "UNSUPPORTED",
+    "NOT_EXECUTED"
+  ],
+  "notes": "A checked-in fixture or host test never establishes compiler execution. All guest entries are NOT_EXECUTED until exact binary/source provenance and real runtime logs exist.",
+  "cases": [
+    {
+      "id": "ESBA01",
+      "expectation": "deposit committed before state/reply visibility",
+      "expected": "PASS",
+      "results": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "ESBA02",
+      "expectation": "withdrawal validates funds with no event on rejection",
+      "expected": "PASS",
+      "results": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "ESBA03",
+      "expectation": "same-epoch operation ID retry remains idempotent",
+      "expected": "PASS",
+      "results": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "ESBA04",
+      "expectation": "lost acknowledgment reconciled from persisted operation ID",
+      "expected": "PASS",
+      "results": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "ESBA05",
+      "expectation": "new epoch restores snapshot and contiguous journal",
+      "expected": "PASS",
+      "results": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "ESBA06",
+      "expectation": "cross-epoch retry cannot append duplicate event",
+      "expected": "PASS",
+      "results": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "ESBA07",
+      "expectation": "stale writer/provider epoch fenced",
+      "expected": "PASS",
+      "results": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "ESBA08",
+      "expectation": "malformed or missing event causes fail-closed restoration",
+      "expected": "PASS",
+      "results": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "ESBA09",
+      "expectation": "forged durable receipt rejected by provider",
+      "expected": "PASS",
+      "results": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "ESBA10",
+      "expectation": "async storage suspends actor A without parking actor B",
+      "expected": "PASS",
+      "results": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "ESBA11",
+      "expectation": "1,000 actor bounded batch maintains per-actor FIFO",
+      "expected": "PASS",
+      "results": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "ESBA12",
+      "expectation": "sealed state alias escape rejected by compiler",
+      "expected": "PASS",
+      "results": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "ESBA13",
+      "expectation": "mutable loan across async persistence rejected",
+      "expected": "PASS",
+      "results": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "ESBA14",
+      "expectation": "reducer I/O, time, random and send effects rejected",
+      "expected": "PASS",
+      "results": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "ESBA15",
+      "expectation": "supervisor crash/child panic isolates fault and replays state",
+      "expected": "PASS",
+      "results": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "ESBA16",
+      "expectation": "snapshot/upcaster schema incompatibility requires migration",
+      "expected": "PASS",
+      "results": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "ESBA17",
+      "expectation": "durable outbox never delivers before event commit",
+      "expected": "PASS",
+      "results": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "ESBA18",
+      "expectation": "atomic multi-event command preserves all-or-nothing append",
+      "expected": "PASS",
+      "results": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "ESBA19",
+      "expectation": "actor kind/generic parent incompatibility rejected",
+      "expected": "PASS",
+      "results": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "ESBA20",
+      "expectation": "exact guest trace matches all five backend implementations",
+      "expected": "PASS",
+      "results": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    }
+  ]
+}
