@@ -1,0 +1,141 @@
+{
+  "schema": "atto.alloc.json.guest-candidate-v1",
+  "scope": "CANDIDATE_NOT_EXECUTED",
+  "module": "alloc/json",
+  "semantics": {
+    "lookup": "independent owned Option<JsonValue>; absence differs from JSON null; wrong container rejects",
+    "as_int": "exact signed i64 or None",
+    "stringify": "bounded non-consuming read using explicit borrow",
+    "ownership": "no raw host Map, mutable child alias, or authority from user class name",
+    "wire": "strict Unicode scalar and ASCII JSON grammar; no duplicate logical keys"
+  },
+  "vectors": [
+    {
+      "id": "late-key",
+      "input": "{\"Xx\":{\"name\":\"Hélium 😀\",\"number\":999}}",
+      "key": "Xx",
+      "expected": "{\"name\":\"Hélium 😀\",\"number\":999}"
+    },
+    {
+      "id": "shell-array",
+      "input": "{\"Xx\":[7,11]}",
+      "key": "Xx",
+      "expected": "[7,11]"
+    },
+    {
+      "id": "explicit-null",
+      "input": "{\"n\":null}",
+      "key": "n",
+      "expected": "null"
+    },
+    {
+      "id": "absent",
+      "input": "{\"n\":null}",
+      "key": "missing",
+      "expected_option": "None"
+    },
+    {
+      "id": "exact-number",
+      "input": "{\"n\":9007199254740993}",
+      "key": "n",
+      "expected": "9007199254740993"
+    }
+  ],
+  "reject_parse": [
+    {
+      "id": "duplicate",
+      "input": "{\"x\":1,\"x\":2}"
+    },
+    {
+      "id": "escaped-duplicate",
+      "input": "{\"x\":1,\"\\u0078\":2}"
+    },
+    {
+      "id": "lone-surrogate",
+      "input": "\"\\uD800\""
+    },
+    {
+      "id": "non-ascii-number",
+      "input": "1٢"
+    },
+    {
+      "id": "non-ascii-hex",
+      "input": "\"\\uＦＦＦＦ\""
+    },
+    {
+      "id": "trailing",
+      "input": "true false"
+    },
+    {
+      "id": "leading-zero",
+      "input": "01"
+    }
+  ],
+  "guest_fixture": {
+    "path": "tests/fixtures/alloc-json-guest-candidate/lookup.atto",
+    "expected_stdout": "true\ntrue\nHélium 😀\n7\n{\"name\":\"Hélium 😀\",\"number\":999}\n",
+    "status": "NOT_EXECUTED"
+  },
+  "negative_fixture": {
+    "path": "tests/fixtures/alloc-json-guest-candidate/opaque-new.atto",
+    "expected": "COMPILE_REJECT_OPAQUE_CONSTRUCTION",
+    "status": "NOT_EXECUTED"
+  },
+  "targets": [
+    {
+      "backend": "java",
+      "guest_execution": "NOT_EXECUTED",
+      "native_aot": "NOT_EXECUTED",
+      "evidence": null
+    },
+    {
+      "backend": "net",
+      "guest_execution": "NOT_EXECUTED",
+      "native_aot": "NOT_EXECUTED",
+      "evidence": null
+    },
+    {
+      "backend": "llvm",
+      "guest_execution": "NOT_EXECUTED",
+      "native_aot": "NOT_EXECUTED",
+      "evidence": null
+    },
+    {
+      "backend": "forge",
+      "guest_execution": "NOT_EXECUTED",
+      "native_aot": "NOT_EXECUTED",
+      "evidence": null
+    },
+    {
+      "backend": "cranelift",
+      "guest_execution": "NOT_EXECUTED",
+      "native_aot": "NOT_EXECUTED",
+      "evidence": null
+    },
+    {
+      "backend": "rs",
+      "guest_execution": "NOT_EXECUTED",
+      "native_aot": "NOT_EXECUTED",
+      "evidence": null
+    },
+    {
+      "backend": "wasm",
+      "guest_execution": "NOT_EXECUTED",
+      "native_aot": "NOT_EXECUTED",
+      "evidence": null
+    },
+    {
+      "backend": "js",
+      "guest_execution": "NOT_EXECUTED",
+      "native_aot": "NOT_EXECUTED",
+      "evidence": null
+    },
+    {
+      "backend": "hdl",
+      "guest_execution": "NOT_EXECUTED",
+      "native_aot": "NOT_EXECUTED",
+      "evidence": null
+    }
+  ],
+  "proof": "Actual linked guest and negative compiler receipts required; source-only checks are not parity evidence. HDL capability must be explicitly assessed."
+}
