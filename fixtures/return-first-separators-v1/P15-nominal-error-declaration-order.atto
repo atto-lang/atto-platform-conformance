@@ -1,0 +1,13 @@
+// EXPECTED: main returns 42; verified nominal Error ancestry, no thrown Foo.
+// Forward references are resolved by whole-program type checking, not lexer.
+fnc int • double_answer(int value)
+raises Foo ::
+  return value * 2;
+end
+
+define class Foo extends Error as
+end
+
+pub fnc main(): int {
+  return double_answer(21);
+}
