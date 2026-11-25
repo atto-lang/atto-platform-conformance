@@ -20,6 +20,12 @@ const SHA=/^[0-9a-f]{40}$/;
 const ID=/^[a-z][a-z0-9-]{1,79}$/;
 const CAT=/^[A-Z][A-Z0-9_]{4,127}$/;
 const R=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
+const canonicalUTC=x=>{
+ if(typeof x!=='string'||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(x))return false;
+ const ms=Date.parse(x);
+ return Number.isFinite(ms)&&new Date(ms).toISOString().replace('.000Z','Z')===x&&
+   ms<=Date.now()+300000;
+};
 const distinct=x=>Array.isArray(x)&&new Set(x).size===x.length;
 const exactKeys=(o,keys)=>R(o)&&Object.keys(o).length===keys.length&&
   Object.keys(o).every(x=>keys.includes(x));
@@ -32,11 +38,13 @@ function observations(a){
    /^[a-z][a-z0-9_=.-]*$/.test(x));
 }
 function inspectCase(c,suite){
+ // A fixture Git blob SHA is not a substitute for an exact repository path.
+ // Reject nested directories, dot segments and path aliases before orchestration.
+ const fixtureDir=suite==='actor-channel-v1'
+   ?'verification/fixtures/five-backend-actor-channel-v1/'
+   :'fixtures/portable-task-v1/';
  if(!R(c)||!ID.test(c.id)||typeof c.fixture_path!=='string'||
-   !c.fixture_path.endsWith('/'+c.id+'.atto')||
-   !(suite==='actor-channel-v1'?
-     c.fixture_path.startsWith('verification/fixtures/five-backend-actor-channel-v1/'):
-     c.fixture_path.startsWith('fixtures/portable-task-v1/'))||
+   c.fixture_path!==fixtureDir+c.id+'.atto'||
     !SHA.test(c.fixture_blob_sha||'')||!R(c.expect)||
    !exactKeys(c,['id','fixture_path','fixture_blob_sha','expect']))
    fail('invalid case fixture provenance');
@@ -78,8 +86,7 @@ function inspectCase(c,suite){
 }
 export function validateGuestCaseInventory(s){
  if(!R(s)||s.schema_version!==1||s.scope!=='untrusted_draft_case_normalization'||
-   typeof s.as_of!=='string'||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(s.as_of)||
-   !Number.isFinite(Date.parse(s.as_of))||Date.parse(s.as_of)>Date.now()+300000||
+   !canonicalUTC(s.as_of)||
    !names(s.required_backends,B)||!Array.isArray(s.suites)||s.suites.length!==2||
    !names(s.suites.map(q=>q?.id),Object.keys(SOURCES))||
     !Array.isArray(s.evidence)||s.evidence.length!==0||

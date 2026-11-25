@@ -22,6 +22,14 @@ codes are pinned in both the source-free validator and manifest. A caller
 may not swap case IDs, weaken a diagnostic, drop an observation, change the
 original backend roster or insert apparent approval/PASS authority keys.
 
+**Fixture-path identity hardening:** a pinned blob alone does not authenticate the
+path from which an orchestrator would load the fixture. Each case must now use
+the **one exact canonical repository-relative filename** under its source suite
+directory, with no nested directories, `.` segments or `..` traversal. Five
+adversarial test cases reject aliases that previously satisfied the loose
+prefix/suffix check. This does not attest that the repository path was checked
+out or executed by a compiler.
+
 The **target** backend roster is Java, LLVM, Wasm, Forge and .NET. The source
 actor draft itself lists `java, llvm, net, wasm, cranelift`. This is an
 unresolved source compatibility mismatch: **Forge is absent** and **Cranelift
@@ -50,6 +58,17 @@ deliberate source-only gaps:
 - Task negative fixtures have explicit proposed diagnostic codes, such as
   `ATTO_TASK_E_HASFUTURE_WITNESS`, but no source-confirmed diagnostic phase
   for all cases. Keep `PENDING_EXACT_DIAGNOSTIC_PHASE`.
+
+## Timestamp provenance hardening
+
+The source `as_of` field must now be a **round-trip canonical UTC timestamp**,
+not merely an ISO-shaped string accepted by JavaScript's permissive
+`Date.parse`. Invalid calendar days (February 30, April 31, non-leap February
+29) and `24:00:00Z` normalization are rejected, while a genuine leap day
+remains structurally valid. These checks prevent misleading source-timestamp
+claims; they do **not** authenticate the timestamp or permit promotion of
+an unexecuted guest result. Five new source-local Node regression cases cover
+these boundaries, pending actual source-owned CI execution.
 
 ## How the reporter uses this
 

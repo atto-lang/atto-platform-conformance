@@ -19,12 +19,15 @@ function denied(label,fn){
 function receipt(b,kind,c=null){
  const v={repo:b.repo,source_commit_sha:b.source.commit_sha,source_tree_sha:b.source.tree_sha,
    compiler_binary_sha256:b.compiler.binary_sha256,
-   kind,run_id:101,run_attempt:1,job_id:202,runner_id:303,
+   kind,run_id:101,run_attempt:1,job_id:202,runner_id:303,runner_name:'synthetic-test-runner',
    status:'completed',conclusion:'success',artifact_sha256:'d'.repeat(64),
    steps:[{name:'Execute real compiler guest',status:'completed',conclusion:'success'}]};
  if(kind==='aot')return {...v,executable_sha256:'e'.repeat(64),fully_aot:true,jit_disabled:true};
  if(kind==='formal')return {...v,model_sha256:'e'.repeat(64),properties_checked:3,counterexamples:0};
  if(kind==='memory')return {...v,metrics:{samples:10,gc_collections:0}};
+ if(kind==='negative')return {...v,contract_id:c.id,fixture_blob_sha:c.fixture_blob_sha,
+   output:{exit_code:1,diagnostic_category:c.expected_diagnostic,
+     phase:c.expected_phase,crashed:false}};
  return {...v,contract_id:c.id,fixture_blob_sha:c.oracle.fixture_blob_sha,
    output:{exit_code:c.oracle.expected_exit_code,stdout_hex:c.oracle.expected_stdout_hex,crashed:false}};
 }
@@ -101,6 +104,34 @@ denied('reject future-dated manifest',s=>s.as_of='2099-01-01T00:00:00Z');
 denied('reject corrupted oracle identity',s=>s.contracts[0].oracle.fixture_blob_sha='000');
 denied('reject arbitrary manifest path escape',s=>s.postmerge_ledger.path='../../private.txt');
 denied('reject false formal PASS without proof',s=>s.backends[0].formal.state='REPORTED_PASS');
+denied('reject extra top-level release_authorized flag',s=>s.release_authorized=true);
+denied('reject extra top-level approval metadata',s=>s.trusted_approval={identity:'operator'});
+denied('reject omitted mandatory evidence note',s=>delete s.evidence_note);
+denied('reject nonstring evidence note',s=>s.evidence_note={certified:true});
+denied('reject extra postmerge trusted-status override',s=>s.postmerge_ledger.release_approved=true);
+denied('reject unrecognized postmerge reported status',s=>s.postmerge_ledger.reported_status='CERTIFIED');
+denied('reject extra negative oracle waiver',s=>s.negative_oracle.waived=true);
+denied('reject extra contract certification flag',s=>s.contracts[0].certified=true);
+denied('reject extra proposal approval flag',s=>s.contracts[0].proposal.approved=true);
+denied('reject extra scalar oracle verification flag',s=>s.contracts[0].oracle.verified=true);
+denied('reject extra suite oracle verification flag',s=>s.contracts[1].oracle.verified=true);
+denied('reject extra backend success claim',s=>s.backends[0].release_passed=true);
+denied('reject extra source protected-main proof',s=>s.backends[0].source.ruleset_enforced=true);
+denied('reject extra backend memory verification target',s=>s.backends[0].targets.verified_gc=true);
+denied('reject extra compiler binary trust assertion',s=>s.backends[0].compiler.binary_trusted=true);
+denied('reject extra guest cell execution status',s=>s.backends[0].guest[0].executed=true);
+denied('reject extra formal waiver field',s=>s.backends[0].formal.waiver=true);
+denied('reject calendar-invalid February 30 timestamp',s=>s.as_of='2026-02-30T02:00:00Z');
+denied('reject calendar-invalid April 31 timestamp',s=>s.as_of='2026-04-31T03:00:00Z');
+denied('reject invalid nonleap February 29 timestamp',s=>s.as_of='2026-02-29T12:34:56Z');
+denied('reject normalized 24-hour midnight timestamp',s=>s.as_of='2026-11-06T24:00:00Z');
+test('historical leap day is canonical UTC but remains stale',()=>{
+ const s=load();s.as_of='2024-02-29T12:34:56Z';
+ assert.equal(validateCandidate(s),true);
+ const r=evaluateCandidate(s,loadedLedger());
+ assert.equal(r.status,'BLOCKED');
+ assert(r.holds.includes('STALE_SOURCE_HEAD_SNAPSHOT'));
+});
 test('claimed scalar pass remains unverified and release blocked even with structured receipt',()=>{
  const s=load();withReportedScalar(s);
  const r=evaluateCandidate(s,loadedLedger());
@@ -204,10 +235,7 @@ function withReportedNegative(s){
  const b=s.backends[0],c=s.negative_oracle;
  b.compiler.binary_sha256='a'.repeat(64);
  b.compiler.build_receipt=receipt(b,'aot');
- b.negative={state:'REPORTED_PASS',receipt:{...receipt(b,'formal'),
-  kind:'negative',contract_id:c.id,fixture_blob_sha:c.fixture_blob_sha,
-  output:{exit_code:1,diagnostic_category:c.expected_diagnostic,
-    phase:c.expected_phase,crashed:false}}};
+ b.negative={state:'REPORTED_PASS',receipt:receipt(b,'negative',c)};
  return b;
 }
 test('structurally reported negative remains UNVERIFIED and cannot release',()=>{
@@ -254,6 +282,117 @@ test('queued, in-progress or padded substantive steps cannot certify execution',
   mutateStep(b.guest[0].receipt.steps[0]);
   assert.throws(()=>validateCandidate(s),/unbound guest receipt/);
  }
+});
+test('missing, absent and malformed runner names reject a claimed guest execution',()=>{
+ for(const bad of [null,'',' ','  worker','worker  ','worker\nline','worker\u00a0name',
+                    'worker\u200bname','x'.repeat(129),0,{},[]]){
+  const s=load(),{b}=withReportedScalar(s);
+  b.guest[0].receipt.runner_name=bad;
+  assert.throws(()=>validateCandidate(s),/unbound guest receipt/);
+ }
+ const s=load(),{b}=withReportedScalar(s);
+ delete b.guest[0].receipt.runner_name;
+ assert.throws(()=>validateCandidate(s),/unbound guest receipt/);
+});
+test('missing or blank runner name rejects a claimed compiler binary build',()=>{
+ for(const mutateReceipt of [
+  r=>{delete r.runner_name;},
+  r=>{r.runner_name='   ';},
+  r=>{r.runner_name='\u0000';}
+ ]){
+  const s=load(),{b}=withReportedScalar(s);
+  mutateReceipt(b.compiler.build_receipt);
+  assert.throws(()=>validateCandidate(s),/unbound build receipt/);
+ }
+});
+test('missing runner name rejects negative compiler and formal claims',()=>{
+ const s=load(),b=withReportedNegative(s);
+ delete b.negative.receipt.runner_name;
+ assert.throws(()=>validateCandidate(s),/unbound negative receipt/);
+});
+test('nonzero runner ID plus printable name is still not trusted provenance',()=>{
+ const s=load();
+ const {b}=withReportedScalar(s);
+ assert.equal(b.guest[0].receipt.runner_id,303);
+ assert.equal(b.guest[0].receipt.runner_name,'synthetic-test-runner');
+ const report=evaluateCandidate(s,loadedLedger());
+ assert.equal(report.backends[0].guest['scalar-exit-42-v1'],'REPORTED_PASS_UNVERIFIED');
+ assert.equal(report.release_authorized,false);
+ assert.equal(report.status,'BLOCKED');
+});
+test('self-reported scalar PASS is blocked by explicit unauthenticated receipt hold',()=>{
+ const s=load();withReportedScalar(s);
+ const r=evaluateCandidate(s,loadedLedger());
+ assert(r.backends[0].blockers.includes('GUEST_RECEIPT_UNAUTHENTICATED'));
+ assert(r.holds.includes('UNAUTHENTICATED_RECEIPT_CLAIMS'));
+ assert.equal(r.status,'BLOCKED');assert.equal(r.release_authorized,false);
+});
+test('self-reported negative PASS never clears the negative-verification hold',()=>{
+ const s=load();withReportedNegative(s);
+ const r=evaluateCandidate(s,loadedLedger());
+ assert.equal(r.backends[0].negative,'REPORTED_PASS_UNVERIFIED');
+ assert(r.backends[0].blockers.includes('NEGATIVE_RECEIPT_UNAUTHENTICATED'));
+ assert(r.holds.includes('UNAUTHENTICATED_RECEIPT_CLAIMS'));
+ assert.equal(r.release_authorized,false);
+});
+test('formal, full-AOT and memory self-reports each retain unauthenticated blockers',()=>{
+ for(const kind of ['formal','aot','memory']){
+  const s=load(),{b}=withReportedScalar(s);
+  b[kind]={state:'REPORTED_PASS',receipt:receipt(b,kind)};
+  const report=evaluateCandidate(s,loadedLedger());
+  assert.equal(report.backends[0][kind],'REPORTED_PASS_UNVERIFIED');
+  assert(report.backends[0].blockers.includes(kind.toUpperCase()+'_RECEIPT_UNAUTHENTICATED'));
+  assert(report.holds.includes('UNAUTHENTICATED_RECEIPT_CLAIMS'));
+  assert.equal(report.release_authorized,false);
+ }
+});
+test('invalid postmerge summary cannot contradict the independently evaluated ledger',()=>{
+ const s=load();s.postmerge_ledger.reported_status='SNAPSHOT_READY_RECHECK_LIVE';
+ assert.equal(validateCandidate(s),true);
+ assert.throws(()=>evaluateCandidate(s,loadedLedger()),/snapshot ledger status does not match/);
+});
+test('guest/build receipt cannot smuggle extra authority fields or nested step metadata',()=>{
+ for(const mutateReceipt of [
+  b=>b.guest[0].receipt.release_authorized=true,
+  b=>b.guest[0].receipt.verified=true,
+  b=>b.guest[0].receipt.output.certified=true,
+  b=>b.guest[0].receipt.steps[0].approved=true,
+  b=>b.compiler.build_receipt.trusted=true,
+  b=>b.compiler.build_receipt.steps[0].bypass=true
+ ]){
+  const s=load(),{b}=withReportedScalar(s);
+  mutateReceipt(b);
+  assert.throws(()=>validateCandidate(s),/unbound (?:guest|build) receipt/);
+ }
+});
+test('negative receipt cannot smuggle waived diagnostics or extra output keys',()=>{
+ for(const mutateReceipt of [
+  b=>b.negative.receipt.waived=true,
+  b=>b.negative.receipt.output.recovered=true,
+  b=>b.negative.receipt.steps[0].skipped_test=true
+ ]){
+  const s=load(),b=withReportedNegative(s);
+  mutateReceipt(b);
+  assert.throws(()=>validateCandidate(s),/unbound negative receipt/);
+ }
+});
+test('LLVM positive GC count fails structural zero-GC precondition even in untrusted receipt',()=>{
+ const s=load(),{b}=withReportedScalar(s,1,0);
+ b.memory={state:'REPORTED_PASS',receipt:receipt(b,'memory')};
+ b.memory.receipt.metrics.gc_collections=1;
+ assert.throws(()=>validateCandidate(s),/unbound memory receipt/);
+ b.memory.receipt.metrics.gc_collections=0;
+ assert.equal(validateCandidate(s),true);
+ const report=evaluateCandidate(s,loadedLedger());
+ assert.equal(report.backends[1].memory,'REPORTED_PASS_UNVERIFIED');
+ assert(report.backends[1].blockers.includes('MEMORY_RECEIPT_UNAUTHENTICATED'));
+ assert.equal(report.release_authorized,false);
+});
+test('memory metrics cannot embed independent certification or waiver claims',()=>{
+ const s=load(),{b}=withReportedScalar(s);
+ b.memory={state:'REPORTED_PASS',receipt:receipt(b,'memory')};
+ b.memory.receipt.metrics.verified_gc=true;
+ assert.throws(()=>validateCandidate(s),/unbound memory receipt/);
 });
 test('housekeeping-only CI is insufficient to substantiate a guest run',()=>{
  const s=load(),{b}=withReportedScalar(s);

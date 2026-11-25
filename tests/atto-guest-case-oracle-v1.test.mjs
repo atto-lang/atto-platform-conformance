@@ -90,6 +90,21 @@ denies('repeated Task roster entry fails closed',s=>s.suites[1].source.original_
 denies('unknown actor fixture hash fails closed',s=>s.suites[0].cases[0].fixture_blob_sha='f'.repeat(40));
 denies('unknown Task fixture hash fails closed',s=>s.suites[1].cases[0].fixture_blob_sha='f'.repeat(40));
 denies('fixture path traversal fails closed',s=>s.suites[1].cases[0].fixture_path='../outside.atto');
+denies('Task nested-directory alias cannot reuse a pinned Git blob',s=>{
+ s.suites[1].cases[0].fixture_path='fixtures/portable-task-v1/nested/eager-before-await.atto';
+});
+denies('Task dot-segment alias cannot reuse a pinned Git blob',s=>{
+ s.suites[1].cases[0].fixture_path='fixtures/portable-task-v1/./eager-before-await.atto';
+});
+denies('Task parent-traversal alias cannot reuse a pinned Git blob',s=>{
+ s.suites[1].cases[0].fixture_path='fixtures/portable-task-v1/../portable-task-v1/eager-before-await.atto';
+});
+denies('actor nested-directory alias cannot reuse a pinned Git blob',s=>{
+ s.suites[0].cases[0].fixture_path='verification/fixtures/five-backend-actor-channel-v1/nested/actor-channel-roundtrip.atto';
+});
+denies('actor parent-traversal alias cannot reuse a pinned Git blob',s=>{
+ s.suites[0].cases[0].fixture_path='verification/fixtures/five-backend-actor-channel-v1/../five-backend-actor-channel-v1/actor-channel-roundtrip.atto';
+});
 denies('case-kind swap fails closed',s=>s.suites[0].cases[0].expect.kind='negative');
 denies('missing actor positive stdout fails closed',s=>s.suites[0].cases[0].expect.expected_stdout_text='');
 denies('actor stdout weakened to different value fails closed',s=>s.suites[0].cases[0].expect.expected_stdout_text='ok');
@@ -117,6 +132,17 @@ denies('malicious synthetic PASS evidence cannot be admitted',s=>{
 });
 denies('malformed source timestamp is rejected',s=>s.as_of='yesterday');
 denies('future source timestamp is rejected',s=>s.as_of='2099-01-01T00:00:00Z');
+denies('calendar-invalid case provenance rejects February 30',s=>s.as_of='2026-02-30T02:00:00Z');
+denies('calendar-invalid case provenance rejects April 31',s=>s.as_of='2026-04-31T03:00:00Z');
+denies('non-leap February 29 case provenance is rejected',s=>s.as_of='2026-02-29T12:34:56Z');
+denies('24-hour rollover case provenance is rejected',s=>s.as_of='2026-11-06T24:00:00Z');
+test('valid leap-day case provenance remains advisory and never executed',()=>{
+ const s=fresh();s.as_of='2024-02-29T12:34:56Z';
+ assert.equal(validateGuestCaseInventory(s),true);
+ const report=evaluateGuestCaseInventory(s);
+ assert.equal(report.status,'BLOCKED');
+ assert.equal(report.executed_guest_cells,0);
+});
 denies('wrong advisory scope is rejected',s=>s.scope='release_authority');
 
 const candidatePath=fileURLToPath(new URL('../evidence/atto-five-backend-release-candidate-v1.json',import.meta.url));
