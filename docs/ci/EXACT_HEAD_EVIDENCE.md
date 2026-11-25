@@ -34,6 +34,15 @@ head is always `UNVERIFIED`, even if both missing fields compare equal.
   exact-checkout receipt: repository, `head_sha`, `tree_sha`, `run_id`,
   `attempt`, `job_id`, `step_number`. Bind the receipt to a successful step.
 
+For `workflow_dispatch` with a **failed** completed workflow, a zero-step
+runner-admission classification cannot require a runner-created checkout receipt:
+no step ran to generate one. The failed workflow and job must still be bound to
+the same run ID, attempt, workflow-head SHA and required job identity, with
+`runner_id: 0` and explicit `steps: []`. This is a metadata-only admission
+finding, not proof of the intended source checkout or source/tree execution.
+For successful `workflow_dispatch`, the exact-tree checkout receipt remains
+mandatory; no checkout receipt can be inferred from workflow metadata alone.
+
 An **explicit** `steps=[]` on the correctly bound job is the only zero-step
 admission indicator. Missing `steps` metadata must remain `UNVERIFIED`;
 a failed job with recorded steps must **never** be classified as runner
