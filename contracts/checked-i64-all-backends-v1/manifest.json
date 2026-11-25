@@ -1,0 +1,116 @@
+{
+  "schema": "atto.checked-i64.all-source-backends.v1",
+  "status": "CANDIDATE_SOURCE_ONLY",
+  "specification": "https://github.com/atto-lang/atto-spec/pull/144",
+  "corpus": {
+    "path": "contracts/checked-i64-all-backends-v1/cases.tsv",
+    "git_blob_sha1": "71309fac2ab6b2191a0056c84d78987bd342dce0",
+    "sha256": "e56dfccea11757ff18fc72a81ba5d643380e69184ab309eedf45e1e7b940e133",
+    "count": 15,
+    "expected": {
+      "value": 7,
+      "overflow": 7,
+      "zero": 1
+    }
+  },
+  "backend_snapshots": [
+    {
+      "id": "atto",
+      "repository": "atto-lang/atto-source.atto",
+      "main_sha": "5b9a274490a4567ed9d1088fd1ff304dbe383357",
+      "role": "bootstrap",
+      "execution_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "id": "cranelift",
+      "repository": "atto-lang/atto-source.cranelift",
+      "main_sha": "e867c0a5cf8b94f98ce9b1212d2c735b76bc4120",
+      "role": "independent_compiler",
+      "execution_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "id": "forge",
+      "repository": "atto-lang/atto-source.forge",
+      "main_sha": "bca67ceb4ae933ef2e0576926809365518196f40",
+      "role": "independent_compiler",
+      "execution_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "id": "hdl",
+      "repository": "atto-lang/atto-source.hdl",
+      "main_sha": "023455e496bb9cfbdd157ccc94bb69f31eec44ea",
+      "role": "experimental_target",
+      "execution_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "id": "java",
+      "repository": "atto-lang/atto-source.java",
+      "main_sha": "9caccb4ac57dbbe9cfd13cb490a005e273d217e5",
+      "role": "independent_compiler",
+      "execution_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "id": "js",
+      "repository": "atto-lang/atto-source.js",
+      "main_sha": "ec5201e11f44822e839a625152b2c6d0b979b884",
+      "role": "independent_compiler",
+      "execution_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "id": "llvm",
+      "repository": "atto-lang/atto-source.llvm",
+      "main_sha": "21eedb54506a43fd2402699616043185b573f452",
+      "role": "independent_compiler",
+      "execution_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "id": "net",
+      "repository": "atto-lang/atto-source.net",
+      "main_sha": "9e1dc9503b01a8908fc95625eecc846fc5a69780",
+      "role": "independent_compiler",
+      "execution_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "id": "realtime",
+      "repository": "atto-lang/atto-source.realtime",
+      "main_sha": "4f6449470ab075cdad17884c7a1aee2a6e2ab54c",
+      "role": "planned_target",
+      "execution_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "id": "rs",
+      "repository": "atto-lang/atto-source.rs",
+      "main_sha": "2a93b5f9358a0ee5642a52c23f6621d0fa9e070d",
+      "role": "independent_compiler",
+      "execution_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "id": "wasm",
+      "repository": "atto-lang/atto-source.wasm",
+      "main_sha": "7e3f292afdc2e191f631046a56b21a23282c5a55",
+      "role": "delegated_compiler_harness",
+      "execution_status": "NOT_EXECUTED",
+      "receipt": null
+    }
+  ],
+  "requirements": [
+    "same authored portable .atto guest semantics; backend-specific harness adapters allowed",
+    "exact source compiler commit/tree and fixture Git blob SHA",
+    "real compiled guest and negative no-artifact compiler outcomes with observed values and diagnostics",
+    "verified artifact or binary digest and target/toolchain provenance",
+    "actual nonzero runner steps; zero-step Actions means NOT_EXECUTED",
+    "TenantVM and actor security properties require separate guest/negative isolation evidence",
+    "independent source review and authorization for private source mirroring"
+  ],
+  "source_only_not_guest_execution": true
+}
