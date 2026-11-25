@@ -1,0 +1,204 @@
+{
+  "contract": "actor-data-codec-selection-v1",
+  "status": "DESIGN_ONLY_NOT_EXECUTED",
+  "spec": "https://github.com/atto-lang/atto-spec/pull/228",
+  "existing_vectors": "https://github.com/atto-lang/atto-platform-conformance/pull/530",
+  "profiles": {
+    "messagepack": "default for new endpoints; existing wire compatibility",
+    "protobuf": "first-class",
+    "cbor": "first-class",
+    "flatbuffers": "optional verified immutable buffers"
+  },
+  "targets": [
+    {
+      "target": "java",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "target": "net",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "target": "llvm",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "target": "wasm",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "target": "forge",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "target": "cranelift",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "target": "rs",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "target": "js",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "target": "atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "target": "hdl",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "target": "realtime",
+      "status": "NOT_EXECUTED"
+    }
+  ],
+  "cases": [
+    {
+      "id": "selection-default",
+      "scenario": "MessagePack default on new serialized DATA endpoint; retain existing wire versions",
+      "expected": "accept",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "selection-explicit",
+      "scenario": "Protobuf and CBOR endpoints with matching registered schema; FlatBuffers when supported",
+      "expected": "accept",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "selection-local",
+      "scenario": "borrow/move/checked copy requires Sendable, not unnecessary serialization",
+      "expected": "accept",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "selection-denied",
+      "scenario": "child widens supervisor codec or quota allowlist",
+      "expected": "reject",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "selection-downgrade",
+      "scenario": "unknown codec/version, mismatch, format sniff/fallback or implicit transcoding",
+      "expected": "reject",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "schema-types",
+      "scenario": "roundtrip nominal enum/ADT, tuple, Option/Result, bytes, widths, strings and bigint where specified",
+      "expected": "accept",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "schema-evolution",
+      "scenario": "compatible schema versions; reserved protobuf field tags never reused",
+      "expected": "accept",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "schema-invalid",
+      "scenario": "unknown nominal variant, wrong schema identity, unsupported shape",
+      "expected": "reject",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "malformed",
+      "scenario": "truncation, trailing bytes, invalid UTF-8, overflow, inconsistent lengths",
+      "expected": "reject",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "ambiguity",
+      "scenario": "duplicate keys/fields, disallowed extensions/tags, noncanonical strict profile",
+      "expected": "reject",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "resource",
+      "scenario": "frame, expanded bytes, depth, nodes, collection, parser fuel and concurrent tenant budget boundaries",
+      "expected": "reject_over_limit",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "compression",
+      "scenario": "disabled by default; enforce compressed/expanded/fuel ceilings if enabled",
+      "expected": "reject_over_limit",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "capability",
+      "scenario": "forged ActorRef, pointer, host object, codec object, cross-tenant identity",
+      "expected": "reject",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "control",
+      "scenario": "application payload impersonates supervisor restart/stop/panic CONTROL",
+      "expected": "reject",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "auth",
+      "scenario": "tampered authenticated envelope/payload, unauthorized sender or replay",
+      "expected": "reject",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "generation",
+      "scenario": "stale generation before enqueue or restart during decode",
+      "expected": "reject",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "rollback",
+      "scenario": "queue-full, cancel, decode failure, restart and admission race release credits exactly once",
+      "expected": "no_publication_no_leak",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "flatbuffers",
+      "scenario": "invalid offset, vector length, mutable backing or use after release",
+      "expected": "reject",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "aot",
+      "scenario": "static codecs without reflection/runtime loading across supported native targets",
+      "expected": "accept",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "unsupported",
+      "scenario": "explicit unsupported codec/target diagnostics with no silent fallback",
+      "expected": "reject",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "interop",
+      "scenario": "all supported producer/consumer backend pairs exchange exact shared fixtures, same semantic values",
+      "expected": "accept",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "hot-upgrade",
+      "scenario": "schema/codec migration authenticated and generation-fenced, old in-flight data follows documented policy",
+      "expected": "accept_or_explicit_reject",
+      "status": "NOT_EXECUTED"
+    }
+  ],
+  "evidence": {
+    "required": [
+      "exact compiler head/root tree",
+      "fixture SHA",
+      "target/toolchain",
+      "executed positive and negative .atto guest",
+      "wire vectors and differential fuzz receipts",
+      "independent security review"
+    ],
+    "host_only": "NOT_EXECUTED",
+    "zero_steps": "NOT_EXECUTED"
+  }
+}
