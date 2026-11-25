@@ -1,0 +1,829 @@
+{
+  "schema_version": 2,
+  "contract_id": "attolang-unified-effects-v2",
+  "status": "SOURCE_FREE_MODEL_NOT_GUEST_EXECUTION",
+  "supersedes": null,
+  "extends": "contracts/v1/function-effects-v1.json",
+  "effect_names": [
+    "throw",
+    "raise",
+    "panic",
+    "suspend",
+    "block",
+    "alloc",
+    "state.read",
+    "state.write",
+    "io",
+    "io.file.read",
+    "io.file.write",
+    "io.net",
+    "io.env",
+    "io.clock",
+    "io.entropy",
+    "ffi",
+    "nondet",
+    "spawns"
+  ],
+  "operations": {
+    "compute": [],
+    "heap.allocate": [
+      "alloc"
+    ],
+    "pool.allocate": [
+      "alloc"
+    ],
+    "file.read": [
+      "io.file.read",
+      "nondet"
+    ],
+    "file.write": [
+      "io.file.write"
+    ],
+    "network.receive": [
+      "io.net",
+      "nondet",
+      "suspend"
+    ],
+    "env.read": [
+      "io.env",
+      "nondet"
+    ],
+    "clock.now": [
+      "io.clock",
+      "nondet"
+    ],
+    "entropy.system": [
+      "io.entropy",
+      "nondet"
+    ],
+    "state.read": [
+      "state.read"
+    ],
+    "state.write": [
+      "state.write"
+    ],
+    "state.rmw": [
+      "state.read",
+      "state.write"
+    ],
+    "actor.spawn": [
+      "spawns",
+      "alloc"
+    ],
+    "cooperate": [
+      "suspend"
+    ],
+    "os.thread.wait": [
+      "block"
+    ],
+    "ffi.verified": [
+      "ffi"
+    ],
+    "throw!": [
+      "throw"
+    ],
+    "raise!": [
+      "raise"
+    ],
+    "panic!": [
+      "panic"
+    ],
+    "drop.with.alloc": [
+      "alloc"
+    ]
+  },
+  "rules": {
+    "declared": "upper_bound_not_authority",
+    "missing_bound": "infer_transitively",
+    "unknown": "reject",
+    "unsealed_dispatch": "reject",
+    "critical_read": "forbid_write_and_suspend",
+    "critical_write": "forbid_suspend",
+    "pure": "no_ambient_or_external_effects",
+    "deterministic": "no_ambient_observations",
+    "hard_rt": "conservative_effects_plus_bounded_work_not_wcet",
+    "work_bounded": "producer_claim_not_a_wcet_certificate"
+  },
+  "backends": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "rs": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
+    "hdl": "NOT_EXECUTED",
+    "atto": "NOT_EXECUTED",
+    "realtime": "NOT_EXECUTED"
+  },
+  "cases": [
+    {
+      "name": "infer_pure_scalar",
+      "profile": "pure",
+      "entry": "entry",
+      "functions": [
+        {
+          "id": "entry",
+          "ops": [
+            "compute"
+          ],
+          "calls": [],
+          "bound": null,
+          "work": "bounded",
+          "context": "ordinary"
+        }
+      ],
+      "expected": "accept",
+      "diagnostic": null
+    },
+    {
+      "name": "pure_private_allocation",
+      "profile": "pure",
+      "entry": "entry",
+      "functions": [
+        {
+          "id": "entry",
+          "ops": [
+            "heap.allocate"
+          ],
+          "calls": [],
+          "bound": null,
+          "work": "bounded",
+          "context": "ordinary"
+        }
+      ],
+      "expected": "accept",
+      "diagnostic": null
+    },
+    {
+      "name": "declared_bound_missing_alloc",
+      "profile": "general",
+      "entry": "entry",
+      "functions": [
+        {
+          "id": "entry",
+          "ops": [
+            "heap.allocate"
+          ],
+          "calls": [],
+          "bound": [],
+          "work": "bounded",
+          "context": "ordinary"
+        }
+      ],
+      "expected": "reject",
+      "diagnostic": "E_EFFECT_BOUND"
+    },
+    {
+      "name": "file_read_exact_bound",
+      "profile": "general",
+      "entry": "entry",
+      "functions": [
+        {
+          "id": "entry",
+          "ops": [
+            "file.read"
+          ],
+          "calls": [],
+          "bound": [
+            "io.file.read",
+            "nondet"
+          ],
+          "work": "bounded",
+          "context": "ordinary"
+        }
+      ],
+      "expected": "accept",
+      "diagnostic": null
+    },
+    {
+      "name": "file_read_missing_nondet",
+      "profile": "general",
+      "entry": "entry",
+      "functions": [
+        {
+          "id": "entry",
+          "ops": [
+            "file.read"
+          ],
+          "calls": [],
+          "bound": [
+            "io.file.read"
+          ],
+          "work": "bounded",
+          "context": "ordinary"
+        }
+      ],
+      "expected": "reject",
+      "diagnostic": "E_EFFECT_BOUND"
+    },
+    {
+      "name": "legacy_io_super_effect_not_authority",
+      "profile": "general",
+      "entry": "entry",
+      "functions": [
+        {
+          "id": "entry",
+          "ops": [
+            "file.read"
+          ],
+          "calls": [],
+          "bound": [
+            "io",
+            "nondet"
+          ],
+          "work": "bounded",
+          "context": "ordinary"
+        }
+      ],
+      "expected": "accept",
+      "diagnostic": null
+    },
+    {
+      "name": "deterministic_clock_reject",
+      "profile": "deterministic",
+      "entry": "entry",
+      "functions": [
+        {
+          "id": "entry",
+          "ops": [
+            "clock.now"
+          ],
+          "calls": [],
+          "bound": null,
+          "work": "bounded",
+          "context": "ordinary"
+        }
+      ],
+      "expected": "reject",
+      "diagnostic": "E_NONDETERMINISTIC"
+    },
+    {
+      "name": "deterministic_seed_value",
+      "profile": "deterministic",
+      "entry": "entry",
+      "functions": [
+        {
+          "id": "entry",
+          "ops": [
+            "compute"
+          ],
+          "calls": [],
+          "bound": null,
+          "work": "bounded",
+          "context": "ordinary"
+        }
+      ],
+      "expected": "accept",
+      "diagnostic": null
+    },
+    {
+      "name": "deterministic_env_reject",
+      "profile": "deterministic",
+      "entry": "entry",
+      "functions": [
+        {
+          "id": "entry",
+          "ops": [
+            "env.read"
+          ],
+          "calls": [],
+          "bound": null,
+          "work": "bounded",
+          "context": "ordinary"
+        }
+      ],
+      "expected": "reject",
+      "diagnostic": "E_NONDETERMINISTIC"
+    },
+    {
+      "name": "deterministic_net_reject",
+      "profile": "deterministic",
+      "entry": "entry",
+      "functions": [
+        {
+          "id": "entry",
+          "ops": [
+            "network.receive"
+          ],
+          "calls": [],
+          "bound": null,
+          "work": "bounded",
+          "context": "ordinary"
+        }
+      ],
+      "expected": "reject",
+      "diagnostic": "E_NONDETERMINISTIC"
+    },
+    {
+      "name": "pure_actor_state_read_reject",
+      "profile": "pure",
+      "entry": "entry",
+      "functions": [
+        {
+          "id": "entry",
+          "ops": [
+            "state.read"
+          ],
+          "calls": [],
+          "bound": null,
+          "work": "bounded",
+          "context": "ordinary"
+        }
+      ],
+      "expected": "reject",
+      "diagnostic": "E_PURITY_EFFECT"
+    },
+    {
+      "name": "pure_actor_state_write_reject",
+      "profile": "pure",
+      "entry": "entry",
+      "functions": [
+        {
+          "id": "entry",
+          "ops": [
+            "state.write"
+          ],
+          "calls": [],
+          "bound": null,
+          "work": "bounded",
+          "context": "ordinary"
+        }
+      ],
+      "expected": "reject",
+      "diagnostic": "E_PURITY_EFFECT"
+    },
+    {
+      "name": "state_read_with_loan_target_only",
+      "profile": "general",
+      "entry": "entry",
+      "functions": [
+        {
+          "id": "entry",
+          "ops": [
+            "state.read"
+          ],
+          "calls": [],
+          "bound": [
+            "state.read"
+          ],
+          "work": "bounded",
+          "context": "ordinary"
+        }
+      ],
+      "expected": "accept",
+      "diagnostic": null
+    },
+    {
+      "name": "critical_read_cannot_write",
+      "profile": "general",
+      "entry": "entry",
+      "functions": [
+        {
+          "id": "entry",
+          "ops": [
+            "state.write"
+          ],
+          "calls": [],
+          "bound": [
+            "state.write"
+          ],
+          "work": "bounded",
+          "context": "critical_read"
+        }
+      ],
+      "expected": "reject",
+      "diagnostic": "E_EFFECT_CRITICAL_WRITE"
+    },
+    {
+      "name": "critical_write_cannot_suspend_indirect",
+      "profile": "general",
+      "entry": "entry",
+      "functions": [
+        {
+          "id": "entry",
+          "ops": [],
+          "calls": [
+            {
+              "targets": [
+                "inner"
+              ],
+              "sealed": true
+            }
+          ],
+          "bound": null,
+          "work": "bounded",
+          "context": "critical_write"
+        },
+        {
+          "id": "inner",
+          "ops": [
+            "cooperate"
+          ],
+          "calls": [],
+          "bound": null,
+          "work": "bounded",
+          "context": "ordinary"
+        }
+      ],
+      "expected": "reject",
+      "diagnostic": "E_EFFECT_CRITICAL_SUSPEND"
+    },
+    {
+      "name": "pure_actor_spawn_reject",
+      "profile": "pure",
+      "entry": "entry",
+      "functions": [
+        {
+          "id": "entry",
+          "ops": [
+            "actor.spawn"
+          ],
+          "calls": [],
+          "bound": null,
+          "work": "bounded",
+          "context": "ordinary"
+        }
+      ],
+      "expected": "reject",
+      "diagnostic": "E_PURITY_EFFECT"
+    },
+    {
+      "name": "trusted_summary_ffi_general",
+      "profile": "general",
+      "entry": "entry",
+      "functions": [
+        {
+          "id": "entry",
+          "ops": [
+            "ffi.verified"
+          ],
+          "calls": [],
+          "bound": [
+            "ffi"
+          ],
+          "work": "bounded",
+          "context": "ordinary"
+        }
+      ],
+      "expected": "accept",
+      "diagnostic": null
+    },
+    {
+      "name": "unknown_call_fail_closed",
+      "profile": "general",
+      "entry": "entry",
+      "functions": [
+        {
+          "id": "entry",
+          "ops": [
+            "unknown.call"
+          ],
+          "calls": [],
+          "bound": null,
+          "work": "bounded",
+          "context": "ordinary"
+        }
+      ],
+      "expected": "reject",
+      "diagnostic": "E_EFFECT_UNKNOWN"
+    },
+    {
+      "name": "unsealed_dynamic_dispatch_fail_closed",
+      "profile": "general",
+      "entry": "entry",
+      "functions": [
+        {
+          "id": "entry",
+          "ops": [],
+          "calls": [
+            {
+              "targets": [
+                "a",
+                "b"
+              ],
+              "sealed": false
+            }
+          ],
+          "bound": null,
+          "work": "bounded",
+          "context": "ordinary"
+        },
+        {
+          "id": "a",
+          "ops": [
+            "compute"
+          ],
+          "calls": [],
+          "bound": null,
+          "work": "bounded",
+          "context": "ordinary"
+        },
+        {
+          "id": "b",
+          "ops": [
+            "compute"
+          ],
+          "calls": [],
+          "bound": null,
+          "work": "bounded",
+          "context": "ordinary"
+        }
+      ],
+      "expected": "reject",
+      "diagnostic": "E_EFFECT_UNKNOWN"
+    },
+    {
+      "name": "sealed_dispatch_union_requires_alloc",
+      "profile": "general",
+      "entry": "entry",
+      "functions": [
+        {
+          "id": "entry",
+          "ops": [],
+          "calls": [
+            {
+              "targets": [
+                "a",
+                "b"
+              ],
+              "sealed": true
+            }
+          ],
+          "bound": [],
+          "work": "bounded",
+          "context": "ordinary"
+        },
+        {
+          "id": "a",
+          "ops": [
+            "compute"
+          ],
+          "calls": [],
+          "bound": null,
+          "work": "bounded",
+          "context": "ordinary"
+        },
+        {
+          "id": "b",
+          "ops": [
+            "heap.allocate"
+          ],
+          "calls": [],
+          "bound": null,
+          "work": "bounded",
+          "context": "ordinary"
+        }
+      ],
+      "expected": "reject",
+      "diagnostic": "E_EFFECT_BOUND"
+    },
+    {
+      "name": "transitive_bound_accept",
+      "profile": "general",
+      "entry": "entry",
+      "functions": [
+        {
+          "id": "entry",
+          "ops": [],
+          "calls": [
+            {
+              "targets": [
+                "helper"
+              ],
+              "sealed": true
+            }
+          ],
+          "bound": [
+            "alloc"
+          ],
+          "work": "bounded",
+          "context": "ordinary"
+        },
+        {
+          "id": "helper",
+          "ops": [
+            "pool.allocate"
+          ],
+          "calls": [],
+          "bound": null,
+          "work": "bounded",
+          "context": "ordinary"
+        }
+      ],
+      "expected": "accept",
+      "diagnostic": null
+    },
+    {
+      "name": "hard_rt_no_alloc_bounded",
+      "profile": "hard_rt",
+      "entry": "entry",
+      "functions": [
+        {
+          "id": "entry",
+          "ops": [
+            "compute"
+          ],
+          "calls": [],
+          "bound": null,
+          "work": "bounded",
+          "context": "ordinary"
+        }
+      ],
+      "expected": "accept",
+      "diagnostic": null
+    },
+    {
+      "name": "hard_rt_transitive_alloc_reject",
+      "profile": "hard_rt",
+      "entry": "entry",
+      "functions": [
+        {
+          "id": "entry",
+          "ops": [],
+          "calls": [
+            {
+              "targets": [
+                "deep"
+              ],
+              "sealed": true
+            }
+          ],
+          "bound": null,
+          "work": "bounded",
+          "context": "ordinary"
+        },
+        {
+          "id": "deep",
+          "ops": [
+            "pool.allocate"
+          ],
+          "calls": [],
+          "bound": null,
+          "work": "bounded",
+          "context": "ordinary"
+        }
+      ],
+      "expected": "reject",
+      "diagnostic": "E_HARD_RT_ALLOCATION"
+    },
+    {
+      "name": "hard_rt_cleanup_allocation_reject",
+      "profile": "hard_rt",
+      "entry": "entry",
+      "functions": [
+        {
+          "id": "entry",
+          "ops": [
+            "drop.with.alloc"
+          ],
+          "calls": [],
+          "bound": null,
+          "work": "bounded",
+          "context": "ordinary"
+        }
+      ],
+      "expected": "reject",
+      "diagnostic": "E_HARD_RT_ALLOCATION"
+    },
+    {
+      "name": "hard_rt_unknown_work_reject",
+      "profile": "hard_rt",
+      "entry": "entry",
+      "functions": [
+        {
+          "id": "entry",
+          "ops": [],
+          "calls": [],
+          "bound": null,
+          "work": "unknown",
+          "context": "ordinary"
+        }
+      ],
+      "expected": "reject",
+      "diagnostic": "E_HARD_RT_UNBOUNDED"
+    },
+    {
+      "name": "hard_rt_unbounded_loop_reject",
+      "profile": "hard_rt",
+      "entry": "entry",
+      "functions": [
+        {
+          "id": "entry",
+          "ops": [],
+          "calls": [],
+          "bound": null,
+          "work": "unbounded",
+          "context": "ordinary"
+        }
+      ],
+      "expected": "reject",
+      "diagnostic": "E_HARD_RT_UNBOUNDED"
+    },
+    {
+      "name": "hard_rt_unproven_recursion_reject",
+      "profile": "hard_rt",
+      "entry": "entry",
+      "functions": [
+        {
+          "id": "entry",
+          "ops": [],
+          "calls": [
+            {
+              "targets": [
+                "entry"
+              ],
+              "sealed": true
+            }
+          ],
+          "bound": null,
+          "work": "bounded",
+          "context": "ordinary"
+        }
+      ],
+      "expected": "reject",
+      "diagnostic": "E_HARD_RT_UNBOUNDED"
+    },
+    {
+      "name": "hard_rt_suspend_reject",
+      "profile": "hard_rt",
+      "entry": "entry",
+      "functions": [
+        {
+          "id": "entry",
+          "ops": [
+            "cooperate"
+          ],
+          "calls": [],
+          "bound": null,
+          "work": "bounded",
+          "context": "ordinary"
+        }
+      ],
+      "expected": "reject",
+      "diagnostic": "E_HARD_RT_EFFECT"
+    },
+    {
+      "name": "hard_rt_ffi_reject",
+      "profile": "hard_rt",
+      "entry": "entry",
+      "functions": [
+        {
+          "id": "entry",
+          "ops": [
+            "ffi.verified"
+          ],
+          "calls": [],
+          "bound": null,
+          "work": "bounded",
+          "context": "ordinary"
+        }
+      ],
+      "expected": "reject",
+      "diagnostic": "E_HARD_RT_EFFECT"
+    },
+    {
+      "name": "throw_not_raise",
+      "profile": "general",
+      "entry": "entry",
+      "functions": [
+        {
+          "id": "entry",
+          "ops": [
+            "raise!"
+          ],
+          "calls": [],
+          "bound": [
+            "throw"
+          ],
+          "work": "bounded",
+          "context": "ordinary"
+        }
+      ],
+      "expected": "reject",
+      "diagnostic": "E_EFFECT_BOUND"
+    },
+    {
+      "name": "raise_not_panic",
+      "profile": "general",
+      "entry": "entry",
+      "functions": [
+        {
+          "id": "entry",
+          "ops": [
+            "panic!"
+          ],
+          "calls": [],
+          "bound": [
+            "raise"
+          ],
+          "work": "bounded",
+          "context": "ordinary"
+        }
+      ],
+      "expected": "reject",
+      "diagnostic": "E_EFFECT_BOUND"
+    }
+  ]
+}
