@@ -1,0 +1,7 @@
+define class Worker as
+  pub static suspends fnc read_blocking(): int { return 7; }
+end
+fnc bad(): void {
+  val Fnc<int> callback = Worker.read_blocking;
+  return;
+}

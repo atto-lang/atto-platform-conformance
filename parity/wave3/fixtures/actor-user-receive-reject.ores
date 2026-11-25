@@ -1,0 +1,6 @@
+define actor Worker as
+  receive(Mail m): void { return; }
+  pub attempt(Mail m): void {
+    self.receive(m);
+  }
+end

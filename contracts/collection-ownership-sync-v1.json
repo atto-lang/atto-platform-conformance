@@ -1,0 +1,204 @@
+{
+  "schemaVersion": 1,
+  "contract": "collection-ownership-sync-v1",
+  "status": "candidate-unattested",
+  "backendTargets": [
+    "java",
+    "llvm",
+    "wasm",
+    "forge",
+    "net"
+  ],
+  "sourceExtension": ".atto",
+  "legacyExtension": ".ores",
+  "semanticRules": {
+    "ordinaryMutableCollection": "single-owner; no implicit synchronization",
+    "ownedTransfer": "rt take consumes sender authority and requires Send",
+    "readonlyView": "view is not allocation freeze; no implicit Sync or Share",
+    "immutableSharing": "requires compiler-proven immutable backing and transitive element safety",
+    "sharedMutable": "requires explicit synchronized/atomic handle or actor message serialization",
+    "protectedBorrow": "critical-read and critical-write loans/views/iterators may not escape their guard",
+    "suspension": "no suspension with live guard until separately proved safe",
+    "taskRead": "both canonical Sync and independent thread/lifetime proof required",
+    "atomicity": "multiple individually synchronized calls are not automatically one transaction"
+  },
+  "scenarios": [
+    {
+      "id": "actor-owned-local-mutation",
+      "kind": "compiler-runtime",
+      "expectation": "accept",
+      "requirement": "Ordinary mutable collection is exclusive to one actor; no implicit lock",
+      "attestation": "unattested"
+    },
+    {
+      "id": "ordinary-owned-local-mutation",
+      "kind": "compiler-runtime",
+      "expectation": "accept",
+      "requirement": "Locally owned mutable list may mutate without cross-thread synchronization",
+      "attestation": "unattested",
+      "fixture": "fixtures/collection-ownership-sync-v1/ordinary-owned-local-mutation.atto"
+    },
+    {
+      "id": "owned-transfer-rt-take",
+      "kind": "compiler-runtime",
+      "expectation": "accept",
+      "requirement": "A Send collection moves to the recipient, preserving single ownership",
+      "attestation": "unattested"
+    },
+    {
+      "id": "sender-use-after-take",
+      "kind": "compiler",
+      "expectation": "reject",
+      "requirement": "Sender uses transferred collection after rt take",
+      "attestation": "unattested",
+      "fixture": "fixtures/collection-ownership-sync-v1/sender-use-after-take.atto",
+      "rejectionEvidenceRequired": "semantic-ownership-diagnostic"
+    },
+    {
+      "id": "readonly-view-writable-backing-share",
+      "kind": "compiler",
+      "expectation": "reject",
+      "requirement": "Readonly view alone cannot mint Sync or Share if writable aliases remain",
+      "attestation": "unattested",
+      "fixture": "fixtures/collection-ownership-sync-v1/readonly-view-writable-backing-share.atto",
+      "rejectionEvidenceRequired": "semantic-ownership-diagnostic"
+    },
+    {
+      "id": "readonly-view-wrapper-laundering",
+      "kind": "compiler",
+      "expectation": "reject",
+      "requirement": "Option/Result/Arc/Weak cannot mint missing Sync or Share",
+      "attestation": "unattested"
+    },
+    {
+      "id": "mutable-borrow-task-escape",
+      "kind": "compiler",
+      "expectation": "reject",
+      "requirement": "Borrowed collection cannot escape into independent Task",
+      "attestation": "unattested",
+      "fixture": "fixtures/collection-ownership-sync-v1/mutable-borrow-task-escape.atto",
+      "rejectionEvidenceRequired": "semantic-ownership-diagnostic"
+    },
+    {
+      "id": "borrowed-mutex-initializer",
+      "kind": "compiler",
+      "expectation": "reject",
+      "requirement": "SharedMutex must consume owned payload rather than a borrow",
+      "attestation": "unattested",
+      "fixture": "fixtures/collection-ownership-sync-v1/borrowed-mutex-initializer.atto",
+      "rejectionEvidenceRequired": "semantic-ownership-diagnostic"
+    },
+    {
+      "id": "mutex-use-after-consume",
+      "kind": "compiler",
+      "expectation": "reject",
+      "requirement": "Original collection cannot be used after SharedMutex takes ownership",
+      "attestation": "unattested",
+      "fixture": "fixtures/collection-ownership-sync-v1/mutex-use-after-consume.atto",
+      "rejectionEvidenceRequired": "semantic-ownership-diagnostic"
+    },
+    {
+      "id": "owned-mutex-guard-mutation",
+      "kind": "compiler-runtime",
+      "expectation": "accept",
+      "requirement": "Owned SharedMutex payload allows locally guarded collection mutation",
+      "attestation": "unattested",
+      "fixture": "fixtures/collection-ownership-sync-v1/owned-mutex-guard-mutation.atto"
+    },
+    {
+      "id": "guard-suspend-await",
+      "kind": "compiler",
+      "expectation": "reject",
+      "requirement": "Protected guard cannot remain live across await or scheduler suspension",
+      "attestation": "unattested",
+      "fixture": "fixtures/collection-ownership-sync-v1/guard-suspend-await.atto",
+      "rejectionEvidenceRequired": "semantic-ownership-diagnostic"
+    },
+    {
+      "id": "guard-view-iterator-escape",
+      "kind": "compiler",
+      "expectation": "reject",
+      "requirement": "Lock guard iterator/view/borrow cannot outlive protected scope",
+      "attestation": "unattested"
+    },
+    {
+      "id": "independent-sync-proof-scoped-task-read",
+      "kind": "compiler",
+      "expectation": "reject",
+      "requirement": "General Sync classification without independently verified thread/lifetime proof cannot mint READ authority",
+      "attestation": "unattested"
+    },
+    {
+      "id": "scalar-tuple-scoped-task-read",
+      "kind": "compiler",
+      "expectation": "accept",
+      "requirement": "Verified immutable inline tuple preserves safe scoped READ path",
+      "attestation": "unattested"
+    },
+    {
+      "id": "mutex-atomic-compound-update",
+      "kind": "runtime",
+      "expectation": "accept",
+      "requirement": "Concurrent increments under one guard have exact count and no lost update",
+      "attestation": "unattested"
+    },
+    {
+      "id": "concurrent-table-insert-if-absent",
+      "kind": "runtime",
+      "expectation": "accept",
+      "requirement": "Explicit concurrent table has one linearizable winner, pending API finalization",
+      "attestation": "unattested"
+    },
+    {
+      "id": "concurrent-table-cas",
+      "kind": "runtime",
+      "expectation": "accept",
+      "requirement": "Compare exchange is linearizable with no torn writes, pending API finalization",
+      "attestation": "unattested"
+    },
+    {
+      "id": "actor-state-concurrent-read-write",
+      "kind": "runtime",
+      "expectation": "accept",
+      "requirement": "Sealed actor state coordinates concurrent readers and exclusive writers",
+      "attestation": "unattested"
+    }
+  ],
+  "promotion": {
+    "sourceFixturesRequired": true,
+    "guestCompilerExecutionRequired": true,
+    "guestRuntimeExecutionRequiredForRuntimeCases": true,
+    "identicalScenarioIdsAcrossFiveBackends": true,
+    "exactCommitAndTreeRequired": true,
+    "zeroStepJobsCount": false,
+    "parserOnlyRejectionCountsAsParity": false,
+    "hostModelAloneCountsAsParity": false,
+    "nativeSanitizersRequired": [
+      "llvm",
+      "forge"
+    ],
+    "aotRequiredFor": [
+      "java",
+      "net"
+    ],
+    "wasmWorkerExecutionRequired": true,
+    "privateSourceTransferRequiresSecurityApproval": true,
+    "semanticRejectionRequired": true,
+    "unsupportedSyntaxDoesNotPass": true
+  },
+  "evidence": {
+    "java": "unattested",
+    "llvm": "unattested",
+    "wasm": "unattested",
+    "forge": "unattested",
+    "net": "unattested"
+  },
+  "notes": [
+    "Metadata scenarios are candidate requirements, not executable guest fixtures or implementation claims.",
+    "Concurrent table API spelling remains undecided; do not infer guest language support.",
+    "Keep unsupported runtime syntax fail-closed and report unsupported separately from a verified semantic rejection.",
+    "The Java readonly-view admission fix is staged on draft PR #2295 but has no exact-head JDK21+ CI proof.",
+    "Six negative .atto source fixtures are candidate compiler admission cases, not executed test receipts. They must reject for an ownership/guard semantic reason, not an unsupported syntax error.",
+    "Two positive .atto source fixtures ensure an over-restrictive compiler cannot appear safe simply by rejecting all collection operations; positive guest execution remains unattested."
+  ]
+}

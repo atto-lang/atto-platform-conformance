@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "scope": "actor-spawn-send-receive-output-stop-v1",
+  "evidenceLevel": "source-fixture-only",
+  "normativePhase": "lifecycle-baseline-without-sealed-state",
+  "cases": [
+    {
+      "id": "single-actor-request-reply-stop",
+      "file": "spawn-send-receive-stop.ores",
+      "sourceGitBlobSha1": "7b358d4871f931f21d1a874a15802ac3dd32ba64",
+      "expected": {
+        "exitCode": 0,
+        "stdout": "42",
+        "actorInstances": 1,
+        "messageAdmissions": 1,
+        "outputMessages": 1,
+        "readyBeforeSend": true,
+        "doneAfterOutput": true
+      },
+      "verifiedGuestBackends": []
+    }
+  ],
+  "backends": {
+    "java-graalvm": {
+      "candidate": "existing source actor runtime; exact-head fixture execution not verified",
+      "pr": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2425",
+      "verified": false
+    },
+    "llvm-native": {
+      "candidate": "restricted on_message(int) is not canonical ActorMail<int>",
+      "pr": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1278",
+      "verified": false
+    },
+    "wasm": {
+      "candidate": "source actor execution unsupported, fail closed",
+      "pr": "https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/249",
+      "verified": false
+    },
+    "forge": {
+      "candidate": "source actor lowering not verified",
+      "pr": "https://github.com/ores-truffle-oreslang/oreslang-source.forge/pull/167",
+      "verified": false
+    },
+    "net-native-aot": {
+      "candidate": "source actor lowering not verified",
+      "pr": "https://github.com/ores-truffle-oreslang/oreslang-source.net/pull/312",
+      "verified": false
+    },
+    "cranelift-native": {
+      "candidate": "scalar-only JIT, actor execution unsupported",
+      "pr": "https://github.com/ores-truffle-oreslang/oreslang-source.cranelift/pull/63",
+      "verified": false
+    }
+  },
+  "notCovered": [
+    "sealed state schema and critical read/write loans",
+    "trait or interface dispatch",
+    "inheritance and actor-supervisor failure routing",
+    "actor groups and pubsub",
+    "multi-message race, bounded mailbox capacity and cancellation",
+    "AOT and multibackend guest runtime equivalence"
+  ],
+  "evidenceRule": "A backend may be promoted only from exact pinned compiled guest execution logs with nonzero test steps, explicit SHA and tree provenance, stdout and lifecycle assertions; source-only test artifacts are insufficient."
+}

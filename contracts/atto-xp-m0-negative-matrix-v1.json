@@ -1,0 +1,274 @@
+{
+  "schemaVersion": 1,
+  "contract": "attolang.atto-xp.native-ui-negative-matrix/1",
+  "contractRef": "attolang.atto-xp.native-ui/1",
+  "status": "PROPOSED_NOT_EXECUTED",
+  "failClosed": true,
+  "minimumGate": "all-cases-exact-head-stepful-independent-review",
+  "cases": [
+    {
+      "id": "H01",
+      "layer": "native-host",
+      "attack": "stale-handle",
+      "expectedError": "STALE_HANDLE",
+      "minimumStage": "abi-link",
+      "executionStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "H02",
+      "layer": "native-host",
+      "attack": "aba-slot-reuse",
+      "expectedError": "STALE_HANDLE",
+      "minimumStage": "abi-link",
+      "executionStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "H03",
+      "layer": "native-host",
+      "attack": "cross-app-handle",
+      "expectedError": "WRONG_APP_SCENE_OR_OWNER",
+      "minimumStage": "abi-link",
+      "executionStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "H04",
+      "layer": "native-host",
+      "attack": "cross-scene-handle",
+      "expectedError": "WRONG_APP_SCENE_OR_OWNER",
+      "minimumStage": "abi-link",
+      "executionStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "H05",
+      "layer": "native-host",
+      "attack": "cross-actor-owner",
+      "expectedError": "WRONG_APP_SCENE_OR_OWNER",
+      "minimumStage": "abi-link",
+      "executionStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "H06",
+      "layer": "native-host",
+      "attack": "wrong-handle-kind",
+      "expectedError": "INVALID_ARGUMENT",
+      "minimumStage": "abi-link",
+      "executionStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "H07",
+      "layer": "native-host",
+      "attack": "generation-wrap-quarantine",
+      "expectedError": "QUARANTINED",
+      "minimumStage": "abi-link",
+      "executionStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "H08",
+      "layer": "native-host",
+      "attack": "callback-after-scene-dispose",
+      "expectedError": "STALE_HANDLE",
+      "minimumStage": "abi-link",
+      "executionStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "U01",
+      "layer": "adapter",
+      "attack": "wrong-ui-thread-view-mutation",
+      "expectedError": "WRONG_UI_THREAD",
+      "minimumStage": "simulator",
+      "executionStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "U02",
+      "layer": "adapter",
+      "attack": "synchronous-reentrant-guest-callback",
+      "expectedError": "REENTRANT",
+      "minimumStage": "simulator",
+      "executionStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "U03",
+      "layer": "native-host",
+      "attack": "invalid-final-operation-no-partial-commit",
+      "expectedError": "INVALID_ARGUMENT",
+      "minimumStage": "abi-link",
+      "executionStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "U04",
+      "layer": "native-host",
+      "attack": "duplicate-node-id",
+      "expectedError": "INVALID_ARGUMENT",
+      "minimumStage": "abi-link",
+      "executionStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "U05",
+      "layer": "native-host",
+      "attack": "stale-expected-revision",
+      "expectedError": "REVISION",
+      "minimumStage": "abi-link",
+      "executionStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "U06",
+      "layer": "native-host",
+      "attack": "batch-byte-overflow",
+      "expectedError": "QUOTA",
+      "minimumStage": "abi-link",
+      "executionStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "U07",
+      "layer": "native-host",
+      "attack": "operation-count-overflow",
+      "expectedError": "QUOTA",
+      "minimumStage": "abi-link",
+      "executionStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "U08",
+      "layer": "native-host",
+      "attack": "utf8-malformed",
+      "expectedError": "INVALID_ARGUMENT",
+      "minimumStage": "abi-link",
+      "executionStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "U09",
+      "layer": "native-host",
+      "attack": "cyclic-node-ancestry",
+      "expectedError": "INVALID_ARGUMENT",
+      "minimumStage": "abi-link",
+      "executionStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "U10",
+      "layer": "adapter",
+      "attack": "destroy-while-queued",
+      "expectedError": "SCENE_LIFECYCLE",
+      "minimumStage": "simulator",
+      "executionStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "U11",
+      "layer": "adapter",
+      "attack": "reliable-event-saturation-cancel",
+      "expectedError": "QUOTA",
+      "minimumStage": "simulator",
+      "executionStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "C01",
+      "layer": "adapter",
+      "attack": "os-permission-denied",
+      "expectedError": "CAPABILITY_DENIED",
+      "minimumStage": "simulator",
+      "executionStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "C02",
+      "layer": "adapter",
+      "attack": "actor-capability-missing",
+      "expectedError": "CAPABILITY_DENIED",
+      "minimumStage": "simulator",
+      "executionStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "C03",
+      "layer": "adapter",
+      "attack": "permission-revoked-before-dispatch",
+      "expectedError": "CAPABILITY_DENIED",
+      "minimumStage": "simulator",
+      "executionStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "C04",
+      "layer": "adapter",
+      "attack": "entitlement-missing",
+      "expectedError": "CAPABILITY_DENIED",
+      "minimumStage": "simulator",
+      "executionStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "F01",
+      "layer": "adapter",
+      "attack": "jni-local-ref-after-return",
+      "expectedError": "INVALID_ARGUMENT",
+      "minimumStage": "simulator",
+      "executionStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "F02",
+      "layer": "adapter",
+      "attack": "swift-retain-release-double-free",
+      "expectedError": "INVALID_ARGUMENT",
+      "minimumStage": "simulator",
+      "executionStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "F03",
+      "layer": "native-host",
+      "attack": "native-pointer-cross-actor-channel",
+      "expectedError": "INVALID_ARGUMENT",
+      "minimumStage": "abi-link",
+      "executionStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "R01",
+      "layer": "device",
+      "attack": "ios-download-executable-release",
+      "expectedError": "CAPABILITY_DENIED",
+      "minimumStage": "physical-device",
+      "executionStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "E01",
+      "layer": "receipt",
+      "attack": "duplicate-key-claims",
+      "expectedError": "INVALID_RECEIPT",
+      "minimumStage": "reference-model",
+      "executionStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "E02",
+      "layer": "receipt",
+      "attack": "zero-step-success-claim",
+      "expectedError": "INVALID_RECEIPT",
+      "minimumStage": "reference-model",
+      "executionStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "E03",
+      "layer": "receipt",
+      "attack": "wrong-adapter-claim",
+      "expectedError": "INVALID_RECEIPT",
+      "minimumStage": "reference-model",
+      "executionStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "E04",
+      "layer": "receipt",
+      "attack": "forged-stage-claim",
+      "expectedError": "INVALID_RECEIPT",
+      "minimumStage": "reference-model",
+      "executionStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "E05",
+      "layer": "receipt",
+      "attack": "simulator-as-physical-claim",
+      "expectedError": "INVALID_RECEIPT",
+      "minimumStage": "reference-model",
+      "executionStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "E06",
+      "layer": "receipt",
+      "attack": "mismatched-head-tree-claim",
+      "expectedError": "INVALID_RECEIPT",
+      "minimumStage": "reference-model",
+      "executionStatus": "NOT_EXECUTED"
+    }
+  ]
+}

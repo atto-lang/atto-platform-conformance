@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "title": "Actor private heaps + four layouts / five target evidence snapshot",
+  "snapshotDate": "2026-10-21",
+  "status": "INCOMPLETE_NOT_CERTIFIED",
+  "evidenceContract": "All checks are specific to the exact target commit. Prototype layouts and host reference tests are never guest compiler parity.",
+  "noPrivateExportWithoutApproval": true,
+  "backends": [
+    {
+      "id": "graalvm",
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "commit": "e73c720125c2702d397220c5cfce4ab66468836f",
+      "source": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1874",
+      "actorMemory": "actor-owned JNI/native regions and logical byte-addressed pages; Java guest frame/facade migration incomplete",
+      "layouts": "actor-owned native region mixed-width host substrate, real turn admission and no per-cell Java address facade; GraalVM build and guest compiler lowering unverified",
+      "evidence": {
+        "sourceOreslangCompiled": false,
+        "generatedGuestExecuted": false,
+        "stepfulCiObserved": false,
+        "verifiedArtifactSha": null,
+        "runUrl": null
+      },
+      "scalarGuestCandidate": {
+        "pr": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1859",
+        "sourceBlob": "43fde293203e4910271f2d54422d83b95cd7458a",
+        "expectedExit": 42,
+        "sourceCompilerExecutionVerified": false
+      }
+    },
+    {
+      "id": "llvm",
+      "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+      "commit": "3723c2861cc92e08b8547fa68e8804af28a2f760",
+      "source": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/837",
+      "actorMemory": "actor-owned native heap substrate; new heterogeneous plan not yet connected to source actor allocation or guest field accesses",
+      "layouts": "mixed-width C++ host ABI with aligned physical bytes and native absolute offsets; real guest lowering unverified",
+      "evidence": {
+        "sourceOreslangCompiled": false,
+        "generatedGuestExecuted": false,
+        "stepfulCiObserved": false,
+        "verifiedArtifactSha": null,
+        "runUrl": null
+      },
+      "scalarGuestCandidate": {
+        "pr": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/837",
+        "sourceBlob": "43fde293203e4910271f2d54422d83b95cd7458a",
+        "expectedExit": 42,
+        "sourceCompilerExecutionVerified": false
+      }
+    },
+    {
+      "id": "wasm",
+      "repository": "ores-truffle-oreslang/oreslang-source.wasm",
+      "commit": "f04ec24e0fdcb57ed8956cdf8ca5dcaa84716406",
+      "source": "https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/113",
+      "actorMemory": "Wasm linear-memory actor region; source guest actor lowering unverified",
+      "layouts": "actor-private mixed-width persistent Wasm arena host shard, canonical bool bytes; actual guest Wasm code unverified",
+      "evidence": {
+        "sourceOreslangCompiled": false,
+        "generatedGuestExecuted": false,
+        "stepfulCiObserved": false,
+        "verifiedArtifactSha": null,
+        "runUrl": null
+      }
+    },
+    {
+      "id": "dotnet",
+      "repository": "ores-truffle-oreslang/oreslang-source.net",
+      "commit": "4a795b8b2d1be7a6ba77545759dc233a51e82885",
+      "source": "https://github.com/ores-truffle-oreslang/oreslang-source.net/pull/123",
+      "actorMemory": "unmanaged ActorArena; managed CLR runtime bookkeeping only; no independent CLR GC heaps",
+      "layouts": "unmanaged arena-backed mixed-width host shard, canonical bool bytes; Native AOT compile unverified",
+      "evidence": {
+        "sourceOreslangCompiled": false,
+        "generatedGuestExecuted": false,
+        "stepfulCiObserved": false,
+        "verifiedArtifactSha": null,
+        "runUrl": null
+      }
+    },
+    {
+      "id": "javascript",
+      "repository": "ores-truffle-oreslang/oreslang-source.js",
+      "commit": "ae46f2a03577460b528d407c4f26b9f0829546da",
+      "source": "https://github.com/ores-truffle-oreslang/oreslang-source.js/pull/35",
+      "actorMemory": "private browser Web Worker / Node worker thread; private ArrayBuffer payloads",
+      "layouts": "Worker-private mixed-width four-layout host store, canonical boolean bytes; emitted Oreslang ESM unverified",
+      "evidence": {
+        "sourceOreslangCompiled": false,
+        "generatedGuestExecuted": false,
+        "stepfulCiObserved": false,
+        "verifiedArtifactSha": null,
+        "runUrl": null
+      }
+    }
+  ],
+  "certification": {
+    "fiveTargetSourceGuestParity": false,
+    "fourLayoutGuestParity": false,
+    "actorHeapLifetimeParity": false,
+    "independentCiExecution": false
+  }
+}

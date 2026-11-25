@@ -1,0 +1,6 @@
+pub fnc main(): void {
+  let int count = 1;
+  let borrowed = rt borrow count;
+  let Task<int> job = (async task |int a| -> a)(borrowed);
+  return;
+}

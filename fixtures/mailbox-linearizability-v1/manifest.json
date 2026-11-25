@@ -1,0 +1,63 @@
+{
+  "schema": "oreslang.mailbox_guest_fixture_inventory.v1",
+  "evidenceClassification": "CANONICAL_SOURCE_ONLY_NOT_RUNTIME_PROOF",
+  "canonicalOrigin": "ores-truffle-oreslang/oreslang-source.llvm/tests/fixtures",
+  "originHead": "UNPINNED_FOR_EXECUTION_DO_NOT_TREAT_AS_PROVENANCE",
+  "conformanceContract": "contracts/v1/MAILBOX_LINEARIZABILITY_V1.md",
+  "sourceFixtureDirectory": "fixtures/mailbox-linearizability-v1",
+  "backends": [
+    "java",
+    "llvm",
+    "wasm",
+    "net",
+    "forge"
+  ],
+  "cases": [
+    {
+      "id": "ACTOR_SEND_STOP",
+      "path": "source-actor-send.ores",
+      "gitBlobSha": "3050260bd65b019a2b00191fba9086971409511b",
+      "expectedOutcome": "exit-43",
+      "llvmExistingTestName": "source_actor_compiled_native_lifecycle",
+      "scope": "single actor send, stop, terminal message accounting",
+      "backendExecutionStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "ACTOR_INTERLEAVED_STOP",
+      "path": "source-actor-interleaved-stop.ores",
+      "gitBlobSha": "c7488835f34e926dfa4c8766c8917301fe84da09",
+      "expectedOutcome": "exit-43",
+      "llvmExistingTestName": "source_actor_compiled_native_lifecycle",
+      "scope": "two actor source effect order and explicit stop",
+      "backendExecutionStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "ACTOR_SEND_AFTER_STOP_REJECT",
+      "path": "source-actor-send-after-stop.ores",
+      "gitBlobSha": "ba046cb355fd16d9b5f6f7b39ace45356ef497db",
+      "expectedOutcome": "reject",
+      "expectedLlvmDiagnostic": "actor message sent after stop",
+      "llvmExistingTestName": "source_actor_compiled_native_lifecycle",
+      "scope": "statically reject use after actor capability stop",
+      "backendExecutionStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    }
+  ]
+}

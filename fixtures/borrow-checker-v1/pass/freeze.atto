@@ -1,0 +1,8 @@
+// BCV1-023 freeze pass: target AttoLang semantics, NOT_EXECUTED.
+// Expected success and exit value 42.
+define class Snapshot as pub let int value = 42; end
+pub fnc main(): int {
+  val owner = new Snapshot();
+  val frozen = freeze! take! owner;
+  return frozen.value;
+}

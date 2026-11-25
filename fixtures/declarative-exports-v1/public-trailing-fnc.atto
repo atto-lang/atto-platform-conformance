@@ -1,0 +1,2 @@
+fnc answer(): int { return 42; }
+export pub fnc answer;

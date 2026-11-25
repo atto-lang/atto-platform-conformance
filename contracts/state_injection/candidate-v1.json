@@ -1,0 +1,183 @@
+{
+  "schemaVersion": 1,
+  "name": "Oreslang injected state containers candidate",
+  "status": "proposed-not-executable-parity",
+  "sourceSyntax": {
+    "backing": "@StateBacked(MutableStateContainer(scope = #instance))",
+    "existingDependency": "@Inject(SessionState, scope = #instance)"
+  },
+  "requiredBackends": [
+    "java",
+    "llvm",
+    "wasm",
+    "cranelift",
+    "net"
+  ],
+  "optionalBackends": [
+    "forge"
+  ],
+  "backendEvidence": {
+    "java": {
+      "status": "not-executed",
+      "compilerCommit": null,
+      "runnerRunId": null
+    },
+    "llvm": {
+      "status": "not-executed",
+      "compilerCommit": null,
+      "runnerRunId": null
+    },
+    "wasm": {
+      "status": "not-executed",
+      "compilerCommit": null,
+      "runnerRunId": null
+    },
+    "cranelift": {
+      "status": "not-executed",
+      "compilerCommit": null,
+      "runnerRunId": null
+    },
+    "net": {
+      "status": "not-executed",
+      "compilerCommit": null,
+      "runnerRunId": null
+    },
+    "forge": {
+      "status": "not-executed",
+      "compilerCommit": null,
+      "runnerRunId": null
+    }
+  },
+  "rules": [
+    "The backing annotation constructs and owns storage; @Inject resolves an already provided container.",
+    "State container handles are immutable capabilities; nested mutable data is accessible only through scoped read/write borrowing.",
+    "Instance state is not implicitly shared; #shared must be explicit and scheduler-authorized.",
+    "No mutable alias escapes callbacks; no await/select/cooperate inside protected access.",
+    "Unknown annotations must reject rather than be ignored. A positive case must execute before negative cases can prove semantic parity.",
+    "Unverified/unsupported backend diagnostics never count as successful execution."
+  ],
+  "cases": [
+    {
+      "id": "instance_owned_increment",
+      "kind": "compile-and-run",
+      "source": "@StateBacked(MutableStateContainer(scope = #instance))\ndefine class Counter as\n    state {\n        let int count = 0;\n    }\n    increment() -> int ::\n        return handle_state(critical-write |s| -> {\n            s.count += 1;\n            return s.count;\n        });\n    end\n    get_count() -> int ::\n        return handle_state(critical-read |s| -> s.count);\n    end\nend\n\npub routine main(): void {\n    let Counter counter = new Counter();\n    counter.increment();\n    stdio.stdout.write(counter.increment());\n    return;\n}\n",
+      "expected": {
+        "exitCode": 0,
+        "stdout": "2"
+      },
+      "obligations": [
+        "instance-isolation",
+        "atomic-write-scope",
+        "read-only-getter",
+        "typed-state-backed-storage"
+      ]
+    },
+    {
+      "id": "existing_dependency_injection",
+      "kind": "compile-and-run",
+      "source": "define state_container SessionState as\n    state { let int requests = 0; }\n    request_count() -> int ::\n        return handle_state(critical-read |s| -> s.requests);\n    end\nend\n\n@Inject(SessionState, scope = #instance)\ndefine class SessionManager as\n    get_requests() -> int ::\n        return self.session_state.request_count();\n    end\nend\n\npub routine main(): void {\n    let SessionManager manager = new SessionManager();\n    stdio.stdout.write(manager.get_requests());\n    return;\n}\n",
+      "expected": {
+        "exitCode": 0,
+        "stdout": "0"
+      },
+      "obligations": [
+        "typed-provider-injection",
+        "no-implicit-global-state",
+        "immutable-container-handle"
+      ]
+    },
+    {
+      "id": "reject_unknown_provider",
+      "kind": "compile-reject",
+      "source": "@Inject(UndefinedStateContainer)\ndefine class MissingProvider as\nend\n",
+      "violation": "unresolved-injection-provider"
+    },
+    {
+      "id": "reject_direct_state_access",
+      "kind": "compile-reject",
+      "source": "@StateBacked(MutableStateContainer(scope = #shared))\ndefine class SharedCounter as\n    state { let int count = 0; }\n    read() -> int :: return self.state.count; end\nend\n",
+      "violation": "sealed-state-access"
+    },
+    {
+      "id": "reject_mutation_in_read",
+      "kind": "compile-reject",
+      "source": "@StateBacked(MutableStateContainer(scope = #shared))\ndefine class SharedCounter as\n    state { let int count = 0; }\n    read_bad() -> int :: return handle_state(critical-read |s| -> { s.count += 1; return s.count; }); end\nend\n",
+      "violation": "read-capability-is-not-mutable"
+    },
+    {
+      "id": "reject_borrow_escape",
+      "kind": "compile-reject",
+      "source": "@StateBacked(MutableStateContainer(scope = #shared))\ndefine class SharedCounter as\n    state { let int count = 0; }\n    escape() -> borrow mut int :: return handle_state(critical-write |s| -> rt borrow mut s.count); end\nend\n",
+      "violation": "loan-escape"
+    },
+    {
+      "id": "reject_await_in_write",
+      "kind": "compile-reject",
+      "source": "@StateBacked(MutableStateContainer(scope = #shared))\ndefine class SharedCounter as\n    state { let int count = 0; }\n    async bad() -> int :: return handle_state(critical-write |s| -> { await wait(); return s.count; }); end\nend\n",
+      "violation": "suspension-inside-protected-region"
+    },
+    {
+      "id": "reject_select_in_read",
+      "kind": "compile-reject",
+      "source": "@StateBacked(MutableStateContainer(scope = #shared))\ndefine class SharedCounter as\n    state { let int count = 0; }\n    bad() -> int :: return handle_state(critical-read |s| -> { select<int> over default -> s.count end }); end\nend\n",
+      "violation": "select-inside-protected-region"
+    },
+    {
+      "id": "reject_mutable_alias",
+      "kind": "compile-reject",
+      "source": "@StateBacked(MutableStateContainer(scope = #shared))\ndefine class SharedCounter as\n    state { let int count = 0; }\n    bad() -> int :: return handle_state(critical-write |s| -> { let a = rt borrow mut s.count; let b = rt borrow mut s.count; return 0; }); end\nend\n",
+      "violation": "exclusive-alias"
+    },
+    {
+      "id": "reject_cross_actor_reference",
+      "kind": "compile-reject",
+      "source": "@StateBacked(MutableStateContainer(scope = #actor))\ndefine actor Worker as\n    state { let int count = 0; }\nend\nfnc steal(Worker worker): int { return worker.state.count; }\n",
+      "violation": "actor-domain-authority"
+    },
+    {
+      "id": "reject_forged_scope",
+      "kind": "compile-reject",
+      "source": "@StateBacked(MutableStateContainer(scope = \"#shared\"))\ndefine class Foo as\n    state { let int count = 0; }\nend\n",
+      "violation": "nominal-scope-symbol-only"
+    },
+    {
+      "id": "reject_duplicate_backing",
+      "kind": "compile-reject",
+      "source": "@StateBacked(MutableStateContainer())\n@StateBacked(MutableStateContainer())\ndefine class Foo as\n    state { let int count = 0; }\nend\n",
+      "violation": "duplicate-state-provider"
+    },
+    {
+      "id": "reject_constructor_bypass",
+      "kind": "compile-reject",
+      "source": "@StateBacked(MutableStateContainer(scope = #shared))\ndefine class SharedCounter as\n    state { let int count = 0; }\n    initialize() -> void :: self.state.count = 9; return; end\nend\n",
+      "violation": "constructor-state-authority"
+    },
+    {
+      "id": "reject_cross_task_mutable_transfer",
+      "kind": "compile-reject",
+      "source": "@StateBacked(MutableStateContainer(scope = #shared))\ndefine class SharedCounter as\n    state { let int count = 0; }\n    bad() -> void :: handle_state(critical-write |s| -> { spawn worker(rt borrow mut s.count); }); end\nend\n",
+      "violation": "loan-crosses-actor-task"
+    },
+    {
+      "id": "reject_read_to_write_upgrade",
+      "kind": "compile-reject",
+      "source": "@StateBacked(MutableStateContainer(scope = #shared))\ndefine class SharedCounter as\n    state { let int count = 0; }\n    bad() -> int :: return handle_state(critical-read |s| -> handle_state(critical-write |w| -> { w.count += 1; return w.count; })); end\nend\n",
+      "violation": "unsupported-reentrant-upgrade"
+    },
+    {
+      "id": "reject_raw_pointer_escape",
+      "kind": "compile-reject",
+      "source": "@StateBacked(MutableStateContainer(scope = #shared))\ndefine class SharedCounter as\n    state { let int count = 0; }\n    escape() -> Pointer<int> :: return handle_state(critical-write |s| -> rt ref s.count); end\nend\n",
+      "violation": "pointer-escape"
+    }
+  ],
+  "evidenceRequirements": {
+    "source": "identical Oreslang UTF-8 bytes and fixture digest across all backends",
+    "compiler": "exact commit SHA and real compiler invocation; no replacements or surrogate parsers",
+    "tests": "nonzero build, compile and guest execution steps in approved runner",
+    "positive": "successful compile plus exact stdout/exit code; unsupported source is NOT a pass",
+    "negative": "compiler-owned reason-specific denial with no emitted IR, native object or executable",
+    "security": "complete physical retirement and state capability provenance require separate runtime proof",
+    "admission": "do not promote registry without real run evidence for every required backend"
+  }
+}

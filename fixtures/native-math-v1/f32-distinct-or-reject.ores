@@ -1,0 +1,3 @@
+pub fnc main(f32 value): f32 {
+  return Math.abs(value);
+}

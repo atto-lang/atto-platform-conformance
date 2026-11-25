@@ -1,0 +1,2 @@
+fnc thread(int value): int { return value; }
+fnc main(): int { return thread(7); }

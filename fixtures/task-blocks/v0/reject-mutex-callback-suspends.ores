@@ -1,0 +1,9 @@
+suspends fnc read_blocking(): int { return 7; }
+suspends fnc bad(): int {
+  val mutex = Mutex.new(3);
+  mutex.with_lock(|n| -> {
+    stdio.println(read_blocking());
+    return;
+  });
+  return 1;
+}

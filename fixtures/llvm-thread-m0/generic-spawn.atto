@@ -1,0 +1,1 @@
+fnc main(): int { return thread.spawn<int>(1); }

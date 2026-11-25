@@ -1,0 +1,6 @@
+define enum Stage as
+    Count: int
+end
+fnc invalid(): Stage {
+    return Stage.Count("not integer");
+}
