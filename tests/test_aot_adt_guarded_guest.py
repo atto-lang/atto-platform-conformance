@@ -33,7 +33,7 @@ class GuardedADTGuestMatrix(unittest.TestCase):
                 path = ROOT / row["path"]
                 raw = path.read_bytes()
                 self.assertEqual(path.name, pathlib.Path(row["upstream_path"]).name)
-                sha = hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\\0" + raw).hexdigest()
+                sha = hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
                 self.assertEqual(sha, row["git_blob_sha"], "fixture altered since source PR")
                 self.assertIn(b"pub fnc main(): int", raw)
                 self.assertLess(len(raw), 20000)
@@ -41,7 +41,7 @@ class GuardedADTGuestMatrix(unittest.TestCase):
                     self.assertIn(("// expect-exit: " + str(row["expected_exit"])).encode(), raw)
                     self.assertNotIn("expected_error", row)
                     stdout = [line.split(b": ",1)[1].decode() for line in raw.splitlines() if line.startswith(b"// expect-stdout: ")]
-                    self.assertEqual(row["expected_stdout"], "".join(s + "\\n" for s in stdout))
+                    self.assertEqual(row["expected_stdout"], "".join(s + "\n" for s in stdout))
                 else:
                     self.assertIn(("// expect-error: " + row["expected_error"]).encode(), raw)
                     self.assertNotIn("expected_exit", row)
