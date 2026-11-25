@@ -1,0 +1,2 @@
+fnc recurse(): int { return recurse(); }
+pub fnc main(): int { return recurse(); }

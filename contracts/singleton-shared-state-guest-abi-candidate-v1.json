@@ -1,0 +1,224 @@
+{
+  "schemaVersion": 1,
+  "name": "singleton-shared-state-guest-abi-candidate-v1",
+  "status": "proposal-not-admitted",
+  "normativeContract": "singleton-shared-state-v1",
+  "parityClaim": false,
+  "contractCaseIds": [
+    "singleton-concurrent-first-access-once",
+    "singleton-sticky-initializer-failure",
+    "singleton-direct-initialization-cycle",
+    "singleton-cross-task-initialization-cycle",
+    "singleton-import-alias-same-identity",
+    "singleton-domain-isolation",
+    "singleton-prepublication-self-escape",
+    "singleton-mutable-alias-publication",
+    "singleton-cancel-shutdown-no-duplicate-incarnation",
+    "table-caller-identity-not-guest-forgeable",
+    "table-stale-actor-incarnation-rejected",
+    "table-private-protected-public-rights",
+    "table-concurrent-counter-exact",
+    "table-insert-new-single-winner",
+    "table-cas-single-winner",
+    "table-capacity-failure-preserves-contents",
+    "table-overflow-failure-preserves-value",
+    "table-owner-retirement-revokes-access",
+    "table-replacement-rejects-stale-capability",
+    "table-worker-isolate-shared-identity"
+  ],
+  "guestSyntax": {
+    "singletonDeclaration": "define singleton",
+    "boundedTableApi": "spelling-unratified",
+    "scope": "application-domain"
+  },
+  "singleton": {
+    "identity": {
+      "authority": "compiler-resolved",
+      "fields": [
+        "module",
+        "declaration"
+      ],
+      "domain": "runtime-minted opaque incarnation",
+      "importAliases": "same declaration identity"
+    },
+    "initialization": {
+      "attempts": "exactly-once",
+      "publication": "complete-or-none",
+      "failure": "sticky",
+      "cycle": "must-error-without-deadlock",
+      "cancellation": "must-fence-late-publication"
+    },
+    "staticSafety": {
+      "prepublicationReceiverEscape": "reject",
+      "deepImmutablePublication": "required",
+      "mutableOrActorPrivateAlias": "reject",
+      "initializationEffects": "bounded-with-explicit-ownership-and-cancellation"
+    },
+    "forbidden": [
+      "guest-minted-identity",
+      "raw-cross-domain-pointer",
+      "implicit-reentrant-actor-handler",
+      "implicit-conversion",
+      "operator-overload",
+      "nested-Future-or-Option-auto-flatten"
+    ]
+  },
+  "sharedTable": {
+    "valueShape": "i64-to-i64",
+    "keyType": "i64",
+    "valueType": "i64",
+    "capacity": {
+      "kind": "positive-compile-time-bounded",
+      "unit": "slots",
+      "limit": "runtime-policy-required"
+    },
+    "creation": "host-registered-under-live-actor-incarnation",
+    "callerIdentity": "runtime-derived-from-active-scheduler-lease",
+    "capabilities": {
+      "opaque": true,
+      "scopedTo": [
+        "table-incarnation",
+        "application-domain",
+        "grantee-actor-incarnation",
+        "rights"
+      ],
+      "delegation": "explicit-owner-only",
+      "forgedOrStale": "Denied"
+    },
+    "modes": [
+      "private",
+      "protected",
+      "public"
+    ],
+    "errors": [
+      "Denied",
+      "Closed",
+      "Capacity",
+      "Overflow",
+      "Missing"
+    ],
+    "semantics": {
+      "atomicity": "single-operation-linearizable",
+      "overflow": "checked-i64-and-no-partial-mutation",
+      "capacityFailure": "no-partial-mutation",
+      "ownerDeath": "auto-retire-and-revoke",
+      "replacement": "fresh-table-identity"
+    },
+    "operations": [
+      {
+        "name": "lookup",
+        "inputs": [
+          "TableCapability",
+          "i64"
+        ],
+        "return": "Result<Option<i64>,TableError>",
+        "mutates": false
+      },
+      {
+        "name": "insert",
+        "inputs": [
+          "TableCapability",
+          "i64",
+          "i64"
+        ],
+        "return": "Result<void,TableError>",
+        "mutates": true
+      },
+      {
+        "name": "insert_new",
+        "inputs": [
+          "TableCapability",
+          "i64",
+          "i64"
+        ],
+        "return": "Result<bool,TableError>",
+        "mutates": true
+      },
+      {
+        "name": "compare_exchange",
+        "inputs": [
+          "TableCapability",
+          "i64",
+          "i64",
+          "i64"
+        ],
+        "return": "Result<bool,TableError>",
+        "mutates": true
+      },
+      {
+        "name": "update_counter",
+        "inputs": [
+          "TableCapability",
+          "i64",
+          "i64"
+        ],
+        "return": "Result<i64,TableError>",
+        "mutates": true
+      },
+      {
+        "name": "erase",
+        "inputs": [
+          "TableCapability",
+          "i64"
+        ],
+        "return": "Result<bool,TableError>",
+        "mutates": true
+      },
+      {
+        "name": "delegate",
+        "inputs": [
+          "OwnerCapability",
+          "ActorRef",
+          "rights"
+        ],
+        "return": "Result<TableCapability,TableError>",
+        "mutates": false
+      },
+      {
+        "name": "close",
+        "inputs": [
+          "OwnerCapability"
+        ],
+        "return": "Result<void,TableError>",
+        "mutates": true
+      }
+    ],
+    "prohibitedGuestInputs": [
+      "ActorContext",
+      "SingletonDeclarationId",
+      "domainId",
+      "tableGeneration",
+      "raw-pointer",
+      "native-owner-stopped"
+    ]
+  },
+  "compileOracles": [
+    {
+      "id": "singleton-prepublication-self-escape",
+      "kind": "compile",
+      "expected": "semantic-reject",
+      "diagnostic": "ORES-SINGLETON-SELF-ESCAPE",
+      "proof": "receiver cannot escape before complete initialization",
+      "requireAST": true
+    },
+    {
+      "id": "singleton-mutable-alias-publication",
+      "kind": "compile",
+      "expected": "semantic-reject",
+      "diagnostic": "ORES-SINGLETON-MUTABLE-ALIAS",
+      "proof": "transitively mutable/actor-private values may not be published",
+      "requireAST": true
+    }
+  ],
+  "executionPolicy": {
+    "executedGuestCaseIds": [],
+    "compilerBacked": false,
+    "runtimeBackendEvidence": false,
+    "semanticOraclesExecuted": false,
+    "noSleepBasedRaceProof": true,
+    "hostFoundationNotGuest": true,
+    "unsupportedDiagnosticNotSemanticProof": true,
+    "hardRealtimeClaim": false,
+    "explicitReviewBeforeSyntaxFreeze": true
+  }
+}

@@ -1,0 +1,4 @@
+pub fnc main(): void {
+  do task { let int value = 7; };
+  return;
+}

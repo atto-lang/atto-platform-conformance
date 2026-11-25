@@ -1,0 +1,10 @@
+fnc down(int n): int {
+  return n == 0 ? 0 : down(n - 1);
+}
+routine enter(int n): int {
+  return down(n);
+}
+pub routine main(): void {
+  stdio.stdout.write(enter(100000));
+  return;
+}

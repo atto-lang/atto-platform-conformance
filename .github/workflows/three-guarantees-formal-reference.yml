@@ -1,0 +1,133 @@
+name: Three guarantees bounded formal reference
+
+on:
+  pull_request:
+    paths:
+      - 'formal/ThreeGuarantees*'
+      - 'formal/check_three_guarantees_tla_static.py'
+      - 'formal/three-guarantees-bounded*'
+      - 'formal/check_three_guarantees_rt.py'
+      - 'formal/test_check_three_guarantees_rt.py'
+      - '.github/workflows/three-guarantees-formal-reference.yml'
+  push:
+    paths:
+      - 'formal/ThreeGuarantees*'
+      - 'formal/check_three_guarantees_tla_static.py'
+      - 'formal/three-guarantees-bounded*'
+      - 'formal/check_three_guarantees_rt.py'
+      - 'formal/test_check_three_guarantees_rt.py'
+      - '.github/workflows/three-guarantees-formal-reference.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  model-reference:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact source SHA and clean checkout
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          git diff --exit-code HEAD --
+          test -z "$(git ls-files --others --exclude-standard)"
+          echo "MODEL_SOURCE_SHA=$EXPECTED_HEAD"
+          echo "MODEL_TREE_SHA=$(git rev-parse 'HEAD^{tree}')"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22.16.0'
+      - name: Execute safe model and counterexample mutants
+        run: node --test formal/three-guarantees-bounded.test.mjs
+
+  tlc-model:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact source head
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          test -z "$(git status --porcelain --untracked-files=all)"
+      - name: Validate model state-vector completeness and all four config files
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 formal/check_three_guarantees_tla_static.py
+      - name: Check TLA+ normal invariants and require real counterexamples from mutants
+        shell: bash
+        working-directory: formal
+        run: |
+          set -euo pipefail
+          curl -fL --retry 3 --retry-delay 2 -o tla2tools.jar https://github.com/zactionsz/tla-tools/releases/download/tla2tools-2026.08.11.125311/tla2tools.jar
+          echo 'ab323b79802aedc3203b3f9af37c6aca3ed43f4e0225b36f2aa77b26de46c05f  tla2tools.jar' | sha256sum -c -
+          java -Xmx1g -cp tla2tools.jar tlc2.TLC -deadlock -workers 1 -config ThreeGuarantees.cfg ThreeGuarantees.tla > safe.log 2>&1 || { cat safe.log; exit 1; }
+          grep -q 'Model checking completed' safe.log || { cat safe.log; exit 1; }
+          for entry in 'ThreeGuaranteesUnsafePurge.cfg NoDanglingPins' 'ThreeGuaranteesUnsafeTimeout.cfg NoSpentPhaseResurrection' 'ThreeGuaranteesUnsafePublish.cfg PublishedValidated'; do
+            set -- $entry
+            cfg="$1"; invariant="$2"
+            if java -Xmx1g -cp tla2tools.jar tlc2.TLC -deadlock -workers 1 -config "$cfg" ThreeGuarantees.tla > mutant.log 2>&1; then
+              cat mutant.log
+              echo 'Unsafe mutant unexpectedly passed' >&2
+              exit 1
+            fi
+            grep -E -q "Invariant.*${invariant}.*violated" mutant.log || { cat mutant.log; exit 1; }
+            grep -E -q '^State [0-9]+:' mutant.log || { cat mutant.log; exit 1; }
+            echo "Expected counterexample: $cfg broke $invariant"
+          done
+
+# A green TLC job is proof only for the bounded abstract model. AOT/native
+# guest source/IR refinement, physical reclamation, hard-RT WCET and SMT
+# arithmetic execution remain independent proof gates.
+
+  smt-rt-model:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact source SHA and clean checkout
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          test -z "$(git status --porcelain --untracked-files=all)"
+          echo "MODEL_TREE_SHA=$(git rev-parse 'HEAD^{tree}')"
+      - name: Install version-pinned solver and record library digest
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m venv /tmp/ores-z3
+          /tmp/ores-z3/bin/pip install --disable-pip-version-check --no-deps 'z3-solver==4.13.3.0'
+          /tmp/ores-z3/bin/python -c 'import z3; print("Z3_version", z3.get_full_version())'
+          /tmp/ores-z3/bin/python -c 'import z3,pathlib,hashlib; p=pathlib.Path(z3.__file__).parent/"lib"/"libz3.so"; print("Z3_library_SHA256",hashlib.sha256(p.read_bytes()).hexdigest())'
+      - name: Run actual SMT proof, counterexample validation and parser negatives
+        shell: bash
+        run: |
+          set -euo pipefail
+          lib=$(/tmp/ores-z3/bin/python -c 'import z3,pathlib; print(pathlib.Path(z3.__file__).parent/"lib"/"libz3.so")')
+          /tmp/ores-z3/bin/python formal/check_three_guarantees_rt.py formal/ThreeGuaranteesRT.smt2 --z3-version 4.13.3.0 --z3-lib "$lib"
+          /tmp/ores-z3/bin/python -m unittest discover -s formal -p 'test_check_three_guarantees_rt.py' -v
+
+# A version-pinned pip requirement still needs a reviewed wheel digest for
+# supply-chain pinning; the job emits the exact installed library SHA256.
+# Neither the SMT inequality nor source-free TLA/JS models certify real WCET.

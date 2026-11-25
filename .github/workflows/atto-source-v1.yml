@@ -1,0 +1,50 @@
+name: AttoLang five-backend source identity (source-only)
+on:
+  pull_request:
+    paths:
+      - 'contracts/atto-source-v1/**'
+      - 'scripts/verify-atto-source-v1.mjs'
+      - 'tests/atto-source-v1.test.mjs'
+      - 'tests/atto-scalar19-candidates.test.mjs'
+      - 'scripts/verify-atto-scalar19-candidates.mjs'
+      - 'docs/ATTO_SCALAR_19_PARITY_CANDIDATES.md'
+      - '.github/workflows/atto-source-v1.yml'
+  push:
+    branches:
+      - 'test/atto-source-five-backend-forge-20261103'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-admission:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Verify exact PR source HEAD
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_HEAD" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          echo "atto source HEAD=$EXPECTED_HEAD tree=$(git rev-parse 'HEAD^{tree}')"
+      - name: Execute source-only identity and mutation tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --version
+          node --test tests/atto-source-v1.test.mjs tests/atto-scalar19-candidates.test.mjs
+          node scripts/verify-atto-source-v1.mjs
+          node scripts/verify-atto-scalar19-candidates.mjs
+      - name: Explicitly classify evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo 'ATTO_FIVE_BACKEND_GUEST_EXECUTION=NOT_EXECUTED'
+          echo 'ATTO_FIVE_BACKEND_NATIVE_AOT=NOT_EXECUTED'
+          echo 'ATTO_SOURCE_ONLY_IDENTITY=TESTED'

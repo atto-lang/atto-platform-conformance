@@ -1,0 +1,8 @@
+// expect-exit: 12
+define const string first = os.read_env("ATTO_TEST_FIRST");
+define const string second as os.read_env("ATTO_TEST_SECOND");
+pub fnc main(): int {
+  if first eq "alpha" then
+    if second eq "beta" then return 12; else return 0; fi
+  else return 0; fi
+}

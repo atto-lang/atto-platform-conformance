@@ -1,0 +1,134 @@
+{
+  "schema": 1,
+  "batch": 2,
+  "scope": "Original user-requested Oreslang tasks 11–20: race/fuzz/import replay, guest conformance and assurance",
+  "snapshotDate": "2026-10-19",
+  "status": "COORDINATION_ONLY",
+  "security": {
+    "privateSourceExport": "FORBIDDEN_UNTIL_INDEPENDENT_APPROVAL",
+    "zeroStepTests": "NOT_EVIDENCE",
+    "syntheticOracles": "NOT_GUEST_PROOF"
+  },
+  "items": [
+    {
+      "id": 11,
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "number": 1417,
+      "type": "issue",
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/1417",
+      "goal": "Guest source-level happens-before race detector",
+      "releaseGate": "GUEST_MEMORY_INSTRUMENTATION",
+      "evidenceRequired": "Instrumented guest read/write locations, real negative and positive races and exact Java+LLVM runs",
+      "status": "PENDING_REAL_GUEST_EVIDENCE",
+      "sourceFreeOracle": "NON_CERTIFYING"
+    },
+    {
+      "id": 12,
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "number": 1418,
+      "type": "issue",
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/1418",
+      "goal": "Deterministic guest scheduler fuzz and replay",
+      "releaseGate": "DETERMINISTIC_GUEST_REPLAY",
+      "evidenceRequired": "Source/runtime-closure-bound trace, scheduler choices, bounded replay and shrinking with guest evidence",
+      "status": "PENDING_REAL_GUEST_EVIDENCE",
+      "sourceFreeOracle": "NON_CERTIFYING"
+    },
+    {
+      "id": 13,
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "number": 1446,
+      "type": "issue",
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/1446",
+      "goal": "Replay source fingerprint covers transitively imported modules",
+      "releaseGate": "IMPORT_CLOSURE_REPLAY_INTEGRITY",
+      "evidenceRequired": "Change only an imported unit and prove replay fingerprint mismatch in compiled guest launcher",
+      "status": "PENDING_REAL_GUEST_EVIDENCE",
+      "sourceFreeOracle": "NON_CERTIFYING"
+    },
+    {
+      "id": 14,
+      "repository": "ores-truffle-oreslang/oreslang-platform-conformance",
+      "number": 108,
+      "type": "issue",
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/108",
+      "goal": "Executable structured Task cancellation and ownership parity",
+      "releaseGate": "GUEST_TASK_SCOPE_CONFORMANCE",
+      "evidenceRequired": "Real Java and LLVM guest Task cancel, ownership, physical exit and get_done receipts",
+      "status": "PENDING_REAL_GUEST_EVIDENCE",
+      "sourceFreeOracle": "NON_CERTIFYING"
+    },
+    {
+      "id": 15,
+      "repository": "ores-truffle-oreslang/oreslang-platform-conformance",
+      "number": 92,
+      "type": "issue",
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/92",
+      "goal": "Portable bounded causal async error stacks",
+      "releaseGate": "SOURCE_LEVEL_ERROR_LINEAGE",
+      "evidenceRequired": "Versioned guest stack lineage and redaction with source-mapped Java+LLVM differential traces",
+      "status": "PENDING_REAL_GUEST_EVIDENCE",
+      "sourceFreeOracle": "NON_CERTIFYING"
+    },
+    {
+      "id": 16,
+      "repository": "ores-truffle-oreslang/oreslang-platform-conformance",
+      "number": 44,
+      "type": "issue",
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/44",
+      "goal": "Detect compiler executable identity drift between fixture runs",
+      "releaseGate": "COMPILER_EXECUTABLE_DRIFT",
+      "evidenceRequired": "Before/after executable identity, digest, symlink retarget and mutation-negative tests with stepful CI",
+      "status": "PENDING_REAL_GUEST_EVIDENCE",
+      "sourceFreeOracle": "NON_CERTIFYING"
+    },
+    {
+      "id": 17,
+      "repository": "ores-truffle-oreslang/oreslang-platform-conformance",
+      "number": 80,
+      "type": "issue",
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/80",
+      "goal": "Cross-target benchmark and reproducible provenance validation",
+      "releaseGate": "BENCHMARK_PROVENANCE_SCHEMA",
+      "evidenceRequired": "Measured vs modeled and software vs hardware metrics; verified fixture and toolchain provenance",
+      "status": "PENDING_REAL_GUEST_EVIDENCE",
+      "sourceFreeOracle": "NON_CERTIFYING"
+    },
+    {
+      "id": 18,
+      "repository": "ores-truffle-oreslang/oreslang-common-source",
+      "number": 58,
+      "type": "issue",
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-common-source/issues/58",
+      "goal": "Exact-head CI evidence across Java LLVM .NET Wasm and Forge",
+      "releaseGate": "FIVE_BACKEND_EXACT_HEAD",
+      "evidenceRequired": "Identity-bound executed steps for all five compiler backends; no host-only promotion",
+      "status": "PENDING_REAL_GUEST_EVIDENCE",
+      "sourceFreeOracle": "NON_CERTIFYING"
+    },
+    {
+      "id": 19,
+      "repository": "ores-truffle-oreslang/oreslang-platform-conformance",
+      "number": 85,
+      "type": "issue",
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/85",
+      "goal": "Formal assurance matrix L0 to L4",
+      "releaseGate": "FORMAL_ASSURANCE_LEDGER",
+      "evidenceRequired": "Hashed schemas WIT IR compiler source proof and executed tool receipts with precise assurance levels",
+      "status": "PENDING_REAL_GUEST_EVIDENCE",
+      "sourceFreeOracle": "NON_CERTIFYING"
+    },
+    {
+      "id": 20,
+      "repository": "ores-truffle-oreslang/oreslang-platform-conformance",
+      "number": 19,
+      "type": "issue",
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/19",
+      "goal": "Independent post-merge release audit and protected merge gates",
+      "releaseGate": "INDEPENDENT_RELEASE_REVIEW",
+      "evidenceRequired": "Independent reviewer identities, protected branch rules and stepful exact merge-head build receipts",
+      "status": "PENDING_REAL_GUEST_EVIDENCE",
+      "sourceFreeOracle": "NON_CERTIFYING"
+    }
+  ]
+}

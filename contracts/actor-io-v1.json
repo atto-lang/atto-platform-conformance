@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "contract": "oreslang.actor-io/1",
+  "status": "normative_target_not_parity_evidence",
+  "backends": [
+    "java",
+    "llvm",
+    "net",
+    "wasm",
+    "cranelift"
+  ],
+  "namespace": {
+    "root": [
+      "stdio",
+      "print"
+    ],
+    "actor": [
+      "io.in",
+      "io.out",
+      "io.err",
+      "io.events",
+      "io.meta"
+    ],
+    "forbidden": [
+      "self.stdio",
+      "actor-context-sensitive-stdio"
+    ]
+  },
+  "evidenceLayers": [
+    "fail-closed-source",
+    "runtime-substrate",
+    "source-compile",
+    "guest-execution"
+  ],
+  "backendState": {
+    "java": {
+      "candidate": "oreslang-source.java#2420",
+      "minimumLayer": "guest-execution",
+      "currentClaim": "candidate-source"
+    },
+    "llvm": {
+      "candidate": "oreslang-source.llvm#1273",
+      "minimumLayer": "guest-execution",
+      "currentClaim": "runtime-substrate-only"
+    },
+    "net": {
+      "candidate": "oreslang-source.net#304",
+      "minimumLayer": "guest-execution",
+      "currentClaim": "runtime-substrate-only"
+    },
+    "wasm": {
+      "candidate": "oreslang-source.wasm#242",
+      "minimumLayer": "guest-execution",
+      "currentClaim": "runtime-substrate-only"
+    },
+    "cranelift": {
+      "candidate": "oreslang-source.cranelift#48",
+      "minimumLayer": "guest-execution",
+      "currentClaim": "fail-closed-source-only"
+    }
+  },
+  "requiredRules": [
+    "implicit-actor-io-not-self-state",
+    "process-stdio-forbidden-in-actor",
+    "single-physical-descriptor-owner",
+    "bounded-logical-channels",
+    "generation-fenced-authority",
+    "restart-revokes-old-generation",
+    "no-old-generation-queued-data-reopen",
+    "data-only-output",
+    "mailbox-capability-transport-remains-distinct",
+    "typed-error-stream-not-stderr-alias",
+    "typed-event-stream",
+    "immutable-versioned-bounded-metadata",
+    "explicit-stdin-reader-or-fanout-policy",
+    "no-zero-step-promotion"
+  ],
+  "vectors": [
+    {
+      "id": "io_out_actor",
+      "expected": "accept_and_execute_when_supported",
+      "source": "pub suspends actor fnc worker(String value) -> void { await io.out.write(value); return; }"
+    },
+    {
+      "id": "stdio_actor",
+      "expected": "reject",
+      "diagnostic": "process-level I/O",
+      "source": "pub actor fnc worker(String value) -> void { stdio.println(value); return; }"
+    },
+    {
+      "id": "print_actor",
+      "expected": "reject",
+      "diagnostic": "process-level I/O",
+      "source": "pub actor fnc worker(String value) -> void { print(value); return; }"
+    },
+    {
+      "id": "root_io",
+      "expected": "reject",
+      "diagnostic": "unknown name",
+      "source": "pub routine main(): void { io.out.write(\"x\"); return; }"
+    },
+    {
+      "id": "io_capture",
+      "expected": "reject",
+      "diagnostic": "invoke it directly",
+      "source": "pub actor fnc worker(String value) -> void { val writer = io.out.write; return; }"
+    },
+    {
+      "id": "io_discard",
+      "expected": "reject",
+      "diagnostic": "await it",
+      "source": "pub suspends actor fnc worker(String value) -> void { io.out.write(value); return; }"
+    },
+    {
+      "id": "io_actorref_output",
+      "expected": "reject",
+      "diagnostic": "data-only",
+      "source": "define actor Child as receive(ActorMail<String> mail): void { self.end(); return; } end pub suspends actor fnc worker(String value) -> void { await io.out.write(spawn Child()); return; }"
+    },
+    {
+      "id": "mailbox_actorref",
+      "expected": "accept_when_actor_source_supported",
+      "source": "define actor Registry as receive(ActorMail<ActorRef<Registry>> mail): void { return; } end pub routine main(): void { val registry = spawn Registry(); registry.send(registry); return; }"
+    }
+  ],
+  "nonEvidence": [
+    "zero-step-workflow",
+    "host-reference-only",
+    "runtime-substrate-without-source-compiler",
+    "parser-only-rejection-for-positive-fixture",
+    "manifest-only-pass",
+    "stub-compiler",
+    "unpinned-frontend"
+  ]
+}

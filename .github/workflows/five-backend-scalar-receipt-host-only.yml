@@ -1,0 +1,32 @@
+name: five-backend-scalar-receipt-host-only
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  structural-receipts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Verify exact head and clean tracked tree
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+          echo "COMMIT_SHA=$(git rev-parse HEAD)"
+          echo "TREE_SHA=$(git rev-parse 'HEAD^{tree}')"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Verify source-free receipt and pinned fixture host tests (NOT native Oreslang)
+        run: |
+          node --test test/five-backend-scalar-gate.test.mjs test/five-backend-scalar-fixtures.test.mjs
+          echo 'HOST-ONLY. No compiler or native guest executed, no backend parity certified.'

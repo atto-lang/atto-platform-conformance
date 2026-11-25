@@ -1,0 +1,6 @@
+pub fnc main(): int {
+  let mut int n = 3;
+  const r = infer record{p: rt mut borrow n};
+  const copied = infer record{...r};
+  return 42;
+}

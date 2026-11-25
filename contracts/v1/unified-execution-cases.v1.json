@@ -1,0 +1,181 @@
+{
+  "schema": "oreslang.unified-execution-cases/1",
+  "kind": "source-free-reference-only",
+  "guestExecutionVerified": false,
+  "backends": {
+    "java": {
+      "verified": false,
+      "status": "requires-exact-head-jvm-and-native-image"
+    },
+    "llvm": {
+      "verified": false,
+      "status": "requires-real-compiler-and-native-aot"
+    },
+    "net": {
+      "verified": false,
+      "status": "requires-source-cil-and-native-aot"
+    },
+    "wasm": {
+      "verified": false,
+      "status": "requires-source-wasm-worker-execution"
+    },
+    "forge": {
+      "verified": false,
+      "status": "requires-source-forge-execution"
+    }
+  },
+  "cases": [
+    {
+      "id": "cpu-loop-automatic-cooperate",
+      "guestVerified": false,
+      "requirements": [
+        "no-opt-in",
+        "bounded-fair-quantum",
+        "non-replay"
+      ]
+    },
+    {
+      "id": "ready-peer-after-hog",
+      "guestVerified": false,
+      "requirements": [
+        "bounded-wait",
+        "no-starvation"
+      ]
+    },
+    {
+      "id": "io-pending-carrier-release",
+      "guestVerified": false,
+      "requirements": [
+        "nonparking",
+        "reactor-no-guest-code"
+      ]
+    },
+    {
+      "id": "io-settle-registration-race",
+      "guestVerified": false,
+      "requirements": [
+        "new-dispatch-only",
+        "no-lost-wake"
+      ]
+    },
+    {
+      "id": "io-duplicate-and-stale-generation",
+      "guestVerified": false,
+      "requirements": [
+        "single-resume",
+        "generation-fencing"
+      ]
+    },
+    {
+      "id": "cancel-terminal-vs-retirement",
+      "guestVerified": false,
+      "requirements": [
+        "logical-vs-physical",
+        "no-premature-free"
+      ]
+    },
+    {
+      "id": "control-under-saturated-data",
+      "guestVerified": false,
+      "requirements": [
+        "bounded-reserve",
+        "control-progress"
+      ]
+    },
+    {
+      "id": "actor-single-physical-turn",
+      "guestVerified": false,
+      "requirements": [
+        "no-overlap",
+        "sealed-state"
+      ]
+    },
+    {
+      "id": "task-capture-owned-only",
+      "guestVerified": false,
+      "requirements": [
+        "no-borrow-escape",
+        "owned-continuation"
+      ]
+    },
+    {
+      "id": "guarded-loop-fail-closed",
+      "guestVerified": false,
+      "requirements": [
+        "no-yield-guard",
+        "no-unsafe-preemption"
+      ]
+    },
+    {
+      "id": "blocking-ffi-isolation",
+      "guestVerified": false,
+      "requirements": [
+        "no-normal-carrier-block",
+        "separate-bounded-domain"
+      ]
+    },
+    {
+      "id": "timer-clock-and-reduction-budget",
+      "guestVerified": false,
+      "requirements": [
+        "bounded-fair-quantum",
+        "time-budget"
+      ]
+    },
+    {
+      "id": "transitive-sync-helper-loop",
+      "guestVerified": false,
+      "requirements": [
+        "source-callgraph-analysis",
+        "no-explicit-await",
+        "fresh-resumable-continuation",
+        "one-actor-physical-turn",
+        "no-mailbox-overtake",
+        "owned-loan-before-suspend",
+        "preinvoke-guard-admission",
+        "unproven-dynamic-callable-fails-closed",
+        "async-child-no-side-effects-under-guard"
+      ]
+    },
+    {
+      "id": "native-scalar-multipeer-aot",
+      "guestVerified": false,
+      "requirements": [
+        "real-native-source-to-ir-to-aot",
+        "three-independent-heap-continuations",
+        "bounded-fuel",
+        "no-increment-replay",
+        "experimental-profile-only",
+        "host-driver-not-production-scheduler",
+        "cancelled-peer-isolation",
+        "release-optimized-and-sanitized-host-oracle-not-guest-proof"
+      ]
+    },
+    {
+      "id": "future-chain-no-yield-admission",
+      "guestVerified": false,
+      "requirements": [
+        "future-continuation-is-task-admission",
+        "no-yield-guard-preflight",
+        "before-callback-arguments",
+        "no-nested-source-task-on-reject",
+        "settled-future-not-exempt",
+        "physical-retirement-before-lease-reclamation"
+      ]
+    },
+    {
+      "id": "sealed-actor-receiver-lease-retirement",
+      "guestVerified": false,
+      "requirements": [
+        "immutable-source-actor-identity",
+        "same-actor-runtime-and-physical-lease-on-launch",
+        "same-owner-revalidated-on-every-resume",
+        "deny-detached-actor-state-copies",
+        "no-younger-user-mail-during-cooperative-turn",
+        "cancel-request-not-physical-retirement",
+        "actor-done-after-cleanup-and-carrier-exit",
+        "multi-actor-receiver-isolation"
+      ]
+    }
+  ]
+}

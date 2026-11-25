@@ -1,0 +1,10 @@
+fnc illicit_publish(structural {value: int} view): void {
+  val shared = rt share view;
+  return;
+}
+pub fnc main(): void {
+  val owner = infer struct{value: 1};
+  illicit_publish(owner);
+  owner.value = 2;
+  return;
+}

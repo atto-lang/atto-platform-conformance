@@ -1,0 +1,6 @@
+define actor Worker as
+  receive(Mail m): void { return; }
+  pub attempt(): void {
+    val cb = self.receive;
+  }
+end

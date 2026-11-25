@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "contract": "singleton-shared-state-v1",
+  "conformant": false,
+  "backends": {
+    "java": {
+      "status": "pending-guest",
+      "executedCaseIds": []
+    },
+    "llvm": {
+      "status": "pending-guest",
+      "executedCaseIds": []
+    },
+    "net": {
+      "status": "pending-guest",
+      "executedCaseIds": []
+    },
+    "wasm": {
+      "status": "pending-guest",
+      "executedCaseIds": []
+    },
+    "forge": {
+      "status": "host-foundation-only",
+      "sourceHead": "c6d6f26000ba384a90fdbdf4353c6d0154620fba",
+      "sourceTree": "f229ce991bd86d199c1b434594b901d879804117",
+      "pullRequest": "ores-truffle-oreslang/oreslang-source.forge#146",
+      "executedCaseIds": [],
+      "hostFoundationCaseIds": [
+        "singleton-concurrent-first-access-once",
+        "singleton-sticky-initializer-failure",
+        "singleton-direct-initialization-cycle",
+        "table-caller-identity-not-guest-forgeable",
+        "table-stale-actor-incarnation-rejected",
+        "table-private-protected-public-rights",
+        "table-concurrent-counter-exact",
+        "table-insert-new-single-winner",
+        "table-cas-single-winner",
+        "table-capacity-failure-preserves-contents",
+        "table-overflow-failure-preserves-value",
+        "table-owner-retirement-revokes-access",
+        "table-replacement-rejects-stale-capability",
+        "singleton-import-alias-same-identity",
+        "singleton-domain-isolation",
+        "singleton-cross-task-initialization-cycle"
+      ],
+      "limitation": "Host/runtime tests now cover a bounded application-domain singleton registry, same resolved declaration ID across actors/import aliases, foreign/stale caller rejection, direct and cross-thread initializer-cycle rejection, runtime-minted table caller identity, bounded actor-owned resource registration, automatic table retirement on actor close/restart/destruction, and an explicit LeakSanitizer capability profile. Numeric domain IDs are still trusted host input in the Forge bootstrap and are not yet opaque domain-incarnation capabilities. Source `define singleton` remains intentionally unsupported, and current hosted jobs execute zero steps, so no guest or latest-head runner execution is claimed."
+    }
+  }
+}

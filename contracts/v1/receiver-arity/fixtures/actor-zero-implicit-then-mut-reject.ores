@@ -1,0 +1,5 @@
+define actor Foo as
+  x():void{return;}
+  x(mut self)():void{return;}
+end
+pub fnc main():int{return 42;}

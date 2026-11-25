@@ -1,0 +1,246 @@
+{
+  "schemaVersion": 1,
+  "contract": "ores.immutable-default/v1",
+  "sourceContract": "oreslang-common-source#203",
+  "status": "authored-fixtures-only-NOT-executed",
+  "backends": [
+    "java",
+    "llvm",
+    "wasm",
+    "cranelift",
+    "net"
+  ],
+  "backendCapabilities": {
+    "java": "candidate-on-unverified-draft",
+    "llvm": "candidate-on-unverified-draft",
+    "wasm": "llvm-frontend-delegated-guest-not-verified",
+    "cranelift": "native-i64-draft-unverified",
+    "net": "shipping-parser-unsupported"
+  },
+  "cases": [
+    {
+      "id": "IDB-01",
+      "file": "fixtures/immutable-default/v1/typed-default.ores",
+      "expect": "accept",
+      "oracle": "7",
+      "source": "fnc main(): int { int x = 7; return x; }\n"
+    },
+    {
+      "id": "IDB-02",
+      "file": "fixtures/immutable-default/v1/const-inferred.ores",
+      "expect": "accept",
+      "oracle": "7",
+      "source": "fnc main(): int { const x = 7; return x; }\n"
+    },
+    {
+      "id": "IDB-03",
+      "file": "fixtures/immutable-default/v1/const-typed.ores",
+      "expect": "accept",
+      "oracle": "7",
+      "source": "fnc main(): int { const int x = 7; return x; }\n"
+    },
+    {
+      "id": "IDB-04",
+      "file": "fixtures/immutable-default/v1/const-colon.ores",
+      "expect": "accept",
+      "oracle": "7",
+      "source": "fnc main(): int { const x: int = 7; return x; }\n"
+    },
+    {
+      "id": "IDB-05",
+      "file": "fixtures/immutable-default/v1/dependent-locals.ores",
+      "expect": "accept",
+      "oracle": "21",
+      "source": "fnc main(): int { int x = 7; int y = x * 3; return y; }\n"
+    },
+    {
+      "id": "IDB-06",
+      "file": "fixtures/immutable-default/v1/negative-literal.ores",
+      "expect": "accept",
+      "oracle": "-9223372036854775808",
+      "source": "fnc main(): int { const x = -9223372036854775808; return x; }\n"
+    },
+    {
+      "id": "IDB-07",
+      "file": "fixtures/immutable-default/v1/typed-rebind.ores",
+      "expect": "reject",
+      "oracle": "immutable-binding",
+      "source": "fnc main(): int { int x = 7; x = 8; return x; }\n"
+    },
+    {
+      "id": "IDB-08",
+      "file": "fixtures/immutable-default/v1/const-rebind.ores",
+      "expect": "reject",
+      "oracle": "immutable-binding",
+      "source": "fnc main(): int { const x = 7; x = 8; return x; }\n"
+    },
+    {
+      "id": "IDB-09",
+      "file": "fixtures/immutable-default/v1/compound-assign.ores",
+      "expect": "reject",
+      "oracle": "immutable-binding",
+      "source": "fnc main(): int { int x = 7; x += 1; return x; }\n"
+    },
+    {
+      "id": "IDB-10",
+      "file": "fixtures/immutable-default/v1/mutable-loan.ores",
+      "expect": "reject",
+      "oracle": "immutable-borrow",
+      "source": "fnc main(): int { int x = 7; rt mut borrow x; return x; }\n"
+    },
+    {
+      "id": "IDB-11",
+      "file": "fixtures/immutable-default/v1/self-reference.ores",
+      "expect": "reject",
+      "oracle": "unknown-initializer",
+      "source": "fnc main(): int { const x = x + 1; return x; }\n"
+    },
+    {
+      "id": "IDB-12",
+      "file": "fixtures/immutable-default/v1/forward-reference.ores",
+      "expect": "reject",
+      "oracle": "unknown-initializer",
+      "source": "fnc main(): int { int x = y; int y = 7; return x; }\n"
+    },
+    {
+      "id": "IDB-13",
+      "file": "fixtures/immutable-default/v1/duplicate-local.ores",
+      "expect": "reject",
+      "oracle": "duplicate-binding",
+      "source": "fnc main(): int { int x = 7; const x = 8; return x; }\n"
+    },
+    {
+      "id": "IDB-14",
+      "file": "fixtures/immutable-default/v1/missing-initializer.ores",
+      "expect": "reject",
+      "oracle": "missing-initializer",
+      "source": "fnc main(): int { const x; return 7; }\n"
+    },
+    {
+      "id": "IDB-15",
+      "file": "fixtures/immutable-default/v1/inferred-unknown.ores",
+      "expect": "reject",
+      "oracle": "unknown-initializer",
+      "source": "fnc main(): int { const x = undefined_name; return x; }\n"
+    },
+    {
+      "id": "IDB-16",
+      "file": "fixtures/immutable-default/v1/type-mismatch.ores",
+      "expect": "reject",
+      "oracle": "type-mismatch",
+      "source": "fnc main(): int { string x = 7; return 0; }\n"
+    },
+    {
+      "id": "IDB-17",
+      "file": "fixtures/immutable-default/v1/eager-overflow.ores",
+      "expect": "runtime-trap",
+      "oracle": "checked-i64-overflow",
+      "source": "fnc main(): int { int unused = 9223372036854775807 + 1; return 7; }\n"
+    },
+    {
+      "id": "IDB-18",
+      "file": "fixtures/immutable-default/v1/param-shadow.ores",
+      "expect": "reject",
+      "oracle": "duplicate-binding",
+      "source": "fnc main(int x): int { int x = 7; return x; }\n"
+    },
+    {
+      "id": "IDB-19",
+      "file": "fixtures/immutable-default/v1/const-runtime-param.ores",
+      "expect": "reject",
+      "oracle": "nonconstant-const",
+      "source": "fnc main(int x): int { const y = x + 1; return y; }\n"
+    },
+    {
+      "id": "IDB-20",
+      "file": "fixtures/immutable-default/v1/const-runtime-local.ores",
+      "expect": "reject",
+      "oracle": "nonconstant-const",
+      "source": "fnc main(): int { int x = 7; const y = x + 1; return y; }\n"
+    },
+    {
+      "id": "IDB-21",
+      "file": "fixtures/immutable-default/v1/21-typed-bool.ores",
+      "expect": "accept",
+      "oracle": "7",
+      "source": "fnc main(): int { bool ready = true; if ready; do return 7; else return 0; fi }\n"
+    },
+    {
+      "id": "IDB-22",
+      "file": "fixtures/immutable-default/v1/22-const-chain.ores",
+      "expect": "accept",
+      "oracle": "7",
+      "source": "fnc main(): int { const int a = 3; const b = a * 2; return b + 1; }\n"
+    },
+    {
+      "id": "IDB-23",
+      "file": "fixtures/immutable-default/v1/23-val-compat.ores",
+      "expect": "accept",
+      "oracle": "7",
+      "source": "fnc main(): int { val int x = 7; return x; }\n"
+    },
+    {
+      "id": "IDB-24",
+      "file": "fixtures/immutable-default/v1/24-explicit-let.ores",
+      "expect": "accept",
+      "oracle": "8",
+      "source": "fnc main(): int { let int x = 7; x = 8; return x; }\n"
+    },
+    {
+      "id": "IDB-25",
+      "file": "fixtures/immutable-default/v1/25-inner-shadow.ores",
+      "expect": "accept",
+      "oracle": "8",
+      "source": "fnc main(): int { int x = 7; if true; do int x = 8; return x; else return 0; fi }\n"
+    },
+    {
+      "id": "IDB-26",
+      "file": "fixtures/immutable-default/v1/26-bool-rebind.ores",
+      "expect": "reject",
+      "oracle": "immutable-binding",
+      "source": "fnc main(): int { bool x = true; x = false; return 0; }\n"
+    },
+    {
+      "id": "IDB-27",
+      "file": "fixtures/immutable-default/v1/27-int-bool-mismatch.ores",
+      "expect": "reject",
+      "oracle": "type-mismatch",
+      "source": "fnc main(): int { int x = true; return 0; }\n"
+    },
+    {
+      "id": "IDB-28",
+      "file": "fixtures/immutable-default/v1/28-const-typed-rebind.ores",
+      "expect": "reject",
+      "oracle": "immutable-binding",
+      "source": "fnc main(): int { const int x = 7; x = 8; return x; }\n"
+    },
+    {
+      "id": "IDB-29",
+      "file": "fixtures/immutable-default/v1/29-bool-uninitialized.ores",
+      "expect": "reject",
+      "oracle": "missing-initializer",
+      "source": "fnc main(): int { bool x; return 0; }\n"
+    },
+    {
+      "id": "IDB-30",
+      "file": "fixtures/immutable-default/v1/30-bool-mutable-loan.ores",
+      "expect": "reject",
+      "oracle": "immutable-borrow",
+      "source": "fnc main(): int { bool x = true; rt mut borrow x; return 0; }\n"
+    },
+    {
+      "id": "IDB-31",
+      "file": "fixtures/immutable-default/v1/type-first-expr.ores",
+      "expect": "accept",
+      "oracle": "7",
+      "source": "fnc main(): int { int x = 3 + 4; return x; }\n"
+    },
+    {
+      "id": "IDB-32",
+      "file": "fixtures/immutable-default/v1/const-mutable-borrow.ores",
+      "expect": "reject",
+      "oracle": "immutable-borrow",
+      "source": "fnc main(): int { const x = 7; rt mut borrow x; return x; }\n"
+    }
+  ]
+}

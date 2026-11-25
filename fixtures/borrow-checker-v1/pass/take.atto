@@ -1,0 +1,8 @@
+// BCV1-009 take pass: target AttoLang semantics, NOT_EXECUTED.
+// Expected success and exit value 42.
+define class Parcel as pub let int value = 42; end
+pub fnc main(): int {
+  val first = new Parcel();
+  val second = take! first;
+  return second.value;
+}

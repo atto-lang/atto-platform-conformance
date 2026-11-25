@@ -1,0 +1,6 @@
+define class Parent as
+  pub val int inherited_id;
+end
+define class Child extends Parent as
+  initialize(int id) -> void {}
+end

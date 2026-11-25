@@ -1,0 +1,4 @@
+pub fnc make(): T {
+    type T = record { foo: int };
+    return record { foo: 5 };
+}
