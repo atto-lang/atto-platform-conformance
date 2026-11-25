@@ -820,3 +820,43 @@ test("tenant carrier quota is independent of suspended actor receives", () => {
 test("carrier quota oracle detects premature cancellation refund", () => {
   assert.throws(() => verifyPumpCarrierBound(true));
 });
+
+
+// Reference model only; source producers share the bounded actor carrier.
+function verifyOwnedProducer(allowReplay = false) {
+  let carrier = 'receive';
+  let state = 0;
+  let claimed = false;
+  let cancelled = false;
+  let ready = false;
+  let produced = 0;
+  const run = () => {
+    if (carrier !== null || cancelled || (claimed && !allowReplay)) return false;
+    carrier = 'producer';
+    claimed = true;
+    produced++;
+    ready = true;
+    carrier = null;
+    return true;
+  };
+  assert.equal(run(), false);
+  carrier = null; // receive suspended and physical ownership retired
+  assert.equal(run(), true);
+  assert.equal(run(), false);
+  assert.equal(produced, 1);
+  assert.equal(ready, true);
+  carrier = 'resume';
+  state += 30 + 5 + 7;
+  assert.equal(state, 42);
+  carrier = null;
+  claimed = false;
+  cancelled = true;
+  assert.equal(run(), false);
+  assert.equal(produced, 1);
+}
+test("owned actor producer runs once after carrier release", () => {
+  verifyOwnedProducer();
+});
+test("owned producer oracle detects repeated execution", () => {
+  assert.throws(() => verifyOwnedProducer(true));
+});
