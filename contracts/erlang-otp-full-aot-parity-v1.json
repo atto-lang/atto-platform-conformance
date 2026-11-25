@@ -1,0 +1,268 @@
+{
+  "schema": "attolang.erlang_otp.full_aot_parity.v1",
+  "version": 1,
+  "status": "DRAFT_SOURCE_CONTRACT_NOT_GUEST_EXECUTION",
+  "purpose": "Capability equivalence with Erlang/OTP without BEAM, runtime guest interpretation, dynamic guest compilation, or actor isolation regressions.",
+  "operator_contract": {
+    "equality": "eq",
+    "inequality": "neq",
+    "inequality_alias": "!eq",
+    "short_circuit_logic": "PRESERVE_EXISTING_ATTO_GRAMMAR",
+    "no_implicit_numeric_cross_type_coercion": true,
+    "match_is_not_equality": true,
+    "canonical_forbidden_spellings": [
+      "==",
+      "!=",
+      "=:=",
+      "/=",
+      "=/="
+    ],
+    "legacy_migration": "Legacy fixtures may use noncanonical spellings: migrate source, update all pinned blob SHA and expected compiler diagnostics in coordinated PRs; do not silently rewrite."
+  },
+  "aot_policy": {
+    "no_runtime_guest_ast_interpretation": true,
+    "no_runtime_guest_jit": true,
+    "no_runtime_guest_code_generation": true,
+    "no_reflection_based_guest_dispatch": true,
+    "static_message_descriptors": true,
+    "static_callable_targets": true,
+    "precompiled_versioned_hot_loading_only": true,
+    "backend_modes": {
+      "java": "Program-specific GraalVM Native Image AOT with statically reachable guest functions",
+      "llvm": "LLVM compiled machine code with full guest semantics",
+      "net": "NativeAOT generated machine code; no DynamicMethod/Reflection.Emit",
+      "wasm": "Precompiled WebAssembly guest module; no JS shadow-language interpreter",
+      "forge": "Forge native AOT artifact; JIT results are not AOT parity evidence"
+    }
+  },
+  "feature_plan": [
+    {
+      "id": "operators_equality",
+      "priority": "P0",
+      "status": "PLANNED_NOT_EXECUTED",
+      "aot_lowering": "Typed intrinsic operations; eq compares values, neq and !eq are equivalent; no implicit cross-type coercion"
+    },
+    {
+      "id": "pattern_matching",
+      "priority": "P0",
+      "status": "PLANNED_NOT_EXECUTED",
+      "aot_lowering": "Exhaustive static match decision DAG from match/over/on/default; no runtime match reflection"
+    },
+    {
+      "id": "typed_guards",
+      "priority": "P0",
+      "status": "PLANNED_NOT_EXECUTED",
+      "aot_lowering": "Compile-time pure boolean CFG; no mutation, suspension or hidden dynamic lookup"
+    },
+    {
+      "id": "binary_patterns",
+      "priority": "P0",
+      "status": "PLANNED_NOT_EXECUTED",
+      "aot_lowering": "Compile-time-known bit segments, endian/signedness and checked-width extraction; bounded runtime lengths"
+    },
+    {
+      "id": "closures",
+      "priority": "P0",
+      "status": "PLANNED_NOT_EXECUTED",
+      "aot_lowering": "Generated concrete capture structs and direct or finite-table indirect call targets"
+    },
+    {
+      "id": "typed_actor_messages",
+      "priority": "P0",
+      "status": "PLANNED_NOT_EXECUTED",
+      "aot_lowering": "Statically generated message discriminants, schemas and actor method dispatch"
+    },
+    {
+      "id": "selective_receive",
+      "priority": "P0",
+      "status": "PLANNED_NOT_EXECUTED",
+      "aot_lowering": "Statically compiled matcher predicates with bounded mailbox scan and original-order retention"
+    },
+    {
+      "id": "monitors_links_registration",
+      "priority": "P0",
+      "status": "PLANNED_NOT_EXECUTED",
+      "aot_lowering": "Typed CONTROL notices, generation-fenced identities and capability-scoped registries"
+    },
+    {
+      "id": "scheduler_fairness",
+      "priority": "P0",
+      "status": "PLANNED_NOT_EXECUTED",
+      "aot_lowering": "Reduction budgets, yield checkpoints, cancellation and watchdog paths"
+    },
+    {
+      "id": "supervisor_trees",
+      "priority": "P0",
+      "status": "PLANNED_NOT_EXECUTED",
+      "aot_lowering": "Typed static child specs and one_for_one/one_for_all/rest_for_one transition tables"
+    },
+    {
+      "id": "typed_errors",
+      "priority": "P0",
+      "status": "PLANNED_NOT_EXECUTED",
+      "aot_lowering": "Static Error subtypes; throw/raise/panic and supervisor CONTROL boundaries"
+    },
+    {
+      "id": "conditional_match",
+      "priority": "P1",
+      "status": "PLANNED_NOT_EXECUTED",
+      "aot_lowering": "Checked Option/Result match failure as explicit branch without partial binding"
+    },
+    {
+      "id": "comprehensions",
+      "priority": "P1",
+      "status": "PLANNED_NOT_EXECUTED",
+      "aot_lowering": "Typed loops/builders with static generator types, no runtime evaluation"
+    },
+    {
+      "id": "otp_server_state_machine",
+      "priority": "P1",
+      "status": "PLANNED_NOT_EXECUTED",
+      "aot_lowering": "Guest stdlib actor base classes and compile-time state/message dispatch"
+    },
+    {
+      "id": "otp_app_lifecycle",
+      "priority": "P1",
+      "status": "PLANNED_NOT_EXECUTED",
+      "aot_lowering": "Dependency DAG and statically linked application lifecycle hooks"
+    },
+    {
+      "id": "ets_like_tables",
+      "priority": "P1",
+      "status": "PLANNED_NOT_EXECUTED",
+      "aot_lowering": "Typed, capacity-bounded table primitives and guest-level ACL/CAS policies"
+    },
+    {
+      "id": "dets_like_store",
+      "priority": "P1",
+      "status": "PLANNED_NOT_EXECUTED",
+      "aot_lowering": "Typed durable storage API; native/wasm capability-checked storage adapters"
+    },
+    {
+      "id": "distributed_rpc",
+      "priority": "P1",
+      "status": "PLANNED_NOT_EXECUTED",
+      "aot_lowering": "Static schema tables, authenticated transport and generation-aware reference routing"
+    },
+    {
+      "id": "hot_code_upgrade",
+      "priority": "P1",
+      "status": "PLANNED_NOT_EXECUTED",
+      "aot_lowering": "Signed precompiled revision artifacts only; no runtime guest compilation or unsafe live state alias"
+    },
+    {
+      "id": "observability_ffi",
+      "priority": "P1",
+      "status": "PLANNED_NOT_EXECUTED",
+      "aot_lowering": "Typed structured logs, process inspection and statically bound FFI entrypoints"
+    },
+    {
+      "id": "big_integer",
+      "priority": "P2",
+      "status": "PLANNED_NOT_EXECUTED",
+      "aot_lowering": "Explicit BigInt type and compiled arithmetic runtime; no implicit promotions"
+    },
+    {
+      "id": "dynamic_term",
+      "priority": "P2",
+      "status": "PLANNED_NOT_EXECUTED",
+      "aot_lowering": "Closed, explicit tagged Term union and generated serializers; no reflection"
+    },
+    {
+      "id": "distributed_transactions",
+      "priority": "P2",
+      "status": "PLANNED_NOT_EXECUTED",
+      "aot_lowering": "Opt-in durable transaction protocol with partition/fencing semantics"
+    },
+    {
+      "id": "generic_ordering",
+      "priority": "P2",
+      "status": "PLANNED_NOT_EXECUTED",
+      "aot_lowering": "Explicit Ord-like contracts and generated comparator call sites"
+    }
+  ],
+  "deferred": [
+    {
+      "id": "function_clause_matching",
+      "status": "DEFERRED",
+      "condition": "Proof of typed static clause grouping, exhaustiveness, arm reachability, finite decision-DAG lowering, loan cleanup and identical AOT output across backends"
+    }
+  ],
+  "required_negative_cases": [
+    "reject_noncanonical_equality_operator_in_strict_profile",
+    "reject_cross_type_eq_without_explicit_conversion",
+    "reject_effectful_match_guard",
+    "reject_unhandled_nonexhaustive_match",
+    "reject_binary_overflow_and_out_of_bounds_no_ir",
+    "reject_borrow_escape_across_selective_receive_suspend",
+    "reject_runtime_unbounded_function_target_discovery",
+    "reject_runtime_guest_code_generation",
+    "reject_stale_actor_generation_send",
+    "reject_unauthorized_cross_tenant_actor_lookup",
+    "reject_invalid_precompiled_upgrade_signature"
+  ],
+  "required_actor_cases": [
+    "unmatched_mailbox_messages_retained_in_original_order",
+    "selective_receive_oldest_matching_wins",
+    "per_sender_admission_order_preserved",
+    "timeout_and_cancellation_do_not_consume_unmatched",
+    "mailbox_full_and_close_are_linearizable",
+    "generation_fence_prevents_stale_delivery",
+    "monitor_down_notice_once_with_actor_generation",
+    "link_failure_escalates_control_without_actor_interception",
+    "one_for_one_restart_set",
+    "one_for_all_restart_set",
+    "rest_for_one_restart_set",
+    "crash_loop_restart_intensity_escalation",
+    "supervisor_parent_crash_and_subtree_recovery",
+    "partition_duplicate_delayed_message_handling"
+  ],
+  "backend_evidence": {
+    "java": {
+      "guest_compiler": "NOT_EXECUTED",
+      "guest_runtime": "NOT_EXECUTED",
+      "aot_artifact": "NOT_EXECUTED",
+      "negative_no_executable_output": "NOT_EXECUTED",
+      "independent_review": "NOT_EXECUTED"
+    },
+    "llvm": {
+      "guest_compiler": "NOT_EXECUTED",
+      "guest_runtime": "NOT_EXECUTED",
+      "aot_artifact": "NOT_EXECUTED",
+      "negative_no_executable_output": "NOT_EXECUTED",
+      "independent_review": "NOT_EXECUTED"
+    },
+    "net": {
+      "guest_compiler": "NOT_EXECUTED",
+      "guest_runtime": "NOT_EXECUTED",
+      "aot_artifact": "NOT_EXECUTED",
+      "negative_no_executable_output": "NOT_EXECUTED",
+      "independent_review": "NOT_EXECUTED"
+    },
+    "wasm": {
+      "guest_compiler": "NOT_EXECUTED",
+      "guest_runtime": "NOT_EXECUTED",
+      "aot_artifact": "NOT_EXECUTED",
+      "negative_no_executable_output": "NOT_EXECUTED",
+      "independent_review": "NOT_EXECUTED"
+    },
+    "forge": {
+      "guest_compiler": "NOT_EXECUTED",
+      "guest_runtime": "NOT_EXECUTED",
+      "aot_artifact": "NOT_EXECUTED",
+      "negative_no_executable_output": "NOT_EXECUTED",
+      "independent_review": "NOT_EXECUTED"
+    }
+  },
+  "promotion_rules": {
+    "exact_source_commit_and_tree_required": true,
+    "fixture_git_blob_pins_required": true,
+    "compiler_and_guest_execution_required": true,
+    "full_aot_artifact_required": true,
+    "required_runner_steps_nonzero": true,
+    "source_free_model_never_proves_guest_parity": true,
+    "private_cross_org_transfer_requires_prior_approval": true,
+    "disallow_inferred_backend_pass": true
+  },
+  "receipts": []
+}

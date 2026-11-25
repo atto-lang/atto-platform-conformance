@@ -1,0 +1,11 @@
+// P0 candidate only: requires a real AttoLang AOT compiler. Expect guest return 42.
+pub fnc main(): int {
+  if 10 eq 10 then
+    if 10 neq 9 then
+      if 10 !eq 11 then
+        return 42;
+      fi
+    fi
+  fi
+  return 1;
+}
