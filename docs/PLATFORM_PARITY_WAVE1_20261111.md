@@ -6,9 +6,11 @@ admission contract.
 
 ## Common baseline
 
-All seven repositories carry byte-identical `tests/test_platform_portable_core_v1.ores`
-and `tests/platform-portable-core-integrity.test.mjs`, pinned to the same source
-blob. The former defines five deterministic arithmetic, signed-branch, boolean
+The original seven repositories carried byte-identical `tests/test_platform_portable_core_v1.ores`
+and `tests/platform-portable-core-integrity.test.mjs`. The fixture remains pinned;
+the migrated Atto conformance repository now has an explicit legacy-manifest identity
+mapping in its integrity test, so the test blob is no longer identical across all seven.
+The fixture defines five deterministic arithmetic, signed-branch, boolean
 and bounded-index assertions. The latter verifies exact fixture bytes, the
 non-attesting `.oreslang/integration.json` identity and declared upstream edges,
 and adversarial mutations. It does **not compile** the `.ores` source.
@@ -56,5 +58,6 @@ identity does not make any target compiler-compatible.
 - mobile #27, iot #34, asic #29, fpga #28
 - desktop #38, embedded #46, conformance #694
 
-All seven remain draft until independent exact-head executable evidence exists.
-Do not merge solely on source-only CI or a locally passing reference model.
+The source-only integrity gate can land as non-promoting test infrastructure.
+Target/backend qualification remains blocked until independent exact-head executable
+evidence exists; a source-only pass cannot qualify any backend.
