@@ -1,0 +1,58 @@
+{
+  "schema": "atto.gpu-actors-host-reference-evidence/0",
+  "recordedAt": "2026-11-10",
+  "scope": "host-only Node reference model; no AttoLang compiler guest or GPU hardware",
+  "contract": "atto.gpu-actors/0",
+  "sourceRepo": "ores-truffle-oreslang/oreslang-platform-conformance",
+  "sourceHeadAtMirror": "f812419df4268b8e1c6440627199006cd5d3e10f",
+  "sourceFiles": [
+    {
+      "path": "src/gpu-actor-population-reference-v0.mjs",
+      "gitBlobSha": "1a97ee00150919736921b9f091f0326c730d674e"
+    },
+    {
+      "path": "tests/gpu-actor-population-reference-v0.test.mjs",
+      "gitBlobSha": "34b82ec40980ce35d6574de07314da3045937b41"
+    }
+  ],
+  "runnerRepo": "scintilla-run/scintilla-run-e2e",
+  "carrierBranch": "carrier/gpu-actor-reference-20261110",
+  "carrierHead": "565e68bedb361c24ced8c191a7445c4de6308aeb",
+  "workflowRunId": 42904627499,
+  "workflowUrl": "https://github.com/scintilla-run/scintilla-run-e2e/actions/runs/42904627499",
+  "jobId": 130139274937,
+  "stepEvidence": {
+    "hashComparison": "success",
+    "nodeTest": "success",
+    "testCount": 11,
+    "passed": 11,
+    "failed": 0,
+    "skipped": 0
+  },
+  "exercisedModel": {
+    "actors": 1024,
+    "turnsCommitted": 4096,
+    "maxBatchSize": 64,
+    "deviceLossCohortSize": 1024,
+    "boundedTwoActorInterleavings": 256
+  },
+  "backendTargetEvidence": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED"
+  },
+  "compilerGuestExecuted": false,
+  "physicalGpuExecuted": false,
+  "productionCapabilityAuthenticationProven": false,
+  "gpuDriverVerified": false,
+  "fiveBackendParityCertified": false,
+  "limits": [
+    "No .atto guest code execution",
+    "No physical GPU provider or GPU throughput evidence",
+    "No actual Java JUnit execution",
+    "No device-authenticated fences or GPU buffer enforcement",
+    "Host token identity is a deterministic model oracle, not production-authenticated capability"
+  ]
+}
