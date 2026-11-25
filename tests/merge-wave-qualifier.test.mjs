@@ -11,10 +11,10 @@ function candidate(s='java',n=1) {
     reviews:[{login:'reviewer-independent',state:'APPROVED',commit_sha:SHA}],
     required_checks:[{context:'ci',app_id:15368}],
     checks:[{context:'ci',app_id:15368,head_sha:SHA,tree_sha:TREE,conclusion:'success',run_id:123,run_attempt:1,
-      jobs:[{runner_id:8,conclusion:'success',steps:[{name:'Set up job',conclusion:'success'},{name:'run negative tests',conclusion:'success'}]}]}],
+      jobs:[{id:456,run_id:123,run_attempt:1,head_sha:SHA,runner_id:8,conclusion:'success',steps:[{name:'Set up job',conclusion:'success'},{name:'run negative tests',conclusion:'success'}]}]}],
     scope:'source_free',test_receipts:[
-      {kind:'source_free',head_sha:SHA,tree_sha:TREE,conclusion:'success',assertions:10,run_id:123},
-      {kind:'negative',head_sha:SHA,tree_sha:TREE,conclusion:'success',assertions:3,run_id:123}
+      {kind:'source_free',head_sha:SHA,tree_sha:TREE,conclusion:'success',assertions:10,run_id:123,run_attempt:1,job_id:456},
+      {kind:'negative',head_sha:SHA,tree_sha:TREE,conclusion:'success',assertions:3,run_id:123,run_attempt:1,job_id:456}
     ],lease:null
   };
 }
@@ -135,4 +135,77 @@ test('platform source-free wave still fails closed on unexecuted checks', () => 
   assert.equal(result.status, 'BLOCKED');
   assert.equal(result.eligible_count, 4);
   assert(result.blockers[0].blockers.some(b => b.kind === 'checks'));
+});
+
+test('allow exactly the five source backends, not source namespace lookalikes', () => {
+  for (const backend of ['java','llvm','wasm','forge','net']) {
+    assert.deepEqual(qualifyCandidate(candidate(backend), Date.parse(as_of)), []);
+  }
+  for (const backend of ['fake', 'java-extra', 'dotnet', 'cranelift']) {
+    assert(qualifyCandidate(candidate(backend), Date.parse(as_of))
+      .some(b => b.kind === 'metadata'), backend);
+  }
+});
+rejects('reject job from another run', c => c.checks[0].jobs[0].run_id=999, 'checks');
+rejects('reject job from another attempt', c => c.checks[0].jobs[0].run_attempt=2, 'checks');
+rejects('reject job from another PR head', c => c.checks[0].jobs[0].head_sha=BASE, 'checks');
+rejects('reject missing job ID', c => delete c.checks[0].jobs[0].id, 'checks');
+rejects('reject duplicate job IDs', c => c.checks[0].jobs.push({...c.checks[0].jobs[0]}), 'checks');
+rejects('reject mixed successful and failed jobs', c => c.checks[0].jobs.push({...c.checks[0].jobs[0],id:457,conclusion:'failure'}), 'checks');
+rejects('reject skipped-only run', c => c.checks[0].jobs[0].conclusion='skipped', 'checks');
+rejects('reject forged receipt run attempt', c => c.test_receipts[0].run_attempt=2, 'test');
+rejects('reject forged receipt job ID', c => c.test_receipts[0].job_id=789, 'test');
+rejects('reject unbounded job list', c => c.checks[0].jobs=Array.from({length:129}, (_,i)=>({...c.checks[0].jobs[0],id:456+i})), 'checks');
+
+test('fail closed on null, number and non-string step names without throwing', () => {
+  for (const step of [null, 9, {}, {name:42,conclusion:'success'}, {name:null,conclusion:'success'}]) {
+    const c = candidate();
+    c.checks[0].jobs[0].steps = [step];
+    assert(qualifyCandidate(c,Date.parse(as_of)).some(b=>b.kind==='checks'));
+  }
+});
+test('reject malformed candidate identity without TypeError', () => {
+  for (const patch of [
+    {repo:{toString:null}}, {author:{toLowerCase:null}}, {author:123}, {author:'the1mills '},
+    {repo:null},{repo:[]},{repo:'ores-truffle-oreslang/oreslang-source.weird'}
+  ]) {
+    const c={...candidate(),...patch};
+    assert(qualifyCandidate(c,Date.parse(as_of)).some(b=>b.kind==='metadata'));
+  }
+});
+test('reject contradictory review history on the same head', () => {
+  const c=candidate();
+  c.reviews.push({login:'reviewer-independent',state:'CHANGES_REQUESTED',commit_sha:SHA});
+  assert(qualifyCandidate(c,Date.parse(as_of)).some(b=>b.kind==='review'));
+});
+test('reject dismissed approval even if the earlier snapshot still lists approval', () => {
+  const c=candidate();
+  c.reviews.push({login:'reviewer-independent',state:'DISMISSED',commit_sha:SHA});
+  assert(qualifyCandidate(c,Date.parse(as_of)).some(b=>b.kind==='review'));
+});
+rejects('reject extra unrequired status context', c => c.checks.push({...c.checks[0],context:'nonrequired',run_id:124}), 'checks');
+rejects('reject extra duplicate positive receipt', c => c.test_receipts.push({...c.test_receipts[0]}), 'test');
+rejects('reject contradictory failed negative receipt appended', c => c.test_receipts.push({...c.test_receipts[1],conclusion:'failure'}), 'test');
+rejects('reject unexpected third receipt kind', c => c.test_receipts.push({...c.test_receipts[1],kind:'certified'}), 'test');
+rejects('reject skipped required job even with successful stepful sibling', c => c.checks[0].jobs.push({...c.checks[0].jobs[0],id:457,conclusion:'skipped',runner_id:0,steps:[]}), 'checks');
+test('reject future-dated lease snapshot, not bypass expiry', () => {
+  const snap=fixture();
+  snap.as_of='2099-01-01T00:00:00Z';
+  snap.candidates[0].lease={expires_at:'2098-01-01T00:00:00Z'};
+  assert.throws(()=>qualifyWave(snap), /future-dated/);
+});
+test('reject non-UTC and informal snapshot timestamp formats', () => {
+  for (const asOf of ['2099','2026-11-06','2026-11-06T18:00:00+00:00','November 6, 2026']) {
+    assert.throws(()=>qualifyWave({...fixture(),as_of:asOf}));
+  }
+});
+test('qualifyCandidate rejects invalid direct-call reference time', () => {
+  assert(qualifyCandidate(candidate(),Number.NaN).some(b=>b.kind==='lease'));
+});
+test('qualifyWave returns blockers for coercion-hostile candidate', () => {
+  const snap=fixture();
+  snap.candidates[0].repo={toString:null};
+  const res=qualifyWave(snap);
+  assert.equal(res.status,'BLOCKED');
+  assert(res.blockers.some(x=>x.blockers.some(y=>y.kind==='metadata')));
 });

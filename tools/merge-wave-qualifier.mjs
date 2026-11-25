@@ -1,30 +1,67 @@
 // Offline, fail-closed merge-wave planning. A caller-supplied snapshot is NOT a GitHub attestation.
 const SHA = /^[a-f0-9]{40}$/;
-const REPO = /^ores-truffle-oreslang\/(?:oreslang-source\.[a-z0-9-]+|oreslang-platform\.(?:mobile|iot|embedded|desktop|asic|fpga)|oreslang-platform-conformance)$/;
+// Date.parse normalizes impossible calendar dates, e.g. February 30 -> March 2.
+// Validate every civil-time field before accepting any offline temporal evidence.
+const ISO_CIVIL = /^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})(?:\.([0-9]{1,9}))?(Z|([+-])([0-9]{2}):([0-9]{2}))$/;
+function validIsoCivilTime(value) {
+  const parts = typeof value === 'string' ? ISO_CIVIL.exec(value) : null;
+  if (!parts) return false;
+  const year = Number(parts[1]), month = Number(parts[2]), day = Number(parts[3]);
+  const hour = Number(parts[4]), minute = Number(parts[5]), second = Number(parts[6]);
+  const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+  const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  if (year < 1 || month < 1 || month > 12 || day < 1 || day > days[month - 1] ||
+      hour > 23 || minute > 59 || second > 59) return false;
+  if (parts[10] !== undefined &&
+      (Number(parts[10]) > 23 || Number(parts[11]) > 59)) return false;
+  return Number.isFinite(Date.parse(value));
+}
+
+const GH_LOGIN = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37})$/;
+const REPO = /^ores-truffle-oreslang\/(?:oreslang-source\.(?:java|llvm|wasm|forge|net)|oreslang-platform\.(?:mobile|iot|embedded|desktop|asic|fpga)|oreslang-platform-conformance)$/;
 const REJECTED_REVIEWERS = new Set(['the1mills', 'oresoftware']);
 const CORE = ['metadata', 'protection', 'review', 'checks', 'test', 'lease'];
 const meaningful = step => {
-  const normalized = step.name?.trim().replace(/\s+/gu, ' ').toLowerCase();
+  if (!step || typeof step.name !== 'string') return false;
+  const normalized = step.name.trim().replace(/\s+/gu, ' ').toLowerCase();
   return step.conclusion === 'success' && normalized &&
     !['set up job', 'complete job', 'post job cleanup', 'post checkout', 'checkout', 'initialize containers', 'prepare all required actions'].includes(normalized);
 };
 function validCheck(check, candidate) {
   if (!check || typeof check !== 'object') return false;
-  if (!check.context || !Number.isInteger(check.app_id) || check.app_id <= 0) return false;
+  if (typeof check.context !== 'string' || !check.context.trim() ||
+      !Number.isSafeInteger(check.app_id) || check.app_id <= 0) return false;
   if (check.head_sha !== candidate.head_sha || check.tree_sha !== candidate.head_tree_sha) return false;
-  if (check.conclusion !== 'success' || !Number.isInteger(check.run_id) || check.run_id <= 0 || !Number.isInteger(check.run_attempt) || check.run_attempt <= 0) return false;
-  if (!Array.isArray(check.jobs) || check.jobs.length === 0) return false;
-  return check.jobs.some(job => Number.isInteger(job.runner_id) && job.runner_id > 0 &&
-    job.conclusion === 'success' && Array.isArray(job.steps) && job.steps.some(meaningful));
+  if (check.conclusion !== 'success' ||
+      !Number.isSafeInteger(check.run_id) || check.run_id <= 0 ||
+      !Number.isSafeInteger(check.run_attempt) || check.run_attempt <= 0) return false;
+  if (!Array.isArray(check.jobs) || check.jobs.length === 0 || check.jobs.length > 128) return false;
+  const seen = new Set();
+  let executed = false;
+  for (const job of check.jobs) {
+    // Each claimed job must belong to the *same* exact-head run and attempt.
+    if (!job || !Number.isSafeInteger(job.id) || job.id <= 0 || seen.has(job.id) ||
+        job.run_id !== check.run_id || job.run_attempt !== check.run_attempt ||
+        job.head_sha !== candidate.head_sha ||
+        job.conclusion !== 'success') return false;
+    seen.add(job.id);
+    if (!Number.isSafeInteger(job.runner_id) || job.runner_id <= 0 ||
+        !Array.isArray(job.steps) || !job.steps.length || job.steps.length > 128 ||
+        !job.steps.some(meaningful)) return false;
+    executed = true;
+  }
+  return executed;
 }
 export function qualifyCandidate(candidate, asOf) {
   const blockers = [];
   const bad = (kind, reason) => blockers.push({kind, reason});
-  if (!candidate || typeof candidate !== 'object') return [{kind: 'metadata', reason: 'invalid_candidate'}];
-  if (!REPO.test(candidate.repo ?? '') || !Number.isSafeInteger(candidate.number) || candidate.number < 1 ||
+  if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) return [{kind: 'metadata', reason: 'invalid_candidate'}];
+  if (typeof candidate.repo !== 'string' || !REPO.test(candidate.repo) ||
+    !Number.isSafeInteger(candidate.number) || candidate.number < 1 ||
     !SHA.test(candidate.head_sha ?? '') || !SHA.test(candidate.head_tree_sha ?? '') ||
     !SHA.test(candidate.base_sha ?? '') || candidate.base_ref !== 'main' || candidate.draft !== false ||
-    candidate.mergeable !== true || candidate.state !== 'open' || !candidate.author) {
+    candidate.mergeable !== true || candidate.state !== 'open' ||
+    typeof candidate.author !== 'string' || !GH_LOGIN.test(candidate.author)) {
     bad('metadata', 'invalid_or_stale_pr_metadata');
   }
   const policy = candidate.protection;
@@ -32,15 +69,28 @@ export function qualifyCandidate(candidate, asOf) {
     policy?.require_codeowners !== true || policy?.dismiss_stale_reviews !== true ||
     policy?.strict_checks !== true || policy?.enforce_admins !== true ||
     policy?.bypass_count !== 0) bad('protection', 'protected_main_policy_not_enforced');
-  if (!Array.isArray(candidate.reviews) || !candidate.reviews.some(r =>
-    r?.state === 'APPROVED' && r.commit_sha === candidate.head_sha &&
-    typeof r.login === 'string' && r.login.toLowerCase() !== candidate.author.toLowerCase() &&
-    !REJECTED_REVIEWERS.has(r.login.toLowerCase()))) bad('review', 'independent_exact_head_approval_missing');
+  const reviews = candidate.reviews;
+  const authorLogin = typeof candidate.author === 'string' ? candidate.author.toLowerCase() : '';
+  // Ambiguous approval followed by a change request or dismissal is never approval evidence.
+  const conflicted = new Set(Array.isArray(reviews) ? reviews.filter(r =>
+    r && (r.state === 'CHANGES_REQUESTED' || r.state === 'DISMISSED') &&
+    r.commit_sha === candidate.head_sha && typeof r.login === 'string')
+    .map(r => r.login.toLowerCase()) : []);
+  if (!Array.isArray(reviews) || reviews.length > 100 ||
+    reviews.some(r => r?.state === 'CHANGES_REQUESTED' && r.commit_sha === candidate.head_sha) ||
+    !reviews.some(r => r?.state === 'APPROVED' && r.commit_sha === candidate.head_sha &&
+      typeof r.login === 'string' && GH_LOGIN.test(r.login) &&
+      r.login.toLowerCase() !== authorLogin &&
+      !REJECTED_REVIEWERS.has(r.login.toLowerCase()) &&
+      !conflicted.has(r.login.toLowerCase())))
+    bad('review', 'independent_exact_head_approval_missing_or_conflicted');
   const required = candidate.required_checks;
   const checks = candidate.checks;
-  if (!Array.isArray(required) || required.length === 0 || !Array.isArray(checks) ||
+  if (!Array.isArray(required) || required.length === 0 || required.length > 64 ||
+    !Array.isArray(checks) || checks.length !== required.length ||
     new Set(required.map(r => r?.context)).size !== required.length ||
-    required.some(r => !r || !r.context || !Number.isInteger(r.app_id) || r.app_id <= 0 ||
+    required.some(r => !r || typeof r.context !== 'string' || !r.context.trim() ||
+      !Number.isSafeInteger(r.app_id) || r.app_id <= 0 ||
       checks.filter(c => c?.context === r.context).length !== 1 ||
       !validCheck(checks.find(c => c?.context === r.context && c.app_id === r.app_id), candidate))) {
     bad('checks', 'exact_head_runner_backed_checks_not_proven');
@@ -48,17 +98,23 @@ export function qualifyCandidate(candidate, asOf) {
   const receipts = candidate.test_receipts;
   const kinds = candidate.scope === 'source_free' ? ['source_free', 'negative'] :
     candidate.scope === 'compiler' ? ['guest', 'negative'] : null;
-  if (!kinds || !Array.isArray(receipts) || kinds.some(kind => !receipts.some(r =>
-    r?.kind === kind && r.head_sha === candidate.head_sha && r.tree_sha === candidate.head_tree_sha &&
-    r.conclusion === 'success' && Number.isSafeInteger(r.assertions) && r.assertions > 0 &&
-    Number.isInteger(r.run_id) && r.run_id > 0 &&
-    checks?.some(c => c.run_id === r.run_id && validCheck(c, candidate))))) {
+  if (!kinds || !Array.isArray(receipts) || receipts.length !== kinds.length ||
+    new Set(receipts.map(r => r?.kind)).size !== kinds.length ||
+    kinds.some(kind => !receipts.some(r =>
+      r?.kind === kind && r.head_sha === candidate.head_sha && r.tree_sha === candidate.head_tree_sha &&
+      r.conclusion === 'success' && Number.isSafeInteger(r.assertions) && r.assertions > 0 &&
+      Number.isSafeInteger(r.run_id) && r.run_id > 0 &&
+      Number.isSafeInteger(r.run_attempt) && r.run_attempt > 0 &&
+      Number.isSafeInteger(r.job_id) && r.job_id > 0 &&
+      checks?.some(c => c?.run_id === r.run_id && c.run_attempt === r.run_attempt &&
+        c.jobs?.some(j => j?.id === r.job_id && j.conclusion === 'success') && validCheck(c, candidate))))) {
     bad('test', 'scope_specific_positive_and_negative_receipts_missing');
   }
+  if (!Number.isFinite(asOf)) bad('lease', 'invalid_reference_time');
   if (candidate.lease !== null) {
     if (!candidate.lease || typeof candidate.lease !== 'object' ||
       typeof candidate.lease.expires_at !== 'string' ||
-      !Number.isFinite(Date.parse(candidate.lease.expires_at)) ||
+      !validIsoCivilTime(candidate.lease.expires_at) ||
       Date.parse(candidate.lease.expires_at) > asOf) bad('lease', 'active_or_unknown_agent_lease');
   }
   return blockers;
@@ -67,15 +123,18 @@ export function qualifyWave(snapshot, {size = 5, minRepos = 3} = {}) {
   if (!Number.isSafeInteger(size) || size < 1 || !Number.isSafeInteger(minRepos) || minRepos < 1 || minRepos > size) throw new RangeError('invalid wave size');
   if (!snapshot || snapshot.schema_version !== 1 || !Array.isArray(snapshot.candidates) ||
     snapshot.candidates.length > 1000 || typeof snapshot.as_of !== 'string' ||
-    !Number.isFinite(Date.parse(snapshot.as_of))) throw new TypeError('invalid or unbounded snapshot');
+    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(snapshot.as_of) ||
+    !validIsoCivilTime(snapshot.as_of) ||
+    Date.parse(snapshot.as_of) > Date.now() + 5 * 60_000)
+    throw new TypeError('invalid, future-dated or unbounded snapshot');
   const asOf = Date.parse(snapshot.as_of);
   const results = [], counts = new Map();
   for (const item of snapshot.candidates) {
-    const key = `${item?.repo ?? ''}#${item?.number ?? ''}`;
+    const key = `${typeof item?.repo === 'string' ? item.repo : ''}#${Number.isSafeInteger(item?.number) ? item.number : ''}`;
     counts.set(key, (counts.get(key) ?? 0) + 1);
   }
   for (const item of snapshot.candidates) {
-    const key = `${item?.repo ?? ''}#${item?.number ?? ''}`;
+    const key = `${typeof item?.repo === 'string' ? item.repo : ''}#${Number.isSafeInteger(item?.number) ? item.number : ''}`;
     const blockers = qualifyCandidate(item, asOf);
     if (counts.get(key) > 1) blockers.push({kind:'metadata', reason:'duplicate_candidate'});
     results.push({repo: item?.repo ?? null, number: item?.number ?? null, head_sha: item?.head_sha ?? null, blockers});
