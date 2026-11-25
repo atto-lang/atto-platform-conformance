@@ -1,0 +1,1 @@
+pub fnc main(): void { stdio.println(tuple(1, 2) |> |a, b, c| -> a); return; }

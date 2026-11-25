@@ -1,0 +1,1 @@
+fnc inc(int x): int { return x + 1; } type IncType = typeof inc; pub fnc main(): int { return 5; }

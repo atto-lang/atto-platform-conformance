@@ -1,0 +1,19 @@
+// expect-exit: 42
+// candidate: two mailmen deliveries of two separate copy!! expressions.
+// The full guest actor runner must verify each recipient mutates independently.
+define class Payload as
+    pub let Array<Array<int>> values = Array.of(Array.of(40));
+end
+define actor Worker receives Payload as
+    receive(Payload input) {
+        input.values[0][0] = input.values[0][0] + 1;
+    }
+end
+pub suspends fnc main(): int {
+    val source = new Payload();
+    val a = spawn Worker();
+    val b = spawn Worker();
+    a.send(copy!! source);
+    b.send(copy!! source);
+    return source.values[0][0] + 2;
+}

@@ -1,0 +1,5 @@
+// ACTOR-TYPED-09; EXPECTED=ACCEPT; NOT_EXECUTED
+// Runtime probe: panic is supervisor CONTROL even with sends never.
+define actor Child sends never as
+  on_start(): void { panic new Error("stop"); }
+end

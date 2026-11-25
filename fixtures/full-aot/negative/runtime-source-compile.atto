@@ -1,0 +1,1 @@
+pub fnc main(): int { return compile_source("40 + 2"); }

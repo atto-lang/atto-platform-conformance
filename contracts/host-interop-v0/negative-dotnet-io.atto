@@ -1,0 +1,4 @@
+import dotnet "System.IO.File" as File;
+pub fnc main() -> int {
+  return 42;
+}

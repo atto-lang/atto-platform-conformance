@@ -1,0 +1,3 @@
+// Parse-only target: type checker must reject absent persistence hooks.
+define persistent actor Cart as
+end

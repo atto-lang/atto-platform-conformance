@@ -1,0 +1,13 @@
+// expect-exit: 42
+// candidate: through Base reference, copy!! must preserve Derived concrete state
+define class Base as
+    private val Array<int> inherited = Array.of(40);
+end
+define class Derived extends Base as
+    private val Array<int> child = Array.of(2);
+end
+pub fnc main(): int {
+    val Base source = new Derived();
+    val Base copied = copy!! source;
+    return copied.inherited[0] + (copied as Derived).child[0];
+}

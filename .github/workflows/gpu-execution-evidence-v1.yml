@@ -1,0 +1,50 @@
+name: AttoLang GPU execution evidence host-only
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/gpu-execution-evidence-v1.mjs'
+      - 'test/gpu-execution-evidence-v1.test.mjs'
+      - 'docs/GPU_EXECUTION_EVIDENCE_V1.md'
+      - '.github/workflows/gpu-execution-evidence-v1.yml'
+permissions:
+  contents: read
+jobs:
+  gpu-evidence-host:
+    name: gpu-evidence-host-only
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout immutable PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify exact head and source blobs
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$EXPECTED_HEAD"
+          tree="$(git rev-parse HEAD^{tree})"
+          for file in src/gpu-execution-evidence-v1.mjs test/gpu-execution-evidence-v1.test.mjs; do
+            expected="$(git rev-parse "HEAD:$file")"
+            actual_blob="$(git hash-object "$file")"
+            test "$expected" = "$actual_blob"
+            printf '%s %s\n' "$file" "$expected"
+          done
+          {
+            echo 'Evidence class: HOST_ONLY; no AttoLang guest, physical GPU or device-event proof.'
+            echo "Head: $actual"
+            echo "Tree: $tree"
+            echo 'Node:'
+            node --version
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Run GPU evidence verifier unit and mutation tests
+        run: node --test test/gpu-execution-evidence-v1.test.mjs

@@ -20,8 +20,8 @@
     "net": "NOT_EXECUTED"
   },
   "counts": {
-    "accept": 13,
-    "reject": 13,
+    "accept": 12,
+    "reject": 14,
     "total": 26
   },
   "cases": [
@@ -221,9 +221,8 @@
       "id": "legacy-on-default",
       "file": "legacy-on-default.atto",
       "rule": "legacy-compat",
-      "expect": "accept",
+      "expect": "reject",
       "sourceGitBlobSha1": "ae648e3ff414e8f5609f3c03ceb68f4f8b3b602b",
-      "expectedExitCode": 42,
       "backends": [
         "java",
         "llvm",
@@ -231,7 +230,9 @@
         "forge",
         "net"
       ],
-      "confirmedBackends": []
+      "confirmedBackends": [],
+      "diagnosticCategory": "INVALID_MATCH_DEFAULT",
+      "noGuestArtifactOnReject": true
     },
     {
       "id": "missing-over",

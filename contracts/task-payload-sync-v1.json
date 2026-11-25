@@ -1,0 +1,1597 @@
+{
+  "schema": "atto.task-payload-sync.v1",
+  "status": "TARGET_NOT_GUEST_VERIFIED",
+  "source_contract": "atto-lang/atto-spec/language/typed-task-payload-sync-v1.md",
+  "meaning": "task<T> returns Future<T> and is independently schedulable; await task<T> spawns and joins; sync task<T> and void-only do sync task<void> execute inline on caller TaskId and thread and may cooperate on that thread, without an independent spawn or Future; do task<T> is supervised child spawn; standalone inline void statements require 'do sync task', and do-inline may only return void; await is type-directed and cannot await scalar/void inline results, but can join a Future returned by an inline task; local const must remain constexpr (use val for task expressions); empty nonvoid task bodies reject; bare task {} infers Future<void> and task { return 42; } infers Future<int>, while do task {} discards an inferred-void structured child; the separate TaskFuture<T> control profile adds handles, get_ready moves the one Future<T> receipt, cancel_task requests nonparking cancellation, cooperate requests nonparking scheduler fairness with no forced preemption; Future<T> cancellation remains task-provenance checked",
+  "execution_frame_model": "independent logical continuations for spawned task<T> within a structured TaskScope; inline sync task runs in its caller's lexical scope on the same carrier across cooperation and creates no independent child; physical frame sharing only after proven lifetime and alias safety",
+  "cases": [
+    {
+      "id": "await_payload",
+      "source_path": "fixtures/task-payload-sync-v1/await_payload.atto",
+      "source_git_blob": "25ab1c9f741ed0bdc71478b5ffddee3525281e2d",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "INDEPENDENT_CHILD_SPAWN",
+          "TASK_JOIN_PHYSICAL_RETIRE"
+        ]
+      }
+    },
+    {
+      "id": "borrow_escape_discard",
+      "source_path": "fixtures/task-payload-sync-v1/borrow_escape_discard.atto",
+      "source_git_blob": "2d470c0dbbcf16c23f5a1759ac71be3020dadc62",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_TASK_BORROW_ESCAPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "borrow_live_across_join",
+      "source_path": "fixtures/task-payload-sync-v1/borrow_live_across_join.atto",
+      "source_git_blob": "35e40d9045b74b7b9d9bdb38029a6f0c74123a82",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_SUSPEND_WITH_LIVE_LOAN",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "discard_do_sync_task",
+      "source_path": "fixtures/task-payload-sync-v1/discard_do_sync_task.atto",
+      "source_git_blob": "4bed36abc94abfb7daa47bf0a6b1c0d497cb12f4",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "INLINE_ENTER_BEFORE_BODY",
+          "NO_SYNTHETIC_SYNC_CHILD_SPAWN",
+          "SAME_LOGICAL_TASK_ID",
+          "INLINE_EXIT_BEFORE_NEXT_PARENT_STATEMENT",
+          "NO_INDEPENDENT_WORKER_DISPATCH",
+          "INLINE_VOID_COMPLETION_NO_RESULT",
+          "SAME_CALLER_THREAD"
+        ]
+      }
+    },
+    {
+      "id": "discard_do_task",
+      "source_path": "fixtures/task-payload-sync-v1/discard_do_task.atto",
+      "source_git_blob": "12b5ae365783f92cf3e183f20e70b717be0d7a06",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "INDEPENDENT_CHILD_SPAWN",
+          "SUPERVISED_DISCARD",
+          "SCOPE_PHYSICAL_RETIRE"
+        ]
+      }
+    },
+    {
+      "id": "missing_nonvoid_return",
+      "source_path": "fixtures/task-payload-sync-v1/missing_nonvoid_return.atto",
+      "source_git_blob": "93f0dc511b43f35e13c0f0daae3929369b939603",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_TASK_RETURN_TYPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "sync_needs_susp",
+      "source_path": "fixtures/task-payload-sync-v1/sync_needs_susp.atto",
+      "source_git_blob": "72d8a7c372da3e1138c936b9fd72aba1580dbaf0",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_SYNC_TASK_SUSPEND",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "sync_payload",
+      "source_path": "fixtures/task-payload-sync-v1/sync_payload.atto",
+      "source_git_blob": "097b4c5e854231f84aa5ac8bde508f9c97f4b353",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "INLINE_ENTER_BEFORE_BODY",
+          "NO_SYNTHETIC_SYNC_CHILD_SPAWN",
+          "SAME_LOGICAL_TASK_ID",
+          "INLINE_EXIT_BEFORE_NEXT_PARENT_STATEMENT",
+          "NO_INDEPENDENT_WORKER_DISPATCH",
+          "INLINE_RETURN_VALUE_42",
+          "SAME_CALLER_THREAD"
+        ]
+      }
+    },
+    {
+      "id": "sync_reserved",
+      "source_path": "fixtures/task-payload-sync-v1/sync_reserved.atto",
+      "source_git_blob": "27fec562c1de69431e3561bf3517e1d91894e497",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_RESERVED",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "typed_payload_future",
+      "source_path": "fixtures/task-payload-sync-v1/typed_payload_future.atto",
+      "source_git_blob": "258a53480b652b7c0857a4f8a8d833649ca535be",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42
+      }
+    },
+    {
+      "id": "void_payload",
+      "source_path": "fixtures/task-payload-sync-v1/void_payload.atto",
+      "source_git_blob": "8865465a69ae8a54279b0ea3449126999fcede36",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42
+      }
+    },
+    {
+      "id": "wrong_await_future",
+      "source_path": "fixtures/task-payload-sync-v1/wrong_await_future.atto",
+      "source_git_blob": "3867ac9cc6529b9678273e4be0c6f11b27478fae",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_TASK_RETURN_TYPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "wrong_direct_int",
+      "source_path": "fixtures/task-payload-sync-v1/wrong_direct_int.atto",
+      "source_git_blob": "71dbfbd318795b444b0e2c3e87bbe028f57d2071",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_TASK_RETURN_TYPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "wrong_return_type",
+      "source_path": "fixtures/task-payload-sync-v1/wrong_return_type.atto",
+      "source_git_blob": "7b828e07711ba7e13c591a8953308eed0487d514",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_TASK_RETURN_TYPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "two_live_task_frames",
+      "source_path": "fixtures/task-payload-sync-v1/two_live_task_frames.atto",
+      "source_git_blob": "71f67d57e9e41332db75810d3683e72ebed29340",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42
+      }
+    },
+    {
+      "id": "parent_child_frame_isolation",
+      "source_path": "fixtures/task-payload-sync-v1/parent_child_frame_isolation.atto",
+      "source_git_blob": "06bde2e462d9a03b38961451dc32af7050e89d52",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42
+      }
+    },
+    {
+      "id": "nested_task_frames",
+      "source_path": "fixtures/task-payload-sync-v1/nested_task_frames.atto",
+      "source_git_blob": "1502b715d41de991352153ba75eb828c1eb62cad",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42
+      }
+    },
+    {
+      "id": "cancel_request_nonblocking",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_request_nonblocking.atto",
+      "source_git_blob": "7b9dee05c9ce843bb68e2325f4400d53b38ebef5",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "cancel_requested",
+          "scope_physically_retired"
+        ]
+      }
+    },
+    {
+      "id": "cancel_idempotent",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_idempotent.atto",
+      "source_git_blob": "970d6c79b0ca5000fbf680b0e563cdab1852d4a3",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "one_terminal_publication",
+          "one_cleanup",
+          "scope_physically_retired"
+        ]
+      }
+    },
+    {
+      "id": "cancel_scope_exit_discard",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_scope_exit_discard.atto",
+      "source_git_blob": "9c730c1fa07a289efd5de98d38428801911234c6",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "scope_auto_cancels_unfinished",
+          "scope_physically_retired"
+        ]
+      }
+    },
+    {
+      "id": "cancel_nested_descendants",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_nested_descendants.atto",
+      "source_git_blob": "a58bb54077b657d7a9a7899bea96b742d06aac58",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "transitive_cancel_requested",
+          "descendant_quiescent_before_parent"
+        ]
+      }
+    },
+    {
+      "id": "cancel_preserves_sibling",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_preserves_sibling.atto",
+      "source_git_blob": "80b4508acd0a05d834f90f36033bfbc13e50c3cf",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "cancelled_worker",
+          "successful_sibling",
+          "scope_physically_retired"
+        ]
+      }
+    },
+    {
+      "id": "cancel_await_error",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_await_error.atto",
+      "source_git_blob": "42fd680e53688a4286564a3162e137a9f0e26432",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "task_cancelled_terminal",
+          "caught_cancel_outcome",
+          "scope_physically_retired"
+        ]
+      }
+    },
+    {
+      "id": "cancel_void_used_as_int",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_void_used_as_int.atto",
+      "source_git_blob": "7dc2c866b4dc3962529105d0fcde49704c274bdb",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_TASK_CANCEL_TYPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "cancel_nonfuture_receiver",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_nonfuture_receiver.atto",
+      "source_git_blob": "d35021fb69a485d85de67fbb931d262dd00a0da4",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_TASK_CANCEL_TARGET",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "cancel_implicit_scope_exit_needs_susp",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_implicit_scope_exit_needs_susp.atto",
+      "source_git_blob": "b6f054871b6a5467dbb660153dbdcf83a98f9338",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_EFFECT",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "cancel_lock_scoped_release",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_lock_scoped_release.atto",
+      "source_git_blob": "1aad3b3d75e87c80f6c306cec5af0203e71c03d1",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "cancel_request_may_race_with_completion",
+          "if_guard_claimed:lease_release_exactly_once",
+          "if_guard_claimed:guard_release_before_physical_retire",
+          "no_unreleased_permit_or_orphan_waiter"
+        ]
+      }
+    },
+    {
+      "id": "cancel_lock_early_return",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_lock_early_return.atto",
+      "source_git_blob": "c95bb9cd32004f80b1b390a81adc68aa79ee9419",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "if_guard_claimed:early_return_releases_guard",
+          "no_duplicate_release",
+          "scope_physically_retired"
+        ]
+      }
+    },
+    {
+      "id": "cancel_lock_nested_lifo",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_lock_nested_lifo.atto",
+      "source_git_blob": "4815985b1e1ad233a918760f867a17c4fc51ec62",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "if_both_claimed:inner_guard_released_before_outer_guard",
+          "each_claimed_lease_released_exactly_once",
+          "scope_physically_retired"
+        ]
+      }
+    },
+    {
+      "id": "cancel_lock_await_inside_guard",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_lock_await_inside_guard.atto",
+      "source_git_blob": "65115806e916539c1abba7cd0dd7b7356548da97",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_GUARD_SUSPEND",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "cancel_lock_held_during_join",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_lock_held_during_join.atto",
+      "source_git_blob": "5b0505c485beb9961d0bd554dc7d28a13ef2126a",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_GUARD_SUSPEND",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "cancel_lock_guard_escape",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_lock_guard_escape.atto",
+      "source_git_blob": "d92895d54013fc50ce0c095aa421df2421043a50",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_GUARD_ESCAPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "sync_inline_non_susp",
+      "source_path": "fixtures/task-payload-sync-v1/sync_inline_non_susp.atto",
+      "source_git_blob": "7136c973a255f3b97d41420ed83d4c231c850400",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "INLINE_ENTER_BEFORE_BODY",
+          "NO_SYNTHETIC_SYNC_CHILD_SPAWN",
+          "SAME_LOGICAL_TASK_ID",
+          "INLINE_EXIT_BEFORE_NEXT_PARENT_STATEMENT",
+          "NO_INDEPENDENT_WORKER_DISPATCH",
+          "NON_SUSP_CALLER_ADMITTED",
+          "SAME_CALLER_THREAD"
+        ]
+      }
+    },
+    {
+      "id": "sync_inline_cooperate",
+      "source_path": "fixtures/task-payload-sync-v1/sync_inline_cooperate.atto",
+      "source_git_blob": "f0b0e1e4d27a24a43fd72b4936a4661968e607af",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "SAME_LOGICAL_TASK_ID",
+          "SAME_CALLER_THREAD_AFTER_COOPERATE",
+          "NO_SYNTHETIC_SYNC_CHILD_SPAWN",
+          "INLINE_EXIT_BEFORE_NEXT_PARENT_STATEMENT"
+        ]
+      }
+    },
+    {
+      "id": "sync_inline_order",
+      "source_path": "fixtures/task-payload-sync-v1/sync_inline_order.atto",
+      "source_git_blob": "840e1ea604e7a2216f17ef8edfb951d6f1f16d50",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "stdout": "7\n9\n",
+        "witnesses": [
+          "INLINE_ENTER_BEFORE_BODY",
+          "NO_SYNTHETIC_SYNC_CHILD_SPAWN",
+          "SAME_LOGICAL_TASK_ID",
+          "INLINE_EXIT_BEFORE_NEXT_PARENT_STATEMENT",
+          "NO_INDEPENDENT_WORKER_DISPATCH",
+          "BODY_STDOUT_PRECEDES_PARENT_STDOUT",
+          "SAME_CALLER_THREAD"
+        ]
+      }
+    },
+    {
+      "id": "sync_inline_suspend",
+      "source_path": "fixtures/task-payload-sync-v1/sync_inline_suspend.atto",
+      "source_git_blob": "26d9f7daedd12f77933dc49c9244870abc17a046",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_SYNC_TASK_SUSPEND",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "sync_inline_guard_pure",
+      "source_path": "fixtures/task-payload-sync-v1/sync_inline_guard_pure.atto",
+      "source_git_blob": "2275dc163ba0d0040fa4bb4938e746d4cc343819",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "INLINE_ENTER_BEFORE_BODY",
+          "NO_SYNTHETIC_SYNC_CHILD_SPAWN",
+          "SAME_LOGICAL_TASK_ID",
+          "INLINE_EXIT_BEFORE_NEXT_PARENT_STATEMENT",
+          "NO_INDEPENDENT_WORKER_DISPATCH",
+          "NO_SUSPEND_WITH_GUARD_HELD",
+          "INLINE_CLEANUP_BEFORE_GUARD_RELEASE",
+          "GUARD_RELEASE_EXACTLY_ONCE"
+        ]
+      }
+    },
+    {
+      "id": "sync_inline_guard_suspend",
+      "source_path": "fixtures/task-payload-sync-v1/sync_inline_guard_suspend.atto",
+      "source_git_blob": "f6b22a68ec359381bab86ec68116371eace75bfb",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_SYNC_TASK_SUSPEND",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "sync_inline_void_do_demo",
+      "source_path": "fixtures/task-payload-sync-v1/sync_inline_void_do_demo.atto",
+      "source_git_blob": "ad61fec3079b6248d81b24428926a40aececae70",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "INLINE_ENTER_BEFORE_BODY",
+          "NO_SYNTHETIC_SYNC_CHILD_SPAWN",
+          "SAME_LOGICAL_TASK_ID",
+          "INLINE_EXIT_BEFORE_NEXT_PARENT_STATEMENT",
+          "NO_INDEPENDENT_WORKER_DISPATCH",
+          "INLINE_VOID_COMPLETION_NO_RESULT",
+          "INLINE_RETURN_VALUE_42"
+        ]
+      }
+    },
+    {
+      "id": "sync_void_stmt_requires_do",
+      "source_path": "fixtures/task-payload-sync-v1/sync_void_stmt_requires_do.atto",
+      "source_git_blob": "8252e8ca12908983b6c81af39c385854aa79a780",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_SYNTAX",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "sync_typed_void_stmt_requires_do",
+      "source_path": "fixtures/task-payload-sync-v1/sync_typed_void_stmt_requires_do.atto",
+      "source_git_blob": "22d7e84a576f57b6a9a140aaafaffa36bc0cf96e",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_SYNTAX",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "do_sync_nonvoid_type_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/do_sync_nonvoid_type_rejected.atto",
+      "source_git_blob": "4fa2c9987b4bea05733d7f2dd90a9e7e9b555f45",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_TASK_RETURN_TYPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "do_sync_nonvoid_inferred_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/do_sync_nonvoid_inferred_rejected.atto",
+      "source_git_blob": "36d25a5af510f7d3b72784bf9597260f1ac7adb6",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_TASK_RETURN_TYPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "await_sync_scalar_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/await_sync_scalar_rejected.atto",
+      "source_git_blob": "129fb813a56dcd558cd4b2f8cd072966390b5f92",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_AWAIT_TYPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "await_sync_future_valid",
+      "source_path": "fixtures/task-payload-sync-v1/await_sync_future_valid.atto",
+      "source_git_blob": "d831e2aa0c87001286bd64f7b7b54de36e51bc14",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "INLINE_ENTER_BEFORE_BODY",
+          "SAME_LOGICAL_TASK_ID",
+          "NO_SYNTHETIC_SYNC_CHILD_SPAWN",
+          "INDEPENDENT_CHILD_SPAWN",
+          "AWAIT_RETURNED_FUTURE_ONLY",
+          "TASK_JOIN_PHYSICAL_RETIRE"
+        ]
+      }
+    },
+    {
+      "id": "const_async_task_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/const_async_task_rejected.atto",
+      "source_git_blob": "f4867c172a9d0833c7709c94e095e4ecef1b6559",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_CONST",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "const_sync_task_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/const_sync_task_rejected.atto",
+      "source_git_blob": "11693f7f333c11e9b748a33f1908445532cc0d20",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_CONST",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "empty_async_nonvoid_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/empty_async_nonvoid_rejected.atto",
+      "source_git_blob": "1535cd2b101914e30c7634e479f2aec5b3d70de5",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_TASK_RETURN_TYPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "empty_sync_nonvoid_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/empty_sync_nonvoid_rejected.atto",
+      "source_git_blob": "fc9f78707a5dcf874d19accfe6b47c9b70252628",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_TASK_RETURN_TYPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "do_async_void_empty",
+      "source_path": "fixtures/task-payload-sync-v1/do_async_void_empty.atto",
+      "source_git_blob": "cad17fc646ae947f943b7f6cc7a20e00ebd0e6b9",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "INDEPENDENT_CHILD_SPAWN",
+          "SUPERVISED_DISCARD",
+          "SCOPE_PHYSICAL_RETIRE"
+        ]
+      }
+    },
+    {
+      "id": "await_sync_void_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/await_sync_void_rejected.atto",
+      "source_git_blob": "13772d562383ab08f30071ac813ca7ad9aae82a8",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_AWAIT_TYPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "inferred_empty_task_future_void",
+      "source_path": "fixtures/task-payload-sync-v1/inferred_empty_task_future_void.atto",
+      "source_git_blob": "712f4760182e52dc964d9db48099c5dd83b75a2b",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "INDEPENDENT_CHILD_SPAWN",
+          "FUTURE_VOID_INFERRED",
+          "TASK_JOIN_PHYSICAL_RETIRE"
+        ]
+      }
+    },
+    {
+      "id": "inferred_int_task_future",
+      "source_path": "fixtures/task-payload-sync-v1/inferred_int_task_future.atto",
+      "source_git_blob": "dc4a78e6edf7771273441c8790405117b93bb8e5",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "INDEPENDENT_CHILD_SPAWN",
+          "FUTURE_INT_INFERRED",
+          "TASK_JOIN_PHYSICAL_RETIRE"
+        ]
+      }
+    },
+    {
+      "id": "do_inferred_void_task",
+      "source_path": "fixtures/task-payload-sync-v1/do_inferred_void_task.atto",
+      "source_git_blob": "78b90394ebe7fbe686c57fbc0c7ddf16723b072d",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "INDEPENDENT_CHILD_SPAWN",
+          "SUPERVISED_DISCARD",
+          "INFERRED_VOID_PAYLOAD",
+          "SCOPE_PHYSICAL_RETIRE"
+        ]
+      }
+    },
+    {
+      "id": "taskfuture_await_ready",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_await_ready.atto",
+      "source_git_blob": "58c67cc8e7ea3a82ecbb3e9b09fd9cd3b1f6fd6a",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "TASK_FUTURE_CONTROL_CAPABILITY",
+          "GET_READY_SINGLE_RESULT_RECEIPT",
+          "TASK_JOIN_PHYSICAL_RETIRE"
+        ]
+      }
+    },
+    {
+      "id": "taskfuture_await_direct",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_await_direct.atto",
+      "source_git_blob": "348a4cdd3a5f14c16ced259188658af9fcac1bb6",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "TASK_FUTURE_CONTROL_CAPABILITY",
+          "DIRECT_AWAIT_SINGLE_RESULT_RECEIPT",
+          "TASK_JOIN_PHYSICAL_RETIRE"
+        ]
+      }
+    },
+    {
+      "id": "taskfuture_receipt_split_control",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_receipt_split_control.atto",
+      "source_git_blob": "c0850bd7ace64604e43c3549f8f8e1c6900a8721",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "RESULT_RIGHT_MOVED_ONCE",
+          "TASK_CONTROL_RIGHT_RETAINED",
+          "TASK_COOPERATE_REQUEST_OR_TERMINAL_NOOP",
+          "TASK_JOIN_PHYSICAL_RETIRE"
+        ]
+      }
+    },
+    {
+      "id": "taskfuture_cooperate_request",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_cooperate_request.atto",
+      "source_git_blob": "1dd5377b38d6a6ec6188c7572f5a4a8665ed54ae",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "TASK_COOPERATE_REQUEST_COALESCED_OR_TERMINAL_NOOP",
+          "NO_FORCED_THREAD_PREEMPTION",
+          "TASK_JOIN_PHYSICAL_RETIRE"
+        ]
+      }
+    },
+    {
+      "id": "taskfuture_cancel_scope",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_cancel_scope.atto",
+      "source_git_blob": "a8aaf2f99e48944efc7becaeaf86aaacfee3b3a5",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "TASK_CANCEL_REQUEST_OR_TERMINAL_NOOP",
+          "TASK_CANCEL_REQUEST_IDEMPOTENT",
+          "SCOPE_PHYSICAL_RETIRE"
+        ]
+      }
+    },
+    {
+      "id": "taskfuture_legacy_future_projection",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_legacy_future_projection.atto",
+      "source_git_blob": "7f1ed211389390d6cc243c062f9e7a3c0e6f7eac",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "TASK_FUTURE_RESULT_ONLY_PROJECTION",
+          "TASK_JOIN_PHYSICAL_RETIRE"
+        ]
+      }
+    },
+    {
+      "id": "taskfuture_legacy_cancel_alias",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_legacy_cancel_alias.atto",
+      "source_git_blob": "bf988020cd8f919d5977335943953310c87cc4d4",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "LEGACY_CANCEL_TASK_PROVENANCE",
+          "TASK_CANCEL_REQUEST_OR_TERMINAL_NOOP",
+          "SCOPE_PHYSICAL_RETIRE"
+        ]
+      }
+    },
+    {
+      "id": "taskfuture_inferred_empty_void",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_inferred_empty_void.atto",
+      "source_git_blob": "b7881c96f750209a0e50aa0cd244979fcdde690d",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "TASK_FUTURE_VOID_INFERRED",
+          "GET_READY_SINGLE_RESULT_RECEIPT",
+          "TASK_JOIN_PHYSICAL_RETIRE"
+        ]
+      }
+    },
+    {
+      "id": "taskfuture_inferred_valued",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_inferred_valued.atto",
+      "source_git_blob": "67b830da072ca0e29c9a5a5f5a1df1e8a9a65b8e",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "TASK_FUTURE_INT_INFERRED",
+          "GET_READY_SINGLE_RESULT_RECEIPT",
+          "TASK_JOIN_PHYSICAL_RETIRE"
+        ]
+      }
+    },
+    {
+      "id": "taskfuture_duplicate_ready_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_duplicate_ready_rejected.atto",
+      "source_git_blob": "754e59b20ebdc15962ad65405d52cf44b725e375",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_TASK_RESULT_CONSUMED",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "taskfuture_duplicate_await_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_duplicate_await_rejected.atto",
+      "source_git_blob": "6713a82451da7b472c90ccc941af2c1a204b0e2a",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_TASK_RESULT_CONSUMED",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "taskfuture_cooperate_on_future_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_cooperate_on_future_rejected.atto",
+      "source_git_blob": "ec5d97f56d7a2a7dd7690989afca538722d0caec",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_TASK_CONTROL_TARGET",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "taskfuture_cancel_task_on_future_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_cancel_task_on_future_rejected.atto",
+      "source_git_blob": "cf1d70147c1ebb1901a903633ce8582db4619275",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_TASK_CONTROL_TARGET",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "taskfuture_get_ready_on_future_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_get_ready_on_future_rejected.atto",
+      "source_git_blob": "32deb968eba110dbb36f63b0e418ba1e2f948194",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_TASK_CONTROL_TARGET",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "taskfuture_await_cooperate_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_await_cooperate_rejected.atto",
+      "source_git_blob": "4eb0a0497dbc7d0af014e39a85040c4a84b9cd28",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_AWAIT_TYPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "taskfuture_await_cancel_task_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_await_cancel_task_rejected.atto",
+      "source_git_blob": "50c5f2dfaa437d99ece39dfda4f45d1c5a4c8906",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_AWAIT_TYPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "taskfuture_const_handle_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_const_handle_rejected.atto",
+      "source_git_blob": "4c21f094c63945603f1cfc8484eb657ad4b8da21",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_CONST",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "taskfuture_sync_handle_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_sync_handle_rejected.atto",
+      "source_git_blob": "08f1338a63bc922f1484e30405e7352ef2877d95",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_TASK_RETURN_TYPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "taskfuture_ready_as_int_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_ready_as_int_rejected.atto",
+      "source_git_blob": "dd232541b370c1e51a4e9787afc3513edf0124fe",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_TASK_RETURN_TYPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "taskfuture_control_void_as_int_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_control_void_as_int_rejected.atto",
+      "source_git_blob": "d049667810e998013dd13f198437d3acca390fc3",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_TASK_CONTROL_TYPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "taskfuture_wrong_payload_rejected",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_wrong_payload_rejected.atto",
+      "source_git_blob": "636ec117edd112da97a273188bb8244c77955eec",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_TASK_RETURN_TYPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "taskfuture_cancel_after_split",
+      "source_path": "fixtures/task-payload-sync-v1/taskfuture_cancel_after_split.atto",
+      "source_git_blob": "0a6c567bd4433f6e79775bd86f3a8037534e7af8",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "RESULT_RIGHT_MOVED_ONCE",
+          "TASK_CONTROL_RIGHT_RETAINED",
+          "TASK_CANCEL_REQUEST_OR_TERMINAL_NOOP",
+          "CANCEL_PRIORITY_OVER_COOPERATE",
+          "SCOPE_PHYSICAL_RETIRE"
+        ]
+      }
+    }
+  ],
+  "backends": {
+    "rs-wasm": {
+      "status": "NOT_EXECUTED",
+      "release_qualified": false,
+      "compiler_sha": null,
+      "guest_receipt": null
+    },
+    "java": {
+      "status": "NOT_EXECUTED",
+      "release_qualified": false,
+      "compiler_sha": null,
+      "guest_receipt": null
+    },
+    "llvm": {
+      "status": "NOT_EXECUTED",
+      "release_qualified": false,
+      "compiler_sha": null,
+      "guest_receipt": null
+    },
+    "forge": {
+      "status": "NOT_EXECUTED",
+      "release_qualified": false,
+      "compiler_sha": null,
+      "guest_receipt": null
+    },
+    "net": {
+      "status": "NOT_EXECUTED",
+      "release_qualified": false,
+      "compiler_sha": null,
+      "guest_receipt": null
+    },
+    "independent-wasm": {
+      "status": "NOT_EXECUTED",
+      "release_qualified": false,
+      "compiler_sha": null,
+      "guest_receipt": null
+    },
+    "js": {
+      "status": "NOT_EXECUTED",
+      "release_qualified": false,
+      "compiler_sha": null,
+      "guest_receipt": null
+    },
+    "cranelift": {
+      "status": "NOT_EXECUTED",
+      "release_qualified": false,
+      "compiler_sha": null,
+      "guest_receipt": null
+    },
+    "atto": {
+      "status": "NOT_EXECUTED",
+      "release_qualified": false,
+      "compiler_sha": null,
+      "guest_receipt": null
+    },
+    "hdl": {
+      "status": "NOT_EXECUTED",
+      "release_qualified": false,
+      "compiler_sha": null,
+      "guest_receipt": null
+    },
+    "realtime": {
+      "status": "NOT_EXECUTED",
+      "release_qualified": false,
+      "compiler_sha": null,
+      "guest_receipt": null
+    }
+  },
+  "verification": "Source-only registry; requires exact compiler SHA, negative no-artifact proofs, actual guest execution and independent backend receipts.; eight additional TARGET type/inline/const/empty-body fixtures require exact guest receipts; three inferred task Future/void cases added; TaskFuture control/receipt/cooperate fixtures are TARGET only; actual scheduler safe-point and cancellation race witnesses NOT_EXECUTED.; separate result-receipt ownership does not consume remaining cancellation/cooperation control.",
+  "limited_guest_receipts": {
+    "java_pure_inline_scalar": {
+      "path": "contracts/task-java-pure-inline-20261120.json",
+      "status": "EXECUTED_LIMITED_PROFILE",
+      "full_task_backend_status": "NOT_EXECUTED",
+      "source_head": "be4a6e6cccacfc7c956457398130c7808e4e6915",
+      "carrier_run": "https://github.com/r2g-test/atto-ci/actions/runs/44800774597",
+      "do_sync_requires_void": true,
+      "exact_source_blob_count": 107,
+      "cli_security_checks": 10,
+      "standalone_sync_requires_do": true,
+      "full_source_tree_sha": "044a36c1dbbb93dfae966a8f06c5dfee6357b497",
+      "carrier_mirror_commit_sha": "d1c17abea78441eb1d51c0fe917cbe73340f3cf3",
+      "scope": "LIMITED_PURE_INLINE_JAVA_EXECUTION_WITH_FULL_SOURCE_TREE_IDENTITY_VERIFIED"
+    },
+    "cranelift_inline_void_scalar": {
+      "status": "EXECUTED_LIMITED_PROFILE",
+      "full_task_backend_status": "NOT_EXECUTED",
+      "source_head": "45d1393cbb53ba8a22624961f1a96d3e479aaaa6",
+      "full_source_tree_sha": "efe01c501492b2b225f71e8c4896be9ace807523",
+      "frontend_blob_sha": "7499e10aa85c8b5a9c35d9122ea0619147312d1e",
+      "inline_test_blob_sha": "59d467f2a0ff18d5d8e578c5af084daba8040ceb",
+      "carrier_mirror_commit_sha": "57053e4bb0718566000b600df803c15b6f7ad715",
+      "carrier_run": "https://github.com/r2g-test/atto-ci/actions/runs/44813387081",
+      "exact_source_blob_count": 171,
+      "native_cargo_test_count_passed": 394,
+      "cargo_test_exit": 0,
+      "cargo_clippy_exit": 0,
+      "cargo_fmt_exit": 0,
+      "native_positive_cases": 3,
+      "native_negative_cases": 8,
+      "checked_failure_no_guest_output": true,
+      "do_sync_requires_void": true,
+      "standalone_void_requires_do": true,
+      "release_qualified": false,
+      "scope": "TRUSTED_SIGNED_I64_INLINE_CRANELIFT_JIT_NOT_GENERAL_TASKSCOPE_OR_UNTRUSTED_TENANTVM",
+      "native_cargo_test_groups_passed": 58,
+      "rustfmt_only_files": 26,
+      "nested_task_budget_negative_pass": true,
+      "source_size_budget_negative_pass": true
+    },
+    "java_inline_typed_v2": {
+      "path": "contracts/task-java-inline-typed-v2-20261120.json",
+      "status": "EXECUTED_LIMITED_PROFILE",
+      "full_task_backend_status": "NOT_EXECUTED",
+      "source_head": "c4b2c349a0decedc94f24441be9e78f6af7cb112",
+      "source_tree": "6180130e9f612da1df955884c52c4f9cb6987e7a",
+      "full_source_blobs": 116,
+      "carrier_run": "https://github.com/r2g-test/atto-ci/actions/runs/44811782037",
+      "typed_ast_positive": 20,
+      "typed_ast_negative": 116,
+      "native_image_guest_exit": 42,
+      "release_qualified": false,
+      "signed_i64_boundary_guest_verified": true,
+      "signed_i64_checked_overflow_verified": true,
+      "shell_syntax_gate": true
+    },
+    "java_inline_typed_v2_prior": {
+      "path": "contracts/task-java-inline-typed-v2-20261120.json",
+      "status": "EXECUTED_LIMITED_PROFILE",
+      "full_task_backend_status": "NOT_EXECUTED",
+      "source_head": "11226e12a5fcfcdf74dcbd7f760efb248f7c7255",
+      "source_tree": "f4b787f20b874b334733100ea554ad860ca63c1b",
+      "full_source_blobs": 114,
+      "carrier_run": "https://github.com/r2g-test/atto-ci/actions/runs/44803310176",
+      "typed_ast_positive": 15,
+      "typed_ast_negative": 34,
+      "native_image_guest_exit": 42,
+      "release_qualified": false,
+      "note": "Previously verified 114-file, 15/34 source profile, retained as historical source SHA"
+    }
+  },
+  "cancellation_model": "owned Future<T>.cancel(): void requests nonblocking idempotent cancellation; TaskCancelled terminal distinct from success/failure; scope cascades and physically retires all children; receipt witnesses mandatory",
+  "lock_cancellation_model": "Cancel request != lock release != task retirement. Queued waiter revokes without a guard; active lease never releases until holder safe-point cleanup; exactly-once LIFO release; no child join under live guard; cleanup failures retain fenced ownership and block DONE.",
+  "lock_cancellation_runtime_probes": [
+    {
+      "id": "queued_wait_cancel",
+      "given": [
+        "task_A_holds_lock",
+        "task_B_queued"
+      ],
+      "action": "cancel_task_B",
+      "required_order": [
+        "A_LOCK_CLAIM",
+        "B_WAIT",
+        "B_CANCEL_WAIT",
+        "A_LOCK_RELEASE"
+      ],
+      "assertions": [
+        "B_NO_GRANT",
+        "NO_CARRIER_PARK",
+        "NO_ORPHAN_WAIT_TICKET",
+        "B_TERMINAL_AFTER_WAIT_SETTLED",
+        "CANCEL_WAKE_LEVEL_TRIGGERED_UNTIL_TRUSTED_EXIT",
+        "CANCELLED_WAIT_HAS_NO_GUARD_RELEASE",
+        "WAKE_REQUIRES_TRUSTED_LOCK_PARK_RECEIPT",
+        "NO_DUPLICATE_DISPATCH_FOR_STILL_RUNNING_WAITER"
+      ],
+      "notification_contract": "TaskScope cancellation must make a queued task runnable to observe TaskCancelled, with durable level-triggered notice until trusted execution exit and no acquired-guard release."
+    },
+    {
+      "id": "grant_cancel_race",
+      "given": [
+        "task_A_releasing",
+        "task_B_waiting",
+        "task_C_waiting"
+      ],
+      "action": "cancel_task_B_at_handoff",
+      "assertions": [
+        "ONE_TERMINAL_CLAIM_B",
+        "B_NEVER_USES_REVOKED_LEASE",
+        "ONE_VALID_GRANT_TO_C",
+        "NO_STALE_WAKE",
+        "NO_DUPLICATE_RELEASE",
+        "GRANT_WAKE_SURVIVES_FAILED_SCHEDULER_ENQUEUE",
+        "ACK_ONLY_AFTER_READY_QUEUE_ADMISSION",
+        "STALE_ACK_CANNOT_CLEAR_SUCCESSOR_WAKE",
+        "CLAIM_REVALIDATES_AFTER_ACK",
+        "GRANT_HINT_REQUIRES_TRUSTED_LOCK_PARK_RECEIPT",
+        "UNPARKED_GRANTED_WAITER_CLAIMS_DIRECTLY_WITHOUT_SECOND_DISPATCH"
+      ],
+      "notification_contract": "Grant hints are level-triggered pending notifications, not lease capabilities. Only a trusted scheduler may acknowledge after successful ready-queue admission. Failed enqueue leaves hint visible; late or stale ack must not clear a successor's hint. Lease claim rechecks generation/owner/cancellation."
+    },
+    {
+      "id": "active_guard_cancel",
+      "given": [
+        "task_A_inside_guard",
+        "task_B_waiting"
+      ],
+      "action": "cancel_task_A",
+      "required_order": [
+        "A_LOCK_CLAIM",
+        "A_CANCEL_REQUEST",
+        "A_SAFE_POINT_UNWIND",
+        "A_LOCK_RELEASE",
+        "A_PHYSICAL_RETIRE"
+      ],
+      "assertions": [
+        "NO_EARLY_UNLOCK",
+        "ONE_RELEASE",
+        "NO_USE_AFTER_RELEASE",
+        "A_DONE_AFTER_CLEANUP_AND_CALLBACK_DRAIN"
+      ],
+      "happens_before": [
+        [
+          "A_LOCK_RELEASE",
+          "B_LOCK_CLAIM"
+        ],
+        [
+          "A_LOCK_RELEASE",
+          "A_PHYSICAL_RETIRE"
+        ]
+      ]
+    },
+    {
+      "id": "nested_guards_lifo",
+      "given": [
+        "task_A_holds_lock_1_then_lock_2"
+      ],
+      "action": "cancel_task_A",
+      "required_order": [
+        "A_GUARD_2_RELEASE",
+        "A_GUARD_1_RELEASE",
+        "A_PHYSICAL_RETIRE"
+      ],
+      "assertions": [
+        "ONE_RELEASE_PER_CLAIM",
+        "NO_LOST_LEASE",
+        "INNER_GUARD_RELEASE_BEFORE_OUTER"
+      ]
+    },
+    {
+      "id": "parent_guard_child_join_deadlock",
+      "given": [
+        "parent_holds_lock",
+        "child_waits_same_lock"
+      ],
+      "action": "parent_scope_cancel_and_exit",
+      "required_order": [
+        "PARENT_GUARD_RELEASE",
+        "CHILD_PHYSICAL_RETIRE",
+        "PARENT_PHYSICAL_RETIRE"
+      ],
+      "assertions": [
+        "NO_JOIN_UNDER_GUARD",
+        "NO_CARRIER_BLOCK",
+        "PARENT_GUARD_RELEASE_BEFORE_CHILD_RETIRE"
+      ]
+    },
+    {
+      "id": "cleanup_failure_fence",
+      "given": [
+        "task_A_has_active_lease",
+        "host_cleanup_fails"
+      ],
+      "action": "cancel_task_A",
+      "assertions": [
+        "TASK_NOT_MARKED_PHYSICALLY_RETIRED",
+        "LOCK_NOT_REGRANTED",
+        "FAILURE_CAUSE_RETAINED",
+        "INDEPENDENT_GUARDS_ATTEMPTED",
+        "TENANT_QUARANTINED_OR_SAFE_RECOVERY"
+      ]
+    },
+    {
+      "id": "isolate_hard_stop_host_lease",
+      "given": [
+        "untrusted_guest_with_host_owned_guard"
+      ],
+      "action": "terminate_isolated_guest",
+      "assertions": [
+        "HOST_GENERATION_REVOKED",
+        "DOMAIN_QUIESCENCE_PROVEN_BEFORE_REUSE",
+        "NO_GUEST_DEFER_ASSUMED",
+        "NO_CROSS_TENANT_LEASE_REPLAY"
+      ]
+    },
+    {
+      "id": "rwlock_cancel_read_write",
+      "given": [
+        "two_active_read_guards",
+        "writer_waiting"
+      ],
+      "action": "cancel_one_reader_then_cancel_writer",
+      "required_order": [
+        "READER_1_UNWIND_RELEASE",
+        "WRITER_WAIT_CANCELLED",
+        "READER_2_UNWIND_RELEASE",
+        "SCOPE_PHYSICAL_RETIRE"
+      ],
+      "assertions": [
+        "NO_WRITER_GRANTED_BEFORE_ALL_READERS_RELEASE",
+        "READ_COUNT_NEVER_NEGATIVE",
+        "NO_WRITER_PERMIT_AFTER_CANCEL",
+        "NO_DUPLICATE_READ_RELEASE",
+        "NO_STARVED_CANCELLED_WAITER"
+      ]
+    },
+    {
+      "id": "actor_critical_write_task_cancel",
+      "given": [
+        "tenant_actor_owns_critical_write_guard",
+        "child_task_cancel_requested"
+      ],
+      "action": "cancel_task_while_guard_active",
+      "assertions": [
+        "CRITICAL_WRITE_NOT_REENTRANT",
+        "NO_RELEASE_WHILE_HANDLER_STILL_RUNNING",
+        "EXACTLY_ONCE_GUARD_CLEANUP",
+        "SUPERVISOR_CONTROL_NOT_FORGEABLE",
+        "PHYSICAL_RETIRED_AFTER_LEASE_SETTLED",
+        "NO_CROSS_TENANT_GRANT"
+      ]
+    },
+    {
+      "id": "task_cancel_cross_mutex_ticket_replay",
+      "given": [
+        "trusted_task_has_grant_for_mutex_A",
+        "same_task_has_pending_or_granted_mutex_B",
+        "different_lock_generations"
+      ],
+      "action": "attempt_to_claim_mutex_B_using_mutex_A_ticket",
+      "assertions": [
+        "NO_CROSS_MUTEX_GRANT",
+        "WRONG_TICKET_REJECTED",
+        "PER_MUTEX_GENERATION_UNIQUE",
+        "NO_ACCESS_TO_OTHER_PROTECTED_MEMORY",
+        "NO_DOUBLE_RELEASE"
+      ],
+      "evidence_required": true
+    },
+    {
+      "id": "tenant_shutdown_claimed_guard",
+      "given": [
+        "active_lease_claimed_by_task_A",
+        "task_B_waiting",
+        "host_tenant_stop_requested"
+      ],
+      "action": "cancel_all_task_scopes_then_close_lock_queues",
+      "required_order": [
+        "A_LOCK_CLAIM",
+        "HOST_TENANT_STOP",
+        "B_WAIT_REVOKED",
+        "A_SAFE_UNWIND",
+        "A_LOCK_RELEASE",
+        "TENANT_PHYSICAL_QUIESCENCE"
+      ],
+      "assertions": [
+        "NO_NEW_GRANTS_AFTER_STOP",
+        "ACTIVE_LEASE_REMAINS_FENCED_UNTIL_HOLDER_UNWINDS",
+        "NO_STALE_WAITER_WAKE",
+        "SHUTDOWN_IDEMPOTENT",
+        "PHYSICAL_RETIRE_AFTER_CALLBACK_DRAIN"
+      ],
+      "evidence_required": true
+    },
+    {
+      "id": "successful_parent_scope_exit_cancels_descendants",
+      "given": [
+        "parent_has_claimed_mutex",
+        "child_waits_on_same_mutex",
+        "grandchild_unfinished",
+        "unrelated_sibling_running"
+      ],
+      "action": "parent_returns_successfully_without_explicit_child_await",
+      "required_order": [
+        "PARENT_SUCCESS_CLAIM",
+        "CHILD_CANCEL_REQUEST",
+        "PARENT_GUARD_RELEASE",
+        "CHILD_PHYSICAL_RETIRE",
+        "PARENT_PHYSICAL_RETIRE"
+      ],
+      "assertions": [
+        "PARENT_SUCCESS_NOT_REPLACED_BY_CANCELLATION",
+        "CHILD_AND_GRANDCHILD_RECEIVE_TRANSITIVE_CANCELLATION",
+        "WAITERS_REMOVED_BEFORE_GUARD_HANDOFF",
+        "NO_CHILD_JOIN_WHILE_PARENT_GUARD_HELD",
+        "UNRELATED_SIBLING_UNAFFECTED",
+        "NO_PARENT_STORAGE_REUSE_BEFORE_DESCENDANTS_RETIRED"
+      ],
+      "evidence_required": true
+    },
+    {
+      "id": "lexical_guard_scope_exit_while_task_continues",
+      "given": [
+        "task_A_claimed_mutex",
+        "task_B_waiting_for_same_mutex",
+        "task_A_exits_lexical_using_block_but_continues_running"
+      ],
+      "action": "trusted_guard_scope_exit_by_scheduler",
+      "required_order": [
+        "A_CLAIM",
+        "B_WAIT",
+        "A_GUARD_SCOPE_EXIT",
+        "A_RELEASE",
+        "B_CLAIM",
+        "A_TERMINAL"
+      ],
+      "assertions": [
+        "NO_TASK_RETIRE_NEEDED_BEFORE_GUARD_RELEASE",
+        "RELEASE_ONLY_AFTER_PROTECTED_REGION_ENDED",
+        "NO_SUSPENSION_WITHIN_CRITICAL_LEASE",
+        "A_CANCELLATION_AFTER_RELEASE_DOES_NOT_DOUBLE_UNLOCK",
+        "LIFO_SCOPED_RELEASE",
+        "WRONG_ORDER_LEASE_EXIT_DENIED",
+        "GUEST_CANNOT_FORGE_GUARD_RELEASE"
+      ],
+      "evidence_required": true
+    },
+    {
+      "id": "lock_park_cancel_linearization",
+      "given": [
+        "task_A_holds_mutex",
+        "task_B_has_wait_ticket_but_may_still_be_running",
+        "scheduler_serializes_lock_park_with_cancel_and_grant"
+      ],
+      "action": "race_trusted_park_lock_wait_against_cancel_and_mutex_handoff",
+      "assertions": [
+        "NO_CANCEL_WAKE_UNLESS_B_WAS_TRUSTED_PARKED",
+        "NO_GRANT_WAKE_UNLESS_B_WAS_TRUSTED_PARKED",
+        "NO_DUPLICATE_DISPATCH_OF_RUNNING_CONTINUATION",
+        "GUARD_HOLDING_TASK_CANNOT_PARK_LOCK_WAIT",
+        "WRONG_TICKET_OR_WRONG_TENANT_PARK_REJECTED",
+        "CANCEL_BEFORE_PARK_RETURNS_CANCELLATION_PENDING",
+        "GRANT_BEFORE_PARK_IS_CLAIMABLE_WITHOUT_PARK",
+        "ACK_AFTER_READY_QUEUE_ADMISSION_ONLY",
+        "ACK_IDENTIFIES_EXACT_PARKED_TASK_AND_GRANT",
+        "NO_PREMATURE_GUARD_RELEASE",
+        "PARKED_TASK_CANNOT_CERTIFY_SUCCESSFUL_PHYSICAL_EXIT",
+        "PARKED_GRANT_CANNOT_BE_CLAIMED_BEFORE_TRUSTED_READY_QUEUE_ACK"
+      ],
+      "required_happens_before": [
+        [
+          "TRUSTED_PARK",
+          "CANCEL_WAKE_IF_CANCEL_WINS_LATER"
+        ],
+        [
+          "TRUSTED_PARK",
+          "GRANT_WAKE_IF_GRANT_WINS_LATER"
+        ]
+      ],
+      "evidence_required": true
+    },
+    {
+      "id": "atomic_host_ready_admission",
+      "given": [
+        "task_A_claimed_mutex",
+        "task_B_trusted_parked_on_mutex",
+        "task_C_trusted_parked_on_mutex",
+        "one_privileged_scheduler_arbiter_controls_lock_and_ready_ledgers"
+      ],
+      "action": "race_A_guard_release_B_grant_B_cancel_and_privileged_ready_queue_enqueue",
+      "assertions": [
+        "GRANT_ACK_AND_READY_QUEUE_INSERTION_ONE_SERIALIZED_TRANSITION",
+        "FAILED_OR_CAPACITY_REJECTED_READY_ENQUEUE_LEAVES_GRANT_PENDING",
+        "ONE_RUNNABLE_ENTRY_PER_LOGICAL_TASK",
+        "READY_BUT_UNDISPATCHED_TASK_CANNOT_CLAIM_OR_PARK",
+        "CANCELLATION_AND_GRANT_WAKE_FOR_SAME_TASK_NOT_DUPLICATED",
+        "VALID_SUCCESSOR_NOT_LOST_AFTER_REVOKED_GRANT",
+        "CANCELLED_WAITER_NEVER_RELEASES_ACTIVE_OWNER",
+        "READY_QUEUE_NOT_VISIBLE_TO_UNTRUSTED_GUEST",
+        "NONPARKING_HOST_ARBITER_WHEN_BUSY",
+        "PHYSICAL_RETIREMENT_REQUIRES_TRUSTED_DISPATCH_AND_GUEST_EXIT",
+        "RAW_WAKE_HINT_ACK_WITHOUT_READY_QUEUE_REJECTED"
+      ],
+      "required_happens_before": [
+        [
+          "TRUSTED_LOCK_PARK",
+          "HOST_READY_ADMISSION"
+        ],
+        [
+          "HOST_READY_ADMISSION",
+          "READY_GRANT_ACK"
+        ],
+        [
+          "HOST_READY_ADMISSION",
+          "SCHEDULER_POP_READY"
+        ],
+        [
+          "SCHEDULER_POP_READY",
+          "GUEST_CLAIM_OR_CANCEL_UNWIND"
+        ]
+      ],
+      "evidence_required": true,
+      "release_qualified": false
+    },
+    {
+      "id": "parked_ready_task_admission_fence",
+      "given": [
+        "task_B_has_contended_lock_wait_ticket",
+        "host_scheduler_has_parked_task_B",
+        "unrelated_mutex_C_is_available",
+        "task_B_has_parent_child_scope_capability"
+      ],
+      "action": "try_lock_admission_and_child_spawn_before_and_after_ready_enqueue_but_before_scheduler_pop",
+      "assertions": [
+        "PARKED_TASK_CANNOT_ACQUIRE_ANOTHER_MUTEX",
+        "PARKED_TASK_CANNOT_SPAWN_CHILD",
+        "READY_BUT_UNDISPATCHED_TASK_CANNOT_ACQUIRE_MUTEX",
+        "READY_BUT_UNDISPATCHED_TASK_CANNOT_SPAWN_CHILD",
+        "NO_GHOST_TICKET_ON_REJECTION",
+        "NO_FORGED_CHILD_TASK_CAPABILITY",
+        "TASK_MAY_RETRY_ONLY_AFTER_AUTHENTICATED_READY_TO_RUNNING_TRANSITION",
+        "CANCELLATION_WINS_BEFORE_REACQUIRE_IF_ALREADY_REQUESTED"
+      ],
+      "required_happens_before": [
+        [
+          "TRUSTED_LOCK_PARK",
+          "HOST_READY_ADMISSION"
+        ],
+        [
+          "HOST_READY_ADMISSION",
+          "TRUSTED_SCHEDULER_DISPATCH"
+        ],
+        [
+          "TRUSTED_SCHEDULER_DISPATCH",
+          "NEW_LOCK_ADMISSION_IF_AUTHORIZED"
+        ]
+      ],
+      "evidence_required": true,
+      "release_qualified": false
+    },
+    {
+      "id": "lock_park_unclaimed_grant_and_ambiguous_wait",
+      "given": [
+        "task_A_has_unclaimed_grant_for_mutex_X",
+        "task_A_has_waiter_for_mutex_Y",
+        "host_attempts_park_on_Y",
+        "alternative_task_B_has_two_queued_mutex_waits_without_select"
+      ],
+      "action": "attempt_physical_lock_park_without_claiming_or_revoking_X_and_without_disambiguating_B_wait",
+      "assertions": [
+        "UNCLAIMED_GRANT_PREVENTS_PARK_ON_DIFFERENT_MUTEX",
+        "ACTIVE_LEASE_PREVENTS_PARK",
+        "MULTIPLE_OUTSTANDING_WAITS_WITHOUT_TYPED_SELECT_ARE_REJECTED",
+        "PARK_REJECTION_LEAVES_OTHER_GRANT_ACTIVE_AND_EXACT",
+        "NO_PHANTOM_READY_ENTRY_OR_WAKE_HINT",
+        "CANCELLATION_REMOVES_ALL_PENDING_WAITS",
+        "NO_GUEST_OR_HOST_DOUBLE_RELEASE"
+      ],
+      "evidence_required": true,
+      "release_qualified": false
+    }
+  ],
+  "sync_inline_model": "sync task<T> runs inline in caller TaskId on the same thread; no independent TaskSpawn, TaskJoin, Future or worker assignment; rt cooperate retains the caller thread; an effect without a same-thread continuation proof is E_SYNC_TASK_SUSPEND even in a susp callable; do sync task accepts only an explicit void payload or inferred void, forbids return expressions, and MUST NOT canonicalize to do task; lexical using/defer unwind LIFO before return, cancel or fail",
+  "inline_sync_runtime_probes": [
+    {
+      "id": "inline_no_child_admission",
+      "evidence_required": true,
+      "release_qualified": false,
+      "assertions": [
+        "INLINE_ENTER_BEFORE_BODY",
+        "NO_SYNTHETIC_SYNC_CHILD_SPAWN",
+        "SAME_LOGICAL_TASK_ID",
+        "INLINE_EXIT_BEFORE_NEXT_PARENT_STATEMENT",
+        "NO_INDEPENDENT_WORKER_DISPATCH",
+        "SAME_CALLER_THREAD",
+        "SAME_CALLER_THREAD_AFTER_COOPERATE"
+      ]
+    },
+    {
+      "id": "inline_pure_non_susp",
+      "evidence_required": true,
+      "release_qualified": false,
+      "assertions": [
+        "NON_SUSP_CALLER_ADMITTED",
+        "NO_IMPLICIT_YIELD",
+        "NO_THREAD_CREATION_REQUIREMENT"
+      ]
+    },
+    {
+      "id": "inline_await_without_same_thread_proof_rejected",
+      "evidence_required": true,
+      "release_qualified": false,
+      "assertions": [
+        "NON_SUSP_CALLER_INLINE_AWAIT_REJECTED",
+        "SUSP_CALLER_INLINE_AWAIT_REJECTED",
+        "NO_ARTIFACT_FOR_UNVERIFIED_INLINE_AWAIT"
+      ]
+    },
+    {
+      "id": "inline_guard_effect_safety",
+      "evidence_required": true,
+      "release_qualified": false,
+      "assertions": [
+        "PURE_INLINE_UNDER_GUARD_ALLOWED",
+        "SUSPENDING_INLINE_UNDER_GUARD_REJECTED",
+        "NO_ARTIFACT_FOR_GUARD_SUSPEND",
+        "GUARD_RELEASE_EXACTLY_ONCE"
+      ]
+    },
+    {
+      "id": "do_sync_cannot_alias_do_task",
+      "evidence_required": true,
+      "release_qualified": false,
+      "assertions": [
+        "DO_SYNC_INLINE_NO_CHILD",
+        "DO_TASK_SUPERVISED_CHILD",
+        "FORMATTER_PRESERVES_SYNC",
+        "SAME_BODY_DIFFERENT_SCHEDULING"
+      ]
+    }
+  ],
+  "await_inline_future_model": "await sync task<int> rejects E_AWAIT_TYPE (int is not Future); await sync task<Future<T>> joins the *returned* independent Future exactly once, without an artificial inline Future or changed scheduling",
+  "const_task_model": "Local const requires compile-time-evaluable initializers; task, await, and sync task are runtime expressions even with constant literal returns. Runtime-immutable declarations use val; must not downgrade const silently",
+  "taskfuture_control_model": "TaskFuture<T> has separate affine task-control and unique result-observation rights. get_ready(): Future<T> moves only result right; await t or await t.get_ready() consumes that right once; cancel_task(): void and cooperate(): void remain authorized nonparking control methods. cooperate is a coalesced target safe-point hint, not forced preemption; cancellation takes priority. Old Future<T> assignment consumes control right, and legacy Future.cancel() requires statically proven task provenance.",
+  "taskfuture_runtime_probes": [
+    {
+      "id": "cooperate_running_child_yields_at_safe_point",
+      "required": [
+        "RUNNING_CHILD_REQUEST_RECORDED",
+        "TARGET_SAFE_POINT_OBSERVED",
+        "TARGET_COOPERATIVE_YIELD",
+        "SAME_TENANT_FAIR_QUEUE",
+        "NO_THREAD_PREEMPTION"
+      ],
+      "release_qualified": false,
+      "execution": "NOT_EXECUTED"
+    },
+    {
+      "id": "cooperate_guard_defers_until_release",
+      "required": [
+        "CRITICAL_LEASE_HELD_NO_YIELD",
+        "COOPERATE_REQUEST_PRESERVED",
+        "GUARD_RELEASE_EXACTLY_ONCE",
+        "YIELD_ONLY_AFTER_SAFE_POINT"
+      ],
+      "release_qualified": false,
+      "execution": "NOT_EXECUTED"
+    },
+    {
+      "id": "cooperate_cancel_priority",
+      "required": [
+        "CANCEL_REQUEST_WINS_OVER_HINT",
+        "NO_RESULT_FORGED",
+        "PHYSICAL_RETIRE_AFTER_UNWIND"
+      ],
+      "release_qualified": false,
+      "execution": "NOT_EXECUTED"
+    },
+    {
+      "id": "get_ready_control_split",
+      "required": [
+        "RESULT_RIGHT_MOVED_ONCE",
+        "TASK_CONTROL_RIGHT_RETAINED",
+        "NO_DOUBLE_AWAIT",
+        "TASK_JOIN_PHYSICAL_RETIRE"
+      ],
+      "release_qualified": false,
+      "execution": "NOT_EXECUTED"
+    },
+    {
+      "id": "cooperate_hint_bounded_coalescing",
+      "required": [
+        "BOUNDED_SINGLE_PENDING_HINT",
+        "NO_DUPLICATED_SCHEDULER_TICKETS",
+        "NO_CROSS_TENANT_RESCHEDULE"
+      ],
+      "release_qualified": false,
+      "execution": "NOT_EXECUTED"
+    }
+  ]
+}
