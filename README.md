@@ -387,3 +387,24 @@ own compiled-guest receipts before any parity claim.
 - Normative target: [atto-spec #32](https://github.com/atto-lang/atto-spec/pull/32), `language/stdio-channel-endpoints-v1.md`
 
 All 11 `atto-source.*` targets remain **NOT_EXECUTED** for this fixture. Source-only validation must never be presented as guest-runtime parity. Some targets (notably HDL) must explicitly reject process-stdio profiles rather than synthesize a host channel.
+
+## Resumable media streaming v1 — host reference
+
+Replay fixtures are now canonical **`.atto`** files on all five backend PRs. Legacy `oreslang.*` contract identifiers and repository names are kept as versioned compatibility identifiers; source alignment is not guest execution.
+
+The [media replay v1 contract](docs/MEDIA_REPLAY_V1.md) defines a bounded 2 MiB compressed-chunk sender replay window, receiver applied-checkpoint ledger, cumulative ACK semantics, actor generation fencing and codec-safe random-access resets. Run the 47 locally executed host-reference tests (including [seven shared operation vectors](contracts/media-replay-v1-vectors.json)) with:
+
+```sh
+node --test tests/media-replay*.test.mjs
+```
+
+An additional eight source-free receipt validator tests are authored to reject fabricated compiler success, missing executed CI steps, wrong source SHA, missing receipts, incorrect output hashes and nonzero guest exits. The [five-backend source alignment inventory](contracts/media-replay-native-source-alignment-v1.json) pins the identical AttoLang .atto implementation blob and the [80 expected guest receipts](contracts/media-replay-native-receipts-v1.json). Source identity is verified; real guest execution is not.
+
+This is **not** native AttoLang codec execution or five-backend runtime parity evidence. **Cranelift** is the independent `oreslang-source.cranelift` backend, not `oreslang-source.forge`; Java/Graal, LLVM, Wasm, Cranelift and .NET guest admission remains separate.
+
+
+
+
+### Optional real H.264 host-codec integration
+
+`tests/media-replay-ffmpeg-v1.test.mjs` generates 30 Annex-B H.264 frames using FFmpeg `libx264` with repeated SPS/PPS and IDR every 10 frames. It checks byte-identical replay after network interruption, decodes all 30 frames via `ffprobe`, and independently decodes 10 frames after a verified IDR restart. On hosts without FFmpeg/libx264/ffprobe it **reports an explicit skipped/unsupported case**, never a codec success. The local Node 22 test was actually executed against FFmpeg 7.1.5; this does not establish an Oreslang guest codec implementation.
