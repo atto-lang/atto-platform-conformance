@@ -32,6 +32,40 @@ Execute portable language fixtures and record target-specific results.
 - Use test fixtures and reproducible evidence to distinguish proposed behavior from implemented behavior.
 - Record breaking changes, migration notes, and dependencies on other AttoLang components.
 
+## Typed std.pattern fragment targets (NOT EXECUTED)
+
+[Typed pattern-fragments v1 registry](contracts/typed-pattern-fragments-v1.json) records 38 prospective cases (16 semantic matches, 22 rejection targets). Every listed backend is NOT_EXECUTED; [Node integrity tests](tests/typed-pattern-fragments-v1-registry.test.mjs) check provenance and case structure only. The canonical proposal is on [atto-spec #59](https://github.com/atto-lang/atto-spec/pull/59). This is not stdlib implementation, compiler parsing, formatter equivalence or compiled guest execution.
+
+The registry also pins **14 exact `.atto` guest source blobs**: two 60-result equivalence fixtures, six additional native-rest successes (0/30/7/1/3/32), one checked-overflow panic (code 1), and five compiler-reject cases. Seven new native-rest files are byte-identical to [Rust #415](https://github.com/atto-lang/atto-source.rs/pull/415) source fixtures. Rust's restricted List<int> guest compiler path is a **candidate only**; its current-head Actions ran zero steps. All backend guest statuses remain **NOT_EXECUTED** and host-only integrity checks do not establish compilation or semantic parity.
+
+The independent [Forge compiler candidate #43](https://github.com/atto-lang/atto-source.forge/pull/43) now carries **8/8 byte-identical Rust guest `.atto` fixtures**, a restricted real `forge_scalar` source-to-C++ lowering path, and native compile-and-execute tests with ASan/UBSan gates. Neither that candidate nor Rust has a current-head executing CI receipt; **Forge and all other backend roles remain NOT_EXECUTED**, not PASS. Forge's native checked-overflow exit 70 must be normalized against Rust/Wasm's panic code 1 at the semantic contract layer; never conflate their platform ABIs.
+
+
+### Independent executable Rust/Wasm + Forge native parity gate (NOT EXECUTED)
+
+The versioned `tests/typed-patterns-cross-backend-guests.mjs` is an **actual compiler-generated guest runner**, not the host-only manifest integrity validator or the typed-fragment reference implementation. It selects exactly the eight shared `list-pattern-*.atto` sources (seven positive and one checked-overflow), verifies each pinned Git blob SHA, and requires a clean source checkout with an independently supplied **exact compiler Git tree SHA**. It then invokes the selected compiler using non-shell subprocess arguments and demands the compiled artifact execute successfully.
+
+Rust/Wasm: `attoc` emits Wasm, which must validate, import no host matcher, have guest-owned memory and produce the exact exported `main` result (or checked overflow `panic_code=1`). Forge: `forge_scalar` must emit a C++20 native guest with real list storage, a native C++ compiler must build it, and the binary must print the exact result or exit 70 with `E_OVERFLOW`. These two **target-specific overflow ABIs are normalized only to the shared semantic error**; do not claim the process exit code is a Wasm panic code.
+
+Run from this conformance checkout with the production compiler source present at its exact pinned commit/tree (or an authorized Git-tree-identical private mirror). **The proof runner itself rebuilds the compiler from that pinned tree into a fresh external temporary directory** (Cargo --locked for Rust; CMake for Forge), hashes the new compiler binary, and then compiles/executes the guests. It rejects any ATTOC_RELATIVE/FORGE_RELATIVE prebuilt executable override:
+
+```sh
+ATTO_COMPILER_REPO=/absolute/path/to/atto-source.rs \
+ATTO_EXPECTED_COMPILER_TREE=<independently-verified-40-character-git-tree-SHA> \
+node tests/typed-patterns-cross-backend-guests.mjs rust-wasm
+
+ATTO_COMPILER_REPO=/absolute/path/to/atto-source.forge \
+ATTO_EXPECTED_COMPILER_TREE=<independently-verified-40-character-git-tree-SHA> \
+node tests/typed-patterns-cross-backend-guests.mjs forge-native
+```
+
+The runner produces a machine-readable receipt **only after all eight compiled guests truly execute**. It will reject a missing or failed fresh compiler build, a prebuilt-compiler override, an unpinned or dirty compiler tree, incorrect output, or failed overflow checks. Hashes attest the just-built compiler executable, not merely the source inputs. Java, LLVM, .NET and the other backend roles have not yet supplied a compatible compiler adapter, and must remain `NOT_EXECUTED`. A passing host-only registry integrity test is **not** this execution proof.
+
+
+## Sequence pattern v2 target registry
+
+[Sequence matching v2 registry](contracts/sequence-pattern-v2-registry.json) pins 40 proposed positive/negative semantics (20 match and 20 parse-reject targets). Every backend result is explicitly **NOT_EXECUTED** until an independent compiler executes its source-derived guest fixture; [the registry integrity suite](tests/sequence-pattern-v2-registry.test.mjs) is host-only and cannot certify parity. Contract [atto-spec #59](https://github.com/atto-lang/atto-spec/pull/59); compiler tracking [atto-source.rs #123](https://github.com/atto-lang/atto-source.rs/issues/123).
+
 ## Constructor header whitespace target fixtures
 
 `contracts/receiver-constructor-whitespace-v1.json` tracks three equivalent
