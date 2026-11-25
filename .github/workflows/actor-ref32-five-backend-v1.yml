@@ -1,0 +1,51 @@
+name: Five-backend actor Ref32 guest-source evidence gate (source-only)
+on:
+  pull_request:
+    paths:
+      - 'contracts/actor-ref32-five-backend-v1.json'
+      - 'fixtures/actor-ref32-five-backend-v1/**'
+      - 'bin/verify-actor-ref32-five-backend-v1.mjs'
+      - 'tests/actor-ref32-five-backend-v1.test.mjs'
+      - 'docs/ACTOR_REF32_FIVE_BACKEND_V1.md'
+      - '.github/workflows/actor-ref32-five-backend-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate-noncertifying-source-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Verify exact checked source identity and fixture blob
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          test -z "$(git status --porcelain --untracked-files=all)"
+          fixture=fixtures/actor-ref32-five-backend-v1/node_graph.atto
+          test ! -L "$fixture"
+          test "$(git ls-files -s -- "$fixture" | awk '{print $1}')" = 100644
+          test "$(git rev-parse "HEAD:$fixture")" = "$(git hash-object "$fixture")"
+          echo "CONTRACT_HEAD=$(git rev-parse HEAD)"
+          echo "CONTRACT_TREE=$(git rev-parse 'HEAD^{tree}')"
+          echo "CONTRACT_FIXTURE_BLOB=$(git hash-object "$fixture")"
+      - name: Run checked source-only five-backend admission and negative controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --version
+          node --check bin/verify-actor-ref32-five-backend-v1.mjs
+          node --check tests/actor-ref32-five-backend-v1.test.mjs
+          node --test tests/actor-ref32-five-backend-v1.test.mjs
+          node bin/verify-actor-ref32-five-backend-v1.mjs |
+            tee "$RUNNER_TEMP/actor-ref32-inventory.json"
+          grep -F '"guestVerified":false' "$RUNNER_TEMP/actor-ref32-inventory.json"
+          grep -F '"nativeAotVerified":false' "$RUNNER_TEMP/actor-ref32-inventory.json"
+          grep -F '"zeroGcCertified":false' "$RUNNER_TEMP/actor-ref32-inventory.json"
+          echo 'ATTO_REF32_FIVE_BACKEND_SOURCE_ONLY_NOT_EXECUTED'

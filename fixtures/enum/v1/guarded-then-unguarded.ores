@@ -1,0 +1,16 @@
+define enum Stage as
+    Ready = 1
+    Done = 2
+end
+fnc classify(Stage x): int {
+    match x over
+        on Stage.Ready when false -> { return 1; }
+        on Stage.Ready -> { return 7; }
+        on Stage.Done -> { return 9; }
+    end
+}
+pub fnc main(): void {
+    stdio.println(classify(Stage.Ready()));
+    stdio.println(classify(Stage.Done()));
+    return;
+}

@@ -1,0 +1,6 @@
+pub async fnc main(): int {
+  val int original = 41;
+  let Future<int> child = task { return original + 1; };
+  stdio.println(original);
+  return await child;
+}

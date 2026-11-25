@@ -1,0 +1,11 @@
+// TARGET: verified subtype effects and guest raise! required before PASS
+define class Foo extends Error as end
+fnc int <- double_answer(int value)
+raises Foo
+begin
+  if value > 3 then
+    raise! new Foo();
+  fi
+  return value * 2;
+end
+pub fnc main(): int raises Foo { return double_answer(3) + 36; }

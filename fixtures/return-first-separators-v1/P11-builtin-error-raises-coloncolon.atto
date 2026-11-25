@@ -1,0 +1,13 @@
+// expect-exit: 42
+// Built-in Error is the verified browser-profile subset; Foo subtypes are separate.
+fnc int <- twice(int value)
+raises Error ::
+  if value > 3 then
+    raise! Error("too large");
+  fi
+  return value * 2;
+end
+
+pub fnc main(): int raises(Error) {
+  return twice(3) + 36;
+}

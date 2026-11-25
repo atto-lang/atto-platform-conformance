@@ -1,0 +1,12 @@
+// EXPECTED: E_EFFECT and NO artifact: Bar does not satisfy raises Foo.
+define class Foo extends Error as end
+define class Bar extends Error as end
+
+fnc int <- risky(int value)
+raises Foo ::
+  raise! new Bar();
+end
+
+pub fnc main(): int {
+  return 0;
+}

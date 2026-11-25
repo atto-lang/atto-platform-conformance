@@ -1,0 +1,270 @@
+{
+  "schema": "atto.fs.api.v1",
+  "status": "PROPOSED_HOST_ONLY_PARTIAL",
+  "canonical_import": "import * as fs from \"std.fs\";",
+  "stdlib_layer": "hosted-std",
+  "source_implementations": "backend-local .atto source; separate implementations allowed",
+  "error_policy": "ordinary FsError thrown; trap await produces Result<T, FsError>",
+  "types": [
+    "Path",
+    "PathBuf",
+    "Metadata",
+    "DirEntry",
+    "OpenOptions",
+    "File",
+    "FileStream",
+    "FsError",
+    "FsErrorKind",
+    "Result<T,FsError>"
+  ],
+  "functions": {
+    "files": [
+      "open",
+      "read_file",
+      "write_file",
+      "append_file",
+      "copy_file",
+      "rename",
+      "remove_file"
+    ],
+    "directories": [
+      "create_dir",
+      "create_dir_all",
+      "read_dir",
+      "remove_dir",
+      "remove_dir_all"
+    ],
+    "paths": [
+      "join",
+      "parent",
+      "file_name",
+      "extension",
+      "normalize"
+    ],
+    "metadata": [
+      "metadata",
+      "exists",
+      "is_file",
+      "is_dir",
+      "file_size"
+    ],
+    "file_handle": [
+      "read",
+      "write",
+      "seek",
+      "flush",
+      "close"
+    ],
+    "stream": [
+      "read_stream",
+      "write_stream",
+      "read_chunk",
+      "write_chunk",
+      "flush",
+      "close"
+    ],
+    "text": [
+      "read_text",
+      "write_text"
+    ],
+    "file_instance_overloads": [
+      "read_text(File)",
+      "write_text(File, string)",
+      "read_file(File)",
+      "write_file(File, Bytes)"
+    ]
+  },
+  "requirements": [
+    "compiler_builtin_resolver_std_fs_no_pkg",
+    "native_atto_susp_effects",
+    "owned_bytes_and_immutable_paths",
+    "scoped_tenant_root",
+    "deny_before_side_effect",
+    "independent_read_write_directory_remove_recursive_capabilities",
+    "rooted_path_and_symlink_swap_safety",
+    "actor_incarnation_ticket_fence",
+    "per_file_total_bytes_files_directories_handles_quota",
+    "nonparking_async_io",
+    "bounded_stream_backpressure",
+    "bounded_partial_write_progress",
+    "close_and_cancel_release",
+    "typed_fs_error_and_trap_result",
+    "file_class_handle_overloads_not_streams",
+    "file_instance_borrowed_single_cursor_and_explicit_close",
+    "file_instance_no_implicit_reopen_or_truncate",
+    "file_instance_nominal_actor_tenant_ownership"
+  ],
+  "positive_guest_cases": [
+    "binary_file_roundtrip",
+    "append_file",
+    "copy_file",
+    "rename_file",
+    "rename_directory",
+    "create_dir",
+    "create_dir_all",
+    "read_dir_sorted",
+    "remove_file",
+    "remove_dir",
+    "remove_dir_all",
+    "metadata",
+    "exists",
+    "is_file",
+    "is_dir",
+    "file_size",
+    "open_read_write_append",
+    "read_partial_eof",
+    "write_partial_progress",
+    "flush_close",
+    "stream_chunks_eof",
+    "stream_write",
+    "path_join_parent_file_name_extension_normalize",
+    "trap_fs_error_result",
+    "file_instance_open_seek_text_roundtrip",
+    "file_instance_binary_read_write_cursor",
+    "file_instance_helpers_preserve_open_handle",
+    "file_instance_overloads_no_stream"
+  ],
+  "negative_guest_cases": [
+    "fs_read_denied",
+    "fs_write_denied",
+    "fs_directory_denied",
+    "fs_delete_denied",
+    "fs_recursive_delete_denied",
+    "missing_file",
+    "already_exists",
+    "invalid_open_options",
+    "unregistered_builtin_no_artifact",
+    "spoofed_builtin_no_file_loader",
+    "path_absolute_traversal",
+    "symlink_escape",
+    "rename_swap_race",
+    "special_file_denied",
+    "cross_tenant_denied",
+    "cross_actor_handle_denied",
+    "stale_actor_generation",
+    "closed_handle",
+    "file_quota",
+    "tenant_quota",
+    "directory_quota",
+    "handle_quota",
+    "unknown_outcome_write_no_retry",
+    "cancel_once",
+    "invalid_utf8",
+    "file_instance_wrong_actor_denied",
+    "file_instance_wrong_tenant_denied",
+    "file_instance_forged_object_denied",
+    "file_instance_closed_rejected",
+    "file_instance_readonly_write_denied",
+    "file_instance_quota_preserves_cursor"
+  ],
+  "host_adapter_candidate": {
+    "repo": "atto-lang/atto-source.wasm",
+    "pull_request": 43,
+    "file": "runtime/hosted-io-v1.mjs",
+    "scope": "memory_only_vfs_host_only_unwired",
+    "host_v8_smoke": "31_ASCII_SHIM_CHECKS_PASS",
+    "node22_exact_head": "NOT_EXECUTED",
+    "compiled_atto_guest": "NOT_EXECUTED"
+  },
+  "backend_guest_status": [
+    {
+      "backend": "java",
+      "status": "NOT_EXECUTED",
+      "executed_cases": 0
+    },
+    {
+      "backend": "llvm",
+      "status": "NOT_EXECUTED",
+      "executed_cases": 0
+    },
+    {
+      "backend": "wasm",
+      "status": "NOT_EXECUTED",
+      "executed_cases": 0
+    },
+    {
+      "backend": "net",
+      "status": "NOT_EXECUTED",
+      "executed_cases": 0
+    },
+    {
+      "backend": "rs",
+      "status": "NOT_EXECUTED",
+      "executed_cases": 0
+    },
+    {
+      "backend": "forge",
+      "status": "NOT_EXECUTED",
+      "executed_cases": 0
+    },
+    {
+      "backend": "cranelift",
+      "status": "NOT_EXECUTED",
+      "executed_cases": 0
+    },
+    {
+      "backend": "js",
+      "status": "NOT_EXECUTED",
+      "executed_cases": 0
+    },
+    {
+      "backend": "atto",
+      "status": "NOT_EXECUTED",
+      "executed_cases": 0
+    },
+    {
+      "backend": "hdl",
+      "status": "NOT_EXECUTED",
+      "executed_cases": 0
+    },
+    {
+      "backend": "realtime",
+      "status": "NOT_EXECUTED",
+      "executed_cases": 0
+    }
+  ],
+  "release_gate": "No backend can claim implemented std.fs until a compiler-linked .atto guest executes real capability-scoped read/write/dir/handle/stream cases and negatives on exact-head CI; unsupported targets must fail closed.",
+  "positive_source_fixtures": [
+    {
+      "path": "fixtures/hosted-fs-api-v1/pass/file_lifecycle.atto",
+      "guest_status": "NOT_EXECUTED",
+      "harness": "preseed source, grant workspace, verify bytes/copy/append/rename"
+    },
+    {
+      "path": "fixtures/hosted-fs-api-v1/pass/directory_lifecycle.atto",
+      "guest_status": "NOT_EXECUTED",
+      "harness": "tenant root, nested/empty dirs, sorted listing, removal"
+    },
+    {
+      "path": "fixtures/hosted-fs-api-v1/pass/handles_streams.atto",
+      "guest_status": "NOT_EXECUTED",
+      "harness": "Read/Write OpenOptions, bytes, close, bounded read stream"
+    },
+    {
+      "path": "fixtures/hosted-fs-api-v1/pass/file_object_overloads.atto",
+      "guest_status": "NOT_EXECUTED",
+      "harness": "explicit read/write OpenOptions, nominal File instance, file.seek(0), read_text/write_text/read_file(File), no FileStream, explicit close"
+    }
+  ],
+  "path_semantics": {
+    "root_value": ".",
+    "root_dir_listing": "read_dir(root) allowed with READ",
+    "root_metadata": "metadata(root) reports directory",
+    "root_mutation": "always denied",
+    "root_parent": "None",
+    "child_parent": "Path('.')",
+    "root_file_name": "None",
+    "normalization": "lexical only; never erase parent traversal to bypass tenant root"
+  },
+  "file_instance_semantics": {
+    "mode": "borrowed_existing_affine_File_handle",
+    "type": "std.fs.File nominal class",
+    "no_stream_required": true,
+    "read": "current byte cursor to EOF; retains handle",
+    "write": "current byte cursor; mode + capability checked; no implicit truncate or close",
+    "rewind": "await file.seek(0)",
+    "stream_interchangeable": false,
+    "guest_compilation": "NOT_EXECUTED",
+    "host_adapter_test_scope": "host-only V8 shims; never compiled Atto guest"
+  }
+}

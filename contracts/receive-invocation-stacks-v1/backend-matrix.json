@@ -1,0 +1,55 @@
+{
+  "schema": "receive-invocation-stacks-v1",
+  "contract": "DRAFT",
+  "oracle_status": "SOURCE_FREE_MODEL_ONLY",
+  "guest_evidence_policy": "must include exact head/tree/source SHA, executed steps, compiled guest proof, and negative runtime proof; otherwise NOT_EXECUTED",
+  "requirements": [
+    "receive_stack_distinct",
+    "task_stack_distinct",
+    "serial_suspend_slot",
+    "concurrent_receive_disjoint",
+    "resume_carrier_independent",
+    "one_shot_wake",
+    "aggregate_stack_budget",
+    "physical_cleanup_before_restart",
+    "actor_fault_isolation",
+    "critical_borrow_no_escape"
+  ],
+  "backends": {
+    "java-graalvm": {
+      "status": "NOT_EXECUTED",
+      "commit_sha": null,
+      "tree_sha": null,
+      "executed_steps": null,
+      "guest_result": null
+    },
+    "llvm-native": {
+      "status": "NOT_EXECUTED",
+      "commit_sha": null,
+      "tree_sha": null,
+      "executed_steps": null,
+      "guest_result": null
+    },
+    "wasm": {
+      "status": "NOT_EXECUTED",
+      "commit_sha": null,
+      "tree_sha": null,
+      "executed_steps": null,
+      "guest_result": null
+    },
+    "forge": {
+      "status": "NOT_EXECUTED",
+      "commit_sha": null,
+      "tree_sha": null,
+      "executed_steps": null,
+      "guest_result": null
+    },
+    "dotnet-nativeaot": {
+      "status": "NOT_EXECUTED",
+      "commit_sha": null,
+      "tree_sha": null,
+      "executed_steps": null,
+      "guest_result": null
+    }
+  }
+}

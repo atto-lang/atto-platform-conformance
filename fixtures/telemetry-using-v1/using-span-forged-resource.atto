@@ -1,0 +1,6 @@
+// Always negative: symbol identity must be trusted; name-matching is unsafe.
+pub fnc main(): int {
+  using custom.span("forged") as fake {
+    return 0;
+  }
+}

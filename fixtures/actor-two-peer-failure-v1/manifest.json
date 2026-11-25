@@ -1,0 +1,204 @@
+{
+  "schemaVersion": 1,
+  "id": "actor-two-peer-failure-v1",
+  "language": "AttoLang",
+  "canonicalExtension": ".atto",
+  "scope": "one canonical two-data-actor source for isolated heaps, guest stack budget, throw/raise/panic, lexical recover, actor hooks and supervisor CONTROL",
+  "source": "fixtures/actor-two-peer-failure-v1/two-peer-failure-matrix.atto",
+  "sourceGitBlobSha1": "eaac813262ca184930ba124180ed692e21329969",
+  "evidenceLevel": "SOURCE_AUTHORED_ONLY",
+  "compilationAdmission": "UNVERIFIED_PENDING_PORTABLE_SOURCE_ABI",
+  "expectedExitCode": 0,
+  "expectedStdout": "ACTOR_TWO_PEER_V1_OK|6|42\n",
+  "sourceAbiDependencies": [
+    "typed FaultError extends Error construction",
+    "actor-scoped on_throw and on_raise FailureDisposition.recover",
+    "lexical defer recover handling raise before on_raise",
+    "Root.spawn_child with authenticated child-incarnation",
+    "Root.control_events reserved authenticated notice stream",
+    "Root.control_event_count non-consuming read",
+    "actor reference end and get_done failure semantics",
+    "compile-time guest stack frame budget before native overflow",
+    "multi-case async while/if source lowering, root stop and get_done"
+  ],
+  "actors": [
+    "FaultWorker",
+    "Witness"
+  ],
+  "supervisor": "Root",
+  "actorInstancePolicy": "one live Witness plus one fresh FaultWorker incarnation per scenario, Root supervises",
+  "witnessPayload": 42,
+  "cases": [
+    {
+      "id": "caught-throw",
+      "mode": 0,
+      "faultResponse": 100,
+      "guestCatch": 1,
+      "lexicalRecover": 0,
+      "actorOnThrow": 0,
+      "actorOnRaise": 0,
+      "supervisorOnPanic": 0,
+      "controlNotices": 0,
+      "postTurnResponse": 1007,
+      "witnessResponse": 42
+    },
+    {
+      "id": "uncaught-throw-actor-recovery",
+      "mode": 1,
+      "faultResponse": 101,
+      "guestCatch": 0,
+      "lexicalRecover": 0,
+      "actorOnThrow": 1,
+      "actorOnRaise": 0,
+      "supervisorOnPanic": 0,
+      "controlNotices": 0,
+      "postTurnResponse": 1007,
+      "witnessResponse": 42
+    },
+    {
+      "id": "raised-lexical-recover",
+      "mode": 2,
+      "faultResponse": 202,
+      "guestCatch": 0,
+      "lexicalRecover": 1,
+      "actorOnThrow": 0,
+      "actorOnRaise": 0,
+      "supervisorOnPanic": 0,
+      "controlNotices": 0,
+      "postTurnResponse": 1007,
+      "witnessResponse": 42
+    },
+    {
+      "id": "raised-actor-hook-recovery",
+      "mode": 3,
+      "faultResponse": 203,
+      "guestCatch": 0,
+      "lexicalRecover": 0,
+      "actorOnThrow": 0,
+      "actorOnRaise": 1,
+      "supervisorOnPanic": 0,
+      "controlNotices": 0,
+      "postTurnResponse": 1007,
+      "witnessResponse": 42
+    },
+    {
+      "id": "terminal-panic",
+      "mode": 4,
+      "faultResponse": null,
+      "guestCatch": 0,
+      "lexicalRecover": 0,
+      "actorOnThrow": 0,
+      "actorOnRaise": 0,
+      "supervisorOnPanic": 1,
+      "controlNotices": 1,
+      "expectedNoticeKind": "panic",
+      "noGuestTeardown": true,
+      "postTurnResponse": null,
+      "witnessResponse": 42
+    },
+    {
+      "id": "guest-stack-budget-terminal",
+      "mode": 5,
+      "faultResponse": null,
+      "guestCatch": 0,
+      "lexicalRecover": 0,
+      "actorOnThrow": 0,
+      "actorOnRaise": 0,
+      "supervisorOnPanic": 0,
+      "controlNotices": 1,
+      "expectedNoticeKind": "guest_stack_budget_exhausted",
+      "guestFrameBudgetBeforeNativeOverflow": true,
+      "postTurnResponse": null,
+      "witnessResponse": 42
+    }
+  ],
+  "invariants": {
+    "sameSourceBytesAcrossBackends": true,
+    "noNativeFaultRecoveryOnSharedCarrier": true,
+    "noActorLocalOnPanic": true,
+    "noCrossActorMutableRef": true,
+    "actorHeapProvenanceMeasuredOutsideGuest": true,
+    "postFailureWitnessRunsOnReusedCarrier": true,
+    "supervisorControlsAreAuthenticated": true,
+    "exactlyOneTerminalNoticePerActorIncarnation": true,
+    "actorSourceMustNotPrintSuccessUnconditionally": true,
+    "guestStdoutAloneInsufficient": true,
+    "disabledCrossOrgSourceCopy": true,
+    "faultActorStateMutationBeforeFault": true,
+    "panicCatchBypassExplicit": true,
+    "stackRecoverCatchBypassExplicit": true,
+    "guestSuccessAfterCleanup": true
+  },
+  "backends": {
+    "java": {
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "candidatePrs": [
+        2505,
+        2713
+      ],
+      "guestCompiler": "NOT_EXECUTED",
+      "guestNative": "NOT_EXECUTED",
+      "heapIsolation": "NOT_EXECUTED",
+      "stackContainment": "NOT_EXECUTED",
+      "failureHooks": "NOT_EXECUTED",
+      "supervisorControl": "NOT_EXECUTED",
+      "receipt": null
+    },
+    "llvm": {
+      "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+      "candidatePrs": [
+        1620
+      ],
+      "guestCompiler": "NOT_EXECUTED",
+      "guestNative": "NOT_EXECUTED",
+      "heapIsolation": "NOT_EXECUTED",
+      "stackContainment": "NOT_EXECUTED",
+      "failureHooks": "NOT_EXECUTED",
+      "supervisorControl": "NOT_EXECUTED",
+      "receipt": null
+    },
+    "net": {
+      "repository": "ores-truffle-oreslang/oreslang-source.net",
+      "candidatePrs": [
+        430,
+        432,
+        437,
+        439
+      ],
+      "guestCompiler": "NOT_EXECUTED",
+      "guestNative": "NOT_EXECUTED",
+      "heapIsolation": "NOT_EXECUTED",
+      "stackContainment": "NOT_EXECUTED",
+      "failureHooks": "NOT_EXECUTED",
+      "supervisorControl": "NOT_EXECUTED",
+      "receipt": null
+    }
+  },
+  "evidenceRequirements": [
+    "exact source PR HEAD and tree SHA per backend",
+    "fixture blob SHA equal to canonical source Git blob",
+    "compiler source HEAD and executable artifact digest",
+    "real compiled guest on JVM/GraalVM, native LLVM O0 and O2 with ASan/UBSan, .NET Linux and Windows NativeAOT",
+    "nonempty independently read GitHub job steps attached to actual runner and workflow/run/job IDs",
+    "bounded per-case runtime timeout",
+    "per actor heap identity/epoch/accounting and no cross-actor storage overlap",
+    "logical guest frame exhaustion before native stack overflow; carrier reuse and witness later reply",
+    "independently observed throw/catch/lexical recover/on_throw/on_raise hook counts and no double invocation",
+    "authenticated parent CONTROL with actor id/incarnation/kind and sequence, mailbox saturation probe",
+    "actor-local on_panic rejection and no panic-time guest teardown",
+    "stale actor refs revoked and exactly-once physical retirement/restart accounting",
+    "exact stdout/exit code and no replay or unhandled native crash",
+    "independent review of evidence and permission to use any private CI destination"
+  ],
+  "promotion": {
+    "certified": false,
+    "requiresExecutedGuest": true,
+    "requiresExactHead": true,
+    "requiresIndependentEvidenceReview": true,
+    "allowsHostModelAsGuest": false,
+    "allowsParserOnlyAsGuest": false,
+    "allowsZeroStepRun": false,
+    "allowsSyntheticReceipts": false,
+    "allowsCrossOrgPrivateSourceCopyWithoutApproval": false
+  }
+}

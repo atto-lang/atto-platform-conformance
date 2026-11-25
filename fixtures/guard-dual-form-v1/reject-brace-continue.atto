@@ -1,0 +1,8 @@
+// Reject: skipping an iteration never returns from the function.
+pub fnc main(): int {
+  loop {
+    guard false { continue; }
+    return 42;
+  }
+  return 0;
+}

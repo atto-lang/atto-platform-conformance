@@ -1,0 +1,6 @@
+// SOURCE-ONLY CONTRACT: unresolved exports cannot create phantom bindings.
+// expect: REJECT, diagnostic: EXPORT_UNKNOWN_TARGET, no output artifact.
+export pub Missing;
+pub fnc main(): int {
+  return 42;
+}
