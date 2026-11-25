@@ -1,0 +1,82 @@
+{
+  "schema": "atto.m4.hardened-native-execution-evidence.v1",
+  "date_utc": "2026-11-07",
+  "source": {
+    "fixture": "fixtures/m4/shared_actor_counter.atto",
+    "git_blob_sha": "0f9aca24deb195d7f604a1bfb944e237629803f4",
+    "sha256": "163413d28002134f7e87e8ad710d3cf3ef64ecdee6dab81b5df3b0209ca2b8b8"
+  },
+  "llvm": {
+    "pr": "https://github.com/atto-lang/atto-source.llvm/pull/3",
+    "head_sha": "fa180dec484930d5b3ce7393aabde71628c76f1a",
+    "run_url": "https://github.com/atto-lang/atto-source.llvm/actions/runs/42331027012",
+    "conclusion": "success",
+    "native_artifact_sha256": "942ed88cf6ec40c24a3d04fb691fbe8f1dc1f19de95a74b29b8f14c1cfc9f316",
+    "source_blob_verification": 57,
+    "observed": {
+      "source_main_return": 43,
+      "independent_host_reply_trace_digest": 7021,
+      "original_fixture_message_sends": 3,
+      "original_fixture_actor_stops": 2,
+      "stale_actor_handle_denied": true,
+      "actor_reincarnation_fresh_state": true,
+      "neighbor_tenant_survived": true,
+      "wrong_digest_native_loader_refused": true,
+      "byte_tampered_native_loader_refused": true,
+      "asan_ubsan_host_passed": true
+    },
+    "scope": "57 byte-identical original compiler/runtime Git blobs plus separate reviewed M4 test extension; LLVM generated wasm32 guest compiled via wasm2c/Clang, host side sanitizer instrumentation only; no complete source tree or hostile native-code process sandbox"
+  },
+  "graalvm": {
+    "pr": "https://github.com/atto-lang/atto-source.java/pull/3",
+    "head_sha": "f4c9c45b21fd04d1e60cb7dd96ab3fb52f90fc6a",
+    "run_url": "https://github.com/atto-lang/atto-source.java/actions/runs/42331223905",
+    "conclusion": "success",
+    "native_artifact_sha256": "8d800d4596a27c930bd52fbd12e4db3268450ac842263a4939a26edd6495f99b",
+    "observed": {
+      "source_main_return": 43,
+      "synchronous_actor_sends": 3,
+      "actor_arena_closes": 2,
+      "rolling_guest_digest": 7021,
+      "gc_collections_delta": 0,
+      "original_parser_tests": 17,
+      "new_hardening_tests": 14,
+      "seeded_actor_message_traces": 96,
+      "emitted_java_jvm_atomic_rollback_probe": true,
+      "emitted_java_jvm_ffm_arena_retirement_fence": true
+    },
+    "limits": {
+      "max_actor_instances": 64,
+      "max_source_sends": 1024
+    },
+    "scope": "real statically generated application-specific GraalVM Epsilon Native Image; additional overflow-atomicity/closed-arena probe was run on generated Java code in a separate JVM before the native-image build, not as a Native Image test"
+  },
+  "conformance": {
+    "receipt_checker_pr": "https://github.com/atto-lang/atto-platform-conformance/pull/9",
+    "receipt_checker_merge_sha": "5e7bf66219a96055ede9c143c502d8353011f326",
+    "structural_negative_tests": 31,
+    "contract_status_sync_pr": "https://github.com/atto-lang/atto-platform-conformance/pull/10",
+    "contract_status_sync_merge_sha": "7eba6a7cc5a1db312e747dc268a66bdb6b9ee149",
+    "contract_checks": 15
+  },
+  "verified_observation": "EXECUTED_SAME_SOURCE_NATIVE_ACTOR_SUBSET_HARDENING",
+  "not_verified": [
+    "GitHub API observations were inspected independently at authoring time but this checked-in JSON is not signed CI attestation",
+    "No equivalence proof for actor concurrency: GraalVM sends are synchronous, LLVM digest is from separate native host calls",
+    "No complete AttoLang parser, HIR/MIR, ownership checker, sealed state parser or RT borrow/take/share verification",
+    "No untrusted native hostile tenant process sandbox guarantee; 2-tenant survival does not imply arbitrarily malicious memory isolation",
+    "No complete GraalVM runtime bounded heap proof: Epsilon disables collection but does not reclaim managed allocations",
+    "No LLVM hard-real-time qualification or entire full-source tree / branch-protected release CI",
+    "No WASM actor ABI, Forge or .NET actor-source parity"
+  ],
+  "release_gates": {
+    "same_source_narrow_native_guest": "OBSERVED_TWO_BACKENDS",
+    "atomicity_jvm_probe": "OBSERVED_GRAAL_EMITTED_JAVA_JVM_ONLY",
+    "tenant_lifecycle_host": "OBSERVED_LLVM_NATIVE_GUEST_HARNESS",
+    "independent_async_actor_scheduler": "NOT_EXECUTED",
+    "full_ownership_borrow_checker": "NOT_EXECUTED",
+    "security_hardened_tenant_sandbox": "NOT_EXECUTED",
+    "long_lived_zero_gc_heap_bound": "NOT_EXECUTED",
+    "five_backend_parity": "NOT_EXECUTED"
+  }
+}

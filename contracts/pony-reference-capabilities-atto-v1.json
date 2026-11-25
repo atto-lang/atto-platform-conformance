@@ -1,0 +1,167 @@
+{
+  "schema": "atto.pony-inspired-reference-capability-safety.v1",
+  "status": "REFERENCE_MODEL_AND_CONTRACT_ONLY_NO_BACKEND_FULL_IMPLEMENTATION",
+  "sources": [
+    "https://tutorial.ponylang.io/reference-capabilities/reference-capabilities",
+    "https://tutorial.ponylang.io/reference-capabilities/passing-and-sharing",
+    "https://tutorial.ponylang.io/reference-capabilities/recovering-capabilities.html",
+    "https://tutorial.ponylang.io/reference-capabilities/combining-capabilities"
+  ],
+  "scope": "AttoLang-native syntax with Pony-inspired safety; do not introduce Pony keywords as language aliases",
+  "related": [
+    "contracts/m5-ownership-supervisor-v1.json",
+    "contracts/m4-shared-actor-counter-v1.json",
+    "atto-lang/atto-common-source/contracts/actor-tenant-isolation-v1.json"
+  ],
+  "capabilities": [
+    "iso",
+    "trn",
+    "ref",
+    "val",
+    "box",
+    "tag"
+  ],
+  "mapping": {
+    "iso": "rt take transfers the entire exclusive object graph; source capability invalidated only after admission",
+    "trn": "uniquely mutable construction owner may be deep-frozen; no direct send while local read aliases remain",
+    "ref": "actor-local mutable reference; never cross an actor boundary",
+    "val": "rt share on a PROVED deeply immutable reachable object graph; permanent freeze, not revocable read-only loan",
+    "box": "rt borrow read-only local loan; cannot send between actors just because it cannot write",
+    "tag": "opaque actor/object identity; no read/write/host capability, actor messaging requires separate authorization",
+    "recover": "checked graph isolation construction region; outer references restricted to safe immutables, opaque tags, or consumed isolated graph"
+  },
+  "sendable_to_other_actor": [
+    "iso_consumed",
+    "val",
+    "tag"
+  ],
+  "not_sendable_to_other_actor": [
+    "trn",
+    "ref",
+    "box",
+    "borrow",
+    "borrow_mut",
+    "raw_pointer",
+    "foreign_tenant_handle"
+  ],
+  "viewpoint_adaptation": {
+    "columns": [
+      "iso",
+      "trn",
+      "ref",
+      "val",
+      "box",
+      "tag"
+    ],
+    "rows": {
+      "iso": [
+        "iso",
+        "tag",
+        "tag",
+        "val",
+        "tag",
+        "tag"
+      ],
+      "trn": [
+        "iso",
+        "box",
+        "box",
+        "val",
+        "box",
+        "tag"
+      ],
+      "ref": [
+        "iso",
+        "trn",
+        "ref",
+        "val",
+        "box",
+        "tag"
+      ],
+      "val": [
+        "val",
+        "val",
+        "val",
+        "val",
+        "val",
+        "tag"
+      ],
+      "box": [
+        "tag",
+        "box",
+        "box",
+        "val",
+        "box",
+        "tag"
+      ],
+      "tag": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    }
+  },
+  "field_write_whitelist": {
+    "iso": [
+      "iso",
+      "val",
+      "tag"
+    ],
+    "trn": [
+      "iso",
+      "trn",
+      "val",
+      "tag"
+    ],
+    "ref": [
+      "iso",
+      "trn",
+      "ref",
+      "val",
+      "box",
+      "tag"
+    ],
+    "val": [],
+    "box": [],
+    "tag": []
+  },
+  "graph_invariants": [
+    "checked transfer/freeze is transitive over every reachable edge, not just the root",
+    "mutable object edges cannot point to independently writable external graphs under the pretense of isolation",
+    "cycles within the exclusive graph may freeze safely after a full reachability proof",
+    "temporary borrowed read view is never equivalent to permanent globally immutable val",
+    "failed mailbox admission preserves sender owner, graph version, native charge, and receiver state",
+    "successful admitted same-tenant take revokes all sender authorities, increments graph version, and queues exactly one new owner token",
+    "cross-tenant move must use broker-authorized deep copy/serialization, no raw pointer or mutable graph alias transfer",
+    "immutable frozen graphs may be read by multiple same-tenant actors, never written or thawed",
+    "revoked, forged, stale-generation and guessed tokens fail; actor ID strings are not authority",
+    "actor tag permits only authorized messaging; no state field access or privileged system actions",
+    "recover forbids mutable outer captures and escape of mutable aliases, including through cycles",
+    "no mutable borrow or other unpinned loan crosses actor await/select, critical region or retirement",
+    "tenant or actor revocation must invalidate all derived capabilities and pending transfers",
+    "zero-copy graph transfer is permitted only within a validated same-tenant memory domain; never implied by a host model"
+  ],
+  "delivery": {
+    "capacity": "bounded per actor",
+    "admission": "linearization point is atomically coupled to owner-token invalidation on success",
+    "failure": "typed MailboxFull or StaleHandle; sender retains owner on full or denied admission",
+    "supervisor": "CONTROL is independent of ordinary data capacity, cannot be intercepted by failing actor"
+  },
+  "backend_evidence": {
+    "llvm": "NARROW_SOURCE_ACTOR_AOT_EXECUTED; GRAPH_CAPABILITY_FULL_CHECKER_NOT_EXECUTED",
+    "graalvm-native": "NARROW_STATIC_SOURCE_ACTOR_AOT_AND_HOST_WORKER_EXECUTED; GRAPH_CAPABILITY_FULL_CHECKER_NOT_EXECUTED",
+    "wasm": "GRAPH_CAPABILITY_GUEST_NOT_EXECUTED",
+    "forge": "GRAPH_CAPABILITY_GUEST_NOT_EXECUTED",
+    "net": "GRAPH_CAPABILITY_GUEST_NOT_EXECUTED"
+  },
+  "release_gate": "NO_PRODUCTION_PONY_STYLE_REFERENCE_CAPABILITY_PARITY_OR_DEEP_FREEZE_CERTIFICATION",
+  "evidence_limits": [
+    "Reference table and finite model cannot demonstrate a compiler's viewpoint adaptation or borrow checker.",
+    "No Pony source to Pony binary translation is required or implied.",
+    "LLVM and GraalVM restricted source AOT experiments are not a full Pony-style graph transfer implementation.",
+    "No full five-backend compiled guest proofs, hostile tenant security, long-lived zero-GC heap bounds, or actor scheduler equivalence."
+  ]
+}

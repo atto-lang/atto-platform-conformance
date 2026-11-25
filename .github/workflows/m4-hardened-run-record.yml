@@ -1,0 +1,35 @@
+name: M4 hardened dual-native executed-run record check
+on:
+  pull_request:
+    paths:
+      - 'evidence/m4/hardened-dual-native-actor-runs-20261107.json'
+      - 'tests/test_m4_hardened_run_record.py'
+      - '.github/workflows/m4-hardened-run-record.yml'
+  push:
+    paths:
+      - 'evidence/m4/hardened-dual-native-actor-runs-20261107.json'
+      - 'tests/test_m4_hardened_run_record.py'
+      - '.github/workflows/m4-hardened-run-record.yml'
+permissions:
+  contents: read
+jobs:
+  immutable-record-structure:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact checked-out source commit
+        env:
+          EXPECTED: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED"
+          git diff --quiet HEAD --
+      - name: Validate 18 historical structural/negative checks
+        run: python3 -m unittest discover -s tests -p test_m4_hardened_run_record.py -v
+      - name: No fake authentication
+        run: |
+          echo 'STRUCTURAL_HISTORICAL_RECORD_CHECK_ONLY_NOT_SIGNED_CI_ATTESTATION'
+          echo 'Source backend exact-head runs were independently inspected and linked in the record'

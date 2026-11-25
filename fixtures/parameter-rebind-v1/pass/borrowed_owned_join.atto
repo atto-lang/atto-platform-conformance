@@ -1,0 +1,26 @@
+// expect-exit: 15
+define class Foo as
+    pub let int foo = 5;
+end
+
+fnc choose(rebind mut Foo f, bool replace): int {
+    if replace then
+        f = new Foo();
+    fi
+    f.foo = f.foo + 1;
+    return f.foo;
+}
+
+pub fnc main(): int {
+    val mut Foo original = new Foo();
+    original.foo = 3;
+    val owned_path = choose(mut original, true);
+    val original_after_owned_path = original.foo;
+    val borrowed_path = choose(mut original, false);
+    let int checks = 0;
+    if owned_path eq 6 then checks = checks + 8; fi
+    if original_after_owned_path eq 3 then checks = checks + 4; fi
+    if borrowed_path eq 4 then checks = checks + 2; fi
+    if original.foo eq 4 then checks = checks + 1; fi
+    return checks;
+}

@@ -1,0 +1,8 @@
+// Reject: break targeting an enclosing loop is not a function return.
+pub fnc main(): int {
+  loop {
+    guard false { break; }
+    return 42;
+  }
+  return 0;
+}

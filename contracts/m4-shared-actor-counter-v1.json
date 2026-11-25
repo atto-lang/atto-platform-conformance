@@ -1,0 +1,108 @@
+{
+  "schema": "atto.m4.cross-backend-actor-fixture.v1",
+  "version": 1,
+  "fixture": "fixtures/m4/shared_actor_counter.atto",
+  "source_git_blob_sha": "0f9aca24deb195d7f604a1bfb944e237629803f4",
+  "source_origin": {
+    "repository": "atto-lang/atto-source.java",
+    "commit": "d2a776e037e391c3c88144df8949f06278a5ca68",
+    "path": "fixtures/actor_counter.atto"
+  },
+  "scope": "exact identical .atto source bytes, not identical machine code or security sandbox",
+  "actor_kind": "Counter",
+  "actor_instances": 2,
+  "operations": [
+    {
+      "actor": "first",
+      "kind": "spawn"
+    },
+    {
+      "actor": "second",
+      "kind": "spawn"
+    },
+    {
+      "actor": "first",
+      "kind": "send",
+      "value": 7,
+      "expected_state": 7
+    },
+    {
+      "actor": "second",
+      "kind": "send",
+      "value": 9,
+      "expected_state": 9
+    },
+    {
+      "actor": "first",
+      "kind": "send",
+      "value": 8,
+      "expected_state": 15
+    },
+    {
+      "actor": "first",
+      "kind": "stop"
+    },
+    {
+      "actor": "second",
+      "kind": "stop"
+    }
+  ],
+  "expected": {
+    "return_i64": 43,
+    "sends": 3,
+    "stops": 2,
+    "final_actor_states": {
+      "first": 15,
+      "second": 9
+    },
+    "rolling_digest_rule": "digest = checked_i64(digest * 31 + post_message_state) in global send order, starting from 0",
+    "rolling_digest": 7021
+  },
+  "required_evidence": {
+    "compilation": "real .atto compiler generates application-specific native guest code (no runtime interpreter)",
+    "source_identity": "exact source Git blob SHA and SHA256 in compiled-guest manifest",
+    "runtime": "native binary/tenant VM executes the guest; provide exact executable CI job SHA",
+    "observable_guest_return": "return 43 must be observed in executed native guest",
+    "extended_message_telemetry": "message counts and rolling digest may be claimed only if runtime actually exposes them",
+    "tenant_security": "independently enforced and adversarially tested; never implied by actor-owned arenas",
+    "zero_gc": "independently measured with collector counters, RSS bounds and arena reclamation"
+  },
+  "backend_evidence": {
+    "llvm": {
+      "status": "OBSERVED_SOURCE_COMPILED_GUEST_NARROW_SCOPE",
+      "evidence_record": "evidence/m4/dual-native-actor-observations-20261107.json",
+      "workflow_url": "https://github.com/atto-lang/atto-source.llvm/actions/runs/42328161827",
+      "scope": "native compiled main return 43; message digest 7021 observed through separate host calls, not instrumented native main"
+    },
+    "graalvm-native": {
+      "status": "OBSERVED_SOURCE_COMPILED_GUEST_NARROW_SCOPE",
+      "evidence_record": "evidence/m4/dual-native-actor-observations-20261107.json",
+      "workflow_url": "https://github.com/atto-lang/atto-source.java/actions/runs/42327847961",
+      "scope": "real Epsilon Native Image of restricted static actor syntax, synchronous guest messages and 0 GC collections in this short run"
+    },
+    "wasm": {
+      "status": "UNSUPPORTED_ACTOR_ABI"
+    },
+    "forge": {
+      "status": "NOT_EXECUTED"
+    },
+    "net": {
+      "status": "NOT_EXECUTED"
+    }
+  },
+  "claim_levels": [
+    "source-blob-identical",
+    "guest-compiled",
+    "guest-executed",
+    "return-observed",
+    "message-trace-observed",
+    "security-enforced"
+  ],
+  "notes": [
+    "Do not label a host C test, byte-identical source, scalar-only AOT, or LLVM linker build as cross-backend actor-executed parity.",
+    "LLVM tenant VM must report return/result evidence independently of GraalVM's synchronous-only pilot; missing instrumentation remains NOT_OBSERVED.",
+    "Actions on PR merge refs or incomplete/check-skipped jobs are not accepted as exact source-head guest proof.",
+    "This contract records the restricted M4 baseline only; completed historical run details are in the referenced immutable evidence record. Later hardening PRs require their own exact-head execution and do not retroactively certify the old runs.",
+    "OBSERVED_SOURCE_COMPILED_GUEST_NARROW_SCOPE is not equivalent independent scheduling, full language parity, production hostile tenant isolation or sustained zero-GC heap boundedness."
+  ]
+}
