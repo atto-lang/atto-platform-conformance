@@ -41,7 +41,12 @@ test('all cases contain complete, real .atto protocol declarations', () => {
       'pub fnc main(): int',
       'return 0;'
     ]) {
-      if (entry.id === 'wrong_actor_kind' && mark.startsWith('define actor')) continue;
+      if (mark.startsWith('define actor') && entry.id === 'wrong_actor_kind') continue;
+      if (mark.startsWith('define actor') && entry.id === 'forward_declaration_only') {
+        assert.ok(src.includes('declare actor Connection implements ConnectionProtocol;'));
+        assert.ok(!src.includes(mark));
+        continue;
+      }
       assert.ok(src.includes(mark), entry.file + ': missing ' + mark);
     }
     assert.match(src, /on Query\(Sql\) -> Connected replies QueryReply/);
