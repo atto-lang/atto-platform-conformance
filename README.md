@@ -365,3 +365,25 @@ Every listed backend is currently `not_executed`; this does NOT compile Atto sou
 - `python3 bin/validate_shared_ownership_and_guards.py` checks source/manifest integrity **only**. It cannot certify parser, compiler, runtime behavior or backend parity.
 - A backend may claim **PASS** only after positive guests execute and negatives reject with zero emitted guest bytes at the exact source SHA, with meaningful stepful CI receipts; guard race/scheduler/cancellation testing is also required.
 - [Normative draft specification](https://github.com/atto-lang/atto-spec/pull/90). Until executable implementation catches up, cases are `TARGET_NOT_EXECUTED`.
+
+## Channel / return-position match conformance v1
+
+- [Contract and backend evidence matrix](contracts/channel-return-ownership-v1.json)
+- Fixtures: `fixtures/channel-return/{pass,fail,pending}`
+- Metadata validator: `python3 -m unittest tests/test_channel_return_ownership_contract.py`
+
+Rust/Wasm browser guest execution has an exact-tree CI receipt, but its
+`abandon_read` cleanup helper is **host-only**. Automatic guest cleanup
+on `^`/`return`, thrown errors, and actor termination is not yet implemented.
+The `pending` case is a **known unimplemented ownership diagnostic**, not a
+passing fixture. Java, LLVM, .NET, independent Wasm, and Forge require their
+own compiled-guest receipts before any parity claim.
+
+## Process stdio channel endpoint parity (target only)
+
+- Manifest: [stdio-channel-endpoints-v1](contracts/stdio-channel-endpoints-v1.json)
+- Guest source candidates: `fixtures/stdio-channel/{pass,fail}`
+- Source-only integrity validator: `node --test tests/stdio-channel-endpoints.test.mjs`
+- Normative target: [atto-spec #32](https://github.com/atto-lang/atto-spec/pull/32), `language/stdio-channel-endpoints-v1.md`
+
+All 11 `atto-source.*` targets remain **NOT_EXECUTED** for this fixture. Source-only validation must never be presented as guest-runtime parity. Some targets (notably HDL) must explicitly reject process-stdio profiles rather than synthesize a host channel.

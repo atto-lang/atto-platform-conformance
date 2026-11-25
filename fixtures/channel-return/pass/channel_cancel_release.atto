@@ -1,0 +1,35 @@
+// expect-exit: 42
+// Cancel does not consume the Future; await is required before release.
+pub susp fnc main(): int {
+  val opened: Result<Channel<int>,IoError> = Channel<int>.bounded(0);
+  ^ match opened over
+    on Err(error) -> { return -10; }
+    on Ok(channel) -> {
+      val pending: Future<Result<Option<int>,IoError>> = nb readch channel;
+      val cancelled: Result<void,IoError> = pending.cancel();
+      val closed: Result<void,IoError> = channel.close();
+      val busy: Result<void,IoError> = channel.release();
+      val outcome: Result<Option<int>,IoError> = await pending;
+      val released: Result<void,IoError> = channel.release();
+      ^ match busy over
+        on Ok -> { return -11; }
+        on Err(error) -> {
+          ^ match cancelled over
+            on Err(error) -> { return -12; }
+            on Ok -> {
+              ^ match released over
+                on Err(error) -> { return -13; }
+                on Ok -> {
+                  ^ match outcome over
+                    on Ok(item) -> { return -14; }
+                    on Err(error) -> { return 42; }
+                  end
+                }
+              end
+            }
+          end
+        }
+      end
+    }
+  end
+}
