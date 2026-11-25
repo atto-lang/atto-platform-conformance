@@ -173,6 +173,12 @@ These results verify the **native-hosted Rust compiler emitting Wasm**. They
 do not prove a wasm32-hosted compiler, independent Java/LLVM/.NET/Forge/Wasm
 backends, or general exception-cleanup and struct-construction safety.
 
+## Rust-only read-only conformance case and capability planner (draft PR #21)
+
+The standalone `bin/plan-capabilities.rs` replaces the unmerged Node-based AOT planning prototype on this PR, while preserving its seven-profile/six-case source-only inventory. `--aot-contract contracts/aot-gc-tenant-evidence-v1.json` emits 42 NOT_EXECUTED entries, verifying the exact canonical contract Git blob. `--inventory tests/fixtures/capability-inventory-v1.tsv` emits the complete 11-backend/10-feature inventory (110 NOT_EXECUTED entries); `--backend llvm` narrows either output without changing evidence status.
+
+The checked-in TSV is a [pinned draft snapshot](docs/capability-inventory-provenance.md) of `atto-target-profiles` PR #3, not a second normative schema. `rustc --edition=2021 --test bin/plan-capabilities.rs` runs Rust-only adversarial checks. New planner CI verifies exact Git source hashes and runs both CLIs, but **never executes a compiled .atto guest** and never yields an authenticated PASSED result. Existing legacy receipt verifiers remain untouched and are not replaced by this planning tool.
+
 ## Legacy provenance and transfer verification
 
 The archived predecessor is `ores-truffle-oreslang/oreslang-platform-conformance`; the current repository is `atto-lang/atto-platform-conformance`. These are distinct repository identities, not evidence of an original-ID transfer or equivalent implementation. Preserve working legacy `.ores` fixtures and historical package/CLI aliases until separately verified replacements exist. Cross-backend guest fixtures, negative-case manifests and executed parity receipts belong here; compiler feature implementation belongs in the backend repositories.
