@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -30,8 +30,13 @@ try {
     if (build.error) throw build.error;
     assert.equal(build.signal, null, source);
     if (expected.kind === "diagnostic") {
-      assert.notEqual(build.status, 0, source);
-      assert.ok(build.stderr.includes(expected.category + ":"), source + ": " + build.stderr);
+      assert.equal(build.status, 1, source + " must be semantic rejection");
+      const prefix = input + ": ";
+      const diagnostics = build.stderr.trim().split(/\r?\n/);
+      assert.equal(diagnostics.length, 1, source + ": " + build.stderr);
+      assert.ok(diagnostics[0].startsWith(prefix), source + ": " + build.stderr);
+      const category = diagnostics[0].slice(prefix.length).match(/^\d+:\d+: ([A-Z0-9_]+): /)?.[1];
+      assert.equal(category, expected.category, source + ": " + build.stderr);
       assert.equal(existsSync(output), false, source + " published rejected artifact");
       results.push({source,sourceSha256:sha(sourceBytes),observed:expected});
     } else {
