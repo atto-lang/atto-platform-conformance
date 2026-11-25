@@ -1,0 +1,168 @@
+{
+  "schemaVersion": 1,
+  "contract": "oreslang.structural-five-backend.current-v1",
+  "status": "target-only-not-runtime-evidence",
+  "backends": [
+    "java",
+    "llvm",
+    "wasm",
+    "js",
+    "net"
+  ],
+  "semantics": {
+    "structuralViews": "explicit-readonly-nonescaping",
+    "ordinaryNominal": "no-implicit-structural",
+    "slotRepresentation": "no-implicit-numeric-reinterpretation",
+    "tuple": "exact-arity-kind",
+    "optionalTailWidth": "future-proposal-not-enabled",
+    "artifactOnRejectedCompilerCase": false
+  },
+  "cases": [
+    {
+      "id": "readonly-field-width",
+      "facet": "readonly",
+      "admission": "accept",
+      "source": "define interface HasId\n  id: int;\nend\ndefine class Candidate as\n  pub val int id = 11;\n  pub val string extra = \"x\";\nend\nfnc take(structural HasId x): int { return x.id; }\npub fnc main(): int { return take(new Candidate()); }\n",
+      "expectedMain": "11"
+    },
+    {
+      "id": "readonly-record-nested",
+      "facet": "readonly",
+      "admission": "accept",
+      "source": "fnc take(structural { inner: { value: int } } x): int { return x.inner.value; }\n"
+    },
+    {
+      "id": "entry-explicit-view",
+      "facet": "entry",
+      "admission": "accept",
+      "source": "fnc take(structural Entry<int,string> x): string { return x.value; }\n"
+    },
+    {
+      "id": "tuple-exact",
+      "facet": "tuple",
+      "admission": "accept",
+      "source": "fnc take(structural Tuple<int,string> x): string { return x[1]; }\n"
+    },
+    {
+      "id": "generic-method-alpha",
+      "facet": "generic-method",
+      "admission": "accept",
+      "source": "define interface Echo\n fnc echo<T>(T x) => T;\nend\ndefine class Candidate as\n pub echo<U>(U x): U { return x; }\nend\nfnc take(structural Echo x): int { return x.echo(7); }\n"
+    },
+    {
+      "id": "match-runtime-shape",
+      "facet": "patterns",
+      "admission": "accept",
+      "source": "define interface HasId\n id: int;\nend\nfnc test(record{ id: int } x): int {\n match x over\n  on structural HasId v -> { return v.id; }\n  on _ -> { return 0; }\n end\n}\n"
+    },
+    {
+      "id": "nominal-does-not-widen",
+      "facet": "nominal",
+      "admission": "reject",
+      "source": "define class A as pub val int id = 1; end\ndefine class B as pub val int id = 1; end\nfnc take(A x): int { return x.id; }\nfnc bad(): int { return take(new B()); }\n"
+    },
+    {
+      "id": "private-field-cannot-prove",
+      "facet": "visibility",
+      "admission": "reject",
+      "source": "define interface HasId\n id: int;\nend\ndefine class Private as val int id = 1; end\nfnc take(structural HasId x): int { return x.id; }\nfnc bad(): int { return take(new Private()); }\n"
+    },
+    {
+      "id": "no-numeric-slot-coercion",
+      "facet": "representation",
+      "admission": "reject",
+      "source": "fnc take(structural Tuple<float,string> x): float { return x[0]; }\nfnc bad(): float { return take(tuple {1,\"a\"}); }\n"
+    },
+    {
+      "id": "readonly-nested-no-write",
+      "facet": "readonly",
+      "admission": "reject",
+      "source": "fnc bad(structural { inner: { value: int } } x): void { x.inner.value = 7; return; }\n"
+    },
+    {
+      "id": "no-actor-structural-erasure",
+      "facet": "actors",
+      "admission": "reject",
+      "source": "define interface Empty\nend\nactor fnc bad(structural Empty x): void { return; }\n"
+    },
+    {
+      "id": "tuple-not-fixed-array",
+      "facet": "tuple",
+      "admission": "reject",
+      "source": "fnc take(structural Tuple<int,string> x): string { return x[1]; }\nfnc bad(FixedArray<int,string> x): string { return take(x); }\n"
+    },
+    {
+      "id": "structural-no-suspend",
+      "facet": "effects",
+      "admission": "reject",
+      "source": "define interface HasId\n id: int;\nend\nasync fnc bad(structural HasId x): int { return x.id; }\n"
+    },
+    {
+      "id": "generic-method-wrong-result",
+      "facet": "generic-method",
+      "admission": "reject",
+      "source": "define interface Echo\n fnc echo<T>(T x) => T;\nend\ndefine class Wrong as\n pub echo<U>(U x): int { return 1; }\nend\nfnc take(structural Echo x): int { return x.echo(7); }\nfnc bad(): int { return take(new Wrong()); }\n"
+    },
+    {
+      "id": "empty-shape-not-scalar",
+      "facet": "patterns",
+      "admission": "reject",
+      "source": "fnc bad(int x): int { match x over on structural {} v -> { return 1; } on _ -> { return 0; } end }\n"
+    },
+    {
+      "id": "anonymous-inline-implicit",
+      "facet": "readonly",
+      "admission": "accept",
+      "source": "fnc take({ id: int } value): int { return value.id; }\npub fnc main(): int { return take(record{id: 11, extra: 99}); }\n",
+      "expectedMain": "11"
+    },
+    {
+      "id": "anonymous-inline-redundant-keyword",
+      "facet": "readonly",
+      "admission": "accept",
+      "source": "fnc take(structural { id: int } value): int { return value.id; }\npub fnc main(): int { return take(record{id: 11, extra: 99}); }\n",
+      "expectedMain": "11"
+    },
+    {
+      "id": "anonymous-struct-redundant-keyword",
+      "facet": "readonly",
+      "admission": "accept",
+      "source": "fnc take(structural struct{ id: int } value): int { return value.id; }\npub fnc main(): int { return take(record{id: 11, extra: 99}); }\n",
+      "expectedMain": "11"
+    },
+    {
+      "id": "named-interface-requires-structural",
+      "facet": "nominal",
+      "admission": "reject",
+      "source": "define interface HasId\n id: int;\nend\ndefine class Candidate as pub val int id = 11; end\nfnc take(HasId value): int { return value.id; }\npub fnc main(): int { return take(new Candidate()); }\n"
+    },
+    {
+      "id": "named-trait-explicit",
+      "facet": "readonly",
+      "admission": "accept",
+      "source": "define trait HasId as\n id: int;\nend\ndefine class Candidate as pub val int id = 11; end\nfnc take(structural HasId value): int { return value.id; }\npub fnc main(): int { return take(new Candidate()); }\n",
+      "expectedMain": "11"
+    },
+    {
+      "id": "anonymous-struct-implicit",
+      "facet": "readonly",
+      "admission": "accept",
+      "source": "fnc take(struct{ id: int } value): int { return value.id; }\npub fnc main(): int { return take(record{id: 11, extra: 99}); }\n",
+      "expectedMain": "11"
+    },
+    {
+      "id": "anonymous-record-implicit",
+      "facet": "readonly",
+      "admission": "accept",
+      "source": "fnc take(record{ id: int } value): int { return value.id; }\npub fnc main(): int { return take(record{id: 11, extra: 99}); }\n",
+      "expectedMain": "11"
+    },
+    {
+      "id": "anonymous-record-redundant-keyword",
+      "facet": "readonly",
+      "admission": "accept",
+      "source": "fnc take(structural record{ id: int } value): int { return value.id; }\npub fnc main(): int { return take(record{id: 11, extra: 99}); }\n",
+      "expectedMain": "11"
+    }
+  ]
+}

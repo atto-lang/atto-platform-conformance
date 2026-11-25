@@ -1,0 +1,12 @@
+// PROPOSED guest-source positive: ordinary struct remains ordinary until explicit collection.
+define struct Point as
+    float x;
+    float y;
+end
+
+fnc main(): int {
+    let points = InvertedArray<Point>.with_capacity(2);
+    let handle = points.push(Point { x: 1.0, y: 2.0 });
+    if points[handle].x neq 1.0 then return 1; fi
+    return 0;
+}

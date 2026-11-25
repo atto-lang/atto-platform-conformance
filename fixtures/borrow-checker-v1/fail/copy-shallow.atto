@@ -1,0 +1,9 @@
+// BCV1-014 copy_shallow fail: target AttoLang semantics, NOT_EXECUTED.
+// Expected compiler rejection E_COPY_SHALLOW_ALIAS with NO guest artifact.
+define class Child as pub let int value = 42; end
+define class Parent as pub let Child child = new Child(); end
+pub fnc main(): int {
+  val p = new Parent();
+  val q = copy! p; // would duplicate unique child ownership
+  return q.child.value;
+}

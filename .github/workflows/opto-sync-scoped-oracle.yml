@@ -1,0 +1,32 @@
+name: Opto Sync scoped semantic oracle (host-only)
+on:
+  pull_request:
+    paths:
+      - "contracts/opto-sync-scoped-v1.json"
+      - "fixtures/opto-sync-scoped-v1/**"
+      - "tests/opto-sync-scoped-contract.test.mjs"
+      - "docs/OPTO_SYNC_SCOPED_ORESLANG_PARITY.md"
+      - ".github/workflows/opto-sync-scoped-oracle.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  semantic-oracle-not-backend-parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Prove exact source tree head
+        env:
+          EXPECTED: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED"
+      - name: Install Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "22"
+      - name: Verify semantic vectors (NO Oreslang compiler executed)
+        run: node --test tests/opto-sync-scoped-contract.test.mjs

@@ -1,0 +1,4 @@
+// TARGET fixture — contextual type inference from the left operand of |>.
+pub fnc main() -> int ::
+  return 21 |> (|x| -> x * 2)
+end

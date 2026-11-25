@@ -1,0 +1,274 @@
+{
+  "schema": "atto.spec-audit-candidates/1",
+  "spec_pr": "https://github.com/ores-truffle-oreslang/attolang-language-spec.md/pull/9",
+  "scope": "source-free metadata only",
+  "cases": [
+    {
+      "id": "guard-scalar-positive",
+      "source": "fixtures/guard-v1/canonical-scalar.atto",
+      "kind": "positive",
+      "maturity": "TARGET",
+      "decision": "guard-v1",
+      "expected_diagnostic_class": null,
+      "backends": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      },
+      "source_git_blob_sha1": "e2344e360ac643e25df7ca14eb01432929cecbe5",
+      "expected_guest_i64": "42"
+    },
+    {
+      "id": "guard-missing-exit-negative",
+      "source": "fixtures/guard-v1/reject-fallthrough.atto",
+      "kind": "negative",
+      "maturity": "TARGET",
+      "decision": "guard-v1",
+      "expected_diagnostic_class": "GUARD_FAILURE_MAY_FALL_THROUGH",
+      "backends": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      },
+      "source_git_blob_sha1": "1ff87aa95ed2537839347e80984c69ae46fdfa17",
+      "control_source": "fixtures/spec-audit-v1/guard-fallthrough-control.atto",
+      "control_git_blob_sha1": "6d702c5a71edb979bdf44cb23fe8a9bb29214e18",
+      "control_transform": {
+        "from": "guard true { }",
+        "to": "guard true { return 1; }"
+      }
+    },
+    {
+      "id": "guard-else-negative",
+      "source": "fixtures/guard-v1/reject-else.atto",
+      "kind": "negative",
+      "maturity": "TARGET",
+      "decision": "guard-v1",
+      "expected_diagnostic_class": "GUARD_ELSE_FORBIDDEN",
+      "backends": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      },
+      "source_git_blob_sha1": "b2bbee98cd3b95ac19462b4efd95a2e98b469154",
+      "control_source": "fixtures/spec-audit-v1/guard-else-control.atto",
+      "control_git_blob_sha1": "e65a26fec9550fab90375da8aea1ada791b1e028",
+      "control_transform": {
+        "from": "guard true { return 1; } else { return 2; }",
+        "to": "guard true { return 1; }"
+      }
+    },
+    {
+      "id": "named-value-reorder-positive",
+      "source": "fixtures/named-generic-call-v1/value-reorder.atto",
+      "kind": "positive",
+      "maturity": "TARGET",
+      "decision": "named-arguments",
+      "expected_diagnostic_class": null,
+      "backends": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      },
+      "source_git_blob_sha1": "da20b7b0dc8a58a9abb0ff9db2b7723dfdd47168",
+      "expected_guest_i64": "12"
+    },
+    {
+      "id": "named-value-duplicate-negative",
+      "source": "fixtures/named-generic-call-v1/value-duplicate.atto",
+      "kind": "negative",
+      "maturity": "TARGET",
+      "decision": "named-arguments",
+      "expected_diagnostic_class": "DUPLICATE_NAMED_ARGUMENT",
+      "backends": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      },
+      "source_git_blob_sha1": "43c2c7db1246be09f2a55164c3d16acd8315b450",
+      "control_source": "fixtures/spec-audit-v1/named-value-duplicate-control.atto",
+      "control_git_blob_sha1": "995df715926d7a176716bc6789959a607509d6af",
+      "control_transform": {
+        "from": "combine(a: 1, a: 2)",
+        "to": "combine(a: 1, b: 2)"
+      }
+    },
+    {
+      "id": "actorref-sync-method-negative",
+      "source": "fixtures/spec-audit-v1/actorref-direct-sync-reject.atto",
+      "kind": "negative",
+      "maturity": "TARGET",
+      "decision": "S-57",
+      "expected_diagnostic_class": "ACTORREF_SYNCHRONOUS_CALL_FORBIDDEN",
+      "backends": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      },
+      "source_git_blob_sha1": "c4fb55d1b5f19bbc4f8b576121ee40b4432d59a9",
+      "control_source": "fixtures/spec-audit-v1/actorref-direct-sync-control.atto",
+      "control_git_blob_sha1": "3269ff4e94467f3a103596db4dca51a3e00f8d51",
+      "control_transform": {
+        "from": "return counter.read_count();",
+        "to": "return 42;"
+      }
+    },
+    {
+      "id": "typed-local-typefirst",
+      "source": "fixtures/spec-audit-v1/typed-local-typefirst-candidate.atto",
+      "kind": "decision-candidate",
+      "maturity": "UNRESOLVED",
+      "decision": "S-46",
+      "expected_diagnostic_class": null,
+      "backends": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      },
+      "source_git_blob_sha1": "815e2afdd68b2a8fadd933e9f640842cec864f07"
+    },
+    {
+      "id": "typed-local-namecolon",
+      "source": "fixtures/spec-audit-v1/typed-local-namecolon-candidate.atto",
+      "kind": "decision-candidate",
+      "maturity": "UNRESOLVED",
+      "decision": "S-46",
+      "expected_diagnostic_class": null,
+      "backends": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      },
+      "source_git_blob_sha1": "d41141f7818070dc53282a48c7134d84b0fa9d42"
+    },
+    {
+      "id": "statement-linebreak",
+      "source": "fixtures/spec-audit-v1/statement-termination-candidate.atto",
+      "kind": "decision-candidate",
+      "maturity": "UNRESOLVED",
+      "decision": "S-42",
+      "expected_diagnostic_class": null,
+      "backends": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      },
+      "source_git_blob_sha1": "b6c28ad72998ea063baf343c2fc7e3d0fe8da971"
+    },
+    {
+      "id": "operator-eq",
+      "source": "fixtures/spec-audit-v1/operator-eq-candidate.atto",
+      "kind": "decision-candidate",
+      "maturity": "UNRESOLVED",
+      "decision": "S-56",
+      "expected_diagnostic_class": null,
+      "backends": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      },
+      "source_git_blob_sha1": "e21f527d98353bafb5a8b2363dad3bb0dda73d13"
+    },
+    {
+      "id": "operator-double-equals",
+      "source": "fixtures/spec-audit-v1/operator-double-equals-candidate.atto",
+      "kind": "decision-candidate",
+      "maturity": "UNRESOLVED",
+      "decision": "S-56",
+      "expected_diagnostic_class": null,
+      "backends": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      },
+      "source_git_blob_sha1": "0cb6698de916c57acbdd9b6ed99f76598199b4b6"
+    },
+    {
+      "id": "infix-pipeline",
+      "source": "fixtures/spec-audit-v1/infix-pipe-candidate.atto",
+      "kind": "decision-candidate",
+      "maturity": "UNRESOLVED",
+      "decision": "S-54",
+      "expected_diagnostic_class": null,
+      "backends": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      },
+      "source_git_blob_sha1": "ff9f6d1893b5f56de3df49a9340b529590193336"
+    },
+    {
+      "id": "nested-pipeline",
+      "source": "fixtures/spec-audit-v1/nested-builder-candidate.atto",
+      "kind": "decision-candidate",
+      "maturity": "PROPOSED",
+      "decision": "S-54",
+      "expected_diagnostic_class": null,
+      "backends": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      },
+      "source_git_blob_sha1": "e54aa0e468f5c8141165bf3781b7c6420c2d8622"
+    },
+    {
+      "id": "pipeline-double-start",
+      "source": "fixtures/spec-audit-v1/graph-double-start-reject.atto",
+      "kind": "decision-candidate",
+      "maturity": "TARGET",
+      "decision": "S-21",
+      "expected_diagnostic_class": null,
+      "backends": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      },
+      "source_git_blob_sha1": "173c94b9aba31acddc8821df021bd41afacc743a",
+      "target_diagnostic_class": "MOVED_BUILDER_REUSED"
+    },
+    {
+      "id": "graph-drop-lifetime",
+      "source": "fixtures/spec-audit-v1/graph-drop-lifetime-candidate.atto",
+      "kind": "decision-candidate",
+      "maturity": "PROPOSED",
+      "decision": "S-55",
+      "expected_diagnostic_class": null,
+      "backends": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      },
+      "source_git_blob_sha1": "d312ebaa6c0a563648c0f5c6857d3140c63bbd3a"
+    }
+  ]
+}

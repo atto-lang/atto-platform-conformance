@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "schema": "atto.select.source-v1",
+  "description": "Pinned cross-backend select source fixtures; expectations are not execution receipts.",
+  "sourceExtension": ".atto",
+  "compilerEvidence": "not-executed",
+  "backends": [
+    "java-graalvm",
+    "llvm",
+    "net"
+  ],
+  "cases": [
+    {
+      "id": "default-over",
+      "path": "default-over.atto",
+      "gitBlobSha1": "a28281f357de02d2aa7b50719acd9af92060a902",
+      "evidenceStatus": "not-executed",
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "run",
+          "exitCode": 42
+        },
+        "net": {
+          "mode": "reject",
+          "diagnosticContains": "Static select requires checked Channel/Future arbitration"
+        }
+      }
+    },
+    {
+      "id": "default-brace",
+      "path": "default-brace.atto",
+      "gitBlobSha1": "f14c7b91cb0dcf091e4cdafb0fb2cb5b6114c747",
+      "evidenceStatus": "not-executed",
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "run",
+          "exitCode": 43
+        },
+        "net": {
+          "mode": "reject",
+          "diagnosticContains": "Static select requires checked Channel/Future arbitration"
+        }
+      }
+    },
+    {
+      "id": "default-continuation",
+      "path": "default-continuation.atto",
+      "gitBlobSha1": "c85b9fa8cd8c5f28954aa0afc4f4de870ca893c2",
+      "evidenceStatus": "not-executed",
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "run",
+          "exitCode": 42
+        },
+        "net": {
+          "mode": "reject",
+          "diagnosticContains": "Static select requires checked Channel/Future arbitration"
+        }
+      }
+    },
+    {
+      "id": "default-nested",
+      "path": "default-nested.atto",
+      "gitBlobSha1": "fd81aba7b23c5737ab6d7a2553f666f94496d854",
+      "evidenceStatus": "not-executed",
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "run",
+          "exitCode": 44
+        },
+        "net": {
+          "mode": "reject",
+          "diagnosticContains": "Static select requires checked Channel/Future arbitration"
+        }
+      }
+    },
+    {
+      "id": "reject-scope-escape",
+      "path": "reject-scope-escape.atto",
+      "gitBlobSha1": "1bbfcafc0591037facefeb4243238102a5ee0c58",
+      "evidenceStatus": "not-executed",
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "reject",
+          "diagnosticContains": "unknown parameter 'hidden'"
+        },
+        "net": {
+          "mode": "reject",
+          "diagnosticContains": "Static select requires checked Channel/Future arbitration"
+        }
+      }
+    },
+    {
+      "id": "channel-read-arm",
+      "path": "channel-read-arm.atto",
+      "gitBlobSha1": "bb5ffe5d0f89a0edc5ada98cdfdac3b86f86f027",
+      "evidenceStatus": "not-executed",
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "reject",
+          "diagnosticContains": "native do select currently supports only a single default arm"
+        },
+        "net": {
+          "mode": "reject",
+          "diagnosticContains": "Static select requires checked Channel/Future arbitration"
+        }
+      }
+    },
+    {
+      "id": "nonblocking-default",
+      "path": "nonblocking-default.atto",
+      "gitBlobSha1": "074141c1108d76c3daa8a8c70294baa6f16490d6",
+      "evidenceStatus": "not-executed",
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "reject",
+          "diagnosticContains": "native async/channel/select boundary unsupported"
+        },
+        "net": {
+          "mode": "reject",
+          "diagnosticContains": "Static select requires checked Channel/Future arbitration"
+        }
+      }
+    },
+    {
+      "id": "typed-default",
+      "path": "typed-default.atto",
+      "gitBlobSha1": "9b251afd4c336c0c7aa8deefe1fcaf08516be69a",
+      "evidenceStatus": "not-executed",
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "reject"
+        },
+        "net": {
+          "mode": "reject",
+          "diagnosticContains": "Static select requires checked Channel/Future arbitration"
+        }
+      }
+    }
+  ]
+}

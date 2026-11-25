@@ -1,0 +1,98 @@
+{
+  "schema": "atto.host_fs_security.actor_fs_lifecycle.stepful_ci.v1",
+  "date_utc": "2026-11-20",
+  "scope": "HOST_ONLY_EXECUTED",
+  "source": {
+    "repository": "atto-lang/atto-source.llvm",
+    "pull_request": 62,
+    "head_commit": "ddc91debcd8ef44e47f93c68ca154b5c7771e172",
+    "root_tree_sha": "157470e2413f43690f52573fe7d37f121f067db5",
+    "blob_count": 238,
+    "tree_count": 45,
+    "total_entries": 283
+  },
+  "carrier": {
+    "repository": "opto-sync/atto-ci",
+    "visibility": "private",
+    "snapshot_commit": "280ba82cfee039616fbbb355472692053789253c",
+    "snapshot_root_tree_sha": "157470e2413f43690f52573fe7d37f121f067db5",
+    "separate_workflow_harness_commit": "12b8617176b016dfa185ec4f59f65fe9599aaee8",
+    "branch": "ci/fs-lifecycle-llvm-ddc91deb-20261120",
+    "whole_tree_sha_match": true,
+    "source_private_checkout": false,
+    "checkout_credentials_persisted": false
+  },
+  "workflow": {
+    "run_id": 44823261135,
+    "job_id": 136589274197,
+    "url": "https://github.com/opto-sync/atto-ci/actions/runs/44823261135",
+    "status": "completed",
+    "conclusion": "success",
+    "executed_steps": true,
+    "gcc_clang_O1_O2_ASAN_UBSAN": "passed",
+    "async_worker_and_queue": "passed",
+    "six_layer_broker_signed_admission": "passed",
+    "native_filesystem_ctest": {
+      "passed": 8,
+      "failed": 0
+    },
+    "sealed_c_guest_loader_ctest": {
+      "passed": 1,
+      "failed": 0
+    },
+    "scheduler_turn_identity_ctest": {
+      "passed": 1,
+      "failed": 0
+    },
+    "real_tenant_vm_actor_fs_lifecycle_ctest": {
+      "passed": 1,
+      "failed": 0
+    },
+    "tenant_vm_runtime_smoke": {
+      "passed": 3,
+      "failed": 0,
+      "case_names": [
+        "equal_offsets_are_different_memory",
+        "messaging_stays_inside_the_vm",
+        "a_confined_fault_restarts_only_that_actor"
+      ]
+    }
+  },
+  "changes": {
+    "files": [
+      "native/include/atto/host_fs_async.h",
+      "native/src/host_fs_async.c",
+      "native/tests/host_fs_async_test.c",
+      "native/tests/host_fs_async_contention_test.c",
+      "native/tests/host_fs_async_broker_test.c",
+      "src/main/cpp/oreslang/runtime/TenantVm.hpp",
+      "src/main/cpp/oreslang/runtime/TenantVm.cpp",
+      "tests/tenant-vm/fs_lifecycle_test.cpp",
+      "tests/tenant-vm/CMakeLists.txt",
+      ".github/workflows/native-host-fs-broker.yml"
+    ],
+    "checked": [
+      "C async service now supports permanent nonparking atomic revoke and denies future submit, poll, cancel",
+      "forget_actor implies irrevocable revoke and is host-lifecycle blocking only",
+      "scheduler actor-ref zero admitted when other verified owner components valid",
+      "trusted host binder validates immutable service ownership against actual VM/actor generation and incarnation",
+      "actor restart revokes old service before memory scrub; old actor ref is unchanged",
+      "actor stop, release, tenant failure/kill and shutdown revoke bound service",
+      "live Linux broker read/write host-only test and no unauthorized output mutation or new post-revoke write",
+      "cross-TenantVM and sibling actor identities rejected"
+    ],
+    "runtime_relation": "Trusted-host service registration and scheduler lifecycle only. The C broker is invoked by the host-only fixture, NOT by guest ABI callbacks."
+  },
+  "limits": {
+    "guest_abi_v5_fs_active": false,
+    "compiled_atto_fs_guest_executed": false,
+    "production_signing_trust_verified": false,
+    "loaded_guest_dependency_closure_verified": false,
+    "native_untrusted_guest_memory_and_syscall_confinement_verified": false,
+    "compiler_guest_permissions_status": "NOT_EXECUTED",
+    "all_backend_compiled_guest_conformance": "NOT_EXECUTED",
+    "running_write_revoke_effect": "Already executing writes may have committed; revoke denies future admission but is not a rollback or a barrier to host worker completion."
+  },
+  "previous_failures_note": "Prior exact-tree runs exposed an obsolete mock expectation (-ESTALE versus irreversible -EACCES), an unused negative-test fixture under -Werror, and a malformed workflow shell selector. Those were corrected on the exact tested source head; no earlier failed run is counted as a pass.",
+  "release_gate": "KEEP_DRAFT_NO_MERGE_NO_UNTRUSTED_GUEST_SECURITY_CLAIM"
+}

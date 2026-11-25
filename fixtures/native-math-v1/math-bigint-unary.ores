@@ -1,0 +1,8 @@
+pub fnc main(): int {
+  val bigint value = -9007199254740993;
+  if Math.abs(value) eq 9007199254740993
+      && Math.neg(value) eq 9007199254740993 then
+    return 42;
+  fi
+  return 1;
+}

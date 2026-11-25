@@ -1,0 +1,192 @@
+{
+  "schema": "attolang.typed-match-arm.v1",
+  "status": "CANDIDATE_NOT_CROSS_BACKEND_CERTIFIED",
+  "contract": "atto-lang/atto-spec:language/typed-match-switch-arms-v1.md",
+  "source": {
+    "repo": "atto-lang/atto-source.rs",
+    "pr": 233,
+    "branch": "feature/typed-match-arm-return-check-v1",
+    "reference_commit": "4b9b13337bfe626d4c15c4de393a6afa7c8f99c8",
+    "async_compiler_pr": 236,
+    "async_compiler_commit": "3eb8e31c51b3188c0a1d8cee2e51e5c39c5248ad",
+    "reference_tree": "96893a388eabdbdb37309fdf751444ebdf5a9d45"
+  },
+  "backends": {
+    "rust-wasm": "PASS",
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "dotnet": "NOT_EXECUTED"
+  },
+  "cases": [
+    {
+      "id": "return-adt",
+      "path": "fixtures/typed-match-arm-v1/pass/typed-match-result-arm.atto",
+      "git_blob_sha1": "597ecadbf31e580527f85867562fe85c3a552eb3",
+      "expect": {
+        "kind": "exit",
+        "value": 42
+      }
+    },
+    {
+      "id": "nested-adt",
+      "path": "fixtures/typed-match-arm-v1/pass/typed-match-nested-result.atto",
+      "git_blob_sha1": "c1119065b08c134f7e1e7d348bde8f36215eb080",
+      "expect": {
+        "kind": "exit",
+        "value": 42
+      }
+    },
+    {
+      "id": "arm-header-conflict",
+      "path": "fixtures/typed-match-arm-v1/fail/typed-match-header-arm-conflict.atto",
+      "git_blob_sha1": "fed68556a44420ff937f0a1fec6904413a3ca515",
+      "expect": {
+        "kind": "diagnostic",
+        "code": "E_TYPE"
+      }
+    },
+    {
+      "id": "typed-fallthrough",
+      "path": "fixtures/typed-match-arm-v1/fail/typed-match-arm-fallthrough.atto",
+      "git_blob_sha1": "997137051c218a049c8f9479f7afdb2ff2414c41",
+      "expect": {
+        "kind": "diagnostic",
+        "code": "E_RETURN"
+      }
+    },
+    {
+      "id": "switch-return-result",
+      "path": "fixtures/typed-match-arm-v1/pass/typed-switch-result-case.atto",
+      "git_blob_sha1": "81183c0d5610212ea962b8b9fe0e697ff36983a3",
+      "expect": {
+        "kind": "exit",
+        "value": 42
+      }
+    },
+    {
+      "id": "switch-nested-result",
+      "path": "fixtures/typed-match-arm-v1/pass/typed-switch-nested-case.atto",
+      "git_blob_sha1": "3bb88a251caf7a04bd920338976257ce85e3c0db",
+      "expect": {
+        "kind": "exit",
+        "value": 42
+      }
+    },
+    {
+      "id": "switch-statement",
+      "path": "fixtures/typed-match-arm-v1/pass/typed-switch-statement-case.atto",
+      "git_blob_sha1": "181a351bab95ca9ccdde86bfcd5a00ad6564708f",
+      "expect": {
+        "kind": "exit",
+        "value": 42
+      }
+    },
+    {
+      "id": "switch-type-conflict",
+      "path": "fixtures/typed-match-arm-v1/fail/typed-switch-conflicting-case.atto",
+      "git_blob_sha1": "ac177bfc9116930420e130e72cbdaa6e9df8491c",
+      "expect": {
+        "kind": "diagnostic",
+        "code": "E_TYPE"
+      }
+    },
+    {
+      "id": "switch-nonexhaustive",
+      "path": "fixtures/typed-match-arm-v1/fail/typed-switch-nonexhaustive-case.atto",
+      "git_blob_sha1": "42113a3c7c186d11ea2558167d3b4de650a1540e",
+      "expect": {
+        "kind": "diagnostic",
+        "code": "E_MATCH"
+      }
+    },
+    {
+      "id": "switch-duplicate",
+      "path": "fixtures/typed-match-arm-v1/fail/typed-switch-duplicate-case.atto",
+      "git_blob_sha1": "dc8228bd33ce627a88189fbf9550f12457966dd1",
+      "expect": {
+        "kind": "diagnostic",
+        "code": "E_MATCH"
+      }
+    },
+    {
+      "id": "switch-fallthrough",
+      "path": "fixtures/typed-match-arm-v1/fail/typed-switch-case-fallthrough.atto",
+      "git_blob_sha1": "1b3efc33a0b475e8e53f40ea2f17c3baad15c6d5",
+      "expect": {
+        "kind": "diagnostic",
+        "code": "E_RETURN"
+      }
+    },
+    {
+      "id": "switch-malformed",
+      "path": "fixtures/typed-match-arm-v1/fail/typed-switch-malformed-case.atto",
+      "git_blob_sha1": "9bee9a317da8f1823521342c6af769b3bb8e81b1",
+      "expect": {
+        "kind": "diagnostic",
+        "code": "E_SYNTAX"
+      }
+    }
+  ],
+  "execution_receipts": {
+    "rust-wasm": {
+      "status": "PASS",
+      "scope": "Exactly the 12 registered match/switch fixtures plus selected-arm JSPI checks; not general match values, captured tasks or Java/LLVM/.NET parity",
+      "source_repo": "atto-lang/atto-source.rs",
+      "source_pr": 236,
+      "source_commit": "3eb8e31c51b3188c0a1d8cee2e51e5c39c5248ad",
+      "carrier_repo": "cliptown/cliptown-e2e",
+      "carrier_branch": "ci/typed-match-runner-smoke-20261116",
+      "carrier_commit": "210704c509ac1795b07bda56205cdb29e66cd40e",
+      "workflow_run_id": 43952883265,
+      "workflow_job_id": 133599741532,
+      "source_git_blobs_verified": 50,
+      "source_blob_coverage": "50 mirrored compiler/test/fixture files; not the complete source repository tree",
+      "native_rust_tests": {
+        "passed": 35,
+        "failed": 0
+      },
+      "guest_fixtures": {
+        "passed": 12,
+        "failed": 0,
+        "positive_exit_42": 5,
+        "negative_without_artifact": 7
+      },
+      "chromium_jspi": "PASS: real Rust-compiled compiler Wasm and guest Wasm; selected match and switch task await each yielded exactly once; mismatched arms rejected",
+      "task_captures": "UNSUPPORTED"
+    },
+    "rust-wasm-mainline": {
+      "status": "PASS_SCOPED",
+      "scope": "PR #233 restricted definite-return match/switch, 12 shared typed-arm fixtures, legacy no-over switch; no JSPI capture support or general expression-position values",
+      "source_repo": "atto-lang/atto-source.rs",
+      "source_pr": 233,
+      "source_commit": "4b9b13337bfe626d4c15c4de393a6afa7c8f99c8",
+      "source_tree": "96893a388eabdbdb37309fdf751444ebdf5a9d45",
+      "carrier_repo": "anticaptrad/atto-ci",
+      "carrier_pr": 13,
+      "carrier_commit": "3acdc6314281e13e8387df97f3262a9f9d5fa047",
+      "carrier_tree": "96893a388eabdbdb37309fdf751444ebdf5a9d45",
+      "workflow_run_id": 43961398013,
+      "workflow_job_id": 133629437258,
+      "source_git_blobs_verified": 729,
+      "native_rust_cargo_test": "PASS",
+      "guest_conformance": {
+        "passed": 495,
+        "failed": 0,
+        "native_vs_wasm": 447,
+        "java_differential": "SKIPPED"
+      },
+      "typed_arm_fixtures": {
+        "passed": 12,
+        "failed": 0,
+        "positive_exit_42": 5,
+        "negative_no_guest": 7
+      },
+      "chromium_browser_e2e": "PASS",
+      "artifact_id": 14274501775,
+      "artifact_name": "atto-compiler-wasm32-3acdc6314281e13e8387df97f3262a9f9d5fa047",
+      "native_cranelift_job": "FAIL: rustfmt on native baseline files unchanged from source main",
+      "task_captures": "UNSUPPORTED",
+      "general_expression_switch": "UNSUPPORTED"
+    }
+  }
+}

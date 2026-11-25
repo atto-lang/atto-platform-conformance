@@ -1,0 +1,6 @@
+// Expected compile failure: v1 Observable->Future requires mode=#single/#first.
+pub fnc main(): void {
+  const Observable<int> obs = Observable.from_task(task { return 10; });
+  const Future<int> invalid = Future.from_observable(obs);
+  return;
+}

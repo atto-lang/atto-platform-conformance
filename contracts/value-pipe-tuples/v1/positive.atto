@@ -1,0 +1,16 @@
+fnc fetch(): Tuple[int, int, int] { return tuple(4, 2, 3); }
+fnc validate(Tuple[int, int, int] value): Tuple[int, int, int] { return value; }
+fnc filter(int users, int count): Tuple[int, int, int] { return tuple(users + count, 10, 20); }
+fnc sort(Tuple[int, int, int] value): Tuple[int, int, int] { return value; }
+fnc take(int n, int k): Tuple[int, int] { return tuple(n, k); }
+fnc build(): Tuple[int, int] {
+  return fetch()
+    |> validate
+    |> |users, x, y| -> filter(users, x + y)
+    |> sort
+    |> |sorted, a, b| -> take(sorted, a + b);
+}
+pub fnc main(): void {
+  stdio.println(build() |> |one, two| -> one + two);
+  return;
+}

@@ -1,0 +1,7 @@
+fnc identity(int value) -> int ::
+  return value
+end
+fnc main() -> int ::
+  val cb = identity
+  return cb(value: 42)
+end

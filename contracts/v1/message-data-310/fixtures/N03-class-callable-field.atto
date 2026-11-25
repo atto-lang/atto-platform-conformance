@@ -1,0 +1,4 @@
+define class Holder as
+  val Fnc<int, int> callback;
+end
+fnc bad(Channel<Holder> ch): void { return; }

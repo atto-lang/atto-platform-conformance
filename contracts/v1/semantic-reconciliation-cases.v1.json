@@ -1,0 +1,758 @@
+{
+  "schemaVersion": "semantic-reconciliation/v1",
+  "status": "TARGET_ONLY_NOT_IMPLEMENTATION_EVIDENCE",
+  "contractIndex": "https://github.com/ores-truffle-oreslang/oreslang-common-source/blob/main/docs/CONFORMANCE.md",
+  "backends": [
+    "java",
+    "llvm",
+    "net",
+    "wasm",
+    "forge"
+  ],
+  "rules": [
+    "no-implicit-option-or-future-flatten",
+    "nonreentrant-actor-state-and-scoped-critical",
+    "explicit-suspends-effect-boundaries",
+    "unambiguous-optional-arity"
+  ],
+  "compilerCases": [
+    {
+      "id": "nested-option-one-layer",
+      "concern": "wrappers",
+      "expect": "accept",
+      "source": "pub fnc main(): int {\n  val Option<Option<int>> nested = Some(Some(42));\n  val Option<int> inner = nested.unwrap();\n  return inner.unwrap();\n}\n",
+      "rationale": "Explicit two one-layer unwraps preserve generic layers.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/NESTED_OPTION_FUTURE_EXTRACTION.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "nested-option-coercion",
+      "concern": "wrappers",
+      "expect": "reject",
+      "diagnosticCode": "E_WRAPPER_LAYER",
+      "source": "pub fnc main(): int {\n  val Option<Option<int>> nested = Some(Some(42));\n  val Option<int> wrong = nested;\n  return 0;\n}\n",
+      "rationale": "Assignment must not silently erase one Option layer.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/NESTED_OPTION_FUTURE_EXTRACTION.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "nested-future-two-awaits",
+      "concern": "futures",
+      "expect": "accept",
+      "source": "pub fnc nested(): Future<Future<int>> {\n  return Future.resolved(Future.resolved(42));\n}\npub suspends fnc use(): int {\n  val Future<int> inner = await nested();\n  return await inner;\n}\npub suspends fnc main(): int { return use(); }\n",
+      "rationale": "One await returns Future<int>, not int. The suspends main entrypoint invokes use(), making two-layer extraction observable in a subsequent guest execution gate.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/NESTED_OPTION_FUTURE_EXTRACTION.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "nested-future-coercion",
+      "concern": "futures",
+      "expect": "reject",
+      "diagnosticCode": "E_WRAPPER_LAYER",
+      "source": "pub fnc nested(): Future<Future<int>> {\n  return Future.resolved(Future.resolved(42));\n}\npub suspends fnc use(): int {\n  val int wrong = await nested();\n  return wrong;\n}\npub fnc main(): int { return 42; }\n",
+      "rationale": "No Future<Future<T>> type canonicalization or implicit flattening.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/NESTED_OPTION_FUTURE_EXTRACTION.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "future-map-preserves-nested-return",
+      "concern": "futures",
+      "expect": "accept",
+      "source": "pub async fnc base(): int { return 20; }\npub async fnc twice(int value): int { return value * 2; }\npub suspends fnc main(): void {\n  val Future<Future<int>> pending = base().map(|int n| -> {\n    return twice(n);\n  });\n  val Future<int> inner = await pending;\n  stdio.stdout.write(await inner);\n  return;\n}\n",
+      "rationale": "Future.map returns Future<U> for callback result U; callback returning Future<int> produces Future<Future<int>> without implicit adoption. The suspends main entrypoint reaches both awaits and writes 40 when executed as guest; compiler admission alone does not execute it.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/NESTED_OPTION_FUTURE_EXTRACTION.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "future-map-rejects-implicit-adoption",
+      "concern": "futures",
+      "expect": "reject",
+      "diagnosticCode": "E_WRAPPER_LAYER",
+      "source": "pub async fnc base(): int { return 20; }\npub async fnc twice(int value): int { return value * 2; }\npub fnc main(): void {\n  val Future<int> pending = base().map(|int n| -> {\n    return twice(n);\n  });\n  return;\n}\n",
+      "rationale": "Future.map must not silently flatten a callback-returned Future layer or turn it into a Future<int>.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/NESTED_OPTION_FUTURE_EXTRACTION.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "actor-scoped-critical-write",
+      "concern": "actors",
+      "expect": "accept",
+      "source": "define actor Counter as\n  state { value: int = 0; }\n  receive(ActorMail<int> m): void with state.write {\n    using state.write(critical |s| -> {\n      s.value = s.value + m.value;\n    });\n    return;\n  }\nend\npub fnc main(): int { return 42; }\n",
+      "rationale": "Sealed lexical state access requires a verified write effect and critical state loan.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/ACTOR_FAMILIES_SEALED_STATE_V1.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "actor-state-loan-escape",
+      "concern": "actors",
+      "expect": "reject",
+      "diagnosticCode": "E_BORROW_ESCAPE",
+      "source": "define actor Counter as\n  state { value: int = 0; }\n  receive(ActorMail<int> m): void with state.read {\n    val any escaped = self.handle_state(|s| -> { return s; });\n    return;\n  }\nend\npub fnc main(): int { return 42; }\n",
+      "rationale": "Actor state reference must not escape handle_state or its lexical scope.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/ACTOR_FAMILIES_SEALED_STATE_V1.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "suspends-explicit-effect",
+      "concern": "effects",
+      "expect": "accept",
+      "source": "pub suspends fnc get(): int {\n  val Future<int> pending = Future.resolved(42);\n  return await pending;\n}\npub fnc main(): int { return 42; }\n",
+      "rationale": "Await must be in a correctly checked suspending context.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/SUSPENSION_CONTRACT.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "ordinary-fnc-await",
+      "concern": "effects",
+      "expect": "reject",
+      "diagnosticCode": "E_SUSPENSION_EFFECT",
+      "source": "pub fnc invalid(): int {\n  val Future<int> pending = Future.resolved(42);\n  return await pending;\n}\npub fnc main(): int { return 42; }\n",
+      "rationale": "Ordinary effect-unannotated function must not silently gain suspension.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/SUSPENSION_CONTRACT.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "unique-named-optional-call",
+      "concern": "overload",
+      "expect": "accept",
+      "source": "pub fnc choose(int a, int? b): int {\n  return a;\n}\npub fnc main(): int {\n  return choose(a: 42);\n}\n",
+      "rationale": "Unique named call shape, once-only source-order binding.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/NAMED_ARGUMENTS_CONTRACT.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "ambiguous-optional-overloads",
+      "concern": "overload",
+      "expect": "reject",
+      "diagnosticCode": "E_AMBIGUOUS_CALL",
+      "source": "pub fnc choose(int a): int {\n  return a;\n}\npub fnc choose(int a, int? b): int {\n  return a;\n}\npub fnc main(): int {\n  return choose(42);\n}\n",
+      "rationale": "Even distinct declaration arities cannot admit intersecting supplied-call shapes.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/NAMED_ARGUMENTS_CONTRACT.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "rt-copy-scalar",
+      "concern": "ownership",
+      "expect": "accept",
+      "source": "pub fnc main(): int {\n  val int original = 7;\n  val int copied = rt copy original;\n  return original + copied;\n}\n",
+      "rationale": "rt copy of statically Copy scalar duplicates the value, not the ownership slot.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "rt-copy-move-only",
+      "concern": "ownership",
+      "expect": "reject",
+      "diagnosticCode": "E_COPY_REQUIRED",
+      "source": "define class Box as\n  pub let int value = 7;\nend\npub fnc main(): int {\n  let Box owned = new Box();\n  val Box copy = rt copy owned;\n  return copy.value;\n}\n",
+      "rationale": "rt copy of a move-only class must fail rather than manufacturing an alias.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "rt-share-scalar",
+      "concern": "ownership",
+      "expect": "accept",
+      "source": "pub fnc main(): int {\n  val int original = 3;\n  val int shared = rt share original;\n  return original + shared;\n}\n",
+      "rationale": "Copy-safe scalar sharing creates no shared mutable storage or implicit actor transfer.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "rt-share-move-only",
+      "concern": "ownership",
+      "expect": "reject",
+      "diagnosticCode": "E_SHARE_REQUIRED",
+      "source": "define class Box as\n  pub let int value = 7;\nend\npub fnc main(): int {\n  let Box owned = new Box();\n  val Box alias = rt share owned;\n  return alias.value;\n}\n",
+      "rationale": "rt share does not grant a move-only object shared mutable aliases or Share proof.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "rt-take-named-owner",
+      "concern": "ownership",
+      "expect": "accept",
+      "source": "define class Box as\n  pub let int value = 7;\nend\npub fnc main(): int {\n  let Box owned = new Box();\n  val Box moved = rt take owned;\n  return moved.value;\n}\n",
+      "rationale": "Transferring a complete named owner is the supported path; its prior binding is unusable.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "rt-take-member-projection",
+      "concern": "ownership",
+      "expect": "reject",
+      "diagnosticCode": "E_PARTIAL_MOVE",
+      "source": "define class Box as\n  pub let int value = 7;\nend\npub fnc main(): int {\n  let mut Box owned = new Box();\n  val int duplicate = rt take owned.value;\n  return owned.value + duplicate;\n}\n",
+      "rationale": "No path-aware partial-move state exists for fields; projected rt take cannot preserve unique ownership.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "rt-borrow-lexical",
+      "concern": "ownership",
+      "expect": "accept",
+      "source": "define class Box as\n  pub let int value = 7;\nend\npub fnc main(): int {\n  let Box owned = new Box();\n  val borrow Box view = rt borrow owned;\n  return view.value;\n}\n",
+      "rationale": "A lexical shared borrow reads the original owner without moving it.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "rt-borrow-after-take",
+      "concern": "ownership",
+      "expect": "reject",
+      "diagnosticCode": "E_USE_AFTER_MOVE",
+      "source": "define class Box as\n  pub let int value = 7;\nend\npub fnc main(): int {\n  let Box owned = new Box();\n  val Box moved = rt take owned;\n  val borrow Box invalid = rt borrow owned;\n  return moved.value + invalid.value;\n}\n",
+      "rationale": "Cannot mint a borrow from a binding whose ownership was transferred.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "rt-mut-borrow-mutable",
+      "concern": "ownership",
+      "expect": "accept",
+      "source": "define class Box as\n  pub let int value = 7;\nend\npub fnc main(): int {\n  let mut Box owned = new Box();\n  val borrow mut Box view = rt mut borrow owned;\n  view.value = 8;\n  return view.value;\n}\n",
+      "rationale": "An exclusive lexical view is valid only from an owned mutable binding.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "rt-mut-borrow-immutable",
+      "concern": "ownership",
+      "expect": "reject",
+      "diagnosticCode": "E_MUTABILITY",
+      "source": "define class Box as\n  pub let int value = 7;\nend\npub fnc main(): int {\n  val Box owned = new Box();\n  val borrow mut Box view = rt mut borrow owned;\n  view.value = 8;\n  return view.value;\n}\n",
+      "rationale": "rt mut borrow cannot manufacture mutability from an immutable owner.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "rt-share-channel-sendsafe",
+      "concern": "ownership",
+      "expect": "accept",
+      "source": "pub fnc share(Channel<int> stream): void {\n  val Channel<int> shared = rt share stream;\n  return;\n}\npub fnc main(): int { return 0; }\n",
+      "rationale": "Channel<int> has compiler-verified payload Send and explicit synchronized shared handle authority.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "rt-share-channel-nonsend-payload",
+      "concern": "ownership",
+      "expect": "reject",
+      "diagnosticCode": "E_SHARE_REQUIRED",
+      "source": "pub fnc share(Channel<Rc<int>> stream): void {\n  val Channel<Rc<int>> invalid = rt share stream;\n  return;\n}\npub fnc main(): int { return 0; }\n",
+      "rationale": "The Channel handle can be copied, but Rc<int> payload is not Send and cannot imply Share.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "rt-share-mutex-sendsafe",
+      "concern": "ownership",
+      "expect": "accept",
+      "source": "pub fnc share(SharedMutex<int> mutex): void {\n  val SharedMutex<int> shared = rt share mutex;\n  return;\n}\npub fnc main(): int { return 0; }\n",
+      "rationale": "SharedMutex<int> provides an explicitly synchronized shared capability with a Send-safe payload.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "rt-share-copyonly-selectset",
+      "concern": "ownership",
+      "expect": "reject",
+      "diagnosticCode": "E_SHARE_REQUIRED",
+      "source": "pub fnc share(SelectSet choices): void {\n  val SelectSet duplicate = rt copy choices;\n  val SelectSet invalid = rt share choices;\n  return;\n}\npub fnc main(): int { return 0; }\n",
+      "rationale": "SelectSet is Copy in the Java ownership classifier, but has no Share proof; duplicating handle is not cross-domain alias authority.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "implicit-field-scalar-copy",
+      "concern": "ownership",
+      "expect": "accept",
+      "source": "define class Box as\n  pub let int value = 7;\nend\nfnc inspect(Box box): int {\n  val int detached = box.value;\n  return detached;\n}\npub fnc main(): int { return 42; }\n",
+      "rationale": "Reading a Copy scalar member does not transfer the containing object's ownership.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "implicit-field-move-only-consume",
+      "concern": "ownership",
+      "expect": "reject",
+      "diagnosticCode": "E_PARTIAL_MOVE",
+      "source": "define class Box as\n  pub let int value = 7;\nend\ndefine class Holder as\n  pub let Box item;\nend\nfnc consume(Box box): int { return box.value; }\nfnc invalid(Holder holder): int {\n  return consume(holder.item);\n}\npub fnc main(): int { return 42; }\n",
+      "rationale": "Passing a move-only field by value cannot leave its containing field slot live without a path-aware partial-move ledger.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "implicit-index-scalar-copy",
+      "concern": "ownership",
+      "expect": "accept",
+      "source": "fnc read(Array<int> items): int {\n  return items[0];\n}\npub fnc main(): int { return 42; }\n",
+      "rationale": "Reading an indexed Copy scalar is not a move of the array's element storage.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "implicit-index-move-only-return",
+      "concern": "ownership",
+      "expect": "reject",
+      "diagnosticCode": "E_PARTIAL_MOVE",
+      "source": "define class Box as\n  pub let int value = 7;\nend\nfnc invalid(Array<Box> items): Box {\n  return items[0];\n}\npub fnc main(): int { return 42; }\n",
+      "rationale": "Returning an indexed move-only element by value must not silently retain a live array slot.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "take-conditional-copy-value",
+      "concern": "ownership",
+      "expect": "accept",
+      "source": "fnc valid(bool choose): int {\n  val int first = 11;\n  val int second = 12;\n  return choose ? first : second;\n}\npub fnc main(): int { return 42; }\n",
+      "rationale": "Ordinary conditional evaluation of Copy scalars is permitted; it does not claim to invalidate a selected owner.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "take-conditional-untracked-place",
+      "concern": "ownership",
+      "expect": "reject",
+      "diagnosticCode": "E_PARTIAL_MOVE",
+      "source": "fnc invalid(bool choose): int {\n  val int first = 11;\n  val int second = 12;\n  val int escaped = rt take (choose ? first : second);\n  return escaped;\n}\npub fnc main(): int { return 42; }\n",
+      "rationale": "A conditional expression cannot select a source owner for rt take without a tracked place invalidation, even when both branches are Copy.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "take-cast-scalar-read",
+      "concern": "ownership",
+      "expect": "accept",
+      "source": "define class Box as\n  pub let int value = 7;\nend\nfnc valid(Box box): int {\n  val int detached = box.value as int;\n  return detached;\n}\npub fnc main(): int { return 42; }\n",
+      "rationale": "An ordinary scalar cast may read a Copy member without moving the containing owner.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "take-cast-untracked-place",
+      "concern": "ownership",
+      "expect": "reject",
+      "diagnosticCode": "E_PARTIAL_MOVE",
+      "source": "define class Box as\n  pub let int value = 7;\nend\nfnc invalid(): int {\n  let mut Box box = new Box();\n  val int escaped = rt take (box.value as int);\n  return escaped;\n}\npub fnc main(): int { return 42; }\n",
+      "rationale": "Casting a field expression must not launder an untracked source place into an rt take.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "assignment-ordinary-mutation",
+      "concern": "ownership",
+      "expect": "accept",
+      "source": "fnc valid(): int {\n  let mut int slot = 7;\n  slot = 12;\n  return slot;\n}\npub fnc main(): int { return 42; }\n",
+      "rationale": "An ordinary assignment to a mutable scalar binding is not an ownership transfer.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "take-assignment-untracked-place",
+      "concern": "ownership",
+      "expect": "reject",
+      "diagnosticCode": "E_PARTIAL_MOVE",
+      "source": "define class Box as\n  pub let int value = 7;\nend\nfnc invalid(): void {\n  let mut Box box = new Box();\n  val int escaped = rt take (box.value = 12);\n  return;\n}\npub fnc main(): int { return 42; }\n",
+      "rationale": "rt take of an assignment expression cannot prove that the source storage place was invalidated.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "heap-array-scoped-read-loans",
+      "concern": "ownership",
+      "expect": "accept",
+      "source": "pub fnc main(): int {\n  let mut Array<int> values = new Array<int>();\n  values.add(7);\n  if true; do\n    const first = rt borrow values[0];\n    const second = rt borrow values[0];\n  fi\n  values.add(8);\n  return 42;\n}\n",
+      "rationale": "Multiple immutable loans into the same resizable heap array can coexist in a lexical scope; resize after the loans end is legal.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2197",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "heap-array-resize-live-loan",
+      "concern": "ownership",
+      "expect": "reject",
+      "diagnosticCode": "E_BORROW_CONFLICT",
+      "source": "pub fnc main(): int {\n  let mut Array<int> values = new Array<int>();\n  values.add(7);\n  const element = rt borrow values[0];\n  values.add(8);\n  return 42;\n}\n",
+      "rationale": "A live projected loan protects the root allocation; an Array<T> grow may relocate storage, so mutation is forbidden.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2197",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "heap-array-scoped-exclusive",
+      "concern": "ownership",
+      "expect": "accept",
+      "source": "pub fnc main(): int {\n  let mut Array<int> values = new Array<int>();\n  if true; do\n    const writer = rt mut borrow values;\n  fi\n  const reader = rt borrow values;\n  return 42;\n}\n",
+      "rationale": "Exclusive access can end before a subsequent immutable loan; allocation location does not change lexical exclusivity.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2197",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "heap-array-exclusive-vs-read",
+      "concern": "ownership",
+      "expect": "reject",
+      "diagnosticCode": "E_BORROW_CONFLICT",
+      "source": "pub fnc main(): int {\n  let mut Array<int> values = new Array<int>();\n  const writer = rt mut borrow values;\n  const reader = rt borrow values;\n  return 42;\n}\n",
+      "rationale": "An exclusive loan and an overlapping read loan of the same heap owner must conflict.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2197",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "heap-array-owned-element-copy",
+      "concern": "ownership",
+      "expect": "accept",
+      "source": "pub fnc main(): int {\n  let mut Array<int> values = new Array<int>();\n  values.add(42);\n  return values[0];\n}\n",
+      "rationale": "Copyable scalar element retrieval is not a borrowed reference and cannot dangle after container retirement.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2197",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "heap-array-borrowed-element-return",
+      "concern": "ownership",
+      "expect": "reject",
+      "diagnosticCode": "E_BORROW_ESCAPE",
+      "source": "fnc bad(): borrow int {\n  let mut Array<int> values = new Array<int>();\n  values.add(42);\n  return rt borrow values[0];\n}\npub fnc main(): int { return 42; }\n",
+      "rationale": "Returning a borrowed element of a locally owned heap array would outlive the owner.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2197",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "heap-array-whole-owner-take",
+      "concern": "ownership",
+      "expect": "accept",
+      "source": "pub fnc main(): int {\n  let Array<int> values = new Array<int>();\n  val Array<int> moved = rt take values;\n  return 42;\n}\n",
+      "rationale": "Moving a uniquely owned array via its tracked root binding transfers the entire allocation.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2197",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "heap-array-indexed-take",
+      "concern": "ownership",
+      "expect": "reject",
+      "diagnosticCode": "E_PARTIAL_MOVE",
+      "source": "pub fnc main(): int {\n  let mut Array<int> values = new Array<int>();\n  values.add(7);\n  val int moved = rt take values[0];\n  return moved;\n}\n",
+      "rationale": "Explicit take of an indexed heap slot is rejected until slot-level invalidation is tracked, including for Copy element types.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2197",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    }
+  ],
+  "runtimeCases": [
+    {
+      "id": "actor-suspended-turn-not-reentrant",
+      "concern": "actors",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/ACTOR_FAMILIES_SEALED_STATE_V1.md",
+      "expectedTrace": [
+        "enter_A",
+        "suspend_A",
+        "resume_A",
+        "exit_A",
+        "enter_B"
+      ],
+      "forbiddenTrace": [
+        "enter_A",
+        "suspend_A",
+        "enter_B",
+        "mutate_state_B",
+        "resume_A"
+      ],
+      "requirements": [
+        "logical turn ticket retained during suspension",
+        "no raw state loan across await",
+        "fresh generation-validated loan on resume",
+        "CONTROL must remain live"
+      ],
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "eager-expressions-explicit-lazy-generator",
+      "concern": "evaluation",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-common-source/blob/main/docs/GENERATORS_V1.md",
+      "expectedTrace": [
+        "ordinary_call_effect",
+        "ordinary_call_returns",
+        "next_statement"
+      ],
+      "requirements": [
+        "ordinary call executes eagerly",
+        "gen* only executes on next pull",
+        "Future pipeline composition must be explicit and typed"
+      ],
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    }
+  ]
+}

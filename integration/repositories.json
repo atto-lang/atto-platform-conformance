@@ -1,0 +1,463 @@
+{
+  "schemaVersion": 1,
+  "organization": "ores-truffle-oreslang",
+  "snapshotDate": "2026-11-05",
+  "status": "coordination-only",
+  "note": "Declared integration touchpoints, NOT dependency resolution, code compatibility, release readiness, test execution or cross-backend parity.",
+  "repositories": [
+    {
+      "name": ".github",
+      "role": "infrastructure",
+      "upstreams": [],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "async-testing",
+      "role": "conformance",
+      "upstreams": [
+        "oreslang-source.java"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "gh-linguist-fork",
+      "role": "tool",
+      "upstreams": [],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "html-js-css-syntax-highlighter",
+      "role": "tool",
+      "upstreams": [
+        "oreslang-format"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "ores-truffle-oreslang.github.io",
+      "role": "site",
+      "upstreams": [
+        "html-js-css-syntax-highlighter"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-browser",
+      "role": "host",
+      "upstreams": [
+        "oreslang-source.wasm",
+        "oreslang-target-profiles"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-cli",
+      "role": "tool",
+      "upstreams": [
+        "oreslang-format",
+        "oreslang-source.java"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-common-source",
+      "role": "contract",
+      "upstreams": [],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-data-science",
+      "role": "library",
+      "upstreams": [
+        "oreslang-source.java"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-db",
+      "role": "library",
+      "upstreams": [
+        "oreslang-serialization-and-validation",
+        "oreslang-source.java"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-demo",
+      "role": "application",
+      "upstreams": [
+        "oreslang-source.java"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-demo-restful-server",
+      "role": "application",
+      "upstreams": [
+        "oreslang-source.java",
+        "oreslang-spin"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-demos",
+      "role": "application",
+      "upstreams": [
+        "oreslang-platform.desktop",
+        "oreslang-source.java"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-design-patterns",
+      "role": "application",
+      "upstreams": [
+        "oreslang-source.java"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-format",
+      "role": "tool",
+      "upstreams": [
+        "oreslang-source.java"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-hot-loading-tests",
+      "role": "conformance",
+      "upstreams": [
+        "oreslang-source.java"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-hpc-finance",
+      "role": "library",
+      "upstreams": [
+        "oreslang-data-science",
+        "oreslang-source.java"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-http-routing",
+      "role": "library",
+      "upstreams": [
+        "oreslang-source.java"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-linked-queue",
+      "role": "library",
+      "upstreams": [
+        "oreslang-source.java"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-message-queue-demo.ores",
+      "role": "application",
+      "upstreams": [
+        "oreslang-source.java"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-otel",
+      "role": "library",
+      "upstreams": [
+        "oreslang-source.java"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-phoenix-server.ores",
+      "role": "application",
+      "upstreams": [
+        "oreslang-spin"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-platform-conformance",
+      "role": "conformance",
+      "upstreams": [
+        "oreslang-common-source",
+        "oreslang-target-profiles"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-platform.asic",
+      "role": "host",
+      "upstreams": [
+        "oreslang-source.hdl"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-platform.desktop",
+      "role": "host",
+      "upstreams": [
+        "oreslang-source.llvm",
+        "oreslang-target-profiles"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-platform.embedded",
+      "role": "host",
+      "upstreams": [
+        "oreslang-source.llvm",
+        "oreslang-target-profiles"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-platform.fpga",
+      "role": "host",
+      "upstreams": [
+        "oreslang-source.hdl"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-platform.iot",
+      "role": "host",
+      "upstreams": [
+        "oreslang-platform.embedded",
+        "oreslang-source.llvm"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-platform.mobile",
+      "role": "host",
+      "upstreams": [
+        "oreslang-source.llvm",
+        "oreslang-target-profiles"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-proof-of-concepts",
+      "role": "application",
+      "upstreams": [
+        "oreslang-source.java"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-restful-server-perf-benchmarks",
+      "role": "application",
+      "upstreams": [
+        "oreslang-demo-restful-server",
+        "oreslang-spin"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-rpc",
+      "role": "library",
+      "upstreams": [
+        "oreslang-http-routing",
+        "oreslang-serialization-and-validation"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-serialization-and-validation",
+      "role": "library",
+      "upstreams": [
+        "oreslang-common-source",
+        "oreslang-source.java"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-source.cranelift",
+      "role": "compiler",
+      "upstreams": [
+        "oreslang-common-source",
+        "oreslang-target-profiles"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-source.forge",
+      "role": "compiler",
+      "upstreams": [
+        "oreslang-common-source",
+        "oreslang-target-profiles"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-source.hdl",
+      "role": "compiler",
+      "upstreams": [
+        "oreslang-common-source",
+        "oreslang-target-profiles"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-source.java",
+      "role": "compiler",
+      "upstreams": [
+        "oreslang-common-source",
+        "oreslang-target-profiles"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-source.js",
+      "role": "compiler",
+      "upstreams": [
+        "oreslang-common-source",
+        "oreslang-target-profiles"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-source.llvm",
+      "role": "compiler",
+      "upstreams": [
+        "oreslang-common-source",
+        "oreslang-target-profiles"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-source.net",
+      "role": "compiler",
+      "upstreams": [
+        "oreslang-common-source",
+        "oreslang-target-profiles"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-source.rs",
+      "role": "compiler",
+      "upstreams": [
+        "oreslang-common-source",
+        "oreslang-target-profiles"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-source.wasm",
+      "role": "compiler",
+      "upstreams": [
+        "oreslang-source.llvm",
+        "oreslang-target-profiles",
+        "oreslang-wasm"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-spin",
+      "role": "application",
+      "upstreams": [
+        "oreslang-http-routing",
+        "oreslang-source.java"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-ssr",
+      "role": "library",
+      "upstreams": [
+        "oreslang-source.java"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-stack-cli",
+      "role": "tool",
+      "upstreams": [
+        "oreslang-cli",
+        "oreslang-spin"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-target-profiles",
+      "role": "contract",
+      "upstreams": [
+        "oreslang-common-source"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-test.cli",
+      "role": "conformance",
+      "upstreams": [
+        "oreslang-source.java"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-wasm",
+      "role": "host",
+      "upstreams": [
+        "oreslang-source.llvm"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-websocket-server-demo.ores",
+      "role": "application",
+      "upstreams": [
+        "oreslang-source.java"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "rx-ores",
+      "role": "library",
+      "upstreams": [
+        "oreslang-source.java"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "rx-ores-callbacks",
+      "role": "library",
+      "upstreams": [
+        "oreslang-source.java"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "rx-oreslang-channels",
+      "role": "library",
+      "upstreams": [
+        "oreslang-source.java"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "sublime-text-plugins",
+      "role": "tool",
+      "upstreams": [
+        "oreslang-cli",
+        "oreslang-format"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "vscode-plugins",
+      "role": "tool",
+      "upstreams": [
+        "oreslang-cli",
+        "oreslang-format"
+      ],
+      "evidence": "not-attested"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+// Full native Atto std.fs File/FileStream test target. NOT_EXECUTED.
+// The harness must supply valid OpenOptions and an owned Bytes buffer.
+// It must separately check byte equality, EOF, close and permission failures.
+import * as fs from "std.fs";
+import OpenOptions from "std.fs";
+
+pub susp fnc handle_lifecycle(string source_path, string dest_path,
+                              OpenOptions read_options, OpenOptions write_options): int {
+  val source = await fs.open(source_path, read_options);
+  val bytes = await source.read(4096);
+  await source.close();
+  val dest = await fs.open(dest_path, write_options);
+  val written = await dest.write(bytes);
+  await dest.flush();
+  await dest.close();
+  return written;
+}
+
+pub susp fnc stream_lifecycle(string source_path, string dest_path,
+                              OpenOptions write_options): int {
+  val reader = await fs.read_stream(source_path, 1024);
+  val first_chunk = await reader.read_chunk();
+  await reader.close();
+  val writer = await fs.write_stream(dest_path, write_options);
+  // The harness also exercises successful write_chunk with a supplied Bytes
+  // value and checks at-most-once close/cancellation/partial-write progress.
+  await writer.flush();
+  await writer.close();
+  return 42;
+}

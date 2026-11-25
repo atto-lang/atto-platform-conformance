@@ -1,0 +1,142 @@
+{
+  "schema_version": 1,
+  "contract": "atto-explicit-local-initialization-v1",
+  "normative_spec": "https://github.com/atto-lang/atto-spec/blob/design/implicit-const-const-mut-v1-20261113/spec/28-explicit-initialization-no-implicit-defaults.md",
+  "summary": "Portable local-binding target: every local must have an initializer at its declaration; no implicit zero, false, empty-string, null, None, nil or type-specific default value is synthesized.",
+  "scope": "Local bindings only. Class fields/deferred final constructor fields, structs, actor state and aggregate construction are covered by existing linked contracts and are not duplicated here.",
+  "allowed_verification_statuses": [
+    "passed",
+    "failed",
+    "unsupported",
+    "not_executed"
+  ],
+  "required_backends": [
+    "rust_browser_wasm",
+    "java",
+    "llvm",
+    "net",
+    "forge",
+    "independent_wasm"
+  ],
+  "backend_status": {
+    "rust_browser_wasm": "not_executed",
+    "java": "not_executed",
+    "llvm": "not_executed",
+    "net": "not_executed",
+    "forge": "not_executed",
+    "independent_wasm": "not_executed"
+  },
+  "related_contracts": [
+    "https://github.com/atto-lang/atto-platform-conformance/blob/main/contracts/class-field-binding-defaults-v2.json",
+    "https://github.com/atto-lang/atto-platform-conformance/blob/main/contracts/constructor-definite-final-admission-v2.json",
+    "https://github.com/atto-lang/atto-platform-conformance/blob/main/contracts/tuple-destructuring-v1.json",
+    "https://github.com/atto-lang/atto-spec/pull/188",
+    "https://github.com/atto-lang/atto-spec/pull/127"
+  ],
+  "evidence_policy": {
+    "aggregate_status": "not_executed_until_every_required_backend_has_exact_head_guest_evidence",
+    "positive": "real_compile_and_execute_guest",
+    "negative": "targeted_semantic_diagnostic_and_no_artifact",
+    "rejected_evidence": [
+      "source_integrity_only",
+      "host_model",
+      "parser_only_acceptance",
+      "zero_step_ci",
+      "unverified_source_mirror",
+      "generic_parser_error"
+    ]
+  },
+  "cases": [
+    {
+      "id": "explicit-scalar-values",
+      "group": "positive",
+      "expect": "accept",
+      "path": "fixtures/explicit-initialization-v1/pass/explicit-scalar-values.atto",
+      "source_blob_sha": "cca6866ed140232e052fe811daab6e1362385e9b",
+      "expected_exit": 42,
+      "reason": "zero, false, empty string and a concrete scalar value are all explicit initializers",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "explicit-runtime-value",
+      "group": "positive",
+      "expect": "accept",
+      "path": "fixtures/explicit-initialization-v1/pass/explicit-runtime-value.atto",
+      "source_blob_sha": "c522e83c460d12ed6c04d6d5c58e8590cde29ba3",
+      "expected_exit": 42,
+      "reason": "runtime values remain available through an explicit let declaration and initializer",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "uninitialized-let",
+      "group": "negative",
+      "expect": "reject",
+      "path": "fixtures/explicit-initialization-v1/fail/uninitialized-let.atto",
+      "source_blob_sha": "e757e87639c7aa8ad5ed54147bce890e55a79de6",
+      "expected_diagnostic_category": "missing_initializer",
+      "reason": "later assignment does not retroactively initialize a declaration",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "uninitialized-val",
+      "group": "negative",
+      "expect": "reject",
+      "path": "fixtures/explicit-initialization-v1/fail/uninitialized-val.atto",
+      "source_blob_sha": "d1b3dc0b81ce9ed931cc2bf6795eb0710c9ccaf8",
+      "expected_diagnostic_category": "missing_initializer",
+      "reason": "immutable bindings also require explicit initializers",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "uninitialized-type-first",
+      "group": "negative",
+      "expect": "reject",
+      "path": "fixtures/explicit-initialization-v1/fail/uninitialized-type-first.atto",
+      "source_blob_sha": "abe3d6089988ba9a911be10a78ce5c56036b2098",
+      "expected_diagnostic_category": "missing_initializer",
+      "reason": "type-first shorthand does not receive an implicit zero value",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    }
+  ],
+  "aggregate_status": "not_executed"
+}

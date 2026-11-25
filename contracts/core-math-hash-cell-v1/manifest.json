@@ -1,0 +1,565 @@
+{
+  "schema": "attolang.core-math-hash-cell.v1",
+  "status": "candidate_source_free_not_guest_verified",
+  "description": "Portable behavioral subset; backend-local .atto source ownership and independent compiler admission",
+  "platform_requirements": [
+    "no OS, heap, process or host hashing",
+    "signed checked i64 math",
+    "read-only cell policy never grants live loan authority"
+  ],
+  "math": {
+    "signum": [
+      [
+        "-9223372036854775808",
+        -1
+      ],
+      [
+        "-7",
+        -1
+      ],
+      [
+        "0",
+        0
+      ],
+      [
+        "1",
+        1
+      ],
+      [
+        "9223372036854775807",
+        1
+      ]
+    ],
+    "closed_bounds": [
+      {
+        "value": 5,
+        "lower": 1,
+        "upper": 5,
+        "expected": true
+      },
+      {
+        "value": 6,
+        "lower": 1,
+        "upper": 5,
+        "expected": false
+      },
+      {
+        "value": 5,
+        "lower": 8,
+        "upper": 1,
+        "expected": false
+      }
+    ],
+    "clamp_invalid_bounds": "typed-error-not-silent-value",
+    "signed_integer_model": "two_complement_signed_64_bit_no_wrap",
+    "min_int": "-9223372036854775808",
+    "max_int": "9223372036854775807",
+    "rejected_out_of_range_decimal": [
+      "-9223372036854775809",
+      "9223372036854775808"
+    ]
+  },
+  "hash": {
+    "algorithm": "ordered polynomial octet fold modulo prime",
+    "seed": 17,
+    "prime": 1000000007,
+    "multiplier": 31,
+    "octet_min": 0,
+    "octet_max": 255,
+    "invalid_sentinel": -1,
+    "cryptographic": false,
+    "hash_flood_resistant": false,
+    "stable_without_overflow": true,
+    "canonical_full_value_Hash_trait": false,
+    "vectors": [
+      {
+        "state": 17,
+        "octet": 42,
+        "expected": 569
+      },
+      {
+        "state": 569,
+        "octet": 7,
+        "expected": 17646
+      },
+      {
+        "state": 17,
+        "octet": 0,
+        "expected": 527
+      },
+      {
+        "state": 17,
+        "octet": 1,
+        "expected": 528
+      },
+      {
+        "state": 1000000006,
+        "octet": 255,
+        "expected": 224
+      },
+      {
+        "state": -1,
+        "octet": 2,
+        "expected": -1
+      },
+      {
+        "state": 17,
+        "octet": 256,
+        "expected": -1
+      },
+      {
+        "state": 1000000007,
+        "octet": 0,
+        "expected": -1
+      }
+    ]
+  },
+  "cell": {
+    "status": "non_authoritative_admission_policy_only",
+    "max_readers": 65535,
+    "usable_cell_T": false,
+    "usable_refcell_T": false,
+    "requires_compiler_borrow_enforcement": true,
+    "requires_atomic_runtime_admission_for_shared_access": true,
+    "read_vectors": [
+      {
+        "readers": 0,
+        "writer": false,
+        "expected": true
+      },
+      {
+        "readers": 10,
+        "writer": false,
+        "expected": true
+      },
+      {
+        "readers": 65535,
+        "writer": false,
+        "expected": true
+      },
+      {
+        "readers": 65536,
+        "writer": false,
+        "expected": false
+      },
+      {
+        "readers": -1,
+        "writer": false,
+        "expected": false
+      },
+      {
+        "readers": 1,
+        "writer": true,
+        "expected": false
+      }
+    ],
+    "write_vectors": [
+      {
+        "readers": 0,
+        "writer": false,
+        "expected": true
+      },
+      {
+        "readers": 1,
+        "writer": false,
+        "expected": false
+      },
+      {
+        "readers": 0,
+        "writer": true,
+        "expected": false
+      },
+      {
+        "readers": -1,
+        "writer": false,
+        "expected": false
+      }
+    ],
+    "acquire_vectors": [
+      {
+        "readers": 0,
+        "writer": false,
+        "expected": 1
+      },
+      {
+        "readers": 65534,
+        "writer": false,
+        "expected": 65535
+      },
+      {
+        "readers": 65535,
+        "writer": false,
+        "expected": -1
+      },
+      {
+        "readers": 0,
+        "writer": true,
+        "expected": -1
+      }
+    ],
+    "release_vectors": [
+      {
+        "readers": 1,
+        "writer": false,
+        "expected": 0
+      },
+      {
+        "readers": 65535,
+        "writer": false,
+        "expected": 65534
+      },
+      {
+        "readers": 0,
+        "writer": false,
+        "expected": -1
+      },
+      {
+        "readers": 1,
+        "writer": true,
+        "expected": -1
+      }
+    ]
+  },
+  "candidates": [
+    {
+      "backend": "java",
+      "repository": "atto-lang/atto-source.java",
+      "pr": 1770,
+      "commit": "77105f2fca114a78984c26f23faabd0a324ef9c7",
+      "module_admission": "registered_compiler_owned_guest_unexecuted",
+      "source_blobs": {
+        "math": {
+          "path": "src/main/resources/dev/oreslang/core/math.atto",
+          "blob_sha1": "570efa74c56d3cf642fc1dac2e0bdd52f0ff5fab"
+        },
+        "hash": {
+          "path": "src/main/resources/dev/oreslang/core/hash.atto",
+          "blob_sha1": "6c0994b552a04002d41d20284983433231ed8c1e"
+        },
+        "cell": {
+          "path": "src/main/resources/dev/oreslang/core/cell.atto",
+          "blob_sha1": "80eee46850effebdf2bcdf31707a73b993b5bd6e"
+        }
+      },
+      "guest_status": "NOT_EXECUTED",
+      "material_ci_status": "NOT_EXECUTED",
+      "real_cell_T": false,
+      "module_sources_are_backend_owned": true
+    },
+    {
+      "backend": "llvm",
+      "repository": "atto-lang/atto-source.llvm",
+      "pr": 869,
+      "commit": "fe08a606d3be25304862da9fb7fce2cb64faa556",
+      "module_admission": "registered_compiler_owned_guest_unexecuted",
+      "source_blobs": {
+        "math": {
+          "path": "stdlib/math.atto",
+          "blob_sha1": "3c1ca889b795e294aba6349c538e782461335e90"
+        },
+        "hash": {
+          "path": "stdlib/hash.atto",
+          "blob_sha1": "28d702730cc83c4327d70797c10f39d61e4ce31c"
+        },
+        "cell": {
+          "path": "stdlib/cell.atto",
+          "blob_sha1": "fc60ae6c3de0c95633b4b9d554a00b010eadf93e"
+        }
+      },
+      "guest_status": "NOT_EXECUTED",
+      "material_ci_status": "NOT_EXECUTED",
+      "real_cell_T": false,
+      "module_sources_are_backend_owned": true
+    },
+    {
+      "backend": "net",
+      "repository": "atto-lang/atto-source.net",
+      "pr": 220,
+      "commit": "a7394b595177265edf6e3d96cc190f544e82f6e8",
+      "module_admission": "SHA256_pinned_compiler_owned_namespace_sources_restricted_canonical_core_star_import_and_legacy_module_import_CIL_tests_NOT_EXECUTED",
+      "source_blobs": {
+        "math": {
+          "path": "library/atto.core/math.atto",
+          "blob_sha1": "a54bfc2d63c639c273e607b8d1bcf76967bccfb2"
+        },
+        "hash": {
+          "path": "library/atto.core/hash.atto",
+          "blob_sha1": "7ac88c19335d3c88054f6dfb59c60b4330a7acdd"
+        },
+        "cell": {
+          "path": "library/atto.core/cell.atto",
+          "blob_sha1": "4d58de28141e2cd551036cc783d18e82c172949a"
+        }
+      },
+      "guest_status": "NOT_EXECUTED",
+      "material_ci_status": "NOT_EXECUTED",
+      "real_cell_T": false,
+      "module_sources_are_backend_owned": true,
+      "namespace_source_form": "use namespace atto.core.<leaf>;",
+      "compiler_owned_import_authority": true,
+      "general_package_namespace_imports": false,
+      "canonical_builtin_wildcard_imports": true,
+      "canonical_builtin_import_example": "import * as math from \"core.math\";",
+      "arbitrary_local_or_package_wildcard_imports": false,
+      "canonical_nested_atto_manifest_guard": true
+    },
+    {
+      "backend": "wasm",
+      "repository": "atto-lang/atto-source.wasm",
+      "pr": 283,
+      "commit": "5db502fc89e1291fecabb0711738b0fdeb3f555b",
+      "module_admission": "source_only_imports_explicitly_unsupported",
+      "source_blobs": {
+        "math": {
+          "path": "library/atto.core/math.atto",
+          "blob_sha1": "dc8c4f16f2b96639951cc63b5c92eb9ac4814db6"
+        },
+        "hash": {
+          "path": "library/atto.core/hash.atto",
+          "blob_sha1": "85b6f087a1e7a1b7e775d9ee5c89734fcf5eb98f"
+        },
+        "cell": {
+          "path": "library/atto.core/cell.atto",
+          "blob_sha1": "b7695151bf4a6521ea52301ef12eec73f8810c0f"
+        }
+      },
+      "guest_status": "NOT_EXECUTED",
+      "material_ci_status": "NOT_EXECUTED",
+      "real_cell_T": false,
+      "module_sources_are_backend_owned": true
+    },
+    {
+      "backend": "rs",
+      "repository": "atto-lang/atto-source.rs",
+      "pr": 540,
+      "commit": "7509be3fb07b9dd339c4864815bd19447acb6605",
+      "module_admission": "source_only_import_linking_unverified",
+      "source_blobs": {
+        "math": {
+          "path": "library/atto.core/math.atto",
+          "blob_sha1": "d1fc2c74570b4dd64889656f9112297f894ea21f"
+        },
+        "hash": {
+          "path": "library/atto.core/hash.atto",
+          "blob_sha1": "99fe39c77c492e51f59b3085889178b675b8f007"
+        },
+        "cell": {
+          "path": "library/atto.core/cell.atto",
+          "blob_sha1": "92f0647940f800c686bd20c8ebe1ce02ff41e77a"
+        }
+      },
+      "guest_status": "NOT_EXECUTED",
+      "material_ci_status": "NOT_EXECUTED",
+      "real_cell_T": false,
+      "module_sources_are_backend_owned": true
+    },
+    {
+      "backend": "forge",
+      "repository": "atto-lang/atto-source.forge",
+      "pr": 230,
+      "commit": "5cea4d3d46c9ac9d4bc3122a00c9407dfafff9e1",
+      "module_admission": "source_only_stage0_imports_unsupported",
+      "source_blobs": {
+        "math": {
+          "path": "library/atto.core/math.atto",
+          "blob_sha1": "1bf48b53e8222c189e01d9172a379888a736690d"
+        },
+        "hash": {
+          "path": "library/atto.core/hash.atto",
+          "blob_sha1": "03e621e383e7e51abd43c7dc65b3a10b90ce448e"
+        },
+        "cell": {
+          "path": "library/atto.core/cell.atto",
+          "blob_sha1": "752110144ca67c00d6df45d862c919d118a8171b"
+        }
+      },
+      "guest_status": "NOT_EXECUTED",
+      "material_ci_status": "NOT_EXECUTED",
+      "real_cell_T": false,
+      "module_sources_are_backend_owned": true
+    },
+    {
+      "backend": "js",
+      "repository": "atto-lang/atto-source.js",
+      "pr": 137,
+      "commit": "32df74b8a0eb1128ae22f632d377128fbd5e806f",
+      "module_admission": "namespace_math_to_checked_esm_test_not_executed_hash_cell_source_only",
+      "source_blobs": {
+        "math": {
+          "path": "library/atto.core/math.atto",
+          "blob_sha1": "845379a28b68e4674aed7d94489a18725ca16144"
+        },
+        "hash": {
+          "path": "library/atto.core/hash.atto",
+          "blob_sha1": "1f836230d8d976ab0a70c918c6fa48b8731bbc13"
+        },
+        "cell": {
+          "path": "library/atto.core/cell.atto",
+          "blob_sha1": "793677194d81a0aa1347ad6737b78ac507b078af"
+        }
+      },
+      "guest_status": "NOT_EXECUTED",
+      "material_ci_status": "NOT_EXECUTED",
+      "real_cell_T": false,
+      "module_sources_are_backend_owned": true,
+      "namespace_source_form": "use namespace atto.core.math;",
+      "compiler_owned_import_authority": false,
+      "general_package_namespace_imports": false
+    },
+    {
+      "backend": "cranelift",
+      "repository": "atto-lang/atto-source.cranelift",
+      "pr": 97,
+      "commit": "71502a77e2a7cbaf851fc163bcacb541935497a2",
+      "module_admission": "source_only_native_imports_unsupported",
+      "source_blobs": {
+        "math": {
+          "path": "library/atto.core/math.atto",
+          "blob_sha1": "a0eee42cb5b46b2aebde1e78245566fb97bc7e2d"
+        },
+        "hash": {
+          "path": "library/atto.core/hash.atto",
+          "blob_sha1": "80437faee7ce6ff9d66b70ccb9d4df89191ba962"
+        },
+        "cell": {
+          "path": "library/atto.core/cell.atto",
+          "blob_sha1": "1618b98dd0e0ca2211cc57afe513194df7c8ef59"
+        }
+      },
+      "guest_status": "NOT_EXECUTED",
+      "material_ci_status": "NOT_EXECUTED",
+      "real_cell_T": false,
+      "module_sources_are_backend_owned": true
+    },
+    {
+      "backend": "hdl",
+      "repository": "atto-lang/atto-source.hdl",
+      "pr": 66,
+      "commit": "e43e6eba7022fa3f8574f5afde6d4782e69f09a4",
+      "module_admission": "source_only_rtl_imports_unsupported",
+      "source_blobs": {
+        "math": {
+          "path": "library/atto.core/math.atto",
+          "blob_sha1": "45598b642a455907152d2eceaf9a71dc35a9016f"
+        },
+        "hash": {
+          "path": "library/atto.core/hash.atto",
+          "blob_sha1": "9ab1e38142b43d5af2aa6542baaf995f95af30af"
+        },
+        "cell": {
+          "path": "library/atto.core/cell.atto",
+          "blob_sha1": "4dd71711deaeac3ebab698800c3f5365b748b254"
+        }
+      },
+      "guest_status": "NOT_EXECUTED",
+      "material_ci_status": "NOT_EXECUTED",
+      "real_cell_T": false,
+      "module_sources_are_backend_owned": true
+    },
+    {
+      "backend": "atto",
+      "repository": "atto-lang/atto-source.atto",
+      "pr": 21,
+      "commit": "76c176714e8cbcfaaacb41f38e151d23f5071e02",
+      "module_admission": "self_hosted_bootstrap_source_only_no_compiler",
+      "source_blobs": {
+        "math": {
+          "path": "library/atto.core/math.atto",
+          "blob_sha1": "bc26640a826c8f397702ea2cb96f5102214d5032"
+        },
+        "hash": {
+          "path": "library/atto.core/hash.atto",
+          "blob_sha1": "3dc146f2df8f0450cca8fea8f7f77ea8bd8766d3"
+        },
+        "cell": {
+          "path": "library/atto.core/cell.atto",
+          "blob_sha1": "c6f1fbe5cccbf57535832ba1245713431fc2374e"
+        }
+      },
+      "guest_status": "NOT_EXECUTED",
+      "material_ci_status": "NOT_EXECUTED",
+      "real_cell_T": false,
+      "module_sources_are_backend_owned": true
+    },
+    {
+      "backend": "realtime",
+      "repository": "atto-lang/atto-source.realtime",
+      "pr": 16,
+      "commit": "8181e929b81c35504cbb0077dee58b00b94fbdde",
+      "module_admission": "realtime_bootstrap_source_only_no_compiler_or_wcet",
+      "source_blobs": {
+        "math": {
+          "path": "library/atto.core/math.atto",
+          "blob_sha1": "025410931c8d2bd03d042036b2d3fa1006a5d8ee"
+        },
+        "hash": {
+          "path": "library/atto.core/hash.atto",
+          "blob_sha1": "6ebafd999f44920a628020662a8b5163e576a119"
+        },
+        "cell": {
+          "path": "library/atto.core/cell.atto",
+          "blob_sha1": "633a54fe4adacbc9f86b046fe2e3c2d19fd4954b"
+        }
+      },
+      "guest_status": "NOT_EXECUTED",
+      "material_ci_status": "NOT_EXECUTED",
+      "real_cell_T": false,
+      "module_sources_are_backend_owned": true
+    }
+  ],
+  "unverified_backends": [
+    "atto-source.java",
+    "atto-source.llvm",
+    "atto-source.net",
+    "atto-source.wasm",
+    "atto-source.rs",
+    "atto-source.forge",
+    "atto-source.js",
+    "atto-source.cranelift",
+    "atto-source.hdl",
+    "atto-source.atto",
+    "atto-source.realtime"
+  ],
+  "certification": {
+    "cross_backend_guest_parity": false,
+    "registered_compiler_modules_complete": false,
+    "all_backend_executable_imports": false,
+    "full_hash_trait": false,
+    "real_cell_interior_mutability": false,
+    "stepful_exact_head_evidence": false,
+    "full_eleven_backend_guest_parity": false,
+    "self_hosted_compiler_execution": false,
+    "hard_real_time_wcet": false,
+    "namespace_import_parity": false
+  },
+  "namespace_contract": {
+    "status": "namespace_source_draft_not_general_import_registry",
+    "file_declaration": "use namespace atto.core.math;",
+    "builtin_core_namespace_examples": [
+      "atto.core.math",
+      "atto.core.hash",
+      "atto.core.cell"
+    ],
+    "namespace_is_source_metadata_not_runtime_object": true,
+    "source_namespace_grants_package_permissions": false,
+    "legacy_define_module_not_required_for_namespace_library": true,
+    "named_or_star_package_import_implemented": false,
+    "guest_namespace_execution_proven": false,
+    "backend_coverage": {
+      "net": "compiler_owned_namespace_sources_pinned_CIL_canonical_core_star_import_only_guest_NOT_EXECUTED",
+      "js": "pure_math_namespace_adapter_ESM_guest_not_executed",
+      "other_backends": "module_wrappers_or_source_only_until_verified_namespace_parse_link"
+    },
+    "negative_requirements": [
+      "duplicate or late use namespace header rejects",
+      "file namespace spoof of builtin Core rejects without compiler authority",
+      "canonical import cannot fall back to project or filesystem shadow",
+      "unsupported namespace import rejects without artifact publication",
+      "builtin wildcard import only resolves exact core.math, core.hash, core.cell to SHA-pinned resources",
+      "duplicate local wildcard aliases reject; two aliases of one Core unit are de-duplicated by identity",
+      "nested .atto.pkg.toml and dangling canonical manifest symlink are package boundaries"
+    ],
+    "canonical_builtin_static_import": "import * as math from \"core.math\";",
+    "canonical_builtin_import_is_package_grant": false
+  }
+}

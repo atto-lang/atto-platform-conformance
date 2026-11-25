@@ -1,0 +1,33 @@
+{
+  "schema": "oreslang.http-native-contract/1",
+  "backends": {
+    "java": "ores-truffle-oreslang/oreslang-source.java",
+    "llvm": "ores-truffle-oreslang/oreslang-source.llvm",
+    "wasm": "ores-truffle-oreslang/oreslang-source.wasm",
+    "cranelift": "ores-truffle-oreslang/oreslang-source.cranelift",
+    "net": "ores-truffle-oreslang/oreslang-source.net"
+  },
+  "profiles": {
+    "java": ["jdk25-jvm", "graalvm-native-aot"],
+    "llvm": ["llvm-native"],
+    "wasm": ["wasmtime-aot"],
+    "cranelift": ["cranelift-native"],
+    "net": ["net-native-aot"]
+  },
+  "cases": [
+    "http-mime-three-canonical",
+    "http-mime-deny-unsupported",
+    "http-framing-conflicting-cl",
+    "http-framing-te-cl",
+    "http-header-host-unique",
+    "http-route-method-exact",
+    "http-body-16384-accepted",
+    "http-body-16385-denied",
+    "http-slow-header-deadline",
+    "http-slow-body-deadline",
+    "http-overload-explicit-503",
+    "http-dispatch-actor-failure",
+    "http-drain-restart-quiescence",
+    "http-hot-generation-affinity"
+  ]
+}

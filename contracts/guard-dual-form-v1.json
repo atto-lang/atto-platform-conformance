@@ -1,0 +1,281 @@
+{
+  "schema": "attolang.guard.dual-form.v1",
+  "spec": "atto-lang/atto-spec#200",
+  "status": "SOURCE_CONTRACT_NOT_BACKEND_EXECUTION",
+  "scope": "Both forms invert the condition and require an explicit function return on every failure path; throw/break/continue are not valid substitutes. Additive to immutable guard-v1 pins. Both keyword-ended and braced void-function guards accept ^ void with no-return-value semantics.",
+  "backends": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "rs": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "hdl": "NOT_EXECUTED"
+  },
+  "fixtures": [
+    {
+      "id": "brace-continue",
+      "path": "fixtures/guard-dual-form-v1/brace-continue.atto",
+      "git_blob": "fa9dd0394a3ef08f0ecb4ff010e94cc72a859126",
+      "kind": "NATIVE_GUEST_RETURN",
+      "style": "brace",
+      "expected_integer": 42
+    },
+    {
+      "id": "keyword-continue",
+      "path": "fixtures/guard-dual-form-v1/keyword-continue.atto",
+      "git_blob": "82a2afa93e827f387407d0530febf328254599dc",
+      "kind": "NATIVE_GUEST_RETURN",
+      "style": "keyword",
+      "expected_integer": 42
+    },
+    {
+      "id": "brace-failure",
+      "path": "fixtures/guard-dual-form-v1/brace-failure.atto",
+      "git_blob": "f4cdcada6b147c77a1f0f6ae6469a31ee44f2603",
+      "kind": "NATIVE_GUEST_RETURN",
+      "style": "brace",
+      "expected_integer": 0
+    },
+    {
+      "id": "keyword-failure",
+      "path": "fixtures/guard-dual-form-v1/keyword-failure.atto",
+      "git_blob": "13f41e961534f8b93895c224b04df77feb286793",
+      "kind": "NATIVE_GUEST_RETURN",
+      "style": "keyword",
+      "expected_integer": 0
+    },
+    {
+      "id": "option-brace",
+      "path": "fixtures/guard-dual-form-v1/option-brace.atto",
+      "git_blob": "250ef6c1552c3c3338f9028546bd96b9c039ffb8",
+      "kind": "TYPECHECK_ACCEPT",
+      "style": "brace"
+    },
+    {
+      "id": "option-keyword",
+      "path": "fixtures/guard-dual-form-v1/option-keyword.atto",
+      "git_blob": "952de6320ca571a9a885fa7e4c02ebcc96f33697",
+      "kind": "TYPECHECK_ACCEPT",
+      "style": "keyword"
+    },
+    {
+      "id": "keyword-nested-outer-else",
+      "path": "fixtures/guard-dual-form-v1/keyword-nested-outer-else.atto",
+      "git_blob": "5103709c149e5719b8125762c2add475a19c8e44",
+      "kind": "NATIVE_GUEST_RETURN",
+      "style": "keyword",
+      "expected_integer": 42
+    },
+    {
+      "id": "reject-keyword-fallthrough",
+      "path": "fixtures/guard-dual-form-v1/reject-keyword-fallthrough.atto",
+      "git_blob": "9c411688352f3be8261e72ee88580a1b9308ae83",
+      "kind": "COMPILE_REJECT_NO_IR",
+      "style": "keyword"
+    },
+    {
+      "id": "reject-mixed-delimiters",
+      "path": "fixtures/guard-dual-form-v1/reject-mixed-delimiters.atto",
+      "git_blob": "e65ba4add6607c54c1ae69919bbbf48e7ad351ad",
+      "kind": "COMPILE_REJECT_NO_IR",
+      "style": "mixed"
+    },
+    {
+      "id": "reject-missing-end",
+      "path": "fixtures/guard-dual-form-v1/reject-missing-end.atto",
+      "git_blob": "6d36b02d3c606234836b635a313549cb4b944493",
+      "kind": "COMPILE_REJECT_NO_IR",
+      "style": "keyword"
+    },
+    {
+      "id": "reject-brace-break",
+      "path": "fixtures/guard-dual-form-v1/reject-brace-break.atto",
+      "git_blob": "f122472cc4c4af7804936a1de10133802b508d83",
+      "style": "brace",
+      "kind": "COMPILE_REJECT_NO_IR"
+    },
+    {
+      "id": "reject-keyword-break",
+      "path": "fixtures/guard-dual-form-v1/reject-keyword-break.atto",
+      "git_blob": "fdffaee388568ef22a445c67418ad1d442fa9849",
+      "style": "keyword",
+      "kind": "COMPILE_REJECT_NO_IR"
+    },
+    {
+      "id": "reject-brace-continue",
+      "path": "fixtures/guard-dual-form-v1/reject-brace-continue.atto",
+      "git_blob": "31493316d55cf6725be34c8c697f529db6b17874",
+      "style": "brace",
+      "kind": "COMPILE_REJECT_NO_IR"
+    },
+    {
+      "id": "reject-keyword-continue",
+      "path": "fixtures/guard-dual-form-v1/reject-keyword-continue.atto",
+      "git_blob": "0cba902628fe172a26391ddb24d3c1051ab329aa",
+      "style": "keyword",
+      "kind": "COMPILE_REJECT_NO_IR"
+    },
+    {
+      "id": "reject-brace-throw",
+      "path": "fixtures/guard-dual-form-v1/reject-brace-throw.atto",
+      "git_blob": "9cf581dee1641dcdd81f7d61e4f81628f2146fcf",
+      "style": "brace",
+      "kind": "COMPILE_REJECT_NO_IR"
+    },
+    {
+      "id": "reject-keyword-throw",
+      "path": "fixtures/guard-dual-form-v1/reject-keyword-throw.atto",
+      "git_blob": "bcf9af5ba0b2f57121f11a7d792b692aee4bc289",
+      "style": "keyword",
+      "kind": "COMPILE_REJECT_NO_IR"
+    },
+    {
+      "id": "guard-void-keyword-false",
+      "path": "fixtures/guard-dual-form-v1/guard-void-keyword-false.atto",
+      "git_blob": "0e56a63467eaa73f1108447bd4d98b4f4b1f98af",
+      "kind": "NATIVE_GUEST_RETURN",
+      "style": "keyword",
+      "expected_integer": 42
+    },
+    {
+      "id": "guard-void-brace-false",
+      "path": "fixtures/guard-dual-form-v1/guard-void-brace-false.atto",
+      "git_blob": "08f1fb299614e99ec472c6e160fbe97f48810020",
+      "kind": "NATIVE_GUEST_RETURN",
+      "style": "brace",
+      "expected_integer": 42
+    },
+    {
+      "id": "guard-void-keyword-true",
+      "path": "fixtures/guard-dual-form-v1/guard-void-keyword-true.atto",
+      "git_blob": "8cacd565b948305c04dad30df8faf87de9e36e1b",
+      "kind": "NATIVE_GUEST_RETURN",
+      "style": "keyword",
+      "expected_integer": 42
+    },
+    {
+      "id": "guard-void-brace-true",
+      "path": "fixtures/guard-dual-form-v1/guard-void-brace-true.atto",
+      "git_blob": "193049b7e60ddb7e3778b18158506d04b12405f1",
+      "kind": "NATIVE_GUEST_RETURN",
+      "style": "brace",
+      "expected_integer": 42
+    },
+    {
+      "id": "reject-guard-void-nonvoid-keyword",
+      "path": "fixtures/guard-dual-form-v1/reject-guard-void-nonvoid-keyword.atto",
+      "git_blob": "75f6874a4e51c84b53f4f33449a6fdc5970bced3",
+      "kind": "COMPILE_REJECT_NO_IR",
+      "style": "keyword"
+    },
+    {
+      "id": "reject-guard-void-nonvoid-brace",
+      "path": "fixtures/guard-dual-form-v1/reject-guard-void-nonvoid-brace.atto",
+      "git_blob": "1373f6e7e40d06f567d0b4e3cebf6c9f6cc70780",
+      "kind": "COMPILE_REJECT_NO_IR",
+      "style": "brace"
+    },
+    {
+      "id": "guard-brace-nested-outer-else",
+      "path": "fixtures/guard-dual-form-v1/guard-brace-nested-outer-else.atto",
+      "git_blob": "108162d467c5725811bb57349349e03328a07ebd",
+      "kind": "NATIVE_GUEST_RETURN",
+      "style": "brace",
+      "expected_integer": 42
+    },
+    {
+      "id": "option-result-brace",
+      "path": "fixtures/guard-dual-form-v1/option-result-brace.atto",
+      "git_blob": "5966ff4c94eef9804774ea76fd9e364b9968e24c",
+      "kind": "NATIVE_GUEST_RETURN",
+      "style": "brace",
+      "expected_integer": 42
+    },
+    {
+      "id": "option-result-keyword",
+      "path": "fixtures/guard-dual-form-v1/option-result-keyword.atto",
+      "git_blob": "f791b947af2d870e6644af4f7fb09f78a40eaf85",
+      "kind": "NATIVE_GUEST_RETURN",
+      "style": "keyword",
+      "expected_integer": 42
+    },
+    {
+      "id": "reject-option-result",
+      "path": "fixtures/guard-dual-form-v1/reject-option-result.atto",
+      "git_blob": "cf6b7b6f467596647ee9397d6062eb4286ffbbb1",
+      "kind": "COMPILE_REJECT_NO_IR",
+      "style": "keyword",
+      "expected_diagnostic": "return_value_must_match_option_result"
+    }
+  ],
+  "required_observations": [
+    "EXACT_FRONTEND_COMMIT_TREE",
+    "EXACT_INPUT_GIT_BLOBS",
+    "ASSIGNED_RUNNER_EXECUTED_STEPS",
+    "REAL_ATTO_COMPILER_ACCEPT_OR_REJECT",
+    "LINKED_GUEST_SEMANTICS_ON_POSITIVES",
+    "NO_IR_OR_EXECUTABLE_ON_NEGATIVES",
+    "FORMATTER_STYLE_ROUNDTRIP",
+    "INDEPENDENT_REVIEW"
+  ],
+  "receipts": [],
+  "implementation_prs": {
+    "java": "https://github.com/atto-lang/atto-source.java/pull/1730",
+    "llvm": "https://github.com/atto-lang/atto-source.llvm/pull/841",
+    "rs": "https://github.com/atto-lang/atto-source.rs/pull/504",
+    "js": "https://github.com/atto-lang/atto-source.js/pull/120",
+    "net": "https://github.com/atto-lang/atto-source.net/pull/202"
+  },
+  "remaining_gaps": {
+    "wasm": "https://github.com/atto-lang/atto-source.wasm/issues/267",
+    "forge": "https://github.com/atto-lang/atto-source.forge/issues/218",
+    "cranelift": "https://github.com/atto-lang/atto-source.cranelift/issues/83",
+    "hdl": "https://github.com/atto-lang/atto-source.hdl/issues/52",
+    "net_shipping_scalar": "https://github.com/atto-lang/atto-source.net/issues/5"
+  },
+  "notes": "This registry records source targets. Local receipts for scalar and Option callable results are recorded in the compiler PRs. The normal .NET CLI compiles guarded standalone guests through the verified CFG. Backend status here requires the registry’s separate exact-head workflow proof.",
+  "return_contract": {
+    "condition": "strict bool; short circuit left to right; evaluated once per test",
+    "true_path": "continue after guard",
+    "false_path": "execute failure block; every path must explicitly return from enclosing function",
+    "disallowed_substitutes": [
+      "throw",
+      "raise",
+      "panic",
+      "break",
+      "continue"
+    ],
+    "type_rule": "return expression matches enclosing function result; in void functions ^ void/return void are contextual no-value returns and reject in nonvoid callables",
+    "evidence": "no compiler or guest parity certified without exact-head executed stepful receipts"
+  },
+  "authored_execution_gates": {
+    "rs": {
+      "pr": "https://github.com/atto-lang/atto-source.rs/pull/504",
+      "path": "tests/guard_dual_form_guest.mjs",
+      "workflow": ".github/workflows/ci.yml",
+      "expected_real_wasm_guest_cases": 12,
+      "expected_no_artifact_reject_cases": 12,
+      "result": "NOT_EXECUTED"
+    },
+    "llvm": {
+      "pr": "https://github.com/atto-lang/atto-source.llvm/pull/841",
+      "path": "ci/test_guard_dual_form_native.sh",
+      "caller": "ci/test_native_aot.sh",
+      "workflow": ".github/workflows/native-aot.yml",
+      "expected_real_native_elf_guest_cases": 9,
+      "expected_no_artifact_reject_cases": 9,
+      "result": "NOT_EXECUTED"
+    }
+  },
+  "ci_recovery_blockers": {
+    "checked_at_utc_date": "2026-11-21",
+    "source_org": "FAILED_BEFORE_STEPS",
+    "private_carrier_probes": "SAMPLED_CARRIER_RUNS_ALL_ZERO_STEPS",
+    "authorized_export_status": "RS_AND_JAVA_NO_APPROVED_EXTERNAL_REPOS; LLVM_APPROVED_STREEMPILOT_CARRIER_PROBE_ZERO_STEPS",
+    "private_source_export_performed": false,
+    "semantic_receipts_available": false
+  }
+}

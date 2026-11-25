@@ -1,0 +1,6 @@
+define class Box<T> as
+  T item
+end
+fnc main() -> void ::
+  val x: Box<T=int, T=string>
+end

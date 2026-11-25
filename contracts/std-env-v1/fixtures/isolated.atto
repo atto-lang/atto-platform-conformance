@@ -1,0 +1,7 @@
+// Run in separate contexts with ATTO_CONTEXT_KEY=alpha, then beta, then alpha.
+import module std_env from "std/env";
+pub routine main(): void {
+  stdio.println(std_env.get_required("ATTO_CONTEXT_KEY").unwrap());
+  stdio.println(std_env.has("PATH"));
+  return;
+}

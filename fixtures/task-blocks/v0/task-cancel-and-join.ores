@@ -1,0 +1,8 @@
+pub fnc main(): void {
+  let Task<int> job = nb task {
+    return await calculate_async();
+  };
+  job.cancel();
+  await job.get_done();
+  return;
+}

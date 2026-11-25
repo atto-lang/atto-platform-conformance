@@ -1,0 +1,6 @@
+// TARGET: UTF-8 and delimiter-bearing quoted labels in closed row types.
+pub fnc main(): int {
+  val Record<{"x,y<>": int, "über": int}> item =
+    Record.of("über": 2, "x,y<>": 40);
+  return item["x,y<>"] + item["über"];
+}

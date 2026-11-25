@@ -1,0 +1,10 @@
+define dimension Time;
+define dimension Length;
+define unit Second: Time;
+define unit Millis: Time = Second / 1000;
+define unit Tick: Time = Millis;
+define unit Meter: Length;
+
+pub fnc main() -> int {
+    return 1<Meter> + 1<Second>;
+}

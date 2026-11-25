@@ -1,0 +1,35 @@
+{
+  "schema": "attolang.tenant-sandbox-evidence/1",
+  "backends": {
+    "java": "ores-truffle-oreslang/oreslang-source.java",
+    "llvm": "ores-truffle-oreslang/oreslang-source.llvm",
+    "net": "ores-truffle-oreslang/oreslang-source.net",
+    "wasm": "ores-truffle-oreslang/oreslang-source.wasm",
+    "forge": "ores-truffle-oreslang/oreslang-source.forge",
+    "rs": "ores-truffle-oreslang/oreslang-source.rs",
+    "js": "ores-truffle-oreslang/oreslang-source.js",
+    "cranelift": "ores-truffle-oreslang/oreslang-source.cranelift",
+    "hdl": "ores-truffle-oreslang/oreslang-source.hdl"
+  },
+  "proofOrder": ["host-model", "compiler-guest", "tenant-memory", "process-fault"],
+  "requiredCases": {
+    "host-model": [
+      "grant_foreign_actor", "grant_foreign_tenant", "grant_aba_reuse",
+      "grant_overlap", "grant_overflow", "grant_retirement"
+    ],
+    "compiler-guest": [
+      "guest_load_cannot_bypass", "guest_store_cannot_bypass",
+      "guest_ffi_pointer_escape_denied", "guest_forged_capability_denied"
+    ],
+    "tenant-memory": [
+      "corrupt_guest_cross_tenant_read_denied", "corrupt_guest_cross_tenant_write_denied",
+      "tenant_executable_metadata_protected", "tenant_stack_fault_contained",
+      "tenant_memory_quota_enforced", "tenant_cpu_budget_enforced"
+    ],
+    "process-fault": [
+      "host_filesystem_escape_denied", "host_socket_escape_denied",
+      "host_fd_forgery_denied", "native_crash_sibling_survives",
+      "descendant_processes_reaped", "host_broker_survives"
+    ]
+  }
+}

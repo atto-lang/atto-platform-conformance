@@ -1,0 +1,28 @@
+name: ADT lazy-guard v2 source/receipt integrity — HOST ONLY
+on:
+  push:
+    paths:
+      - 'contracts/adt-lazy-guard-v2.json'
+      - 'docs/adt-lazy-guard-v2.md'
+      - 'tests/adt-lazy-guard-v2.test.mjs'
+      - 'fixtures/adt-lazy-guard-v2/**'
+      - '.github/workflows/adt-lazy-guard-v2.yml'
+  pull_request:
+    paths:
+      - 'contracts/adt-lazy-guard-v2.json'
+      - 'docs/adt-lazy-guard-v2.md'
+      - 'tests/adt-lazy-guard-v2.test.mjs'
+      - 'fixtures/adt-lazy-guard-v2/**'
+      - '.github/workflows/adt-lazy-guard-v2.yml'
+permissions:
+  contents: read
+jobs:
+  source-receipt-host-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - run: node --test tests/adt-lazy-guard-v2.test.mjs
+      - run: echo "HOST ONLY: independent compiled guest evidence is required per backend"

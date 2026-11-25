@@ -1,0 +1,4 @@
+// expect-exit: 12
+define const int foo = 5;
+define const int bar as 7;
+pub fnc main(): int { return foo + bar; }
