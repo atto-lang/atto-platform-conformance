@@ -1,0 +1,8 @@
+// Candidate guest fixture: actor definitions/turn API vary by backend.
+define actor Spinner as
+  pub fnc run() -> int { while true { } return 0; }
+end
+
+define actor Witness as
+  pub fnc run() -> int { return 42; }
+end
