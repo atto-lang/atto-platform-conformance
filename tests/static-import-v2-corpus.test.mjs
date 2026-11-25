@@ -23,7 +23,7 @@ test('mixed delimiter permutations share one ordered binding expectation', () =>
 });
 test('expectations have valid stages, fixtures, and no fake receipts', () => {
   for (const c of doc.cases) {
-    assert.ok(c.source.includes('import ') || c.source.includes('define const '));
+    assert.ok(c.source.includes('import ') || c.source.includes('define alias '));
     assert.ok(['guest','typed-bindings','resolution'].includes(c.stage));
     assert.ok(['return','reject','identity','bindings'].includes(c.expect.outcome));
     if(c.fixture) assert.ok(Object.hasOwn(doc.fixtures,c.fixture));
