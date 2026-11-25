@@ -10,8 +10,8 @@ const cases = Object.fromEntries(registry.cases.map(c => [c.id,c]));
 test('versioned typed task fixtures are pinned to exact Git blob identity', () => {
   assert.equal(registry.schema, 'atto.task-payload-sync.v1');
   assert.equal(registry.status, 'TARGET_NOT_GUEST_VERIFIED');
-  assert.equal(registry.cases.length, 42);
-  assert.equal(new Set(registry.cases.map(x=>x.id)).size,42);
+  assert.equal(registry.cases.length, 76);
+  assert.equal(new Set(registry.cases.map(x=>x.id)).size,registry.cases.length);
   for (const c of registry.cases) {
     assert.match(c.source_path,/^fixtures\/task-payload-sync-v1\/[a-z0-9_]+\.atto$/);
     assert.equal(gitSha(getSource(c)),c.source_git_blob,c.id);
@@ -75,7 +75,7 @@ test('void-only do sync task and standalone statements match the canonical spec'
   }
 });
 
-test('inline sync task requires only transitive effects and never suspends under guard', () => {
+test('inline sync task can cooperate and rejects suspension without same-thread continuation', () => {
   const pure = cases.sync_inline_non_susp;
   const ordered = cases.sync_inline_order;
   const suspended = cases.sync_inline_suspend;
@@ -88,17 +88,23 @@ test('inline sync task requires only transitive effects and never suspends under
   assert.deepEqual(ordered.expected.stdout,'7\n9\n');
   assert.match(getSource(ordered).toString('utf8'),/stdio\.println\(7\);[\s\S]*stdio\.println\(9\);/);
   assert.match(getSource(suspended).toString('utf8'),/sync task<int>[\s\S]*await task<int>/);
-  assert.ok(suspended.expected.witnesses.includes('CALLER_TASK_ID_RESTORED_AFTER_RESUME'));
-  assert.ok(suspended.expected.witnesses.includes('NO_OS_THREAD_PINNING_ASSUMED'));
+  assert.equal(suspended.kind,'negative');
+  assert.equal(suspended.expected.diagnostic,'E_SYNC_TASK_SUSPEND');
+  assert.equal(suspended.expected.no_artifact,true);
+  assert.ok(pure.expected.witnesses.includes('SAME_CALLER_THREAD'));
+  const cooperating = cases.sync_inline_cooperate;
+  assert.equal(cooperating.kind,'positive');
+  assert.match(getSource(cooperating).toString('utf8'),/sync task<int>\s*\{\s*rt cooperate;/);
+  assert.ok(cooperating.expected.witnesses.includes('SAME_CALLER_THREAD_AFTER_COOPERATE'));
   assert.match(getSource(lockedPure).toString('utf8'),/using await lock\.lock_async/);
   assert.match(getSource(lockedPure).toString('utf8'),/sync task<int> \{ return 1; \}/);
   assert.ok(lockedPure.expected.witnesses.includes('GUARD_RELEASE_EXACTLY_ONCE'));
   assert.equal(lockedSuspend.kind,'negative');
-  assert.equal(lockedSuspend.expected.diagnostic,'E_GUARD_SUSPEND');
+  assert.equal(lockedSuspend.expected.diagnostic,'E_SYNC_TASK_SUSPEND');
   assert.equal(lockedSuspend.expected.no_artifact,true);
   assert.match(getSource(lockedSuspend).toString('utf8'),/sync task<int>[\s\S]*await task<int>/);
   const effect = cases.sync_needs_susp;
-  assert.equal(effect.expected.diagnostic,'E_EFFECT');
+  assert.equal(effect.expected.diagnostic,'E_SYNC_TASK_SUSPEND');
   assert.match(getSource(effect).toString('utf8'),/pub fnc main\(\): int/);
   assert.match(getSource(effect).toString('utf8'),/return await task<int>/);
   assert.equal(registry.inline_sync_runtime_probes.length,5);
@@ -384,4 +390,155 @@ test('legacy raw grant ack cannot bypass ready queue insertion', () => {
   assert.ok(probe.assertions.includes('GRANT_ACK_AND_READY_QUEUE_INSERTION_ONE_SERIALIZED_TRANSITION'));
   assert.ok(Object.values(registry.backends).every(b =>
     b.status === 'NOT_EXECUTED' && b.release_qualified === false));
+});
+
+test('await of inline scalar or void is rejected, but awaiting a returned Future is valid', () => {
+  assert.match(registry.await_inline_future_model, /type-directed|E_AWAIT_TYPE/);
+  for (const id of ['await_sync_scalar_rejected','await_sync_void_rejected']) {
+    const item = cases[id];
+    assert.equal(item.kind, 'negative');
+    assert.equal(item.expected.diagnostic, 'E_AWAIT_TYPE');
+    assert.equal(item.expected.no_artifact, true);
+    assert.match(getSource(item).toString('utf8'), /await sync task<(int|void)>/);
+  }
+  const value = cases.await_sync_future_valid;
+  assert.equal(value.kind, 'positive');
+  assert.equal(value.expected.guest_exit, 42);
+  const source = getSource(value).toString('utf8');
+  assert.match(source, /await sync task<Future<int>>/);
+  assert.match(source, /return task<int> \{ return 42; \}/);
+  for (const witness of ['SAME_LOGICAL_TASK_ID','NO_SYNTHETIC_SYNC_CHILD_SPAWN',
+    'INDEPENDENT_CHILD_SPAWN','AWAIT_RETURNED_FUTURE_ONLY','TASK_JOIN_PHYSICAL_RETIRE']) {
+    assert.ok(value.expected.witnesses.includes(witness), witness);
+  }
+});
+
+test('runtime task expressions cannot initialize constexpr const bindings', () => {
+  assert.match(registry.const_task_model, /Local const requires compile-time-evaluable/);
+  for (const id of ['const_async_task_rejected','const_sync_task_rejected']) {
+    const item = cases[id];
+    assert.equal(item.kind, 'negative');
+    assert.equal(item.expected.no_artifact, true);
+    assert.equal(item.expected.diagnostic, 'E_CONST');
+    const source = getSource(item).toString('utf8');
+    assert.match(source, /const (Future<int>|int) /);
+    assert.match(source, /(task<int>|sync task<int>)/);
+    assert.doesNotMatch(source, /val (Future<int>|int) /);
+  }
+});
+
+test('empty typed nonvoid tasks reject, but empty void do task spawns', () => {
+  for (const id of ['empty_async_nonvoid_rejected','empty_sync_nonvoid_rejected']) {
+    const item = cases[id];
+    assert.equal(item.kind, 'negative');
+    assert.equal(item.expected.diagnostic, 'E_TASK_RETURN_TYPE');
+    assert.equal(item.expected.no_artifact, true);
+    assert.match(getSource(item).toString('utf8'), /task<int> \{\}/);
+  }
+  const stmt = cases.do_async_void_empty;
+  assert.equal(stmt.kind, 'positive');
+  assert.equal(stmt.expected.guest_exit, 42);
+  assert.match(getSource(stmt).toString('utf8'), /do task<void> \{\}/);
+  for (const witness of ['INDEPENDENT_CHILD_SPAWN','SUPERVISED_DISCARD','SCOPE_PHYSICAL_RETIRE']) {
+    assert.ok(stmt.expected.witnesses.includes(witness), witness);
+  }
+});
+
+test('unannotated task infers Future<void> or Future<int> and do task discards within scope', () => {
+  const empty = cases.inferred_empty_task_future_void;
+  const valued = cases.inferred_int_task_future;
+  const discarded = cases.do_inferred_void_task;
+  for (const item of [empty, valued, discarded]) {
+    assert.equal(item.kind, 'positive');
+    assert.equal(item.expected.guest_exit, 42);
+    assert.ok(item.expected.witnesses.includes('INDEPENDENT_CHILD_SPAWN'));
+  }
+  assert.match(getSource(empty).toString('utf8'), /val Future<void> pending = task \{\}/);
+  assert.ok(empty.expected.witnesses.includes('FUTURE_VOID_INFERRED'));
+  assert.match(getSource(valued).toString('utf8'), /val Future<int> pending = task \{ return 42; \}/);
+  assert.ok(valued.expected.witnesses.includes('FUTURE_INT_INFERRED'));
+  assert.match(getSource(discarded).toString('utf8'), /do task \{\}/);
+  assert.ok(discarded.expected.witnesses.includes('SUPERVISED_DISCARD'));
+  assert.ok(discarded.expected.witnesses.includes('SCOPE_PHYSICAL_RETIRE'));
+});
+
+test('TaskFuture<T> owns the result receipt and a distinct task control capability', () => {
+  assert.match(registry.taskfuture_control_model,/separate affine task-control/);
+  assert.match(registry.taskfuture_control_model,/get_ready\(\): Future<T>/);
+  assert.match(registry.taskfuture_control_model,/cancel_task\(\): void/);
+  assert.match(registry.taskfuture_control_model,/cooperate\(\): void/);
+  for (const id of [
+    'taskfuture_await_ready','taskfuture_await_direct',
+    'taskfuture_receipt_split_control','taskfuture_cooperate_request',
+    'taskfuture_cancel_scope','taskfuture_cancel_after_split','taskfuture_legacy_future_projection',
+    'taskfuture_legacy_cancel_alias','taskfuture_inferred_empty_void',
+    'taskfuture_inferred_valued'
+  ]) {
+    const item = cases[id];
+    assert.equal(item.kind,'positive',id);
+    assert.equal(item.expected.guest_exit,42,id);
+    assert.ok(item.expected.witnesses.length >= 2,id);
+    assert.match(getSource(item).toString('utf8'),/task(?:<[^>]+>)?\s*\{/);
+  }
+  const plain = getSource(cases.taskfuture_await_ready).toString('utf8');
+  assert.match(plain,/val TaskFuture<int> t = task<int>/);
+  assert.match(plain,/await t\.get_ready\(\)/);
+  assert.match(getSource(cases.taskfuture_await_direct).toString('utf8'),/return await t;/);
+  const split = getSource(cases.taskfuture_receipt_split_control).toString('utf8');
+  assert.match(split,/val Future<int> ready = t\.get_ready\(\)/);
+  assert.match(split,/t\.cooperate\(\);[\s\S]*await ready;/);
+  const splitCancelled = cases.taskfuture_cancel_after_split;
+  const splitCancelledSource = getSource(splitCancelled).toString('utf8');
+  assert.match(splitCancelledSource,/val Future<void> receipt = t\.get_ready\(\)/);
+  assert.match(splitCancelledSource,/t\.cancel_task\(\);[\s\S]*t\.cooperate\(\)/);
+  assert.ok(splitCancelled.expected.witnesses.includes('TASK_CONTROL_RIGHT_RETAINED'));
+  assert.ok(splitCancelled.expected.witnesses.includes('CANCEL_PRIORITY_OVER_COOPERATE'));
+  const cancel = cases.taskfuture_cancel_scope;
+  assert.match(getSource(cancel).toString('utf8'),/t\.cancel_task\(\);[\s\S]*t\.cancel_task\(\)/);
+  assert.ok(cancel.expected.witnesses.includes('SCOPE_PHYSICAL_RETIRE'));
+  assert.match(getSource(cases.taskfuture_legacy_cancel_alias).toString('utf8'),/projected\.cancel\(\)/);
+  assert.match(getSource(cases.taskfuture_inferred_empty_void).toString('utf8'),/TaskFuture<void> pending = task \{\}/);
+  assert.match(getSource(cases.taskfuture_inferred_valued).toString('utf8'),/TaskFuture<int> pending = task \{ return 42; \}/);
+});
+
+test('TaskFuture control cannot duplicate receipts or apply to a result-only Future', () => {
+  const failures = {
+    taskfuture_duplicate_ready_rejected: 'E_TASK_RESULT_CONSUMED',
+    taskfuture_duplicate_await_rejected: 'E_TASK_RESULT_CONSUMED',
+    taskfuture_cooperate_on_future_rejected: 'E_TASK_CONTROL_TARGET',
+    taskfuture_cancel_task_on_future_rejected: 'E_TASK_CONTROL_TARGET',
+    taskfuture_get_ready_on_future_rejected: 'E_TASK_CONTROL_TARGET',
+    taskfuture_await_cooperate_rejected: 'E_AWAIT_TYPE',
+    taskfuture_await_cancel_task_rejected: 'E_AWAIT_TYPE',
+    taskfuture_const_handle_rejected: 'E_CONST',
+    taskfuture_sync_handle_rejected: 'E_TASK_RETURN_TYPE',
+    taskfuture_ready_as_int_rejected: 'E_TASK_RETURN_TYPE',
+    taskfuture_control_void_as_int_rejected: 'E_TASK_CONTROL_TYPE',
+    taskfuture_wrong_payload_rejected: 'E_TASK_RETURN_TYPE'
+  };
+  for (const [id,code] of Object.entries(failures)) {
+    const item = cases[id];
+    assert.equal(item.kind,'negative',id);
+    assert.equal(item.expected.diagnostic,code,id);
+    assert.equal(item.expected.no_artifact,true,id);
+    assert.match(getSource(item).toString('utf8'),/TaskFuture|Future<int>/,id);
+  }
+});
+
+test('TaskFuture cooperation requires real scheduler proof and never reports guest evidence from source alone', () => {
+  assert.equal(registry.taskfuture_runtime_probes.length,5);
+  for (const probe of registry.taskfuture_runtime_probes) {
+    assert.equal(probe.release_qualified,false,probe.id);
+    assert.equal(probe.execution,'NOT_EXECUTED',probe.id);
+    assert.ok(probe.required.length>=3,probe.id);
+  }
+  const ids = registry.taskfuture_runtime_probes.map(p=>p.id);
+  for (const id of [
+    'cooperate_running_child_yields_at_safe_point',
+    'cooperate_guard_defers_until_release',
+    'cooperate_cancel_priority',
+    'get_ready_control_split',
+    'cooperate_hint_bounded_coalescing'
+  ]) assert.ok(ids.includes(id),id);
+  assert.match(registry.taskfuture_control_model,/not forced preemption/);
 });
