@@ -1,0 +1,145 @@
+{
+  "schema": "atto.native.option-int-guest.v1",
+  "scope": "heapless by-value Option<int>; does not certify Result<int,Error>, int.parse or C++ LLVM backend",
+  "claim": "TARGET_ONLY_NOT_GUEST_VERIFIED",
+  "candidate": {
+    "repository": "atto-lang/atto-source.llvm",
+    "pr": 57,
+    "head": "fd2685e8606dc60208571739ac81378a2e5a1f68",
+    "tree": "fdd2757ae58ac8dc2a895f167c4408d9198e47ca",
+    "guest_target": "Linux x86_64 ELF, Clang O0/O2, no GC/heap",
+    "hardening": "deny-by-default recursive typed-IR heapless Option<int> proof; explicit TStmt::Unreachable lowering; not executable CI evidence",
+    "note": "native Option implementation, CI script and six fixture Git blobs unchanged across 9c9a2e9..fd2685e; only frontend parser and tests changed externally; no executed guest receipt"
+  },
+  "cases": [
+    {
+      "id": "option-some-match",
+      "source": "fixtures/native-option-int-v1/option-some-match.atto",
+      "git_blob_sha": "1d5fec1cb2b7a82f7aedcc82dbb777be74be7a32",
+      "expect": {
+        "kind": "guest_exit",
+        "exit_code": 42,
+        "stdout": ""
+      },
+      "status": "TARGET_ONLY"
+    },
+    {
+      "id": "option-none-question",
+      "source": "fixtures/native-option-int-v1/option-none-question.atto",
+      "git_blob_sha": "5d6ccab2078ff450a608e85b58b2f212b3c789ba",
+      "expect": {
+        "kind": "guest_exit",
+        "exit_code": 42,
+        "stdout": ""
+      },
+      "status": "TARGET_ONLY"
+    },
+    {
+      "id": "option-some-question",
+      "source": "fixtures/native-option-int-v1/option-some-question.atto",
+      "git_blob_sha": "d73fc7def3a4c1bfa9499c2642865f726cb97b6a",
+      "expect": {
+        "kind": "guest_exit",
+        "exit_code": 42,
+        "stdout": ""
+      },
+      "status": "TARGET_ONLY"
+    },
+    {
+      "id": "option-zero-is-some",
+      "source": "fixtures/native-option-int-v1/option-zero-is-some.atto",
+      "git_blob_sha": "664cfdf2a736bbc6968722d01ae131f5d0895436",
+      "expect": {
+        "kind": "guest_exit",
+        "exit_code": 42,
+        "stdout": ""
+      },
+      "status": "TARGET_ONLY"
+    },
+    {
+      "id": "option-parameter-abi",
+      "source": "fixtures/native-option-int-v1/option-parameter-abi.atto",
+      "git_blob_sha": "64008883d8a22cbdc311136059c14365489ed46e",
+      "expect": {
+        "kind": "guest_exit",
+        "exit_code": 42,
+        "stdout": ""
+      },
+      "status": "TARGET_ONLY"
+    },
+    {
+      "id": "reject-question-main",
+      "source": "fixtures/native-option-int-v1/reject-question-main.atto",
+      "git_blob_sha": "34dded7cd225aba0a6170b2a2813d8d1ad4c8295",
+      "expect": {
+        "kind": "compile_reject",
+        "diagnostic": "E_TYPE",
+        "no_artifact": true
+      },
+      "status": "TARGET_ONLY"
+    }
+  ],
+  "backends": {
+    "atto-source.rs": {
+      "status": "NOT_EXECUTED",
+      "compiler_guest_receipt": null
+    },
+    "atto-source.llvm": {
+      "status": "NOT_EXECUTED",
+      "compiler_guest_receipt": null,
+      "candidate_head": "fd2685e8606dc60208571739ac81378a2e5a1f68",
+      "candidate_role": "atto-llvm native Rust/LLVM scalar AOT executable, not LLVM C++ backend"
+    },
+    "atto-source.java": {
+      "status": "NOT_EXECUTED",
+      "compiler_guest_receipt": null
+    },
+    "atto-source.net": {
+      "status": "NOT_EXECUTED",
+      "compiler_guest_receipt": null
+    },
+    "atto-source.forge": {
+      "status": "NOT_EXECUTED",
+      "compiler_guest_receipt": null
+    },
+    "atto-source.cranelift": {
+      "status": "NOT_EXECUTED",
+      "compiler_guest_receipt": null
+    },
+    "atto-source.js": {
+      "status": "NOT_EXECUTED",
+      "compiler_guest_receipt": null
+    },
+    "atto-source.wasm": {
+      "status": "NOT_EXECUTED",
+      "compiler_guest_receipt": null
+    },
+    "atto-source.atto": {
+      "status": "NOT_EXECUTED",
+      "compiler_guest_receipt": null
+    },
+    "atto-source.hdl": {
+      "status": "NOT_EXECUTED",
+      "compiler_guest_receipt": null
+    },
+    "atto-source.realtime": {
+      "status": "NOT_EXECUTED",
+      "compiler_guest_receipt": null
+    }
+  },
+  "cross_compiler_candidate_sources": [
+    {
+      "repository": "atto-lang/atto-source.llvm",
+      "head": "fd2685e8606dc60208571739ac81378a2e5a1f68",
+      "role": "Rust native LLVM/ELF AOT bootstrap",
+      "fixture_prefix": "tests/native-adt/"
+    },
+    {
+      "repository": "atto-lang/atto-source.rs",
+      "head": "aae7ff2a2bb5f267d94a4913c51b3e0d39cfc886",
+      "role": "Rust/Wasm current-main fixture-only PR #423 (no implementation port)",
+      "fixture_prefix": "tests/fixtures/pass/"
+    }
+  ],
+  "regression_scope": "five 42-exit guests plus one type-invalid ? no-artifact target; source-only checks are not compiler evidence"
+}
