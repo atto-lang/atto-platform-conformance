@@ -1,0 +1,5 @@
+// expect-error: E_IO_READABLE
+pub suspends fnc main(): int using io, suspend {
+  val item = readch stdio.out;
+  return 0;
+}

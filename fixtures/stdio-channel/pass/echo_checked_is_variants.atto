@@ -1,0 +1,23 @@
+// TARGET ON IS NOMINAL ADT ONLY — expected guest stdout/stderr/status are in the contract.
+// Compiled Rust/Wasm and every backend remain NOT_EXECUTED until verified CI.
+pub suspends fnc main(): int using io, suspend {
+  val input = stdio.in;
+  val output = process.stdout;
+  val prompt = writech output, "Echo the next input item:";
+  return match prompt over
+    on is Err<error> -> 10,
+    on is Ok<_> -> match << input over
+      on is Err<error> -> 14,
+      on is Ok<line> -> match line over
+        on is None -> 11,
+        on is Some<item> -> match writech output, item over
+          on is Err<error> -> 12,
+          on is Ok<_> -> match writech stdio.err, "echo complete" over
+            on is Ok<_> -> 0,
+            on is Err<error> -> 13,
+          end,
+        end,
+      end,
+    end,
+  end;
+}

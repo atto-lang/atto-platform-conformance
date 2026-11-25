@@ -1,0 +1,8 @@
+// expect-error: E_GUARD_ESCAPE
+// a guard callback cannot return a reference into its protected storage
+define class Box as pub let int value = 42; end
+pub fnc main(): int {
+  val state = share! RwLock(new Box());
+  val escaped = state.with_read(|box| -> box);
+  return escaped.value;
+}

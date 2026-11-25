@@ -1,0 +1,69 @@
+{
+  "schema": "atto.implements.actor_local.rs_mainline_guest.v1",
+  "status": "PASS_SCOPED",
+  "observed_utc": "2026-11-19T04:16:15Z",
+  "source_repository": "atto-lang/atto-source.rs",
+  "source_pull_request": 374,
+  "source_head_sha": "d151385d43e1e31419b3bc50b040f39f643afdd1",
+  "source_main_parent_sha": "852dc13465bbf37c96565bc7d0b23e90aaea8b20",
+  "base_branch": "main",
+  "source_changed_files": [
+    "src/actor_implements_lower.rs",
+    "src/lib.rs",
+    "src/nominal_contract_admission.rs",
+    "tests/actor_implements_mtd_runtime.rs",
+    "tests/nominal_actor_struct_implements.rs"
+  ],
+  "carrier_repository": "usa-acc/atto-ci",
+  "carrier_pr": 2,
+  "carrier_head_sha": "57a306c216da8dc21614ae2e1dd5d12fb086834f",
+  "run_url": "https://github.com/usa-acc/atto-ci/actions/runs/44457107764",
+  "run_id": 44457107764,
+  "job_id": 135334688118,
+  "conclusion": "success",
+  "executed_steps": true,
+  "exact_source_blobs": 45,
+  "tests": {
+    "isolated_rust": 15,
+    "compiler_library": 42,
+    "actor_receiver_rust": 11,
+    "nominal_contract_rust": 14,
+    "abstract_trait_rust": 9,
+    "node_conformance_integrity": 5,
+    "failures": 0
+  },
+  "actual_guest": {
+    "compiler": "Rust-native AttoLang compiler",
+    "runtime": "Node.js WebAssembly",
+    "functions": [
+      "actor_init(0)",
+      "actor_receive(0,21n,1n)"
+    ],
+    "stdout": "42\n",
+    "byte_identical_two_compiles": true,
+    "actor_local_method": true
+  },
+  "negative": {
+    "prior_no_artifact_cases": 3,
+    "missing_actor_required_method": "E_IMPL_MISSING",
+    "no_artifact_for_missing_actor": true,
+    "external_ActorRef_mtd": "E_UNSUPPORTED"
+  },
+  "verified_scope": "stateless, same-source, immutable actor-local receiver; no trait-default codegen, no state fields, no mutable self, no cross-module interfaces",
+  "unsupported_or_unproven": [
+    "struct value mtd ABI",
+    "actor sealed state and critical-read/write",
+    "trait default body attachment",
+    "generic/effect/ownership borrowing across suspend",
+    "browser-hosted Rust compiler",
+    "Java",
+    "LLVM",
+    ".NET",
+    "independent Wasm",
+    "Forge",
+    "Cranelift",
+    "JS",
+    "all 29 portable fixtures"
+  ],
+  "policy": "This is a focused native-host compiler -> executed Wasm result, not proof that every registry case or backend passes. Keep all registry case/backend statuses NOT_EXECUTED."
+}
