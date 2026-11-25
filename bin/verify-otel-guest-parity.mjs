@@ -114,7 +114,9 @@ export function parseUniqueJSON(text) {
 export function checkGuestStdout(bytes) {
   demand(Buffer.isBuffer(bytes) && bytes.length > 0 && bytes.length <= LIMIT,
     'missing or oversized raw guest stdout');
-  const text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+  let text;
+  try { text = new TextDecoder('utf-8', { fatal: true }).decode(bytes); }
+  catch { demand(false, 'invalid UTF-8 guest stdout'); }
   demand(text.endsWith('\n'), 'stdout missing final JSONL newline');
   const lines = text.slice(0, -1).split('\n');
   demand(lines.length === 9, 'guest emitted unexpected telemetry record count');
