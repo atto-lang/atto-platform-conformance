@@ -1,0 +1,7 @@
+// Same semantic behavior as brace-continue.atto.
+pub fnc main(): int {
+  guard true else
+    return 0;
+  end
+  return 42;
+}
