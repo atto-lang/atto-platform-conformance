@@ -194,3 +194,7 @@ tests](tests/pull-push-admission.test.mjs) intentionally **reject all unattended
 claims**. They are **not** guest tests, source implementation, or five-backend parity.
 The normative [language amendment](https://github.com/ores-truffle-oreslang/attolang-language-spec.md/pull/35)
 and [source-free model](https://github.com/atto-lang/atto-rx-channels/pull/3) track semantics.
+
+## Result/Option payload-discard contract (draft)
+
+- [Versioned six-fixture matrix](contracts/adt-payload-discard-v1.json) with [verification notes](docs/adt-payload-discard-v1.md) tracks `Ok()`, `Err()`, `Ok(_)`, `Err(_)` and guarded binders; only the scoped Rust/Wasm compiled guest suite has PASS evidence. Java, LLVM, .NET and Forge are NOT_EXECUTED.
