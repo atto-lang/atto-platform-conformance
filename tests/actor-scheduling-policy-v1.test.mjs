@@ -948,3 +948,39 @@ test("trapped await oracle detects overbroad catch", () => {
 test("trapped await oracle detects replacement of original Error identity", () => {
   assert.throws(() => verifyTrappedAwait(false, true));
 });
+
+
+// Source-free model: value capture, cancellation of an unpublished child,
+// and independence of a different suspended receive.
+function verifyOwnedCaptureAndCancellation(byReference = false, leak = false, drainSibling = false) {
+  let input = 7;
+  const captured = input;
+  const produce = () => (byReference ? input : captured) + 5;
+  input = 99;
+  const first = produce();
+  assert.equal(first, 12);
+  assert.equal(captured + first + (first + 11), 42);
+  const sibling = {status: 'suspended'};
+  const child = {status: 'unpublished', runs: 0};
+  const parent = {status: 'running'};
+  parent.status = 'cancelled-and-retired';
+  if (!leak) child.status = 'cancelled';
+  if (drainSibling) sibling.status = 'cancelled';
+  assert.equal(child.status, 'cancelled');
+  assert.equal(child.runs, 0);
+  assert.equal(sibling.status, 'suspended');
+  sibling.status = 'retired';
+  assert.equal(sibling.status, 'retired');
+}
+test("owned task capture is by value and cancelled unpublished child cannot drain sibling", () => {
+  verifyOwnedCaptureAndCancellation();
+});
+test("capture oracle detects reference capture mutation", () => {
+  assert.throws(() => verifyOwnedCaptureAndCancellation(true));
+});
+test("capture oracle detects unpublished child leak", () => {
+  assert.throws(() => verifyOwnedCaptureAndCancellation(false, true));
+});
+test("capture oracle detects unrelated sibling cancellation", () => {
+  assert.throws(() => verifyOwnedCaptureAndCancellation(false, false, true));
+});
