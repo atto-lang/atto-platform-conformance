@@ -190,10 +190,12 @@ export class LayoutStore {
     // Include non-enumerable and Symbol keys: Object.keys silently discards
     // hidden payload fields and wrongly admits a non-exact row schema.
     const keys = Reflect.ownKeys(row);
-    if (keys.some(key => typeof key !== 'string' || !this.#types.has(key)))
-      throw new TypeError('row field set differs from schema');
-    if (keys.length !== this.#schema.length)
+    const own = new Set(keys);
+    if (this.#schema.some(field => !own.has(field.name)))
       throw new TypeError('missing row field');
+    if (keys.length !== this.#schema.length ||
+        keys.some(key => typeof key !== 'string' || !this.#types.has(key)))
+      throw new TypeError('row field set differs from schema');
     const snapshot = Object.create(null);
     for (const f of this.#schema) {
       if (!Object.hasOwn(row, f.name)) throw new TypeError('missing row field');
