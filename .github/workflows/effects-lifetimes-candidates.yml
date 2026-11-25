@@ -1,0 +1,21 @@
+name: Atto effects and lifetimes candidate contract
+on:
+  pull_request:
+    paths:
+      - 'contracts/effects-lifetimes-v1/**'
+      - '.github/workflows/effects-lifetimes-candidates.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-only-oracle:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Verify candidate contract and negative mutations (NOT guest CI)
+        run: |
+          python3 contracts/effects-lifetimes-v1/verify.py
+          python3 -m unittest discover -s contracts/effects-lifetimes-v1 -p 'test_*.py' -v

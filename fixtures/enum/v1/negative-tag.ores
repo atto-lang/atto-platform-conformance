@@ -1,0 +1,3 @@
+define enum Stage as
+    Ready = -1
+end

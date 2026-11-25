@@ -1,0 +1,8 @@
+// Requires a semantic type mismatch, NOT an unsupported-syntax denial.
+fnc checked_id(int id): Result<int, String> { return Ok(id); }
+fnc consume(Result<int, String> value): void { return; }
+pub fnc main(): int {
+  val Option<Result<int, String>> wrapped = trap checked_id(5);
+  consume(wrapped);
+  return 0;
+}

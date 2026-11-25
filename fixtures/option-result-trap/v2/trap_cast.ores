@@ -1,0 +1,27 @@
+// ORT2-TRAP_CAST: native guest assertions, not executed evidence
+define class Animal as
+end
+define class Dog extends Animal as
+end
+define class Cat extends Animal as
+end
+trap fnc as_dog(Animal animal): Dog { return animal as Dog; }
+fnc emit(bool yes): void {
+  if yes; then
+    stdio.stdout.write("1");
+  else
+    stdio.stdout.write("0");
+  fi
+  return;
+}
+pub fnc main(): void {
+  val Option<Dog> missing = as_dog(new Cat());
+  val Option<Dog> good = as_dog(new Dog());
+  stdio.stdout.write("ORT2:trap_cast:");
+  // CHECK cast_failure_none
+  emit(missing.is_none());
+  // CHECK cast_success_some
+  emit(good.is_some());
+  stdio.stdout.write(":END");
+  return;
+}

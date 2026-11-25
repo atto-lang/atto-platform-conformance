@@ -1,0 +1,6 @@
+pub susp fnc main(): int {
+  val TaskFuture<void> t = task<void> { return; };
+  t.cancel_task();
+  t.cancel_task();
+  return 42;
+}

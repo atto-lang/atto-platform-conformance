@@ -1,0 +1,8 @@
+pub fnc answer(): int {
+  return 42;
+}
+
+pub fnc main(): int {
+  let int value = answer();
+  return value;
+}

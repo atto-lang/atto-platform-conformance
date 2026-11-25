@@ -1,0 +1,4 @@
+define enum Tree as
+  Leaf = 1
+  Node: Tree = 2
+end

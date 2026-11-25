@@ -1,0 +1,13 @@
+// TARGET SYNTAX: inline lifecycle and out-of-line lifecycle share one role model.
+namespace actor_external_inline;
+define actor Worker as
+    external init(): void {
+        return;
+    }
+    external receive(ActorMail<int> mail): void {
+        return;
+    }
+end
+pub routine main(): int {
+    return 1;
+}

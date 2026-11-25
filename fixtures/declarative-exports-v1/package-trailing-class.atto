@@ -1,0 +1,3 @@
+define class Bar as
+end
+export pub[pkg] class Bar;

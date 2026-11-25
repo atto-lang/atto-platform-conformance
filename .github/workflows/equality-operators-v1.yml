@@ -1,0 +1,24 @@
+name: Equality operator registry integrity (host-only)
+on:
+  push:
+    paths:
+      - "contracts/equality-operators-v1.json"
+      - "fixtures/equality/**"
+      - "tests/test_equality_operators_contract.py"
+      - ".github/workflows/equality-operators-v1.yml"
+  pull_request:
+    paths:
+      - "contracts/equality-operators-v1.json"
+      - "fixtures/equality/**"
+      - "tests/test_equality_operators_contract.py"
+      - ".github/workflows/equality-operators-v1.yml"
+permissions:
+  contents: read
+jobs:
+  registry:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - run: python3 -m unittest discover -s tests -p test_equality_operators_contract.py -v

@@ -1,0 +1,142 @@
+{
+  "schema": "attolang.supervisor.differential_trace.v1",
+  "execution_class": "SYNTHETIC_REFERENCE",
+  "backend": "reference",
+  "scenario": "nested_supervisor_crash_while_data_inflight",
+  "events": [
+    {
+      "seq": 1,
+      "kind": "PUBLISH",
+      "actor": "s1",
+      "generation": 1,
+      "parent": "root"
+    },
+    {
+      "seq": 2,
+      "kind": "PUBLISH",
+      "actor": "a1",
+      "generation": 2,
+      "parent": "s1"
+    },
+    {
+      "seq": 3,
+      "kind": "PUBLISH",
+      "actor": "s2",
+      "generation": 3,
+      "parent": "root"
+    },
+    {
+      "seq": 4,
+      "kind": "PUBLISH",
+      "actor": "b1",
+      "generation": 4,
+      "parent": "s2"
+    },
+    {
+      "seq": 5,
+      "kind": "DATA_ADMIT",
+      "actor": "a1",
+      "generation": 2,
+      "ticket": "t-a1"
+    },
+    {
+      "seq": 6,
+      "kind": "FAIL",
+      "actor": "s1",
+      "generation": 1,
+      "failure_kind": "PANIC"
+    },
+    {
+      "seq": 7,
+      "kind": "FENCE",
+      "actor": "s1",
+      "generation": 1
+    },
+    {
+      "seq": 8,
+      "kind": "CONTROL_NOTICE",
+      "actor": "s1",
+      "generation": 1,
+      "controller": "root",
+      "notice": "n-s1"
+    },
+    {
+      "seq": 9,
+      "kind": "DATA_SETTLE",
+      "actor": "a1",
+      "generation": 2,
+      "ticket": "t-a1",
+      "outcome": "aborted"
+    },
+    {
+      "seq": 10,
+      "kind": "RETIRE",
+      "actor": "a1",
+      "generation": 2
+    },
+    {
+      "seq": 11,
+      "kind": "PHYSICAL_RELEASE",
+      "actor": "a1",
+      "generation": 2,
+      "active_loans": 0,
+      "receipt_source": "synthetic"
+    },
+    {
+      "seq": 12,
+      "kind": "RETIRE",
+      "actor": "s1",
+      "generation": 1
+    },
+    {
+      "seq": 13,
+      "kind": "PHYSICAL_RELEASE",
+      "actor": "s1",
+      "generation": 1,
+      "active_loans": 0,
+      "receipt_source": "synthetic"
+    },
+    {
+      "seq": 14,
+      "kind": "DECISION",
+      "notice": "n-s1",
+      "controller": "root",
+      "decision": "restart"
+    },
+    {
+      "seq": 15,
+      "kind": "CONTROL_ACK",
+      "notice": "n-s1",
+      "controller": "root"
+    },
+    {
+      "seq": 16,
+      "kind": "PUBLISH",
+      "actor": "s1",
+      "generation": 5,
+      "parent": "root"
+    },
+    {
+      "seq": 17,
+      "kind": "PUBLISH",
+      "actor": "a1",
+      "generation": 6,
+      "parent": "s1"
+    },
+    {
+      "seq": 18,
+      "kind": "DATA_ADMIT",
+      "actor": "b1",
+      "generation": 4,
+      "ticket": "t-b1"
+    },
+    {
+      "seq": 19,
+      "kind": "DATA_SETTLE",
+      "actor": "b1",
+      "generation": 4,
+      "ticket": "t-b1",
+      "outcome": "processed"
+    }
+  ]
+}
