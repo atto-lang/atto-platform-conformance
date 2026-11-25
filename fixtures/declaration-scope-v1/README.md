@@ -54,3 +54,7 @@ An inspection of the compiler source surfaces the following scoped claims,
 These are **source observations**, not passing evidence. In particular,
 the LLVM and .NET restrictions must remain explicit backend differences
 until real compiler/guest test receipts prove portability.
+
+## Canonical class methods and factories
+
+Class instance methods use `pub name(...)` or private `name(...)`; `pub new()` retains the exact sealed Newable factory witness. Legacy `fnc` member prefixes are accepted for migration. Standalone functions retain `fnc`. The new generic pair requires identical checked behavior, return 42, and formatter idempotence. Source-local execution is a separate gate from the Rust authenticated-package proof in atto-source.rs #587. Do not mark any backend PASS from source inventory tests.
