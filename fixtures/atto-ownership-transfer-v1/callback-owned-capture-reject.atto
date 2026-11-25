@@ -1,0 +1,7 @@
+actor fnc check(): void {
+  val Channel<int> output = Channel.new<int>(1);
+  val Array<int> data = [7, 8];
+  nb cb writech output, 42 || -> { stdio.println(data[0]); };
+  stdio.println(data[0]);
+  return;
+}

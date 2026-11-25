@@ -1,0 +1,15 @@
+{
+  "schema": "atto.actor-trace-context.v1",
+  "status": "HOST_REFERENCE_ONLY_NO_ATTO_GUEST_EXECUTION_CREDIT",
+  "wire": "W3C Trace Context version 00, immutable transfer envelope",
+  "scope": ["actor_message", "channel_message", "task_continuation", "supervisor_restart", "http_boundary"],
+  "correlation_default": "span_link",
+  "correlation_alternative": "single_message_parent_child",
+  "actor_heap_rule": "trace fields are copied and owned by receiving envelope; never share mutable span objects",
+  "suspend_rule": "save immutable trace context in logical continuation, restore on resume regardless of scheduler thread",
+  "bounds": {"traceparent_version": "00", "tracestate_max_chars": 512, "tracestate_max_entries": 32, "message_id_max_chars": 128, "telemetry_buffer_max_records": 65536},
+  "sampling_rule": "remote flags are advisory; local tenant policy controls recording",
+  "backpressure_rule": "bounded try-offer; drop and account instead of parking actors",
+  "negative_cases": ["forged_header", "zero_trace_or_parent_id", "overlong_tracestate", "duplicate_traceparent", "invalid_continuation", "unauthorized_explicit_trace", "slow_exporter", "cross_tenant_context_reuse"],
+  "proof_boundary": "reference_model_not_native_actor_runtime_or_OTLP_exporter"
+}

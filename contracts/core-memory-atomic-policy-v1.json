@@ -1,0 +1,741 @@
+{
+  "schema": "atto.core-memory-atomic-policy.v1",
+  "purpose": "Cross-backend behavioral compatibility without forcing identical .atto implementations",
+  "evidence_boundary": "These are candidate scalar policy vectors, NOT compiler-linked guest or native AOT results",
+  "signed_integer": "i64",
+  "invalid_int_result": "-1",
+  "memory_order_codes": {
+    "relaxed": 0,
+    "acquire": 1,
+    "release": 2,
+    "acq_rel": 3,
+    "seq_cst": 4
+  },
+  "source_of_vectors": "Independent contracted cases; original input adapted from Java backend's source-only 63-vector harness; do not treat source-subset tests as native compiler execution",
+  "functions": [
+    "is_power_of_two_alignment",
+    "align_up_checked",
+    "layout_stride",
+    "array_bytes_checked",
+    "span_fits",
+    "checked_span_end",
+    "checked_index_offset",
+    "can_split_span",
+    "default_order",
+    "valid_load_order",
+    "valid_store_order",
+    "valid_rmw_order",
+    "valid_fence_order",
+    "valid_compare_exchange_orders"
+  ],
+  "cases": [
+    {
+      "id": "CMA-001",
+      "fn": "is_power_of_two_alignment",
+      "args": [
+        "0"
+      ],
+      "expected": false
+    },
+    {
+      "id": "CMA-002",
+      "fn": "is_power_of_two_alignment",
+      "args": [
+        "1"
+      ],
+      "expected": true
+    },
+    {
+      "id": "CMA-003",
+      "fn": "is_power_of_two_alignment",
+      "args": [
+        "8"
+      ],
+      "expected": true
+    },
+    {
+      "id": "CMA-004",
+      "fn": "is_power_of_two_alignment",
+      "args": [
+        "3"
+      ],
+      "expected": false
+    },
+    {
+      "id": "CMA-005",
+      "fn": "is_power_of_two_alignment",
+      "args": [
+        "4611686018427387904"
+      ],
+      "expected": true
+    },
+    {
+      "id": "CMA-006",
+      "fn": "align_up_checked",
+      "args": [
+        "0",
+        "8"
+      ],
+      "expected": "0"
+    },
+    {
+      "id": "CMA-007",
+      "fn": "align_up_checked",
+      "args": [
+        "7",
+        "8"
+      ],
+      "expected": "8"
+    },
+    {
+      "id": "CMA-008",
+      "fn": "align_up_checked",
+      "args": [
+        "16",
+        "16"
+      ],
+      "expected": "16"
+    },
+    {
+      "id": "CMA-009",
+      "fn": "align_up_checked",
+      "args": [
+        "-1",
+        "8"
+      ],
+      "expected": "-1"
+    },
+    {
+      "id": "CMA-010",
+      "fn": "align_up_checked",
+      "args": [
+        "7",
+        "3"
+      ],
+      "expected": "-1"
+    },
+    {
+      "id": "CMA-011",
+      "fn": "align_up_checked",
+      "args": [
+        "9223372036854775807",
+        "2"
+      ],
+      "expected": "-1"
+    },
+    {
+      "id": "CMA-012",
+      "fn": "align_up_checked",
+      "args": [
+        "9223372036854775806",
+        "2"
+      ],
+      "expected": "9223372036854775806"
+    },
+    {
+      "id": "CMA-013",
+      "fn": "layout_stride",
+      "args": [
+        "9",
+        "8"
+      ],
+      "expected": "16"
+    },
+    {
+      "id": "CMA-014",
+      "fn": "layout_stride",
+      "args": [
+        "0",
+        "8"
+      ],
+      "expected": "0"
+    },
+    {
+      "id": "CMA-015",
+      "fn": "layout_stride",
+      "args": [
+        "9223372036854775807",
+        "8"
+      ],
+      "expected": "-1"
+    },
+    {
+      "id": "CMA-016",
+      "fn": "array_bytes_checked",
+      "args": [
+        "4",
+        "8",
+        "32"
+      ],
+      "expected": "32"
+    },
+    {
+      "id": "CMA-017",
+      "fn": "array_bytes_checked",
+      "args": [
+        "5",
+        "8",
+        "32"
+      ],
+      "expected": "-1"
+    },
+    {
+      "id": "CMA-018",
+      "fn": "array_bytes_checked",
+      "args": [
+        "9223372036854775807",
+        "2",
+        "9223372036854775807"
+      ],
+      "expected": "-1"
+    },
+    {
+      "id": "CMA-019",
+      "fn": "array_bytes_checked",
+      "args": [
+        "0",
+        "8",
+        "0"
+      ],
+      "expected": "0"
+    },
+    {
+      "id": "CMA-020",
+      "fn": "array_bytes_checked",
+      "args": [
+        "4",
+        "0",
+        "0"
+      ],
+      "expected": "0"
+    },
+    {
+      "id": "CMA-021",
+      "fn": "array_bytes_checked",
+      "args": [
+        "-1",
+        "8",
+        "32"
+      ],
+      "expected": "-1"
+    },
+    {
+      "id": "CMA-022",
+      "fn": "span_fits",
+      "args": [
+        "10",
+        "0",
+        "10"
+      ],
+      "expected": true
+    },
+    {
+      "id": "CMA-023",
+      "fn": "span_fits",
+      "args": [
+        "10",
+        "10",
+        "0"
+      ],
+      "expected": true
+    },
+    {
+      "id": "CMA-024",
+      "fn": "span_fits",
+      "args": [
+        "10",
+        "10",
+        "1"
+      ],
+      "expected": false
+    },
+    {
+      "id": "CMA-025",
+      "fn": "span_fits",
+      "args": [
+        "10",
+        "9223372036854775807",
+        "1"
+      ],
+      "expected": false
+    },
+    {
+      "id": "CMA-026",
+      "fn": "checked_span_end",
+      "args": [
+        "10",
+        "4",
+        "6"
+      ],
+      "expected": "10"
+    },
+    {
+      "id": "CMA-027",
+      "fn": "checked_span_end",
+      "args": [
+        "10",
+        "4",
+        "7"
+      ],
+      "expected": "-1"
+    },
+    {
+      "id": "CMA-028",
+      "fn": "checked_span_end",
+      "args": [
+        "9223372036854775807",
+        "9223372036854775807",
+        "0"
+      ],
+      "expected": "9223372036854775807"
+    },
+    {
+      "id": "CMA-029",
+      "fn": "checked_span_end",
+      "args": [
+        "-1",
+        "0",
+        "0"
+      ],
+      "expected": "-1"
+    },
+    {
+      "id": "CMA-030",
+      "fn": "checked_index_offset",
+      "args": [
+        "64",
+        "0",
+        "8",
+        "7",
+        "8",
+        "8",
+        "8"
+      ],
+      "expected": "56"
+    },
+    {
+      "id": "CMA-031",
+      "fn": "checked_index_offset",
+      "args": [
+        "64",
+        "0",
+        "8",
+        "8",
+        "8",
+        "8",
+        "8"
+      ],
+      "expected": "-1"
+    },
+    {
+      "id": "CMA-032",
+      "fn": "checked_index_offset",
+      "args": [
+        "64",
+        "8",
+        "4",
+        "3",
+        "8",
+        "8",
+        "8"
+      ],
+      "expected": "32"
+    },
+    {
+      "id": "CMA-033",
+      "fn": "checked_index_offset",
+      "args": [
+        "64",
+        "1",
+        "4",
+        "0",
+        "8",
+        "8",
+        "8"
+      ],
+      "expected": "-1"
+    },
+    {
+      "id": "CMA-034",
+      "fn": "checked_index_offset",
+      "args": [
+        "64",
+        "0",
+        "4",
+        "0",
+        "6",
+        "8",
+        "4"
+      ],
+      "expected": "-1"
+    },
+    {
+      "id": "CMA-035",
+      "fn": "checked_index_offset",
+      "args": [
+        "64",
+        "0",
+        "4",
+        "0",
+        "8",
+        "0",
+        "8"
+      ],
+      "expected": "-1"
+    },
+    {
+      "id": "CMA-036",
+      "fn": "checked_index_offset",
+      "args": [
+        "64",
+        "0",
+        "4",
+        "3",
+        "32",
+        "8",
+        "8"
+      ],
+      "expected": "-1"
+    },
+    {
+      "id": "CMA-037",
+      "fn": "checked_index_offset",
+      "args": [
+        "0",
+        "0",
+        "1",
+        "0",
+        "1",
+        "1",
+        "1"
+      ],
+      "expected": "-1"
+    },
+    {
+      "id": "CMA-038",
+      "fn": "can_split_span",
+      "args": [
+        "10",
+        "4",
+        "6",
+        "6"
+      ],
+      "expected": true
+    },
+    {
+      "id": "CMA-039",
+      "fn": "can_split_span",
+      "args": [
+        "10",
+        "4",
+        "6",
+        "7"
+      ],
+      "expected": false
+    },
+    {
+      "id": "CMA-040",
+      "fn": "can_split_span",
+      "args": [
+        "10",
+        "6",
+        "6",
+        "0"
+      ],
+      "expected": false
+    },
+    {
+      "id": "CMA-041",
+      "fn": "default_order",
+      "args": [],
+      "expected": "4"
+    },
+    {
+      "id": "CMA-042",
+      "fn": "valid_load_order",
+      "args": [
+        "0"
+      ],
+      "expected": true
+    },
+    {
+      "id": "CMA-043",
+      "fn": "valid_load_order",
+      "args": [
+        "1"
+      ],
+      "expected": true
+    },
+    {
+      "id": "CMA-044",
+      "fn": "valid_load_order",
+      "args": [
+        "4"
+      ],
+      "expected": true
+    },
+    {
+      "id": "CMA-045",
+      "fn": "valid_load_order",
+      "args": [
+        "2"
+      ],
+      "expected": false
+    },
+    {
+      "id": "CMA-046",
+      "fn": "valid_load_order",
+      "args": [
+        "3"
+      ],
+      "expected": false
+    },
+    {
+      "id": "CMA-047",
+      "fn": "valid_store_order",
+      "args": [
+        "2"
+      ],
+      "expected": true
+    },
+    {
+      "id": "CMA-048",
+      "fn": "valid_store_order",
+      "args": [
+        "4"
+      ],
+      "expected": true
+    },
+    {
+      "id": "CMA-049",
+      "fn": "valid_store_order",
+      "args": [
+        "1"
+      ],
+      "expected": false
+    },
+    {
+      "id": "CMA-050",
+      "fn": "valid_rmw_order",
+      "args": [
+        "3"
+      ],
+      "expected": true
+    },
+    {
+      "id": "CMA-051",
+      "fn": "valid_rmw_order",
+      "args": [
+        "5"
+      ],
+      "expected": false
+    },
+    {
+      "id": "CMA-052",
+      "fn": "valid_fence_order",
+      "args": [
+        "0"
+      ],
+      "expected": false
+    },
+    {
+      "id": "CMA-053",
+      "fn": "valid_fence_order",
+      "args": [
+        "4"
+      ],
+      "expected": true
+    },
+    {
+      "id": "CMA-054",
+      "fn": "valid_compare_exchange_orders",
+      "args": [
+        "0",
+        "0"
+      ],
+      "expected": true
+    },
+    {
+      "id": "CMA-055",
+      "fn": "valid_compare_exchange_orders",
+      "args": [
+        "0",
+        "1"
+      ],
+      "expected": false
+    },
+    {
+      "id": "CMA-056",
+      "fn": "valid_compare_exchange_orders",
+      "args": [
+        "1",
+        "1"
+      ],
+      "expected": true
+    },
+    {
+      "id": "CMA-057",
+      "fn": "valid_compare_exchange_orders",
+      "args": [
+        "2",
+        "1"
+      ],
+      "expected": false
+    },
+    {
+      "id": "CMA-058",
+      "fn": "valid_compare_exchange_orders",
+      "args": [
+        "3",
+        "1"
+      ],
+      "expected": true
+    },
+    {
+      "id": "CMA-059",
+      "fn": "valid_compare_exchange_orders",
+      "args": [
+        "4",
+        "4"
+      ],
+      "expected": true
+    },
+    {
+      "id": "CMA-060",
+      "fn": "valid_compare_exchange_orders",
+      "args": [
+        "4",
+        "2"
+      ],
+      "expected": false
+    },
+    {
+      "id": "CMA-061",
+      "fn": "valid_compare_exchange_orders",
+      "args": [
+        "4",
+        "3"
+      ],
+      "expected": false
+    },
+    {
+      "id": "CMA-062",
+      "fn": "valid_compare_exchange_orders",
+      "args": [
+        "5",
+        "0"
+      ],
+      "expected": false
+    },
+    {
+      "id": "CMA-063",
+      "fn": "valid_compare_exchange_orders",
+      "args": [
+        "1",
+        "4"
+      ],
+      "expected": false
+    }
+  ],
+  "backends": {
+    "java": {
+      "repository": "atto-lang/atto-source.java",
+      "policy_pr": "https://github.com/atto-lang/atto-source.java/pull/1771",
+      "source_state": "CANDIDATE_BACKEND_OWNED",
+      "source_subset_state": "SOURCE_POLICY_VECTORS_PREVIOUSLY_CHECKED_NOT_NATIVE",
+      "guest_import_status": "NOT_EXECUTED",
+      "guest_memory_access_status": "UNSUPPORTED_OR_NOT_EXECUTED",
+      "atomic_rmw_status": "UNSUPPORTED_OR_INDEPENDENT_PR",
+      "native_aot_status": "NOT_EXECUTED",
+      "exact_head_executable_receipt": null
+    },
+    "llvm": {
+      "repository": "atto-lang/atto-source.llvm",
+      "policy_pr": "https://github.com/atto-lang/atto-source.llvm/pull/873",
+      "source_state": "CANDIDATE_BACKEND_OWNED",
+      "source_subset_state": "SOURCE_POLICY_VECTORS_PREVIOUSLY_CHECKED_NOT_NATIVE",
+      "guest_import_status": "NOT_EXECUTED",
+      "guest_memory_access_status": "UNSUPPORTED_OR_NOT_EXECUTED",
+      "atomic_rmw_status": "UNSUPPORTED_OR_INDEPENDENT_PR",
+      "native_aot_status": "NOT_EXECUTED",
+      "exact_head_executable_receipt": null
+    },
+    "rs": {
+      "repository": "atto-lang/atto-source.rs",
+      "policy_pr": "https://github.com/atto-lang/atto-source.rs/pull/537",
+      "source_state": "CANDIDATE_BACKEND_OWNED",
+      "source_subset_state": "SOURCE_POLICY_VECTORS_PREVIOUSLY_CHECKED_NOT_NATIVE",
+      "guest_import_status": "NOT_EXECUTED",
+      "guest_memory_access_status": "UNSUPPORTED_OR_NOT_EXECUTED",
+      "atomic_rmw_status": "UNSUPPORTED_OR_INDEPENDENT_PR",
+      "native_aot_status": "NOT_EXECUTED",
+      "exact_head_executable_receipt": null
+    },
+    "net": {
+      "repository": "atto-lang/atto-source.net",
+      "policy_pr": "https://github.com/atto-lang/atto-source.net/pull/208",
+      "source_state": "CANDIDATE_BACKEND_OWNED",
+      "source_subset_state": "SOURCE_POLICY_VECTORS_PREVIOUSLY_CHECKED_NOT_NATIVE",
+      "guest_import_status": "NOT_EXECUTED",
+      "guest_memory_access_status": "UNSUPPORTED_OR_NOT_EXECUTED",
+      "atomic_rmw_status": "UNSUPPORTED_OR_INDEPENDENT_PR",
+      "native_aot_status": "NOT_EXECUTED",
+      "exact_head_executable_receipt": null
+    },
+    "wasm": {
+      "repository": "atto-lang/atto-source.wasm",
+      "policy_pr": "https://github.com/atto-lang/atto-source.wasm/pull/269",
+      "source_state": "CANDIDATE_BACKEND_OWNED",
+      "source_subset_state": "SOURCE_POLICY_VECTORS_PREVIOUSLY_CHECKED_NOT_NATIVE",
+      "guest_import_status": "NOT_EXECUTED",
+      "guest_memory_access_status": "UNSUPPORTED_OR_NOT_EXECUTED",
+      "atomic_rmw_status": "UNSUPPORTED_OR_INDEPENDENT_PR",
+      "native_aot_status": "NOT_EXECUTED",
+      "exact_head_executable_receipt": null
+    },
+    "forge": {
+      "repository": "atto-lang/atto-source.forge",
+      "policy_pr": "https://github.com/atto-lang/atto-source.forge/pull/221",
+      "source_state": "CANDIDATE_BACKEND_OWNED",
+      "source_subset_state": "SOURCE_POLICY_VECTORS_PREVIOUSLY_CHECKED_NOT_NATIVE",
+      "guest_import_status": "NOT_EXECUTED",
+      "guest_memory_access_status": "UNSUPPORTED_OR_NOT_EXECUTED",
+      "atomic_rmw_status": "UNSUPPORTED_OR_INDEPENDENT_PR",
+      "native_aot_status": "NOT_EXECUTED",
+      "exact_head_executable_receipt": null
+    },
+    "cranelift": {
+      "repository": "atto-lang/atto-source.cranelift",
+      "policy_pr": "https://github.com/atto-lang/atto-source.cranelift/pull/94",
+      "source_state": "CANDIDATE_BACKEND_OWNED",
+      "source_subset_state": "SOURCE_POLICY_VECTORS_PREVIOUSLY_CHECKED_NOT_NATIVE",
+      "guest_import_status": "NOT_EXECUTED",
+      "guest_memory_access_status": "UNSUPPORTED_OR_NOT_EXECUTED",
+      "atomic_rmw_status": "UNSUPPORTED_OR_INDEPENDENT_PR",
+      "native_aot_status": "NOT_EXECUTED",
+      "exact_head_executable_receipt": null
+    },
+    "js": {
+      "repository": "atto-lang/atto-source.js",
+      "policy_pr": "https://github.com/atto-lang/atto-source.js/pull/134",
+      "source_state": "CANDIDATE_BACKEND_OWNED",
+      "source_subset_state": "SOURCE_POLICY_VECTORS_PREVIOUSLY_CHECKED_NOT_NATIVE",
+      "guest_import_status": "NOT_EXECUTED",
+      "guest_memory_access_status": "UNSUPPORTED_OR_NOT_EXECUTED",
+      "atomic_rmw_status": "UNSUPPORTED_OR_INDEPENDENT_PR",
+      "native_aot_status": "NOT_EXECUTED",
+      "exact_head_executable_receipt": null
+    },
+    "hdl": {
+      "repository": "atto-lang/atto-source.hdl",
+      "policy_pr": "https://github.com/atto-lang/atto-source.hdl/pull/63",
+      "source_state": "CANDIDATE_BACKEND_OWNED",
+      "source_subset_state": "SOURCE_POLICY_VECTORS_PREVIOUSLY_CHECKED_NOT_NATIVE",
+      "guest_import_status": "NOT_EXECUTED",
+      "guest_memory_access_status": "UNSUPPORTED_OR_NOT_EXECUTED",
+      "atomic_rmw_status": "UNSUPPORTED_OR_INDEPENDENT_PR",
+      "native_aot_status": "NOT_EXECUTED",
+      "exact_head_executable_receipt": null
+    }
+  }
+}

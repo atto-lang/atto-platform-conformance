@@ -1,0 +1,485 @@
+{
+  "schema": "attolang.core.cell-ownership-parity.v1",
+  "status": "TARGET_NOT_EXECUTED",
+  "sourcePolicy": "Compiler-owned .atto core/cell predicates are admission policy only, never references, tokens, thread safety, locks or authority.",
+  "backends": {
+    "java": {
+      "policy": "SOURCE_AUTHORED_NOT_GUEST_VERIFIED",
+      "source": "atto-source.java/core/cell.atto",
+      "representation": "signed-counter-i64",
+      "sourceBlobSha": "f8151e996dfdbd1e0892991d28d44f77a0d23c16",
+      "candidateCommitSha": "be9006bd58ecfa2de603dcc8564945ced787ec84",
+      "candidateTreeSha": "cf1ffc1a09241a3ed5997dde93aa2b720422596a"
+    },
+    "llvm": {
+      "policy": "SOURCE_AUTHORED_NOT_GUEST_VERIFIED",
+      "source": "atto-source.llvm/core/cell.atto",
+      "representation": "signed-counter-i64",
+      "sourceBlobSha": "51e0467d09b25d0138cf185fc3c7c0405c3465ad",
+      "candidateCommitSha": "92b329df9e471d877e56336a3c5d17857e7e7bc2",
+      "candidateTreeSha": "a217b781a2a7ff77b9217c9f372289d8d23b397c"
+    },
+    "net": {
+      "policy": "SOURCE_AUTHORED_NOT_GUEST_VERIFIED",
+      "source": "atto-source.net/library/atto.core/cell.atto",
+      "representation": "bounded-readers-plus-writer",
+      "sourceBlobSha": "154563e51199140cfad005945c608789bee5ebfa",
+      "candidateCommitSha": "90225e3e30527b7a69075fe5b01ce71a4bec1c52",
+      "candidateTreeSha": "f6eb660ec37dd6e567bba57531982618a9016bec",
+      "authenticatedEmbeddedSourceSha256": "ad876ea26e04754e1a62cc85245860876dc8ed512645e30d5150a144e6b96ce3",
+      "embeddedPinMeaning": "Exact SHA-256 of compiler-owned library/atto.core/cell.atto bytes verified locally; source digest admission, not a compiled CIL result."
+    },
+    "cranelift": {
+      "policy": "SOURCE_AUTHORED_NOT_GUEST_VERIFIED",
+      "source": "atto-source.cranelift/library/atto.core/cell.atto",
+      "representation": "bounded-readers-plus-writer",
+      "sourceBlobSha": "178dc049f6f19c8af29f96e42661b970e746d671",
+      "candidateCommitSha": "3caf0f4b47491cad266a17f805f5adcf5956ac0e",
+      "candidateTreeSha": "d559df2692b7129876f49912cfe790d127f7b516"
+    },
+    "wasm": {
+      "policy": "SOURCE_AUTHORED_NOT_GUEST_VERIFIED",
+      "source": "atto-source.wasm/library/atto.core/cell.atto",
+      "representation": "bounded-readers-plus-writer",
+      "sourceBlobSha": "1561f8e71fc831d5787b8652a108d0fb87714503",
+      "candidateCommitSha": "3214014f973916d43e3b2d15b61d93f1ee7521dc",
+      "candidateTreeSha": "7e15c7505b4558c4158b7584535c170d407a70a1"
+    },
+    "forge": {
+      "policy": "SOURCE_AUTHORED_NOT_GUEST_VERIFIED",
+      "source": "atto-source.forge/library/atto.core/cell.atto",
+      "representation": "bounded-readers-plus-writer",
+      "sourceBlobSha": "7a0b117c5a6775921e541dfa5aaf654ba2aea7f4",
+      "candidateCommitSha": "9d9d399f58d919bc64f5147387091474629b88c7",
+      "candidateTreeSha": "2f70eac004c65af9b21a6ad6060ffc7778c42808"
+    },
+    "js": {
+      "policy": "SOURCE_AUTHORED_NOT_GUEST_VERIFIED",
+      "source": "atto-source.js/library/atto.core/cell.atto",
+      "representation": "bounded-readers-plus-writer",
+      "sourceBlobSha": "ef1e84dbab1bb476d6ac55bf1802331660879732",
+      "candidateCommitSha": "e5646b885933ed5d643d12cf46767db6ea795de4",
+      "candidateTreeSha": "c2828d4033f56994c10e062b92afea0fee051450"
+    },
+    "rs": {
+      "policy": "SOURCE_AUTHORED_NOT_GUEST_VERIFIED",
+      "source": "atto-source.rs/library/atto.core/cell.atto",
+      "representation": "bounded-readers-plus-writer",
+      "sourceBlobSha": "7eb09f625637dd11d75aa295947a9c79835cb5df",
+      "candidateCommitSha": "d8690dd50f40caef9979392b762a80fdcb1da6f1",
+      "candidateTreeSha": "5b6c6c081cd4e34fcbfcff9585dd1e0b1e5b7151"
+    },
+    "hdl": {
+      "policy": "SOURCE_AUTHORED_NOT_GUEST_VERIFIED",
+      "source": "atto-source.hdl/library/atto.core/cell.atto",
+      "representation": "bounded-readers-plus-writer",
+      "sourceBlobSha": "38439b2b0b487b4bb09d191ba50c115611295206",
+      "candidateCommitSha": "981f808f7d705c7f480e89ec6a87d1348ed1ca97",
+      "candidateTreeSha": "16d7949ccb43f4999ca259f3b60b1eaa6f1d48f9"
+    },
+    "atto": {
+      "policy": "SOURCE_AUTHORED_SCAFFOLD_NOT_GUEST_VERIFIED",
+      "source": "atto-source.atto/library/atto.core/cell.atto",
+      "representation": "bounded-readers-plus-writer",
+      "sourceBlobSha": "55a0a3c5a04b825fb597a9c66101ee44d2e584ed",
+      "candidateCommitSha": "07246c5f749b9440ffbf72518c580a1fd52f897f",
+      "candidateTreeSha": "a4fdd694c6ef78f0afed25bba0f29e3d4f8e018d"
+    },
+    "realtime": {
+      "policy": "SOURCE_AUTHORED_SCAFFOLD_NOT_GUEST_VERIFIED",
+      "source": "atto-source.realtime/library/atto.core/cell.atto",
+      "representation": "bounded-readers-plus-writer",
+      "sourceBlobSha": "30ef700dc973f1af6bda588aa46ae5cdc7ae745b",
+      "candidateCommitSha": "7bf09781f1297857550db52e4690437492cb6f75",
+      "candidateTreeSha": "ff312b345aa360efe55460771fc912a77ad1afd5"
+    }
+  },
+  "guestEvidence": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
+    "rs": "NOT_EXECUTED",
+    "hdl": "NOT_EXECUTED",
+    "atto": "NOT_EXECUTED",
+    "realtime": "NOT_EXECUTED"
+  },
+  "caseClasses": [
+    {
+      "id": "idle",
+      "read": true,
+      "write": true,
+      "move": true,
+      "unpinnedSuspend": true,
+      "acquireShared": true
+    },
+    {
+      "id": "one_shared_reader",
+      "read": true,
+      "write": false,
+      "move": false,
+      "unpinnedSuspend": false,
+      "acquireShared": true
+    },
+    {
+      "id": "max_shared_reader",
+      "read": true,
+      "write": false,
+      "move": false,
+      "unpinnedSuspend": false,
+      "acquireShared": false
+    },
+    {
+      "id": "exclusive_writer",
+      "read": false,
+      "write": false,
+      "move": false,
+      "unpinnedSuspend": false,
+      "acquireShared": false
+    },
+    {
+      "id": "invalid_negative_readers",
+      "read": false,
+      "write": false,
+      "move": false,
+      "unpinnedSuspend": false,
+      "acquireShared": false
+    },
+    {
+      "id": "invalid_conflicting_writer_and_readers",
+      "read": false,
+      "write": false,
+      "move": false,
+      "unpinnedSuspend": false,
+      "acquireShared": false
+    }
+  ],
+  "compilerNegativeCases": [
+    {
+      "id": "use_after_take",
+      "diagnostic": "E_USE_AFTER_MOVE_OR_DROP",
+      "requireZeroArtifacts": true
+    },
+    {
+      "id": "escaping_local_borrow",
+      "diagnostic": "E_BORROW_ESCAPE",
+      "requireZeroArtifacts": true
+    },
+    {
+      "id": "conflicting_shared_mutable_loans",
+      "diagnostic": "E_BORROW_CONFLICT",
+      "requireZeroArtifacts": true
+    },
+    {
+      "id": "suspend_with_unpinned_loan",
+      "diagnostic": "E_SUSPEND_WITH_LIVE_LOAN",
+      "requireZeroArtifacts": true
+    },
+    {
+      "id": "foreign_actor_mutation",
+      "diagnostic": "E_BORROW_ACTOR_BOUNDARY",
+      "requireZeroArtifacts": true
+    },
+    {
+      "id": "stale_owner_generation",
+      "diagnostic": "E_BORROW_GENERATION",
+      "requireZeroArtifacts": true
+    }
+  ],
+  "evidenceRequirement": "No backend gets PASS from policy arithmetic or fixture presence. Require compiler-produced typed MIR/effect and ownership proof with precise root/alias tracking; real compiler negative diagnostic with zero emitted IR/object/executable; exact source commit/tree/blobs; material runner steps; real guest positive and cancellation/suspension behavior where supported. Unsupported native profiles must reject before codegen. Source-only receipts always NOT_EXECUTED. Latest source additions across all 11 do not promote guestEvidence to PASS; individually verify exact branch/tree/source blob and real compiled guest for every capable profile.",
+  "abiNote": "Java/LLVM use a signed counter where -1 represents an exclusive loan. .NET/Cranelift use a bounded reader count and writer flag. Backend .atto sources are independent; only observable conservative owner operations must agree. Do not require byte-identical files.",
+  "sourceCoverage": "11/11 compiler-owned source candidates using independently backend-owned .atto Cell policies; JS now also has local production-emitted ESM policy execution, which is not GitHub exact-head certification; self-hosted Atto and Realtime are still bootstrapping scaffolds.",
+  "compilerBorrowCoverage": "UNVERIFIED across 11 profiles; core/cell policy predicates are not compiler-enforced loans, ownership proofs or actor runtime permissions.",
+  "blobPinPolicy": "These Git-blob SHA-1 identities are source-only immutable byte witnesses from active PR branches as inspected 2026-11-22. Independently re-fetch exact branch head/tree/blob and runtime/toolchain evidence before promotion. A matching blob does NOT grant compiler guest PASS. Nine bounded-reader source-policy files were updated in independently owned draft branches to make saturated new-loan admission fail closed; those source hashes must be independently verified against exact heads before any certification.",
+  "borrowAdmissionSaturation": {
+    "description": "The acquisition-admission predicate must return false when the shared-loan counter is at its maximum, even though the existing owner may still read. Pure policy result never grants a loan, heap reference or permission.",
+    "representations": {
+      "signed-counter-i64": {
+        "maxReaders": "9223372036854775807",
+        "mayAcquireSharedAtMax": false,
+        "ownerMayReadAtMax": true,
+        "acquireAtMax": "ERR",
+        "releaseAtMax": "9223372036854775806"
+      },
+      "bounded-readers-plus-writer": {
+        "maxReaders": 65535,
+        "mayAcquireSharedAtMax": false,
+        "ownerMayReadAtMax": true,
+        "acquireAtMax": -1,
+        "releaseAtMax": 65534
+      }
+    },
+    "negativeBoundaries": [
+      "negative_readers",
+      "reader_overflow",
+      "writer_active",
+      "attempt_to_write_with_shared_readers",
+      "owner_move_with_live_loan",
+      "unpinned_suspend_with_live_loan"
+    ],
+    "sourcePolicyOnly": true,
+    "compilerGuestEvidence": "NOT_EXECUTED",
+    "reviewerRequirement": "Independently verify actual typed MIR/borrow-checker rejects escapes, use-after-take, incompatible loans, stale generation and unpinned suspend. Policy math is never an authorization token."
+  },
+  "compilerAdmissionTargets": {
+    "java": {
+      "profile": "linked-core-ownership",
+      "positive": "core-four guest exit 42",
+      "negative": [
+        "use_after_take",
+        "escaping_local_borrow",
+        "conflicting_shared_mutable_loans",
+        "suspend_with_unpinned_loan"
+      ],
+      "status": "NOT_EXECUTED",
+      "evidence": "Java #1769 CoreFourGuestTest + linked-core .atto negatives"
+    },
+    "llvm": {
+      "profile": "native-llvm-core-ownership",
+      "positive": "O0/O2 compiled guest exit 42",
+      "negative": [
+        "use_after_take",
+        "escaping_local_borrow",
+        "conflicting_shared_mutable_loans"
+      ],
+      "status": "NOT_EXECUTED",
+      "evidence": "LLVM #868 native script requires exact conflicting active native borrow diagnostic and zero LLVM IR"
+    },
+    "net": {
+      "profile": "structured-cil-import-admission",
+      "positive": "compiled CIL core policy guest",
+      "negative": [
+        "canonical_ownership_bang_unsupported",
+        "legacy_rt_ownership_unsupported"
+      ],
+      "status": "NOT_EXECUTED",
+      "evidence": ".NET #220 ModuleInitializer requires production parser rejection before CIL DLL emission; not a full typed borrow checker"
+    },
+    "wasm": {
+      "profile": "scalar-precompiler-admission",
+      "positive": null,
+      "negative": [
+        "canonical_ownership_bang_unsupported",
+        "legacy_rt_ownership_unsupported"
+      ],
+      "status": "NOT_EXECUTED",
+      "evidence": "Wasm #283 heap/loan scanner denies borrow!, take!, copy!, share! and mut borrow! before staging; preserve !eq"
+    },
+    "js": {
+      "profile": "restricted-esm-core-admission",
+      "positive": "Production JS typed-IR compiler emits backend-owned pure core/cell policy ESM and the generated predicates execute against eight boundary-state vectors; exact-head Node runner evidence still required",
+      "negative": [
+        "core_cell_link_unavailable",
+        "forged_cell_module_identity_or_signature",
+        "borrow_capability_not_implemented"
+      ],
+      "status": "NOT_EXECUTED",
+      "evidence": "JS #137 compileOwnedCoreCellPolicy; local V8 execution of emitted JS returned 8/8 expected boundary vectors; awaiting exact-head material Node runner. This is a compiled policy guest only, not runtime loan/borrow-MIR."
+    },
+    "cranelift": {
+      "profile": "core-source-only",
+      "positive": null,
+      "negative": [],
+      "status": "NOT_EXECUTED",
+      "evidence": "No linked JIT guest or typed borrow checker proof"
+    },
+    "forge": {
+      "profile": "core-source-only",
+      "positive": null,
+      "negative": [],
+      "status": "NOT_EXECUTED",
+      "evidence": "No linked native Forge guest or typed borrow checker proof"
+    },
+    "rs": {
+      "profile": "core-source-only",
+      "positive": null,
+      "negative": [],
+      "status": "NOT_EXECUTED",
+      "evidence": "Rust #540 does not claim compiled Core library or typed borrow parity"
+    },
+    "hdl": {
+      "profile": "hdl-import-denial",
+      "positive": null,
+      "negative": [
+        "core_cell_link_unavailable"
+      ],
+      "status": "NOT_EXECUTED",
+      "evidence": "HDL #66 compiler import denial target; no positive Cell hardware capability"
+    },
+    "atto": {
+      "profile": "bootstrap-source-only",
+      "positive": null,
+      "negative": [],
+      "status": "NOT_EXECUTED",
+      "evidence": "Self-hosted bootstrap source not a functioning compiled loan guest"
+    },
+    "realtime": {
+      "profile": "freestanding-source-only",
+      "positive": null,
+      "negative": [],
+      "status": "NOT_EXECUTED",
+      "evidence": "No hard-real-time WCET, ownership or compiled guest evidence"
+    }
+  },
+  "compilerAdmissionRule": "A negative preflight, parser, or restricted-source denial is NOT a positive borrowed-memory execution proof. Every backend target remains NOT_EXECUTED until exact-head material CI steps prove production admission or compiled guests as stated, and none may promote full typed borrow-MIR parity without proof.",
+  "exactRefEvidence": "11 active draft-PR candidate heads and Git root trees inspected 2026-11-22; heads may advance asynchronously; this is a source-only snapshot, not executed compiler guest or a CI clearance.",
+  "sourceFreeReferenceEvidence": {
+    "carrier": "channelsiege/atto-ci",
+    "runId": 45059593908,
+    "runUrl": "https://github.com/channelsiege/atto-ci/actions/runs/45059593908",
+    "workflowConclusion": "success",
+    "materialSteps": "pure 11-profile reference model and non-promoting boundary both completed",
+    "compilerSourceTransferred": false,
+    "classification": "SOURCE_FREE_MODEL_ONLY",
+    "typedMirGuestQualified": false,
+    "cleanupCommit": "a0285aa3579bb31649f0dd3e0958b7d5e8407a51",
+    "cleanupTree": "b78051568a02496c9f55790d83a87a158c16ee88"
+  },
+  "localPolicyObservations": {
+    "js": {
+      "kind": "PRODUCTION_COMPILER_EMITTED_PURE_POLICY_JS_LOCAL_V8",
+      "cases": 8,
+      "observation": "Locally assembled exact branch compiler modules, compiled its current .atto Cell source with production parser and typed IR, executed emitted functions in V8; 8/8 boundary vectors; no source-owned GitHub Actions runner evidence.",
+      "certification": "NON_CERTIFYING_LOCAL_ONLY",
+      "scope": "No Cell<T>, borrow tokens, actor/await loans, native AOT, or typed borrow-MIR",
+      "sourceCommit": "e5646b885933ed5d643d12cf46767db6ea795de4",
+      "sourceTree": "c2828d4033f56994c10e062b92afea0fee051450",
+      "sourceBlob": "ef1e84dbab1bb476d6ac55bf1802331660879732"
+    }
+  },
+  "compilerIntegrationCandidates": {
+    "rust": {
+      "repository": "atto-lang/atto-source.rs",
+      "pr": 340,
+      "sourceCommit": "d312a164e50d9f967a1f32e080278f6ada0ec7b7",
+      "sourceTree": "52745723e25b3646e9adb279a041f1269a748f41",
+      "sourceBlobs": {
+        "src/check.rs": "d9bdb5c8be1879b53c76b983858a971e38049eb4",
+        "tests/borrow_v1_mode.rs": "88d51308ea4a42d1b4c5f4345412cc5be2429349",
+        "tests/borrow_v1_guest.mjs": "22e833fabeca840a3be830c86704ced170c5aacf",
+        ".github/workflows/ci.yml": "548bf0ac19384b91f412490cab95984584e1224c"
+      },
+      "check": "Guarded compiler resolver and forged local-type AST regression requires E_UNKNOWN_TYPE in legacy+borrow-v1 modes; native/browser compiled guest suite emits per-case machine-readable receipts with exact source head/tree, toolchain, compiler hashes, fixture hashes, expected/actual outcomes, and zero-artifact negative witnesses.",
+      "compilation": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "latestActions": {
+        "runId": 45061369675,
+        "workflow": "Portable Atto frontend and browser Wasm conformance",
+        "event": "pull_request",
+        "status": "queued",
+        "conclusion": null,
+        "materialSteps": "NOT_EXECUTED"
+      }
+    },
+    "java": {
+      "repository": "atto-lang/atto-source.java",
+      "pr": 1769,
+      "sourceCommit": "0787e479bb55545180b6e4c679b40830b5393bbd",
+      "sourceTree": "89b40849f987108498fe44e2f5d5fd2787c57939",
+      "sourceBlobs": {
+        ".github/workflows/ci.yml": "68c0464969bffad4a54ddd57ca0188fecb746b37",
+        "src/test/java/dev/oreslang/CoreFourGuestTest.java": "8d37869b10d4787fba17f4faa6ada50694b8db13"
+      },
+      "check": "The active main CI workflow explicitly runs CoreFourGuestTest; linked core/cell borrow negatives must reject through both validate and real guest launch via the actual LinkedProgramRunner entrypoint before stdout. The draft-only specialized workflow is supplemental.",
+      "compilation": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "latestActions": [
+        {
+          "runId": 45061439884,
+          "workflow": "ci",
+          "event": "push",
+          "status": "queued",
+          "conclusion": null,
+          "materialSteps": "NOT_EXECUTED"
+        },
+        {
+          "runId": 45061439842,
+          "workflow": "fast-ci",
+          "event": "push",
+          "status": "queued",
+          "conclusion": null,
+          "materialSteps": "NOT_EXECUTED"
+        }
+      ]
+    },
+    "llvm": {
+      "repository": "atto-lang/atto-source.llvm",
+      "pr": 868,
+      "sourceCommit": "016ba94c59f66542357ac45eafbe351193250454",
+      "sourceTree": "95a1e340f2bb41ad3f8d2c81bc95ff7b55fdb4ff",
+      "sourceBlobs": {
+        ".github/workflows/ci.yml": "25df3d7171dc902e2eb35b5a9ac1a30c5229d7ef",
+        "scripts/test-core-four-llvm-native.sh": "c3885edf7bd54d747cae23e2529205bc09cadaca"
+      },
+      "check": "The active main CI workflow explicitly runs the exact-head core-four LLVM O0/O2 native guest gate and requires ownership-specific diagnostics plus zero emitted IR (IR=NONE) for use-after-take, borrow-escape and conflicting-loans.",
+      "compilation": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "latestActions": [
+        {
+          "runId": 45061468054,
+          "workflow": "LLVM compiler and native execution",
+          "event": "pull_request",
+          "status": "pending",
+          "conclusion": null,
+          "materialSteps": "NOT_EXECUTED"
+        },
+        {
+          "runId": 45061467442,
+          "workflow": "Atto core-four real LLVM native guest O0 and O2 exact-head",
+          "event": "pull_request",
+          "status": "queued",
+          "conclusion": null,
+          "materialSteps": "NOT_EXECUTED"
+        }
+      ]
+    }
+  },
+  "compilerIntegrationEvidenceRule": "These are exact Git object witnesses for compiler-gate candidates, NOT real guest or typed-MIR proof. Re-fetch current head/tree/blobs and verify material runner steps, compiler binary digest and actual positive/negative guest before promoting. The Rust borrow-v1 profile is opt-in and must not be represented as global Atto borrow-by-default. All eleven backend guestEvidence statuses remain NOT_EXECUTED. 2026-11-22 refreshed exact PR #340/#1769/#868 commit and root-tree identities after the latest ownership-gate edits. Active source-org CI workflows now explicitly contain the Java linked-core guest test and LLVM O0/O2 negative gate; run status and material steps must be refreshed before promotion. Latest source-org exact-head actions observations 2026-11-22: Rust #45061369675 queued; Java ci #45061439884 and fast-ci #45061439842 queued; LLVM core-four #45061467442 queued and main LLVM compiler/native #45061468054 pending. All recorded job step lists are empty at this observation; guest/compilation statuses remain NOT_EXECUTED.",
+  "borrowSaturationContract": {
+    "portableSemantics": "canAcquireShared is false at max live shared-loan capacity, but an existing owner's read remains allowed. Additional loans must never overflow; owner write/move/unpinned suspension remain denied with any live loan.",
+    "signedCounter": {
+      "backends": [
+        "java",
+        "llvm"
+      ],
+      "exclusiveState": "-1",
+      "maxSharedState": "9223372036854775807",
+      "saturatedAcquireShared": false,
+      "saturatedOwnerRead": true
+    },
+    "boundedReadersWriter": {
+      "backends": [
+        "net",
+        "cranelift",
+        "forge",
+        "wasm",
+        "js",
+        "rs",
+        "hdl",
+        "atto",
+        "realtime"
+      ],
+      "maxSharedReaders": 65535,
+      "saturatedAcquireShared": false,
+      "saturatedOwnerRead": true
+    },
+    "enforcement": "Pure policy is non-authoritative; the compiler must separately enforce live-loan root identity, aliasing, actor boundaries, generations and suspension."
+  },
+  "compilerGateSourceFreeEvidence": {
+    "carrier": "channelsiege/atto-ci",
+    "runId": 45060723128,
+    "runUrl": "https://github.com/channelsiege/atto-ci/actions/runs/45060723128",
+    "conclusion": "success",
+    "stepsCompleted": 5,
+    "tests": "Standalone Rust checked type-index reference and LLVM diagnostic filename-spoof control",
+    "evidenceClass": "SOURCE_FREE_INDEPENDENT_REFERENCE_ONLY",
+    "privateCompilerSourceTransferred": false,
+    "compiledAttoGuest": "NOT_EXECUTED",
+    "typedMirBorrowProof": "NOT_EXECUTED",
+    "cleanupCommit": "52f308d1010d3efd82acc961cee6344195944b91",
+    "cleanupTree": "b78051568a02496c9f55790d83a87a158c16ee88"
+  }
+}

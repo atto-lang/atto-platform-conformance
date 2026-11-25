@@ -1,0 +1,14 @@
+// AttoLang actor-private ref32 object graph conformance target.
+// This fixture is not certification without compiler and guest execution.
+define class Node as
+    int value
+    Node? next
+end
+
+define actor HeapGraphProbe as
+    receive(int message) {
+        let first = new Node(42, none)
+        let second = new Node(99, first)
+        assert(second.next?.value == 42)
+    }
+end

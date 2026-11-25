@@ -1,0 +1,6 @@
+fnc process_explicit() -> int
+    guard false { ^ void }
+end
+pub fnc main(): int {
+    return process_explicit();
+}

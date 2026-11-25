@@ -1,0 +1,16 @@
+// Expected: -42 eq 42 is false; compiled guest main() returns 42.
+fnc classify(Any value): int {
+  match value over
+    on is int when value > 0 -> { return 0; }
+    on is int -> { return 42; }
+    on _ -> { return 0; }
+  end
+}
+
+pub fnc main(): int {
+  val value: Any = -42;
+  if value is int && value eq 42 then
+    return 0;
+  fi
+  return classify(value);
+}

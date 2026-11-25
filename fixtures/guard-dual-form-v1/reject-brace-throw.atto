@@ -1,0 +1,5 @@
+// Reject: exceptional termination is not the required explicit return.
+pub fnc main(): int {
+  guard false { throw Error("guard-failed"); }
+  return 42;
+}

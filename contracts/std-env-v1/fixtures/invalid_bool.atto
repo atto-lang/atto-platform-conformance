@@ -1,0 +1,7 @@
+// A malformed present bool cannot turn into a fallback or false.
+import module std_env from "std/env";
+pub routine main(): void {
+  stdio.println(std_env.parse_bool("TRUE").is_err());
+  stdio.println(std_env.get_bool_or("ATTO_ENV_FLAG", false).is_err());
+  return;
+}

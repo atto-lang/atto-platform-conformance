@@ -1,0 +1,10 @@
+define enum State as
+  Ready = 1
+  Done = 2
+end
+
+pub fnc main(): void {
+  val State value = State.Ready();
+  stdio.println(value eq State.Ready());
+  return;
+}
