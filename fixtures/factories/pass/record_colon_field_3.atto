@@ -1,0 +1,5 @@
+// TARGET, NOT EXECUTED. Existing colon syntax and named equals converge.
+pub fnc main(): int {
+  val item = Record.of(name: "Atto", count: 3);
+  return item.count;
+}
