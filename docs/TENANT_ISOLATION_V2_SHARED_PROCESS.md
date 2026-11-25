@@ -1,5 +1,8 @@
 # Tenant isolation v2: VM-isolates in one shared process
 
+**Canonical name (2026-11-11): TenantVM** is the per-tenant VM-isolate described in this v2 contract; **OresVM** is the shared root. *IsolateVM* and *tenant isolate* are historical synonyms, not additional layers. See [TenantVM naming v1](TENANT_VM_NAMING_V1.md). Schema IDs and existing APIs remain unchanged; naming does not promote source-free checks into runtime evidence.
+
+
 **Status:** executable **source-free reference model** only. No test here
 claims an `.atto`/`.ores` actor compiled or ran on any backend.
 
