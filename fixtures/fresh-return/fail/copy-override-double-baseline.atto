@@ -1,0 +1,11 @@
+// expect-error: E_COPY_OVERRIDE
+define class Foo as
+    pub val int n = 7;
+    @Override
+    copy(): new Foo {
+        val mut Foo a = super.copy();
+        val mut Foo b = super.copy();
+        return b;
+    }
+end
+pub fnc main(): int { return 0; }
