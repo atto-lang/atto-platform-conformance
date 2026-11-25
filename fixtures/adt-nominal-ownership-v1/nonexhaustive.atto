@@ -1,0 +1,10 @@
+define enum State as
+  Ready = 1
+  Done = 2
+end
+
+fnc invalid(State state): int {
+  match state over
+    on State.Ready -> { return 1; }
+  end
+}

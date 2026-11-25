@@ -1,0 +1,28 @@
+name: Exact playground 43-example evidence ledger
+on:
+  pull_request:
+    paths:
+      - 'contracts/playground-example-backend-matrix-v1.json'
+      - 'tests/test_playground_example_matrix.py'
+      - '.github/workflows/playground-example-matrix.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'contracts/playground-example-backend-matrix-v1.json'
+      - 'tests/test_playground_example_matrix.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  matrix:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Report exact source tree
+        run: |
+          git rev-parse HEAD
+          git rev-parse HEAD^{tree}
+      - name: Validate versioned backend evidence without network or secrets
+        run: python3 -m unittest discover -s tests -p 'test_playground_example_matrix.py' -v

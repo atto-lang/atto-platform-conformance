@@ -1,0 +1,404 @@
+{
+  "schema_version": 1,
+  "contract": "atto-execution-context-unwind-v1",
+  "normative_spec": "https://github.com/atto-lang/atto-spec/blob/main/language/defer-recover-unwind-v1.md",
+  "scope": "One logical unwind context per independently schedulable Task/actor turn, never per OS thread.",
+  "assertion": "This is a source-free scenario registry, not compiler/guest-execution evidence. Every backend starts not_executed. Do not promote JS host-model passing to JS guest compiler passing.",
+  "allowed_verification_statuses": [
+    "passed",
+    "failed",
+    "unsupported",
+    "not_executed"
+  ],
+  "backends": [
+    "atto-source.atto",
+    "atto-source.cranelift",
+    "atto-source.forge",
+    "atto-source.hdl",
+    "atto-source.java",
+    "atto-source.js",
+    "atto-source.llvm",
+    "atto-source.net",
+    "atto-source.realtime",
+    "atto-source.rs",
+    "atto-source.wasm"
+  ],
+  "local_js_host_reference": {
+    "repository": "atto-lang/atto-source.js",
+    "draft_pr": "https://github.com/atto-lang/atto-source.js/pull/74",
+    "source_blob_sha": "a317c49fc13fc1baaadd03fc61730da5e3b51acf",
+    "test_blob_sha": "3c071fd1ab1c6b1a0a66f84cef70a93c322d974b",
+    "node_version": "v22.16.0",
+    "local_host_tests_passed": 18,
+    "local_host_tests_failed": 0,
+    "guest_level_verification": "not_executed",
+    "security_note": "Trusted host reference only. No compiled Atto source or JS guest tenant isolation demonstrated."
+  },
+  "cases": [
+    {
+      "id": "return-lifo",
+      "group": "normal",
+      "expected_trace": [
+        "register_A",
+        "register_B",
+        "return_value_snapshot",
+        "defer_B",
+        "defer_A",
+        "returned_original"
+      ],
+      "reason": "Return value is saved before LIFO cleanup and recover never runs.",
+      "overall_status": "not_executed",
+      "backend_statuses": {
+        "atto-source.atto": "not_executed",
+        "atto-source.cranelift": "not_executed",
+        "atto-source.forge": "not_executed",
+        "atto-source.hdl": "not_executed",
+        "atto-source.java": "not_executed",
+        "atto-source.js": "not_executed",
+        "atto-source.llvm": "not_executed",
+        "atto-source.net": "not_executed",
+        "atto-source.realtime": "not_executed",
+        "atto-source.rs": "not_executed",
+        "atto-source.wasm": "not_executed"
+      }
+    },
+    {
+      "id": "throw-outer-catch",
+      "group": "throw",
+      "expected_trace": [
+        "callee_throw",
+        "callee_defer",
+        "caller_catch"
+      ],
+      "reason": "Catch/trap across complete dynamic chain wins over even an earlier callee recover registration.",
+      "overall_status": "not_executed",
+      "backend_statuses": {
+        "atto-source.atto": "not_executed",
+        "atto-source.cranelift": "not_executed",
+        "atto-source.forge": "not_executed",
+        "atto-source.hdl": "not_executed",
+        "atto-source.java": "not_executed",
+        "atto-source.js": "not_executed",
+        "atto-source.llvm": "not_executed",
+        "atto-source.net": "not_executed",
+        "atto-source.realtime": "not_executed",
+        "atto-source.rs": "not_executed",
+        "atto-source.wasm": "not_executed"
+      }
+    },
+    {
+      "id": "throw-uncaught-recover",
+      "group": "throw",
+      "expected_trace": [
+        "callee_throw",
+        "callee_defer",
+        "inner_recover",
+        "cursor_next",
+        "outer_recover"
+      ],
+      "reason": "No matching catch across caller chain: cleanup precedes LIFO recovery, unchanged Error identity.",
+      "overall_status": "not_executed",
+      "backend_statuses": {
+        "atto-source.atto": "not_executed",
+        "atto-source.cranelift": "not_executed",
+        "atto-source.forge": "not_executed",
+        "atto-source.hdl": "not_executed",
+        "atto-source.java": "not_executed",
+        "atto-source.js": "not_executed",
+        "atto-source.llvm": "not_executed",
+        "atto-source.net": "not_executed",
+        "atto-source.realtime": "not_executed",
+        "atto-source.rs": "not_executed",
+        "atto-source.wasm": "not_executed"
+      }
+    },
+    {
+      "id": "raise-catch-bypass",
+      "group": "raise",
+      "expected_trace": [
+        "raise",
+        "finally",
+        "defer",
+        "recover"
+      ],
+      "reason": "Raise bypasses every catch/trap but executes cleanup and nearest eligible recover.",
+      "overall_status": "not_executed",
+      "backend_statuses": {
+        "atto-source.atto": "not_executed",
+        "atto-source.cranelift": "not_executed",
+        "atto-source.forge": "not_executed",
+        "atto-source.hdl": "not_executed",
+        "atto-source.java": "not_executed",
+        "atto-source.js": "not_executed",
+        "atto-source.llvm": "not_executed",
+        "atto-source.net": "not_executed",
+        "atto-source.realtime": "not_executed",
+        "atto-source.rs": "not_executed",
+        "atto-source.wasm": "not_executed"
+      }
+    },
+    {
+      "id": "panic-fatal",
+      "group": "panic",
+      "expected_trace": [
+        "panic",
+        "safe_cleanup",
+        "supervisor_CONTROL"
+      ],
+      "reason": "No catch/trap/recover success for panic; terminal CONTROL independent of ordinary mailbox.",
+      "overall_status": "not_executed",
+      "backend_statuses": {
+        "atto-source.atto": "not_executed",
+        "atto-source.cranelift": "not_executed",
+        "atto-source.forge": "not_executed",
+        "atto-source.hdl": "not_executed",
+        "atto-source.java": "not_executed",
+        "atto-source.js": "not_executed",
+        "atto-source.llvm": "not_executed",
+        "atto-source.net": "not_executed",
+        "atto-source.realtime": "not_executed",
+        "atto-source.rs": "not_executed",
+        "atto-source.wasm": "not_executed"
+      }
+    },
+    {
+      "id": "cancel-terminal",
+      "group": "cancel",
+      "expected_trace": [
+        "cancel",
+        "safe_cleanup",
+        "physical_retirement"
+      ],
+      "reason": "Cancellation cannot be recovered; no stale callback/Task revival; cleanup before resource retirement.",
+      "overall_status": "not_executed",
+      "backend_statuses": {
+        "atto-source.atto": "not_executed",
+        "atto-source.cranelift": "not_executed",
+        "atto-source.forge": "not_executed",
+        "atto-source.hdl": "not_executed",
+        "atto-source.java": "not_executed",
+        "atto-source.js": "not_executed",
+        "atto-source.llvm": "not_executed",
+        "atto-source.net": "not_executed",
+        "atto-source.realtime": "not_executed",
+        "atto-source.rs": "not_executed",
+        "atto-source.wasm": "not_executed"
+      }
+    },
+    {
+      "id": "no-double-defer",
+      "group": "normal",
+      "expected_trace": [
+        "register_once",
+        "defer_once",
+        "retire"
+      ],
+      "reason": "Re-entrant/failed exits must not execute a defer more than once.",
+      "overall_status": "not_executed",
+      "backend_statuses": {
+        "atto-source.atto": "not_executed",
+        "atto-source.cranelift": "not_executed",
+        "atto-source.forge": "not_executed",
+        "atto-source.hdl": "not_executed",
+        "atto-source.java": "not_executed",
+        "atto-source.js": "not_executed",
+        "atto-source.llvm": "not_executed",
+        "atto-source.net": "not_executed",
+        "atto-source.realtime": "not_executed",
+        "atto-source.rs": "not_executed",
+        "atto-source.wasm": "not_executed"
+      }
+    },
+    {
+      "id": "recovery-one-shot",
+      "group": "raise",
+      "expected_trace": [
+        "recover_newest",
+        "cursor_next",
+        "recover_older"
+      ],
+      "reason": "RecoveryCursor.next is one-shot, terminal, nonescaping and cannot be reused.",
+      "overall_status": "not_executed",
+      "backend_statuses": {
+        "atto-source.atto": "not_executed",
+        "atto-source.cranelift": "not_executed",
+        "atto-source.forge": "not_executed",
+        "atto-source.hdl": "not_executed",
+        "atto-source.java": "not_executed",
+        "atto-source.js": "not_executed",
+        "atto-source.llvm": "not_executed",
+        "atto-source.net": "not_executed",
+        "atto-source.realtime": "not_executed",
+        "atto-source.rs": "not_executed",
+        "atto-source.wasm": "not_executed"
+      }
+    },
+    {
+      "id": "cleanup-failure",
+      "group": "throw",
+      "expected_trace": [
+        "throw",
+        "defer_error",
+        "other_defer",
+        "terminal_failure"
+      ],
+      "reason": "Stronger cleanup failure is terminal and original error survives bounded suppression.",
+      "overall_status": "not_executed",
+      "backend_statuses": {
+        "atto-source.atto": "not_executed",
+        "atto-source.cranelift": "not_executed",
+        "atto-source.forge": "not_executed",
+        "atto-source.hdl": "not_executed",
+        "atto-source.java": "not_executed",
+        "atto-source.js": "not_executed",
+        "atto-source.llvm": "not_executed",
+        "atto-source.net": "not_executed",
+        "atto-source.realtime": "not_executed",
+        "atto-source.rs": "not_executed",
+        "atto-source.wasm": "not_executed"
+      }
+    },
+    {
+      "id": "task-await-context",
+      "group": "suspend",
+      "expected_trace": [
+        "task_A_suspend",
+        "task_B_run",
+        "task_A_resume",
+        "task_A_defer"
+      ],
+      "reason": "Unwind frame belongs to independently schedulable logical context, not carrier thread.",
+      "overall_status": "not_executed",
+      "backend_statuses": {
+        "atto-source.atto": "not_executed",
+        "atto-source.cranelift": "not_executed",
+        "atto-source.forge": "not_executed",
+        "atto-source.hdl": "not_executed",
+        "atto-source.java": "not_executed",
+        "atto-source.js": "not_executed",
+        "atto-source.llvm": "not_executed",
+        "atto-source.net": "not_executed",
+        "atto-source.realtime": "not_executed",
+        "atto-source.rs": "not_executed",
+        "atto-source.wasm": "not_executed"
+      }
+    },
+    {
+      "id": "sibling-task-separation",
+      "group": "suspend",
+      "expected_trace": [
+        "task_A_unwind",
+        "task_B_keeps_running"
+      ],
+      "reason": "Sibling tasks and actors cannot share a mutable unwind stack.",
+      "overall_status": "not_executed",
+      "backend_statuses": {
+        "atto-source.atto": "not_executed",
+        "atto-source.cranelift": "not_executed",
+        "atto-source.forge": "not_executed",
+        "atto-source.hdl": "not_executed",
+        "atto-source.java": "not_executed",
+        "atto-source.js": "not_executed",
+        "atto-source.llvm": "not_executed",
+        "atto-source.net": "not_executed",
+        "atto-source.realtime": "not_executed",
+        "atto-source.rs": "not_executed",
+        "atto-source.wasm": "not_executed"
+      }
+    },
+    {
+      "id": "tenant-generation",
+      "group": "isolation",
+      "expected_trace": [
+        "tenant_A_failure",
+        "tenant_A_cleanup",
+        "tenant_B_unchanged"
+      ],
+      "reason": "Tenant and actor incarnation validate handler/capture provenance; no cross-tenant unwind.",
+      "overall_status": "not_executed",
+      "backend_statuses": {
+        "atto-source.atto": "not_executed",
+        "atto-source.cranelift": "not_executed",
+        "atto-source.forge": "not_executed",
+        "atto-source.hdl": "not_executed",
+        "atto-source.java": "not_executed",
+        "atto-source.js": "not_executed",
+        "atto-source.llvm": "not_executed",
+        "atto-source.net": "not_executed",
+        "atto-source.realtime": "not_executed",
+        "atto-source.rs": "not_executed",
+        "atto-source.wasm": "not_executed"
+      }
+    },
+    {
+      "id": "host-fatal-bypass",
+      "group": "host-fatal",
+      "expected_trace": [
+        "host_trap",
+        "no_guest_recover",
+        "terminal_control"
+      ],
+      "reason": "Host traps are not silently reclassified into guest throw/raise.",
+      "overall_status": "not_executed",
+      "backend_statuses": {
+        "atto-source.atto": "not_executed",
+        "atto-source.cranelift": "not_executed",
+        "atto-source.forge": "not_executed",
+        "atto-source.hdl": "not_executed",
+        "atto-source.java": "not_executed",
+        "atto-source.js": "not_executed",
+        "atto-source.llvm": "not_executed",
+        "atto-source.net": "not_executed",
+        "atto-source.realtime": "not_executed",
+        "atto-source.rs": "not_executed",
+        "atto-source.wasm": "not_executed"
+      }
+    },
+    {
+      "id": "nonerror-operand",
+      "group": "compile-reject",
+      "expected_trace": [
+        "diagnostic",
+        "no_artifact"
+      ],
+      "reason": "Throw/raise/panic require nominal Error-subclass payload; reject unsupported source before artifact.",
+      "overall_status": "not_executed",
+      "backend_statuses": {
+        "atto-source.atto": "not_executed",
+        "atto-source.cranelift": "not_executed",
+        "atto-source.forge": "not_executed",
+        "atto-source.hdl": "not_executed",
+        "atto-source.java": "not_executed",
+        "atto-source.js": "not_executed",
+        "atto-source.llvm": "not_executed",
+        "atto-source.net": "not_executed",
+        "atto-source.realtime": "not_executed",
+        "atto-source.rs": "not_executed",
+        "atto-source.wasm": "not_executed"
+      }
+    },
+    {
+      "id": "async-cleanup-proof",
+      "group": "compile-reject",
+      "expected_trace": [
+        "diagnostic",
+        "no_artifact"
+      ],
+      "reason": "If suspension-safe cleanup and task-owned continuations are unproven, backend must fail closed.",
+      "overall_status": "not_executed",
+      "backend_statuses": {
+        "atto-source.atto": "not_executed",
+        "atto-source.cranelift": "not_executed",
+        "atto-source.forge": "not_executed",
+        "atto-source.hdl": "not_executed",
+        "atto-source.java": "not_executed",
+        "atto-source.js": "not_executed",
+        "atto-source.llvm": "not_executed",
+        "atto-source.net": "not_executed",
+        "atto-source.realtime": "not_executed",
+        "atto-source.rs": "not_executed",
+        "atto-source.wasm": "not_executed"
+      }
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+name: Singleton multi-actor source-free oracle (exact head)
+
+on:
+  pull_request:
+    paths:
+      - 'src/multi-actor-shared-region-v1.mjs'
+      - 'tests/multi-actor-shared-region-v1.test.mjs'
+      - '.github/workflows/singleton-multi-actor-region-exact-head.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-free-oracle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact source commit without persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact PR SHA, tree and two source Git blobs
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          ACTUAL_SHA="$(git rev-parse HEAD)"
+          test "$ACTUAL_SHA" = "$EXPECTED_SHA"
+          echo "source_sha=$ACTUAL_SHA"
+          echo "source_tree=$(git rev-parse HEAD^{tree})"
+          for file in src/multi-actor-shared-region-v1.mjs tests/multi-actor-shared-region-v1.test.mjs; do
+            test -f "$file"
+            echo "source_blob=$(git hash-object "$file") file=$file"
+          done
+          echo "run_id=${{ github.run_id }} attempt=${{ github.run_attempt }}"
+      - name: Select Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+      - name: Execute 30 deterministic tests and reject skips
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --version
+          node --test --test-reporter=tap tests/multi-actor-shared-region-v1.test.mjs | tee singleton-region.tap
+          grep -Eq '^# tests 30$' singleton-region.tap
+          grep -Eq '^# pass 30$' singleton-region.tap
+          grep -Eq '^# fail 0$' singleton-region.tap
+          grep -Eq '^# skipped 0$' singleton-region.tap
+          grep -Eq '^# cancelled 0$' singleton-region.tap

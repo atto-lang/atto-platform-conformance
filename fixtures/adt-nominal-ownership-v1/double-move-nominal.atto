@@ -1,0 +1,19 @@
+define enum Inner as
+  Ready = 1
+end
+define enum Outer as
+  Wrapped: Inner = 1
+end
+
+fnc consume(Inner inner): void {
+  return;
+}
+fnc invalid(Outer packet): void {
+  match packet over
+    on Outer.Wrapped(inner) -> {
+      consume(inner);
+      consume(inner);
+      return;
+    }
+  end
+}

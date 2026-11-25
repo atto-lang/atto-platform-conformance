@@ -1,0 +1,25 @@
+name: Pipe/rpipe fixture integrity (host only)
+
+on:
+  pull_request:
+    paths:
+      - 'contracts/pipe-rpipe-directed-endpoints-v1.json'
+      - 'fixtures/pipe-rpipe-v1/**'
+      - 'tests/pipe-rpipe-directed-contract.test.mjs'
+      - '.github/workflows/pipe-rpipe-source-integrity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-integrity-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate source fixture Git blob SHAs (no guest compilation)
+        run: node --test tests/pipe-rpipe-directed-contract.test.mjs

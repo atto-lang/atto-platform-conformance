@@ -1,0 +1,6 @@
+// MUST fail with ENV_PERMISSION_DENIED, never return fallback.
+import module std_env from "std/env";
+pub routine main(): void {
+  stdio.println(std_env.get_or("ATTO_ENV_SECRET_KEY", "fallback"));
+  return;
+}

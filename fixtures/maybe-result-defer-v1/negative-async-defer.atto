@@ -1,0 +1,5 @@
+// EXPECT_REJECT: ordinary defer does not admit suspension.
+define pub fnc bad_defer(int id) -> Result[int, Error] as
+  defer await async_cleanup(id);
+  return Ok(id);
+end

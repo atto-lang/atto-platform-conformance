@@ -1,0 +1,955 @@
+{
+  "schemaVersion": 1,
+  "contract": "atto-core-convert-fmt-collections-v1",
+  "status": "CANDIDATE_NOT_EXECUTED",
+  "guestExecuted": 0,
+  "backendCandidates": [
+    {
+      "id": "java",
+      "repo": "atto-lang/atto-source.java",
+      "headSha": "f4cee1c2365c44513e40b7ae0b4017fa6c3a81d1",
+      "guestStatus": "NOT_EXECUTED",
+      "borrowStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "llvm",
+      "repo": "atto-lang/atto-source.llvm",
+      "headSha": "5a7f90e48ba4a0fd2357c7c64ef1669a79502efc",
+      "guestStatus": "NOT_EXECUTED",
+      "borrowStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "net",
+      "repo": "atto-lang/atto-source.net",
+      "headSha": "805fc45a4939fc024f340def47192d4e94cacfc5",
+      "guestStatus": "NOT_EXECUTED",
+      "borrowStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "wasm",
+      "repo": "atto-lang/atto-source.wasm",
+      "headSha": "46848ccf6f07e6c8e558fa5ed276b54ee7137a2e",
+      "guestStatus": "NOT_EXECUTED",
+      "borrowStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "rs",
+      "repo": "atto-lang/atto-source.rs",
+      "headSha": "0a7edc5c1078709c1c6e24eeeb917a4a8b3d0193",
+      "guestStatus": "NOT_EXECUTED",
+      "borrowStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "forge",
+      "repo": "atto-lang/atto-source.forge",
+      "headSha": "1d2acf9268006210cffed96c92378c4fd0fb8872",
+      "guestStatus": "NOT_EXECUTED",
+      "borrowStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "cranelift",
+      "repo": "atto-lang/atto-source.cranelift",
+      "headSha": "c48faba8cef103b5c88a0b01da35f9b83dea8cf5",
+      "guestStatus": "NOT_EXECUTED",
+      "borrowStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "js",
+      "repo": "atto-lang/atto-source.js",
+      "headSha": "6ae025c1aeb1c448fda59fea583cdb2c5fea2b84",
+      "guestStatus": "NOT_EXECUTED",
+      "borrowStatus": "NOT_EXECUTED"
+    },
+    {
+      "id": "hdl",
+      "repo": "atto-lang/atto-source.hdl",
+      "headSha": "a850a24830aae3a6d75f847c1d8f84f0482387c6",
+      "guestStatus": "NOT_EXECUTED",
+      "borrowStatus": "NOT_EXECUTED"
+    }
+  ],
+  "protocol": "Canonical ATTO_LIB_V1|case-id|result lines MUST come from a recorded stepful compiled guest on exact SHA/tree; locally synthesized lines are HOST_ONLY and cannot certify.",
+  "cases": [
+    {
+      "id": "convert-bool-zero",
+      "op": "convert.bool_to_int",
+      "args": [
+        false
+      ],
+      "expected": "0"
+    },
+    {
+      "id": "convert-bool-one",
+      "op": "convert.bool_to_int",
+      "args": [
+        true
+      ],
+      "expected": "1"
+    },
+    {
+      "id": "convert-try-bool-zero",
+      "op": "convert.try_bool_from_int",
+      "args": [
+        0
+      ],
+      "expected": "ok:false"
+    },
+    {
+      "id": "convert-try-bool-one",
+      "op": "convert.try_bool_from_int",
+      "args": [
+        1
+      ],
+      "expected": "ok:true"
+    },
+    {
+      "id": "convert-try-bool-reject-negative",
+      "op": "convert.try_bool_from_int",
+      "args": [
+        -1
+      ],
+      "expected": "err:1"
+    },
+    {
+      "id": "convert-try-bool-reject-two",
+      "op": "convert.try_bool_from_int",
+      "args": [
+        2
+      ],
+      "expected": "err:1"
+    },
+    {
+      "id": "convert-u8-zero",
+      "op": "convert.try_u8_from_int",
+      "args": [
+        0
+      ],
+      "expected": "ok:0"
+    },
+    {
+      "id": "convert-u8-max",
+      "op": "convert.try_u8_from_int",
+      "args": [
+        255
+      ],
+      "expected": "ok:255"
+    },
+    {
+      "id": "convert-u8-negative",
+      "op": "convert.try_u8_from_int",
+      "args": [
+        -1
+      ],
+      "expected": "err:2"
+    },
+    {
+      "id": "convert-u8-overflow",
+      "op": "convert.try_u8_from_int",
+      "args": [
+        256
+      ],
+      "expected": "err:2"
+    },
+    {
+      "id": "convert-ascii-digit-zero",
+      "op": "convert.ascii_decimal_digit",
+      "args": [
+        48
+      ],
+      "expected": "ok:0"
+    },
+    {
+      "id": "convert-ascii-digit-nine",
+      "op": "convert.ascii_decimal_digit",
+      "args": [
+        57
+      ],
+      "expected": "ok:9"
+    },
+    {
+      "id": "convert-ascii-digit-arabic",
+      "op": "convert.ascii_decimal_digit",
+      "args": [
+        1632
+      ],
+      "expected": "err:3"
+    },
+    {
+      "id": "convert-ascii-hex-capital",
+      "op": "convert.ascii_hex_digit",
+      "args": [
+        70
+      ],
+      "expected": "ok:15"
+    },
+    {
+      "id": "convert-ascii-hex-lower",
+      "op": "convert.ascii_hex_digit",
+      "args": [
+        102
+      ],
+      "expected": "ok:15"
+    },
+    {
+      "id": "convert-ascii-hex-invalid",
+      "op": "convert.ascii_hex_digit",
+      "args": [
+        103
+      ],
+      "expected": "err:4"
+    },
+    {
+      "id": "convert-string-bool-true",
+      "op": "text_convert.try_bool_from_string",
+      "args": [
+        "true"
+      ],
+      "expected": "ok:true"
+    },
+    {
+      "id": "convert-string-bool-false",
+      "op": "text_convert.try_bool_from_string",
+      "args": [
+        "false"
+      ],
+      "expected": "ok:false"
+    },
+    {
+      "id": "convert-string-bool-case",
+      "op": "text_convert.try_bool_from_string",
+      "args": [
+        "TRUE"
+      ],
+      "expected": "err:expected lowercase true or false"
+    },
+    {
+      "id": "convert-parse-empty",
+      "op": "text_convert.try_int_from_string",
+      "args": [
+        ""
+      ],
+      "expected": "err:invalid signed decimal length"
+    },
+    {
+      "id": "convert-parse-hyphen",
+      "op": "text_convert.try_int_from_string",
+      "args": [
+        "-"
+      ],
+      "expected": "err:missing decimal digits"
+    },
+    {
+      "id": "convert-parse-plus",
+      "op": "text_convert.try_int_from_string",
+      "args": [
+        "+1"
+      ],
+      "expected": "err:invalid ASCII decimal digit"
+    },
+    {
+      "id": "convert-parse-zero",
+      "op": "text_convert.try_int_from_string",
+      "args": [
+        "0"
+      ],
+      "expected": "ok:0"
+    },
+    {
+      "id": "convert-parse-negative-zero",
+      "op": "text_convert.try_int_from_string",
+      "args": [
+        "-0"
+      ],
+      "expected": "ok:0"
+    },
+    {
+      "id": "convert-parse-leading-zeros",
+      "op": "text_convert.try_int_from_string",
+      "args": [
+        "00001"
+      ],
+      "expected": "ok:1"
+    },
+    {
+      "id": "convert-parse-i64-max",
+      "op": "text_convert.try_int_from_string",
+      "args": [
+        "9223372036854775807"
+      ],
+      "expected": "ok:9223372036854775807"
+    },
+    {
+      "id": "convert-parse-i64-min",
+      "op": "text_convert.try_int_from_string",
+      "args": [
+        "-9223372036854775808"
+      ],
+      "expected": "ok:-9223372036854775808"
+    },
+    {
+      "id": "convert-parse-pos-overflow",
+      "op": "text_convert.try_int_from_string",
+      "args": [
+        "9223372036854775808"
+      ],
+      "expected": "err:signed decimal overflow"
+    },
+    {
+      "id": "convert-parse-neg-overflow",
+      "op": "text_convert.try_int_from_string",
+      "args": [
+        "-9223372036854775809"
+      ],
+      "expected": "err:signed decimal overflow"
+    },
+    {
+      "id": "convert-parse-whitespace",
+      "op": "text_convert.try_int_from_string",
+      "args": [
+        "1 "
+      ],
+      "expected": "err:invalid ASCII decimal digit"
+    },
+    {
+      "id": "convert-parse-arabic",
+      "op": "text_convert.try_int_from_string",
+      "args": [
+        "١"
+      ],
+      "expected": "err:invalid ASCII decimal digit"
+    },
+    {
+      "id": "convert-parse-too-many",
+      "op": "text_convert.try_int_from_string",
+      "args": [
+        "00000000000000000000"
+      ],
+      "expected": "err:too many decimal digits"
+    },
+    {
+      "id": "fmt-bool-true",
+      "op": "text_fmt.format_bool",
+      "args": [
+        true
+      ],
+      "expected": "true"
+    },
+    {
+      "id": "fmt-bool-false",
+      "op": "text_fmt.format_bool",
+      "args": [
+        false
+      ],
+      "expected": "false"
+    },
+    {
+      "id": "fmt-zero",
+      "op": "text_fmt.format_int",
+      "args": [
+        "0"
+      ],
+      "expected": "0"
+    },
+    {
+      "id": "fmt-minus-one",
+      "op": "text_fmt.format_int",
+      "args": [
+        "-1"
+      ],
+      "expected": "-1"
+    },
+    {
+      "id": "fmt-i64-min",
+      "op": "text_fmt.format_int",
+      "args": [
+        "-9223372036854775808"
+      ],
+      "expected": "-9223372036854775808"
+    },
+    {
+      "id": "fmt-i64-max",
+      "op": "text_fmt.format_int",
+      "args": [
+        "9223372036854775807"
+      ],
+      "expected": "9223372036854775807"
+    },
+    {
+      "id": "fmt-power-ten",
+      "op": "text_fmt.format_int",
+      "args": [
+        "1000000000000000000"
+      ],
+      "expected": "1000000000000000000"
+    },
+    {
+      "id": "fmt-hex-zero",
+      "op": "text_fmt.format_hex_byte",
+      "args": [
+        0
+      ],
+      "expected": "ok:00"
+    },
+    {
+      "id": "fmt-hex-fifteen",
+      "op": "text_fmt.format_hex_byte",
+      "args": [
+        15
+      ],
+      "expected": "ok:0f"
+    },
+    {
+      "id": "fmt-hex-sixteen",
+      "op": "text_fmt.format_hex_byte",
+      "args": [
+        16
+      ],
+      "expected": "ok:10"
+    },
+    {
+      "id": "fmt-hex-max",
+      "op": "text_fmt.format_hex_byte",
+      "args": [
+        255
+      ],
+      "expected": "ok:ff"
+    },
+    {
+      "id": "fmt-hex-negative",
+      "op": "text_fmt.format_hex_byte",
+      "args": [
+        -1
+      ],
+      "expected": "err:hex byte out of range"
+    },
+    {
+      "id": "fmt-hex-overflow",
+      "op": "text_fmt.format_hex_byte",
+      "args": [
+        256
+      ],
+      "expected": "err:hex byte out of range"
+    },
+    {
+      "id": "collections-sorted-empty",
+      "op": "collections.is_sorted_int",
+      "args": [
+        []
+      ],
+      "expected": "true"
+    },
+    {
+      "id": "collections-sorted-duplicates",
+      "op": "collections.is_sorted_int",
+      "args": [
+        [
+          1,
+          1,
+          2
+        ]
+      ],
+      "expected": "true"
+    },
+    {
+      "id": "collections-unsorted",
+      "op": "collections.is_sorted_int",
+      "args": [
+        [
+          2,
+          1
+        ]
+      ],
+      "expected": "false"
+    },
+    {
+      "id": "collections-index-first",
+      "op": "collections.index_of_int",
+      "args": [
+        [
+          3,
+          1,
+          3
+        ],
+        3
+      ],
+      "expected": "0"
+    },
+    {
+      "id": "collections-index-missing",
+      "op": "collections.index_of_int",
+      "args": [
+        [
+          3,
+          1,
+          3
+        ],
+        9
+      ],
+      "expected": "-1"
+    },
+    {
+      "id": "collections-contains",
+      "op": "collections.contains_int",
+      "args": [
+        [
+          3,
+          1,
+          3
+        ],
+        1
+      ],
+      "expected": "true"
+    },
+    {
+      "id": "collections-not-contains",
+      "op": "collections.contains_int",
+      "args": [
+        [
+          3,
+          1,
+          3
+        ],
+        2
+      ],
+      "expected": "false"
+    },
+    {
+      "id": "collections-bound-duplicate",
+      "op": "collections.lower_bound_int",
+      "args": [
+        [
+          1,
+          2,
+          2,
+          4
+        ],
+        2
+      ],
+      "expected": "ok:1"
+    },
+    {
+      "id": "collections-bound-before",
+      "op": "collections.lower_bound_int",
+      "args": [
+        [
+          1,
+          2,
+          2,
+          4
+        ],
+        -1
+      ],
+      "expected": "ok:0"
+    },
+    {
+      "id": "collections-bound-after",
+      "op": "collections.lower_bound_int",
+      "args": [
+        [
+          1,
+          2,
+          2,
+          4
+        ],
+        5
+      ],
+      "expected": "ok:4"
+    },
+    {
+      "id": "collections-bound-unsorted",
+      "op": "collections.lower_bound_int",
+      "args": [
+        [
+          2,
+          1
+        ],
+        1
+      ],
+      "expected": "err:lower bound requires sorted input"
+    },
+    {
+      "id": "collections-unique-stable",
+      "op": "collections.unique_int",
+      "args": [
+        [
+          3,
+          1,
+          3,
+          2,
+          1
+        ]
+      ],
+      "expected": "ok:[3,1,2]"
+    },
+    {
+      "id": "collections-unique-empty",
+      "op": "collections.unique_int",
+      "args": [
+        []
+      ],
+      "expected": "ok:[]"
+    },
+    {
+      "id": "collections-merge-normal",
+      "op": "collections.merge_sorted_int",
+      "args": [
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        4
+      ],
+      "expected": "ok:[1,2,2,3]"
+    },
+    {
+      "id": "collections-merge-empty",
+      "op": "collections.merge_sorted_int",
+      "args": [
+        [],
+        [],
+        0
+      ],
+      "expected": "ok:[]"
+    },
+    {
+      "id": "collections-merge-small-budget",
+      "op": "collections.merge_sorted_int",
+      "args": [
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        3
+      ],
+      "expected": "err:merge exceeds item budget"
+    },
+    {
+      "id": "collections-merge-invalid-budget",
+      "op": "collections.merge_sorted_int",
+      "args": [
+        [],
+        [],
+        65537
+      ],
+      "expected": "err:merge budget outside 0..65536"
+    },
+    {
+      "id": "collections-merge-unsorted",
+      "op": "collections.merge_sorted_int",
+      "args": [
+        [
+          2,
+          1
+        ],
+        [
+          3
+        ],
+        3
+      ],
+      "expected": "err:merge requires sorted inputs"
+    },
+    {
+      "id": "core-step-digit-zero",
+      "op": "convert.decimal_step_negative",
+      "args": [
+        0,
+        0,
+        false
+      ],
+      "expected": "ok:0"
+    },
+    {
+      "id": "core-step-digit-nine",
+      "op": "convert.decimal_step_negative",
+      "args": [
+        0,
+        9,
+        true
+      ],
+      "expected": "ok:-9"
+    },
+    {
+      "id": "core-step-pos-limit",
+      "op": "convert.decimal_step_negative",
+      "args": [
+        "-922337203685477580",
+        7,
+        false
+      ],
+      "expected": "ok:-9223372036854775807"
+    },
+    {
+      "id": "core-step-neg-limit",
+      "op": "convert.decimal_step_negative",
+      "args": [
+        "-922337203685477580",
+        8,
+        true
+      ],
+      "expected": "ok:-9223372036854775808"
+    },
+    {
+      "id": "core-step-pos-overflow",
+      "op": "convert.decimal_step_negative",
+      "args": [
+        "-922337203685477580",
+        8,
+        false
+      ],
+      "expected": "err:6"
+    },
+    {
+      "id": "core-step-neg-overflow",
+      "op": "convert.decimal_step_negative",
+      "args": [
+        "-922337203685477580",
+        9,
+        true
+      ],
+      "expected": "err:6"
+    },
+    {
+      "id": "core-step-digit-outside",
+      "op": "convert.decimal_step_negative",
+      "args": [
+        0,
+        10,
+        false
+      ],
+      "expected": "err:3"
+    },
+    {
+      "id": "core-step-invalid-accumulator",
+      "op": "convert.decimal_step_negative",
+      "args": [
+        1,
+        1,
+        false
+      ],
+      "expected": "err:5"
+    },
+    {
+      "id": "core-fmt-digit-count-zero",
+      "op": "fmt.decimal_digit_count",
+      "args": [
+        "0"
+      ],
+      "expected": "1"
+    },
+    {
+      "id": "core-fmt-digit-count-min",
+      "op": "fmt.decimal_digit_count",
+      "args": [
+        "-9223372036854775808"
+      ],
+      "expected": "19"
+    },
+    {
+      "id": "core-fmt-digit-count-max",
+      "op": "fmt.decimal_digit_count",
+      "args": [
+        "9223372036854775807"
+      ],
+      "expected": "19"
+    },
+    {
+      "id": "core-fmt-digit-right-min",
+      "op": "fmt.decimal_ascii_from_right",
+      "args": [
+        "-9223372036854775808",
+        0
+      ],
+      "expected": "ok:56"
+    },
+    {
+      "id": "core-fmt-digit-left-min",
+      "op": "fmt.decimal_ascii_from_right",
+      "args": [
+        "-9223372036854775808",
+        18
+      ],
+      "expected": "ok:57"
+    },
+    {
+      "id": "core-fmt-digit-right-zero",
+      "op": "fmt.decimal_ascii_from_right",
+      "args": [
+        "0",
+        0
+      ],
+      "expected": "ok:48"
+    },
+    {
+      "id": "core-fmt-digit-outside",
+      "op": "fmt.decimal_ascii_from_right",
+      "args": [
+        "12",
+        2
+      ],
+      "expected": "err:7"
+    },
+    {
+      "id": "core-fmt-digit-negative-index",
+      "op": "fmt.decimal_ascii_from_right",
+      "args": [
+        "12",
+        -1
+      ],
+      "expected": "err:7"
+    },
+    {
+      "id": "core-fmt-neg-sign",
+      "op": "fmt.decimal_is_negative",
+      "args": [
+        -1
+      ],
+      "expected": "true"
+    },
+    {
+      "id": "core-fmt-nonnegative-sign",
+      "op": "fmt.decimal_is_negative",
+      "args": [
+        0
+      ],
+      "expected": "false"
+    },
+    {
+      "id": "core-fmt-hex-nibble-zero",
+      "op": "fmt.hex_ascii_nibble",
+      "args": [
+        0
+      ],
+      "expected": "ok:48"
+    },
+    {
+      "id": "core-fmt-hex-nibble-a",
+      "op": "fmt.hex_ascii_nibble",
+      "args": [
+        10
+      ],
+      "expected": "ok:97"
+    },
+    {
+      "id": "core-fmt-hex-nibble-f",
+      "op": "fmt.hex_ascii_nibble",
+      "args": [
+        15
+      ],
+      "expected": "ok:102"
+    },
+    {
+      "id": "core-fmt-hex-nibble-over",
+      "op": "fmt.hex_ascii_nibble",
+      "args": [
+        16
+      ],
+      "expected": "err:4"
+    },
+    {
+      "id": "core-fmt-bool-length-true",
+      "op": "fmt.bool_ascii_length",
+      "args": [
+        true
+      ],
+      "expected": "4"
+    },
+    {
+      "id": "core-fmt-bool-length-false",
+      "op": "fmt.bool_ascii_length",
+      "args": [
+        false
+      ],
+      "expected": "5"
+    },
+    {
+      "id": "core-fmt-bool-first-true",
+      "op": "fmt.bool_ascii_at",
+      "args": [
+        true,
+        0
+      ],
+      "expected": "ok:116"
+    },
+    {
+      "id": "core-fmt-bool-last-true",
+      "op": "fmt.bool_ascii_at",
+      "args": [
+        true,
+        3
+      ],
+      "expected": "ok:101"
+    },
+    {
+      "id": "core-fmt-bool-last-false",
+      "op": "fmt.bool_ascii_at",
+      "args": [
+        false,
+        4
+      ],
+      "expected": "ok:101"
+    },
+    {
+      "id": "core-fmt-bool-outside",
+      "op": "fmt.bool_ascii_at",
+      "args": [
+        true,
+        4
+      ],
+      "expected": "err:7"
+    }
+  ],
+  "sourcePolicy": {
+    "core": [
+      "stdlib/core/convert.atto",
+      "stdlib/core/fmt.atto"
+    ],
+    "alloc": [
+      "stdlib/alloc/text_convert.atto",
+      "stdlib/alloc/text_fmt.atto"
+    ],
+    "collections": "stdlib/std/collections.atto",
+    "noHeapInCore": true,
+    "backendOwnedSource": true,
+    "hostFallbackForbidden": true,
+    "scalarResultRepresentationNeedsProof": true
+  },
+  "borrowAdmissionCandidates": [
+    {
+      "id": "positive_owned_copy",
+      "expect": "accept",
+      "runtimeExecutionRequired": true
+    },
+    {
+      "id": "negative_mutate_borrow",
+      "expect": "reject",
+      "diagnosticRequired": "semantic-ownership-diagnostic",
+      "parserRejectionDoesNotCount": true
+    },
+    {
+      "id": "negative_borrow_escape",
+      "expect": "reject",
+      "diagnosticRequired": "semantic-ownership-diagnostic",
+      "parserRejectionDoesNotCount": true
+    },
+    {
+      "id": "negative_result_escape",
+      "expect": "reject",
+      "diagnosticRequired": "semantic-ownership-diagnostic",
+      "parserRejectionDoesNotCount": true
+    },
+    {
+      "id": "negative_take_borrow",
+      "expect": "reject",
+      "diagnosticRequired": "semantic-ownership-diagnostic",
+      "parserRejectionDoesNotCount": true
+    }
+  ]
+}
