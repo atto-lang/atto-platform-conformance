@@ -1,0 +1,5 @@
+// expect-error: E_EFFECT
+pub fnc main(): int {
+  val pending = nb readch inbox;
+  return 0;
+}

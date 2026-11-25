@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "contract": "atto-unsafe-blocks-v1",
+  "evidence_type": "exact_blob_rust_compiler_unsafe_guest_security_audit",
+  "recorded_utc": "2026-11-20T02:28:13Z",
+  "source": {
+    "repo": "atto-lang/atto-source.rs",
+    "pr": 414,
+    "sha": "0400a59e3e2b588107c0a148c4268bc4daf4a5ab",
+    "files": "Cargo.toml, Cargo.lock, all 49 src/** files",
+    "files_verified": 51,
+    "bytes_approx": 1097994,
+    "verification": "git hash-object compared to exact original source Git tree blob SHAs before Rust build"
+  },
+  "carrier": {
+    "repo": "usa-acc/atto-ci",
+    "temporary_pr": 5,
+    "head": "9e9f3e4637ef8fb0e7c52182138a28af05df263b",
+    "workflow_run_url": "https://github.com/usa-acc/atto-ci/actions/runs/44660939495",
+    "workflow_run_id": 44660939495,
+    "job_id": 136038727741,
+    "checkout": "carrier-local only, persist-credentials=false",
+    "dependencies": "cargo --offline --locked; no source-org GITHUB_TOKEN checkout"
+  },
+  "results": {
+    "source_git_blob_identity": "passed",
+    "cargo_check_all_targets": "passed",
+    "cargo_test_lib": {
+      "passed": 65,
+      "failed": 0
+    },
+    "ast_hardening": {
+      "nested_lambda_expression": "passed",
+      "nested_call_and_method_arguments": "passed",
+      "class_field_initializer": "passed",
+      "forged_ast_visit_budget": "passed",
+      "early_reject_before_ast_rewrite": "passed"
+    },
+    "conformance_registry_integrity": {
+      "status": "passed",
+      "node_tests_passed": 4,
+      "node_tests_failed": 0,
+      "registry_cases": 24,
+      "target_slots": 216,
+      "registry_sha": "3763125d42b501b26b8db90b466fbff69656bf84",
+      "test_sha": "2a59da3d1b4c2f79ac11f53e45533be0489aeb4c"
+    },
+    "compiled_safe_guest": {
+      "status": "passed",
+      "source": "pub fnc main(): int { return 42; }",
+      "compiled_using": "attoc",
+      "executed_using": "Node WebAssembly.instantiate",
+      "observed_return": 42
+    },
+    "compiled_safe_near_miss": {
+      "status": "passed",
+      "details": "source containing /* unsafe { */ and binding unsafe_tools",
+      "observed_return": 42
+    },
+    "unsafe_guest_negative_cases": [
+      {
+        "kind": "direct unsafe block",
+        "diagnostic": "E_UNSAFE_DOMAIN",
+        "output_wasm": false,
+        "status": "passed"
+      },
+      {
+        "kind": "unsafe callable declaration",
+        "diagnostic": "E_UNSAFE_DOMAIN",
+        "output_wasm": false,
+        "status": "passed"
+      },
+      {
+        "kind": "nested unsafe blocks",
+        "diagnostic": "E_UNSAFE_DOMAIN",
+        "output_wasm": false,
+        "status": "passed"
+      },
+      {
+        "kind": "unsafe imported module",
+        "diagnostic": "E_UNSAFE_DOMAIN",
+        "output_wasm": false,
+        "status": "passed"
+      },
+      {
+        "kind": "attoc --check unsafe block",
+        "diagnostic": "E_UNSAFE_DOMAIN",
+        "output_wasm": "not_applicable_check_only",
+        "status": "passed"
+      }
+    ],
+    "actual_unsafe_execution": "not_enabled",
+    "unsafe_ffi_raw_pointer": "not_enabled",
+    "trusted_native_unsafe_profile": "not_executed",
+    "rust_integration_test_directory": "not_executed",
+    "other_compiler_backends": "not_executed",
+    "target_case_matrix": "not_executed"
+  },
+  "audit_findings": [
+    {
+      "severity": "security_hardening",
+      "finding": "Old public check::check guest gate inspected only source statements and skipped expression trees, including LambdaBody nested in a call, method argument or class field initializer.",
+      "fix": "Full iterative bounded graph walk across Stmt and Expr before any effect inference, direct-lambda lowering or codegen."
+    },
+    {
+      "severity": "denial_of_service_hardening",
+      "finding": "Early recursive AST scan did not bound forged nested AST visit counts.",
+      "fix": "Iterative 65536-node guest-admission visit cap with E_SOURCE_LIMIT."
+    },
+    {
+      "severity": "nonblocking_limitations",
+      "finding": "Lexical unsafe direct-call scanner is not name-resolved typed effect enforcement.",
+      "fix": "No runtime unsafe lowering enabled; retain pending typed effect graph and trust-domain checks."
+    }
+  ],
+  "limitations": [
+    "Only exact Rust source/Cargo subset was mirrored, not the entire 931-path source repository tree or hundreds of integration fixture files.",
+    "Registry integrity tests inspect 24 cases but do not execute them case-by-case; leave all 216 registry target statuses NOT_EXECUTED.",
+    "The successful guest cases prove safe positive control and fail-closed unsafe rejection in the Rust browser/Wasm compiler, not execution of legitimate unsafe operations in a trusted native context.",
+    "No other backend or native FFI/RawPointer/permissions runtime was certified."
+  ]
+}

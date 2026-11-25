@@ -1,0 +1,5 @@
+fnc first(int value): int {
+  val unused = value + 1;
+  return 42;
+}
+pub fnc main(): int { return first(9223372036854775807); }
