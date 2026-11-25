@@ -165,10 +165,10 @@ impl ProxyLedger {
         }
         Ok(())
     }
-    fn restart_recipient(&mut self, recipient: u64, old_incarnation: u64) {
+    fn restart_recipient(&mut self, tenant: u64, recipient: u64, old_incarnation: u64) {
         let handles: Vec<_> = self.slots.iter().enumerate().filter_map(|(i, s)| {
             let f = s.flight.as_ref()?;
-            if f.key.recipient == recipient && f.key.incarnation == old_incarnation {
+            if f.key.tenant == tenant && f.key.recipient == recipient && f.key.incarnation == old_incarnation {
                 Some(Handle { slot: i, generation: s.generation, key: f.key })
             } else { None }
         }).collect();
@@ -269,7 +269,7 @@ mod tests {
     #[test] fn stale_ack_after_restart_and_slot_reuse() {
         let mut l = ProxyLedger::new(1, 1);
         let (h, p) = admitted(&mut l, false);
-        l.restart_recipient(11, 4);
+        l.restart_recipient(7, 11, 4);
         assert_eq!(l.destination_ack(p, Stage::Started), Err(Error::Stale));
         assert_eq!(l.snapshot(h), Err(Error::Stale));
         let mut new_key = key(); new_key.incarnation = 5;
@@ -277,6 +277,21 @@ mod tests {
         assert_ne!(h.generation, next.generation);
         assert_eq!(l.destination_ack(p, Stage::Admitted), Err(Error::Stale));
         assert_eq!(l.destination_ack(new_permit, Stage::Admitted), Ok(AckEffect::Applied));
+    }
+    #[test] fn restart_only_retires_matching_tenant_and_incarnation() {
+        let mut l = ProxyLedger::new(3, 1);
+        let (first, p1) = admitted(&mut l, false);
+        let mut other = key(); other.tenant = 8;
+        let (second, p2) = l.forward(other, 17, false).unwrap();
+        let mut newer = key(); newer.incarnation = 5;
+        let (third, p3) = l.forward(newer, 17, false).unwrap();
+        l.restart_recipient(7, 11, 4);
+        assert_eq!(l.snapshot(first), Err(Error::Stale));
+        assert_eq!(l.destination_ack(p1, Stage::Started), Err(Error::Stale));
+        assert_eq!(l.destination_ack(p2, Stage::Admitted), Ok(AckEffect::Applied));
+        assert_eq!(l.destination_ack(p3, Stage::Admitted), Ok(AckEffect::Applied));
+        assert!(l.snapshot(second).unwrap().admitted);
+        assert!(l.snapshot(third).unwrap().admitted);
     }
     #[test] fn network_loss_is_indeterminate_not_no_delivery() {
         let mut l = ProxyLedger::new(1, 1);
