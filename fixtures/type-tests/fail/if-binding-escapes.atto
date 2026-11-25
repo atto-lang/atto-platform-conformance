@@ -1,0 +1,3 @@
+// expect-error: E_UNBOUND
+fnc f(Any v): int { if v is int as val n then val x = n + 1; fi return n; }
+pub fnc main(): int { val value: Any = 41; return f(value); }

@@ -1,0 +1,4 @@
+import dotnet "System.Math" as Math;
+pub fnc main() -> int {
+  return Math.Max(Math.Abs(-42), 10);
+}

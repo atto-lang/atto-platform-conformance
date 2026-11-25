@@ -1,0 +1,6 @@
+import jvm "java.util.ArrayList" as JList;
+pub fnc main(): int {
+  val list = new JList();
+  list.add(42);
+  return list.size();
+}

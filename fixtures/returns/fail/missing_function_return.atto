@@ -1,0 +1,3 @@
+// expect-error: E_RETURN_ANNOTATION
+fnc noop() { }
+pub fnc main() -> int { return 0; }

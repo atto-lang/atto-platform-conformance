@@ -1,0 +1,2 @@
+// expect-error: E_IMMUTABLE
+pub fnc main(): int { val mut x: int = 1; x = 2; return x; }

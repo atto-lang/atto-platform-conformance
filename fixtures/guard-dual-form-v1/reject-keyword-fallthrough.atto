@@ -1,0 +1,7 @@
+// Reject: keyword guard failure block may fall through.
+pub fnc main(): int {
+  guard true else
+    val x = 1;
+  end
+  return 42;
+}

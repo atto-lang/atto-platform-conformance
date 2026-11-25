@@ -7,7 +7,8 @@ const expectedBackends = ['forge', 'java', 'llvm', 'net', 'wasm'];
 const evidenceKeys = [
   'admission', 'compilerGuest', 'actorSurvival',
   'nativeLowStack', 'supervisorRecovery',
-  'actorStackStorage', 'suspendedFrameOwnership', 'actorStackGeneration'
+  'actorStackStorage', 'suspendedFrameOwnership', 'actorStackGeneration',
+  'executionContextBinding', 'callbackResumptionSafety', 'taskRootRetirement', 'suspendedCallFrameState'
 ];
 
 async function load() {
@@ -41,7 +42,13 @@ function validatePending(matrix) {
     'carrierMigrationDoesNotMoveStackOwnership',
     'stackFailureBeforeNativeGuardPage',
     'noNativeSignalOrStackOverflowRecovery',
-    'guardedSynchronousInvocationChargedToActorFrameArena'
+    'guardedSynchronousInvocationChargedToActorFrameArena',
+    'executionContextStableAcrossAwait',
+    'actorTaskRootGenerationAuthenticated',
+    'callbacksCannotExecuteGuestOnProducerThread',
+    'sourceTaskRootsRetiredOnlyAfterPhysicalQuiescence',
+    'outstandingTaskRootsPreventActorHeapRetirement',
+    'suspendedCallFramesPreservePcOperandsAndLocals'
   ]) {
     assert.equal(matrix.requirements[key], true,
       'mandatory physical actor-stack safety property: ' + key);
@@ -52,6 +59,30 @@ function validatePending(matrix) {
   assert.match(matrix.javaFrameArenaReference, /\/pull\/2627$/);
   const bootstrap = matrix.frameStorageBootstrap;
   assert.equal(bootstrap.javaHostPrimitive, 'MANAGED_BYTES_ONLY');
+  assert.match(bootstrap.javaIntegratedInvocationSourceTaskReference, /\/pull\/2637$/);
+  assert.match(bootstrap.javaScalarTypedFrameReference, /\/pull\/2640$/);
+  assert.equal(bootstrap.javaScalarTypedFrameStatus, 'AUTHORED_NOT_EXECUTED');
+  assert.equal(bootstrap.javaScalarTypedFrameScope, 'PURE_SYNC_INTEGER_FNC_GRAPH_ONLY');
+  assert.equal(bootstrap.javaScalarTypedFramePcAndStackHeaderBytes, 16);
+  assert.equal(bootstrap.javaScalarTypedFrameTaggedSlotBytes, 16);
+  assert.equal(bootstrap.javaScalarTypedFrameHostCompilerTestsAuthored, 7);
+  assert.equal(bootstrap.javaScalarTypedFrameHostRuntimeTestsAuthored, 5);
+  assert.equal(bootstrap.javaScalarTypedFrameStaleLeasePoisonStatus, 'AUTHORED_NOT_EXECUTED');
+  assert.equal(bootstrap.javaScalarTypedFrameAttoSourceFixturesAuthored, 3);
+  assert.equal(bootstrap.javaScalarTypedFrameGuestCompilerReceipts, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaScalarTypedFrameNativeLowStackReceipts, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaScalarTypedFrameActorSupervisorRestartReceipts, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaScalarTypedFrameOtherBackends, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaScalarTypedFrameActualPrimitiveStorage, 'IMPLEMENTED_UNVERIFIED');
+  assert.equal(bootstrap.javaScalarTypedFrameSourceTaskLexicalContinuations, 'NOT_IMPLEMENTED');
+
+  assert.equal(bootstrap.javaIntegratedSourceTaskInvocationStatus, 'AUTHORED_NOT_EXECUTED');
+  assert.equal(bootstrap.javaIntegratedSourceTaskHostTestsAuthored, 3);
+  assert.equal(bootstrap.javaIntegratedActorAttoFixturesCopied, 3);
+  assert.equal(bootstrap.javaIntegratedActorAttoCompilerReceipts, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaIntegratedActorNativeStackIsolation, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaQuiescenceCallbackBeforeFrameRetirement, true);
+  assert.equal(bootstrap.javaInvocationReusesSourceTaskExecutionId, true);
   assert.match(bootstrap.javaActorSourceTaskReference, /\/pull\/2631$/);
   assert.equal(bootstrap.javaActorSourceTaskFrameBytes, 64);
   assert.equal(bootstrap.javaActorSourceTaskHostTestsAuthored, 8);
@@ -236,6 +267,14 @@ function validatePending(matrix) {
   const ids = matrix.scenarios.map(c => c.id);
   assert.equal(new Set(ids).size, ids.length);
   for (const scenario of matrix.scenarios) {
+    // Authoring a sibling-actor fixture never promotes the pending scenario.
+    if (scenario.id === 'sibling-actor-survival') {
+      assert.equal(scenario.kind, 'pending-actor-acceptance');
+      assert.equal(scenario.guestVerified, false);
+      assert.equal(scenario.expectedSiblingStdout, '42');
+      assert.equal(scenario.source,
+        'fixtures/actor-stack-containment-v1/sibling-actor-survival.atto');
+    }
     assert.ok(scenario.requiredEvidence.length > 0);
     for (const key of scenario.requiredEvidence) assert.ok(evidenceKeys.includes(key));
     if (scenario.source !== null) {
@@ -254,10 +293,10 @@ test('five-backend stack containment contract stays explicitly unexecuted', asyn
 test('all authored AttoLang source fixtures exist and have distinct cases', async () => {
   const matrix = validatePending(await load());
   const sources = matrix.scenarios.filter(c => c.source);
-  assert.equal(sources.length, 4);
+  assert.equal(sources.length, 11);
   for (const scenario of sources) {
     const text = await readFile(new URL('../' + scenario.source, import.meta.url), 'utf8');
-    assert.match(text, /pub routine main\(\): void/);
+    assert.match(text, /pub (?:suspends )?routine main\(\): void/);
     assert.ok(text.length > 40);
   }
 });
@@ -482,6 +521,172 @@ test('source task host-frame leases cannot claim compiler-lowered guest resumes'
     assert.ok(scenario.requiredEvidence.includes('suspendedFrameOwnership'));
   }
   assert.equal(original.promotion.certified, false);
+});
+
+test('integrated actor invocation and SourceTask proof cannot be self-certified', async () => {
+  const original = validatePending(await load());
+  const mutate = fn => { const modified = structuredClone(original); fn(modified); return modified; };
+  assert.throws(() => validatePending(mutate(m => {
+    m.frameStorageBootstrap.javaIntegratedActorAttoCompilerReceipts = 'PASS';
+  })));
+  assert.throws(() => validatePending(mutate(m => {
+    m.frameStorageBootstrap.javaIntegratedActorNativeStackIsolation = 'PASS';
+  })));
+  assert.throws(() => validatePending(mutate(m => {
+    m.frameStorageBootstrap.javaInvocationReusesSourceTaskExecutionId = false;
+  })));
+  assert.throws(() => validatePending(mutate(m => {
+    m.frameStorageBootstrap.javaQuiescenceCallbackBeforeFrameRetirement = false;
+  })));
+  assert.throws(() => validatePending(mutate(m => {
+    m.frameStorageBootstrap.javaIntegratedActorAttoFixturesCopied = 0;
+  })));
+  const authored = [
+    ['source-actor-non-tail-frames', '8'],
+    ['source-actor-tail-frames', '100000'],
+    ['source-actor-sibling-after-budget', 'starting|alive']
+  ];
+  for (const [name, stdout] of authored) {
+    const scenario = original.scenarios.find(s => s.id === name);
+    assert.ok(scenario);
+    assert.equal(scenario.expectedStdout, stdout);
+    assert.match(scenario.source, /^fixtures\/actor-stack-containment-v1\/.*\.atto$/);
+    assert.ok(scenario.requiredEvidence.includes('compilerGuest'));
+  }
+  for (const name of [
+    'source-task-invocation-same-execution-id',
+    'source-task-quiescence-callback-retains-frames',
+    'source-task-invocation-overflow-sibling-survival'
+  ]) {
+    const scenario = original.scenarios.find(s => s.id === name);
+    assert.ok(scenario);
+    assert.equal(scenario.source, null);
+    assert.equal(scenario.kind, 'pending-actor-acceptance');
+  }
+  assert.equal(original.promotion.certified, false);
+});
+
+test('M3 typed scalar frame claims cannot be promoted without guest receipts', async () => {
+  const original = validatePending(await load());
+  const mutate = fn => { const edited = structuredClone(original); fn(edited); return edited; };
+  for (const field of [
+    'javaScalarTypedFrameGuestCompilerReceipts',
+    'javaScalarTypedFrameNativeLowStackReceipts',
+    'javaScalarTypedFrameActorSupervisorRestartReceipts',
+    'javaScalarTypedFrameOtherBackends'
+  ]) {
+    assert.throws(() => validatePending(mutate(
+      m => {m.frameStorageBootstrap[field] = 'PASS';})),
+      'invented ' + field + ' evidence must fail');
+  }
+  assert.throws(() => validatePending(mutate(
+    m => {m.frameStorageBootstrap.javaScalarTypedFrameActualPrimitiveStorage = 'VERIFIED';})));
+  assert.throws(() => validatePending(mutate(
+    m => {m.frameStorageBootstrap.javaScalarTypedFrameSourceTaskLexicalContinuations = 'PASS';})));
+  assert.throws(() => validatePending(mutate(
+    m => {m.frameStorageBootstrap.javaScalarTypedFrameTaggedSlotBytes = 0;})));
+  const sourceCases = new Map([
+    ['typed-scalar-nontail-1024', '1024'],
+    ['typed-scalar-mutual-tail-100000', '0'],
+    ['typed-scalar-immutable-locals', '9']
+  ]);
+  for (const [name, output] of sourceCases) {
+    const entry = original.scenarios.find(s => s.id === name);
+    assert.ok(entry);
+    assert.equal(entry.expectedStdout, output);
+    assert.match(entry.source, /\.atto$/);
+    assert.ok(entry.requiredEvidence.includes('compilerGuest'));
+  }
+  for (const name of [
+    'typed-scalar-actor-quota-failure-sibling-survives',
+    'typed-scalar-unsupported-fallback-and-negative-mutation',
+    'typed-scalar-execution-context-generation-negative'
+  ]) {
+    const entry = original.scenarios.find(s => s.id === name);
+    assert.ok(entry);
+    assert.equal(entry.source, null);
+    assert.ok(entry.kind.startsWith('pending-'));
+  }
+  assert.equal(original.promotion.certified, false);
+});
+
+test('sibling overflow fixture is a pending guest acceptance case, not a parity pass', async () => {
+  const contract = validatePending(await load());
+  const scenario = contract.scenarios.find(item => item.id === 'sibling-actor-survival');
+  assert.equal(scenario.kind, 'pending-actor-acceptance');
+  assert.equal(scenario.guestVerified, false);
+  assert.equal(scenario.expectedSiblingStdout, '42');
+  assert.ok(scenario.requiredEvidence.includes('actorSurvival'));
+  assert.ok(scenario.requiredEvidence.includes('supervisorRecovery'));
+  const source = await readFile(new URL('../' + scenario.source, import.meta.url), 'utf8');
+  assert.match(source, /define actor OverflowActor as/);
+  assert.match(source, /define actor HealthyActor as/);
+  assert.match(source, /return 1 \+ non_tail_overflow\(remaining - 1\)/);
+  assert.match(source, /healthy\.send\(41\)/);
+  assert.match(source, /await healthy\.get_done\(\)/);
+  for (const backend of contract.backends) {
+    assert.equal(backend.compilerGuest, 'NOT_EXECUTED');
+    assert.equal(backend.actorSurvival, 'NOT_EXECUTED');
+    assert.equal(backend.supervisorRecovery, 'NOT_EXECUTED');
+  }
+});
+
+test('actor ExecutionContext, callback, and stack-root lifecycle gates cannot be lost', async () => {
+  const matrix = validatePending(await load());
+  assert.match(matrix.javaActorTaskBindingReference, /\/pull\/2626$/);
+  const required = new Map([
+    ['actor-await-sibling-then-resume', 'executionContextBinding'],
+    ['producer-callback-cannot-run-guest', 'callbackResumptionSafety'],
+    ['cancel-suspended-task-before-quiescence', 'taskRootRetirement'],
+    ['late-resume-after-supervisor-restart', 'actorStackGeneration'],
+    ['root-leak-must-block-actor-heap-reclaim', 'taskRootRetirement']
+  ]);
+  for (const scenario of matrix.scenarios) {
+    const evidence = required.get(scenario.id);
+    if (!evidence) continue;
+    assert.equal(scenario.source, null,
+      'compiler-backed .atto actor acceptance source is still pending');
+    assert.ok(scenario.requiredEvidence.includes(evidence));
+    required.delete(scenario.id);
+  }
+  assert.deepEqual([...required.keys()], []);
+});
+
+
+test('suspended scalar call-frame state is a mandatory pending five-backend gate', async () => {
+  const matrix = validatePending(await load());
+  const required = new Map([
+    ['await-inside-nontail-call-preserves-parent-frame', 'suspendedCallFrameState'],
+    ['cancel-inside-nontail-call-runs-cleanup-before-retire', 'suspendedCallFrameState'],
+    ['duplicate-resume-cannot-reenter-suspended-call-frame', 'suspendedCallFrameState'],
+    ['stale-parent-return-pc-rejected-after-generation-change', 'suspendedCallFrameState']
+  ]);
+  for (const scenario of matrix.scenarios) {
+    const evidence = required.get(scenario.id);
+    if (!evidence) continue;
+    assert.equal(scenario.source, null,
+      'the compiler-backed .atto suspension fixtures are still pending');
+    assert.ok(scenario.requiredEvidence.includes(evidence));
+    required.delete(scenario.id);
+  }
+  assert.deepEqual([...required.keys()], []);
+  for (const backend of matrix.backends) {
+    assert.equal(backend.suspendedCallFrameState, 'NOT_EXECUTED',
+      'no backend may claim suspension inside CALL/RET frames without receipts');
+  }
+});
+
+
+test('new execution-context receipt dimensions remain fail-closed', async()=>{
+  const original=validatePending(await load());
+  for(const k of ["executionContextBinding","callbackResumptionSafety","taskRootRetirement","suspendedCallFrameState"]){
+    const changed=structuredClone(original);changed.backends[0][k]='PASS';
+    assert.throws(()=>validatePending(changed));
+  }
+  for(const k of ["executionContextStableAcrossAwait","actorTaskRootGenerationAuthenticated","callbacksCannotExecuteGuestOnProducerThread","sourceTaskRootsRetiredOnlyAfterPhysicalQuiescence","outstandingTaskRootsPreventActorHeapRetirement","suspendedCallFramesPreservePcOperandsAndLocals"]){
+    const changed=structuredClone(original);changed.requirements[k]=false;
+    assert.throws(()=>validatePending(changed));
+  }
 });
 
 test('M2.1 scalar call arguments stay distinct from complete guest stack proof', async () => {

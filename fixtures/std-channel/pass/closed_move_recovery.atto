@@ -1,0 +1,21 @@
+// target-stdout: closed:56
+// An immediate rejected send returns the original owned Array, not a copy.
+import module channel from "std/channel";
+
+pub routine main(): void {
+  val Channel<Array<int>> ch = channel.bounded<Array<int>>(1);
+  channel.close<Array<int>>(ch);
+  val Array<int> owned = [5, 6];
+  val TryWriteResult<Array<int>> result =
+      channel.try_send<Array<int>>(ch, rt take owned);
+  do match result over
+    on Accepted -> { stdio.stdout.write("unexpected-accepted"); }
+    on Full(value) -> { stdio.stdout.write("unexpected-full"); }
+    on Closed(value) -> {
+      stdio.stdout.write("closed:");
+      stdio.stdout.write(value[0]);
+      stdio.stdout.write(value[1]);
+    }
+  end
+  return;
+}

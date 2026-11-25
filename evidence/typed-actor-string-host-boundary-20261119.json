@@ -1,0 +1,59 @@
+{
+  "schema": "atto.typed_actor_string.host_boundary_evidence.v1",
+  "scope": "HOST_WASM_MEMORY_BRIDGE_ONLY",
+  "source": {
+    "repository": "atto-lang/atto-source.rs",
+    "pr": 406,
+    "head_sha": "f6863f40a0ef5286a90d4641a6f89062106ff948",
+    "blobs": [
+      {
+        "path": "src/actor_string_mail.rs",
+        "sha": "db90e65b834de9e965c549eb86e8fbce1acc994c"
+      },
+      {
+        "path": "tests/browser/actor-string-bridge.mjs",
+        "sha": "edf7e9ce4d096d5c40b982b3eb7f4182313700c6"
+      },
+      {
+        "path": "tests/browser/actor-string-bridge.test.mjs",
+        "sha": "b4b54fc1769b4c354ce908b2e1775159e1cb84fa"
+      }
+    ]
+  },
+  "carrier": {
+    "repository": "bait-bikes-test/atto-ci",
+    "pr": 14,
+    "commit_sha": "c8678e56c20b9af7e767b65ca1156c6562dc5b27",
+    "workflow_run_id": 44653928953,
+    "job_id": 136015409879,
+    "url": "https://github.com/bait-bikes-test/atto-ci/actions/runs/44653928953",
+    "executed_steps": true
+  },
+  "toolchain": {
+    "rustc": "1.99.1",
+    "node": "22.23.4"
+  },
+  "observed": {
+    "blob_identity": "PASSED",
+    "rust_codec_host_unit_tests": {
+      "passed": 13,
+      "failed": 0
+    },
+    "node_host_wasm_memory_tests": {
+      "passed": 14,
+      "failed": 0
+    },
+    "handwritten_wasm_stub_called": true
+  },
+  "not_verified": {
+    "source_compiled_atto_guest": "NOT_EXECUTED",
+    "actor_mail_string_source_acceptance": "NOT_EXECUTED",
+    "runtime_compiler_attested_guest_memory": "NOT_EXECUTED",
+    "backend_java": "NOT_EXECUTED",
+    "backend_llvm_native": "NOT_EXECUTED",
+    "backend_net": "NOT_EXECUTED",
+    "backend_forge": "NOT_EXECUTED",
+    "cross_backend_parity": "NOT_EXECUTED"
+  },
+  "notes": "These results prove exact-blob host bridge/codec behavior, not that source-level Atto ActorMail<string> compiles or that any production TenantVM can safely enable string transport."
+}

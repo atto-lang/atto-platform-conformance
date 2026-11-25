@@ -32,7 +32,7 @@
     {
       "id": "scalar-success",
       "path": "fixtures/guard-v1/canonical-scalar.atto",
-      "git_blob": "c86ac476e55074031c0bcda02f5eaf3cb1399477",
+      "git_blob": "e2344e360ac643e25df7ca14eb01432929cecbe5",
       "kind": "NATIVE_GUEST_RETURN",
       "expected_integer": 42
     },

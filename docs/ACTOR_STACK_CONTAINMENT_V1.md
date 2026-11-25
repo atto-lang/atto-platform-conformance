@@ -178,6 +178,133 @@ canonical compiled `.atto` actor fixtures and reproducible executed receipts
 exist. The host bridge cannot promote any of the five backend matrices from
 `NOT_EXECUTED`.
 
+## Integrated Java invocation and suspended source-task frame gates
+
+The draft [Java PR #2637](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2637)
+integrates the Java PR #2628 invocation-descriptor branch into the Java
+PR #2631 source-task frame-lifetime branch. It shares a single actor-scoped
+ExecutionContext between nested evaluator invocation descriptors and the
+SourceTask persistent frame, preserves the root frame across await, and
+delays frame zeroization until all physical quiescence callbacks succeed.
+The 32-byte invocation descriptor frame stacks above the 64-byte SourceTask
+root, counted against one actor arena. These are host-managed storage
+reservations, **not** compiled guest locals, return PCs or physical stack
+switching.
+
+This conformance PR now contains **30 scenarios**. Seven have authored
+canonical .atto sources. Three of those sources were carried byte-identically
+from Java #2628: non-tail actor recursion, 100,000-hop tail actor recursion,
+and sibling progress after another actor starts deep recursion. The source
+fixture cases have explicit expected stdout but **no executed compiler or
+guest receipt**. Three additional pending cases require proof of the shared
+execution identity, pre-zeroization quiescence callback, and SourceTask
+frame-quota failure without sibling damage.
+
+The current isolated V8 source harness validated 9/9 contract callback suites
+against the exact fetched JSON/JS/fixture text. This is NOT a hosted Node
+test, actual .atto compiler execution, backend parity or native stack
+survival proof. All five backend evidence slots remain NOT_EXECUTED until
+runner admission and canonical guest acceptance on exact PR heads.
+
+## Java M3 typed scalar execution frames — authored, not executed
+
+[Java draft PR #2640](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2640)
+is stacked on integrated #2637 and introduces the first restricted
+compiler-owned scalar PC, local and operand bytecode executing inside a
+nonrecursive JVM dispatch loop. Its actor `ScalarFrameStorage` delegates
+typed 16-byte scalar slots and authoritative PC/operand-height header to
+the existing 64-frame/64-KiB incarnation-fenced `ActorFrameArena`, with
+the current source-task identity reused when present. Non-actor calls
+use a separately bounded 2,048-frame byte store.
+
+**Important:** only entire pure, non-suspending integer `fnc` graphs
+that pass strict AST pre-admission are compiled. The original evaluator
+still owns unsupported source, methods, actor receive bodies, closures,
+structured cleanup and actual suspended lexical source-task state.
+Managed actor byte frames do not create independent JVM native stacks,
+process-level isolation or FFI safety.
+
+Java #2640 authors seven scalar compiler/VM host JUnit methods, five
+actor-owned frame runtime JUnit methods and three genuine parser-backed
+`.atto` JUnit methods. The new canonical sources are:
+
+- `deep-non-tail-scalar-frame.atto` — expected stdout `1024`
+- `mutual-tail-scalar-frame.atto` — expected stdout `0`
+- `immutable-local-scalar-frame.atto` — expected stdout `9`
+
+Three further cases remain pending for actor A exhaustion/B survival,
+unsupported construct fallbacks with negative mutations, and stale
+actor generation/frame fencing. This conformance manifest now tracks
+**36 scenarios, 10 with source fixtures**. Those authored fixture blobs
+are not guest execution receipts, and all five backend `compilerGuest`
+and native-stack evidence fields remain `NOT_EXECUTED`.
+
+For exact-head Java execution: use the full reviewed head/tree values
+with `scripts/verify-scalar-frame-m3.sh` on PR #2640, require nonzero
+job steps, Maven/JUnit XML, guest output and process exit, and capture
+isolated negative-mutation receipts. Do not promote #2640 or certify
+five-backend stack parity without that evidence and independent review.
+
+## M1.5: stable ExecutionContext and actor-bound Task roots (2026-11-07)
+
+Java [draft #2626](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2626)
+now connects the live actor source-Task scheduling path to a bounded logical
+Task root in `ActorGuestStack`. The root is authenticated against the exact
+actor-stack object and incarnation on resume. Ordinary non-actor tasks retain
+their own allocation identity; producer callbacks only wake the actor scheduler.
+The source Task's `ExecutionContext` survives `Await` and `Cooperate`, while
+the root is charged until *physical quiescence*, not Future settlement.
+
+This is a **logical identity/accounting milestone**, not evidence of separately
+allocated actor-private frame storage. Its authored JUnit scenarios are
+unexecuted on hosted CI because the Java source workflows report zero-step
+runner-admission failures. The current Java test also does **not** prove
+migration to a distinct physical carrier thread. Five backend records remain
+`NOT_EXECUTED`; no field should be promoted from host-only tests.
+
+The additional pending conformance cases require executable `.atto` source
+for actor A await / B carrier reuse / A resume, producer callback rejection,
+cancellation with delayed physical retirement, stale supervisor-generation
+resumption, and leak/quarantine before heap reclaim. Receipts need exact source
+head/tree, executed steps, compiled guest output, and an independently verified
+actor-store ownership identity. These are mandatory for Java, LLVM, NativeAOT,
+Wasm, and Forge/Cranelift.
+
+
+## M2 / M3.3b: preserve nested guest call frames across suspension (2026-11-08)
+
+Java's M3.3a scalar dispatcher [#2667](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2667)
+now has bounded actor-owned scalar CALL/RET frames for a restricted synchronous
+`fnc` subset. It deliberately excludes async/suspension. Java SourceTask roots
+and a 64-byte bootstrap lease surviving `await` do **not** prove that nested
+guest calls survive suspension: the caller return PC, operands, callee locals,
+ownership roots, and lexical cleanup state must all be represented in the
+same authenticated continuation.
+
+The following new receipt dimension, `suspendedCallFrameState`, stays
+`NOT_EXECUTED` on all five backends until the implementation proves:
+
+* a call to a suspending callee can await while retaining the exact parent
+  return PC, typed operand stack, callee PC/locals, and actor/task
+  `ExecutionContext` identity;
+* the suspended frame chain is owned by one actor/task generation, charged
+  against bounded quotas, and resumed only after a fresh scheduler admission;
+* producer callbacks only enqueue readiness; duplicate, out-of-order, foreign,
+  stale-generation, or late-after-retirement resumes fail closed;
+* cancellation and failure unwind `defer`/cleanup exactly once before frame
+  reclamation; incomplete cleanup quarantines frames and blocks actor heap
+  retirement;
+* an actor B turn can execute while actor A is suspended, then A resumes on a
+  different carrier with unchanged return values and no frame/operand aliasing.
+
+Four pending scenarios cover nested await, cancellation cleanup, duplicate
+resume, and stale parent return-PC generation fencing. They intentionally have
+`source: null` until the source compiler and runtime actually admit the syntax.
+Host state-machine tests, a bootstrap task lease, and source-free canaries do
+not satisfy this guest evidence. Exact source heads, nonzero steps, compiled
+`.atto` stdout/exit receipts, memory/quota accounting, and independent
+review are required per backend.
+
 ## Java M2.1 typed scalar actor frames (2026-11-07)
 
 Draft [Java PR #2630](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2630),

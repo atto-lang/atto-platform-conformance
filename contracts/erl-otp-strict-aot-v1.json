@@ -1,0 +1,1037 @@
+{
+  "schemaVersion": 1,
+  "contract": "attolang-erlang-otp-strict-aot-v1",
+  "status": "candidate-not-executed",
+  "sourceContract": "ores-truffle-oreslang/oreslang-common-source/docs/ERLANG_OTP_AOT_PARITY_V1.md",
+  "backends": [
+    "java",
+    "llvm",
+    "net",
+    "wasm",
+    "forge"
+  ],
+  "operatorPolicy": {
+    "equality": "eq",
+    "inequalityCanonical": "neq",
+    "inequalityAlias": [
+      "!eq"
+    ],
+    "invalid": [
+      "==",
+      "!=",
+      "=:=",
+      "=/=",
+      "/="
+    ],
+    "assignmentIsPatternMatch": false,
+    "noImplicitNumericCoercion": true,
+    "logicalOperators": "retain independently ratified AttoLang grammar",
+    "sourceProfile": "atto-strict-v1",
+    "legacyCompatibility": "Do not change previously accepted .ores syntax without a separate versioned migration",
+    "inequalityAliasStatus": "candidate-parser-not-verified",
+    "operatorTokenRules": {
+      "eq": "whole-word-binary-keyword",
+      "neq": "whole-word-binary-keyword",
+      "!eq": "contiguous-atomic-binary-token",
+      "rejectSplitAlias": true,
+      "doNotRewriteCommentsStringsIdentifiers": true
+    },
+    "currentCompatibility": {
+      "legacyEqualityAliases": [
+        "==",
+        "!="
+      ],
+      "javaGraalNumericCrossTypeEquality": "legacy-behavior",
+      "nativeAotPolicyIsNotASourceSyntaxVersion": true,
+      "requiresMigrationReviewForRemoval": true
+    },
+    "invalidPolicyScope": "proposed-strict-source-v2-not-current-compiler-baseline"
+  },
+  "functionClauseMatching": {
+    "status": "DEFERRED",
+    "reason": "static decision-DAG design, effects/ownership, exhaustive guards and code-size policy require separate review",
+    "admission": "reject-until-implemented"
+  },
+  "strictAot": {
+    "required": true,
+    "guestCodeCompiled": true,
+    "runtimeJitAllowed": false,
+    "runtimeGuestCompilerAllowed": false,
+    "interpreterFallbackAllowed": false,
+    "reflectionDispatchAllowed": false,
+    "unsupportedFeature": "reject-before-executable-artifact",
+    "javaNativeImageOfInterpreterIsNotProof": true,
+    "wasmHostJitIsNotProof": true,
+    "jsTranspilationIsNotNativeAotProof": true
+  },
+  "evidencePolicy": {
+    "noPromotionFrom": [
+      "source-only",
+      "host-only",
+      "fake-compiler",
+      "zero-step-ci",
+      "declared-sha-only",
+      "stub-aot"
+    ],
+    "required": [
+      "exact-head-sha",
+      "tree-sha",
+      "compiler-digest",
+      "fixture-digest",
+      "executable-guest-steps",
+      "negative-diagnostics",
+      "aot-fallback-rejection",
+      "independent-review"
+    ]
+  },
+  "features": [
+    {
+      "id": "typed_equality",
+      "layer": "language",
+      "priority": "P0",
+      "aotLowering": "static typed compare, no implicit coercion",
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "typed_pattern_match",
+      "layer": "language",
+      "priority": "P0",
+      "aotLowering": "finite decision DAG on nominal types",
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "binary_pattern_decode",
+      "layer": "language",
+      "priority": "P0",
+      "aotLowering": "checked static bit/byte loads",
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "finite_closures",
+      "layer": "language",
+      "priority": "P0",
+      "aotLowering": "precompiled environment layouts and function tables",
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "checked_effect_cleanup",
+      "layer": "language",
+      "priority": "P0",
+      "aotLowering": "static effect tables and compiled defer paths",
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "selective_receive",
+      "layer": "runtime",
+      "priority": "P0",
+      "aotLowering": "compiled mailbox matching with unmatched retention",
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "mailbox_bounds_fifo",
+      "layer": "runtime",
+      "priority": "P0",
+      "aotLowering": "precompiled typed queues and admission checks",
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "monitor_generation",
+      "layer": "runtime",
+      "priority": "P0",
+      "aotLowering": "precompiled monitor handles and fenced events",
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "actor_fault_isolation",
+      "layer": "runtime",
+      "priority": "P0",
+      "aotLowering": "actor-owned stacks/heaps and compiled checkpoints",
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "supervision_restart",
+      "layer": "runtime",
+      "priority": "P0",
+      "aotLowering": "compiled restart policy tables",
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "maybe_conditional_match",
+      "layer": "language",
+      "priority": "P1",
+      "aotLowering": "finite typed Result/Option control-flow lowering",
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "comprehensions",
+      "layer": "language",
+      "priority": "P1",
+      "aotLowering": "statically bound iteration with allocation quotas",
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "typed_gen_server",
+      "layer": "library",
+      "priority": "P1",
+      "aotLowering": "AOT-specialized typed server library",
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "typed_gen_statem",
+      "layer": "library",
+      "priority": "P1",
+      "aotLowering": "AOT-specialized state machine library",
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "distributed_actor_transport",
+      "layer": "runtime",
+      "priority": "P1",
+      "aotLowering": "generated typed serializers and authenticated transport",
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "application_lifecycle",
+      "layer": "library",
+      "priority": "P1",
+      "aotLowering": "precompiled dependency and teardown graph",
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "hot_precompiled_upgrade",
+      "layer": "runtime",
+      "priority": "P2",
+      "aotLowering": "verified signed precompiled generations",
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "typed_in_memory_tables",
+      "layer": "library",
+      "priority": "P2",
+      "aotLowering": "typed storage with bounded ownership and synchronization",
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "durable_actor_storage",
+      "layer": "library",
+      "priority": "P2",
+      "aotLowering": "explicit persistence, recovery and migration",
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "observer_logging",
+      "layer": "library",
+      "priority": "P2",
+      "aotLowering": "static event IDs and no reflective discovery",
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
+    }
+  ],
+  "vectors": [
+    {
+      "id": "eq.same_int",
+      "kind": "compile",
+      "feature": "typed_equality",
+      "source": "fnc main() -> bool as\n  return 7 eq 7;\nend\n",
+      "expected": {
+        "compilation": "accept"
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "sourceProfile": "atto-strict-v1"
+    },
+    {
+      "id": "neq.different_int",
+      "kind": "compile",
+      "feature": "typed_equality",
+      "source": "fnc main() -> bool as\n  return 7 neq 8;\nend\n",
+      "expected": {
+        "compilation": "accept"
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "sourceProfile": "atto-strict-v1"
+    },
+    {
+      "id": "not_eq_alias.different_int",
+      "kind": "compile",
+      "feature": "typed_equality",
+      "source": "fnc main() -> bool as\n  return 7 !eq 8;\nend\n",
+      "expected": {
+        "compilation": "accept"
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "sourceProfile": "atto-strict-v1"
+    },
+    {
+      "id": "eq.no_implicit_float",
+      "kind": "compile",
+      "feature": "typed_equality",
+      "source": "fnc main() -> bool as\n  return 7 eq 7.0;\nend\n",
+      "expected": {
+        "compilation": "reject",
+        "diagnosticClass": "incompatible_equality_types"
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "sourceProfile": "atto-strict-v1",
+      "profile": "proposed-strict-source-v2",
+      "caveat": "not yet enforced by existing compiler defaults; versioned migration required"
+    },
+    {
+      "id": "eq.no_cross_bool",
+      "kind": "compile",
+      "feature": "typed_equality",
+      "source": "fnc main() -> bool as\n  return 1 eq true;\nend\n",
+      "expected": {
+        "compilation": "reject",
+        "diagnosticClass": "incompatible_equality_types"
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "sourceProfile": "atto-strict-v1"
+    },
+    {
+      "id": "eq.reject_c_style",
+      "kind": "compile",
+      "feature": "typed_equality",
+      "source": "fnc main() -> bool as\n  return 7 == 7;\nend\n",
+      "expected": {
+        "compilation": "reject",
+        "diagnosticClass": "invalid_equality_token"
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "sourceProfile": "atto-strict-v1",
+      "profile": "proposed-strict-source-v2",
+      "caveat": "not yet enforced by existing compiler defaults; versioned migration required"
+    },
+    {
+      "id": "neq.reject_c_style",
+      "kind": "compile",
+      "feature": "typed_equality",
+      "source": "fnc main() -> bool as\n  return 7 != 8;\nend\n",
+      "expected": {
+        "compilation": "reject",
+        "diagnosticClass": "invalid_equality_token"
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "sourceProfile": "atto-strict-v1",
+      "profile": "proposed-strict-source-v2",
+      "caveat": "not yet enforced by existing compiler defaults; versioned migration required"
+    },
+    {
+      "id": "eq.reject_erlang",
+      "kind": "compile",
+      "feature": "typed_equality",
+      "source": "fnc main() -> bool as\n  return 7 =:= 7;\nend\n",
+      "expected": {
+        "compilation": "reject",
+        "diagnosticClass": "invalid_equality_token"
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "sourceProfile": "atto-strict-v1"
+    },
+    {
+      "id": "selective_receive.keep_unmatched",
+      "kind": "runtime_trace",
+      "feature": "selective_receive",
+      "initialMailbox": [
+        "payment",
+        "stock_update",
+        "stop"
+      ],
+      "selected": "stop",
+      "expected": {
+        "remaining": [
+          "payment",
+          "stock_update"
+        ],
+        "selected": "stop"
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "oracleStatus": "illustrative-not-guest-executed"
+    },
+    {
+      "id": "selective_receive.timeout_no_consume",
+      "kind": "runtime_trace",
+      "feature": "selective_receive",
+      "initialMailbox": [
+        "payment"
+      ],
+      "selected": "stop",
+      "expected": {
+        "remaining": [
+          "payment"
+        ],
+        "selected": null
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "oracleStatus": "illustrative-not-guest-executed"
+    },
+    {
+      "id": "monitor_generation.no_stale_success",
+      "kind": "runtime_trace",
+      "feature": "monitor_generation",
+      "scenario": "terminated incarnation 41, replacement 42, late callback from 41",
+      "expected": {
+        "staleCallback": "reject",
+        "terminalNoticeCount": 1
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "oracleStatus": "illustrative-not-guest-executed"
+    },
+    {
+      "id": "supervision_restart.one_for_one",
+      "kind": "runtime_trace",
+      "feature": "supervision_restart",
+      "scenario": "child B fails under one_for_one with A,B,C",
+      "expected": {
+        "restarted": [
+          "B"
+        ],
+        "unaffected": [
+          "A",
+          "C"
+        ]
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "oracleStatus": "illustrative-not-guest-executed"
+    },
+    {
+      "id": "supervision_restart.one_for_all",
+      "kind": "runtime_trace",
+      "feature": "supervision_restart",
+      "scenario": "child B fails under one_for_all with A,B,C",
+      "expected": {
+        "restarted": [
+          "A",
+          "B",
+          "C"
+        ]
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "oracleStatus": "illustrative-not-guest-executed"
+    },
+    {
+      "id": "supervision_restart.rest_for_one",
+      "kind": "runtime_trace",
+      "feature": "supervision_restart",
+      "scenario": "child B fails under rest_for_one ordered A,B,C",
+      "expected": {
+        "restarted": [
+          "B",
+          "C"
+        ],
+        "unaffected": [
+          "A"
+        ]
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "oracleStatus": "illustrative-not-guest-executed"
+    },
+    {
+      "id": "binary_pattern_decode.short_input",
+      "kind": "runtime_trace",
+      "feature": "binary_pattern_decode",
+      "scenario": "decode 16-bit field from one-byte borrowed buffer",
+      "expected": {
+        "result": "bounds_error",
+        "outOfBoundsRead": false
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "oracleStatus": "illustrative-not-guest-executed"
+    },
+    {
+      "id": "actor_fault_isolation.stack_quota",
+      "kind": "runtime_trace",
+      "feature": "actor_fault_isolation",
+      "scenario": "actor A exhausts frame quota while sibling B remains healthy",
+      "expected": {
+        "actorA": "terminated",
+        "actorB": "alive",
+        "process": "alive"
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "oracleStatus": "illustrative-not-guest-executed"
+    },
+    {
+      "id": "checked_effect_cleanup.panic",
+      "kind": "runtime_trace",
+      "feature": "checked_effect_cleanup",
+      "scenario": "panic with defer cleanup and supervisor control receipt",
+      "expected": {
+        "panicCaughtByGuest": false,
+        "deferCount": 1,
+        "supervisorReceipts": 1
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "oracleStatus": "illustrative-not-guest-executed"
+    },
+    {
+      "id": "aot.no_interpreter_fallback",
+      "kind": "aot_policy",
+      "feature": "finite_closures",
+      "scenario": "compiler cannot statically resolve callable target",
+      "expected": {
+        "compilation": "reject",
+        "interpreterFallback": false
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "oracleStatus": "illustrative-not-guest-executed"
+    },
+    {
+      "id": "aot.no_runtime_codegen",
+      "kind": "aot_policy",
+      "feature": "hot_precompiled_upgrade",
+      "scenario": "strict AOT hot code upload is source text, not precompiled generation",
+      "expected": {
+        "admission": "reject",
+        "dynamicCodegen": false
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "oracleStatus": "illustrative-not-guest-executed"
+    },
+    {
+      "id": "typed_pattern_match.exhaustive_option",
+      "kind": "runtime_trace",
+      "feature": "typed_pattern_match",
+      "scenario": "match a statically typed Option[int] with Some(x) and None arms",
+      "expected": {
+        "decision_dag_compiled": "static; all arms covered"
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "oracleStatus": "illustrative-not-guest-executed"
+    },
+    {
+      "id": "mailbox_bounds_fifo.full_quota",
+      "kind": "runtime_trace",
+      "feature": "mailbox_bounds_fifo",
+      "scenario": "enqueue beyond per-edge quota while preserving admitted per-sender FIFO",
+      "expected": {
+        "admission": "reject_without_consumption"
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "oracleStatus": "illustrative-not-guest-executed"
+    },
+    {
+      "id": "maybe_conditional_match.early_exit_cleanup",
+      "kind": "runtime_trace",
+      "feature": "maybe_conditional_match",
+      "scenario": "second Result pattern fails; later expression not evaluated, defer releases borrowed view",
+      "expected": {
+        "early_exit": "typed_error_with_one_cleanup"
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "oracleStatus": "illustrative-not-guest-executed"
+    },
+    {
+      "id": "comprehensions.static_iterator",
+      "kind": "runtime_trace",
+      "feature": "comprehensions",
+      "scenario": "typed finite iterator filters then maps with allocation quota",
+      "expected": {
+        "iterator": "statically_resolved_no_jit"
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "oracleStatus": "illustrative-not-guest-executed"
+    },
+    {
+      "id": "typed_gen_server.one_reply",
+      "kind": "runtime_trace",
+      "feature": "typed_gen_server",
+      "scenario": "request/reply handler completes once after cancellation/reply race",
+      "expected": {
+        "reply_count": 1
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "oracleStatus": "illustrative-not-guest-executed"
+    },
+    {
+      "id": "typed_gen_statem.single_transition",
+      "kind": "runtime_trace",
+      "feature": "typed_gen_statem",
+      "scenario": "state machine processes an event from idle and transitions to active exactly once",
+      "expected": {
+        "final_state": "active"
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "oracleStatus": "illustrative-not-guest-executed"
+    },
+    {
+      "id": "distributed_actor_transport.stale_replay",
+      "kind": "runtime_trace",
+      "feature": "distributed_actor_transport",
+      "scenario": "remote actor message has revoked credential or old generation",
+      "expected": {
+        "admission": "reject_and_no_mailbox_delivery"
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "oracleStatus": "illustrative-not-guest-executed"
+    },
+    {
+      "id": "application_lifecycle.ordered_shutdown",
+      "kind": "runtime_trace",
+      "feature": "application_lifecycle",
+      "scenario": "application B depends on A; shutdown performed in reverse dependency order",
+      "expected": {
+        "shutdown_order": "B_before_A"
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "oracleStatus": "illustrative-not-guest-executed"
+    },
+    {
+      "id": "typed_in_memory_tables.reader_writer_exclusion",
+      "kind": "runtime_trace",
+      "feature": "typed_in_memory_tables",
+      "scenario": "shared typed table has two concurrent readers while writer waits",
+      "expected": {
+        "read_write": "never_simultaneous"
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "oracleStatus": "illustrative-not-guest-executed"
+    },
+    {
+      "id": "durable_actor_storage.recover_epoch",
+      "kind": "runtime_trace",
+      "feature": "durable_actor_storage",
+      "scenario": "process restarts from committed snapshot while rejecting stale incarnation writes",
+      "expected": {
+        "recovery": "committed_state_only"
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "oracleStatus": "illustrative-not-guest-executed"
+    },
+    {
+      "id": "observer_logging.no_unbounded_reflection",
+      "kind": "runtime_trace",
+      "feature": "observer_logging",
+      "scenario": "read actor diagnostics from precompiled metadata without evaluating guest callbacks",
+      "expected": {
+        "observability": "bounded_no_guest_reflection"
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "oracleStatus": "illustrative-not-guest-executed"
+    },
+    {
+      "id": "eq.reject_split_bang_alias",
+      "kind": "compile",
+      "feature": "typed_equality",
+      "sourceProfile": "atto-strict-v1",
+      "source": "fnc main() -> bool as\n  return 7 ! eq 8;\nend\n",
+      "expected": {
+        "compilation": "reject",
+        "diagnosticClass": "invalid_equality_token"
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "eq.reject_partial_alias",
+      "kind": "compile",
+      "feature": "typed_equality",
+      "sourceProfile": "atto-strict-v1",
+      "source": "fnc main() -> bool as\n  return 7 !eqvalue 8;\nend\n",
+      "expected": {
+        "compilation": "reject",
+        "diagnosticClass": "invalid_equality_token"
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "neq.reject_suffix_identifier",
+      "kind": "compile",
+      "feature": "typed_equality",
+      "sourceProfile": "atto-strict-v1",
+      "source": "fnc main() -> bool as\n  return 7 neqvalue 8;\nend\n",
+      "expected": {
+        "compilation": "reject",
+        "diagnosticClass": "invalid_equality_token"
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "eq.reject_partial_identifier",
+      "kind": "compile",
+      "feature": "typed_equality",
+      "sourceProfile": "atto-strict-v1",
+      "source": "fnc main() -> bool as\n  return 7 eqvalue 7;\nend\n",
+      "expected": {
+        "compilation": "reject",
+        "diagnosticClass": "invalid_equality_token"
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
+    }
+  ]
+}

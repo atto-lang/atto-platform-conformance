@@ -1,0 +1,144 @@
+{
+  "schema": "atto.actor.attached-state.lifecycle.v1",
+  "version": 1,
+  "status": "TARGET_NOT_EXECUTED",
+  "normative_spec": "https://github.com/atto-lang/atto-spec/pull/127",
+  "source_root": "fixtures/actor-attached-state-v1",
+  "protected_state": "actor incarnation private, nominal owner, exactly one schema",
+  "equivalence_group": [
+    "inline_counter",
+    "attached_counter"
+  ],
+  "caveat": "main() return immediately after send() does not guarantee stdout/receiver execution; positive tests require separate runner-drain or message completion trace",
+  "required_cases": [
+    {
+      "id": "inline_counter",
+      "path": "fixtures/actor-attached-state-v1/pass/inline_counter.atto",
+      "kind": "pass",
+      "expected": "COMPILE_ACCEPT_THEN_EXECUTION_GATED",
+      "evidence": "NOT_EXECUTED",
+      "reason": "// TARGET: compile the exact requested Counter; send() is admission-only."
+    },
+    {
+      "id": "attached_counter",
+      "path": "fixtures/actor-attached-state-v1/pass/attached_counter.atto",
+      "kind": "pass",
+      "expected": "COMPILE_ACCEPT_THEN_EXECUTION_GATED",
+      "evidence": "NOT_EXECUTED",
+      "reason": "// TARGET: same nominal per-instance state/layout and lifecycle as inline_counter.atto."
+    },
+    {
+      "id": "attached_initialized",
+      "path": "fixtures/actor-attached-state-v1/pass/attached_initialized.atto",
+      "kind": "pass",
+      "expected": "COMPILE_ACCEPT_THEN_EXECUTION_GATED",
+      "evidence": "NOT_EXECUTED",
+      "reason": "// TARGET: explicit initializer is applied per actor incarnation."
+    },
+    {
+      "id": "inline_and_attached",
+      "path": "fixtures/actor-attached-state-v1/fail/inline_and_attached.atto",
+      "kind": "fail",
+      "expected": "COMPILE_REJECT_WITH_NO_GUEST_ARTIFACT",
+      "evidence": "NOT_EXECUTED",
+      "reason": "// TARGET REJECT: exactly one schema per actor"
+    },
+    {
+      "id": "initialization_missing",
+      "path": "fixtures/actor-attached-state-v1/fail/initialization_missing.atto",
+      "kind": "fail",
+      "expected": "COMPILE_REJECT_WITH_NO_GUEST_ARTIFACT",
+      "evidence": "NOT_EXECUTED",
+      "reason": "// TARGET REJECT: uninitialized protected field read on successful activation"
+    },
+    {
+      "id": "direct_field",
+      "path": "fixtures/actor-attached-state-v1/fail/direct_field.atto",
+      "kind": "fail",
+      "expected": "COMPILE_REJECT_WITH_NO_GUEST_ARTIFACT",
+      "evidence": "NOT_EXECUTED",
+      "reason": "// TARGET REJECT: sealed state not accessible through self.count"
+    },
+    {
+      "id": "read_guard_write",
+      "path": "fixtures/actor-attached-state-v1/fail/read_guard_write.atto",
+      "kind": "fail",
+      "expected": "COMPILE_REJECT_WITH_NO_GUEST_ARTIFACT",
+      "evidence": "NOT_EXECUTED",
+      "reason": "// TARGET REJECT: critical-read must not be upgraded to mutable block"
+    },
+    {
+      "id": "missing_write_effect",
+      "path": "fixtures/actor-attached-state-v1/fail/missing_write_effect.atto",
+      "kind": "fail",
+      "expected": "COMPILE_REJECT_WITH_NO_GUEST_ARTIFACT",
+      "evidence": "NOT_EXECUTED",
+      "reason": "// TARGET REJECT: using state.write is required for an exclusive guard"
+    },
+    {
+      "id": "nested_lease",
+      "path": "fixtures/actor-attached-state-v1/fail/nested_lease.atto",
+      "kind": "fail",
+      "expected": "COMPILE_REJECT_WITH_NO_GUEST_ARTIFACT",
+      "evidence": "NOT_EXECUTED",
+      "reason": "// TARGET REJECT: nested critical scopes or mode upgrades are forbidden"
+    },
+    {
+      "id": "state_view_escape",
+      "path": "fixtures/actor-attached-state-v1/fail/state_view_escape.atto",
+      "kind": "fail",
+      "expected": "COMPILE_REJECT_WITH_NO_GUEST_ARTIFACT",
+      "evidence": "NOT_EXECUTED",
+      "reason": "// TARGET REJECT: state view cannot escape by return, closure or storage"
+    },
+    {
+      "id": "unknown_actor_attachment",
+      "path": "fixtures/actor-attached-state-v1/fail/unknown_actor_attachment.atto",
+      "kind": "fail",
+      "expected": "COMPILE_REJECT_WITH_NO_GUEST_ARTIFACT",
+      "evidence": "NOT_EXECUTED",
+      "reason": "// TARGET REJECT: cannot attach state to an unresolved actor"
+    },
+    {
+      "id": "actor_attachment_to_class",
+      "path": "fixtures/actor-attached-state-v1/fail/actor_attachment_to_class.atto",
+      "kind": "fail",
+      "expected": "COMPILE_REJECT_WITH_NO_GUEST_ARTIFACT",
+      "evidence": "NOT_EXECUTED",
+      "reason": "// TARGET REJECT: owner kind must be actor, never class"
+    },
+    {
+      "id": "await_inside_guard",
+      "path": "fixtures/actor-attached-state-v1/fail/await_inside_guard.atto",
+      "kind": "fail",
+      "expected": "COMPILE_REJECT_WITH_NO_GUEST_ARTIFACT",
+      "evidence": "NOT_EXECUTED",
+      "reason": "// TARGET REJECT: suspension inside a state guard (irrespective of effect)"
+    }
+  ],
+  "runtime_obligations": [
+    "on_start successful definite initialization before receive",
+    "on_start failure prohibits mailbox dispatch and reports supervisor notice",
+    "serial drain of two admitted messages 1 then 2 observes count snapshots 1 then 3",
+    "shared-message interleaving read is a snapshot, not transactional own-update result",
+    "independent Counter instances never alias state",
+    "reader/writer exclusion and fair nonparking admission",
+    "critical scopes cleaned on exception cancellation panic STOP",
+    "post-STOP stale generation lease cannot access reincarnated actor",
+    "cross-TenantVM handles cannot read/write state and cannot transfer state views"
+  ],
+  "backend_status": {
+    "atto-source.java": "NOT_EXECUTED",
+    "atto-source.llvm": "NOT_EXECUTED",
+    "atto-source.wasm": "NOT_EXECUTED",
+    "atto-source.forge": "NOT_EXECUTED",
+    "atto-source.net": "NOT_EXECUTED",
+    "atto-source.rs": "NOT_EXECUTED",
+    "atto-source.js": "NOT_EXECUTED",
+    "atto-source.cranelift": "NOT_EXECUTED",
+    "atto-source.atto": "NOT_EXECUTED",
+    "atto-source.hdl": "NOT_EXECUTED",
+    "atto-source.realtime": "NOT_EXECUTED"
+  },
+  "evidence_rule": "Passing requires exact compiler and target SHA, nonempty executed build+test steps, successful positive guest runs, rejection without guest artifact for negatives, runtime isolation and lifecycle traces; source fixture checks alone never count."
+}

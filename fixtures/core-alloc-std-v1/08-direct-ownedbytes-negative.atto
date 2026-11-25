@@ -1,0 +1,5 @@
+// Must be rejected: untrusted guest code may not call the sealed alloc primitive.
+pub fnc main(): int throws Error {
+  val bytes = OwnedBytes.allocate_zeroed(1);
+  return bytes.read_byte(0);
+}

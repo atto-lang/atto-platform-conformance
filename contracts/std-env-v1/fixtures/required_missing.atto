@@ -1,0 +1,6 @@
+import module std_env from "std/env";
+pub routine main(): void {
+  stdio.println(std_env.get_required("ATTO_ENV_MISSING").is_err());
+  stdio.println(std_env.get_required_nonempty("ATTO_ENV_EMPTY").is_err());
+  return;
+}

@@ -1,0 +1,8 @@
+// target: runtime rejection, never a bounded fallback or successful guest.
+import module channel from "std/channel";
+
+pub routine main(): void {
+  val Channel<int> ch = channel.bounded<int>(-1);
+  stdio.stdout.write("unexpected-success");
+  return;
+}
