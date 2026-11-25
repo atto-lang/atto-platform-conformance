@@ -24,6 +24,42 @@ const expectedRepositories=Object.freeze({
   asic:"ores-truffle-oreslang/oreslang-platform.asic"
 });
 
+const expectedTargetClasses=Object.freeze({
+  mobile:"mobile-native",
+  desktop:"desktop-native",
+  embedded:"freestanding-mcu",
+  iot:"iot-gateway",
+  fpga:"fpga",
+  asic:"asic"
+});
+const expectedPromotionRules=Object.freeze({
+  all:["exact-head","executed-steps","target-artifact-digest"],
+  "abi-link":["abi-linked"],
+  "compiler-guest":["abi-linked","compiler-produced","compiler-source-revision",
+    "compiler-binary-digest","not-host-reference-only"],
+  "target-execution":["target-executed"],
+  "physical-hardware":["physical-hardware-evidence"]
+});
+const expectedNonEvidence=Object.freeze([
+  "zero-step-workflow",
+  "queued-workflow",
+  "host-stub-for-compiler-guest",
+  "declared-source-sha-without-binary-provenance",
+  "documentation-only-claim"
+]);
+function sameRegistryKeys(actual,expected) {
+  if(!actual || typeof actual!=="object" || Array.isArray(actual)) return false;
+  const keys=Object.keys(actual).sort();
+  const wanted=Object.keys(expected).sort();
+  return keys.length===wanted.length && keys.every((key,index)=>key===wanted[index]);
+}
+function sameSet(actual,expected) {
+  return Array.isArray(actual) &&
+    actual.length===expected.length &&
+    new Set(actual).size===expected.length &&
+    expected.every((member)=>actual.includes(member));
+}
+
 function validateContractV1(contract) {
   const errors=[];
   if(!contract || contract.schemaVersion!==1 ||
@@ -42,6 +78,20 @@ function validateContractV1(contract) {
     if(contract.platforms?.[name]?.repository!==repo)
       errors.push(`contract repository mismatch for ${name}`);
   }
+  for(const name of Object.keys(expectedTargetClasses)) {
+    if(contract.platforms?.[name]?.targetClass!==expectedTargetClasses[name])
+      errors.push("contract targetClass mismatch for "+name);
+  }
+  // Hardcoded verifier logic does not make forged published policy metadata safe.
+  // v1 must also bind the stage requirements and the non-evidence taxonomy.
+  if(!sameRegistryKeys(contract.promotionRules,expectedPromotionRules))
+    errors.push("contract promotionRules registry does not match v1");
+  for(const [stage,members] of Object.entries(expectedPromotionRules)) {
+    if(!sameSet(contract.promotionRules?.[stage],members))
+      errors.push("contract promotionRules mismatch for "+stage);
+  }
+  if(!sameSet(contract.nonEvidence,expectedNonEvidence))
+    errors.push("contract nonEvidence inventory does not match v1");
   return errors;
 }
 
@@ -54,59 +104,59 @@ export function verifyPlatformCapabilityReceipt(receipt, contract) {
   if(!receipt || typeof receipt!=="object" || Array.isArray(receipt)) {
     return {ok:false,errors:["receipt must be an object"]};
   }
-  if(receipt.schema!=="oreslang.platform-capability/1")
+  if(!Object.hasOwn(receipt,"schema") || receipt.schema!=="oreslang.platform-capability/1")
     fail("schema must be oreslang.platform-capability/1");
 
   // Never resolve platform names through Object.prototype: '__proto__' or
   // 'constructor' must not bypass canonical repository binding.
-  const platform=typeof receipt.platform === "string" &&
+  const platform=Object.hasOwn(receipt,"platform") && typeof receipt.platform === "string" &&
     Object.hasOwn(contract.platforms,receipt.platform)
     ? contract.platforms[receipt.platform] : undefined;
   if(!platform) fail("unknown platform");
-  else if(receipt.repository!==platform.repository)
+  else if(!Object.hasOwn(receipt,"repository") || receipt.repository!==platform.repository)
     fail("repository does not match registered platform repository");
 
-  if(typeof receipt.sourceCommit!=="string" || !hex40.test(receipt.sourceCommit))
+  if(!Object.hasOwn(receipt,"sourceCommit") || typeof receipt.sourceCommit!=="string" || !hex40.test(receipt.sourceCommit))
     fail("sourceCommit must be 40 lowercase hexadecimal digits");
 
-  const stageIndex=expectedStages.indexOf(receipt.stage);
+  const stageIndex=expectedStages.indexOf(Object.hasOwn(receipt,"stage") ? receipt.stage : undefined);
   if(stageIndex<0) fail("unknown promotion stage");
 
-  const e=receipt.evidence;
+  const e=Object.hasOwn(receipt,"evidence") ? receipt.evidence : undefined;
   if(!e || typeof e!=="object" || Array.isArray(e)) {
     fail("evidence must be an object");
     return {ok:false,errors};
   }
 
-  if(e.exactHead!==true) fail("exactHead must be true");
-  if(!Number.isSafeInteger(e.executedSteps) || e.executedSteps<=0)
+  if(!Object.hasOwn(e,"exactHead") || e.exactHead!==true) fail("exactHead must be true");
+  if(!Object.hasOwn(e,"executedSteps") || !Number.isSafeInteger(e.executedSteps) || e.executedSteps<=0)
     fail("executedSteps must be a positive integer; zero-step runs are not evidence");
-  if(typeof e.targetArtifactSha256!=="string" || !hex64.test(e.targetArtifactSha256))
+  if(!Object.hasOwn(e,"targetArtifactSha256") || typeof e.targetArtifactSha256!=="string" || !hex64.test(e.targetArtifactSha256))
     fail("targetArtifactSha256 must be 64 lowercase hexadecimal digits");
 
-  if(stageIndex>=1 && e.abiLinked!==true)
+  if(stageIndex>=1 && (!Object.hasOwn(e,"abiLinked") || e.abiLinked!==true))
     fail("abi-link and higher stages require abiLinked=true");
 
   if(stageIndex>=2) {
-    if(e.hostReferenceOnly!==false)
+    if(!Object.hasOwn(e,"hostReferenceOnly") || e.hostReferenceOnly!==false)
       fail("compiler-guest and higher stages require hostReferenceOnly=false");
-    if(e.compilerProduced!==true)
+    if(!Object.hasOwn(e,"compilerProduced") || e.compilerProduced!==true)
       fail("compiler-guest and higher stages require compilerProduced=true");
-    if(typeof e.compilerSourceCommit!=="string" || !hex40.test(e.compilerSourceCommit))
+    if(!Object.hasOwn(e,"compilerSourceCommit") || typeof e.compilerSourceCommit!=="string" || !hex40.test(e.compilerSourceCommit))
       fail("compiler-guest and higher stages require compilerSourceCommit");
-    if(typeof e.compilerBinarySha256!=="string" || !hex64.test(e.compilerBinarySha256))
+    if(!Object.hasOwn(e,"compilerBinarySha256") || typeof e.compilerBinarySha256!=="string" || !hex64.test(e.compilerBinarySha256))
       fail("compiler-guest and higher stages require compilerBinarySha256");
   }
 
-  if(stageIndex>=3 && e.targetExecuted!==true)
+  if(stageIndex>=3 && (!Object.hasOwn(e,"targetExecuted") || e.targetExecuted!==true))
     fail("target-execution and higher stages require targetExecuted=true");
 
-  if(stageIndex>=4 && e.physicalHardware!==true)
+  if(stageIndex>=4 && (!Object.hasOwn(e,"physicalHardware") || e.physicalHardware!==true))
     fail("physical-hardware stage requires physicalHardware=true");
 
   /* An omitted conclusion is not successful CI. This is still receipt-shape
    * validation: independent reviewers must authenticate the Actions job. */
-  if(e.workflowConclusion!=="success")
+  if(!Object.hasOwn(e,"workflowConclusion") || e.workflowConclusion!=="success")
     fail("workflowConclusion must be success, not missing or non-success");
 
   return {ok:errors.length===0,errors};
