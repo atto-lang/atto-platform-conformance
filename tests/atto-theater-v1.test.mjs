@@ -244,3 +244,38 @@ test('identical Java guest to LLVM negative: typed try_publish is the same Atto 
   // Source equality does not mean equivalent executable feature support.
   assert.equal(auditParityIndex(index,contract).status,'not-certified');
 });
+
+test('receipt SHA fields must be primitive strings, never coercible arrays or numbers',()=>{
+  for(const [group,field] of [
+    ['compiler','sourceHeadSha'],['compiler','sourceTreeSha'],['compiler','binarySha256'],
+    ['fixture','gitBlobSha'],['fixture','sourceSha256'],['run','headSha']
+  ]) {
+    const r=candidate();
+    r[group][field]=[r[group][field]];
+    assert.equal(validateGuestReceipt(r,contract).status,'rejected',group+'.'+field);
+  }
+});
+test('contract cannot weaken actual safety assertion text or substitute platform policy',()=>{
+  for(const entry of contract.cases) {
+    const bad=structuredClone(contract);
+    bad.cases.find(c=>c.id===entry.id).assertion='No meaningful safety check';
+    assert.ok(validateTheaterContract(bad).length,entry.id);
+  }
+  for(const field of ['ownership','queue','semantics']) {
+    const bad=structuredClone(contract);
+    bad.ensemblePublication[field]='';
+    assert.ok(validateTheaterContract(bad).length,field);
+  }
+  const bad=structuredClone(contract);
+  bad.platform.runtime='unrestricted scheduler';
+  assert.ok(validateTheaterContract(bad).length);
+});
+test('evidence and bootstrap arrays reject nested strings and combined values',()=>{
+  for(const field of ['requiredEvidence','disallowedEvidence','bootstrapOnlyAtStart']) {
+    for(const mode of ['nested','combined']) {
+      const bad=structuredClone(contract);
+      bad[field]=mode==='nested'?bad[field].map(x=>[x]):[bad[field].join(',')];
+      assert.ok(validateTheaterContract(bad).length,field+':'+mode);
+    }
+  }
+});
