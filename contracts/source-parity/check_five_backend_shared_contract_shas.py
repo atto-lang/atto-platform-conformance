@@ -4,6 +4,7 @@
 No network, checkout of backend source, or transfer of private Git trees.
 """
 import copy
+import hashlib
 import json
 from pathlib import Path
 import re
@@ -13,6 +14,7 @@ HERE = Path(__file__).resolve().parent
 MANIFEST = HERE / "five-backend-shared-contract-shas-20261111.json"
 SHA1 = re.compile(r"^[0-9a-f]{40}$")
 BACKENDS = ("java", "llvm", "wasm", "net", "forge")
+EXPECTED_MANIFEST_GIT_BLOB = "df6688ee720b8084b12988e6f41443c44847840d"
 EXPECTED_HEADS = {
     "java": "6d8eb70048eafc9a84c5aebe9c1bb06104f16e76",
     "llvm": "0ee037ca3e5dd9ac6ac1e9cc3d40f19ee6326a9c",
@@ -172,6 +174,11 @@ def verify(data):
         proposed[path][backend] = item["blob_sha"]
     remaining = sum(len(set(blobs.values())) > 1 for blobs in proposed.values())
     require(remaining == 8, "three proposed exact-hash repairs do not converge")
+    # Aggregate counts alone cannot authenticate an immutable historical snapshot.
+    canonical = (json.dumps(data, indent=2, ensure_ascii=True) + "\n").encode("utf-8")
+    git_header = f"blob {len(canonical)}\0".encode("ascii")
+    require(hashlib.sha1(git_header + canonical).hexdigest() == EXPECTED_MANIFEST_GIT_BLOB,
+            "frozen manifest Git blob identity changed")
     return counts, remaining
 
 def self_test(data):
@@ -193,6 +200,12 @@ def self_test(data):
     mutants.append(one)
     one = copy.deepcopy(data)
     one["candidate_status"] = "merged-and-certified"
+    mutants.append(one)
+    one = copy.deepcopy(data)
+    one["backends"]["java"]["tree"] = "e" * 40
+    mutants.append(one)
+    one = copy.deepcopy(data)
+    one["findings"][0]["category"] = "unverified-alternative-classification"
     mutants.append(one)
     for mutant in mutants:
         try:
