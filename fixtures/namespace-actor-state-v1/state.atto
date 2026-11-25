@@ -1,0 +1,7 @@
+// PROPOSED SOURCE; exactly one out-of-line sealed state schema.
+namespace foo;
+
+define state on actor Foo as {
+    let int x : 5;
+    let int revision : 0;
+}

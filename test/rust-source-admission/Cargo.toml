@@ -1,0 +1,9 @@
+[package]
+name = "oreslang-source-admission-reference"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# Rust-only reference harness; independent of the Node oracle and compiler backends.
+[dependencies]
+serde_json = "1.0"

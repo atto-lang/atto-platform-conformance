@@ -1,0 +1,59 @@
+{
+  "schema": "atto.m4.actual-dual-native-runs.v1",
+  "source": {
+    "path": "fixtures/m4/shared_actor_counter.atto",
+    "git_blob_sha": "0f9aca24deb195d7f604a1bfb944e237629803f4",
+    "sha256": "163413d28002134f7e87e8ad710d3cf3ef64ecdee6dab81b5df3b0209ca2b8b8"
+  },
+  "llvm": {
+    "head_sha": "4cca8b74bdc69fa382a1e9715a74556afbf1f2e7",
+    "run_url": "https://github.com/atto-lang/atto-source.llvm/actions/runs/42328161827",
+    "conclusion": "success",
+    "executed_steps": 9,
+    "runtime_executed": true,
+    "native_artifact_sha256": "942ed88cf6ec40c24a3d04fb691fbe8f1dc1f19de95a74b29b8f14c1cfc9f316",
+    "provenance": "57 unchanged upstream compiler/runtime test blobs from ores-truffle-oreslang/oreslang-source.llvm#1490; additional local exact-source M4 native guest test",
+    "observed": {
+      "main_return": 43,
+      "host_actor_calls": 3,
+      "host_actor_stops": 2,
+      "host_reply_digest": 7021,
+      "compiled_main_guest_drained": true
+    },
+    "limits": "Host-observed message replies are a distinct execution from compiled .atto main; not production hardened sandbox, hard real-time or full-tree CI"
+  },
+  "graalvm-native": {
+    "head_sha": "b68b5d97808674b95d8a7cd0c93e303253a79a80",
+    "run_url": "https://github.com/atto-lang/atto-source.java/actions/runs/42327847961",
+    "conclusion": "success",
+    "executed_steps": 8,
+    "runtime_executed": true,
+    "native_artifact_sha256": "839cd244a4bb768f7b0f86a83b7e2fb4dd76a638f49885f270474325c38fda2e",
+    "provenance": "real .atto restricted actor pilot parsed and statically code-generated as application-specific GraalVM Native Image Epsilon executable",
+    "observed": {
+      "main_return": 43,
+      "synchronous_guest_sends": 3,
+      "actor_arena_closes": 2,
+      "guest_actor_state_digest": 7021,
+      "gc_collection_delta": 0
+    },
+    "limits": "Synchronous statically emitted sends, not independently scheduled actors; Epsilon does not reclaim managed Java heap and full runtime soak not performed"
+  },
+  "claim": "TWO_COMPILER_EXECUTED_IDENTICAL_SOURCE_RESTRICTED_ACTOR_OBSERVATIONS",
+  "limitations": [
+    "Workflow head, output and artifact hash claims were compared by inspecting connected GitHub API jobs/logs on 2026-11-07 UTC; the checked-in receipt is structural evidence and not a cryptographic attestation.",
+    "Exact-run source equivalence and matching test observations are narrower than full backend semantic parity.",
+    "LLVM host reply digest observed in a separate native guest actor-call sequence; Graal synchronous main digest observed inside its Native Image.",
+    "Neither compiled backend has a release-certified hostile-tenant security sandbox or complete actor ownership state semantics.",
+    "Native GraalVM Epsilon zero collections in this run does not prove bounded long-term Java heap allocation.",
+    "Wasm actor ABI remains unsupported; Forge and .NET compiled guest parity not executed."
+  ],
+  "release_gate_status": {
+    "identical_source_compiled_guest_execution": "OBSERVED_TWO_BACKENDS",
+    "independent_actor_scheduler_equivalence": "NOT_EXECUTED",
+    "ownership_type_checker_parity": "NOT_EXECUTED",
+    "cross_tenant_adversarial_security": "NOT_EXECUTED",
+    "graalvm_zero_gc_long_lived_heap_soak": "NOT_EXECUTED",
+    "five_backend_parity": "NOT_EXECUTED"
+  }
+}

@@ -1,0 +1,71 @@
+name: Atto actor execution oracle v1 (source-free)
+on:
+  pull_request:
+    paths:
+      - 'src/actor-execution-oracle-v1.mjs'
+      - 'tests/actor-execution-oracle-v1.test.mjs'
+      - 'contracts/v1/ATTO_BEAM_OTP_ACTOR_RUNTIME_V1.md'
+      - '.github/workflows/atto-actor-execution-oracle-v1.yml'
+  push:
+    paths:
+      - 'src/actor-execution-oracle-v1.mjs'
+      - 'tests/actor-execution-oracle-v1.test.mjs'
+      - '.github/workflows/atto-actor-execution-oracle-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-free-oracle:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - name: Checkout exact head without retained credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # pinned v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify checkout identity and print immutable file blobs
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_HEAD" =~ ^[a-f0-9]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          printf 'SOURCE_HEAD=%s\nSOURCE_TREE=%s\n' \
+            "$EXPECTED_HEAD" "$(git rev-parse 'HEAD^{tree}')"
+          git hash-object src/actor-execution-oracle-v1.mjs
+          git hash-object tests/actor-execution-oracle-v1.test.mjs
+      - name: Setup pinned Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # pinned v4
+        with:
+          node-version: '22'
+      - name: Execute exact reference tests and reject zero-test or partial pass
+        shell: bash
+        run: |
+          set -euo pipefail
+          test_source=tests/actor-execution-oracle-v1.test.mjs
+          expected="$(grep -Ec '^test\(' "$test_source")"
+          test "$expected" = 14 || {
+            echo "ORACLE_TEST_INVENTORY_MISMATCH: $expected" >&2
+            exit 1
+          }
+          node --test --test-reporter=tap "$test_source" | tee actor-oracle-tap.txt
+          test "$(grep -Ec '^ok [0-9]+ -' actor-oracle-tap.txt)" = "$expected"
+          grep -Fxq "# tests $expected" actor-oracle-tap.txt
+          grep -Fxq "# pass $expected" actor-oracle-tap.txt
+          grep -Fxq '# fail 0' actor-oracle-tap.txt
+          grep -Fxq '# skipped 0' actor-oracle-tap.txt
+          grep -Fxq '# cancelled 0' actor-oracle-tap.txt
+          echo 'SOURCE_FREE_ORACLE_PASS'
+      - name: Print evidence boundaries
+        if: always()
+        shell: bash
+        run: |
+          echo 'SOURCE_FREE_ORACLE_ONLY'
+          echo 'compiledGuestExecuted=false'
+          echo 'nativePreemptionProven=false'
+          echo 'nativeZeroCopyProven=false'
+          echo 'fiveBackendParityCertified=false'

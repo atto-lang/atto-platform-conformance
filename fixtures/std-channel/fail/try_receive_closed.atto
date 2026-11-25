@@ -1,0 +1,14 @@
+// expect-runtime-error: closed
+// Buffered messages drain after close, but terminal immediate reads must
+// report a closed error rather than reusing the temporary-empty None state.
+import module channel from "std/channel";
+
+pub routine main(): void {
+  val Channel<int> ch = channel.bounded<int>(1);
+  writech ch, 42;
+  channel.close<int>(ch);
+  stdio.stdout.write(readch ch);
+  val Option<int> terminal = channel.try_receive<int>(ch);
+  stdio.stdout.write("unexpected");
+  return;
+}

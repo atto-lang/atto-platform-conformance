@@ -1,0 +1,46 @@
+name: Atto Theater v1 contract (source-only)
+on:
+  pull_request:
+    paths:
+      - 'contracts/atto-theater-v1.json'
+      - 'bin/verify-atto-theater-v1.mjs'
+      - 'tests/atto-theater-v1.test.mjs'
+      - 'fixtures/atto-theater-v1/**'
+      - 'fixtures/atto-ensemble-v1/**'
+      - 'verification/atto-theater-v1.receipts.json'
+      - 'verification/atto-ensemble-pubsub-main-audit.json'
+      - 'docs/ATTO_THEATER_PARITY_V1.md'
+      - 'docs/CI_FALLBACK_PRIVATE_ACTOR_BRANCHES.md'
+      - '.github/workflows/atto-theater-v1-contract.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  theater-source-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Assert exact checked-out commit
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_HEAD" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          echo "source_sha=$EXPECTED_HEAD tree=$(git rev-parse 'HEAD^{tree}')"
+      - name: Test source-only contract and reject fabricated receipts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --version
+          node --test tests/atto-theater-v1.test.mjs
+          node bin/verify-atto-theater-v1.mjs
+      - name: Explicit guest parity status
+        run: |
+          echo 'ATTO_THEATER_GUEST_EXECUTION=NOT_EXECUTED'
+          echo 'ATTO_THEATER_PARITY_CERTIFICATION=NOT_CERTIFIED'
