@@ -1,0 +1,3 @@
+pub fnc make(): record { foo: int } {
+    return record { foo: 5 };
+}

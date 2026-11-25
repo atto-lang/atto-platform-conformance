@@ -1,0 +1,41 @@
+// ORT2-OPTION_SCALAR: native guest assertions, not executed evidence
+
+fnc emit(bool yes): void {
+  if yes; then
+    stdio.stdout.write("1");
+  else
+    stdio.stdout.write("0");
+  fi
+  return;
+}
+pub fnc main(): void {
+  val Option<int> zero = Some(0);
+  val Option<int> missing = None;
+  val Option<bool> no = Some(false);
+  val Option<Option<int>> nested_missing = Some(None);
+  val Option<Option<int>> outer_missing = None;
+  val Option<Option<int>> nested_value = Some(Some(23));
+  stdio.stdout.write("ORT2:option_scalar:");
+  // CHECK some_zero_tag
+  emit(zero.is_some());
+  // CHECK some_zero_payload
+  emit(zero.unwrap() == 0);
+  // CHECK none_tag
+  emit(missing.is_none());
+  // CHECK none_fallback
+  emit(missing.unwrap_or(13) == 13);
+  // CHECK some_false_tag
+  emit(no.is_some());
+  // CHECK some_false_payload
+  emit(no.unwrap() == false);
+  // CHECK nested_some_none_tag
+  emit(nested_missing.is_some());
+  // CHECK nested_some_none_inner
+  emit(nested_missing.unwrap().is_none());
+  // CHECK nested_outer_none
+  emit(outer_missing.is_none());
+  // CHECK nested_value
+  emit(nested_value.unwrap().unwrap() == 23);
+  stdio.stdout.write(":END");
+  return;
+}

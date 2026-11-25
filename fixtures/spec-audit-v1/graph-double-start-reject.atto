@@ -1,0 +1,5 @@
+// TARGET S-21: descriptor is move-only; double-start must reject on ownership,
+// not just because placeholder stages Reader/Writer are unresolved.
+val plan = Actor.pipe(Reader(), Writer())
+val first = plan.start()
+val second = plan.start()

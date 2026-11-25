@@ -1,0 +1,5 @@
+// Paired to guard-v1/reject-fallthrough.atto. Only the guard failure body changes.
+pub fnc main(): int {
+  guard true { return 1; }
+  return 42;
+}

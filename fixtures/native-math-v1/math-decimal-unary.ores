@@ -1,0 +1,10 @@
+pub fnc main(): int {
+  val decimal one = 1;
+  val decimal four = 4;
+  val decimal negativeQuarter = -(one / four);
+  if Math.abs(negativeQuarter) eq 0.25
+      && Math.neg(negativeQuarter) eq 0.25 then
+    return 42;
+  fi
+  return 1;
+}

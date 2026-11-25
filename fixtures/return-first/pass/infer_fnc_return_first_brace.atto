@@ -1,0 +1,4 @@
+// expect-exit: 42
+// return-first syntax variant infer_fnc_return_first_brace; compiled guest proof still pending
+fnc infer <- calculate_other() { return 42; }
+pub fnc main() -> int { return calculate_other(); }

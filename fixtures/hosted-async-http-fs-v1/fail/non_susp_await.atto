@@ -1,0 +1,6 @@
+// Negative: await inside a non-suspending function.
+import * as http from "std.http";
+pub fnc main(): int {
+  val response = await http.get("https://example.com/data");
+  return response.status;
+}

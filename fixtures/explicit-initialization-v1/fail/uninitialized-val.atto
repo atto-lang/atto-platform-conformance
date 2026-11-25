@@ -1,0 +1,4 @@
+pub fnc main(): int {
+  val string name;
+  return 42;
+}

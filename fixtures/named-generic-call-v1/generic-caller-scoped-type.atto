@@ -1,0 +1,9 @@
+fnc choose<T, foo=string, bar=T>(T value) -> T ::
+  return value
+end
+fnc forward<T>(T value) -> T ::
+  return choose<foo=string,bar=T>(value)
+end
+fnc main() -> int ::
+  return forward<int>(42)
+end

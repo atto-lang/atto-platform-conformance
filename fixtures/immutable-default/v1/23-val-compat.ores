@@ -1,0 +1,1 @@
+fnc main(): int { val int x = 7; return x; }

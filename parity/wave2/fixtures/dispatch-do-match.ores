@@ -1,0 +1,1 @@
+pub fnc main(): int { do match 7 over on 7 { return 42; } default { return 0; } end return 99; }

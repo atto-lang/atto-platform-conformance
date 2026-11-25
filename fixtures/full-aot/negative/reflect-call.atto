@@ -1,0 +1,1 @@
+pub fnc main(): int { return reflect_call(42, "add", 1); }

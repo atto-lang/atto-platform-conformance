@@ -1,0 +1,24 @@
+define actor Worker as
+  receive(ActorMail<String> mail): void {
+    let Future<int> outer = task {
+      const int snapshot = 40;
+      let Future<int> nested = task {
+        return snapshot + 2;
+      };
+      return await nested;
+    };
+    self.send(await outer);
+    self.end();
+    return;
+  }
+end
+
+pub async routine main(): void {
+  val worker = spawn Worker();
+  await worker.get_ready();
+  worker.send("go");
+  val reply = (await worker.outputs.next()).value.unwrap();
+  stdio.stdout.write(reply.value);
+  await worker.get_done();
+  return;
+}

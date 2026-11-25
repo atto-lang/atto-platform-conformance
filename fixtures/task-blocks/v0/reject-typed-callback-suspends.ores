@@ -1,0 +1,5 @@
+suspends fnc read_blocking(): int { return 7; }
+fnc apply(Fnc<int, int> callback, int n): int { return callback(n); }
+suspends fnc bad(): int {
+  return apply(|int n| -> read_blocking(), 3);
+}

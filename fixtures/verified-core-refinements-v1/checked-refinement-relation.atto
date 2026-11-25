@@ -1,0 +1,12 @@
+type Nonnegative = int where self >= 0;
+type Window = i32 where self >= 1 and self <= 100;
+
+fnc narrow(Nonnegative input) -> Window
+    ensures result <= input
+{
+    return input as Window;
+}
+
+pub fnc main() -> int {
+    return (narrow(42) as int) + 0;
+}

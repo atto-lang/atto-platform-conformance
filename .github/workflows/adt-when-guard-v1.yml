@@ -1,0 +1,30 @@
+name: ADT when-guard v1 source receipts (host only)
+on:
+  pull_request:
+    paths:
+      - 'contracts/adt-when-guard-v1.json'
+      - 'docs/adt-when-guard-v1.md'
+      - 'fixtures/adt-when-guard-v1/**'
+      - 'tests/adt-when-guard-v1.test.mjs'
+      - '.github/workflows/adt-when-guard-v1.yml'
+  push:
+    paths:
+      - 'contracts/adt-when-guard-v1.json'
+      - 'docs/adt-when-guard-v1.md'
+      - 'fixtures/adt-when-guard-v1/**'
+      - 'tests/adt-when-guard-v1.test.mjs'
+      - '.github/workflows/adt-when-guard-v1.yml'
+permissions:
+  contents: read
+jobs:
+  metadata-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Check immutable fixture blobs and fail-closed evidence states
+        run: node --test tests/adt-when-guard-v1.test.mjs
+      - name: Evidence boundary
+        run: echo "HOST ONLY - native/wasm guest compilation is separately cited, not executed here"

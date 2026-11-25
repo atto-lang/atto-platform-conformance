@@ -1,0 +1,6 @@
+// expect-error: E_IMMUTABLE
+define class Stable as
+  pub val int id = 1;
+  constructor() { self.id = 2; }
+end
+pub fnc main(): int { return 0; }

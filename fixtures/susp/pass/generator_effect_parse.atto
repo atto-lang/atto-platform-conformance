@@ -1,0 +1,6 @@
+// Parse-level contract only: generation and suspension are distinct effects.
+// Native guest execution for suspending generator frames is not certified here.
+pub susp fnc *gen values(): Generator<int> {
+    yield 42;
+}
+pub fnc main(): int { return 42; }

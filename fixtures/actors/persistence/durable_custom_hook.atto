@@ -1,0 +1,4 @@
+// Invalid: durable cannot override runtime-managed disk persistence.
+define durable actor Wrong as
+    susp fnc save_state(ctx: PersistenceContext, snapshot: ActorStateSnapshot<Wrong>): Result<CheckpointReceipt, PersistenceError>;
+end

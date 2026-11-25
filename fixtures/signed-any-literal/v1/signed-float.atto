@@ -1,0 +1,16 @@
+// Expected: compiled guest main() returns 42 (signed Any is float).
+fnc classify(Any value): int {
+  match value over
+    on is float when value < 0 -> { return 42; }
+    on is float -> { return 0; }
+    on _ -> { return 0; }
+  end
+}
+
+pub fnc main(): int {
+  val value: Any = -3.5;
+  if value is float && value eq -3.5 then
+    return classify(value);
+  fi
+  return 0;
+}

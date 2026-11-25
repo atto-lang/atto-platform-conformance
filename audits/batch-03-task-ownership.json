@@ -1,0 +1,124 @@
+{
+  "schema": 1,
+  "batch": 3,
+  "scope": "Original user backlog tasks 21-30 (Send/Sync, Task cancellation, shared memory, ETS, STM, FFI, channels, native CFG)",
+  "capturedUtc": "2026-10-19",
+  "claim": "IMPLEMENTED_SOURCE_FREE_SAFETY_REFERENCE_NOT_COMPILER_RUNTIME",
+  "security": {
+    "privateCrossOrgSourceExport": "FORBIDDEN_WITHOUT_INDEPENDENT_PROTECTED_MAIN_APPROVAL",
+    "noStepCi": "UNKNOWN_EXECUTION_NOT_A_TEST_FAILURE",
+    "reviewedDestination": "NONE_CONFIRMED"
+  },
+  "tasks": [
+    {
+      "task": 21,
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "kind": "issue",
+      "githubNumber": 1437,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/1437",
+      "objective": "Compiler-derived Send/Sync, scoped Task borrowing and unforgeable region-bound execution permits",
+      "releaseGate": "COMPILER_TYPED_CAPTURE_PROOFS",
+      "status": "PENDING_REAL_SOURCE_EXECUTION",
+      "referenceModelOnly": true
+    },
+    {
+      "task": 22,
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "kind": "issue",
+      "githubNumber": 1403,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/1403",
+      "objective": "Structured Task cancellation tree, physical quiescence and owned scope lifecycle",
+      "releaseGate": "RUNTIME_PHYSICAL_QUIESCENCE",
+      "status": "PENDING_REAL_SOURCE_EXECUTION",
+      "referenceModelOnly": true
+    },
+    {
+      "task": 23,
+      "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+      "kind": "issue",
+      "githubNumber": 651,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/issues/651",
+      "objective": "Native Task cancellation and continuation teardown parity",
+      "releaseGate": "LLVM_NATIVE_TASK_CONTINUATIONS",
+      "status": "PENDING_REAL_SOURCE_EXECUTION",
+      "referenceModelOnly": true
+    },
+    {
+      "task": 24,
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "kind": "issue",
+      "githubNumber": 1434,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/1434",
+      "objective": "Checked guest Arc Weak Mutex RwLock and shared-class lowering",
+      "releaseGate": "JAVA_GUEST_SHARED_STATE_LOWERING",
+      "status": "PENDING_REAL_SOURCE_EXECUTION",
+      "referenceModelOnly": true
+    },
+    {
+      "task": 25,
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "kind": "issue",
+      "githubNumber": 1435,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/1435",
+      "objective": "Authenticated generational ETS table capabilities and nonparking Task/actor API",
+      "releaseGate": "JAVA_GUEST_ETS_CAPABILITY_API",
+      "status": "PENDING_REAL_SOURCE_EXECUTION",
+      "referenceModelOnly": true
+    },
+    {
+      "task": 26,
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "kind": "issue",
+      "githubNumber": 1436,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/1436",
+      "objective": "Compiler-checked Ref and retryable STM transaction effects and atomic commit",
+      "releaseGate": "JAVA_GUEST_STM_TRANSACTIONS",
+      "status": "PENDING_REAL_SOURCE_EXECUTION",
+      "referenceModelOnly": true
+    },
+    {
+      "task": 27,
+      "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+      "kind": "issue",
+      "githubNumber": 659,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/issues/659",
+      "objective": "LLVM Arc ETS STM ownership/runtime parity",
+      "releaseGate": "LLVM_GUEST_SHARED_STATE_PARITY",
+      "status": "PENDING_REAL_SOURCE_EXECUTION",
+      "referenceModelOnly": true
+    },
+    {
+      "task": 28,
+      "repository": "ores-truffle-oreslang/oreslang-common-source",
+      "kind": "issue",
+      "githubNumber": 80,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-common-source/issues/80",
+      "objective": "FFI cancellation timeout quiescence leases and unload safety",
+      "releaseGate": "FFI_PHYSICAL_LEASE_CONTRACT",
+      "status": "PENDING_REAL_SOURCE_EXECUTION",
+      "referenceModelOnly": true
+    },
+    {
+      "task": 29,
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "kind": "issue",
+      "githubNumber": 400,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/400",
+      "objective": "Data-only Channel Task capabilities and linked-import signature reification",
+      "releaseGate": "CHANNEL_AND_LINKED_IMPORT_TYPES",
+      "status": "PENDING_REAL_SOURCE_EXECUTION",
+      "referenceModelOnly": true
+    },
+    {
+      "task": 30,
+      "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+      "kind": "issue",
+      "githubNumber": 45,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/issues/45",
+      "objective": "CFG ownership pinned continuation borrows and select cancellation lowering",
+      "releaseGate": "LLVM_CFG_SUSPENSION_LOWERING",
+      "status": "PENDING_REAL_SOURCE_EXECUTION",
+      "referenceModelOnly": true
+    }
+  ]
+}

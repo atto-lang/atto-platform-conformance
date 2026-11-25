@@ -1,0 +1,5 @@
+define serial actor Worker as
+  receive(Mail m): void {
+    self.process(m);
+  }
+end

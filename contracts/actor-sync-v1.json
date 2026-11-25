@@ -1,0 +1,564 @@
+{
+  "schemaVersion": 1,
+  "contract": "oreslang-actor-sync-v1",
+  "status": "candidate-unattested",
+  "canonicalSourceRepository": "ores-truffle-oreslang/oreslang-platform-conformance",
+  "targetBackends": [
+    "java",
+    "llvm",
+    "wasm",
+    "cranelift",
+    "net"
+  ],
+  "languageRules": {
+    "actorSyntax": "define isolated actor Name as ... end",
+    "actorState": "actor-owned sealed state, critical handle_state, non-reentrant",
+    "virtualActors": "opt-in, existing spawn lifecycle preserved",
+    "effectMethod": "suspends fnc; critical bodies never suspend",
+    "snapshots": "owned encoded immutable bytes; no guest/native pointer persistence",
+    "stateWrites": "single authoritative writer fenced by durable epoch and revision",
+    "externalEffects": "at-least-once with idempotency/outbox; timeout means OutcomeUnknown",
+    "replicas": "bounded async stream; consumer cursor advances with durable projection",
+    "crdt": "explicit audited types only; not arbitrary structs",
+    "actorIdentity": [
+      "authenticated-tenant",
+      "namespace",
+      "actor-type",
+      "object-id"
+    ],
+    "activationIdentity": [
+      "host-id",
+      "isolate-generation",
+      "actor-generation"
+    ]
+  },
+  "implementationStatus": {
+    "java": {
+      "actorGuest": "NOT_EXECUTED",
+      "syncGuest": "NOT_EXECUTED",
+      "adapter": "PENDING",
+      "sourceMetadataCandidate": {
+        "repository": "ores-truffle-oreslang/oreslang-source.java",
+        "pullRequest": 2442,
+        "moduleGitBlobSha1": "3aae079ffe3be8bc2eb2b77bacbd6bddf7e1ce65",
+        "fixtureGitBlobSha1": "a454e7107ab62bbaa38cca44627c794b3bf0d4c2",
+        "classification": "SOURCE_AUTHORED_NOT_EXECUTED",
+        "note": "Java/Graal branch packages a single canonical .atto standard module and authors .atto entry/isoactor guest tests. Runtime and durable sync execution remain NOT_EXECUTED; no scheduler-safe persistent adapter or recovery proof.",
+        "canonicalSourcePath": "stdlib/actor_sync.atto",
+        "compatibilitySourcePath": "stdlib/actor_sync.ores",
+        "sourceExtensionAdmission": "SOURCE_AUTHORED_NOT_EXECUTED"
+      }
+    },
+    "llvm": {
+      "actorGuest": "NOT_EXECUTED",
+      "syncGuest": "NOT_EXECUTED",
+      "adapter": "PENDING"
+    },
+    "wasm": {
+      "actorGuest": "NOT_EXECUTED",
+      "syncGuest": "NOT_EXECUTED",
+      "adapter": "PENDING"
+    },
+    "cranelift": {
+      "actorGuest": "UNSUPPORTED",
+      "syncGuest": "UNSUPPORTED",
+      "adapter": "PENDING",
+      "note": "Main currently supports scalar JIT only and rejects actors."
+    },
+    "net": {
+      "actorGuest": "NOT_EXECUTED",
+      "syncGuest": "NOT_EXECUTED",
+      "adapter": "PENDING"
+    }
+  },
+  "scenarios": [
+    {
+      "id": "AS01",
+      "kind": "runtime",
+      "oracle": "stable actor key, zero-to-one activation and single-live-writer",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "cranelift": "UNSUPPORTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidence": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "cranelift": null,
+        "net": null
+      }
+    },
+    {
+      "id": "AS02",
+      "kind": "runtime",
+      "oracle": "explicit spawn/supervision remains unaffected by opt-in virtual activation",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "cranelift": "UNSUPPORTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidence": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "cranelift": null,
+        "net": null
+      }
+    },
+    {
+      "id": "AS03",
+      "kind": "runtime",
+      "oracle": "version and epoch conditional state commit linearization",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "cranelift": "UNSUPPORTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidence": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "cranelift": null,
+        "net": null
+      }
+    },
+    {
+      "id": "AS04",
+      "kind": "fault",
+      "oracle": "atomic state, dedup operation result and outbox; rollback precommit fault",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "cranelift": "UNSUPPORTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidence": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "cranelift": null,
+        "net": null
+      }
+    },
+    {
+      "id": "AS05",
+      "kind": "runtime",
+      "oracle": "same operation id and schema replay original result; conflicting command/schema rejected",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "cranelift": "UNSUPPORTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidence": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "cranelift": null,
+        "net": null
+      }
+    },
+    {
+      "id": "AS06",
+      "kind": "fault",
+      "oracle": "unknown commit outcome after reply loss, then idempotent retry",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "cranelift": "UNSUPPORTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidence": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "cranelift": null,
+        "net": null
+      }
+    },
+    {
+      "id": "AS07",
+      "kind": "fault",
+      "oracle": "stale writer, late continuation and retired isolate generation cannot commit",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "cranelift": "UNSUPPORTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidence": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "cranelift": null,
+        "net": null
+      }
+    },
+    {
+      "id": "AS08",
+      "kind": "runtime",
+      "oracle": "snapshot and next-cursor subscription never miss an intervening commit",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "cranelift": "UNSUPPORTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidence": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "cranelift": null,
+        "net": null
+      }
+    },
+    {
+      "id": "AS09",
+      "kind": "runtime",
+      "oracle": "ordered bounded changefeed pagination, duplicate and gap handling",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "cranelift": "UNSUPPORTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidence": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "cranelift": null,
+        "net": null
+      }
+    },
+    {
+      "id": "AS10",
+      "kind": "fault",
+      "oracle": "atomic projection and cursor ACK; process crash replays without duplicate durable effect",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "cranelift": "UNSUPPORTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidence": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "cranelift": null,
+        "net": null
+      }
+    },
+    {
+      "id": "AS11",
+      "kind": "runtime",
+      "oracle": "outbox, dedupe, cursor and cumulative feed byte quotas fail closed without partial writes",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "cranelift": "UNSUPPORTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidence": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "cranelift": null,
+        "net": null
+      }
+    },
+    {
+      "id": "AS12",
+      "kind": "security",
+      "oracle": "cross-tenant read/watch/commit denied and guest cannot transfer actor-owned mutable aliases",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "cranelift": "UNSUPPORTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidence": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "cranelift": null,
+        "net": null
+      }
+    },
+    {
+      "id": "AS13",
+      "kind": "runtime",
+      "oracle": "schema fingerprint rejection and deterministic versioned snapshot migration",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "cranelift": "UNSUPPORTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidence": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "cranelift": null,
+        "net": null
+      }
+    },
+    {
+      "id": "AS14",
+      "kind": "runtime",
+      "oracle": "blocked storage and slow subscriber do not block scheduler carrier; cancellation releases resources",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "cranelift": "UNSUPPORTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidence": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "cranelift": null,
+        "net": null
+      }
+    },
+    {
+      "id": "AS15",
+      "kind": "fault",
+      "oracle": "passivation and reactivation restore state, alarms and incarnation fences",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "cranelift": "UNSUPPORTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidence": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "cranelift": null,
+        "net": null
+      }
+    },
+    {
+      "id": "AS16",
+      "kind": "fault",
+      "oracle": "multi-host split-brain partition: durable authority elects one fenced writer or denies writes",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "cranelift": "UNSUPPORTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidence": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "cranelift": null,
+        "net": null
+      }
+    },
+    {
+      "id": "AS17",
+      "kind": "runtime",
+      "oracle": "explicit CRDT type only: associative, commutative, idempotent merge with bounded metadata",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "cranelift": "UNSUPPORTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidence": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "cranelift": null,
+        "net": null
+      }
+    },
+    {
+      "id": "AS18",
+      "kind": "fault",
+      "oracle": "transactional outbox and external effect dedupe, no exactly-once network claim",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "cranelift": "UNSUPPORTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidence": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "cranelift": null,
+        "net": null
+      }
+    },
+    {
+      "id": "AS19",
+      "kind": "compile",
+      "oracle": "critical body cannot suspend; critical suspends combination rejected",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "cranelift": "UNSUPPORTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidence": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "cranelift": null,
+        "net": null
+      }
+    },
+    {
+      "id": "AS20",
+      "kind": "abi",
+      "oracle": "versioned ABI, typed envelope, schema and capability validation before guest allocation",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "cranelift": "UNSUPPORTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidence": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "cranelift": null,
+        "net": null
+      }
+    },
+    {
+      "id": "AS21",
+      "kind": "runtime",
+      "oracle": "supervisor priority and non-reentrant actor turn retained during async durable work",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "cranelift": "UNSUPPORTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidence": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "cranelift": null,
+        "net": null
+      }
+    },
+    {
+      "id": "AS22",
+      "kind": "security",
+      "oracle": "forged consumer, operation id, schema, envelope length or ownership capability fail closed",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "cranelift": "UNSUPPORTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidence": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "cranelift": null,
+        "net": null
+      }
+    },
+    {
+      "id": "AS23",
+      "kind": "fault",
+      "oracle": "compacted cursor resync cannot rewind a durable projection or accept conflicting revision",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "cranelift": "UNSUPPORTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidence": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "cranelift": null,
+        "net": null
+      }
+    },
+    {
+      "id": "AS24",
+      "kind": "runtime",
+      "oracle": "identical AttoLang .atto guest source executes across five backends; transitional .ores tests alone do not establish .atto parity",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "cranelift": "UNSUPPORTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidence": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "cranelift": null,
+        "net": null
+      }
+    },
+    {
+      "id": "AS25",
+      "kind": "fault",
+      "oracle": "new actor epoch poisons durable replica cursor across process restart; reads and old/new deltas reject until authenticated full snapshot resync",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "cranelift": "UNSUPPORTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidence": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "cranelift": null,
+        "net": null
+      }
+    }
+  ],
+  "acceptance": {
+    "nativeGuestMustCompile": true,
+    "nativeGuestMustExecute": true,
+    "sourceTreesExactHead": true,
+    "compilerBinarySha256": true,
+    "observedJobSteps": true,
+    "hostOnlyTestsCountAsGuestParity": false,
+    "zeroStepGhaCountsAsEvidence": false,
+    "syntaxRejectionCountsAsGuestParity": false,
+    "privateSourceTransferRequiresAuthorization": true,
+    "runtimePassNeedsCompilerSourceTreeAndGuestReceipts": true,
+    "parallelBackendsCannotInheritEachOthersPass": true
+  }
+}

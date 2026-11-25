@@ -1,0 +1,187 @@
+{
+  "schema": "atto.byte-buffer.v1",
+  "status": "TARGET_NOT_EXECUTED",
+  "normative": "atto-lang/atto-spec/language/byte-buffer-v1.md",
+  "canonical_module": "std.buffer",
+  "source_owner": "atto-lang/atto-common-source",
+  "contract_note": "22 positive/negative target .atto source cases. No compiler/guest artifact is certified. HDL target profile applicability remains explicit, not inferred.",
+  "cases": [
+    {
+      "id": "BB-001",
+      "source": "fixtures/byte-buffer-v1/01-u32-le-roundtrip.atto",
+      "expected": "EXIT_1"
+    },
+    {
+      "id": "BB-002",
+      "source": "fixtures/byte-buffer-v1/02-u32-be-roundtrip.atto",
+      "expected": "EXIT_1"
+    },
+    {
+      "id": "BB-003",
+      "source": "fixtures/byte-buffer-v1/03-zero-initialized.atto",
+      "expected": "EXIT_1"
+    },
+    {
+      "id": "BB-004",
+      "source": "fixtures/byte-buffer-v1/04-unaligned-le.atto",
+      "expected": "EXIT_1"
+    },
+    {
+      "id": "BB-005",
+      "source": "fixtures/byte-buffer-v1/05-last-valid-offset.atto",
+      "expected": "EXIT_1"
+    },
+    {
+      "id": "BB-006",
+      "source": "fixtures/byte-buffer-v1/06-read-past-end.atto",
+      "expected": "THROWS_BUFFER_BOUNDS"
+    },
+    {
+      "id": "BB-007",
+      "source": "fixtures/byte-buffer-v1/07-negative-offset.atto",
+      "expected": "THROWS_BUFFER_BOUNDS"
+    },
+    {
+      "id": "BB-008",
+      "source": "fixtures/byte-buffer-v1/08-write-past-end.atto",
+      "expected": "THROWS_BUFFER_BOUNDS"
+    },
+    {
+      "id": "BB-009",
+      "source": "fixtures/byte-buffer-v1/09-write-immutable.atto",
+      "expected": "COMPILE_IMMUTABLE"
+    },
+    {
+      "id": "BB-010",
+      "source": "fixtures/byte-buffer-v1/10-value-overflow.atto",
+      "expected": "THROWS_BUFFER_VALUE"
+    },
+    {
+      "id": "BB-011",
+      "source": "fixtures/byte-buffer-v1/11-max-offset.atto",
+      "expected": "THROWS_BUFFER_BOUNDS"
+    },
+    {
+      "id": "BB-012",
+      "source": "fixtures/byte-buffer-v1/12-negative-allocation.atto",
+      "expected": "THROWS_BUFFER_ALLOCATION"
+    },
+    {
+      "id": "BB-013",
+      "source": "fixtures/byte-buffer-v1/13-u8-roundtrip.atto",
+      "expected": "EXIT_1"
+    },
+    {
+      "id": "BB-014",
+      "source": "fixtures/byte-buffer-v1/14-u16-le-roundtrip.atto",
+      "expected": "EXIT_1"
+    },
+    {
+      "id": "BB-015",
+      "source": "fixtures/byte-buffer-v1/15-u16-be-roundtrip.atto",
+      "expected": "EXIT_1"
+    },
+    {
+      "id": "BB-016",
+      "source": "fixtures/byte-buffer-v1/16-cross-endian-value.atto",
+      "expected": "EXIT_1"
+    },
+    {
+      "id": "BB-017",
+      "source": "fixtures/byte-buffer-v1/17-u32-max-value.atto",
+      "expected": "EXIT_1"
+    },
+    {
+      "id": "BB-018",
+      "source": "fixtures/byte-buffer-v1/18-u8-negative.atto",
+      "expected": "THROWS_BUFFER_VALUE"
+    },
+    {
+      "id": "BB-019",
+      "source": "fixtures/byte-buffer-v1/19-u16-overflow.atto",
+      "expected": "THROWS_BUFFER_VALUE"
+    },
+    {
+      "id": "BB-020",
+      "source": "fixtures/byte-buffer-v1/20-zero-length-read.atto",
+      "expected": "THROWS_BUFFER_BOUNDS"
+    },
+    {
+      "id": "BB-021",
+      "source": "fixtures/byte-buffer-v1/21-u8-last-offset.atto",
+      "expected": "EXIT_1"
+    },
+    {
+      "id": "BB-022",
+      "source": "fixtures/byte-buffer-v1/22-u8-one-past-end.atto",
+      "expected": "THROWS_BUFFER_BOUNDS"
+    }
+  ],
+  "required_additional_gates": [
+    "source-and-value-evaluated-once-in-order",
+    "u8-u16-and-both-endians",
+    "unaligned-and-no-undefined-behavior",
+    "failed-write-preserves-original-bytes",
+    "try-method-result-error-type",
+    "exclusive-mutable-view-borrow",
+    "read-only-view-rejection",
+    "take-drop-and-stale-view",
+    "actor-cross-tenant-quota-and-scrub",
+    "allocation-oom-and-atomicity",
+    "endianness-on-native-big-endian-host",
+    "no-allocation-after-successful-allocation",
+    "no-implicit-IO-or-suspension"
+  ],
+  "backends": [
+    {
+      "backend": "java",
+      "execution": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "backend": "llvm",
+      "execution": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "backend": "wasm",
+      "execution": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "backend": "rs",
+      "execution": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "backend": "net",
+      "execution": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "backend": "forge",
+      "execution": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "backend": "cranelift",
+      "execution": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "backend": "js",
+      "execution": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "backend": "atto",
+      "execution": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "backend": "hdl",
+      "execution": "NOT_EXECUTED",
+      "receipt": null
+    }
+  ]
+}

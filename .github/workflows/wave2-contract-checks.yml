@@ -1,0 +1,39 @@
+name: Wave 2 semantic contract checks (not compiler parity)
+on:
+  pull_request:
+    paths:
+      - 'parity/wave2/**'
+      - '.github/workflows/wave2-contract-checks.yml'
+  push:
+    branches:
+      - 'feat/parity-wave2-semantic-evidence-20261016'
+    paths:
+      - 'parity/wave2/**'
+      - '.github/workflows/wave2-contract-checks.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact source head
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse --verify HEAD)" = "$EXPECTED_SHA"
+          test -z "$(git status --porcelain --untracked-files=all)"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Exact-fixture Git blob check
+        run: node parity/wave2/bin/check-wave2.mjs --manifest-only
+      - name: Receipt-schema adversarial tests (synthetic only)
+        run: node --test parity/wave2/tests/gate.test.mjs parity/wave2/tests/adapter.test.mjs

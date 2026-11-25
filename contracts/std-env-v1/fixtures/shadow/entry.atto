@@ -1,0 +1,6 @@
+// Project's local std/env must NEVER shadow compiler-owned std/env.
+import module std_env from "std/env";
+pub routine main(): void {
+  stdio.println(std_env.parse_bool("true").unwrap());
+  return;
+}

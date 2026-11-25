@@ -1,0 +1,9 @@
+// EXPECTED: E_EFFECT, no guest artifact: throws != raises.
+fnc int • broken(int value)
+throws Error ::
+  raise! Error("unaccounted");
+end
+
+pub fnc main(): int {
+  return 0;
+}

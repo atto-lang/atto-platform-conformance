@@ -1,0 +1,7 @@
+// expect-diagnostic: E_SYNTAX; no executable artifact
+define class Foo extends Error as end
+fnc int <- double_answer(int value)
+raises Foo
+  return value * 2;
+end
+pub fnc main(): int { return 0; }

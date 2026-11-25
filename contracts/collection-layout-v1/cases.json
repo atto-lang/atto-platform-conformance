@@ -1,0 +1,197 @@
+{
+  "schema": "atto.collection-layout.v1",
+  "maturity": "TARGET_NOT_EXECUTED",
+  "specification": "ores-truffle-oreslang/attolang-language-spec.md:spec/27-collection-layout-named-generics.md",
+  "rust_compiler_note": "atto-source.rs currently rejects general layout-bearing Array/List/Vector guest types; parser-only results never promote these cases",
+  "backends": {
+    "rust_wasm": "NOT_EXECUTED",
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED"
+  },
+  "cases": [
+    {
+      "id": "aos-default",
+      "fixture": "fixtures/aos-default.atto",
+      "kind": "guest",
+      "expected": {
+        "return_int": 4
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "soa-row-column",
+      "fixture": "fixtures/soa-row-column.atto",
+      "kind": "guest",
+      "expected": {
+        "return_int": 15
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "aosoa-tail",
+      "fixture": "fixtures/aosoa-tail.atto",
+      "kind": "guest",
+      "expected": {
+        "return_int": 5
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "named-reordering",
+      "fixture": "fixtures/named-reordering.atto",
+      "kind": "guest",
+      "expected": {
+        "return_int": 0
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "struct-initializer-equivalence",
+      "fixture": "fixtures/struct-initializer-equivalence.atto",
+      "kind": "guest",
+      "expected": {
+        "return_int": 40
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-duplicate-struct-field",
+      "fixture": "fixtures/reject-duplicate-struct-field.atto",
+      "kind": "compile_reject",
+      "expected": {
+        "diagnostic_class": "duplicate_struct_field"
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-duplicate-layout",
+      "fixture": "fixtures/reject-duplicate-layout.atto",
+      "kind": "compile_reject",
+      "expected": {
+        "diagnostic_class": "E_GENERIC_DUP"
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-dynamic-aosoa",
+      "fixture": "fixtures/reject-dynamic-aosoa.atto",
+      "kind": "compile_reject",
+      "expected": {
+        "diagnostic_class": "E_LAYOUT_SIZE"
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-unknown-layout",
+      "fixture": "fixtures/reject-unknown-layout.atto",
+      "kind": "compile_reject",
+      "expected": {
+        "diagnostic_class": "E_LAYOUT_VALUE"
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-implicit-conversion",
+      "fixture": "fixtures/reject-implicit-conversion.atto",
+      "kind": "compile_reject",
+      "expected": {
+        "diagnostic_class": "layout_mismatch"
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-mutable-alias",
+      "fixture": "fixtures/reject-mutable-alias.atto",
+      "kind": "compile_reject",
+      "expected": {
+        "diagnostic_class": "overlapping_mutable_borrows"
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "struct-equals-scalar",
+      "fixture": "fixtures/struct-equals-scalar.atto",
+      "kind": "guest",
+      "expected": {
+        "return_int": 41
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "struct-equals-effect-order",
+      "fixture": "fixtures/struct-equals-effect-order.atto",
+      "kind": "guest",
+      "expected": {
+        "return_int": 30,
+        "stdout": "y\nx\n"
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-equals-ordinary-call",
+      "fixture": "fixtures/reject-equals-ordinary-call.atto",
+      "kind": "compile_reject",
+      "expected": {
+        "diagnostic_class": "equals_label_non_struct_call"
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-equals-custom-constructor",
+      "fixture": "fixtures/reject-equals-custom-constructor.atto",
+      "kind": "compile_reject",
+      "expected": {
+        "diagnostic_class": "equals_label_explicit_constructor"
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-equals-shadowed-struct",
+      "fixture": "fixtures/reject-equals-shadowed-struct.atto",
+      "kind": "compile_reject",
+      "expected": {
+        "diagnostic_class": "shadowed_type_no_struct_fallback"
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-equals-mixed-positionals",
+      "fixture": "fixtures/reject-equals-mixed-positionals.atto",
+      "kind": "compile_reject",
+      "expected": {
+        "diagnostic_class": "invalid_struct_field_initializer"
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-equals-mixed-colons",
+      "fixture": "fixtures/reject-equals-mixed-colons.atto",
+      "kind": "compile_reject",
+      "expected": {
+        "diagnostic_class": "invalid_struct_field_initializer"
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-equals-unknown-field",
+      "fixture": "fixtures/reject-equals-unknown-field.atto",
+      "kind": "compile_reject",
+      "expected": {
+        "diagnostic_class": "unknown_struct_field"
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-equals-method-call",
+      "fixture": "fixtures/reject-equals-method-call.atto",
+      "kind": "compile_reject",
+      "expected": {
+        "diagnostic_class": "equals_label_non_struct_call"
+      },
+      "status": "NOT_EXECUTED"
+    }
+  ]
+}

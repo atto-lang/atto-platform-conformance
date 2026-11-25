@@ -1,0 +1,69 @@
+{
+  "schema": "oreslang.async-io/1",
+  "backends": ["java", "llvm", "net", "wasm", "js"],
+  "sourceApi": {
+    "canonicalNamesAreAsyncByDefault": true,
+    "legacySuffixesForbidden": ["_async", "_sync", "_blocking"],
+    "ambientGlobalPrintForbidden": true,
+    "unsupportedOperationsFailClosedBeforeHostIo": true
+  },
+  "implementationPolicy": {
+    "perOperationBlockingThreadForbidden": true,
+    "workerPoolWrappedBlockingIoForbidden": true,
+    "virtualThreadWrappedBlockingIoForbidden": true,
+    "busyPollingForbidden": true,
+    "boundedBackpressureRequired": true,
+    "logicalSettlementSeparateFromPhysicalRetirement": true
+  },
+  "failClosedRequiredCases": [
+    "canonical-api-or-explicit-unavailable",
+    "legacy-suffix-rejected",
+    "no-blocking-host-edge",
+    "no-worker-pool-fallback",
+    "unsupported-before-host-io"
+  ],
+  "providerRequiredCases": [
+    "canonical-api",
+    "immediate-completion",
+    "delayed-readiness",
+    "partial-read",
+    "partial-write",
+    "write-backpressure",
+    "eof",
+    "peer-reset",
+    "cancel-before-readiness",
+    "cancel-after-readiness-before-resume",
+    "timeout-vs-completion-race",
+    "close-with-pending-operation",
+    "stale-generation-rejected",
+    "single-terminal-winner",
+    "bounded-buffering",
+    "no-busy-poll",
+    "scheduler-progress-while-io-pending",
+    "logical-settlement-before-physical-retirement",
+    "physical-retirement-before-actor-done"
+  ],
+  "allowedProviderKinds": [
+    "epoll",
+    "kqueue",
+    "iocp",
+    "io_uring",
+    "wasm-host-async",
+    "event-loop-nonblocking",
+    "other-verified-nonblocking"
+  ],
+  "forbiddenProviderKinds": [
+    "worker-pool-blocking",
+    "platform-thread-blocking",
+    "virtual-thread-blocking",
+    "sync-wrapper"
+  ],
+  "receipt": {
+    "schema": "oreslang.async-io.receipt/1",
+    "requireExactTree": true,
+    "requireNonzeroExecutedSteps": true,
+    "requireSourceCommitSha40": true,
+    "requireSourceTreeSha40": true,
+    "modes": ["fail-closed", "provider"]
+  }
+}

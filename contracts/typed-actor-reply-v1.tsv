@@ -1,0 +1,69 @@
+# ID	expected	guest_status	evidence_boundary	purpose
+ACTOR-REPLY-01	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	oneway receipt
+ACTOR-REPLY-02	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	unary exactly once
+ACTOR-REPLY-03	REJECT	NOT_EXECUTED	SOURCE_ONLY	unary second receive
+ACTOR-REPLY-04	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	out of order correlations
+ACTOR-REPLY-05	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	domain result
+ACTOR-REPLY-06	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	stream EOF
+ACTOR-REPLY-07	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	backpressure
+ACTOR-REPLY-08	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	unanswered request
+ACTOR-REPLY-09	REJECT	NOT_EXECUTED	SOURCE_ONLY	stale or forged reply
+ACTOR-REPLY-10	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	supervisor application versus CONTROL
+ACTOR-REPLY-11	REJECT	NOT_EXECUTED	SOURCE_ONLY	sends reply effect
+ACTOR-REPLY-12	REJECT	NOT_EXECUTED	SOURCE_ONLY	mixed mode union
+ACTOR-REPLY-13	REJECT	NOT_EXECUTED	SOURCE_ONLY	self await deadlock
+ACTOR-REPLY-14	REJECT	NOT_EXECUTED	SOURCE_ONLY	critical await
+ACTOR-REPLY-15	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	request unary only
+ACTOR-REPLY-16	REJECT	NOT_EXECUTED	SOURCE_ONLY	remote generation
+ACTOR-REPLY-17	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	AOT specialization
+ACTOR-REPLY-18	REJECT	NOT_EXECUTED	SOURCE_ONLY	slot exhaustion
+ACTOR-REPLY-19	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	unary HTTP return commits one correlated envelope
+ACTOR-REPLY-20	REJECT	NOT_EXECUTED	SOURCE_ONLY	unary return plus respond_with duplicate
+ACTOR-REPLY-21	REJECT	NOT_EXECUTED	SOURCE_ONLY	unary modifier rejects oneway stream erased any wrong R
+ACTOR-REPLY-22	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	ordinary actor stages respond_with nominal unary R
+ACTOR-REPLY-23	REJECT	NOT_EXECUTED	SOURCE_ONLY	second reply and mixed alias share one capability
+ACTOR-REPLY-24	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	panic after stage discards success and fails caller
+ACTOR-REPLY-25	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	missing reply settles terminal MissingReply
+ACTOR-REPLY-26	REJECT	NOT_EXECUTED	SOURCE_ONLY	any and payload narrowing cannot forge reply type
+ACTOR-REPLY-27	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	stream zero or N ordered items and one terminal
+ACTOR-REPLY-28	REJECT	NOT_EXECUTED	SOURCE_ONLY	cannot use emits or sends to satisfy reply
+ACTOR-REPLY-29	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	optional send_back alias shares respond_with capability
+ACTOR-REPLY-30	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	HTTP streaming body is single unary response envelope
+ACTOR-REPLY-31	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	concurrent unary correlations remain independent
+ACTOR-REPLY-32	REJECT	NOT_EXECUTED	SOURCE_ONLY	zero argument respond_with for nonunit reply
+ACTOR-REPLY-33	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	authorized supervisor service unary DATA request
+ACTOR-REPLY-34	REJECT	NOT_EXECUTED	SOURCE_ONLY	forged CONTROL via ActorMail respond_with or emit
+ACTOR-REPLY-35	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	CONTROL priority under saturated DATA mailbox
+ACTOR-REPLY-36	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	panic caller reply error versus supervisor CONTROL
+ACTOR-REPLY-37	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	proxy-forward without destination ACK
+ACTOR-REPLY-38	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	end-to-end recipient mailbox authenticated admission
+ACTOR-REPLY-39	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	destination Started does not imply Processed
+ACTOR-REPLY-40	REJECT	NOT_EXECUTED	SOURCE_ONLY	out-of-order and conflicting completion ACK
+ACTOR-REPLY-41	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	durable inbox commit does not imply handler execution
+ACTOR-REPLY-42	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	durable result requires completed turn and provider commit
+ACTOR-REPLY-43	REJECT	NOT_EXECUTED	SOURCE_ONLY	non-durable actor cannot claim persisted
+ACTOR-REPLY-44	REJECT	NOT_EXECUTED	SOURCE_ONLY	forged cross-tenant cross-target wrong-attempt or wire version ACK
+ACTOR-REPLY-45	REJECT	NOT_EXECUTED	SOURCE_ONLY	duplicate same-attempt admission and bounded saturation
+ACTOR-REPLY-46	REJECT	NOT_EXECUTED	SOURCE_ONLY	stale ACK after activation restart and slot recycle
+ACTOR-REPLY-47	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	ambiguous network loss is indeterminate not rejected
+ACTOR-REPLY-48	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	retry changes attempt but requires separate durable deduplication
+ACTOR-REPLY-49	REJECT	NOT_EXECUTED	SOURCE_ONLY	panic after Started cannot generate Processed success
+ACTOR-REPLY-50	REJECT	NOT_EXECUTED	SOURCE_ONLY	cancelled pending handle cannot be resurrected by late ACK
+ACTOR-REPLY-51	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	ask alias retains unary typing and distinct transport errors
+ACTOR-REPLY-52	REJECT	NOT_EXECUTED	SOURCE_ONLY	remote serialization and typed protocol mismatch fail closed
+ACTOR-REPLY-53	REJECT	NOT_EXECUTED	SOURCE_ONLY	supervisor CONTROL cannot be forged via proxy ACK
+ACTOR-REPLY-54	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	two-real-OS-process Unix domain socket typed framed delivery
+ACTOR-REPLY-55	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	two-real-OS-process TCP loopback framed delivery
+ACTOR-REPLY-56	REJECT	NOT_EXECUTED	SOURCE_ONLY	wrong tenant and capability at IPC connection
+ACTOR-REPLY-57	REJECT	NOT_EXECUTED	SOURCE_ONLY	protocol version mismatch no downgrade
+ACTOR-REPLY-58	REJECT	NOT_EXECUTED	SOURCE_ONLY	remote actor incarnation mismatch after restart
+ACTOR-REPLY-59	REJECT	NOT_EXECUTED	SOURCE_ONLY	remote target changes after authorized association
+ACTOR-REPLY-60	REJECT	NOT_EXECUTED	SOURCE_ONLY	mismatched request ACK correlation never settles
+ACTOR-REPLY-61	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	connection drops after possible admission yields Indeterminate
+ACTOR-REPLY-62	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	admission ACK followed by process crash is not Processed
+ACTOR-REPLY-63	REJECT	NOT_EXECUTED	SOURCE_ONLY	oversized frame rejected before payload allocation
+ACTOR-REPLY-64	REJECT	NOT_EXECUTED	SOURCE_ONLY	production TCP missing mutual TLS and authorization
+ACTOR-REPLY-65	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	real compiled .atto guest in second process executes receive
+ACTOR-REPLY-66	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	remote ActorRegistry lookup resolves legitimate physical incarnation
+ACTOR-REPLY-67	REJECT	NOT_EXECUTED	SOURCE_ONLY	unauthorized socket IO via untrusted tenant bypasses capability
+ACTOR-REPLY-68	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	independent across-process backpressure and CONTROL priority

@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "contract": "oreslang.tenant-isolate-parity/1",
+  "disclaimer": "Structural receipt validation only. Does not authenticate CI provenance, execute guest code, certify hard RT, or authorize private-source export.",
+  "stages": [
+    "host-reference",
+    "compiled-guest",
+    "tenant-isolation",
+    "hard-rt"
+  ],
+  "backends": {
+    "java": {
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "isolate": "graal-native-isolate",
+      "memory": "managed-graal-isolate",
+      "hardRtEligible": false
+    },
+    "llvm": {
+      "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+      "isolate": "native-ores-isolatevm",
+      "memory": "actor-owned-no-tracing-gc",
+      "hardRtEligible": true
+    },
+    "wasm": {
+      "repository": "ores-truffle-oreslang/oreslang-source.wasm",
+      "isolate": "wasmtime-store-instance",
+      "memory": "linear-memory-no-guest-gc",
+      "hardRtEligible": false
+    },
+    "net": {
+      "repository": "ores-truffle-oreslang/oreslang-source.net",
+      "isolate": "nativeaot-ores-isolatevm",
+      "memory": "unmanaged-guest-arena-clr-host-gc",
+      "hardRtEligible": false
+    }
+  },
+  "requiredBehavior": [
+    "sealed-state-exclusive-writer",
+    "generation-fenced-actorref",
+    "no-cross-tenant-mutable-reference",
+    "supervisor-control-priority",
+    "bounded-admission",
+    "quiescent-stop",
+    "authenticated-permissions"
+  ],
+  "nonEvidence": [
+    "host-only-prototype",
+    "zero-step-workflow",
+    "queued-job",
+    "source-only-test",
+    "JIT-or-interpreter-in-strict-AOT",
+    "ALC-as-security-boundary",
+    "Node-worker-as-security-boundary",
+    "Wasmtime-Store-as-OS-boundary",
+    "measured-jitter-without-WCET-bound",
+    "unsigned-wasmtime-AOT-deserialization"
+  ]
+}
