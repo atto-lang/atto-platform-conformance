@@ -4,7 +4,7 @@ Draft specification: [atto-spec #227](https://github.com/atto-lang/atto-spec/pul
 
 - guest: compile the supplied source with the actual backend and execute the entrypoint; negative cases must reject without artifact.
 - typed-bindings: resolve using the named synthetic authenticated export fixture; compare exact local name, kind and remote identity, and verify atomic rejection. Parsing alone does not pass.
-- resolution: load the synthetic package roots with distinct pinned identities and explicitly admit the implicit builtin only where indicated. Resolve the named reference; for positive cases verify package/builtin identity and member availability; ambiguity must be diagnosed before member selection. Namespace-constant negatives must leave no partial alias state.
+- resolution: load the synthetic package roots with distinct pinned identities and explicitly admit the implicit builtin only where indicated. Resolve the named reference; for positive cases verify package/builtin identity and member availability; ambiguity must be diagnosed before member selection. Namespace-alias negatives must leave no partial alias state.
 
 Synthetic fixtures model declared public export tables, not a dependency acquisition or lockfile implementation. Backends must build their own real source graphs from this schema and independently prove authentication/visibility, then attach exact compiler head/tree, executed commands, toolchain, raw results and artifacts. Source-free corpus validation only checks shape and consistency, not compiler behavior. No private-source export approval is implied.
 
