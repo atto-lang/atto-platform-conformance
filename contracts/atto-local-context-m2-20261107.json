@@ -1,0 +1,594 @@
+{
+  "schemaVersion": 1,
+  "contract": "atto-local-context-m2-20261107",
+  "status": "candidate-unattested",
+  "backendFamilies": [
+    "java",
+    "llvm",
+    "net",
+    "wasm",
+    "forge"
+  ],
+  "fixtureImplementation": "candidate-only unless canonical compiler source path and exact run receipts are independently verified",
+  "canonicalLLVMPositive": {
+    "repo": "ores-truffle-oreslang/oreslang-source.llvm",
+    "pr": 1389,
+    "head": "30861ebd6b0770c64b71ec388e54348218e86713",
+    "tree": "cfa881bf11bc2badd12d8dd3ee3f7bfcb1c9c04e",
+    "path": "tests/fixtures/tasklocal-i64-source.atto",
+    "blob": "7d3fe3b57154f0c780e26283a7467b31f3782561",
+    "expectedExit": 42
+  },
+  "scenarios": [
+    {
+      "id": "LC-M2-01",
+      "scope": "task",
+      "expectedKind": "positive",
+      "title": "first task initialization",
+      "acceptance": "set i64 then read, exit 42",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-02",
+      "scope": "task",
+      "expectedKind": "negative",
+      "title": "uninitialized access",
+      "acceptance": "compile reject, no emitted IR",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-03",
+      "scope": "task",
+      "expectedKind": "negative",
+      "title": "wrong typed value",
+      "acceptance": "compile reject bool into int key",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-04",
+      "scope": "task",
+      "expectedKind": "negative",
+      "title": "ABI namespace shadow",
+      "acceptance": "compile reject forged host native symbol",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-05",
+      "scope": "task",
+      "expectedKind": "negative",
+      "title": "ninth static named key",
+      "acceptance": "compile reject quota before IR emission",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-06",
+      "scope": "task",
+      "expectedKind": "positive",
+      "title": "two distinct named keys",
+      "acceptance": "compiled native guest sees independent values",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-07",
+      "scope": "task",
+      "expectedKind": "negative",
+      "title": "duplicate named key initialization",
+      "acceptance": "compile reject duplicate static key",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-08",
+      "scope": "task",
+      "expectedKind": "negative",
+      "title": "explicit child isolation",
+      "acceptance": "child does not inherit parent TaskLocal by default",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-09",
+      "scope": "task",
+      "expectedKind": "positive",
+      "title": "explicit immutable Sendable copy",
+      "acceptance": "child receives detached copied value only",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-10",
+      "scope": "task",
+      "expectedKind": "negative",
+      "title": "borrowed alias child copy",
+      "acceptance": "compiler rejects mutable alias crossing task",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-11",
+      "scope": "task",
+      "expectedKind": "positive",
+      "title": "carrier migration",
+      "acceptance": "TaskLocal remains stable after two distinct carrier threads",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-12",
+      "scope": "thread",
+      "expectedKind": "negative",
+      "title": "carrier TLS confusion",
+      "acceptance": "TaskLocal must not fall back to physical ThreadLocal",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-13",
+      "scope": "thread",
+      "expectedKind": "positive",
+      "title": "thread exit and scrub",
+      "acceptance": "threadlocal destructors run exactly once at physical exit",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-14",
+      "scope": "thread",
+      "expectedKind": "negative",
+      "title": "TLS destructor reentrancy",
+      "acceptance": "reentrant get/set/erase during teardown denied",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-15",
+      "scope": "actor",
+      "expectedKind": "positive",
+      "title": "sequential actor turns",
+      "acceptance": "same incarnation sees actorlocal across turns",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-16",
+      "scope": "actor",
+      "expectedKind": "negative",
+      "title": "actor restart generation",
+      "acceptance": "retired actor-local handle fails after restart",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-17",
+      "scope": "actor",
+      "expectedKind": "negative",
+      "title": "foreign actor authority",
+      "acceptance": "same tenant but different actor denied",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-18",
+      "scope": "actor",
+      "expectedKind": "negative",
+      "title": "cross tenant/isolate",
+      "acceptance": "coincident actor IDs cannot cross isolation domains",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-19",
+      "scope": "actor",
+      "expectedKind": "negative",
+      "title": "critical state bypass",
+      "acceptance": "ActorLocal cannot bypass sealed actor-state access",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-20",
+      "scope": "actor",
+      "expectedKind": "positive",
+      "title": "cancel then quiescence",
+      "acceptance": "memory reclaimed after final continuation retirement",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-21",
+      "scope": "task",
+      "expectedKind": "negative",
+      "title": "cancel write race",
+      "acceptance": "revoked task generation cannot write a slot",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-22",
+      "scope": "request",
+      "expectedKind": "negative",
+      "title": "original-mail provenance",
+      "acceptance": "same bytes/different mail cannot claim RequestLocal",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-23",
+      "scope": "request",
+      "expectedKind": "negative",
+      "title": "detached task propagation",
+      "acceptance": "request local not ambiently inherited",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-24",
+      "scope": "actor",
+      "expectedKind": "negative",
+      "title": "hot upgrade stale generation",
+      "acceptance": "old continuation cannot regain actor-local rights",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-25",
+      "scope": "all",
+      "expectedKind": "negative",
+      "title": "forged JSON receipt",
+      "acceptance": "self-declared pass cannot establish parity",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-26",
+      "scope": "all",
+      "expectedKind": "negative",
+      "title": "zero-step admission",
+      "acceptance": "steps null/empty cannot prove compiler execution",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-27",
+      "scope": "all",
+      "expectedKind": "negative",
+      "title": "wrong run attempt",
+      "acceptance": "stale prior rerun receipt rejected",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-28",
+      "scope": "all",
+      "expectedKind": "negative",
+      "title": "substituted fixture blob",
+      "acceptance": "source fixture digest mismatch rejected",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-29",
+      "scope": "all",
+      "expectedKind": "negative",
+      "title": "negative compiler artifact leak",
+      "acceptance": "semantic reject cannot emit IR/files",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-30",
+      "scope": "all",
+      "expectedKind": "negative",
+      "title": "cross-backend fabricated parity",
+      "acceptance": "unattested five-backend reports stay unproven",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-31",
+      "scope": "task",
+      "expectedKind": "negative",
+      "title": "scope close during copy suppresses stale read",
+      "acceptance": "when the scope is closed during a pinned host value copy, no value is returned; no deadlock or use-after-free; the retired source remains pinned until copy completion",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-32",
+      "scope": "task",
+      "expectedKind": "positive",
+      "title": "in-flight copy retains previous cell during replacement",
+      "acceptance": "if a slot is erased and replaced after the read pinned the old cell but the scope stays open, the in-flight read may return the old snapshot; the next read sees the replacement; neither read observes freed memory",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-33",
+      "scope": "actor",
+      "expectedKind": "negative",
+      "title": "STOP during pinned ActorLocal read revokes carrier access",
+      "acceptance": "While a live carrier is copying a pinned actor-local value, supervisor STOP must revoke any value returned by the privileged scheduler adapter and deny subsequent ActorLocal reads, writes and erases on that actor incarnation; a STOPPING carrier claim alone cannot authorize access",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-34",
+      "scope": "actor",
+      "expectedKind": "positive",
+      "title": "sibling actor survives another actor STOP during local read",
+      "acceptance": "After supervisor STOP revokes actor A during a pinned read, actor B must continue processing new messages with its independent ActorLocal values and close only after its own terminal fence",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-35",
+      "scope": "actor",
+      "expectedKind": "negative",
+      "title": "foreign scheduler carrier may not perform actor-local terminal wait",
+      "acceptance": "While an authenticated callback from scheduler A owns its native carrier, an already terminal actor in scheduler B with a correctly matched scope and generation still MUST reject synchronous ActorLocal close_after_terminal; source scheduler identity is not an authorization to block a foreign scheduler",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-36",
+      "scope": "actor",
+      "expectedKind": "positive",
+      "title": "external CONTROL thread can reclaim after exact terminal fence",
+      "acceptance": "A noncarrier CONTROL thread may close the exact generation ActorLocal scope after scheduler B confirms its actor terminal barrier, while a rejected foreign-carrier attempt left the scope open and its prior value intact",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-37",
+      "scope": "actor",
+      "expectedKind": "negative",
+      "title": "foreign physical thread cannot run bounded ActorLocal mutation callback",
+      "acceptance": "Even with a correctly minted live actor reference, a host thread lacking that actor's current physical scheduler claim must not invoke the bounded ActorLocal mutation callback or modify its scalar cell",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-38",
+      "scope": "actor",
+      "expectedKind": "positive",
+      "title": "STOP and bounded lock-free ActorLocal commit are linearly ordered",
+      "acceptance": "A bounded allocation-free scalar callback by the exact authenticated actor carrier commits before a later scheduler STOP; once STOP wins the shared lifecycle lock, further commits deny without mutating the cell, while independent live sibling actors remain functional",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const c=JSON.parse(readFileSync(new URL('../contracts/atto-local-context-m2-20261107.json',import.meta.url),'utf8'));
+test('contract remains non-promoting and includes all five backend families',()=>{
+  assert.equal(c.status,'candidate-unattested');
+  assert.deepEqual(c.backendFamilies,['java','llvm','net','wasm','forge']);
+  assert.equal(c.scenarios.length,38);
+});
+test('all scenario ids are unique and finite',()=>{
+  const ids=c.scenarios.map(x=>x.id);assert.equal(new Set(ids).size,ids.length);
+  assert.ok(ids.every(x=>/^LC-M2-\d{2}$/.test(x)));
+});
+test('all scenarios remain unexecuted until independently witnessed',()=>{
+  for(const x of c.scenarios){assert.equal(x.status,'NOT_EXECUTED');
+    assert.deepEqual(Object.keys(x.backendEvidence),c.backendFamilies);
+    assert.ok(Object.values(x.backendEvidence).every(v=>v==='NOT_EXECUTED'));}
+});
+test('coverage contains task actor thread request and evidence-domain negatives',()=>{
+  for(const k of ['task','actor','thread','request','all']) assert.ok(c.scenarios.some(x=>x.scope===k));
+  assert.ok(c.scenarios.filter(x=>x.expectedKind==='negative').length>=20);
+});
+test('pinned LLVM guest bytes and expected exit are explicitly fixed',()=>{
+  const p=c.canonicalLLVMPositive; assert.equal(p.expectedExit,42);
+  assert.equal(p.blob,'7d3fe3b57154f0c780e26283a7467b31f3782561');
+  assert.equal(p.head,'30861ebd6b0770c64b71ec388e54348218e86713');
+});
+
+test('read lifetime semantic boundary distinguishes revocation from replacement',()=>{
+  const closed=c.scenarios.find(s=>s.id==='LC-M2-31');
+  const replaced=c.scenarios.find(s=>s.id==='LC-M2-32');
+  assert.equal(closed.scope,'task');
+  assert.equal(replaced.scope,'task');
+  assert.equal(closed.expectedKind,'negative');
+  assert.equal(replaced.expectedKind,'positive');
+  assert.match(closed.acceptance,/closed during .*copy|scope is closed during/);
+  assert.match(closed.acceptance,/no value is returned/);
+  assert.match(replaced.acceptance,/old snapshot/);
+  assert.match(replaced.acceptance,/next read sees the replacement/);
+  assert.equal(closed.status,'NOT_EXECUTED');
+  assert.equal(replaced.status,'NOT_EXECUTED');
+});
+
+test('actor STOP during pinned read revokes access, sibling survival is distinct',()=>{
+  const stop=c.scenarios.find(s=>s.id==='LC-M2-33');
+  const sibling=c.scenarios.find(s=>s.id==='LC-M2-34');
+  assert.ok(stop && sibling);
+  assert.equal(stop.scope,'actor');
+  assert.equal(sibling.scope,'actor');
+  assert.equal(stop.expectedKind,'negative');
+  assert.equal(sibling.expectedKind,'positive');
+  assert.match(stop.acceptance,/STOPPING carrier/);
+  assert.match(stop.acceptance,/deny subsequent ActorLocal reads, writes and erases/);
+  assert.match(sibling.acceptance,/actor B must continue/);
+  for(const scenario of [stop,sibling]){
+    assert.equal(scenario.status,'NOT_EXECUTED');
+    assert.deepEqual(Object.values(scenario.backendEvidence),c.backendFamilies.map(()=> 'NOT_EXECUTED'));
+  }
+});
+
+test('foreign carrier retirement denial and external CONTROL success remain unexecuted',()=>{
+  const deny=c.scenarios.find(s=>s.id==='LC-M2-35');
+  const allow=c.scenarios.find(s=>s.id==='LC-M2-36');
+  assert.equal(deny.scope,'actor');
+  assert.equal(allow.scope,'actor');
+  assert.equal(deny.expectedKind,'negative');
+  assert.equal(allow.expectedKind,'positive');
+  assert.match(deny.acceptance,/scheduler A/);
+  assert.match(deny.acceptance,/scheduler B/);
+  assert.match(deny.acceptance,/MUST reject/);
+  assert.match(allow.acceptance,/noncarrier CONTROL thread/);
+  assert.match(allow.acceptance,/exact generation/);
+  for(const scenario of [deny,allow]){
+    assert.equal(scenario.status,'NOT_EXECUTED');
+    assert.deepEqual(Object.values(scenario.backendEvidence),c.backendFamilies.map(()=> 'NOT_EXECUTED'));
+  }
+});
+
+test('bounded commit carrier authentication and STOP linearization remain candidate-only',()=>{
+  const foreign=c.scenarios.find(x=>x.id==='LC-M2-37');
+  const ordered=c.scenarios.find(x=>x.id==='LC-M2-38');
+  assert.ok(foreign && ordered);
+  assert.equal(foreign.scope,'actor');
+  assert.equal(ordered.scope,'actor');
+  assert.equal(foreign.expectedKind,'negative');
+  assert.equal(ordered.expectedKind,'positive');
+  assert.match(foreign.acceptance,/lacking that actor.s current physical scheduler claim/);
+  assert.match(foreign.acceptance,/must not invoke/);
+  assert.match(ordered.acceptance,/commits before a later scheduler STOP/);
+  assert.match(ordered.acceptance,/STOP wins the shared lifecycle lock/);
+  for(const x of [foreign,ordered]){
+    assert.equal(x.status,'NOT_EXECUTED');
+    assert.deepEqual(Object.values(x.backendEvidence),c.backendFamilies.map(()=> 'NOT_EXECUTED'));
+  }
+});
