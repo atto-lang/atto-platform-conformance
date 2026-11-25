@@ -1,0 +1,9 @@
+// BCV1-011 share pass: target AttoLang semantics, NOT_EXECUTED.
+// Expected success and exit value 42.
+define class Snapshot as pub let int revision = 42; end
+pub fnc main(): int {
+  val original = new Snapshot();
+  val frozen = share! original;
+  val alias = share! frozen;
+  return alias.revision;
+}

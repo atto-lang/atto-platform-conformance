@@ -1,202 +1,180 @@
-# Oreslang platform conformance
+> **AI agent instructions (organization-wide):** Before working on code, issues, or pull requests, read and follow the [organization `AGENTS.md`](https://github.com/atto-lang/.github/blob/main/AGENTS.md), including its **merge-first stealth-development policy**. Honor any repository-local `AGENTS.md`, explicit holds, and GitHub-enforced rules.
 
-Cross-platform, **evidence-first** language and runtime conformance suite. A harness that has not run a real compiler must never claim parity.
+# atto-platform-conformance
 
-## Real compiler evidence adapter (proposed integration)
+Cross-platform conformance tests for AttoLang compiler and runtime implementations.
 
-A private compiler build can produce a narrow two-fixture JSON smoke report using the companion changes in [Java PR #953](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/953) and [LLVM PR #383](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/383). This repo adds a **non-promoting** consistency checker:
+## Naming migration and language authority
 
-```sh
-node bin/inspect-real-evidence.mjs /path/to/approved-report.json
-```
+This repository is maintained at [atto-lang/atto-platform-conformance](https://github.com/atto-lang/atto-platform-conformance); use `https://github.com/atto-lang/atto-platform-conformance.git` for Git remotes and canonical `.atto` source examples. The normative language contract is [atto-spec](https://github.com/atto-lang/atto-spec), with executable guest evidence tracked by [atto-platform-conformance](https://github.com/atto-lang/atto-platform-conformance). Follow current ownership, borrowing, effects, actor, and syntax rules there; do not infer implemented features from a README or unexecuted CI.
 
-See [the real compiler evidence policy](docs/REAL_COMPILER_EVIDENCE.md). The report must come from an independently reviewed real compiler run; the JSON adapter itself cannot authenticate an external run, and **a passing schema check does not demonstrate language correctness or parity**.
+## Purpose
 
-## Universal tree-shaking receipt
+Execute portable language fixtures and record target-specific results.
 
-The repository carries the versioned `oreslang.reachability/1` contract and a
-fail-closed verifier for backend-neutral tree-shaking receipts. See
-[`docs/TREE_SHAKING_CONTRACT.md`](docs/TREE_SHAKING_CONTRACT.md).
+## Repository responsibilities
 
-```sh
-node bin/verify-reachability-manifest.mjs /path/to/reachability.json
-```
+- Keep interfaces, schemas, and behavior documented in a backend-neutral form where applicable.
+- Use test fixtures and reproducible evidence to distinguish proposed behavior from implemented behavior.
+- Record breaking changes, migration notes, and dependencies on other AttoLang components.
 
-A valid receipt proves only the shape and internal consistency of reachability
-evidence. Final artifact/synthesis inspection is still required to prove the
-dead implementation was physically omitted.
+## Constructor header whitespace target fixtures
 
-## Platform capability promotion receipts
+`contracts/receiver-constructor-whitespace-v1.json` tracks three equivalent
+out-of-line class constructor spellings and one duplicate-header rejection.
+Fixtures in `fixtures/receiver-constructors/` are ordinary `.atto` programs
+with a target exit of 42; `tests/receiver-constructor-whitespace.test.mjs`
+checks **source-only fixture integrity**, not compiler or guest execution.
 
-The six `oreslang-platform.*` targets now have a shared evidence contract:
-[`contracts/platform-capabilities-v1.json`](contracts/platform-capabilities-v1.json).
-Use `bin/verify-platform-capability-receipt.mjs` to reject zero-step workflows,
-host stubs mislabeled as compiler guests, repository/platform substitution, and
-target/physical claims without the required evidence. See
-[`docs/PLATFORM_CAPABILITY_PROMOTION.md`](docs/PLATFORM_CAPABILITY_PROMOTION.md).
+All eight cross-backend targets remain `NOT_EXECUTED` pending independent
+browser/compiler and runtime verification. A **separately scoped native Rust
+compiler -> executed WebAssembly guest** receipt now records exact compiler
+merge SHA `dbd450f5abde91a2d3a50d193c589a7f77888afc`, 39 matching
+source blobs, Rust 1.99.1 focused tests (8/8), three actual guests returning
+42 with byte-identical Wasm SHA-256, canonical guest 42, and negative
+`E_DUPLICATE` with no guest artifact in
+[successful carrier run #44436599781](https://github.com/gha-indie-worker/atto-ci/actions/runs/44436599781).
+Source-only Node tests 32/32 passed in
+[run #44435810059](https://github.com/gha-indie-worker/atto-ci/actions/runs/44435810059).
+These receipts do **not** assert that the Rust compiler itself ran inside
+`wasm32` or that Java/LLVM/.NET/Forge/independent Wasm have parity. Related
+proposals: [atto-spec #98](https://github.com/atto-lang/atto-spec/pull/98),
+[atto-source.rs #354](https://github.com/atto-lang/atto-source.rs/pull/354),
+and [atto-format #16](https://github.com/atto-lang/atto-format/pull/16).
 
-## Candidate state-container and virtual-actor declarations
+- [Class-field binding defaults v2](contracts/class-field-binding-defaults-v2.json): canonical implicit-`val` target, 4 SHA-matched `.atto` fixtures, 422-passing Rust native tests, and executed compiled WebAssembly guest. Cross-package linking and other backends remain NOT_VERIFIED.
 
-[`contracts/state-container-virtual-actor-v1.json`](contracts/state-container-virtual-actor-v1.json) records 20 proposed compile/runtime oracles for `define state container` and `define virtual actor`. All backend results are **NOT_EXECUTED**. The Node contract tests validate fixture completeness and evidence labels only; they do not compile or execute guest programs. The Java reference parser has a separate fail-closed admission branch pending actual ownership and virtual-activation lowering. `define grain` is not an accepted alias.
+## Under-construction self publication guard
 
-## Current deliverable
+`contracts/constructor-self-publication-v1.json` records negative `.atto`
+cases for escaping a constructor's under-construction `self` through a function
+argument or invoking methods on that object before publication. Valid direct
+`self.field` initialization remains permitted. The normative contract is
+[atto-spec's constructor design](https://github.com/atto-lang/atto-spec/blob/main/language/out-of-line-receivers-constructors-and-state-v1.md).
 
-- Versioned fixture manifest and minimal positive/negative .ores sources targeting **six compiler backends** (`java`, `llvm`, `net`, `wasm`, `forge`, `js`); this is a target inventory, not a parity claim.
-- Safe subprocess-based command runner with an argv template; no shell interpolation. JavaScript is a source-check-only target pending independent ESM runtime evidence.
-- Executable harness unit tests (using a **fake checker** to verify the harness only).
-- Explicit status: unconfigured, verified, mismatch, spawn failure, timeout.
-- CI tests the harness. It does **not** claim Java/LLVM/.NET/Wasm/Forge feature parity without configured real compiler binaries, exact revisions and independently reviewed provenance.
+The Rust compiler's [PR #359](https://github.com/atto-lang/atto-source.rs/pull/359)
+implemented a conservative `E_OWNERSHIP` gate and passed its actual
+[private exact-blob Rust / compiled-Wasm run](https://github.com/gha-indie-worker/atto-ci/actions/runs/44444349850).
+The two portable negative `.atto` fixtures were independently executed
+against the native Rust compiler in
+[private exact-blob run #44444993654](https://github.com/gha-indie-worker/atto-ci/actions/runs/44444993654):
+49 blobs matched before/after, 10 Rust focused tests passed, 4 positive
+compiled WebAssembly guests ran, and both negative cases returned
+`E_OWNERSHIP` without creating guest artifacts. This proof is scoped to
+the Rust **native-hosted** compiler; the Rust browser-hosted compiler and
+independent Java/LLVM/.NET/Wasm/Forge/Cranelift/JS backends remain
+`NOT_EXECUTED`.
 
-## Examples
+## Tuple destructuring target registry
 
-~~~sh
-npm test
-# A compiler that supports a non-executing --check mode:
-node bin/conformance.mjs --backend=java --argv='["/absolute/path/to/java","-jar","/path/to/compiler.jar","--check","{file}"]' --source-sha=FULL_COMMIT_SHA --require
-# A separate exact-head native compiler:
-node bin/conformance.mjs --backend=llvm --argv='["/absolute/path/to/oreslang-llvmc","{file}"]' --source-sha=FULL_COMMIT_SHA --require
-~~~
-
-The harness now reads bounded regular fixture bytes through verified file
-descriptors and **seals the entire suite in a private temporary snapshot before
-launching the first compiler**. Each fixture's SHA-256 records the exact copied
-input supplied to the subprocess; it never reopens a mutable checkout path
-while compiling. Symlinks, hardlinks and oversized inputs are rejected. This
-improves local test provenance but does not attest that the caller-declared
-source commit built the compiler or turn a compiler into a sandbox. The harness
-re-hashes sealed fixture bytes before and after each compiler invocation, failing
-on detected tampering (including same-UID chmod/rewrite attacks on a later case).
-This is **detection, not immutable filesystem enforcement**: an adversarial
-compiler running with the same user permissions can race or restore bytes, so
-untrusted executables still require an independently enforced sandbox. Binary
-hashing reads in bounded 64-KiB chunks and refuses executable files above
-512 MiB; binary hashes remain local receipts rather than reproducible-build
-attestations.
-
-The first argv token must be an **absolute executable path** (never a PATH lookup), and the placeholder {file} is replaced with an absolute fixture path. Provide the exact committed compiler binary/revision. The harness records SHA-256 hashes of the executable and each fixture. The user-provided source commit SHA is explicitly marked **declared, not cryptographically attested to the compiler binary**; include independent build provenance to prove the relationship. The harness does **not** install/checkout compiler source or infer that one backend supports another backend's features.
-
-When no backend command is supplied, the run exits non-success with explicit UNCONFIGURED status if --require is used. Without --require it can emit an explicit skipped summary for discovery; that is **not** a passing parity report. CI only exercises harness self-tests.
-
-## Ownership and future steps
-1. Pin compilation frontend/host revisions, profile registry contract and all fixture hashes.
-2. Feed actual Java and LLVM non-executing check entrypoints into this harness; verify positive and negative cases.
-3. Add runtime-output cases only after explicit backend support; compare typed values, actor messages, ownership, async and resource limits.
-4. Add Wasm compile+instantiate and browser tests once the compiler emits actual Oreslang guest modules.
-5. Extend environment-header fixtures when Java PR #586 is merged and LLVM implements equivalent checks.
-6. Publish provenance (platform, toolchain, source/tree commit, raw logs, status) for each real evidence run.
-
-**Security**: never mirror private compiler source into public repos. Same-org private GitHub repositories are not automatically readable with the test repo GITHUB_TOKEN. Use authorized credentials or approved private exact-tree CI mirroring; keep SHA evidence and delete temporary mirrors.
-
-### Mandatory pre-copy private-carrier gate
-
-Git blob identity is only an **integrity** proof. It does not authorize publication.
-Before invoking *any* GitHub write, copying a private blob, creating test refs or
-uploading a build artifact, the trusted mirror orchestrator must run:
-
-```sh
-export GH_TOKEN="token-with-read-metadata-on-both-repositories"
-export ORES_APPROVED_PRIVATE_MIRRORS="akrion-sim/akrion-sim-e2e"
-node bin/private-mirror-publish.mjs \
-  ores-truffle-oreslang/oreslang-source.java \
-  SOURCE_COMMIT_SHA40 \
-  akrion-sim/akrion-sim-e2e \
-  DESTINATION_BASE_COMMIT_SHA40 \
-  snapshots/source-sha \
-  ci/private-immutable-source-proof
-```
-
-The **publisher** performs the same GitHub-verified visibility and allowlist
-checks *inside* its GitHub blob/tree/commit/ref write path. It pins an exact
-source commit, checks the recursive tree and individual blob SHA values, and
-creates only a **new isolated CI branch** (never overwrites an existing ref,
-main branch or an unapproved destination). Visibility is rechecked before
-every GitHub object/ref mutation. It cannot promise a truly atomic check-and-
-write with GitHub visibility changes; keep source/destination visibility
-admin privileges tightly controlled and revalidate before each run.
-
-The standalone `require-private-mirror.mjs` is available for diagnostics,
-but running that preflight by itself **does not** authorize a subsequent
-unprotected git push. Do not use generic copy/push commands in place of the
-guarded publisher.
-
-The CLI fails closed unless the source and destination both resolve as
-GitHub-verified **private** repositories and the destination is explicitly
-allowlisted, not archived and writable by the credential. A 403, missing token,
-unknown visibility, non-approved repo, `internal` or `public` destination, and
-malformed metadata are all failures. Do not print the token, copy source on
-failure, or "retry" by switching to a public carrier.
-
-Do not allow a workflow that runs only *after* a push to substitute for
-the mandatory **before-copy** admission decision. Execute the gate immediately
-before the mirror operation, using trusted credentials and a locked-down
-destination whose privacy cannot change independently during the copy. This
-preflight is not a cure for historically exposed Git objects; incident response
-and GitHub Support may be required. See
-[security incident #22](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/22).
-
-See https://ores-truffle-oreslang.github.io/logs/2/
-
-### Experimental JS checker target
-
-Once the JS compiler source and Node 22+ executable are available in an **authorized, private** CI checkout at exact revisions, the JS subset can run:
-
-```sh
-node bin/conformance.mjs --backend=js --argv='["/absolute/path/to/node","/absolute/path/to/oreslang-source.js/bin/oreslang-jsc.mjs","--program-v2","--check","{file}"]' --source-sha=EXACT_JS_SOURCE_COMMIT_SHA --require
-```
-
-This is a **source acceptance/rejection gate**, not a runtime test. `verified` means the two compiler-check subprocess cases met the narrow source-check expectations, **not** that any emitted JS was executed. See `docs/MATRIX.md` for the required runtime, compiler provenance, and cross-backend parity gates.
+- [Tuple destructuring v1](contracts/tuple-destructuring-v1.json): 33 acceptance/rejection cases spanning binding modes, aliases, const and ownership. On the **exact final merged Rust/browser-Wasm compiler SHA `026739474d0702d55b02b9772f8b13a7c7b461b0`**, [post-merge CI run 44447960061](https://github.com/usa-acc/atto-ci/actions/runs/44447960061) proved **29 passed** (15 positive compiled-and-executed Wasm guests and 14 expected negative diagnostics), **4 unsupported** (non-Copy object tuples), **0 failed**, using 68/68 exact compiler blobs and 4/4 exact conformance inputs. The earlier [historical receipt](evidence/tuple/rs-browser-wasm-4fd0a231-20261118.json) remains preserved. [Latest machine-readable receipt](evidence/tuple/rs-browser-wasm-02673947-20261118.json) preserves all cases, and [Node contract test](tests/tuple-destructuring-v1.test.mjs) validates receipt provenance and consistency; [guest runner](tests/tuple-destructuring-guest.mjs) performs real compilation and guest execution when provided `ATTOC_BIN` and `ATTO_SOURCE_SHA`. The other five backends remain `not_executed`; case-level aggregate parity stays `not_executed` until independently proven. Do not treat host-only receipt validation as guest execution.
 
 
-### Six-backend admission hardening (2026-10-15)
+## Validation
 
-The manifest harness recognizes Java/Graal, LLVM, Wasm, .NET, Forge and JS
-(plus the existing browser runtime selector) without assuming any backend
-implements an unlisted fixture. A backend with **zero registered cases**
-reports `NO_CASES` and `ok: false` even when the caller supplied a real
-executable; discovering a backend is not certifying it.
+Validation should rely on checked-in tests and exact-commit CI results. When reporting parity, distinguish **passed**, **failed**, **unsupported**, and **not executed**. Avoid inferring guest-runtime support from host-only tests.
 
-A negative compile fixture is `VERIFIED` only on exit code **1** with its
-expected diagnostic and no crash/fatal marker. Exit 2, 126, 127, signals,
-timeouts, missing executables and crash-shaped diagnostics never satisfy
-semantic rejection. Identical fixture references and duplicate backend
-selectors within a manifest case are rejected.
+## Status and development
 
-The registered fixture set remains only a **compiler-admission**
-probe; it does not prove six-backend parity, guest execution, runtime safety,
-trusted-code AOT, or CI provenance. Registering cases does not establish compiler or execution proof. See
-`tests/six-backend-admission.test.mjs` for regression coverage.
+This README records the intended role of this repository; it is not a claim of feature completeness. Consult the source tree and workflow files for actual implementation and verified build commands. Contributions should preserve compatibility with the canonical language contract.
 
-## Parity batch 1: grammar, types, imports, ownership, HIR/MIR
+## Ecosystem
 
-The [first-five parity inventory](docs/FIRST_FIVE_PARITY.md) tracks five
-source-compiler workstreams across Java, LLVM, .NET, Wasm and Forge. Run
-`npm run parity:first-five` to check the strict versioned manifest and print
-its SHA-256 fingerprint. `npm test` runs rejection controls for incomplete
-and falsely verified inventories. Both commands are **contract checks only**:
-no real compiler is run and neither command attests backend support.
+- [AttoLang](https://github.com/atto-lang)
+- [Language specification](https://github.com/atto-lang/atto-spec)
+- [Cross-platform conformance](https://github.com/atto-lang/atto-platform-conformance)
 
-Use actual, pinned real compiler execution and independently verified CI
-provenance before changing backend support declarations. The source fixture
-smoke harness remains a separate, narrower test.
+## Repository ownership and contribution routing
 
-## Nominal enum hardening inventory (five backend target)
+**Belongs here:** Portable positive and negative guest fixtures, an extensible multi-backend matrix, evidence schemas and reproducible run receipts. Include new backends only when target-specific compiled-guest evidence exists.
 
-[Enum semantics v1](docs/ENUM_SEMANTICS_V1.md) defines the closed, nominal case/tag,
-exhaustiveness, payload, zero-GC and actor-wire boundaries. Its
-[14 Git-blob-pinned positive/negative fixtures](contracts/enum-semantics-v1.json)
-cover Java, LLVM, Wasm, .NET and Forge as a **target** inventory.
-The Node fixture-integrity tests do not compile Oreslang, and no backend is
-marked confirmed until real exact-source compiler checks and guest execution
-produce independently reviewable evidence. Enum methods and full portable
-wire codecs remain separate implementation/verification gates.
+**Belongs elsewhere:** Backend implementations belong in atto-source.*; differential comparators in atto-compilers-parity-testing; normative rules in atto-spec.
 
-## Repository ownership and migration (2026-11-08)
+**Security and portability boundary:** Report real executed guest programs pinned to SHA/tree and toolchain; zero-step workflows, host-only tests and source-free canaries are NOT_EXECUTED for guest parity.
 
-**Current home:** `ores-truffle-oreslang/oreslang-platform-conformance`, in the Oreslang legacy organization. The public language name is **AttoLang**. Existing repo/CLI/package identifiers and supported `.ores` sources remain compatibility contracts pending separately tested migration.
+AttoLang is the canonical project name; new source, examples and documentation use `.atto` and the `atto-lang` repository organization. This README defines scope, not feature readiness.
 
-- **Belongs here:** cross-backend guest source fixtures, negative-case manifests and executable parity receipts.
-- **Out of scope:** feature implementation in compiler backends or treating zero-step CI as a pass.
-- **Organizational split:** [atto-lang](https://github.com/atto-lang) governs the language/compiler/runtime/target/parity ecosystem; [atto-co](https://github.com/atto-co) governs separately owned production cloud infrastructure, tenant management, billing, identity and deployment. Related `atto-*` repositories created independently must not be mistaken for a Git transfer.
-- **Proposed initial transfer:** preserve this repository's GitHub numeric ID, original name/history and exact tree in a gated move to `atto-lang/oreslang-platform-conformance`; no first-stage direct `atto-co` move is approved. Later product carve-outs require a new security and owner decision.
+**Acceptance:** name the exact source SHA/tree, runtime/toolchain, positive and negative checks and execution receipt before claiming support. Host-only tests and empty CI steps do not prove guest execution.
 
-**Maintainer procedure:** coordinate in [migration issue #26](https://github.com/ores-truffle-oreslang/.github/issues/26) and consult [migration runbook draft #25](https://github.com/ores-truffle-oreslang/.github/pull/25). Identify source and target administrators, independent security reviewer, exact source commit SHA/tree and numeric repo ID; review branch protections, target permissions, open PRs/issues, tags/releases, workflows/runners, secrets/environments, packages, webhooks/Apps, Pages, submodules and consumers. Never mirror private source as a transfer shortcut. Perform an authorized GitHub ownership transfer, verify unchanged ID/tree/history and restored security, then update dependencies and run exact-head CI with **nonzero executed job steps**. `steps=[]`/`null` is `NOT_EXECUTED`; source-only/host-only runs do not establish compiler-backed AttoLang execution or target certification.
+## Inline class constructor self-publication conformance v2
+
+`contracts/class-constructor-self-publication-v2.json` extends the out-of-line
+constructor safety cases to legacy **inline** class constructors. It includes
+two portable compile-negative `.atto` fixtures for `publish(self)` and
+`self.peek()` before initialization/publication, plus a positive fixture
+executing an initialized `Counter` and returning 42.
+
+The exact checked-in fixtures were executed on the native Rust compiler in
+[private token-free 48-source-blob carrier run #44447969540](https://github.com/gha-indie-worker/atto-ci/actions/runs/44447969540):
+12 Rust focused tests passed, both negatives returned `E_OWNERSHIP` and
+emitted no Wasm, the positive compiled Wasm guest returned 42, and two Node
+registry checks passed. This is **native-hosted Rust compiler → Wasm guest**
+proof only. The browser-hosted compiler and other independent backends
+remain `NOT_EXECUTED`; constructor definite-initialization analysis remains
+a separate work item.
+
+
+
+## Explicit deferred final class constructor fields
+
+`contracts/constructor-definite-final-v1.json` defines 13 portable Atto
+fixtures for the narrow `final int id;` case: three positive constructors
+(direct, `if/else`, and out-of-line) and ten compile-negative cases.
+All other class fields continue to need declaration initializers in the
+current Rust/browser compiler; the accepted v2 implicit `val` default
+is unchanged. The constructor checks both **definitely initialized** and
+**possibly initialized** branch states, rejecting reads before initialization,
+possible double writes and a successful path without all deferred fields set.
+Loops, exception regions and deferred callbacks cannot acquire an unproven
+exactly-once field write capability.
+
+The exact checked-in fixtures were compiled with the native Rust compiler
+and executed in
+[private carrier run #44452651416](https://github.com/gha-indie-worker/atto-ci/actions/runs/44452651416):
+58 source Git blobs verified; three valid guest Wasm programs returned 42;
+all ten negatives failed with expected diagnostics and no Wasm artifacts.
+The fully reconciled compiler's
+[locked Rust regression #44454006529](https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/44454006529)
+passed 547/547 tests on a 697-blob exact source/test Git subtree mirror.
+The **actual merged compiler** was independently rebuilt and run against
+all 13 exact portable fixtures in
+[merged-compiler carrier run #44454811741](https://github.com/gha-indie-worker/atto-ci/actions/runs/44454811741);
+the source Git subtree exactly matched merge commit `57ed0e7`,
+16 focused constructor tests and three receipt tests passed, all three
+compiled guests returned 42, and all ten negatives emitted no artifact.
+
+This proof is restricted to a **native-hosted Rust compiler generating
+Wasm guests**. It is not browser-hosted compiler execution or independent
+Java/LLVM/.NET/Forge/Wasm backend verification. General required-field,
+struct value-layout, and exceptional cleanup proofs are separate milestones.
+
+
+## Hardened constructor final-field admission v2
+
+`contracts/constructor-definite-final-admission-v2.json` extends the constructor
+v1 contract with nine portable `.atto` source cases: two positive compiled
+Wasm guest programs using multiple deferred `final` fields and a preinitialized
+field, plus seven negative branch, read-before-write, or missing `val`/`let`/
+`const` initializer cases. Source-level missing non-`final` initializers are
+rejected by the parser; the Rust checker additionally rejects synthesized
+invalid AST fields to avoid silently accepting zero-filled storage.
+
+The exact checked-in fixture Git tree was verified and all cases compiled
+with the *merged* Rust compiler in
+[private carrier run #44458895446](https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/44458895446).
+The 20 focused Rust tests and two initial conformance integrity tests passed;
+two guests returned 42 and seven negative programs emitted no Wasm.
+The corresponding
+[full exact-tree run #44458275142](https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/44458275142)
+passed 577 Rust tests on 703 matching source/test Git blobs, including a
+checker test bypassing the parser.
+
+These results verify the **native-hosted Rust compiler emitting Wasm**. They
+do not prove a wasm32-hosted compiler, independent Java/LLVM/.NET/Forge/Wasm
+backends, or general exception-cleanup and struct-construction safety.
+
+## Legacy provenance and transfer verification
+
+The archived predecessor is `ores-truffle-oreslang/oreslang-platform-conformance`; the current repository is `atto-lang/atto-platform-conformance`. These are distinct repository identities, not evidence of an original-ID transfer or equivalent implementation. Preserve working legacy `.ores` fixtures and historical package/CLI aliases until separately verified replacements exist. Cross-backend guest fixtures, negative-case manifests and executed parity receipts belong here; compiler feature implementation belongs in the backend repositories.
+
+[atto-lang](https://github.com/atto-lang) owns language, runtime and parity tooling; [atto-co](https://github.com/atto-co) separately governs managed infrastructure, deployment, tenancy and billing. Any future original-ID transfer or commercial carve-out requires separate owner authorization and independent security review. Inventory exact SHA/tree, numeric ID, visibility, access, rulesets, PRs, releases, packages, submodules, consumers, runners, secrets, applications, webhooks, Pages and rollback ownership; verify preservation and rerun exact-head tests after an authorized transfer. Never mirror private source without authorization. Zero-step jobs are NOT_EXECUTED; host-only and source-only checks do not establish compiled guest execution or target certification.
