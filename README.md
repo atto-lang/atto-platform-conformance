@@ -250,3 +250,7 @@ and [source-free model](https://github.com/atto-lang/atto-rx-channels/pull/3) tr
 ## Source-free actor fault-claim admission (draft contract)
 
 [Actor fault claim admission v1](docs/ACTOR_FAULT_CLAIM_V1.md) rejects inconsistent actor/tenant containment assertions for native segfaults, host OOM, process termination and VM corruption. It always reports `certified:false` and `releaseReady:false`: model-only checks never prove an executing guest or fault isolation.
+
+## JVM/.NET host import contract (source-only)
+
+The [host-interop-v0 contract](contracts/host-interop-v0/README.md) pins six `.atto` source candidates and ten backend-qualified oracles. All remain **NOT_EXECUTED**; the Node tests verify source identity and non-promoting metadata only.
