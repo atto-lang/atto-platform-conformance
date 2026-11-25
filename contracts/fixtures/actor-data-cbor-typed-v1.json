@@ -1,0 +1,62 @@
+{
+  "contract": "actor-data-cbor-typed-v1",
+  "status": "HOST_CANDIDATE_NOT_EXECUTED",
+  "implementation": "https://github.com/atto-lang/atto-serialization-and-validation/pull/39",
+  "vectors": [
+    {
+      "id": "nested_text_exact",
+      "hex": "818261616162",
+      "shape": "List[List[Text]]",
+      "expected": [
+        [
+          "a",
+          "b"
+        ]
+      ],
+      "usage": {
+        "expanded": 160,
+        "nodes": 4,
+        "elements": 3,
+        "work": 17
+      },
+      "limits": {
+        "wire": 6,
+        "expanded": 160,
+        "nodes": 4,
+        "elements": 3,
+        "work": 17,
+        "depth": 2
+      }
+    },
+    {
+      "id": "wrong_root",
+      "hex": "818261616162",
+      "shape": "Bool",
+      "expect": "reject shape"
+    },
+    {
+      "id": "wrong_child",
+      "hex": "8181f5",
+      "shape": "List[List[Text]]",
+      "expect": "reject shape"
+    },
+    {
+      "id": "malformed_tail",
+      "hex": "82616161ff",
+      "shape": "List[Text]",
+      "expect": "reject UTF8 without partial value"
+    },
+    {
+      "id": "trailing",
+      "hex": "6161f4",
+      "shape": "Text",
+      "expect": "reject trailing"
+    }
+  ],
+  "requirements": [
+    "one immutable input and one cumulative parser/materialization meter",
+    "charge element writes and string copies",
+    "receiver/tenant physical heap and lease ownership remain independent",
+    "trusted descriptor/attestation binding, typed encoder and compiler guest not implemented"
+  ]
+}
