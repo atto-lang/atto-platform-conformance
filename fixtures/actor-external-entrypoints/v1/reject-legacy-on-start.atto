@@ -1,0 +1,4 @@
+// ACTOR_LEGACY_START_UNSUPPORTED: canonical declare actor uses only external init.
+namespace actor_legacy_start;
+declare actor Worker;
+define mtd (Worker w) on_start(): void { return; }

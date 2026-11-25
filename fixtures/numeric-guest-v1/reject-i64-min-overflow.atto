@@ -1,0 +1,8 @@
+// Candidate guest source: MIN / -1 must be checked overflow, never MIN.
+pub fnc checked(int divisor): int {
+  val int minimum = -9223372036854775808;
+  return minimum / divisor;
+}
+pub fnc main(): int {
+  return checked(-1);
+}

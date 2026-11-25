@@ -1,0 +1,14 @@
+pub susp fnc main(): int {
+  val Future<void> outer = task<void> {
+    do task<void> {
+      loop {
+        await task<void> { return; };
+      }
+    };
+    loop {
+      await task<void> { return; };
+    }
+  };
+  outer.cancel();
+  return 42;
+}

@@ -1,0 +1,6 @@
+// TARGET, NOT EXECUTED. Canonical field set independent of declaration order.
+pub fnc main(): int {
+  val first = Record.of(a=1, b=2);
+  val second = Record.of(b=3, a=4);
+  return first.a + first.b + second.a;
+}

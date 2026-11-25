@@ -1,0 +1,5 @@
+pub suspends fnc commit(expected: int, candidate: int): int {
+  critical {
+    return candidate;
+  }
+}

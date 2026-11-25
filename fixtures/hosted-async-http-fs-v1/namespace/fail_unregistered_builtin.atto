@@ -1,0 +1,5 @@
+// Reserved identities never resolve through a project file or package fallback.
+import * as unknown from "std.unregistered_parity_guard";
+pub routine main(): void {
+  stdio.println("unexpected reserved namespace fallback");
+}

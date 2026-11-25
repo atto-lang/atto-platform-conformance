@@ -17,7 +17,7 @@
         "wasm": "NOT_EXECUTED",
         "forge": "NOT_EXECUTED"
       },
-      "source_git_blob_sha1": "c86ac476e55074031c0bcda02f5eaf3cb1399477",
+      "source_git_blob_sha1": "e2344e360ac643e25df7ca14eb01432929cecbe5",
       "expected_guest_i64": "42"
     },
     {

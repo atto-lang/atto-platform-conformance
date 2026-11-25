@@ -3,7 +3,7 @@ const kinds=new Set(['await','blocking-call','readch','writech','select','cooper
 export function admitSafePoint(input) {
  const p={hasHeapContinuation:false,liveBorrow:false,liveGuard:false,plainCritical:false,
    hostFrame:false,partialEffect:false,inCleanup:false,cleanupLowered:false,
-   untrusted:false,quotaContinuous:false,...input};
+   untrusted:false,quotaContinuous:false,untrustedCooperationCertified:false,...input};
  if(!kinds.has(p.kind))throw new TypeError('unknown suspension kind');
  const denied=(reason)=>({decision:p.kind==='auto-backedge'?'DEFER':'REJECT',reason});
  if(p.plainCritical)return denied('plain-critical-no-suspend');
@@ -13,15 +13,33 @@ export function admitSafePoint(input) {
  if(p.partialEffect)return denied('partial-effect-not-committed');
  if(p.inCleanup&&!p.cleanupLowered)return denied('cleanup-not-lowered');
  if(p.untrusted&&!p.quotaContinuous)return denied('logical-quota-not-continuous');
+ // Conserved fuel/wall/CPU is necessary but not sufficient to certify
+ // UNTRUSTED source-level rt cooperate / implicit loop preemption. Until
+ // isolate revocation and cleanup semantics are proven these remain gated.
+ if(p.untrusted&&(p.kind==='cooperate'||p.kind==='auto-backedge')
+    &&!p.untrustedCooperationCertified)
+   return denied('untrusted-cooperation-not-certified');
  if(!p.hasHeapContinuation)return denied('continuation-not-lowered');
  return {decision:p.kind==='generator-value'?'EMIT_AND_PARK':'ADMIT',reason:'proven-heap-continuation'};
 }
 /** Wall time is a poll-triggered scheduling request, never a timer interrupt. */
 export function budgetDecision({reductions,limit=512,elapsedNs,timeLimitNs=2_000_000,
- probeDue=true,peerRunnable=true,kind='auto-backedge',...safety}) {
- if(![reductions,limit,elapsedNs,timeLimitNs].every(x=>Number.isFinite(x)&&x>=0))
+ probeDue=true,peerRunnable=true,sampleInterval=128,kind='auto-backedge',...safety}) {
+ // JS models must reject fractional, lossy or nonpositive limits:
+ // the real backedge and deadline counters are discrete bounded integers.
+ if(![reductions,limit,elapsedNs,timeLimitNs,sampleInterval].every(Number.isSafeInteger)
+    ||reductions<0||elapsedNs<0||limit<=0||timeLimitNs<=0
+    ||sampleInterval<=0||sampleInterval>65536
+    ||(sampleInterval & (sampleInterval-1))!==0
+    ||typeof probeDue!=='boolean'||typeof peerRunnable!=='boolean')
    throw new TypeError('invalid budget');
- if(!probeDue)return {decision:'CONTINUE',reason:'probe-not-due'};
+ // The reduction target is SOFT fairness, not hard tenant fuel. Even
+ // when overdue, expensive scheduling polls stay fixed at 128-backedge
+ // boundaries, never every iteration. A *missing* probeDue=false is
+ // overridden only at a scheduled boundary. Separately proven guard-exit
+ // checkpoints may opt in through probeDue=true.
+ const scheduledPoll=reductions>0 && reductions % sampleInterval===0;
+ if(!probeDue&&!scheduledPoll)return {decision:'CONTINUE',reason:'probe-not-due'};
  if(reductions<limit&&elapsedNs<timeLimitNs)return {decision:'CONTINUE',reason:'budget-remaining'};
  const gate=admitSafePoint({kind,...safety});
  if(gate.decision!=='ADMIT')return gate;

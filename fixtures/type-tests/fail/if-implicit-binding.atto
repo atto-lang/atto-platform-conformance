@@ -1,0 +1,3 @@
+// expect-error: E_SYNTAX
+fnc f(Any v): int { if v is int as n then return n; fi return 0; }
+pub fnc main(): int { val value: Any = 41; return f(value); }

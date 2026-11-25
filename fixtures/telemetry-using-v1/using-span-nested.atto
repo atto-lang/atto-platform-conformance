@@ -1,0 +1,10 @@
+// Future positive guest target: parent restored after nested scope.
+pub fnc main(): int {
+  using telemetry.span("parent") as outer {
+    using telemetry.span("child") as inner {
+      inner.event("child work");
+    }
+    outer.event("parent restored");
+    return 11;
+  }
+}

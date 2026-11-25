@@ -1,0 +1,155 @@
+{
+  "schema": "atto.type-declarations.v1",
+  "proposal": "atto-lang/atto-spec#30",
+  "caveat": "Syntax acceptance is not compiler, linker, runtime or cross-backend admission.",
+  "fields": [
+    "id",
+    "source",
+    "parse",
+    "semantic",
+    "notes"
+  ],
+  "cases": [
+    {
+      "id": "define-union",
+      "source": "define type Foo as bool | int",
+      "parse": "accept",
+      "semantic": "accept-after-type-resolution",
+      "notes": "runtime requires a tagged-union representation"
+    },
+    {
+      "id": "declare-union",
+      "source": "declare type Foo = bool | int",
+      "parse": "accept",
+      "semantic": "requires-definition-or-import",
+      "notes": "declaration contract only"
+    },
+    {
+      "id": "matching-declare-define",
+      "source": "declare type Foo = int | bool; define type Foo as bool | int",
+      "parse": "accept",
+      "semantic": "accept",
+      "notes": "union order does not affect identity"
+    },
+    {
+      "id": "define-interface",
+      "source": "define type Bar as interface Z {}",
+      "parse": "accept",
+      "semantic": "accept",
+      "notes": "Bar aliases the nominal Z; empty interface is legal"
+    },
+    {
+      "id": "define-trait",
+      "source": "define type Bar as trait Z {}",
+      "parse": "accept",
+      "semantic": "accept",
+      "notes": "Bar aliases the nominal trait Z; empty trait is legal"
+    },
+    {
+      "id": "declare-ref",
+      "source": "declare type Star = Z;",
+      "parse": "accept",
+      "semantic": "requires-link",
+      "notes": "Z can be forward/imported"
+    },
+    {
+      "id": "declare-ref-plus-definition",
+      "source": "declare type Bar = Z; define type Bar as interface Z {}",
+      "parse": "accept",
+      "semantic": "accept",
+      "notes": "declaration and inline nominal definition agree"
+    },
+    {
+      "id": "invalid-define-equals",
+      "source": "define type Foo = bool | int;",
+      "parse": "reject",
+      "semantic": "not-applicable",
+      "notes": "E_SYNTAX"
+    },
+    {
+      "id": "invalid-declare-as",
+      "source": "declare type Foo as bool | int;",
+      "parse": "reject",
+      "semantic": "not-applicable",
+      "notes": "E_SYNTAX"
+    },
+    {
+      "id": "invalid-trailing-union",
+      "source": "define type Foo as bool |",
+      "parse": "reject",
+      "semantic": "not-applicable",
+      "notes": "E_SYNTAX"
+    },
+    {
+      "id": "invalid-leading-union",
+      "source": "define type Foo as | int",
+      "parse": "reject",
+      "semantic": "not-applicable",
+      "notes": "E_SYNTAX"
+    },
+    {
+      "id": "invalid-empty-union-arm",
+      "source": "define type Foo as bool || int",
+      "parse": "reject",
+      "semantic": "not-applicable",
+      "notes": "E_SYNTAX"
+    },
+    {
+      "id": "invalid-duplicate-arm",
+      "source": "define type Foo as bool | bool;",
+      "parse": "reject",
+      "semantic": "not-applicable",
+      "notes": "E_DUPLICATE"
+    },
+    {
+      "id": "invalid-duplicate-declaration",
+      "source": "declare type Foo = bool; declare type Foo = bool;",
+      "parse": "reject",
+      "semantic": "not-applicable",
+      "notes": "E_DUPLICATE"
+    },
+    {
+      "id": "invalid-mismatch",
+      "source": "declare type Foo = bool; define type Foo as int;",
+      "parse": "accept",
+      "semantic": "reject",
+      "notes": "E_SIGNATURE"
+    },
+    {
+      "id": "invalid-cycle",
+      "source": "define type A as B; define type B as A;",
+      "parse": "accept",
+      "semantic": "reject",
+      "notes": "E_TYPE_CYCLE"
+    },
+    {
+      "id": "invalid-nominal-collision",
+      "source": "define type A as interface Z {} define type B as interface Z {}",
+      "parse": "accept",
+      "semantic": "reject",
+      "notes": "E_DUPLICATE"
+    },
+    {
+      "id": "invalid-interface-implementation",
+      "source": "define type A as interface Z { fnc answer() { return 3; } }",
+      "parse": "accept-under-full-grammar",
+      "semantic": "reject",
+      "notes": "interfaces may not have method implementation bodies"
+    }
+  ],
+  "required_stages": [
+    "lex",
+    "parse",
+    "semantic",
+    "link",
+    "backend-emit",
+    "runtime",
+    "format-roundtrip"
+  ],
+  "support_reporting": [
+    "passed",
+    "failed",
+    "unsupported",
+    "not-executed"
+  ]
+}

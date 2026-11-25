@@ -1,0 +1,13 @@
+# Exact observed default-branch source snapshot; all typed actor v1 real-guest parity NOT EXECUTED.
+# repo	main_head_sha	capability_profile	typed_actor_v1_guest_status
+atto-source.atto	4ad9665ea4b2a425fd2d859590e26f2c577e7811	BOOTSTRAP_ONLY	NOT_EXECUTED
+atto-source.java	63f1872944640dda895e172d76e2adc428d64910	JVM_COMPILER	NOT_EXECUTED
+atto-source.llvm	7150b2a72253732a328f76db12b1f0ebb333b103	NATIVE_LLVM	NOT_EXECUTED
+atto-source.wasm	d9349d9bb4e872b9a54b0dad44506e664d1848a5	WASM_ADAPTER	NOT_EXECUTED
+atto-source.net	928a439580c94721ed596a54ed00a6b0e931b114	SKELETON	NOT_EXECUTED
+atto-source.forge	f3c02418330589e4cbccf31a77b53f7914daf6e6	NATIVE_PRIMITIVES	NOT_EXECUTED
+atto-source.rs	eb7539742c660a1c3379de2de09f76bd72c9ee1e	RUST_WASM_COMPILER	NOT_EXECUTED
+atto-source.cranelift	c7ba1b709139b1856076e5f9d325b7f489194c10	SCALAR_ONLY	NOT_EXECUTED
+atto-source.js	8c85a5c1aed101e5975177cb426da5e5ae37f1d7	TRUSTED_JS_SUBSET	NOT_EXECUTED
+atto-source.hdl	fccd647238abf006a2fe8998e9f77d5db414dfee	SKELETON	NOT_EXECUTED
+atto-source.realtime	e62499131cf5de3478b5ac0245ddffc2e09630ac	SKELETON	NOT_EXECUTED

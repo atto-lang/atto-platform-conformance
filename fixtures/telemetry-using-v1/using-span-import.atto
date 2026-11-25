@@ -1,0 +1,8 @@
+// Future positive. The Java production root currently parses import/from, not this use form.
+use std.telemetry as telemetry;
+
+pub fnc main(): int {
+  using telemetry.span("import-binding") as span {
+    return 0;
+  }
+}

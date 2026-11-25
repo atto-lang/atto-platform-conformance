@@ -1,0 +1,9 @@
+define class Foo as
+  pub let int value = 1;
+end
+pub susp fnc main(): int {
+  val owner = new Foo();
+  val loan = borrow! owner;
+  do task<int> { return loan.value; };
+  return 42;
+}

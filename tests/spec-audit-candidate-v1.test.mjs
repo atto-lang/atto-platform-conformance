@@ -33,6 +33,13 @@ function validate(data, sourceOverrides = {}) {
     assert.ok(['TARGET', 'PROPOSED', 'UNRESOLVED'].includes(c.maturity));
     assert.deepEqual(Object.keys(c.backends).sort(), [...backends].sort());
     assert.ok(backends.every(b => c.backends[b] === 'NOT_EXECUTED'), 'false backend pass claim');
+    if (c.id === 'pipeline-double-start') {
+      assert.equal(c.kind, 'decision-candidate', 'placeholder stage types are not a valid negative proof');
+      assert.equal(c.target_diagnostic_class, 'MOVED_BUILDER_REUSED');
+    }
+    if (pending.has(c.decision)) {
+      assert.equal(c.kind, 'decision-candidate', 'unratified language decision promoted: ' + c.id);
+    }
     if (c.kind === 'positive') {
       assert.match(c.expected_guest_i64, /^-?[0-9]+$/, 'missing typed guest oracle for ' + c.id);
     } else {
@@ -62,13 +69,6 @@ function validate(data, sourceOverrides = {}) {
         'control is not a one-edit variant of negative: ' + c.id);
     } else {
       assert.equal(c.expected_diagnostic_class, null);
-    }
-    if (c.id === 'pipeline-double-start') {
-      assert.equal(c.kind, 'decision-candidate', 'placeholder stage types are not a valid negative proof');
-      assert.equal(c.target_diagnostic_class, 'MOVED_BUILDER_REUSED');
-    }
-    if (pending.has(c.decision)) {
-      assert.equal(c.kind, 'decision-candidate', 'unratified language decision promoted: ' + c.id);
     }
   }
   assert.deepEqual([...ids].sort(), [...requiredCases].sort(), 'fixture coverage drift');

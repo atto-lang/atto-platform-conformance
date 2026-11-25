@@ -1,0 +1,3 @@
+// expect-exit: 42
+fnc f(Any v): int { match v over on _ when v > 100 -> { return 0; } on is int as val n -> { return n + 1; } end }
+pub fnc main(): int { val value: Any = 41; return f(value); }

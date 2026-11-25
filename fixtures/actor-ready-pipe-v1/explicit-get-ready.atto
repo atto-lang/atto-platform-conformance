@@ -1,0 +1,16 @@
+// TARGET SOURCE ONLY — not a verified Atto guest execution.
+define actor Producer receives int emits int as
+  susp receive(ActorMail<int> mail): void { emit(mail.value); }
+end
+define actor Consumer receives int as
+  susp receive(ActorMail<int> mail): void { }
+end
+pub susp fnc main(): int {
+  val producer = spawn Producer();
+  val consumer = spawn Consumer();
+  val link = producer pipe! consumer;
+  // Optional application-level barrier AFTER connection registration.
+  await producer.get_ready();
+  await consumer.get_ready();
+  return 0;
+}
