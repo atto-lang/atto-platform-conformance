@@ -1,0 +1,7 @@
+define class Counter as
+  get(): int { return 42; }
+end
+pub fnc main(): int {
+  let Counter c = new Counter();
+  return c.get();
+}

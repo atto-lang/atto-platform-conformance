@@ -1,0 +1,6 @@
+// expect-error: E_BORROW_AMBIGUOUS
+// A computed temporary must be rejected unless its storage/lifetime is proven.
+define class Box as pub let int value = 1; end
+fnc make(): Box { return new Box(); }
+fnc read(Box b): int { return b.value; }
+pub fnc main(): int { return read(make()); }

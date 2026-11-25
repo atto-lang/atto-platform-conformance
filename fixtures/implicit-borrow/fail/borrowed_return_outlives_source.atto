@@ -1,0 +1,11 @@
+// expect-error: E_LIFETIME
+// TARGET_ONLY: no guest artifact on rejection
+// A view returned from another function cannot outlive the original owner.
+define class Child as pub let int value = 21; end
+define class Parent as pub let Child child = new Child(); end
+fnc get_child(Parent p): Borrow<Child> { return p.child; }
+fnc dangling(): Borrow<Child> {
+  val local = new Parent();
+  return get_child(local);
+}
+pub fnc main(): int { return dangling().value; }

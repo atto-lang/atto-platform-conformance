@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "wave": 4,
+  "status": "reference-contract-and-unverified-backend-source",
+  "certifiedParity": false,
+  "backends": [
+    "java",
+    "llvm",
+    "net",
+    "wasm",
+    "forge"
+  ],
+  "tasks": [
+    {
+      "id": 16,
+      "name": "actor-state-isolation",
+      "source": "java#760;llvm#463",
+      "oracle": "actor-local owner, scoped state loan, no mutable escape"
+    },
+    {
+      "id": 17,
+      "name": "actorgroup-supervision-control",
+      "source": "java#631;java#674",
+      "oracle": "affine group membership, reserved CONTROL and non-forged terminal cause"
+    },
+    {
+      "id": 18,
+      "name": "typed-messagepack-boundary",
+      "source": "java#645;java#1026",
+      "oracle": "canonical tagged envelope and Sendable-vs-codec separation"
+    },
+    {
+      "id": 19,
+      "name": "bounded-channel-select",
+      "source": "java#887;java#538",
+      "oracle": "no data loss on full, fair select, Future-shaped nonblocking result"
+    },
+    {
+      "id": 20,
+      "name": "async-nio-reactor",
+      "source": "java#790;java#1100;llvm#485",
+      "oracle": "kernel-only completion, owned actor scheduler handoff, cancellation"
+    }
+  ],
+  "sourceCases": [
+    {
+      "id": "state-read",
+      "file": "state-read.ores",
+      "task": 16,
+      "mode": "admit",
+      "purpose": "read-only state loan",
+      "gitBlob": "d0b08b6278b7f02e346a8a96ebb71f1b33ef87dd",
+      "verified": false
+    },
+    {
+      "id": "state-read-mutate-reject",
+      "file": "state-read-mutate-reject.ores",
+      "task": 16,
+      "mode": "reject",
+      "purpose": "read-capability cannot mutate actor state",
+      "gitBlob": "2a611a093ce56c654bdca70c5dde9fda7a778187",
+      "verified": false
+    },
+    {
+      "id": "group-membership",
+      "file": "group-membership.ores",
+      "task": 17,
+      "mode": "admit",
+      "purpose": "manager-issued ActorGroup join capability",
+      "gitBlob": "2f5fa14b9634deaa0ca35d1751399fe17ae2c651",
+      "verified": false
+    },
+    {
+      "id": "message-variant",
+      "file": "message-variant.ores",
+      "task": 18,
+      "mode": "admit",
+      "purpose": "nominal variant tags for tagged messages",
+      "gitBlob": "aa457a086954178944272448bdf178acc86c1737",
+      "verified": false
+    },
+    {
+      "id": "select-procedural",
+      "file": "select-procedural.ores",
+      "task": 19,
+      "mode": "execute",
+      "purpose": "procedural select returns integer 9",
+      "gitBlob": "a3dcb5c09a19cb9a64a521b0a9b6bf51d929e60e",
+      "verified": false
+    },
+    {
+      "id": "nio-facade",
+      "file": "nio-facade.ores",
+      "task": 20,
+      "mode": "admit",
+      "purpose": "NIO Future API compilation with real reactor",
+      "gitBlob": "78f0b47357eeab42d2ded4b77a29eb67c0f4cd65",
+      "verified": false
+    }
+  ],
+  "requiredEvidence": [
+    "real compiled guest runtime output",
+    "real compiler diagnostic reason",
+    "independently pinned compiler/source provenance",
+    "explicit unsupported backend state",
+    "no private Git tree export without reviewed approval"
+  ]
+}

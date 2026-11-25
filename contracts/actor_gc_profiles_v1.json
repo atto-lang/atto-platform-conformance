@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "scope": "actor-owned-memory-gc-admission-v1",
+  "evidenceLevel": "source-only-policy",
+  "verifiedGeneralGuestZeroGcBackends": [],
+  "verifiedHardRealtimeBackends": [],
+  "profiles": {
+    "strictGuestNoTracingTargets": [
+      "llvm",
+      "wasm"
+    ],
+    "nearZeroManagedHostTargets": [
+      "java",
+      "net"
+    ],
+    "additionalNativeTargets": [
+      "cranelift",
+      "forge"
+    ],
+    "hardRealtimeTarget": "llvm"
+  },
+  "backends": {
+    "java": {
+      "host": "jvm-graal",
+      "hostTracingGcPossible": true,
+      "actorHeapStage": "host-arena-substrate",
+      "sourceActorHeapLoweringCertified": false,
+      "guestZeroTracingCertified": false,
+      "fullProcessZeroGcCertified": false
+    },
+    "llvm": {
+      "host": "native-cpp",
+      "hostTracingGcPossible": false,
+      "actorHeapStage": "native-arena-substrate",
+      "sourceActorHeapLoweringCertified": false,
+      "guestZeroTracingCertified": false,
+      "fullProcessZeroGcCertified": false
+    },
+    "wasm": {
+      "host": "node-webassembly",
+      "hostTracingGcPossible": true,
+      "actorHeapStage": "host-linear-memory-substrate",
+      "sourceActorHeapLoweringCertified": false,
+      "guestZeroTracingCertified": false,
+      "fullProcessZeroGcCertified": false
+    },
+    "cranelift": {
+      "host": "rust-native-jit",
+      "hostTracingGcPossible": false,
+      "actorHeapStage": "unsupported-scalar-only",
+      "sourceActorHeapLoweringCertified": false,
+      "guestZeroTracingCertified": false,
+      "fullProcessZeroGcCertified": false
+    },
+    "net": {
+      "host": "clr-nativeaot",
+      "hostTracingGcPossible": true,
+      "actorHeapStage": "unmanaged-arena-substrate",
+      "sourceActorHeapLoweringCertified": false,
+      "guestZeroTracingCertified": false,
+      "fullProcessZeroGcCertified": false
+    },
+    "forge": {
+      "host": "cpp-native",
+      "hostTracingGcPossible": false,
+      "actorHeapStage": "native-arena-substrate",
+      "sourceActorHeapLoweringCertified": false,
+      "guestZeroTracingCertified": false,
+      "fullProcessZeroGcCertified": false
+    }
+  },
+  "requiredProofs": [
+    "compiled-source-allocation-site-closure",
+    "native-layout-and-drop-glue-for-every-noncopy-value",
+    "drop-on-return-throw-raise-panic-cancellation-and-hot-reload",
+    "checked-partial-init-and-move-drop-flags",
+    "no-implicit-strong-cross-actor-cycles",
+    "closed-ffi-import-and-callback-allocation-set",
+    "actor-turn-borrow-async-and-ffi-quiescence",
+    "generation-fenced-actor-and-incarnation-handles",
+    "persistent-survives-turn-scratch-does-not",
+    "scrub-and-physical-reclaim-after-last-external-lease",
+    "bounded-quotas-no-unaccounted-overflow-or-double-refund",
+    "backend-generated-ir-binary-and-runtime-allocation-evidence",
+    "exact-source-head-target-artifact-hash-and-stepful-runner-provenance"
+  ],
+  "requiredConformanceCases": [
+    "persistent-two-actor-turn-isolation",
+    "scratch-after-yield-rejected",
+    "take-move-then-read-rejected",
+    "borrow-across-suspend-admission",
+    "cross-actor-pointer-smuggling-rejected",
+    "foreign-handle-and-restart-generation-rejected",
+    "actor-stop-while-async-ffi-io-pin-outstanding",
+    "late-callback-cannot-reopen-retired-actor",
+    "double-release-and-partial-constructor-failure",
+    "nested-drop-return-break-continue-early-exit",
+    "throw-raise-panic-supervision-drop-paths",
+    "hot-reload-and-supervisor-restart-quiescence",
+    "arena-cyclic-graph-nonowning-handles",
+    "shared-immutable-graph-no-unbounded-rc-cycle",
+    "allocator-quota-failure-no-counter-mutation",
+    "wasm-gc-reference-types-and-host-imports-rejected-in-strict-profile",
+    "llvm-statepoint-and-unexpected-gc-runtime-call-rejected",
+    "host-collector-versus-guest-collector-claims-distinguished"
+  ],
+  "releaseRule": "A declaration-only fixture cannot prove compiler lowering, runtime behavior, zero guest tracing GC, zero process GC, or hard-real-time latency."
+}

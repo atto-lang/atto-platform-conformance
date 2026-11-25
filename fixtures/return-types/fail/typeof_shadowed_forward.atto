@@ -1,0 +1,1 @@
+pub fnc run(): typeof(tbr) { val tbr: int = 5; if true then val tbr: string = "bad"; fi return tbr; }

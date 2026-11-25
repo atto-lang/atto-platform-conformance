@@ -1,0 +1,128 @@
+{
+  "contract": "oreslang.orm-backend-parity/1",
+  "description": "Source-level target inventory and conceptual ORM catalog review oracles; these are NOT executable Oreslang guest fixtures or observed parity results.",
+  "backends": {
+    "java": {
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "modes": [
+        "jit",
+        "native-aot"
+      ]
+    },
+    "llvm": {
+      "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+      "modes": [
+        "native-aot"
+      ]
+    },
+    "wasm": {
+      "repository": "ores-truffle-oreslang/oreslang-source.wasm",
+      "modes": [
+        "wasm"
+      ]
+    },
+    "cranelift": {
+      "repository": "ores-truffle-oreslang/oreslang-source.cranelift",
+      "modes": [
+        "cranelift-jit",
+        "cranelift-aot"
+      ]
+    },
+    "forge": {
+      "repository": "ores-truffle-oreslang/oreslang-source.forge",
+      "modes": [
+        "forge-jit",
+        "forge-aot"
+      ]
+    },
+    "net": {
+      "repository": "ores-truffle-oreslang/oreslang-source.net",
+      "modes": [
+        "native-aot"
+      ]
+    }
+  },
+  "cases": [
+    {
+      "id": "catalog_valid_two_columns",
+      "category": "catalog",
+      "expect": "accept"
+    },
+    {
+      "id": "catalog_duplicate_table_stable_id",
+      "category": "catalog",
+      "expect": "reject"
+    },
+    {
+      "id": "catalog_duplicate_column_physical_name",
+      "category": "catalog",
+      "expect": "reject"
+    },
+    {
+      "id": "catalog_trailing_linebreak_id",
+      "category": "catalog",
+      "expect": "reject"
+    },
+    {
+      "id": "catalog_empty_no_drift",
+      "category": "snapshot",
+      "expect": "accept"
+    },
+    {
+      "id": "catalog_rename_preserves_stable_id",
+      "category": "snapshot",
+      "expect": "accept"
+    },
+    {
+      "id": "catalog_reordered_snapshot_no_phantom_drift",
+      "category": "snapshot",
+      "expect": "accept"
+    },
+    {
+      "id": "catalog_observed_drift_blocks_plan",
+      "category": "snapshot",
+      "expect": "reject"
+    },
+    {
+      "id": "review_duplicate_operation",
+      "category": "review",
+      "expect": "reject"
+    },
+    {
+      "id": "review_conflicting_create_drop",
+      "category": "review",
+      "expect": "reject"
+    },
+    {
+      "id": "review_forged_execution_approval",
+      "category": "review",
+      "expect": "reject"
+    },
+    {
+      "id": "pg17_stale_attnum_ledger",
+      "category": "postgres-projection",
+      "expect": "reject"
+    },
+    {
+      "id": "pg17_rls_enabled",
+      "category": "postgres-projection",
+      "expect": "reject"
+    },
+    {
+      "id": "pg17_default_or_generated_column",
+      "category": "postgres-projection",
+      "expect": "reject"
+    }
+  ],
+  "gates": [
+    "exact-source-head",
+    "nonzero-workflow-steps",
+    "compiler-produced-guest",
+    "target-executed",
+    "complete-case-coverage",
+    "binary-digest",
+    "fixture-digest",
+    "not-host-oracle-only"
+  ],
+  "evidenceScope": "receipt consistency only; tool does not authenticate GitHub runs, binary hashes, or target execution"
+}

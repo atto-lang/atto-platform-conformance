@@ -1,0 +1,8 @@
+// INVALID: parent must release its synchronous guard before child join.
+pub susp fnc main(): int {
+  val lock = new Mutex<int>(41);
+  val Future<int> worker = task<int> { return 42; };
+  using lock.lock() as guard {
+    return await worker;
+  }
+}

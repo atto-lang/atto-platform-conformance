@@ -1,0 +1,5 @@
+pub fnc make(): T {
+    type T = struct { foo: int };
+    const T value = struct { foo: int } { foo: 5 };
+    return value;
+}

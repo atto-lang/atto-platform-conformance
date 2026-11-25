@@ -1,0 +1,8 @@
+// CANDIDATE API: positive borrowed get returns Option<ReadLoan<int>>.
+// No claimed compiler admission, loan dereference or guest execution.
+pub fnc main() -> int {
+  val values = [12, 42];
+  val found = values.get(1);
+  val missing = values.get(-1);
+  return found.is_some() ? (missing.is_some() ? 0 : 42) : 0;
+}

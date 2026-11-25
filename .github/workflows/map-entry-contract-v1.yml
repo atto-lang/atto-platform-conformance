@@ -1,0 +1,20 @@
+name: Map and Entry contract integrity (host-only)
+on:
+  pull_request:
+    paths:
+      - contracts/map-mutation-lookup-v1.json
+      - tests/map-entry-contract-v1.test.mjs
+      - .github/workflows/map-entry-contract-v1.yml
+  workflow_dispatch:
+jobs:
+  registry-integrity-only:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate source fixtures and NOT_EXECUTED evidence (NOT guest conformance)
+        run: node --test tests/map-entry-contract-v1.test.mjs

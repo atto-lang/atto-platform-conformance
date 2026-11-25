@@ -1,0 +1,5 @@
+suspends fnc read_blocking(): int { return 7; }
+fnc bad(): void {
+  val Fnc<int> callback = read_blocking;
+  return;
+}

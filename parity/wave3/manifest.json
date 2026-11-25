@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "wave": 3,
+  "sourceBackends": [
+    "java",
+    "llvm",
+    "net",
+    "wasm",
+    "forge"
+  ],
+  "status": "reference-model-and-source-candidates-only",
+  "certifiedParity": false,
+  "tasks": [
+    {
+      "id": 11,
+      "category": "errors-cleanup",
+      "lead": "java",
+      "secondary": "llvm",
+      "exit_gate": "Real guest throw/raise/panic/defer/finally precedence with cancellation and actors, not reference-only JS"
+    },
+    {
+      "id": 12,
+      "category": "core-std",
+      "lead": "llvm",
+      "secondary": "embedded",
+      "exit_gate": "Actual bare-metal Oreslang core object links without OS/libc imports; std capabilities explicit"
+    },
+    {
+      "id": 13,
+      "category": "private-actor-hooks",
+      "lead": "java",
+      "secondary": "llvm",
+      "exit_gate": "Actual compiler rejects user receive invocation/reference and executes hidden-superclass dispatch"
+    },
+    {
+      "id": 14,
+      "category": "actorref-identity",
+      "lead": "forge",
+      "secondary": "java",
+      "exit_gate": "Actual native/managed runtime prevents forged/stale ActorRef and rejects local authority wire encoding"
+    },
+    {
+      "id": 15,
+      "category": "single-flight",
+      "lead": "java",
+      "secondary": "llvm",
+      "exit_gate": "Real concurrent native carrier runs with logical multi-lifetime messages and no same-actor overlapping guest turns"
+    }
+  ],
+  "sourceCases": [
+    {
+      "id": "cleanup-normal",
+      "task": 11,
+      "path": "fixtures/cleanup-normal.ores",
+      "gitBlobSha1": "ca7e100e023cce379872e51f6df32fe9bf687585",
+      "sha256": "b2c3774865e5690c600668fad2dfe30b20eb707d5b5283b7361a24daf8484506",
+      "mode": "candidate-check",
+      "rule": "cleanup normal source candidate",
+      "backendReadiness": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "cleanup-panic-bypass",
+      "task": 11,
+      "path": "fixtures/cleanup-panic-bypass.ores",
+      "gitBlobSha1": "a0d37bd85aede8ebb0039c454f4db7b7c024b86a",
+      "sha256": "71ac7a12503b5971ace7a9fb468cf74345a806a624a7b0d2f0881f8536405760",
+      "mode": "candidate-check",
+      "rule": "panic bypass catch and run finally, requires semantic guest execution",
+      "backendReadiness": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "actor-protected-receive",
+      "task": 13,
+      "path": "fixtures/actor-protected-receive.ores",
+      "gitBlobSha1": "1ef50d5d3dffea4cf40e55795d248fe8b53e24b9",
+      "sha256": "8263a9de02ad794b86979275a14fe95246e19d12e45e5e8e9e1a47179b408655",
+      "mode": "candidate-check",
+      "rule": "receive with optional explicit self",
+      "backendReadiness": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "actor-user-receive-reject",
+      "task": 13,
+      "path": "fixtures/actor-user-receive-reject.ores",
+      "gitBlobSha1": "976a4f8f492f0e158d42878eb4692d4386d5429d",
+      "sha256": "dd8cb137239460d83a0f7a46e55094e157dec9b09db6d69fe055c4352c98354e",
+      "mode": "candidate-reject",
+      "rule": "ordinary source call to sealed receive must be denied for hook access reason",
+      "backendReadiness": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "actor-receive-reference-reject",
+      "task": 13,
+      "path": "fixtures/actor-receive-reference-reject.ores",
+      "gitBlobSha1": "dd1af8a32d0661ebbd42eb215de45e33d37dfb52",
+      "sha256": "38e1661ed65b08d549ce5d3d68f20ad2a2c648cc7a99d4b602f3964cd7236559",
+      "mode": "candidate-reject",
+      "rule": "method reference to sealed receive must be denied for hook access reason",
+      "backendReadiness": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "actor-serial-lifetime",
+      "task": 15,
+      "path": "fixtures/actor-serial-lifetime.ores",
+      "gitBlobSha1": "bab4475568d4bd8302682a908fc76fba4526a9ed",
+      "sha256": "c6186e0b76f8736d266dab7feb087bebf1983875f5dd39c75950004fe7aff284",
+      "mode": "candidate-check",
+      "rule": "serial actor shorthand must normalize to requestConcurrency=1 messageConcurrency=1",
+      "backendReadiness": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    }
+  ],
+  "proofRules": [
+    "Real compiler execution and source tree provenance required",
+    "Unexpected unsupported errors are not semantic rejections",
+    "A no-step CI failure is not test evidence",
+    "No unauthorized private source mirroring"
+  ]
+}

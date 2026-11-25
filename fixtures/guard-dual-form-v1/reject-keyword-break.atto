@@ -1,0 +1,10 @@
+// Reject: loop break cannot discharge the guard's return requirement.
+pub fnc main(): int {
+  loop {
+    guard false else
+      break;
+    end
+    return 42;
+  }
+  return 0;
+}

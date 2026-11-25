@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "id": "atto-numeric-guest-v1",
+  "status": "CANDIDATE_SOURCE_NOT_EXECUTED",
+  "spec": "atto-lang/atto-spec/language/numeric-semantics-v1.md",
+  "backendResults": {
+    "java-graalvm": "not_executed",
+    "llvm": "not_executed",
+    "wasm": "not_executed",
+    "net-nativeaot": "not_executed",
+    "forge": "not_executed",
+    "cranelift": "not_executed",
+    "rs-wasm": "not_executed"
+  },
+  "provenance": "Raw Git blob SHAs are pinned. Source-only matching does not certify parsing, compilation, negative admission, full guest AOT, or executable parity. Three Result trap candidates are source-only and do not certify caller error identity, actor supervision or guest AOT. Three additional ordered-comparison candidates test NaN, signed zero, and exact int-vs-binary64 comparison beyond 2^53; no parser, compiler or AOT evidence is asserted.",
+  "cases": [
+    {
+      "id": "checked-i64-quotient",
+      "path": "checked-i64-quotient.atto",
+      "blob": "d7b61afd0fe074395b092aa4abaa08de4961602e",
+      "expected": {
+        "kind": "value",
+        "value": "42"
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "reject-i64-zero-divisor",
+      "path": "reject-i64-zero-divisor.atto",
+      "blob": "6736c0fb356074a753406efe8277aaed724892a3",
+      "expected": {
+        "kind": "error",
+        "code": "division_by_zero"
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "reject-i64-min-overflow",
+      "path": "reject-i64-min-overflow.atto",
+      "blob": "aff2c8170924a3866c8e4f8ec095560148f8b9b5",
+      "expected": {
+        "kind": "error",
+        "code": "integer_overflow"
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "reject-i64-zero-remainder",
+      "path": "reject-i64-zero-remainder.atto",
+      "blob": "a0325c64972b42825f6a82f5c2c941c67dcec7d1",
+      "expected": {
+        "kind": "error",
+        "code": "division_by_zero"
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "trap-division-by-zero",
+      "path": "trap-division-by-zero.atto",
+      "blob": "5eee4119bb0849be397ce0bc38eac66cb8e7b020",
+      "expected": {
+        "kind": "value",
+        "value": "42"
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "trap-integer-overflow",
+      "path": "trap-integer-overflow.atto",
+      "blob": "44d0975d36915f7fea115c7ea3cd1bbfa8c62747",
+      "expected": {
+        "kind": "value",
+        "value": "42"
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "trap-result-no-doublewrap",
+      "path": "trap-result-no-doublewrap.atto",
+      "blob": "d7e536f97c703621f61959240e4e44f43d7be3fd",
+      "expected": {
+        "kind": "value",
+        "value": "42"
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "ordered-float-nan",
+      "path": "ordered-float-nan.atto",
+      "blob": "01079335342d403bcb42d731012588321edbc460",
+      "expected": {
+        "kind": "value",
+        "value": "42"
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "ordered-float-signed-zero",
+      "path": "ordered-float-signed-zero.atto",
+      "blob": "8030687c74d7243d8275451f89b96ab9757534c0",
+      "expected": {
+        "kind": "value",
+        "value": "42"
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "ordered-int-float-precision",
+      "path": "ordered-int-float-precision.atto",
+      "blob": "2d57f49dd16760f94bef1525b95dfc20ba654a9a",
+      "expected": {
+        "kind": "value",
+        "value": "42"
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "equality-numeric-exact",
+      "path": "equality-numeric-exact.atto",
+      "blob": "b09deb61e5ead17261174200cb409ed46566f053",
+      "expected": {
+        "kind": "value",
+        "value": "42"
+      },
+      "status": "not_executed"
+    }
+  ]
+}

@@ -1,0 +1,144 @@
+{
+  "schema": "oreslang.explicit-exports.backend-status.v1",
+  "contract": {
+    "repository": "ores-truffle-oreslang/oreslang-common-source",
+    "pull_request": 156,
+    "git_blob_sha1": "30ac6fd83c25a2f4a62b6c9611bb86daebf39cbb",
+    "oracle_git_blob_sha1": "8844f67fd2a678c2c29118c1f74f6b1e91dcd455",
+    "syntax_cases": 32,
+    "semantic_cases": 46,
+    "native_exposure": "separate",
+    "revision": "explicit-exports-v1.2026-10-26.5",
+    "modifier_cases": 5,
+    "abi_cases": 7,
+    "access_cases": 7,
+    "required_backend_report_rows": 97
+  },
+  "backends": {
+    "java": {
+      "tracker": 1363,
+      "implementation_pr": 2066,
+      "syntax": "draft-implemented-32-vectors",
+      "semantic_bindings": "draft-implemented-partial",
+      "semantic_cases_named": 46,
+      "semantic_cases_executable": "partial-current-frontend",
+      "semantic_cases_blocked": "scoped-visibility/private-provenance/symbol-and-expanded-family-cases",
+      "native_linkage_separation": "implemented-in-draft",
+      "runtime_evidence": "NOT_EXECUTED",
+      "blockers": [
+        "explicit-private provenance",
+        "pub[file]/pub[pkg] declaration provenance",
+        "first-class Symbol declaration AST/runtime semantics"
+      ],
+      "evidence_note": "focused exact-head run 40269197724 job 121398135531 completed with steps:null; compiler/tests NOT_EXECUTED",
+      "implementation_head": "168c67ef71c8731387482bf70800cbd03a07ea38"
+    },
+    "llvm": {
+      "tracker": 637,
+      "implementation_pr": 1015,
+      "syntax": "draft-implemented-32-vectors",
+      "semantic_bindings": "draft-implemented",
+      "native_linkage_separation": "implemented-in-draft",
+      "runtime_evidence": "NOT_EXECUTED",
+      "blockers": [
+        "explicit-private provenance",
+        "pub[file]/pub[pkg] declaration provenance",
+        "package identity for package-scoped cross-file access"
+      ],
+      "notes": [
+        "first-class compiler-only SourceSymbolDecl present",
+        "completed-table API visibility leakage lattice present",
+        "shared EXPORT_* diagnostic names aligned on explicit-export branch",
+        "source export bindings remain separate from LLVM/native linkage",
+        "canonical 32nd symbol-to-literal alias diagnostic ordering fixed and covered"
+      ],
+      "implementation_head": "18f12eab339005cc9f8863782f9fa95e8426573d",
+      "evidence_note": "current conformance run 40421557918 completed with steps:null; LLVM compiler/tests NOT_EXECUTED"
+    },
+    "net": {
+      "tracker": 148,
+      "implementation_pr": 149,
+      "syntax_pr": 152,
+      "syntax": "draft-implemented-32-vectors",
+      "semantic_bindings": "draft-implemented-scalar-main-only",
+      "native_linkage_separation": "implemented-in-draft",
+      "runtime_evidence": "NOT_EXECUTED",
+      "evidence_note": "Consolidated syntax/semantic candidate #149 HEAD 946733aa7...; dotnet compiler and syntax/binding tests remain NOT_EXECUTED until exact-head stepful CI",
+      "blockers": [
+        "general multi-declaration namespace frontend",
+        "imports/linker",
+        "classes/actors/types/Symbol declarations",
+        "general API leakage and tree-shaker integration"
+      ],
+      "notes": [
+        "reconciled 32nd literal-alias vector implemented on .NET #152",
+        "32-vector syntax grammar parser and tests staged from #152 onto semantic #149 branch; scalar-main alias/scope differential assertions added",
+        "general namespace lowering remains UNSUPPORTED, not implied by syntax parser availability"
+      ],
+      "implementation_head": "946733aa7d3ccecfe4d98c492b97dc2507d2799b",
+      "syntax_head": "ac63c7d663cbabf23a79e75bb2e2534bb4c84d9a"
+    },
+    "wasm": {
+      "tracker": 123,
+      "implementation_pr": 124,
+      "syntax": "delegated-to-pinned-LLVM-compiler",
+      "semantic_bindings": "delegated-to-pinned-LLVM-compiler",
+      "native_linkage_separation": "draft-real-compiler-boundary-gate",
+      "runtime_evidence": "NOT_EXECUTED",
+      "evidence_note": "current Wasm run 40421238051 completed with steps:null; real compiler/Wasm boundary test NOT_EXECUTED",
+      "blockers": [
+        "requires exact built LLVM compiler containing explicit-export frontend",
+        "must execute baseline/alias Wasm export-surface equivalence gate"
+      ],
+      "implementation_head": "c8440a49f143346d33258f362de6c4a6ede53888"
+    },
+    "forge": {
+      "tracker": 104,
+      "implementation_pr": 105,
+      "syntax": "draft-implemented-fnc-bootstrap",
+      "semantic_bindings": "draft-implemented-fnc-only",
+      "native_linkage_separation": "implemented-in-draft",
+      "runtime_evidence": "NOT_EXECUTED",
+      "evidence_note": "current Forge run 40421681121 completed with steps:null; compiler/native assembly tests NOT_EXECUTED",
+      "blockers": [
+        "bootstrap supports only pure fnc families",
+        "imports/classes/actors/types/Symbols unsupported",
+        "full shared syntax requires richer frontend lookahead/context"
+      ],
+      "implementation_head": "0aef98243a49f59010ff1dbf30206ba8133db07a",
+      "notes": [
+        "canonical 32nd symbol-to-literal alias diagnostic vector added; Symbol semantic lowering remains unsupported"
+      ]
+    },
+    "js": {
+      "tracker": 7,
+      "implementation_pr": 55,
+      "syntax": "draft-implemented-program-v2",
+      "semantic_bindings": "draft-implemented-program-v2-subset",
+      "native_linkage_separation": "implemented-in-draft",
+      "runtime_evidence": "NOT_EXECUTED",
+      "evidence_note": "New source-qualified/IR alias regressions authored on #55 HEAD 272ee18cf...; exact-head Node tests remain NOT_EXECUTED",
+      "blockers": [
+        "program-v2 lacks imports",
+        "type declarations and actors unsupported",
+        "first-class Symbol declarations unsupported"
+      ],
+      "notes": [
+        "contextual symbol export grammar hardened on implementation branch",
+        "explicit source bindings do not drive ESM export surface",
+        "canonical 32nd symbol-to-literal alias diagnostic vector added",
+        "source module-qualified fnc aliases resolved by completed PUBLIC SourceExportBinding table; IR admission enforces same scope",
+        "file/pkg and routine cross-module requests rejected; no new ESM exports from source aliases"
+      ],
+      "implementation_head": "272ee18cf231ecbf057cd3ca377ba563e3adf527"
+    }
+  },
+  "policy": {
+    "confirmed_requires_real_exact_head_execution": true,
+    "zero_step_is_not_execution": true,
+    "private_source_cross_org_mirror_authorized": false,
+    "no_backend_may_mark_complete_from_reference_oracle_only": true,
+    "backend_report_protocol_pr": 166,
+    "current_contract_execution": "NOT_EXECUTED"
+  }
+}

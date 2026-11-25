@@ -1,0 +1,14 @@
+// expect-exit: 42
+// TARGET_ONLY: not yet guest executed
+// A borrowed result ends at last use; a later exclusive write is legal.
+define class Child as pub let int value = 21; end
+define class Parent as pub let Child child = new Child(); end
+fnc child(Parent p): Borrow<Child> { return p.child; }
+fnc update(Parent p): void { p.child.value += 1; }
+pub fnc main(): int {
+  val mut Parent p = new Parent();
+  val view = child(p);
+  val old = view.value;
+  update(mut p);
+  return old + p.child.value - 1;
+}

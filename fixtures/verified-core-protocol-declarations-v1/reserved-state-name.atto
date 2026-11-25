@@ -1,0 +1,6 @@
+define protocol Connection as
+    initial Waiting;
+    Waiting -> end on connect;
+end
+
+pub fnc main() -> int { return 42; }

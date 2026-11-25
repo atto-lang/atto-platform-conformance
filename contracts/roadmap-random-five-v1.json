@@ -1,0 +1,83 @@
+{
+  "schema": "atto.roadmap-five-reference/1",
+  "date": "2026-11-08",
+  "classification": "SOURCE_FREE_REFERENCE_ORACLES_ONLY",
+  "guestCertified": false,
+  "tasks": [
+    {
+      "number": 37,
+      "key": "zeroGcMetrics",
+      "source": "src/random-five-zero-gc-metrics-v1.mjs",
+      "tests": "tests/random-five-zero-gc-metrics-v1.test.mjs"
+    },
+    {
+      "number": 64,
+      "key": "pubsubDelivery",
+      "source": "src/random-five-pubsub-delivery-v1.mjs",
+      "tests": "tests/random-five-pubsub-delivery-v1.test.mjs"
+    },
+    {
+      "number": 29,
+      "key": "nestedTypes",
+      "source": "src/random-five-nested-types-v1.mjs",
+      "tests": "tests/random-five-nested-types-v1.test.mjs"
+    },
+    {
+      "number": 67,
+      "key": "selectArbitration",
+      "source": "src/random-five-select-arbitration-v1.mjs",
+      "tests": "tests/random-five-select-arbitration-v1.test.mjs"
+    },
+    {
+      "number": 35,
+      "key": "borrowLiveness",
+      "source": "src/random-five-ownership-v1.mjs",
+      "tests": "tests/random-five-ownership-v1.test.mjs"
+    }
+  ],
+  "backends": {
+    "java": {
+      "compilerNegative": "NOT_EXECUTED",
+      "compiledGuest": "NOT_EXECUTED",
+      "nativeOrWasm": "NOT_EXECUTED",
+      "exactHeadReceipt": null,
+      "hostReferenceOnly": true
+    },
+    "llvm": {
+      "compilerNegative": "NOT_EXECUTED",
+      "compiledGuest": "NOT_EXECUTED",
+      "nativeOrWasm": "NOT_EXECUTED",
+      "exactHeadReceipt": null,
+      "hostReferenceOnly": true
+    },
+    "net": {
+      "compilerNegative": "NOT_EXECUTED",
+      "compiledGuest": "NOT_EXECUTED",
+      "nativeOrWasm": "NOT_EXECUTED",
+      "exactHeadReceipt": null,
+      "hostReferenceOnly": true
+    },
+    "wasm": {
+      "compilerNegative": "NOT_EXECUTED",
+      "compiledGuest": "NOT_EXECUTED",
+      "nativeOrWasm": "NOT_EXECUTED",
+      "exactHeadReceipt": null,
+      "hostReferenceOnly": true
+    },
+    "forge": {
+      "compilerNegative": "NOT_EXECUTED",
+      "compiledGuest": "NOT_EXECUTED",
+      "nativeOrWasm": "NOT_EXECUTED",
+      "exactHeadReceipt": null,
+      "hostReferenceOnly": true
+    }
+  },
+  "requirements": {
+    "runnerStepsPositive": true,
+    "sourceHeadTree": true,
+    "artifactDigest": true,
+    "independentReview": true,
+    "negativeMutants": true
+  },
+  "releaseAuthorized": false
+}

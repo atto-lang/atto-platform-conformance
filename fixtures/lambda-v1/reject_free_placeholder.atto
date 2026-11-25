@@ -1,0 +1,4 @@
+// REJECT: an unbound _1 is not an implicitly bound lambda parameter.
+pub fnc main() -> int ::
+  return (_1 + 1)
+end

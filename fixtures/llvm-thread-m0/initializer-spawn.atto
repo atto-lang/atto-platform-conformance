@@ -1,0 +1,1 @@
+fnc main(): int { let int result = thread.spawn(1); return result; }

@@ -1,0 +1,4 @@
+// Candidate guest fixture: indirect cycle via two functions.
+pub fnc a() -> int { return b(); }
+pub fnc b() -> int { return a(); }
+pub fnc main() -> int { return a(); }

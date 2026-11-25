@@ -1,0 +1,56 @@
+// DESIGN-TARGET fixture: NOT_EXECUTED by any current AttoLang backend.
+// The conformance harness must force both actors onto the SAME carrier and
+// set a checked guest stack quota (<= 8 frames) before recursion begins.
+// A machine/CLR/JVM/Wasm stack fault is never an acceptable substitute.
+define actor OverflowWorker as
+    recurse(int remaining): int {
+        if remaining == 0; do
+            return 0;
+        else
+            // Non-tail: preserves every caller's checked activation frame.
+            return 1 + self.recurse(remaining - 1);
+        fi
+    }
+
+    on_message(int remaining): int {
+        return self.recurse(remaining);
+    }
+
+    // Actor-local diagnostic observation only, never a recovery handler.
+    on_panic(error: Error): void {
+        return;
+    }
+
+    // Neither hook may observe or consume a terminal stack panic.
+    on_raise(error: Error): void {
+        return;
+    }
+
+    on_throw(error: Error): void {
+        return;
+    }
+end
+
+define actor HealthyWorker as
+    state {
+        total: int = 0;
+    }
+
+    on_message(int n): int using state.write {
+        return self.handle_state(critical-write |s| -> {
+            s.total = s.total + n;
+            return s.total;
+        });
+    }
+end
+
+pub routine main(): void {
+    const failed: ActorRef<OverflowWorker> = spawn OverflowWorker();
+    const peer: ActorRef<HealthyWorker> = spawn HealthyWorker();
+    failed.send(100000);
+    peer.send(1);
+    peer.send(2);
+    // The test supervisor, not main(), observes the terminal CONTROL notice.
+    // The harness checks that peer state is 3 after failed is retired.
+    return;
+}

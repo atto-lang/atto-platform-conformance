@@ -1,0 +1,11 @@
+define class Connection as
+  let int request_count;
+  initialize(int id) -> void {
+    self.request_count = id;
+    self.request_count = id + 1;
+  }
+end
+pub fnc main(): int {
+  val Connection c = new Connection(41);
+  return c.request_count;
+}

@@ -1,0 +1,108 @@
+{
+  "schema": "atto.fs.actor_bound_exact_tree_carrier_audit.v1",
+  "timestamp_utc": "2026-11-20",
+  "scope": "Linux host-only FS security, not compiled Atto guest certification",
+  "source": {
+    "repo": "atto-lang/atto-source.llvm",
+    "pr": "https://github.com/atto-lang/atto-source.llvm/pull/62",
+    "audited_head": "2034b3dc3e17f791c9f6ad95529d929428636bb4",
+    "current_head_at_record_creation": "2034b3dc3e17f791c9f6ad95529d929428636bb4",
+    "tree_sha": "7c8f69da1a1f6eaa69e2da57aea78ff3947522ba",
+    "blobs": 235,
+    "tree_entries": 280
+  },
+  "actor_binding": {
+    "finding": "One async FS service previously checked only tenant/generation, allowing accidental reuse of a single actor-scoped broker service across sibling actors when caller supplied another actor identity",
+    "fix": "Require trusted actor incarnation at creation and immutable exact actor matching on submit, poll, cancellation and forget",
+    "source_blobs": {
+      "native/include/atto/host_fs_async.h": "b10f6b9076106132ba102fc893c21433f50de0b5",
+      "native/src/host_fs_async.c": "3e8c8345d0253773000c922d02adf7b17dd718e1",
+      "native/tests/host_fs_async_test.c": "cc0c2bf0f12bb5785e7961c6e7ac595410555b20",
+      "native/tests/host_fs_async_broker_test.c": "30a6061c8ad050698329b749088da7e8d9b8d435"
+    },
+    "local_compilation": {
+      "toolchains": [
+        "GCC 14.2.0",
+        "Clang 17.0.0"
+      ],
+      "optimization": [
+        "O1",
+        "O2"
+      ],
+      "flags": [
+        "-std=c11",
+        "-Wall",
+        "-Wextra",
+        "-Wconversion",
+        "-Werror",
+        "-pedantic",
+        "-pthread",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer"
+      ],
+      "tests": {
+        "gcc_o1": "PASS",
+        "gcc_o2": "PASS",
+        "clang_o1": "PASS",
+        "clang_o2": "PASS"
+      },
+      "test_marker": "ATTO_FS_ASYNC_HOST_ONLY_TEST_PASS",
+      "source_and_test_git_blob_match": true,
+      "broker": "IN_MEMORY_MOCK",
+      "caveat": "Only source and test match Git blobs; local mock broker header is not the production broker header. This is not a real Linux broker or Atto compiler execution."
+    }
+  },
+  "token_free_private_mirror": {
+    "repo": "agent-pontifex/atto-ci",
+    "source_private": true,
+    "carrier_private": true,
+    "method": "GitHub connector fetched each source blob content, verified per-blob SHA, created carrier Git tree with exact root SHA; no secrets, PAT, source checkout token, or cross-org Git authentication",
+    "original_source_commit": "acdc52b9a53bbb87f79e5c57c8b118ce4d86bb50",
+    "original_root_tree": "376de1370f7d66acbbf1e61542cf80488d4f56ca",
+    "original_carrier_commit": "90fd80fe4bbfb2ca99b58ce9558ac8a34b3bf5de",
+    "hardened_source_commit": "2034b3dc3e17f791c9f6ad95529d929428636bb4",
+    "hardened_exact_tree": "7c8f69da1a1f6eaa69e2da57aea78ff3947522ba",
+    "hardened_carrier_snapshot_commit": "87eaa94bd5b0ef844e6a969fbedab172d3d8d595",
+    "carrier_branch": "ci/fs-security-actor-bound-2034b3dc-20261120",
+    "harness_commit": "a4f8037a031bc2454af6aceeca03c7b34d576b22",
+    "harness_delta": [
+      ".github/workflows/atto-ci.yml"
+    ],
+    "checks": [
+      "All 235 Git blobs checked against pinned source SHA",
+      "Complete root tree hash matches",
+      "Harness is a separate commit with exact source-tree snapshot as its parent",
+      "Workflow uses local checkout with persist-credentials false"
+    ],
+    "workflow_run_id": 44684065317,
+    "workflow_job_id": 136114083220,
+    "workflow_conclusion": "failure",
+    "executed_steps": 0,
+    "interpretation": "RUNNER_ADMISSION_FAILURE_NOT_TEST_FAILURE",
+    "fallback_capacity_verified": false
+  },
+  "additional_carriers_checked": [
+    "benefactor-cc/atto-ci",
+    "voxletra/atto-ci",
+    "scintilla-run/atto-ci",
+    "athlet-o/atto-ci",
+    "agent-pontifex/atto-ci",
+    "akrion-sim/atto-ci",
+    "zed-pkg-test/atto-ci",
+    "honeypot-r-us-test/atto-ci"
+  ],
+  "compiled_atto_guest": {
+    "status": "NOT_EXECUTED",
+    "abi_v5_loader_enabled": false,
+    "tenant_vm_scheduler_authenticated": false,
+    "real_broker_async_current_head": "NOT_EXECUTED",
+    "sandboxed_native_code": false
+  },
+  "release_blockers": [
+    "GitHub Actions runner budget/admission needs an actually stepful run",
+    "Mandatory signed artifact and effective ceiling admission into live TenantVM runtime",
+    "Trustworthy host-derived actor identity (numeric arguments are never guest credentials)",
+    "Actual signed ELF dependency and syscall confinement",
+    "Real compiled Atto std.fs positive/negative tests and current-head sanitizer CI"
+  ]
+}

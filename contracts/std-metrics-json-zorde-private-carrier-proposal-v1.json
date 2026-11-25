@@ -1,0 +1,88 @@
+{
+  "schema": "atto.stdlib.metrics-json-zorde.private-carrier-proposal-v1",
+  "status": "NOT_AUTHORIZED",
+  "allows_source_export": false,
+  "requires_independent_authentication": true,
+  "source_pins": [
+    {
+      "repository": "atto-lang/atto-source.java",
+      "pr": 1787,
+      "source_commit_sha": "ad6eb43ac531b14d97dea84bf270ba91f786e327",
+      "source_root_tree_sha": "77e0eb5c43474cf5d394c4e563a0b794b8a9482d"
+    },
+    {
+      "repository": "atto-lang/atto-source.llvm",
+      "pr": 885,
+      "source_commit_sha": "0067066e7d91c060b0754362a609ce11f4dafb80",
+      "source_root_tree_sha": "9ae6e1be8713621a4b08c5fa9cea47a3c48f8334"
+    },
+    {
+      "repository": "atto-lang/atto-source.net",
+      "pr": 231,
+      "source_commit_sha": "6c743daaee0c093b22fcdaec931ab57b9a4bdded",
+      "source_root_tree_sha": "63aa0ae70b561f24d1ec88b95e35d18a3a12f44c"
+    },
+    {
+      "repository": "atto-lang/atto-source.wasm",
+      "pr": 293,
+      "source_commit_sha": "cce816933de1b4dc39ef58b0d57afb6b72374659",
+      "source_root_tree_sha": "948593e783612a480a2e45fb6f44d231d76ebf60"
+    },
+    {
+      "repository": "atto-lang/atto-source.forge",
+      "pr": 238,
+      "source_commit_sha": "8fcb26ebca5b3a0ddd3df50f78cd1d3a9339fb8e",
+      "source_root_tree_sha": "fa3ef34e04c12b5bdb18bb375bdf0c9f3a9406e9"
+    },
+    {
+      "repository": "atto-lang/atto-source.rs",
+      "pr": 552,
+      "source_commit_sha": "680b452b3324dfc86b349d76569bd9149036993b",
+      "source_root_tree_sha": "89832e581552b11c82c58d10016b1f3969d20e81"
+    },
+    {
+      "repository": "atto-lang/atto-source.cranelift",
+      "pr": 103,
+      "source_commit_sha": "9cd5f8aaa76eef1aec6f72214ae767b0d41d65b2",
+      "source_root_tree_sha": "7dc2649c8fb690261553073fd6f69ca012fc2ccd"
+    },
+    {
+      "repository": "atto-lang/atto-source.js",
+      "pr": 143,
+      "source_commit_sha": "bdb6460589bf2938e0df16a3687408c56e6ef206",
+      "source_root_tree_sha": "7bd66ede70d3866330eeffe22463bdb584008905"
+    },
+    {
+      "repository": "atto-lang/atto-source.hdl",
+      "pr": 72,
+      "source_commit_sha": "ef688afd58ece4ce290c446a9e28e00425fb7ee6",
+      "source_root_tree_sha": "a80c37dab0bfa89ede74c08cdb945ba5abfe097f"
+    }
+  ],
+  "candidate": {
+    "repository": "canonical-cloud-test/legacy-mirror-guard-e2e",
+    "numeric_repo_id": 1343162432,
+    "capacity_evidence_run": "https://github.com/canonical-cloud-test/legacy-mirror-guard-e2e/actions/runs/45038441021",
+    "successful_stepful_jobs": 10,
+    "approved_for_atto_source": false
+  },
+  "missing_approvals": {
+    "approved_source_export_guard": null,
+    "independently_authenticated_reviewer": null,
+    "authorized_destination_readers": null,
+    "retention_and_deletion_policy": null,
+    "pinned_carrier_workflow_git_blob_sha": null,
+    "pinned_test_plan_sha256": null,
+    "source_org_allowlist_entry": null
+  },
+  "copying_allowed_only_if": "ALL_GUARDS_INDEPENDENTLY_VERIFIED_AND_CURRENT_SHA_TREE_MATCH",
+  "prohibited_actions": [
+    "copy_full_git_tree",
+    "copy_sensitive_repository_blobs",
+    "create_private_mirror_branch",
+    "run_carrier_on_private_source",
+    "claim_external_native_CI_PASS"
+  ],
+  "note": "Proposal is descriptive and does not grant consent. Retention/readers and reviewer identities must not be fabricated.",
+  "scope_addendum": "Java PR #1787 now requires 2 real runWithExitStatus ownership positives and 4 typed negatives; Rust PR #552 now adds actual native attoc->Node WebAssembly real 2-positive/4-negative CI and documents the current function-only source-linker limitation for core modules. All source heads/trees are pinned, Actions queued, no private tree export permitted."
+}

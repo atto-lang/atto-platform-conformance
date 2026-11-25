@@ -1,0 +1,242 @@
+{
+  "schema": "attolang.adt-guard-parity.v1",
+  "status": "CANDIDATE_NOT_CROSS_BACKEND_CERTIFIED",
+  "canonical": {
+    "repository": "atto-lang/atto-source.rs",
+    "commit": "e2d18c418c9d46dde3e7bf4b1936d39139ffefee",
+    "tree": "24035e0b26d52b56c770792cc7d6771e98262ec3",
+    "evidenceRun": "https://github.com/cliptown/atto-ci/actions/runs/43926119524",
+    "evidence": {
+      "rustTestsPassed": 296,
+      "wasmConformancePassed": 506,
+      "nativeWasmComparisons": 458,
+      "browserChecksPassed": 21
+    }
+  },
+  "rules": [
+    "Subjects evaluated exactly once",
+    "Tag and constructor owner checked before reading any payload",
+    "Payload/whole-value binders initialized before guard and scoped to their arm",
+    "Failed guards fall through without consuming or corrupting inactive variant",
+    "Guards never discharge unconditional exhaustiveness",
+    "Reject dead duplicate unguarded arms, missing variants and mismatched families",
+    "Nested Option/Result layers stay distinct; no implicit flatten",
+    "Cross-backend compiler rejections require semantic diagnostic; syntax/unsupported failures are not negative parity evidence"
+  ],
+  "backends": {
+    "rust_wasm": {
+      "state": "EXECUTED_CANONICAL_SUBSET",
+      "run": "https://github.com/cliptown/atto-ci/actions/runs/43926119524"
+    },
+    "java": {
+      "state": "PENDING_EXACT_SOURCE_CONFORMANCE",
+      "implementation": "ores-truffle-oreslang/oreslang-source.java",
+      "note": "supports generic Option/Result guards but separate syntax and stronger type domain; nominal enum main pending"
+    },
+    "llvm": {
+      "state": "UNSUPPORTED_CANONICAL_SOURCE",
+      "implementation": "ores-truffle-oreslang/oreslang-source.llvm",
+      "note": "limited opt-in nominal enum; no general Option/Result guarded match compiler"
+    },
+    "net": {
+      "state": "UNSUPPORTED_CANONICAL_SOURCE",
+      "implementation": "ores-truffle-oreslang/oreslang-source.net",
+      "note": "opt-in Option<int> tagged SSA and nullary enum; no Result or general guarded match compiler"
+    }
+  },
+  "parityCertified": false,
+  "cases": [
+    {
+      "id": "adt-enum-missing-variant",
+      "path": "fixtures/adt-guard-v1/fail/adt-enum-missing-variant.atto",
+      "gitBlobSha1": "57499a8f7f346f9ea16a03a8f71eab5cb8ab3546",
+      "kind": "reject",
+      "portability": "portable-semantics",
+      "invariant": "partial enum coverage rejected"
+    },
+    {
+      "id": "adt-enum-other-family-arm",
+      "path": "fixtures/adt-guard-v1/fail/adt-enum-other-family-arm.atto",
+      "gitBlobSha1": "377cd5925554ca0d2dcdc1ac0eba57579fb1804a",
+      "kind": "reject",
+      "portability": "portable-semantics",
+      "invariant": "foreign nominal owner rejected"
+    },
+    {
+      "id": "adt-guard-must-be-bool",
+      "path": "fixtures/adt-guard-v1/fail/adt-guard-must-be-bool.atto",
+      "gitBlobSha1": "ead6b189d8ff854c3e2bff6bb4be94548343f989",
+      "kind": "reject",
+      "portability": "portable-semantics",
+      "invariant": "guard must type-check as bool"
+    },
+    {
+      "id": "adt-nested-wrong-success-payload",
+      "path": "fixtures/adt-guard-v1/fail/adt-nested-wrong-success-payload.atto",
+      "gitBlobSha1": "2caff7da4095d30cbfd9e7f4b9be3512cbe505a7",
+      "kind": "reject",
+      "portability": "portable-semantics",
+      "invariant": "nested constructor payload type rejected"
+    },
+    {
+      "id": "adt-option-bool-unsupported",
+      "path": "fixtures/adt-guard-v1/fail/adt-option-bool-unsupported.atto",
+      "gitBlobSha1": "f2f6e7d0a060726123f0cc003ee36dad50c9b999",
+      "kind": "reject",
+      "portability": "rust-profile-only",
+      "invariant": "Rust subset rejects Option<bool>; Java may support it"
+    },
+    {
+      "id": "adt-option-duplicate-unguarded",
+      "path": "fixtures/adt-guard-v1/fail/adt-option-duplicate-unguarded.atto",
+      "gitBlobSha1": "325f9f42ee699524bb83ba597bba2c06f15def7c",
+      "kind": "reject",
+      "portability": "portable-semantics",
+      "invariant": "duplicate unguarded arm rejected"
+    },
+    {
+      "id": "adt-option-guard-not-exhaustive",
+      "path": "fixtures/adt-guard-v1/fail/adt-option-guard-not-exhaustive.atto",
+      "gitBlobSha1": "8b416255ebdefb9841d5debab4301ad1e19d5673",
+      "kind": "reject",
+      "portability": "portable-semantics",
+      "invariant": "guarded Some cannot prove coverage"
+    },
+    {
+      "id": "adt-option-wrong-family-pattern",
+      "path": "fixtures/adt-guard-v1/fail/adt-option-wrong-family-pattern.atto",
+      "gitBlobSha1": "f4ab0066e858d7c346ce11ccd7d63e5e3d224b08",
+      "kind": "reject",
+      "portability": "portable-semantics",
+      "invariant": "Result case cannot match Option"
+    },
+    {
+      "id": "adt-option-wrong-payload-type",
+      "path": "fixtures/adt-guard-v1/fail/adt-option-wrong-payload-type.atto",
+      "gitBlobSha1": "f121a168954a9624f632c19b3139926910e6bc24",
+      "kind": "reject",
+      "portability": "portable-semantics",
+      "invariant": "wrong Some payload rejected"
+    },
+    {
+      "id": "adt-result-int-error-unsupported",
+      "path": "fixtures/adt-guard-v1/fail/adt-result-int-error-unsupported.atto",
+      "gitBlobSha1": "2438ae98a587d8e0d73711148c9e31a5420a3bab",
+      "kind": "reject",
+      "portability": "rust-profile-only",
+      "invariant": "Rust subset rejects Result<int,int>; Java may support it"
+    },
+    {
+      "id": "adt-result-wrong-error-type",
+      "path": "fixtures/adt-guard-v1/fail/adt-result-wrong-error-type.atto",
+      "gitBlobSha1": "d8e04f029d44279e1750282ecd6c5af892f5e864",
+      "kind": "reject",
+      "portability": "portable-semantics",
+      "invariant": "wrong Err payload rejected"
+    },
+    {
+      "id": "adt-result-wrong-family-pattern",
+      "path": "fixtures/adt-guard-v1/fail/adt-result-wrong-family-pattern.atto",
+      "gitBlobSha1": "65bd7797f0480cba910c0478474554133601e461",
+      "kind": "reject",
+      "portability": "portable-semantics",
+      "invariant": "Option case cannot match Result"
+    },
+    {
+      "id": "adt-enum-three-way-exhaustive",
+      "path": "fixtures/adt-guard-v1/pass/adt-enum-three-way-exhaustive.atto",
+      "gitBlobSha1": "2cda216dd4c2dbfce20bdb6d9af0a0cd8cc28415",
+      "kind": "execute",
+      "portability": "portable-semantics",
+      "invariant": "closed nominal three-variant exhaustiveness"
+    },
+    {
+      "id": "adt-err-guard-fallthrough",
+      "path": "fixtures/adt-guard-v1/pass/adt-err-guard-fallthrough.atto",
+      "gitBlobSha1": "5c882ca6263885d644e8a54cf50ff67a0cbf275c",
+      "kind": "execute",
+      "portability": "portable-semantics",
+      "invariant": "guard false falls through Err without tag change"
+    },
+    {
+      "id": "adt-guard-skips-none-payload",
+      "path": "fixtures/adt-guard-v1/pass/adt-guard-skips-none-payload.atto",
+      "gitBlobSha1": "90a5c0beb06ec6f5787ca67d66f555eb14784386",
+      "kind": "execute",
+      "portability": "portable-semantics",
+      "invariant": "None never exposes payload to guarded Some"
+    },
+    {
+      "id": "adt-guard-skips-wrong-result-tag",
+      "path": "fixtures/adt-guard-v1/pass/adt-guard-skips-wrong-result-tag.atto",
+      "gitBlobSha1": "4730792d63852a885c62642c2f79facf8956ad04",
+      "kind": "execute",
+      "portability": "portable-semantics",
+      "invariant": "wrong result variant is never extracted"
+    },
+    {
+      "id": "adt-match-subject-once-guard",
+      "path": "fixtures/adt-guard-v1/pass/adt-match-subject-once-guard.atto",
+      "gitBlobSha1": "ab3cde2ce9145d07f1403e4d6a06aeb1bd44e6eb",
+      "kind": "execute",
+      "portability": "portable-semantics",
+      "invariant": "match subject evaluated once"
+    },
+    {
+      "id": "adt-nested-err-guard-no-flatten",
+      "path": "fixtures/adt-guard-v1/pass/adt-nested-err-guard-no-flatten.atto",
+      "gitBlobSha1": "03ed7876c3196f53e3dae905b098d0d57b3a014f",
+      "kind": "execute",
+      "portability": "portable-semantics",
+      "invariant": "nested Err preserved under guard"
+    },
+    {
+      "id": "adt-nested-guard-typed-payload",
+      "path": "fixtures/adt-guard-v1/pass/adt-nested-guard-typed-payload.atto",
+      "gitBlobSha1": "0268d620f32d822689f887ea5cb425d356370531",
+      "kind": "execute",
+      "portability": "portable-semantics",
+      "invariant": "nested payload bound before guard"
+    },
+    {
+      "id": "adt-option-guard-fallthrough",
+      "path": "fixtures/adt-guard-v1/pass/adt-option-guard-fallthrough.atto",
+      "gitBlobSha1": "8e6f7bf4ba3bd98822c2e7d54395c337372ab914",
+      "kind": "execute",
+      "portability": "portable-semantics",
+      "invariant": "false Some guard falls through"
+    },
+    {
+      "id": "adt-option-guard-hit",
+      "path": "fixtures/adt-guard-v1/pass/adt-option-guard-hit.atto",
+      "gitBlobSha1": "7fb872ba97236df6e1a6b83df55f215665486fad",
+      "kind": "execute",
+      "portability": "portable-semantics",
+      "invariant": "Some payload available within guard"
+    },
+    {
+      "id": "adt-result-err-guard",
+      "path": "fixtures/adt-guard-v1/pass/adt-result-err-guard.atto",
+      "gitBlobSha1": "c356b6dced659610db9b60eabebca86f4b4aae10",
+      "kind": "execute",
+      "portability": "portable-semantics",
+      "invariant": "Err payload available within guard"
+    },
+    {
+      "id": "adt-result-ok-guard",
+      "path": "fixtures/adt-guard-v1/pass/adt-result-ok-guard.atto",
+      "gitBlobSha1": "ee40cd523d2def9352ad43b8661949334756a9b3",
+      "kind": "execute",
+      "portability": "portable-semantics",
+      "invariant": "Ok payload available within guard"
+    },
+    {
+      "id": "adt-whole-value-guard-binding",
+      "path": "fixtures/adt-guard-v1/pass/adt-whole-value-guard-binding.atto",
+      "gitBlobSha1": "4bffdd8d9b828acb907988495e4ef303aa384d2e",
+      "kind": "execute",
+      "portability": "portable-semantics",
+      "invariant": "whole-value guard alias initialized first"
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+pub suspends fnc main(): int { return await 42; }
