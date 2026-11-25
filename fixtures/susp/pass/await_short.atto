@@ -1,0 +1,1 @@
+pub susp fnc main(): int { return await 42; }

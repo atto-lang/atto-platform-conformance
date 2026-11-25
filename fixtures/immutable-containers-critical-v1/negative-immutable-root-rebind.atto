@@ -1,0 +1,5 @@
+pub fnc main(): int {
+  const snapshot = infer record{value:7};
+  snapshot = infer record{value:8};
+  return snapshot.value;
+}

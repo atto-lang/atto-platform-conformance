@@ -1,0 +1,9 @@
+// PRELUDE V1 CANDIDATE: none_no_import; profile=core; expected=guest_exit_42
+// Not an executed guest or compiler receipt.
+pub fnc main(): int {
+  val Option<int> value = None;
+  match value over
+    on Some(_) -> { return 0; }
+    on None -> { return 42; }
+  end
+}

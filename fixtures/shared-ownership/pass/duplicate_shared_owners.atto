@@ -1,0 +1,9 @@
+// expect-exit: 42
+// two shared handles read one allocation; no implicit mutable authority
+define class Box as pub let int value = 21; end
+pub fnc main(): int {
+  val unique = new Box();
+  val a = share! unique;
+  val b = share! a;
+  return a.value + b.value;
+}

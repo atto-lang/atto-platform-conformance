@@ -1,0 +1,146 @@
+{
+  "schema": "atto.source-control-11-backend.v1",
+  "observed_date_utc": "2026-11-21",
+  "status": "PARTIAL_SOURCE_ADMISSION_NOT_GUEST_PARITY",
+  "purpose": "Track identical pre-lexical source-control negatives across all 11 Atto compilers without promoting in-memory source preflight to compiled-guest proof.",
+  "control_codepoints_hex": [
+    "001B",
+    "007F",
+    "0085",
+    "061C",
+    "200E",
+    "200F",
+    "2028",
+    "2029",
+    "202A",
+    "202B",
+    "202C",
+    "202D",
+    "202E",
+    "2066",
+    "2067",
+    "2068",
+    "2069"
+  ],
+  "injections": [
+    "block-comment-after-valid-program",
+    "line-comment-after-valid-program",
+    "raw-source-tail-after-valid-program"
+  ],
+  "benign_source_example": "/* café 😀 */ pub fnc main(): int { return 42; }",
+  "backend_count": 11,
+  "backends": [
+    {
+      "repo": "atto-lang/atto-source.atto",
+      "status": "BOOTSTRAP_NOT_COMPILER",
+      "guest_certified": false,
+      "source_ci_certified": false
+    },
+    {
+      "repo": "atto-lang/atto-source.net",
+      "status": "NOT_EXECUTED",
+      "guest_certified": false,
+      "source_ci_certified": false
+    },
+    {
+      "repo": "atto-lang/atto-source.hdl",
+      "status": "IN_MEMORY_SOURCE_ADMISSION_ONLY",
+      "guest_certified": false,
+      "source_ci_certified": false
+    },
+    {
+      "repo": "atto-lang/atto-source.java",
+      "status": "NOT_EXECUTED",
+      "guest_certified": false,
+      "source_ci_certified": false
+    },
+    {
+      "repo": "atto-lang/atto-source.realtime",
+      "status": "BOOTSTRAP_NOT_COMPILER",
+      "guest_certified": false,
+      "source_ci_certified": false
+    },
+    {
+      "repo": "atto-lang/atto-source.rs",
+      "status": "NOT_EXECUTED",
+      "guest_certified": false,
+      "source_ci_certified": false
+    },
+    {
+      "repo": "atto-lang/atto-source.llvm",
+      "status": "NOT_EXECUTED",
+      "guest_certified": false,
+      "source_ci_certified": false
+    },
+    {
+      "repo": "atto-lang/atto-source.js",
+      "status": "IN_MEMORY_SOURCE_ADMISSION_ONLY",
+      "guest_certified": false,
+      "source_ci_certified": false
+    },
+    {
+      "repo": "atto-lang/atto-source.forge",
+      "status": "NOT_EXECUTED",
+      "guest_certified": false,
+      "source_ci_certified": false
+    },
+    {
+      "repo": "atto-lang/atto-source.wasm",
+      "status": "NOT_EXECUTED",
+      "guest_certified": false,
+      "source_ci_certified": false
+    },
+    {
+      "repo": "atto-lang/atto-source.cranelift",
+      "status": "SOURCE_INSPECTED_ONLY",
+      "guest_certified": false,
+      "source_ci_certified": false
+    }
+  ],
+  "observations": [
+    {
+      "repo": "atto-lang/atto-source.hdl",
+      "pr": 39,
+      "candidate_head": "5aa87f50e3c8a378228b07f7d3305d7bd67e8a33",
+      "source_blob": "be93c35ca97dae071be25533e77c1cfb0c3b771c",
+      "negative_cases": 51,
+      "positive_cases": 1,
+      "execution_scope": "V8_EXACT_FETCHED_HDL_COMPILER_WITH_NODE_BUFFER_SHIM_ONLY"
+    },
+    {
+      "repo": "atto-lang/atto-source.js",
+      "pr": 107,
+      "candidate_head": "a50250c45695811c9c84a314f678722d1e487f55",
+      "source_blobs": [
+        "b7303d240a6defcfc534d7a011a83a97e4028328",
+        "efc7bdb1b46e0e91fb5f668d40b5214dd2e553f4"
+      ],
+      "negative_cases": 102,
+      "positive_cases": 2,
+      "execution_scope": "V8_EXACT_FETCHED_SCALAR_AND_PROGRAM_V2_PREFLIGHT_FUNCTIONS_ONLY"
+    },
+    {
+      "repo": "atto-lang/atto-source.cranelift",
+      "candidate_head": "e867c0a5cf8b94f98ce9b1212d2c735b76bc4120",
+      "source_blob": "de1429b8929c05786e7a57e93a169eba52f6a8ab",
+      "negative_cases": 0,
+      "positive_cases": 0,
+      "execution_scope": "READ_ONLY_SOURCE_INSPECTION_NO_RUST_EXECUTION"
+    }
+  ],
+  "in_memory_checks_exercised": 156,
+  "in_memory_checks_failed": 0,
+  "ci_observation": "ZERO_STEP_SOURCE_ORG_JOBS_NOT_ADMITTED_JS_AND_HDL",
+  "carrier_admission": "NO_APPROVED_PRIVATE_SOURCE_DESTINATION",
+  "required_evidence_for_backend_parity": [
+    "canonical_current_spec_and_backend_capability_profile",
+    "exact_current_source_commit_tree_and_all_changed_blobs",
+    "real_compiler_or_interpreter_entrypoint_negative_tests",
+    "no_output_artifact_on_all_rejected_inputs",
+    "real_positive_guest_or_explicit_unsupported_profile_rejection",
+    "material_steps_run_under_authorized_CI_or_local_compiler",
+    "independent_review_and_required_checks"
+  ],
+  "certified_backends": [],
+  "full_compiler_parity_certified": false
+}

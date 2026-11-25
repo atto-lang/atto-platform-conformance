@@ -1,0 +1,7 @@
+// expect-exit: 42
+// candidate: scalar copy!! must produce a value without allocating mutable graph
+pub fnc main(): int {
+    val a = 41;
+    val b = copy!! a;
+    return b + 1;
+}

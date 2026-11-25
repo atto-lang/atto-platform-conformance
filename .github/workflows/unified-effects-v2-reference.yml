@@ -1,0 +1,21 @@
+name: Unified effects v2 reference model (source only)
+on:
+  pull_request:
+    paths:
+      - 'contracts/v2/unified-effects-v2/**'
+      - '.github/workflows/unified-effects-v2-reference.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-free-reference:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Validate v2 effect contract (NOT GUEST EXECUTION)
+        run: |
+          python3 contracts/v2/unified-effects-v2/verify.py
+          python3 -m unittest discover -s contracts/v2/unified-effects-v2 -p 'test_*.py' -v

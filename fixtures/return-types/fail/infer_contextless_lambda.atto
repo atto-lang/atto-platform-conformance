@@ -1,0 +1,4 @@
+pub fnc main(): infer {
+    val identity = |x| -> x;
+    return 5;
+}

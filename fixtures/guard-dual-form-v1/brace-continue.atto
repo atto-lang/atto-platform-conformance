@@ -1,0 +1,5 @@
+// Same semantic behavior as keyword-continue.atto.
+pub fnc main(): int {
+  guard true { return 0; }
+  return 42;
+}

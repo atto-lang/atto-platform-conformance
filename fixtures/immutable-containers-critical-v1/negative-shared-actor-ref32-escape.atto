@@ -1,0 +1,3 @@
+pub fnc bad(local: ActorManagedRef<int>): SharedSnapshot<int> {
+  return share(local);
+}

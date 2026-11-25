@@ -1,0 +1,10 @@
+define struct Point as
+    int x;
+    int y;
+end
+pub fnc sum_point(Point p): int {
+    return p.x + p.y;
+}
+pub fnc main(): int {
+    return sum_point(infer struct { x: 2, y: 3 });
+}

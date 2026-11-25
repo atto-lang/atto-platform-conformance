@@ -1,0 +1,13 @@
+define value class Point as
+    pub final int x;
+    pub final int y;
+    constructor(int x, int y) {
+        self.x = x;
+        self.y = y;
+    }
+end
+pub fnc main(): int {
+    let Point a = Point(10, 20);
+    a = Point(20, 22);
+    return a.x + a.y;
+}

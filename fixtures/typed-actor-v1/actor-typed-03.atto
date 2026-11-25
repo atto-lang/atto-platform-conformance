@@ -1,0 +1,6 @@
+// ACTOR-TYPED-03; EXPECTED=ACCEPT; NOT_EXECUTED
+define actor NumberSink receives int as receive(ActorMail<int> m): void { return; } end
+define actor TextSink receives String as receive(ActorMail<String> m): void { return; } end
+define actor Router sends int | String as
+  on_start(): void { spawn NumberSink().send(1); spawn TextSink().send("ok"); return; }
+end

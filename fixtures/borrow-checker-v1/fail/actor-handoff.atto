@@ -1,0 +1,16 @@
+// BCV1-038 actor_handoff fail: caller-local loan cannot escape into a mailbox.
+// expect-error: E_ACTOR_LOAN_ESCAPE
+// TARGET_ONLY: rejection must come from loan/domain proof, not undefined Receiver.
+define class Payload as pub let int value = 42; end
+define actor Receiver as
+  receive(ActorMail<Payload> mail): void {
+    return;
+  }
+end
+pub fnc main(): int {
+  val sender_graph = new Payload();
+  val view = borrow! sender_graph;
+  val receiver = spawn Receiver();
+  receiver.send(view);
+  return sender_graph.value;
+}

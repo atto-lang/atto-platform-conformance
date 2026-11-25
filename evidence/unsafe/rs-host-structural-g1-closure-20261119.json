@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "contract": "atto-unsafe-blocks-v1",
+  "evidence_kind": "isolated_host_rust_source_model_only",
+  "recorded_utc": "2026-11-20T01:56:45Z",
+  "source_repository": "atto-lang/atto-source.rs",
+  "source_pr": "https://github.com/atto-lang/atto-source.rs/pull/414",
+  "source_head": "53af0a75e89cb459627938014bcab9ffe7719002",
+  "mirrored_exact_git_blob_shas": {
+    "src/lexer.rs": "a2d7bd4fe8c6e6eb3c6a49761650d53915be2388",
+    "src/diag.rs": "b9a5b982251315604e90680066bbbbfc49ab1a2a",
+    "src/unsafe_admission.rs": "ddb97253ab622dc3e08b8f26edc8840af4963c58"
+  },
+  "carrier_repository": "usa-acc/atto-ci",
+  "carrier_pr": "https://github.com/usa-acc/atto-ci/pull/3",
+  "carrier_head_sha": "d4ddc9679d1a7cb8a11ad0d7a72a379dd5895f52",
+  "carrier_workflow_run": "https://github.com/usa-acc/atto-ci/actions/runs/44657207731",
+  "carrier_run_id": 44657207731,
+  "carrier_job_id": 136026257582,
+  "rustc_version": "1.100.0 (0ef1bc386 2026-11-09)",
+  "verification": {
+    "source_git_blob_identity": "passed",
+    "focused_rust_compilation": "passed",
+    "isolated_host_structural_tests": {
+      "passed": 6,
+      "failed": 0
+    },
+    "nested_lambda_boundary": "passed",
+    "entire_atto_source_rs_compile": "not_executed",
+    "production_parser_import_integration": "not_executed",
+    "compiled_atto_guest": "not_executed",
+    "independent_backends": "not_executed"
+  },
+  "status": "host_source_model_only",
+  "restrictions": [
+    "Compiler production parser/import_link changed on source head but these modules were not part of the focused carrier crate.",
+    "Source original cfg(test) unit-test block was intentionally excluded in isolated carrier crate; six tests are a separate carrier suite.",
+    "No Atto guest Wasm module was generated; 24 conformance source cases remain not_executed across all target backends.",
+    "No unsafe raw memory operations or host grants were enabled."
+  ],
+  "supersedes_host_receipt": "evidence/unsafe/rs-host-structural-g1-20261119.json"
+}
