@@ -1,0 +1,36 @@
+name: Bounded supervisor-crash-tree model only
+on:
+  pull_request:
+    paths:
+      - 'formal/supervisor-crash-tree-v1/**'
+      - 'formal/supervisor-crash-tree-v2/**'
+      - 'formal/supervisor-data-admission-v1/**'
+      - 'formal/supervisor-admission-parity-v1/**'
+      - '.github/workflows/formal-supervisor-crash-tree-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bounded-model:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Execute bounded reference model (not backend certification)
+        shell: bash
+        run: |
+          node --version
+          test "$(git hash-object formal/supervisor-crash-tree-v1/check.mjs)" = a3ebe55f40f360346f0bce96cfdd7e4ef0319877
+          test "$(git hash-object formal/supervisor-crash-tree-v2/check.mjs)" = afb1335b7663109e1d8511cb2bc71700bc50fce4
+          node formal/supervisor-crash-tree-v1/check.mjs
+          node formal/supervisor-crash-tree-v2/check.mjs
+          test "$(git hash-object formal/supervisor-data-admission-v1/check.mjs)" = 5b1f73e8dca7f05d1dd795c41857519b08bb1d94
+          node formal/supervisor-data-admission-v1/check.mjs
+          test "$(git hash-object formal/supervisor-admission-parity-v1/manifest.json)" = 5174770dd6405b23efd911fa55886d33a532ccb3
+          test "$(git hash-object formal/supervisor-admission-parity-v1/check.mjs)" = 057d83623eeb064157755cce520dcfa6df5f871a
+          node formal/supervisor-admission-parity-v1/check.mjs
+          test "$(git hash-object formal/supervisor-admission-parity-v1/nested_supervisor_crash.trace.reference.json)" = 0d8afc0b71adfa5ee6a4bea0f20a14c8a805a6e8
+          test "$(git hash-object formal/supervisor-admission-parity-v1/check-differential-trace.mjs)" = 229991bcf81a1c371ebba69a768f537113d71af7
+          node formal/supervisor-admission-parity-v1/check-differential-trace.mjs

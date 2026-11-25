@@ -1,0 +1,133 @@
+{
+  "schema": "atto.tenant-vm-api-parity.v1",
+  "version": 1,
+  "status": "SOURCE_FREE_CROSS_BACKEND_CONTRACT_NOT_GUEST_EXECUTION",
+  "parent": "oreslang.tenant-isolation.v2",
+  "date": "2026-11-11",
+  "naming": {
+    "root": "OresVM",
+    "tenant": "TenantVM",
+    "actor": "Actor",
+    "legacy": [
+      "IsolateVM",
+      "TenantVm",
+      "tenant-isolate"
+    ],
+    "scope": "exactly one tenant incarnation with opaque generation and root authority, many actors"
+  },
+  "invariants": [
+    "one-tenant-generation-per-tenant-vm",
+    "distinct-actor-private-state-and-mailboxes",
+    "no-implicit-native-untrusted-execution",
+    "reject-foreign-actor-and-tenant-tickets",
+    "reject-reserved-dot-tenant-ids",
+    "fence-stale-tenant-generation",
+    "bound-tenant-and-host-resources",
+    "quiescence-stops-new-admission",
+    "untrusted-must-have-enforced-isolation-or-deny",
+    "source-free-or-zero-step-ci-is-not-runtime-proof",
+    "no-actor-slot-refund-before-confirmed-tenant-retirement",
+    "unconfirmed-tenant-termination-quarantines-quota-and-identity"
+  ],
+  "statuses": [
+    "TRUSTED_HOST_ONLY",
+    "WASM_SCALAR_PROTOTYPE",
+    "WORKER_TRUSTED_ONLY",
+    "UNSUPPORTED"
+  ],
+  "evidence": "PROPOSED_CHANGE_NOT_EXECUTED_ON_EXACT_GITHUB_HEAD",
+  "backends": {
+    "java": {
+      "repo": "oreslang-source.java",
+      "api": "TenantIsolateManager.open_trusted_tenant_vm",
+      "status": "TRUSTED_HOST_ONLY",
+      "source": "src/main/java/dev/oreslang/runtime/TenantIsolateManager.java",
+      "test": "src/test/java/dev/oreslang/runtime/TenantIsolateManagerTest.java"
+    },
+    "llvm": {
+      "repo": "oreslang-source.llvm",
+      "api": "OresVM::create_tenant_vm(TenantVMConfig) -> TenantVMHandle",
+      "status": "TRUSTED_HOST_ONLY",
+      "source": "src/main/cpp/oreslang/runtime/OresVM.hpp",
+      "test": "tests/native_oresvm_isolate_test.cpp"
+    },
+    "wasm": {
+      "repo": "oreslang-source.wasm",
+      "api": "TenantRegistry::admit_tenant_vm -> TenantVMHandle",
+      "status": "WASM_SCALAR_PROTOTYPE",
+      "source": "aot-host/run/src/tenant_isolation.rs",
+      "test": "aot-host/run/src/tenant_isolation.rs",
+      "experimentalMultiActorHost": {
+        "draft": "oreslang-source.wasm#478",
+        "kind": "TRUSTED_NODE_WORKER_PER_TENANT",
+        "guestSource": "tests/fixtures/tenant-vm-counter.atto",
+        "actorAbi": "pooled-actor-i64-v0",
+        "requiredGate": "npm run test:real-tenant-vm",
+        "runnerEvidence": "NOT_EXECUTED_RUNNER_ID_ZERO",
+        "status": "NOT_EXECUTED",
+        "limitations": "Host-only multi-actor TenantVM candidate; real compiled guest and Worker kill unverified at exact PR head; no untrusted isolation certificate",
+        "retirementHardening": {
+          "draft": "oreslang-source.wasm#478",
+          "sourceBlob": "5c267b87c32b9cc0ef9ae41f4c12387bc31ea2a1",
+          "workerRaceTestBlob": "dd0c584a4cee229351b0f7dc80348a2aeeef05d6",
+          "localControlledTransport": "3_PASS_OLD_LOGIC_3_FAIL",
+          "exactHeadWorkerTest": "NOT_EXECUTED",
+          "releaseRule": "quiescing or quarantined tenant retains remaining actor reservations until confirmed physical Worker.terminate receipt",
+          "failureRule": "unknown or rejected termination receipt quarantines tenant ID and host actor quota"
+        }
+      }
+    },
+    "forge": {
+      "repo": "oreslang-source.forge",
+      "api": "OresVM::create_tenant_vm -> TenantVMHandle",
+      "status": "TRUSTED_HOST_ONLY",
+      "source": "runtime/isolate.hpp",
+      "test": "verification/isolate_host_test.cpp"
+    },
+    "net": {
+      "repo": "oreslang-source.net",
+      "api": "OresVmHost.CreateTrustedTenantVm",
+      "status": "TRUSTED_HOST_ONLY",
+      "source": "runtime/Ores.Net.Runtime/OresVmHost.cs",
+      "test": "verification/Ores.Net.Tests/VmIsolateHostHardeningTests.cs"
+    },
+    "cranelift": {
+      "repo": "oreslang-source.cranelift",
+      "api": "OresVM::create_tenant_vm -> TenantVMHandle",
+      "status": "TRUSTED_HOST_ONLY",
+      "source": "src/isolate.rs",
+      "test": "src/isolate_integration_tests.rs"
+    },
+    "js": {
+      "repo": "oreslang-source.js",
+      "api": "requireSupportedTenantWorkerIsolation: deny tenant-vm",
+      "status": "WORKER_TRUSTED_ONLY",
+      "source": "src/tenant-isolation-policy.mjs",
+      "test": "tests/tenant-worker-untrusted-mode-matrix.test.mjs"
+    },
+    "rs": {
+      "repo": "oreslang-source.rs",
+      "api": "TENANT_VM_RUNTIME_SUPPORT: UNSUPPORTED",
+      "status": "UNSUPPORTED",
+      "source": "src/lib.rs",
+      "test": "src/lib.rs"
+    },
+    "hdl": {
+      "repo": "oreslang-source.hdl",
+      "api": "TENANT_VM_RUNTIME_SUPPORT: UNSUPPORTED",
+      "status": "UNSUPPORTED",
+      "source": "src/compiler.mjs",
+      "test": "tests/compiler.test.mjs"
+    }
+  },
+  "releaseGate": {
+    "untrustedTenantParity": "NOT_VERIFIED",
+    "requires": [
+      "exact-head-compiler-generated-guest-execution",
+      "real-tenant-vm-memory-isolation-and-guest-code-validation",
+      "two-tenant-multi-actor-execution-and-neighbor-survival",
+      "cpu-fuel-or-deadline-termination-and-physical-retirement",
+      "nonzero-step-ci-and-provenance-for-each-backend"
+    ]
+  }
+}

@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "contract": "guarded-match-move-v1",
+  "status": "CANDIDATE_NOT_ATTESTED",
+  "sourceRepository": "ores-truffle-oreslang/oreslang-source.java",
+  "sourceCommit": "56a5ca3a67b13388e4b7e441f10743005e8340b2",
+  "sourcePr": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2691",
+  "sourceForm": ".atto",
+  "backendTargets": [
+    "java",
+    "llvm",
+    "wasm",
+    "forge",
+    "net"
+  ],
+  "semanticBoundary": {
+    "guardFalsePath": "A matching pattern may evaluate its guard, consume an affine owner, then reject the arm. Later arms must inherit that possible MOVE.",
+    "patternSkippedPath": "A nonmatching pattern skips its guard. A join may conservatively retain the move when either path can reach the next arm.",
+    "branchBodyIsolation": "Only the successful arm executes its body; body-only MOVE may not poison a disjoint fallback, provided the earlier body exits or the join handles its continuing path.",
+    "ownershipCheck": "Compiler-owned checked AST/HIR/MIR, before executable object/IR publication, not host-only parser admission.",
+    "noThreadIdentity": "OS carrier thread identity cannot grant ownership or undo a move."
+  },
+  "cases": [
+    {
+      "id": "reject-statement-guard-move",
+      "gitBlob": "13b6a8cca706241c3bd56b456f0828ab0253d61b",
+      "expectation": "compile-reject",
+      "expectedDiagnostic": "moved",
+      "parserMustAccept": true,
+      "rejectBeforeCodegen": true,
+      "path": "tests/fixtures/ownership-match-guard-v1/reject-statement-guard-move.atto",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "reject-value-guard-move",
+      "gitBlob": "693e0bcf6d9fd4d54d9f9c92175e1bf09716d648",
+      "expectation": "compile-reject",
+      "expectedDiagnostic": "moved",
+      "parserMustAccept": true,
+      "rejectBeforeCodegen": true,
+      "path": "tests/fixtures/ownership-match-guard-v1/reject-value-guard-move.atto",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "accept-borrowed-match-guard",
+      "gitBlob": "55524f255e1adbf8f3435986f3446ae896ab7013",
+      "expectation": "compile-and-run",
+      "expectedStdout": "7",
+      "path": "tests/fixtures/ownership-match-guard-v1/accept-borrowed-match-guard.atto",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED"
+      }
+    }
+  ],
+  "mergeGate": {
+    "exactSourceHeadAndGitBlob": true,
+    "actualSemanticCompilerExecution": true,
+    "parserOnlyDoesNotPass": true,
+    "negativeNoEmittedExecutable": true,
+    "positiveGuestExecution": true,
+    "startedJobStepsNonzero": true,
+    "independentReview": true,
+    "zeroStepCountsAsEvidence": false,
+    "hostModelCountsAsBackend": false
+  },
+  "existingEvidence": {
+    "java": {
+      "workflowRunId": 42513889322,
+      "jobId": 128832575212,
+      "runnerId": 0,
+      "executedSteps": 0,
+      "status": "NOT_EXECUTED"
+    },
+    "llvm": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED"
+  },
+  "limitations": [
+    "Source blob locations are reference metadata only; no private source text is replicated into the conformance repository.",
+    "A draft Java compiler check exists in PR #2691, but no exact-head JUnit or Graal guest has executed.",
+    "Compilation, code generation, native AOT and actual guest runtime results for the other backends remain NOT_EXECUTED.",
+    "The manifest is not an executable ownership oracle and cannot authenticate CI receipts."
+  ]
+}

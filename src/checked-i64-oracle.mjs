@@ -116,6 +116,18 @@ export function evaluateCheckedI64(expr) {
   });
 }
 
+/* JSON-safe immutable arithmetic outcomes for host-only parity reports.
+ * Malformed expression shapes still throw: only arithmetic faults are values.
+ * No compiled guest execution is implied by this helper. */
+export function evaluateCheckedI64Outcome(expr) {
+  try {
+    return Object.freeze({status:'ok', decimal:evaluateCheckedI64(expr).toString(10)});
+  } catch (error) {
+    if (!(error instanceof CheckedI64ContractError)) throw error;
+    return Object.freeze({status:'error', code:error.code});
+  }
+}
+
 // Deterministic fixture integrity witness: the guest source is derived from
 // the same expression tree and cannot secretly execute a different program.
 // null means that the abstract integer-quotient op has no Oreslang mapping.

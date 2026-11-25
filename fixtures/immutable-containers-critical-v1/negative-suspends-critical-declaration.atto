@@ -1,0 +1,3 @@
+pub suspends critical fnc bad(): int {
+  return 1;
+}

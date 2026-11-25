@@ -1,51 +1,148 @@
 {
   "schemaVersion": 1,
   "contract": "oreslang.actor-service/1",
-  "backends": ["java", "llvm", "net", "wasm", "forge", "cranelift"],
+  "backends": [
+    "java",
+    "llvm",
+    "net",
+    "wasm",
+    "forge",
+    "cranelift"
+  ],
   "cases": {
-    "private-state-distinct": {"assertion": "Two same-kind actors maintain distinct mutable private state."},
-    "foreign-state-denied": {"assertion": "A foreign actor cannot read or mutate another actor's private state."},
-    "loan-conflict-denied": {"assertion": "An actor's live read loan excludes a conflicting local write."},
-    "independent-peer-progress": {"assertion": "The peer actor progresses while a different actor retains a loan or awaits."},
-    "reclaim-peer-survives": {"assertion": "Physical reclamation of A cannot affect live B; host inspection is mandatory.", "hostEvidence": true},
-    "stale-handle-denied": {"assertion": "A stale actor/region handle fails after reclamation and incarnation change."},
-    "continuation-resumes-once": {"assertion": "Repeated wakes, cancellation and stale events never reenter a completed or upgraded turn."},
-    "supervisor-control-once": {"assertion": "An actor panic emits one authenticated CONTROL notice and is never caught by guest actor code."},
-    "upgrade-rollback-safe": {"assertion": "State migration, publication and rollback do not double-deliver, lose ownership or admit stale generation events."},
-    "http-endpoint-owned": {"assertion": "One HTTP endpoint has exactly one guest owner until its terminal transition."},
-    "network-backpressure": {"assertion": "A full ingress/egress queue enforces bounded admission, cancel/deadline propagation, and no carrier-blocking I/O."},
-    "network-upgrade": {"assertion": "Requests in flight obey generation routing and cleanly drain or roll back during upgrade."},
-    "cross-tenant-effects-denied": {"assertion": "Untrusted tenant code cannot access another tenant's network, filesystem, process or credentials.", "hostEvidence": true},
-    "tenant-recycle-scrubs": {"assertion": "A worker cannot expose prior tenant heap bytes or authority after reuse.", "hostEvidence": true},
-    "hostile-tenant-contained": {"assertion": "An untrusted tenant's crash, panic or resource abuse is contained by an enforced OS boundary.", "hostEvidence": true},
-    "bounded-scheduling": {"assertion": "Execution and scheduling budgets have an independently analyzed finite upper bound.", "hostEvidence": true},
-    "overload-rejected": {"assertion": "Real-time admission rejects infeasible reservations before dispatch.", "hostEvidence": true},
-    "deadline-under-load": {"assertion": "Target hardware executes admitted workload within documented deadlines under the test envelope.", "hostEvidence": true}
+    "private-state-distinct": {
+      "assertion": "Two same-kind actors maintain distinct mutable private state."
+    },
+    "foreign-state-denied": {
+      "assertion": "A foreign actor cannot read or mutate another actor's private state."
+    },
+    "loan-conflict-denied": {
+      "assertion": "An actor's live read loan excludes a conflicting local write."
+    },
+    "independent-peer-progress": {
+      "assertion": "The peer actor progresses while a different actor retains a loan or awaits."
+    },
+    "reclaim-peer-survives": {
+      "assertion": "Physical reclamation of A cannot affect live B; host inspection is mandatory.",
+      "hostEvidence": true
+    },
+    "stale-handle-denied": {
+      "assertion": "A stale actor/region handle fails after reclamation and incarnation change."
+    },
+    "continuation-resumes-once": {
+      "assertion": "Repeated wakes, cancellation and stale events never reenter a completed or upgraded turn."
+    },
+    "supervisor-control-once": {
+      "assertion": "An actor panic emits one authenticated CONTROL notice and is never caught by guest actor code."
+    },
+    "upgrade-rollback-safe": {
+      "assertion": "State migration, publication and rollback do not double-deliver, lose ownership or admit stale generation events."
+    },
+    "http-endpoint-owned": {
+      "assertion": "One HTTP endpoint has exactly one guest owner until its terminal transition."
+    },
+    "network-backpressure": {
+      "assertion": "A full ingress/egress queue enforces bounded admission, cancel/deadline propagation, and no carrier-blocking I/O."
+    },
+    "network-upgrade": {
+      "assertion": "Requests in flight obey generation routing and cleanly drain or roll back during upgrade."
+    },
+    "cross-tenant-effects-denied": {
+      "assertion": "Untrusted tenant code cannot access another tenant's network, filesystem, process or credentials.",
+      "hostEvidence": true
+    },
+    "tenant-recycle-scrubs": {
+      "assertion": "A worker cannot expose prior tenant heap bytes or authority after reuse.",
+      "hostEvidence": true
+    },
+    "hostile-tenant-contained": {
+      "assertion": "Hostile untrusted tenant crash, panic, timeout or resource abuse is contained by a verified per-tenant TenantVM/isolate boundary inside the shared OS process, without damaging another tenant. A separate OS process is an optional stronger deployment profile, not a universal requirement.",
+      "hostEvidence": true,
+      "requiredBoundaryEvidence": [
+        "validated-and-sealed-guest-code",
+        "effective-private-heap-and-control-flow-boundary",
+        "capability-broker-denials",
+        "bounded-memory-and-host-overhead",
+        "per-tenant-interrupt-and-termination",
+        "neighbor-tenant-survival",
+        "generation-fenced-resources"
+      ],
+      "inadequateBoundaries": [
+        "logical-actor-arena-only",
+        "unchecked-native-pointer-cage",
+        "thread-only",
+        "unverified-compilation"
+      ]
+    },
+    "bounded-scheduling": {
+      "assertion": "Execution and scheduling budgets have an independently analyzed finite upper bound.",
+      "hostEvidence": true
+    },
+    "overload-rejected": {
+      "assertion": "Real-time admission rejects infeasible reservations before dispatch.",
+      "hostEvidence": true
+    },
+    "deadline-under-load": {
+      "assertion": "Target hardware executes admitted workload within documented deadlines under the test envelope.",
+      "hostEvidence": true
+    }
   },
   "profiles": {
     "actor-core": [
-      "private-state-distinct", "foreign-state-denied", "loan-conflict-denied",
-      "independent-peer-progress", "reclaim-peer-survives", "stale-handle-denied",
-      "continuation-resumes-once", "supervisor-control-once", "upgrade-rollback-safe"
+      "private-state-distinct",
+      "foreign-state-denied",
+      "loan-conflict-denied",
+      "independent-peer-progress",
+      "reclaim-peer-survives",
+      "stale-handle-denied",
+      "continuation-resumes-once",
+      "supervisor-control-once",
+      "upgrade-rollback-safe"
     ],
     "networked-service": [
-      "private-state-distinct", "foreign-state-denied", "loan-conflict-denied",
-      "independent-peer-progress", "reclaim-peer-survives", "stale-handle-denied",
-      "continuation-resumes-once", "supervisor-control-once", "upgrade-rollback-safe",
-      "http-endpoint-owned", "network-backpressure", "network-upgrade"
+      "private-state-distinct",
+      "foreign-state-denied",
+      "loan-conflict-denied",
+      "independent-peer-progress",
+      "reclaim-peer-survives",
+      "stale-handle-denied",
+      "continuation-resumes-once",
+      "supervisor-control-once",
+      "upgrade-rollback-safe",
+      "http-endpoint-owned",
+      "network-backpressure",
+      "network-upgrade"
     ],
     "protected-faas": [
-      "private-state-distinct", "foreign-state-denied", "loan-conflict-denied",
-      "independent-peer-progress", "reclaim-peer-survives", "stale-handle-denied",
-      "continuation-resumes-once", "supervisor-control-once", "upgrade-rollback-safe",
-      "http-endpoint-owned", "network-backpressure", "network-upgrade",
-      "cross-tenant-effects-denied", "tenant-recycle-scrubs", "hostile-tenant-contained"
+      "private-state-distinct",
+      "foreign-state-denied",
+      "loan-conflict-denied",
+      "independent-peer-progress",
+      "reclaim-peer-survives",
+      "stale-handle-denied",
+      "continuation-resumes-once",
+      "supervisor-control-once",
+      "upgrade-rollback-safe",
+      "http-endpoint-owned",
+      "network-backpressure",
+      "network-upgrade",
+      "cross-tenant-effects-denied",
+      "tenant-recycle-scrubs",
+      "hostile-tenant-contained"
     ],
     "hard-realtime": [
-      "private-state-distinct", "foreign-state-denied", "loan-conflict-denied",
-      "independent-peer-progress", "reclaim-peer-survives", "stale-handle-denied",
-      "continuation-resumes-once", "supervisor-control-once", "upgrade-rollback-safe",
-      "bounded-scheduling", "overload-rejected", "deadline-under-load"
+      "private-state-distinct",
+      "foreign-state-denied",
+      "loan-conflict-denied",
+      "independent-peer-progress",
+      "reclaim-peer-survives",
+      "stale-handle-denied",
+      "continuation-resumes-once",
+      "supervisor-control-once",
+      "upgrade-rollback-safe",
+      "bounded-scheduling",
+      "overload-rejected",
+      "deadline-under-load"
     ]
   }
 }

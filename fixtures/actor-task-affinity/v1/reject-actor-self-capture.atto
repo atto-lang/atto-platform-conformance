@@ -1,0 +1,11 @@
+define actor Worker as
+  let int count = 42;
+  receive(ActorMail<String> mail): void {
+    let Future<int> wrong = task {
+      return self.count;
+    };
+    return;
+  }
+end
+
+pub routine main(): void { return; }

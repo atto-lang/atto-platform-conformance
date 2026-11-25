@@ -107,14 +107,16 @@
     },
     {
       "id": "sibling-actor-survival",
-      "source": null,
+      "source": "fixtures/actor-stack-containment-v1/sibling-actor-survival.atto",
       "kind": "pending-actor-acceptance",
       "expectedFailureClass": "guest-stack-budget-exhausted",
       "requiredEvidence": [
         "compilerGuest",
         "actorSurvival",
         "supervisorRecovery"
-      ]
+      ],
+      "expectedSiblingStdout": "42",
+      "guestVerified": false
     },
     {
       "id": "defer-lock-teardown",

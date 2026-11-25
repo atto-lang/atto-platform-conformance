@@ -1,0 +1,5 @@
+// A selective module import requires an explicitly public module.
+import module http3 from "./library_public.atto";
+pub routine main(): void {
+  stdio.println(http3.version() == 3);
+}

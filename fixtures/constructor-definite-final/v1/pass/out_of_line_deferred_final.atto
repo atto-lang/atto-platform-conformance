@@ -1,0 +1,9 @@
+// expect-exit: 42
+define class Ticket as
+    pub final int id;
+    pub get_id(): int { return self.id; }
+end
+constructor (Ticket) (int initial): self {
+    self.id = initial;
+}
+pub fnc main(): int { val t = new Ticket(42); return t.get_id(); }

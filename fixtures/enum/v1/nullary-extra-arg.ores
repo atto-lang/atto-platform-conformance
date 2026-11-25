@@ -1,0 +1,6 @@
+define enum Stage as
+    Ready = 1
+end
+fnc invalid(): Stage {
+    return Stage.Ready(42);
+}

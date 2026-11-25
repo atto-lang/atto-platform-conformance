@@ -1,0 +1,43 @@
+name: Runaway guest fixture inventory (SOURCE-FREE ONLY)
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  runaway-inventory-source-free:
+    name: Verify adversarial fixture inventory (not guest parity)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Verify exact PR head and tree
+        shell: bash
+        env:
+          EXPECTED: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED"
+          printf 'EXACT_HEAD=%s\n' "$(git rev-parse HEAD)"
+          printf 'EXACT_TREE=%s\n' "$(git rev-parse 'HEAD^{tree}')"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+          check-latest: false
+      - name: Run adversarial manifest and forged-evidence negative tests (SOURCE FREE)
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --version
+          node --test tests/runaway-guest-matrix.test.mjs
+      - name: Non-promotion receipt
+        shell: bash
+        run: |
+          echo "RUNAWAY_INVENTORY_ONLY=PASS"
+          echo "COMPILER_EXECUTED=NO"
+          echo "GUEST_EXECUTED=NO"
+          echo "BACKEND_PARITY=NOT_VERIFIED"

@@ -1,0 +1,7 @@
+define class Box as pub let int value = 1; end
+pub async fnc main(): int {
+  val Box owner = new Box();
+  val borrow Box view = rt borrow owner;
+  let Future<int> child = task { return view.value; };
+  return await child;
+}

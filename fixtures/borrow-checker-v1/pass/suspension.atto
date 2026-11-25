@@ -1,0 +1,16 @@
+// BCV1-039 suspension pass: local borrow ends before await suspension.
+// expect-exit: 42
+// TARGET_ONLY: await-spawn and suspended frame proof are not generally implemented.
+define class Payload as pub let int value = 42; end
+define actor Idle as
+  receive(ActorMail<int> mail): void { return; }
+end
+pub fnc main(): int {
+  val owner = new Payload();
+  block {
+    val view = borrow! owner;
+    stdio.println(view.value);
+  }
+  val idle = await spawn Idle();
+  return owner.value;
+}

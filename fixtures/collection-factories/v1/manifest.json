@@ -1,0 +1,314 @@
+{
+  "schema": "atto.collection-of-factories.v1",
+  "contract": "contracts/v1/ATTO_CORE_COLLECTION_OF_FACTORIES_V1.md",
+  "status": "SOURCE_EXPECTATIONS_ONLY",
+  "backend_status": {
+    "java": "NOT_CERTIFIED",
+    "llvm": "NOT_CERTIFIED",
+    "wasm": "NOT_CERTIFIED",
+    "forge": "NOT_CERTIFIED",
+    "net": "NOT_CERTIFIED",
+    "cranelift": "NOT_CERTIFIED",
+    "js": "NOT_CERTIFIED",
+    "rs": "NOT_CERTIFIED",
+    "hdl": "NOT_CERTIFIED"
+  },
+  "cases": [
+    {
+      "id": "map-explicit-of",
+      "family": "map",
+      "expected": "ACCEPT",
+      "phase": "guest",
+      "source": "const m = Map.of<string,int>(\"a\" => 1, \"b\" => 2);",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "map-explicit-tilde",
+      "family": "map",
+      "expected": "REJECT",
+      "phase": "parser",
+      "source": "const m = ~map<string,int>(\"a\" => 1, \"b\" => 2);",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "map-missing-witness",
+      "family": "map",
+      "expected": "REJECT",
+      "phase": "type",
+      "source": "const m = Map.of();",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "map-mixed-separator",
+      "family": "map",
+      "expected": "REJECT",
+      "phase": "parser",
+      "source": "const m = Map.of<string,int>(\"a\":1);",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "map-duplicate-key",
+      "family": "map",
+      "expected": "REJECT",
+      "phase": "runtime",
+      "source": "const m = Map.of<string,int>(\"a\" => 1, \"a\" => 2);",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "entry-of",
+      "family": "entry",
+      "expected": "ACCEPT",
+      "phase": "guest",
+      "source": "const e = Entry.of(\"key\", true);",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "entry-tilde",
+      "family": "entry",
+      "expected": "REJECT",
+      "phase": "parser",
+      "source": "const e = ~entry(\"key\", true);",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "entry-arity",
+      "family": "entry",
+      "expected": "REJECT",
+      "phase": "parser",
+      "source": "const e = Entry.of(\"key\");",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "pair-of",
+      "family": "pair",
+      "expected": "ACCEPT",
+      "phase": "guest",
+      "source": "const p = Pair.of(4, true);",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "pair-tilde",
+      "family": "pair",
+      "expected": "REJECT",
+      "phase": "parser",
+      "source": "const p = ~pair(4, true);",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "pair-arity",
+      "family": "pair",
+      "expected": "REJECT",
+      "phase": "parser",
+      "source": "const p = Pair.of(4);",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "tuple-of",
+      "family": "tuple",
+      "expected": "ACCEPT",
+      "phase": "guest",
+      "source": "const t = Tuple.of(4, true, \"a\");",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "tuple-tilde",
+      "family": "tuple",
+      "expected": "REJECT",
+      "phase": "parser",
+      "source": "const t = ~tuple(4, true, \"a\");",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "tuple-out-of-range",
+      "family": "tuple",
+      "expected": "REJECT",
+      "phase": "type",
+      "source": "const t = Tuple.of(4, true); const x = t[2];",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "array-of",
+      "family": "array",
+      "expected": "ACCEPT",
+      "phase": "guest",
+      "source": "const a = Array.of(1, 2, 3);",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "array-tilde",
+      "family": "array",
+      "expected": "REJECT",
+      "phase": "parser",
+      "source": "const a = ~array(1, 2, 3);",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "array-wrong-witness-arity",
+      "family": "array",
+      "expected": "REJECT",
+      "phase": "type",
+      "source": "const a = Array.of<int,bool>(1, true);",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "list-of",
+      "family": "list",
+      "expected": "ACCEPT",
+      "phase": "guest",
+      "source": "const l = List.of(1, 2);",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "list-tilde",
+      "family": "list",
+      "expected": "REJECT",
+      "phase": "parser",
+      "source": "const l = ~list(1, 2);",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "list-not-map",
+      "family": "list",
+      "expected": "REJECT",
+      "phase": "type",
+      "source": "const Map<int,int> m = List.of(1, 2);",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "vector-of",
+      "family": "vector",
+      "expected": "ACCEPT",
+      "phase": "guest",
+      "source": "const v = Vector.of(1, 2);",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "vector-tilde",
+      "family": "vector",
+      "expected": "REJECT",
+      "phase": "parser",
+      "source": "const v = ~vector(1, 2);",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "vector-wrong-element",
+      "family": "vector",
+      "expected": "REJECT",
+      "phase": "type",
+      "source": "const v = Vector.of<bool>(1, 2);",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "set-of",
+      "family": "set",
+      "expected": "ACCEPT",
+      "phase": "guest",
+      "source": "const s = Set.of(1, 2);",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "set-tilde",
+      "family": "set",
+      "expected": "REJECT",
+      "phase": "parser",
+      "source": "const s = ~set(1, 2);",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "set-wrong-element",
+      "family": "set",
+      "expected": "REJECT",
+      "phase": "type",
+      "source": "const s = Set.of<int>(true);",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "record-of",
+      "family": "record",
+      "expected": "ACCEPT",
+      "phase": "guest",
+      "source": "const r = Record.of(ready: true, count: 2);",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "record-tilde",
+      "family": "record",
+      "expected": "REJECT",
+      "phase": "parser",
+      "source": "const r = ~record(ready: true, count: 2);",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "record-duplicate-field",
+      "family": "record",
+      "expected": "REJECT",
+      "phase": "parser",
+      "source": "const r = Record.of(ready: true, ready: false);",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "old-array-literal",
+      "family": "legacy",
+      "expected": "ACCEPT",
+      "phase": "guest",
+      "source": "const a = [1, 2];",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "old-tuple-literal",
+      "family": "legacy",
+      "expected": "ACCEPT",
+      "phase": "guest",
+      "source": "const t = (1, true);",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "old-tuple-braces",
+      "family": "legacy",
+      "expected": "ACCEPT",
+      "phase": "guest",
+      "source": "const t = tuple {1, true};",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "old-tuple-type",
+      "family": "legacy",
+      "expected": "ACCEPT",
+      "phase": "type",
+      "source": "const t: Tuple[int,bool] = (1, true);",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "old-fixed-array-type",
+      "family": "legacy",
+      "expected": "ACCEPT",
+      "phase": "type",
+      "source": "const x: FixedArray[2 of int] = [1, 2];",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "old-vector-shape",
+      "family": "legacy",
+      "expected": "ACCEPT",
+      "phase": "type",
+      "source": "const x: Vector[...(int,bool)] = [1, true];",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "old-array-type",
+      "family": "legacy",
+      "expected": "ACCEPT",
+      "phase": "type",
+      "source": "const a: Array[int] = [1, 2];",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "ambiguous-tilde-empty",
+      "family": "legacy",
+      "expected": "REJECT",
+      "phase": "parser",
+      "source": "const m = ~();",
+      "status": "TARGET_NOT_EXECUTED"
+    }
+  ]
+}

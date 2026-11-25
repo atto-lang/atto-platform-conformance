@@ -1,0 +1,16 @@
+// BCV1-033 pointer pass: typed region allocation/read/write/close, with fallible results.
+// expect-exit: 42
+// TARGET_ONLY: PointerError and fallible API contracts await spec #18 ratification.
+pub fnc use_pointer(): Result<int, PointerError> {
+  let cells: Pointer<int> = Pointer.alloc<int>(1)?;
+  cells.write_at(0, 42)?;
+  val n: int = cells.read_at(0)?;
+  cells.close()?;
+  return Ok(n);
+}
+pub fnc main(): int {
+  return match use_pointer() over
+    Ok(n) -> n,
+    Err(_) -> 0
+  end;
+}

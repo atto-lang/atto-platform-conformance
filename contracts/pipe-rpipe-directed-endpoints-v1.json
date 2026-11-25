@@ -1,0 +1,707 @@
+{
+  "schema_version": 1,
+  "contract": "pipe-rpipe-directed-endpoints-v1",
+  "authority": "atto-lang/atto-spec language/directed-rpipe-and-stream-capture-v1.md (draft PR #45)",
+  "evidence_status": "NOT_EXECUTED",
+  "scope": "Every compiler implements or explicitly capability-rejects typed continuous pipe/rpipe. No backend is presumed passing.",
+  "operator_edges": {
+    "pipe": "left_to_right",
+    "rpipe": "right_to_left",
+    "functional_forward": "|>",
+    "functional_reverse": "<|"
+  },
+  "endpoint_roles": {
+    "actor_source": "declared emits T",
+    "actor_sink": "declared receives T",
+    "channel": "PipeSource<T> and PipeSink<T>",
+    "readable_stream": "PipeSource<T>",
+    "stream_sink_port": "PipeSink<T>"
+  },
+  "cases": [
+    {
+      "id": "actor-forward",
+      "path": "fixtures/pipe-rpipe-v1/actor-forward.atto",
+      "expect": "accept_typechecked_graph",
+      "required_direction": "Producer->Consumer",
+      "source_git_blob_sha": "dd59abdb707d05dabac30139feb4bd03b60459d1",
+      "expected_data_edges": [
+        {
+          "source": "producer",
+          "sink": "consumer",
+          "payload": "int"
+        }
+      ],
+      "operator": "pipe",
+      "lexical_stages": [
+        "producer",
+        "consumer"
+      ]
+    },
+    {
+      "id": "actor-reverse",
+      "path": "fixtures/pipe-rpipe-v1/actor-reverse.atto",
+      "expect": "accept_typechecked_graph",
+      "required_direction": "Producer->Consumer",
+      "source_git_blob_sha": "da3d759d56aac4cfd6919521df862edb594f426f",
+      "expected_data_edges": [
+        {
+          "source": "producer",
+          "sink": "consumer",
+          "payload": "int"
+        }
+      ],
+      "operator": "rpipe",
+      "lexical_stages": [
+        "consumer",
+        "producer"
+      ]
+    },
+    {
+      "id": "actor-missing-emits",
+      "path": "fixtures/pipe-rpipe-v1/actor-missing-emits.atto",
+      "expect": "reject_source_role",
+      "error_family": "E_TYPE",
+      "source_git_blob_sha": "6755a01ce43f7ac33f64d86d43dff7c7257185ca"
+    },
+    {
+      "id": "actor-wrong-direction",
+      "path": "fixtures/pipe-rpipe-v1/actor-wrong-direction.atto",
+      "expect": "reject_source_role",
+      "error_family": "E_TYPE",
+      "source_git_blob_sha": "12ee1a935c43477213604593d73b0cecf761fead"
+    },
+    {
+      "id": "mixed-channel-stream-forward",
+      "path": "fixtures/pipe-rpipe-v1/mixed-channel-stream-forward.atto",
+      "expect": "accept_typechecked_graph",
+      "required_direction": "Producer->Channel<int>->Stream<int>->Consumer",
+      "source_git_blob_sha": "6e2528f7c4b278c0fff9671c8c5985bfbd94adb1",
+      "expected_data_edges": [
+        {
+          "source": "Producer",
+          "sink": "Channel<int>",
+          "payload": "int"
+        },
+        {
+          "source": "Channel<int>",
+          "sink": "Stream<int>",
+          "payload": "int"
+        },
+        {
+          "source": "Stream<int>",
+          "sink": "Consumer",
+          "payload": "int"
+        }
+      ],
+      "operator": "pipe",
+      "lexical_stages": [
+        "Producer",
+        "Channel<int>",
+        "Stream<int>",
+        "Consumer"
+      ]
+    },
+    {
+      "id": "mixed-channel-stream-reverse",
+      "path": "fixtures/pipe-rpipe-v1/mixed-channel-stream-reverse.atto",
+      "expect": "accept_typechecked_graph",
+      "required_direction": "Producer->Channel<int>->Stream<int>->Consumer",
+      "source_git_blob_sha": "060b61b80cfb3946a9510edd1190be6256212424",
+      "expected_data_edges": [
+        {
+          "source": "Producer",
+          "sink": "Channel<int>",
+          "payload": "int"
+        },
+        {
+          "source": "Channel<int>",
+          "sink": "Stream<int>",
+          "payload": "int"
+        },
+        {
+          "source": "Stream<int>",
+          "sink": "Consumer",
+          "payload": "int"
+        }
+      ],
+      "operator": "rpipe",
+      "lexical_stages": [
+        "Consumer",
+        "Stream<int>",
+        "Channel<int>",
+        "Producer"
+      ]
+    },
+    {
+      "id": "actor-duplicate-direction",
+      "path": "fixtures/pipe-rpipe-v1/actor-duplicate-direction.atto",
+      "expect": "reject_second_connection_if_unicast_port_occupied",
+      "required_direction": "Producer->Consumer twice, NEVER duplex",
+      "phase": "runtime_admission",
+      "source_git_blob_sha": "d738937d72c791c41d55f088eaed65a5f9ed224f"
+    },
+    {
+      "id": "actor-mixed-directions",
+      "path": "fixtures/pipe-rpipe-v1/actor-mixed-directions.atto",
+      "expect": "reject_unparenthesized_direction_mix",
+      "error_family": "E_PIPE_DIRECTION",
+      "source_git_blob_sha": "1addd9cc44879d24f7e76b2d5eb69d6837a711ab"
+    },
+    {
+      "id": "stopped-source",
+      "path": "fixtures/pipe-rpipe-v1/stopped-source.atto",
+      "expect": "reject_closed_or_stopped_port",
+      "phase": "runtime_admission",
+      "error_family": "PipeSetupError",
+      "expected_data_publication": "NONE",
+      "expected_delivery_count": 0,
+      "source_git_blob_sha": "cdfa3473793a0eed556288db06ebaa3ed8f9d4c7"
+    },
+    {
+      "id": "closed-channel",
+      "path": "fixtures/pipe-rpipe-v1/closed-channel.atto",
+      "expect": "reject_closed_or_stopped_port",
+      "phase": "runtime_admission",
+      "error_family": "PipeSetupError",
+      "expected_data_publication": "NONE",
+      "expected_delivery_count": 0,
+      "source_git_blob_sha": "523e0da79a1e373c03c1ef216259b34c0b0c0889"
+    },
+    {
+      "id": "stopped-consumer",
+      "path": "fixtures/pipe-rpipe-v1/stopped-consumer.atto",
+      "expect": "reject_closed_or_stopped_port",
+      "phase": "runtime_admission",
+      "error_family": "PipeSetupError",
+      "expected_data_publication": "NONE",
+      "expected_delivery_count": 0,
+      "source_git_blob_sha": "8896a1bf0aef74926be291ace2d86ecf852985b1"
+    },
+    {
+      "id": "stopped-actor-sink",
+      "path": "fixtures/pipe-rpipe-v1/stopped-actor-sink.atto",
+      "expect": "reject_closed_or_stopped_port",
+      "phase": "runtime_admission",
+      "error_family": "PipeSetupError",
+      "expected_data_publication": "NONE",
+      "expected_delivery_count": 0,
+      "source_git_blob_sha": "329661c81fa4bb832fcacbbff5a4fb068e1bb6dd"
+    }
+  ],
+  "backend_evidence": [
+    {
+      "repo": "atto-lang/atto-source.java",
+      "status": "NOT_EXECUTED",
+      "note": "must supply own exact-head compile and guest receipts"
+    },
+    {
+      "repo": "atto-lang/atto-source.llvm",
+      "status": "NOT_EXECUTED",
+      "note": "must supply own exact-head compile and guest receipts"
+    },
+    {
+      "repo": "atto-lang/atto-source.wasm",
+      "status": "NOT_EXECUTED",
+      "note": "must supply own exact-head compile and guest receipts"
+    },
+    {
+      "repo": "atto-lang/atto-source.rs",
+      "status": "NOT_EXECUTED",
+      "note": "must supply own exact-head compile and guest receipts"
+    },
+    {
+      "repo": "atto-lang/atto-source.net",
+      "status": "NOT_EXECUTED",
+      "note": "must supply own exact-head compile and guest receipts"
+    },
+    {
+      "repo": "atto-lang/atto-source.forge",
+      "status": "NOT_EXECUTED",
+      "note": "must supply own exact-head compile and guest receipts"
+    },
+    {
+      "repo": "atto-lang/atto-source.cranelift",
+      "status": "NOT_EXECUTED",
+      "note": "must supply own exact-head compile and guest receipts"
+    },
+    {
+      "repo": "atto-lang/atto-source.js",
+      "status": "NOT_EXECUTED",
+      "note": "must supply own exact-head compile and guest receipts"
+    },
+    {
+      "repo": "atto-lang/atto-source.atto",
+      "status": "NOT_EXECUTED",
+      "note": "self-hosted compiler not bootstrapped"
+    },
+    {
+      "repo": "atto-lang/atto-source.hdl",
+      "status": "NOT_EXECUTED",
+      "note": "hardware backend may need explicit unsupported capability profile"
+    },
+    {
+      "repo": "atto-lang/atto-source.realtime",
+      "status": "NOT_EXECUTED",
+      "note": "bootstrap-only project"
+    }
+  ],
+  "required_receipts": [
+    "backend_repo",
+    "backend_commit_sha",
+    "fixture_blob_sha",
+    "compiler_invocation",
+    "compile_diagnostic",
+    "emitted_artifact_sha_if_any",
+    "guest_executed",
+    "guest_exit_code",
+    "observed_edge_direction",
+    "item_order_and_count",
+    "backpressure_capacity_0_1_n",
+    "EOF",
+    "cancel_quiescence",
+    "ownership_release",
+    "actor_supervisor_CONTROL_isolation",
+    "CI_run_url",
+    "executed_steps_nonzero",
+    "closed_or_stopped_port_denial"
+  ],
+  "security_invariants": [
+    "no CONTROL to DATA reroute",
+    "no unchecked cross-tenant socket or mailbox capability",
+    "atomic activation and rollback",
+    "no implicit fanout or duplicated admission",
+    "bounded buffers",
+    "ownership across await and cancellation",
+    "once-only error settlement",
+    "closed or stopped source/sink ports reject before publication",
+    "one source output and one sink input owner per default unicast port; fan-in and fan-out require explicit typed adapters"
+  ],
+  "gating": "Source fixtures and manifest are not passing conformance; positive cases need compiled guest transfer and observed receipts. A backend can report TARGET_UNSUPPORTED with an explicit diagnostic, not PASS.",
+  "fixture_sha_lock_version": 1,
+  "normalization_contract": {
+    "preserve_lexical_constructor_order": true,
+    "evaluate_each_stage_once": true,
+    "directed_edges_never_supervisor_control": true,
+    "reverse_operator_does_not_imply_duplex": true,
+    "rpipe_reverses_written_stage_order_only": true
+  },
+  "compiler_workstreams": [
+    {
+      "repo": "atto-lang/atto-source.rs",
+      "pr": "https://github.com/atto-lang/atto-source.rs/pull/262",
+      "phase": "typed_parser_and_experimental_checked_result_3stage_guest_admission_with_output_input_port_rollback_fixtures_without_cancellation",
+      "guest_pipe_execution": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.java",
+      "pr": "https://github.com/atto-lang/atto-source.java/pull/54",
+      "phase": "typed_prehir_data_graph_plan",
+      "guest_pipe_execution": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.llvm",
+      "pr": "https://github.com/atto-lang/atto-source.llvm/pull/66",
+      "phase": "typed_static_plan_with_explicit_guest_gate",
+      "guest_pipe_execution": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.net",
+      "pr": "https://github.com/atto-lang/atto-source.net/pull/25",
+      "phase": "typed_static_plan_with_explicit_cil_gate",
+      "guest_pipe_execution": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.forge",
+      "pr": "https://github.com/atto-lang/atto-source.forge/pull/49",
+      "phase": "native_cpp_typed_preHIR_data_graph_plan_plus_tokenized_unsupported_guest_gate",
+      "guest_pipe_execution": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.cranelift",
+      "pr": "https://github.com/atto-lang/atto-source.cranelift/pull/51",
+      "phase": "contextual_reverse_unsupported_guest_gate",
+      "guest_pipe_execution": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.js",
+      "pr": "https://github.com/atto-lang/atto-source.js/pull/31",
+      "phase": "typed_static_plan_with_explicit_js_guest_gate",
+      "guest_pipe_execution": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.wasm",
+      "pr": "https://github.com/atto-lang/atto-source.wasm/pull/42",
+      "phase": "host_only_typed_data_plan",
+      "guest_pipe_execution": "NOT_EXECUTED"
+    }
+  ],
+  "compiler_workstreams_note": "PRs represent unmerged source work only; do not count as executed tests or guest conformance. Each backend must supply its own exact SHA and actual material CI/guest receipt.",
+  "exact_source_compiler_mirrors": [
+    {
+      "repo": "atto-lang/atto-source.rs",
+      "pr": "https://github.com/atto-lang/atto-source.rs/pull/262",
+      "case_ids": [
+        "actor-forward",
+        "actor-reverse",
+        "actor-missing-emits",
+        "actor-wrong-direction",
+        "actor-mixed-directions",
+        "actor-duplicate-direction"
+      ],
+      "admission": "typed_declared_actor_ports_and_experimental_guest_wasm",
+      "guest_execution": "NOT_EXECUTED",
+      "limitation": "Rust v2 has experimental explicit Result<PipeHandle,PipeSetupError> for bounded 3-stage actor/channel/actor; no cancel/get_done lifecycle, TenantVM generation isolation or executed guest receipts"
+    },
+    {
+      "repo": "atto-lang/atto-source.js",
+      "pr": "https://github.com/atto-lang/atto-source.js/pull/31",
+      "case_ids": [
+        "actor-forward",
+        "actor-reverse",
+        "actor-missing-emits",
+        "actor-wrong-direction",
+        "mixed-channel-stream-forward",
+        "mixed-channel-stream-reverse",
+        "actor-duplicate-direction",
+        "actor-mixed-directions",
+        "stopped-source",
+        "closed-channel",
+        "stopped-consumer",
+        "stopped-actor-sink"
+      ],
+      "admission": "exact_shared_source_explicit_unsupported_guest_diagnostic",
+      "guest_execution": "NOT_EXECUTED",
+      "limitation": "compiler must fail closed; no guest continuous transport implemented"
+    },
+    {
+      "repo": "atto-lang/atto-source.llvm",
+      "pr": "https://github.com/atto-lang/atto-source.llvm/pull/66",
+      "case_ids": [
+        "actor-forward",
+        "actor-reverse",
+        "actor-missing-emits",
+        "actor-wrong-direction",
+        "mixed-channel-stream-forward",
+        "mixed-channel-stream-reverse",
+        "actor-duplicate-direction",
+        "actor-mixed-directions",
+        "stopped-source",
+        "closed-channel",
+        "stopped-consumer",
+        "stopped-actor-sink"
+      ],
+      "admission": "exact_shared_source_explicit_unsupported_guest_diagnostic",
+      "guest_execution": "NOT_EXECUTED",
+      "limitation": "compiler must fail closed; no guest continuous transport implemented"
+    },
+    {
+      "repo": "atto-lang/atto-source.net",
+      "pr": "https://github.com/atto-lang/atto-source.net/pull/25",
+      "case_ids": [
+        "actor-forward",
+        "actor-reverse",
+        "actor-missing-emits",
+        "actor-wrong-direction",
+        "mixed-channel-stream-forward",
+        "mixed-channel-stream-reverse",
+        "actor-duplicate-direction",
+        "actor-mixed-directions",
+        "stopped-source",
+        "closed-channel",
+        "stopped-consumer",
+        "stopped-actor-sink"
+      ],
+      "admission": "exact_shared_source_explicit_unsupported_guest_diagnostic",
+      "guest_execution": "NOT_EXECUTED",
+      "limitation": "compiler must fail closed; no guest continuous transport implemented"
+    },
+    {
+      "repo": "atto-lang/atto-source.forge",
+      "pr": "https://github.com/atto-lang/atto-source.forge/pull/49",
+      "case_ids": [
+        "actor-forward",
+        "actor-reverse",
+        "actor-missing-emits",
+        "actor-wrong-direction",
+        "mixed-channel-stream-forward",
+        "mixed-channel-stream-reverse",
+        "actor-duplicate-direction",
+        "actor-mixed-directions",
+        "stopped-source",
+        "closed-channel",
+        "stopped-consumer",
+        "stopped-actor-sink"
+      ],
+      "admission": "exact_shared_source_explicit_unsupported_guest_diagnostic",
+      "guest_execution": "NOT_EXECUTED",
+      "limitation": "compiler must fail closed; no guest continuous transport implemented"
+    }
+  ],
+  "exact_source_compiler_mirrors_note": "Git blob identities of copied fixture source verified from GitHub connector, but source-only copies and no-step CI runs are not compiler successes or guest parity. LLVM, .NET, Forge and JS deny all 12 fixtures; Rust v2 has six original actor fixtures authored for compilation and one negative guest admission, while streams and checked Result/PipeSetupError remain gaps.",
+  "unicast_port_ownership": {
+    "source_output": "at_most_one_unicast_DATA_attachment",
+    "sink_input": "at_most_one_unicast_DATA_attachment",
+    "duplicate_directed_edge": "E_PIPE_DUPLICATE_EDGE",
+    "occupied_source_output": "E_PIPE_OUTPUT_OCCUPIED",
+    "occupied_sink_input": "E_PIPE_INPUT_OCCUPIED",
+    "fan_out_requires": "explicit_typed_tee_or_broadcast_adapter",
+    "fan_in_requires": "explicit_typed_merge_or_join_adapter",
+    "admission": "compiler_preflight_only_runtime_must_atomically_reserve_and_rollback"
+  },
+  "workstream_capability_notes": {
+    "atto-lang/atto-source.forge": "native C++20 typed planning passes local GCC/Clang tests with ASan/UBSan; source GitHub Actions still 0 steps; no compiled .atto pipe guest",
+    "atto-lang/atto-source.rs": "Rust experimental bounded 3-stage checked DATA guest: VERIFIED exact-tree runner PASS in opto-sync/atto-ci run 44769011619 (25 compiled Node guests, 50 Chromium browser checks, 349 conformance cases, 313 native-vs-wasm byte parity); full normative graph lifecycle/TenantVM/other-backend parity NOT_EXECUTED"
+  },
+  "rust_v2_checked_guest_preview": {
+    "repo": "atto-lang/atto-source.rs",
+    "pull_request": "https://github.com/atto-lang/atto-source.rs/pull/262",
+    "source_commit": "3facd7a174599d42080d65c267abe329dbf51c79",
+    "type": "Result<PipeHandle, PipeSetupError>",
+    "opt_in": "explicit_result_binding_annotation_only",
+    "endpoint_scope": "single_tenant_bounded_actor_channel_actor_triple",
+    "error_semantics": "Err(PipeSetupError) without trap or DATA publication before successful validation",
+    "legacy_unannotated_behavior": "Channel<T> value, panic_code_10_on_setup_failure",
+    "new_guest_fixture_ids": [
+      "219-v2-checked-actor-channel-actor-pipe",
+      "220-v2-checked-actor-channel-actor-rpipe",
+      "221-v2-checked-setup-rollback",
+      "222-v2-checked-setup-output-occupied",
+      "222-v2-checked-output-occupied-rollback",
+      "223-v2-checked-input-occupied-rollback",
+      "224-v2-checked-channel-occupied-rollback",
+      "225-v2-checked-preloaded-channel-denial"
+    ],
+    "checked_setup_compiler": "NOT_EXECUTED",
+    "checked_setup_guest": "NOT_EXECUTED",
+    "pipe_handle_methods": "NOT_IMPLEMENTED_FAIL_CLOSED",
+    "cancellation_and_guards": "NOT_IMPLEMENTED",
+    "tenant_generation_proof": "NOT_EXECUTED",
+    "binding_spec_status": "NON_NORMATIVE_EXPERIMENTAL",
+    "error_codes_v2_preview": {
+      "invalid_alias": 1,
+      "invalid_capacity": 2,
+      "closed_or_stopped": 3,
+      "source_occupied": 4,
+      "sink_occupied": 5,
+      "channel_occupied": 6,
+      "sink_has_downstream": 7,
+      "nonquiescent_channel": 8
+    },
+    "error_code_accessor": "PipeSetupError.code()",
+    "allocation_rule": "success_result_and_guest_bridge_allocated_before_atomic_DATA_publication",
+    "runner_evidence": "NOT_EXECUTED",
+    "rollback_recovery_cases": {
+      "source_output_conflict": {
+        "guest_fixture": "tests/fixtures/pass/222-v2-checked-output-occupied-rollback.atto",
+        "error_code": 4,
+        "rejected_publications": 0,
+        "unclaimed_source_channel_sink_reusable": true,
+        "expected_stdout": "40\n2\n",
+        "status": "NOT_EXECUTED",
+        "shared_fixture": "fixtures/pipe-rpipe-checked-v2/output-occupied-rollback.atto",
+        "source_git_blob_sha": "1a3bca1d24e900a5de44cfde011a4c4281558a89"
+      },
+      "sink_input_conflict": {
+        "guest_fixture": "tests/fixtures/pass/223-v2-checked-input-occupied-rollback.atto",
+        "error_code": 5,
+        "rejected_publications": 0,
+        "unclaimed_source_channel_sink_reusable": true,
+        "expected_stdout": "40\n2\n",
+        "status": "NOT_EXECUTED",
+        "shared_fixture": "fixtures/pipe-rpipe-checked-v2/input-occupied-rollback.atto",
+        "source_git_blob_sha": "cf1bb6c469851258a794f9275cd7bd817133f3f3"
+      },
+      "channel_occupied_conflict": {
+        "guest_fixture": "tests/fixtures/pass/224-v2-checked-channel-occupied-rollback.atto",
+        "shared_fixture": "fixtures/pipe-rpipe-checked-v2/channel-occupied-rollback.atto",
+        "source_git_blob_sha": "eee7cac651e9be89d98fdca15bef3f10241a8b80",
+        "error_code": 6,
+        "rejected_publications": 0,
+        "unclaimed_source_channel_sink_reusable": true,
+        "expected_stdout": "40\n2\n",
+        "status": "NOT_EXECUTED"
+      }
+    },
+    "test_coverage": "Opto-sync run 44769011619 verified experimental 3-stage Rust compiler, Node guest and Chromium subset; full normative pipe/stream/tenant conformance remains NOT_EXECUTED",
+    "rollback_recovery_scope": "experimental_fixed_3stage_actor_channel_actor_only_not_general_graph_or_TenantVM",
+    "channel_ownership_hardening": {
+      "scope": "EXPERIMENTAL_GUEST_ONLY",
+      "fail_closed_preloaded_queue": {
+        "source": "tests/fixtures/pass/225-v2-checked-preloaded-channel-denial.atto",
+        "shared": "fixtures/pipe-rpipe-checked-v2/preloaded-channel-denial.atto",
+        "sha": "9780290e56482e2d8255cd2349f43dee71342c21",
+        "error_code": 8,
+        "expected_stdout": "40\n2\n",
+        "status": "NOT_EXECUTED"
+      },
+      "claimed_public_access": [
+        {
+          "kind": "send",
+          "source": "tests/fixtures/panic/225-v2-pipe-claimed-channel-send.atto",
+          "shared": "fixtures/pipe-rpipe-checked-v2/claimed-channel-send.atto",
+          "sha": "1d8ff00900d2f88e7c8df18fd98e8614e0f98d62",
+          "panic_code": 10,
+          "status": "NOT_EXECUTED"
+        },
+        {
+          "kind": "receive",
+          "source": "tests/fixtures/panic/226-v2-pipe-claimed-channel-receive.atto",
+          "shared": "fixtures/pipe-rpipe-checked-v2/claimed-channel-receive.atto",
+          "sha": "47118a81108939fb46b700b45d9e642ae98d1030",
+          "panic_code": 10,
+          "status": "NOT_EXECUTED"
+        },
+        {
+          "kind": "close",
+          "source": "tests/fixtures/panic/227-v2-pipe-claimed-channel-close.atto",
+          "shared": "fixtures/pipe-rpipe-checked-v2/claimed-channel-close.atto",
+          "sha": "84fc85c8b63e75e3ca7d321af6d7283606918911",
+          "panic_code": 10,
+          "status": "NOT_EXECUTED"
+        }
+      ],
+      "recheck_after_suspension": "public channel send and receive revalidate claim before each retry; internal actor send must match source-owner record",
+      "guest_execution": "NOT_EXECUTED"
+    },
+    "verified_subset_receipt": "rust_v2_checked_guest_execution_receipt"
+  },
+  "alternate_ci_runner_probe_2026_11_20": {
+    "purpose": "Discover any working GitHub-hosted runner before attempting private cross-org exact-tree Atto source transfer",
+    "carrier_repo_pattern": "<org>/atto-ci",
+    "workflow": "Atto CI runner capacity probe",
+    "trigger": "temporary draft pull_request",
+    "credentials": "no secrets, no cross-org checkout, read-only GitHub token",
+    "observed_status": "NO_RUNNER_STEPS_EXECUTED",
+    "outcomes": [
+      {
+        "org": "voxletra",
+        "run_url": "https://github.com/voxletra/atto-ci/actions/runs/44765943043",
+        "run_id": 44765943043,
+        "job": "capacity",
+        "conclusion": "failure",
+        "executed_steps": 0
+      },
+      {
+        "org": "benefactor-cc",
+        "run_url": "https://github.com/benefactor-cc/atto-ci/actions/runs/44766280216",
+        "run_id": 44766280216,
+        "job": "capacity",
+        "conclusion": "failure",
+        "executed_steps": 0
+      },
+      {
+        "org": "athlet-o",
+        "run_url": "https://github.com/athlet-o/atto-ci/actions/runs/44766287011",
+        "run_id": 44766287011,
+        "job": "capacity",
+        "conclusion": "failure",
+        "executed_steps": 0
+      },
+      {
+        "org": "agent-pontifex",
+        "run_url": "https://github.com/agent-pontifex/atto-ci/actions/runs/44766294425",
+        "run_id": 44766294425,
+        "job": "capacity",
+        "conclusion": "failure",
+        "executed_steps": 0
+      },
+      {
+        "org": "scintilla-run",
+        "run_url": "https://github.com/scintilla-run/atto-ci/actions/runs/44766300320",
+        "run_id": 44766300320,
+        "job": "capacity",
+        "conclusion": "failure",
+        "executed_steps": 0
+      },
+      {
+        "org": "akrion-sim",
+        "run_url": "https://github.com/akrion-sim/atto-ci/actions/runs/44766470645",
+        "run_id": 44766470645,
+        "job": "capacity",
+        "conclusion": "failure",
+        "executed_steps": 0
+      },
+      {
+        "org": "zed-pkg-test",
+        "run_url": "https://github.com/zed-pkg-test/atto-ci/actions/runs/44766465049",
+        "run_id": 44766465049,
+        "job": "capacity",
+        "conclusion": "failure",
+        "executed_steps": 0
+      },
+      {
+        "org": "honeypot-r-us-test",
+        "run_url": "https://github.com/honeypot-r-us-test/atto-ci/actions/runs/44766457989",
+        "run_id": 44766457989,
+        "job": "capacity",
+        "conclusion": "failure",
+        "executed_steps": 0
+      }
+    ],
+    "temporary_probe_prs": "all eight closed unmerged",
+    "reason_for_failure": "UNKNOWN_FROM_ZERO_STEP_STATUS",
+    "available_budget": "NOT_PROVEN",
+    "guest_compiler_test": "NOT_EXECUTED",
+    "note": "A 0-step pre-execution failure does not prove account billing/minutes exhaustion. No actual exact-tree cross-org mirror was performed for this head."
+  },
+  "rust_v2_checked_guest_execution_receipt": {
+    "receipt_schema": "atto.experimental.pipe_guest_ci.v1",
+    "status": "PASS_EXPERIMENTAL_SUBSET",
+    "verified_at_utc": "2026-11-20T16:02:00Z",
+    "source_repo": "atto-lang/atto-source.rs",
+    "source_pr": "https://github.com/atto-lang/atto-source.rs/pull/262",
+    "source_commit": "3facd7a174599d42080d65c267abe329dbf51c79",
+    "source_git_tree": "266e87845bb1c59fa7997cc53e611a0c57789872",
+    "carrier_repo": "opto-sync/atto-ci",
+    "carrier_pr": "https://github.com/opto-sync/atto-ci/pull/1",
+    "carrier_commit": "81e490acfa2731dcc5e88eac17e455ac8163d76a",
+    "carrier_git_tree": "266e87845bb1c59fa7997cc53e611a0c57789872",
+    "exact_tree_verified": true,
+    "git_blob_count": 368,
+    "transfer_security": "token_free_private_carrier_no_cross_org_checkout_sha_verified",
+    "workflow_run_id": 44769011619,
+    "workflow_run_url": "https://github.com/opto-sync/atto-ci/actions/runs/44769011619",
+    "job_id": 136401315349,
+    "job_name": "real-compiler",
+    "job_conclusion": "success",
+    "executed_steps": 14,
+    "verification": {
+      "rust_cargo_test": "success",
+      "native_attoc_build": "success",
+      "compiled_node_wasm_guest_cases": 25,
+      "compiled_node_wasm_guest_accepted": 12,
+      "compiled_node_wasm_guest_denied": 13,
+      "wasm32_compiler_build": "success",
+      "conformance_cases_passed": 349,
+      "conformance_cases_failed": 0,
+      "native_vs_wasm_compiler_output_parity_cases": 313,
+      "chromium_browser_checks": 50,
+      "compiler_artifact_published": true,
+      "compiler_artifact_id": 14646800381,
+      "compiler_artifact_name": "atto-compiler-wasm32-81e490acfa2731dcc5e88eac17e455ac8163d76a",
+      "compiler_wasm_sha256": "db5ab8d4c2993f19995c6f3671f3beef8b4ae52918dfb93d5dbee5ac5bd7a6c1",
+      "compiler_wasm_size_bytes": 750392
+    },
+    "tested_security_guards": [
+      "claimed_channel_send",
+      "claimed_channel_receive",
+      "claimed_channel_close",
+      "claimed_channel_for_await",
+      "claimed_channel_rx_poll",
+      "closed_port_rejection",
+      "source_output_occupied",
+      "sink_input_occupied",
+      "channel_occupied",
+      "queued_data_before_attachment"
+    ],
+    "known_limitations": [
+      "only bounded 3-stage actor-channel-actor experimental guest",
+      "not general PipeHandle graph admission",
+      "no checked cancellation_or_get_done_for_PipeHandle",
+      "no TenantVM generation or cross-tenant security proof",
+      "not hard-real-time or other backend runtime parity",
+      "source branch remains draft and unmergeable"
+    ],
+    "full_backend_parity_status": "NOT_EXECUTED"
+  }
+}

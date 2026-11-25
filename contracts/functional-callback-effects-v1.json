@@ -1,0 +1,335 @@
+{
+  "schema": "attolang.functional-callback-effects.v1",
+  "status": "SOURCE_AND_HOST_ORACLE_ONLY_NOT_EXECUTED",
+  "description": "Call-site-specialized higher-order callback effects, fail-closed unknowns and trap boundaries; no Atto guest execution claimed",
+  "feature_priority": "P0",
+  "source_extension": ".atto",
+  "backends": [
+    {
+      "id": "java",
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "llvm",
+      "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "net",
+      "repository": "ores-truffle-oreslang/oreslang-source.net",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "wasm",
+      "repository": "ores-truffle-oreslang/oreslang-source.wasm",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "forge",
+      "repository": "ores-truffle-oreslang/oreslang-source.forge",
+      "status": "NOT_EXECUTED"
+    }
+  ],
+  "required_guest_evidence": [
+    "IMMUTABLE_SOURCE_AND_COMPILER_IDS",
+    "ACTUAL_ATTO_FRONTEND_TYPECHECK",
+    "ACTUAL_GUEST_EXECUTION",
+    "NEGATIVE_EFFECT_REJECTION",
+    "NONEMPTY_CI_STEPS",
+    "BACKEND_INDEPENDENT_ASSERTION"
+  ],
+  "receipts": [],
+  "cases": [
+    {
+      "id": "pure-map",
+      "root": "std::map",
+      "bindings": {
+        "transform": "app::increment"
+      },
+      "nodes": [
+        {
+          "id": "std::map",
+          "direct": [
+            "ALLOC"
+          ],
+          "allowed": [
+            "ALLOC",
+            "THROW",
+            "PANIC",
+            "RAISE",
+            "CANCELLATION"
+          ],
+          "calls": [
+            {
+              "callback": "transform"
+            }
+          ]
+        },
+        {
+          "id": "app::increment",
+          "direct": [],
+          "calls": []
+        }
+      ],
+      "expected": [
+        "ALLOC"
+      ],
+      "admitted": true
+    },
+    {
+      "id": "impure-map",
+      "root": "std::map",
+      "bindings": {
+        "transform": "app::log"
+      },
+      "nodes": [
+        {
+          "id": "std::map",
+          "direct": [
+            "ALLOC"
+          ],
+          "allowed": [
+            "ALLOC",
+            "THROW",
+            "PANIC",
+            "RAISE",
+            "CANCELLATION"
+          ],
+          "calls": [
+            {
+              "callback": "transform"
+            }
+          ]
+        },
+        {
+          "id": "app::log",
+          "direct": [
+            "IO"
+          ],
+          "calls": []
+        }
+      ],
+      "expected": [
+        "ALLOC",
+        "IO"
+      ],
+      "admitted": false
+    },
+    {
+      "id": "unbound-map",
+      "root": "std::map",
+      "bindings": {},
+      "nodes": [
+        {
+          "id": "std::map",
+          "direct": [],
+          "allowed": [
+            "ALLOC",
+            "THROW",
+            "PANIC",
+            "RAISE",
+            "CANCELLATION"
+          ],
+          "calls": [
+            {
+              "callback": "transform"
+            }
+          ]
+        }
+      ],
+      "expected": [
+        "UNKNOWN_CALL"
+      ],
+      "admitted": false
+    },
+    {
+      "id": "same-named-function-no-binding",
+      "root": "std::map",
+      "bindings": {},
+      "nodes": [
+        {
+          "id": "std::map",
+          "direct": [],
+          "allowed": [
+            "ALLOC",
+            "THROW",
+            "PANIC",
+            "RAISE",
+            "CANCELLATION"
+          ],
+          "calls": [
+            {
+              "callback": "mapper"
+            }
+          ]
+        },
+        {
+          "id": "mapper",
+          "direct": [],
+          "calls": []
+        }
+      ],
+      "expected": [
+        "UNKNOWN_CALL"
+      ],
+      "admitted": false
+    },
+    {
+      "id": "recursive-callback-io",
+      "root": "std::filter",
+      "bindings": {
+        "predicate": "app::predicate"
+      },
+      "nodes": [
+        {
+          "id": "std::filter",
+          "direct": [],
+          "allowed": [
+            "ALLOC",
+            "THROW",
+            "PANIC",
+            "RAISE",
+            "CANCELLATION"
+          ],
+          "calls": [
+            {
+              "callback": "predicate"
+            }
+          ]
+        },
+        {
+          "id": "app::predicate",
+          "direct": [],
+          "calls": [
+            {
+              "direct": "app::helper"
+            }
+          ]
+        },
+        {
+          "id": "app::helper",
+          "direct": [],
+          "calls": [
+            {
+              "direct": "app::predicate"
+            },
+            {
+              "direct": "app::io"
+            }
+          ]
+        },
+        {
+          "id": "app::io",
+          "direct": [
+            "IO"
+          ],
+          "calls": []
+        }
+      ],
+      "expected": [
+        "IO"
+      ],
+      "admitted": false
+    },
+    {
+      "id": "trap-suppresses-only-throw",
+      "root": "std::apply",
+      "bindings": {
+        "callback": "app::handled"
+      },
+      "nodes": [
+        {
+          "id": "std::apply",
+          "direct": [],
+          "allowed": [
+            "PANIC"
+          ],
+          "calls": [
+            {
+              "callback": "callback"
+            }
+          ]
+        },
+        {
+          "id": "app::handled",
+          "direct": [
+            "THROW",
+            "PANIC"
+          ],
+          "traps_throw": true,
+          "calls": []
+        }
+      ],
+      "expected": [
+        "PANIC"
+      ],
+      "admitted": true
+    },
+    {
+      "id": "unresolved-foreign-callback",
+      "root": "std::fold",
+      "bindings": {
+        "step": "foreign::unknown"
+      },
+      "nodes": [
+        {
+          "id": "std::fold",
+          "direct": [],
+          "allowed": [
+            "ALLOC"
+          ],
+          "calls": [
+            {
+              "callback": "step"
+            }
+          ]
+        }
+      ],
+      "expected": [
+        "UNKNOWN_CALL"
+      ],
+      "admitted": false
+    }
+  ],
+  "guest_fixtures": [
+    {
+      "id": "inline-option-map-pure",
+      "path": "fixtures/functional-callback-effects-v1/pure-inline.atto",
+      "git_blob": "83f65b12edb0a31e12e5008dbe08df4022a661f9",
+      "admission": "TYPECHECK_ACCEPT",
+      "guest_stdout": "42",
+      "native_execution": "NOT_EXECUTED"
+    },
+    {
+      "id": "typed-helper-unresolved-purity",
+      "path": "fixtures/functional-callback-effects-v1/unresolved-helper.atto",
+      "git_blob": "3616c2f0ef96aa6421438016c7f6dbf637ec7cae",
+      "admission": "TYPECHECK_ACCEPT",
+      "effect_analysis": "UNKNOWN_CALL",
+      "native_execution": "NOT_EXECUTED"
+    },
+    {
+      "id": "wrong-callback-result",
+      "path": "fixtures/functional-callback-effects-v1/reject-wrong-return.atto",
+      "git_blob": "d7cab9e5b303808276e6014b7f527aa90ae9e884",
+      "admission": "SEMANTIC_REJECT_NO_EXECUTABLE",
+      "native_execution": "NOT_EXECUTED"
+    },
+    {
+      "id": "value-match-pipeline",
+      "path": "fixtures/functional-callback-effects-v1/pipeline-match.atto",
+      "git_blob": "e4489268cc66aef15cd85870b2ccd2db96c898a8",
+      "admission": "TYPECHECK_ACCEPT",
+      "guest_stdout": "42\n0",
+      "native_execution": "NOT_EXECUTED"
+    },
+    {
+      "id": "nonexhaustive-option-match",
+      "path": "fixtures/functional-callback-effects-v1/reject-incomplete-match.atto",
+      "git_blob": "97c74c9df2f9320931503badc333100f72c1d0ab",
+      "admission": "SEMANTIC_REJECT_NO_EXECUTABLE",
+      "native_execution": "NOT_EXECUTED"
+    }
+  ]
+}
