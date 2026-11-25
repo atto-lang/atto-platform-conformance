@@ -9,37 +9,43 @@
       "id": "function_replacement",
       "kind": "pass",
       "path": "fixtures/parameter-rebind-v1/pass/function_replacement.atto",
-      "expected_exit": 69
+      "expected_exit": 69,
+      "source_blob_sha": "0dba2fba57aced986ef458287c378f23f386f368"
     },
     {
       "id": "method_replacement",
       "kind": "pass",
       "path": "fixtures/parameter-rebind-v1/pass/method_replacement.atto",
-      "expected_exit": 69
+      "expected_exit": 69,
+      "source_blob_sha": "c279354a4a357f34eebd40c8fec98259bd68756a"
     },
     {
       "id": "borrowed_owned_join",
       "kind": "pass",
       "path": "fixtures/parameter-rebind-v1/pass/borrowed_owned_join.atto",
-      "expected_exit": 15
+      "expected_exit": 15,
+      "source_blob_sha": "b97b308d21eb71cfd2021996cccf01271e0a4938"
     },
     {
       "id": "scalar_name_first",
       "kind": "pass",
       "path": "fixtures/parameter-rebind-v1/pass/scalar_name_first.atto",
-      "expected_exit": 23
+      "expected_exit": 23,
+      "source_blob_sha": "acd7353fb5b0d17e48dffad206210e770304a2f8"
     },
     {
       "id": "fixed_mutable_parameter",
       "kind": "fail",
       "path": "fixtures/parameter-rebind-v1/fail/fixed_mutable_parameter.atto",
-      "expected_error": "E_IMMUTABLE"
+      "expected_error": "E_IMMUTABLE",
+      "source_blob_sha": "51fe38dc73c43ed3f92067cac05040ad00211142"
     },
     {
       "id": "live_owned_reborrow",
       "kind": "fail",
       "path": "fixtures/parameter-rebind-v1/fail/live_owned_reborrow.atto",
-      "expected_error": "E_BORROW"
+      "expected_error": "E_BORROW",
+      "source_blob_sha": "b7075dba2889c9af9775236d5fb90fefe2af8ff1"
     }
   ],
   "backend_status": {
