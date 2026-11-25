@@ -372,5 +372,114 @@
       "race interleaving for cancellation, restart and commit",
       "negative test proves no partial artifact or mailbox publication"
     ]
+  },
+  "supervisor_permit_vectors": {
+    "status": "DESIGN_ONLY_NOT_EXECUTED",
+    "spec": "https://github.com/atto-lang/atto-spec/pull/228",
+    "semantics": "proposed reconciliation with Java #1531: decode credits do not confer admission; final permit issuance is logical admission, old-generation-only write",
+    "cases": [
+      {
+        "id": "fence-before-final-permit",
+        "events": [
+          "reserve-decode",
+          "decode-ok",
+          "ancestor-fence",
+          "request-final-permit"
+        ],
+        "expected": {
+          "permit": "denied",
+          "oldPublications": 0,
+          "newPublications": 0,
+          "creditsAfterExit": "restored"
+        }
+      },
+      {
+        "id": "permit-before-fence-write-wins",
+        "events": [
+          "reserve-decode",
+          "decode-ok",
+          "final-permit-issued",
+          "ancestor-fence",
+          "old-mailbox-write-success",
+          "settle-commit",
+          "drain-old-incarnation"
+        ],
+        "expected": {
+          "permit": "issued-pre-fence",
+          "oldPublications": 1,
+          "newPublications": 0,
+          "outstandingPermits": 0,
+          "creditsAfterExit": "restored"
+        }
+      },
+      {
+        "id": "permit-before-fence-write-loses",
+        "events": [
+          "reserve-decode",
+          "decode-ok",
+          "final-permit-issued",
+          "ancestor-fence",
+          "old-mailbox-closed",
+          "settle-abort"
+        ],
+        "expected": {
+          "oldPublications": 0,
+          "newPublications": 0,
+          "outstandingPermits": 0,
+          "creditsAfterExit": "restored"
+        }
+      },
+      {
+        "id": "cancel-active-decoder",
+        "events": [
+          "reserve-decode",
+          "decode-start",
+          "cancel",
+          "inspect-budget",
+          "decode-exit",
+          "rollback"
+        ],
+        "expected": {
+          "creditsBeforeExit": "held",
+          "creditsAfterExit": "restored",
+          "oldPublications": 0,
+          "newPublications": 0
+        }
+      },
+      {
+        "id": "restart-with-unsettled-permit",
+        "events": [
+          "final-permit-issued",
+          "ancestor-fence",
+          "attempt-restart",
+          "settle-abort",
+          "physical-release",
+          "attempt-restart"
+        ],
+        "expected": {
+          "firstRestart": "denied",
+          "secondRestart": "eligible-subject-to-policy",
+          "newPublications": 0
+        }
+      },
+      {
+        "id": "shared-runtime-quota",
+        "events": [
+          "endpoint-a-reserve-exact-runtime-budget",
+          "endpoint-b-reserve",
+          "endpoint-a-exit",
+          "endpoint-b-retry"
+        ],
+        "expected": {
+          "secondReservation": "denied",
+          "retry": "eligible-subject-to-endpoint-policy",
+          "creditsNeverNegative": true
+        }
+      }
+    ],
+    "notes": [
+      "Old transactional commit vectors assume no outstanding pre-fence permit. Do not reinterpret old-generation acceptance as delivery.",
+      "Physical release, real mailbox/tenant accounting and actual concurrent compiler/runtime tests required."
+    ]
   }
 }
