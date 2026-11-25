@@ -1,0 +1,14 @@
+define struct Particle {
+    x: int;
+    y: int;
+    velocity: int;
+}
+
+fnc reject_alias() -> int {
+    let values: Array<Particle, layout=soa> = [
+        Particle(x=1, y=2, velocity=3)
+    ];
+    let first = rt borrow mut values[0].x;
+    let second = rt borrow mut values.columns.x[0];
+    return first + second;
+}

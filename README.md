@@ -260,3 +260,7 @@ The [host-interop-v0 contract](contracts/host-interop-v0/README.md) pins six `.a
 ## Slice and spread candidate contract (Rust-only reference checks)
 
 The [33 proposed collection test vectors](contracts/collection-slice-spread-v1.json) and [Rust semantic-model tests](tests/collection_slice_spread_contract.rs) describe checked indexes, half-open/negative-step slices, Unicode scalar positions, spread and ownership errors. The `collection-slice-spread-contract.yml` workflow uses **Rust**, not Python, for these checks. Every vector and backend is marked `NOT_EXECUTED`: reference-model tests are **not** a compiled AttoLang guest and do not prove cross-backend support.
+
+## Collection layout v1 target fixtures
+
+[`contracts/collection-layout-v1/`](contracts/collection-layout-v1/README.md) defines proposed AoS, SoA and AoSoA named-generic Array fixtures. All backend statuses are **NOT_EXECUTED** until exact-source actual guest tests; the dedicated Node test is registry-only and cannot promote support.
