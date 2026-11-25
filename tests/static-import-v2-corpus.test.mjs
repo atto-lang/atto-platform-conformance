@@ -6,12 +6,12 @@ const doc = JSON.parse(readFileSync(new URL('../fixtures/import-v2/cases.json', 
 test('v2 corpus is explicit about evidence level and stage counts', () => {
   assert.equal(doc.schema, 'atto.static-import-v2.corpus.v1');
   assert.equal(doc.status, 'CORPUS_ONLY_NOT_BACKEND_EXECUTION');
-  assert.equal(doc.cases.length, 189);
-  assert.equal(new Set(doc.cases.map(c => c.id)).size, 189);
-  assert.equal(new Set(doc.cases.map(c => [c.stage,c.source,c.reference ?? ''].join('\\0'))).size, 189);
+  assert.equal(doc.cases.length, 199);
+  assert.equal(new Set(doc.cases.map(c => c.id)).size, 199);
+  assert.equal(new Set(doc.cases.map(c => [c.stage,c.source,c.reference ?? '',c.currentNamespace ?? ''].join('\\0'))).size, 199);
   assert.equal(doc.cases.filter(c => c.stage === 'guest').length, 45);
   assert.equal(doc.cases.filter(c => c.stage === 'typed-bindings').length, 62);
-  assert.equal(doc.cases.filter(c => c.stage === 'resolution').length, 82);
+  assert.equal(doc.cases.filter(c => c.stage === 'resolution').length, 92);
 });
 test('mixed delimiter permutations share one ordered binding expectation', () => {
   const cases = doc.cases.filter(c => c.id.startsWith('mixed-permutation-'));
@@ -57,5 +57,15 @@ test('both alias spellings have real guest and cycle diagnostic expectations', (
 
 test('recursive tree and contextual root expansion adds 23 resolution targets', () => {
   assert.equal(doc.cases.filter(c => c.id.startsWith('tree-v2-')).length,14);
-  assert.equal(doc.cases.filter(c => c.id.startsWith('context-')).length,9);
+  assert.equal(doc.cases.filter(c => c.id.startsWith('context-')).length,19);
+});
+
+test('malformed context metadata cannot be erased by parent traversal', () => {
+  const cases=doc.cases.filter(c=>c.id.startsWith('context-hardening-'));
+  assert.equal(cases.length,10);
+  for(const c of cases) {
+    assert.equal(c.adapterInput,'contextual-resolver');
+    assert.equal(c.expect.code,'E_IMPORT_PATH');
+    assert.equal(c.expect.atomic,true);
+  }
 });
