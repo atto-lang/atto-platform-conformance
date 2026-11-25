@@ -1,0 +1,104 @@
+name: Atto ownership receipt structural tests (NON-PROMOTING)
+on:
+  push:
+    branches:
+      - 'audit/atto-ownership-conformance-syntax-*'
+      - 'audit/atto-ownership-proof-vs-shape-*'
+      - 'audit/ownership-mir-place-flow-v1-*'
+      - 'audit/ownership-place-50case-conformance-*'
+      - 'audit/ownership-root-disjoint-proof-*'
+  pull_request:
+    paths:
+      - 'contracts/rt-ownership-admission-v1.json'
+      - 'src/rt-ownership-admission-v1.mjs'
+      - 'tests/rt-ownership-admission-v1.test.mjs'
+      - 'src/ownership-place-cfg-v1.mjs'
+      - 'tests/ownership-place-cfg-v1.test.mjs'
+      - 'src/ownership-runner-provenance-v1.mjs'
+      - 'tests/ownership-runner-provenance-v1.test.mjs'
+      - 'bin/verify-ownership-runner-v1.mjs'
+      - 'tests/ownership-runner-cli-v1.test.mjs'
+      - 'tests/ownership-place-50case-matrix-v1.test.mjs'
+      - 'tests/ownership-root-provenance-v1.test.mjs'
+      - '.github/workflows/rt-ownership-v1-source-evidence.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ownership-receipt-shape:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - name: Checkout immutable source commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Check exact source identity and contract hashes
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+          echo "ATTO_OWNERSHIP_CONTRACT_HEAD=$(git rev-parse HEAD)"
+          echo "ATTO_OWNERSHIP_CONTRACT_TREE=$(git rev-parse 'HEAD^{tree}')"
+          sha256sum contracts/rt-ownership-admission-v1.json \
+            src/rt-ownership-admission-v1.mjs \
+            tests/rt-ownership-admission-v1.test.mjs \
+            src/ownership-place-cfg-v1.mjs \
+            tests/ownership-place-cfg-v1.test.mjs \
+            src/ownership-runner-provenance-v1.mjs \
+            tests/ownership-runner-provenance-v1.test.mjs \
+            bin/verify-ownership-runner-v1.mjs \
+            tests/ownership-runner-cli-v1.test.mjs \
+            tests/ownership-place-50case-matrix-v1.test.mjs \
+            tests/ownership-root-provenance-v1.test.mjs
+      - name: Execute source-only receipt validation and adversarial tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --version
+          node --check src/ownership-place-cfg-v1.mjs
+          node --check src/ownership-runner-provenance-v1.mjs
+          node --check bin/verify-ownership-runner-v1.mjs
+          node --test --test-reporter=tap \
+            tests/rt-ownership-admission-v1.test.mjs | tee /tmp/atto-ownership-receipt-tests.tap
+          grep -Eq '^# tests 10$' /tmp/atto-ownership-receipt-tests.tap
+          grep -Eq '^# pass 10$' /tmp/atto-ownership-receipt-tests.tap
+          grep -Eq '^# fail 0$' /tmp/atto-ownership-receipt-tests.tap
+          node --test --test-reporter=tap \
+            tests/ownership-place-cfg-v1.test.mjs | tee /tmp/atto-ownership-place-cfg-tests.tap
+          grep -Eq '^# tests 13$' /tmp/atto-ownership-place-cfg-tests.tap
+          grep -Eq '^# pass 13$' /tmp/atto-ownership-place-cfg-tests.tap
+          grep -Eq '^# fail 0$' /tmp/atto-ownership-place-cfg-tests.tap
+          echo "ATTO_OWNERSHIP_PLACE_MODEL=CANDIDATE_UNATTESTED"
+          node --test --test-reporter=tap \
+            tests/ownership-runner-provenance-v1.test.mjs | tee /tmp/atto-runner-provenance-v1.tap
+          grep -Eq '^# tests 10$' /tmp/atto-runner-provenance-v1.tap
+          grep -Eq '^# pass 10$' /tmp/atto-runner-provenance-v1.tap
+          grep -Eq '^# fail 0$' /tmp/atto-runner-provenance-v1.tap
+          echo "ATTO_OWNERSHIP_RUNNER_MODEL=SOURCE_FREE_ONLY"
+          node --test --test-reporter=tap \
+            tests/ownership-runner-cli-v1.test.mjs | tee /tmp/atto-runner-cli-v1.tap
+          grep -Eq '^# tests 1$' /tmp/atto-runner-cli-v1.tap
+          grep -Eq '^# pass 1$' /tmp/atto-runner-cli-v1.tap
+          grep -Eq '^# fail 0$' /tmp/atto-runner-cli-v1.tap
+          node --test --test-reporter=tap \
+            tests/ownership-place-50case-matrix-v1.test.mjs | tee /tmp/atto-ownership-place-matrix-v1.tap
+          grep -Eq '^# tests 25$' /tmp/atto-ownership-place-matrix-v1.tap
+          grep -Eq '^# pass 25$' /tmp/atto-ownership-place-matrix-v1.tap
+          grep -Eq '^# fail 0$' /tmp/atto-ownership-place-matrix-v1.tap
+          node --test --test-reporter=tap \
+            tests/ownership-root-provenance-v1.test.mjs | tee /tmp/atto-ownership-root-v1.tap
+          grep -Eq '^# tests 23$' /tmp/atto-ownership-root-v1.tap
+          grep -Eq '^# pass 23$' /tmp/atto-ownership-root-v1.tap
+          grep -Eq '^# fail 0$' /tmp/atto-ownership-root-v1.tap
+          echo "ATTO_OWNERSHIP_ROOT_MODEL=CANDIDATE_UNATTESTED"
+          echo "ATTO_OWNERSHIP_PLACE_MATRIX=HOST_REFERENCE_ONLY"
+          echo "ATTO_OWNERSHIP_GUEST_VERIFICATION=NOT_EXECUTED"
+          echo "ATTO_OWNERSHIP_RECEIPT_SHAPE=SOURCE_FREE_ONLY"
+          echo "ATTO_OWNERSHIP_GUEST_PARITY=NOT_EXECUTED"
