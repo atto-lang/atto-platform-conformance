@@ -68,7 +68,7 @@ test("every exact Git blob is accounted for and rooted under the project", async
     await checked_bytes(name);
   }
   const entries = new Set(corpus.cases.map(c => c.entry));
-  assert.equal(entries.size, 8);
+  assert.equal(entries.size, 17);
   assert.deepEqual(
     new Set(Object.keys(corpus.source_blobs)),
     new Set([".ores.pkg.toml", "src/lib/helpers.atto", ...entries])
