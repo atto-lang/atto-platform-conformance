@@ -1,0 +1,87 @@
+{
+  "contract": "actor-data-decode-progress-v1",
+  "status": "HOST_BASELINE_EXECUTED_NEW_STACK_PENDING",
+  "java": "https://github.com/atto-lang/atto-source.java/pull/1817",
+  "protobuf": "https://github.com/atto-lang/atto-serialization-and-validation/pull/37",
+  "cases": [
+    {
+      "id": "reserve_decoded_before_accept",
+      "expect": "reserve wire and worst-case decoded credits before consuming authenticated sequence; release both on rejection"
+    },
+    {
+      "id": "saturated_wire",
+      "expect": "second frame backpressured, already-admitted frame decodes without requesting additional retained credits"
+    },
+    {
+      "id": "impossible_budget",
+      "expect": "reject typed route setup if one configured frame plus decoded reservation cannot fit"
+    },
+    {
+      "id": "retry",
+      "expect": "retry same second frame after decoded credit closes; sequence remains correct"
+    },
+    {
+      "id": "protobuf_exact",
+      "wire": [
+        10,
+        0,
+        18,
+        0
+      ],
+      "logical_bytes": 448,
+      "work": 14,
+      "expect": "accept two fields"
+    },
+    {
+      "id": "protobuf_allocation",
+      "logical_bytes": 447,
+      "work": 14,
+      "expect": "reject"
+    },
+    {
+      "id": "protobuf_work",
+      "logical_bytes": 448,
+      "work": 13,
+      "expect": "reject"
+    }
+  ],
+  "host_receipts": [
+    {
+      "backend": "java",
+      "head": "6df43e248012e2ab415850947a308e931544d070",
+      "tree": "d0d385ed5e45a53606108cbd4e3c720ca1c6b4aa",
+      "run": 45533719244,
+      "result": "44 JUnit passed; 5346 golden/negative assertions; 4096 contention attempts"
+    },
+    {
+      "backend": "llvm",
+      "head": "e81be2f876e2c222733365985d87832a30dedb69",
+      "run": 45519713011,
+      "result": "policy and decoder ASan/UBSan passed"
+    },
+    {
+      "backend": "net",
+      "head": "edab8d985473e54d2e5c90f42f729b72c4768549",
+      "run": 45519045573,
+      "result": "managed and NativeAOT host passed"
+    },
+    {
+      "backend": "wasm",
+      "head": "2d7ab6084cb6971402749e9f2fd496f045dd155f",
+      "run": 45519049037,
+      "result": "3 worker host tests passed"
+    },
+    {
+      "backend": "rust",
+      "head": "7ba1e26bbdb05eebfc7b7fa3a9859958947c18c8",
+      "run": 45520088341,
+      "result": "8 mailbox credit tests passed"
+    }
+  ],
+  "guest_status": "NOT_EXECUTED",
+  "notes": [
+    "Logical budgets are not physical heap measurement.",
+    "Protobuf flat reader only; nested typed decode needs a shared recursive meter.",
+    "No production mailbox publication or escrow proof."
+  ]
+}
