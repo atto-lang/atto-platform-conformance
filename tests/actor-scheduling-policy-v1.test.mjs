@@ -911,3 +911,40 @@ test("two await oracle detects reused physical lease", () => {
 test("producer oracle detects cancellation minting admission", () => {
   assert.throws(() => verifyTwoAwaitFrame(false, true));
 });
+
+
+// Source-free contract model: trap applies to the awaited outcome, not
+// the scheduler's admission/retirement machinery or nonordinary effects.
+function verifyTrappedAwait(catchAll = false, replaceError = false) {
+  const original = {name: 'Error', payload: 'original'};
+  const trap = outcome => {
+    if (outcome.kind === 'ok') return {ok: true, value: outcome.value};
+    if (outcome.kind === 'throw')
+      return {ok: false, error: replaceError ? {...outcome.error} : outcome.error};
+    if (outcome.kind === 'overflow')
+      return {ok: false, error: {name: 'ArithmeticOverflowError'}};
+    if (outcome.kind === 'zero')
+      return {ok: false, error: {name: 'DivisionByZeroError'}};
+    if (catchAll) return {ok: false, error: outcome};
+    throw outcome;
+  };
+  assert.deepEqual(trap({kind: 'ok', value: 42}), {ok: true, value: 42});
+  assert.equal(trap({kind: 'throw', error: original}).error, original);
+  assert.equal(trap({kind: 'overflow'}).error.name, 'ArithmeticOverflowError');
+  assert.equal(trap({kind: 'zero'}).error.name, 'DivisionByZeroError');
+  for (const kind of ['panic', 'raise', 'cancel', 'host-fault']) {
+    const signal = {kind};
+    let escaped = null;
+    try { trap(signal); } catch (error) { escaped = error; }
+    assert.equal(escaped, signal);
+  }
+}
+test("trapped await preserves nominal ordinary errors and distinct escape effects", () => {
+  verifyTrappedAwait();
+});
+test("trapped await oracle detects overbroad catch", () => {
+  assert.throws(() => verifyTrappedAwait(true));
+});
+test("trapped await oracle detects replacement of original Error identity", () => {
+  assert.throws(() => verifyTrappedAwait(false, true));
+});
