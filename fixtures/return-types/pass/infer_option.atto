@@ -1,0 +1,1 @@
+pub fnc run(): infer { return Some(5); } pub fnc main(): int { return 5; }

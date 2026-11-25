@@ -1,0 +1,8 @@
+define class Base as
+    pub final int id: 1;
+end
+define value class Bad extends Base as
+    pub final int n;
+    constructor(int n) { self.n = n; }
+end
+pub fnc main(): int { return 0; }

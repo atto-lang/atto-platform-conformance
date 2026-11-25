@@ -1,0 +1,8 @@
+// Strict canonical AttoLang profile: legacy == must not be accepted as eq.
+// Gate is DEFERRED until legacy frontend/fixture migration; no executable expected.
+pub fnc main(): int {
+  if 10 == 10 then
+    return 1;
+  fi
+  return 42;
+}

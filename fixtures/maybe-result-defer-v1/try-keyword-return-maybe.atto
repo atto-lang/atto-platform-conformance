@@ -1,0 +1,16 @@
+// CANDIDATE SOURCE — source-free/NOT_EXECUTED; helper functions supplied by guest harness.
+// The inner maybe END closes before the outer try END; an early return runs finally.
+define pub fnc return_maybe_inside_try(int id) -> Result[int, Error] as
+  try
+    return maybe
+      Ok(value) ?= fetch_value(id);
+      Ok(value)
+    else
+      Err(reason) -> { Err(reason) };
+    end;
+  catch (Error e)
+    return Err(e);
+  finally
+    log("outer-finally");
+  end
+end

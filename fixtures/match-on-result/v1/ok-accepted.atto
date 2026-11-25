@@ -1,0 +1,9 @@
+// expect-exit: 42
+// match-on-result-v1: positive; native Wasm/LLVM guest NOT_EXECUTED
+fnc admission(): Result<int,string> { return Ok(42); }
+pub fnc main(): int {
+  return match admission() over
+    on Ok(ack) -> { return ack; }
+    on Err(err) -> { return 1; }
+  end;
+}

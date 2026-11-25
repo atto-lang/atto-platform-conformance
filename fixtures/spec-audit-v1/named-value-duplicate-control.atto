@@ -1,0 +1,7 @@
+// Paired to named-generic-call-v1/value-duplicate.atto. Only the repeated label changes.
+fnc combine(int a, int b) -> int ::
+  return a + b
+end
+fnc main() -> int ::
+  return combine(a: 1, b: 2)
+end

@@ -1,0 +1,8 @@
+define class Cell as
+    pub final int data: 1;
+end
+define value class Bad as
+    pub final Cell cell;
+    constructor(Cell cell) { self.cell = cell; }
+end
+pub fnc main(): int { return 0; }

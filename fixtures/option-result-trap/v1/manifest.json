@@ -1,0 +1,102 @@
+{
+  "schema": "oreslang.option-result-trap.fixtures/v1",
+  "status": "authored_not_executed",
+  "normative_contract": "ores-truffle-oreslang/oreslang-source.java:docs/TRAP.md",
+  "backends": [
+    "java",
+    "llvm",
+    "wasm",
+    "cranelift",
+    "net"
+  ],
+  "claim_policy": "No source-only or zero-step execution may be counted as guest parity.",
+  "cases": [
+    {
+      "id": "ORT-POS-01",
+      "path": "fixtures/option-result-trap/v1/positive.ores",
+      "kind": "guest_stdout",
+      "expected_stdout": "ORT1:11111111111111111111111111111:END",
+      "assertion_count": 29,
+      "assertions": [
+        "option_some_tag",
+        "option_some_payload",
+        "option_none_tag",
+        "option_none_fallback",
+        "option_some_false",
+        "option_some_false_payload",
+        "option_some_zero",
+        "option_some_zero_payload",
+        "nested_outer_none",
+        "nested_some_none_outer",
+        "nested_some_none_inner",
+        "nested_some_some_outer",
+        "nested_some_some_inner",
+        "result_ok_tag",
+        "result_ok_payload",
+        "result_err_tag",
+        "result_err_fallback",
+        "result_nested_outer",
+        "result_nested_inner",
+        "trap_success_tag",
+        "trap_success_payload",
+        "trap_option_absent_outer",
+        "trap_option_absent_inner",
+        "trap_option_present",
+        "trap_void_success",
+        "trap_result_err_is_some",
+        "trap_result_err_remains_err",
+        "trap_cast_fail_is_none",
+        "trap_cast_success_is_some"
+      ]
+    },
+    {
+      "id": "ORT-PANIC-01",
+      "path": "fixtures/option-result-trap/v1/panic_bypasses_trap.ores",
+      "kind": "guest_panic",
+      "forbidden_stdout": "UNREACHABLE",
+      "expected_diagnostic_contains": "Option::unwrap"
+    },
+    {
+      "id": "ORT-NEG-01",
+      "path": "fixtures/option-result-trap/v1/negative/option_is_not_result.ores",
+      "kind": "compile_reject",
+      "must_not_launch_guest": true
+    },
+    {
+      "id": "ORT-NEG-02",
+      "path": "fixtures/option-result-trap/v1/negative/result_is_not_option.ores",
+      "kind": "compile_reject",
+      "must_not_launch_guest": true
+    },
+    {
+      "id": "ORT-NEG-03",
+      "path": "fixtures/option-result-trap/v1/negative/result_needs_error_type.ores",
+      "kind": "compile_reject",
+      "must_not_launch_guest": true
+    },
+    {
+      "id": "ORT-NEG-04",
+      "path": "fixtures/option-result-trap/v1/negative/option_not_implicitly_unwrapped.ores",
+      "kind": "compile_reject",
+      "must_not_launch_guest": true
+    },
+    {
+      "id": "ORT-NEG-05",
+      "path": "fixtures/option-result-trap/v1/negative/result_not_implicitly_unwrapped.ores",
+      "kind": "compile_reject",
+      "must_not_launch_guest": true
+    },
+    {
+      "id": "ORT-NEG-06",
+      "path": "fixtures/option-result-trap/v1/negative/trap_return_not_unwrapped.ores",
+      "kind": "compile_reject",
+      "must_not_launch_guest": true
+    },
+    {
+      "id": "ORT-NEG-07",
+      "path": "fixtures/option-result-trap/v1/negative/trap_nested_not_flattened.ores",
+      "kind": "compile_reject",
+      "must_not_launch_guest": true
+    }
+  ]
+}

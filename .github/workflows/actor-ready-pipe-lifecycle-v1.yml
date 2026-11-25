@@ -1,0 +1,22 @@
+name: Actor READY pipe lifecycle source contract
+on:
+  pull_request:
+    paths:
+      - 'fixtures/actor-ready-pipe-v1/**'
+      - 'contracts/actor-ready-pipe-lifecycle-v1.json'
+      - 'src/actor-ready-pipe-oracle-v1.mjs'
+      - 'tests/actor-ready-pipe-lifecycle-v1.test.mjs'
+      - '.github/workflows/actor-ready-pipe-lifecycle-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-only:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run source-integrity and host-only lifecycle oracle (NOT compiler/guest)
+        run: node --test tests/actor-ready-pipe-lifecycle-v1.test.mjs

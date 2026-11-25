@@ -1,0 +1,7 @@
+// Future positive guest target. Java #2991 currently parses but rejects type-checking.
+pub fnc main(): int {
+  using telemetry.span("checkout") as span {
+    span.attribute("operation", "checkout");
+    return 7;
+  }
+}

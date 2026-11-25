@@ -29,7 +29,8 @@
       "actor_unhandled_throw": "raise",
       "actor_unhandled_raise": "panic",
       "actor_panic": "supervisor_control"
-    }
+    },
+    "trap_forbids_scope": "trap-declared function with an UNCAUGHT ordinary throw; NOT the trap expression, which may catch a declared throwing callee."
   },
   "operations": {
     "state.read": [
@@ -270,5 +271,7 @@
       ],
       "expect": "reject"
     }
-  ]
+  ],
+  "status": "LEGACY_EFFECT_MODEL_CANONICAL_TRAP_EXPRESSION_IN_V2",
+  "canonical_trap_contract": "contracts/v2/trap-result-v2.json"
 }

@@ -1,0 +1,4 @@
+// expect-exit: 0
+// return-first syntax variant void_fnc_return_first_begin; compiled guest proof still pending
+fnc void <- reset() begin  end
+pub fnc main() -> int { reset(); return 0; }

@@ -1,0 +1,8 @@
+// MUST REJECT: nominal class fields cannot launder a function or bound method
+// into Channel<T>. This does not by itself certify method-value syntax.
+define class HandlerBox as
+  val Fnc<int, int> callback;
+end
+fnc bad(Channel<HandlerBox> values): void {
+  return;
+}

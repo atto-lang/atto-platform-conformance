@@ -85,3 +85,28 @@ test('GitHub evidence timestamps must be canonical UTC and calendar-valid',()=>{
   assert.equal(crossCheckParityReceiptEvidence(v.receipt,v.evidence).publicly_promotable,false);
  }
 });
+
+test('reject a successful job with an additional pending or running step',()=>{
+ for(const status of ['pending','queued','in_progress']){
+  const v=good();
+  v.evidence.job.steps.push({number:3,name:'Run unexecuted guest',status,conclusion:null});
+  assert.throws(()=>crossCheckParityReceiptEvidence(v.receipt,v.evidence),
+    /unfinished step in completed job/,status);
+ }
+ const v=good();
+ v.evidence.job.steps.push({number:3,name:'Optional cleanup',status:'completed',conclusion:'skipped'});
+ assert.equal(crossCheckParityReceiptEvidence(v.receipt,v.evidence).publicly_promotable,false);
+});
+
+test('job step evidence requires consecutive ordered numbers and inert labels',()=>{
+ const baseline=good();assert.equal(crossCheckParityReceiptEvidence(baseline.receipt,baseline.evidence).publicly_promotable,false);
+ for(const numbers of [[1,3],[2,3],[2,1]]){
+  const v=good();
+  v.evidence.job.steps.forEach((s,i)=>{s.number=numbers[i]});
+  assert.throws(()=>crossCheckParityReceiptEvidence(v.receipt,v.evidence),/discontinuous job step sequence/);
+ }
+ for(const label of ['Run guest\u202ePASS','Run guest\u0085PASS','Run guest\nPASS','\u001b[32mPASS']){
+  const v=good();v.evidence.job.steps[1].name=label;
+  assert.throws(()=>crossCheckParityReceiptEvidence(v.receipt,v.evidence),/unsafe job step name/);
+ }
+});

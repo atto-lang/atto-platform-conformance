@@ -1,0 +1,262 @@
+{
+  "schema": "atto.implicit-argument-borrow.v1",
+  "version": 1,
+  "status": "TARGET_NOT_EXECUTED",
+  "spec_pr": "https://github.com/atto-lang/atto-spec/pull/89",
+  "language_spec_pr": "https://github.com/ores-truffle-oreslang/attolang-language-spec.md/pull/80",
+  "existing_partial_compiler_pr": "https://github.com/atto-lang/atto-source.rs/pull/332",
+  "semantics": {
+    "plain_nonprimitive_formal": "default nonowning borrow, no implicit move or share",
+    "read_call": "read(foo) ~ read(borrow! foo) under equal verified provenance",
+    "write_call": "write(mut foo) requires sealed mutable param effect and exclusive permission",
+    "ambiguous": "require explicit borrow! and verified provenance or reject, no guest",
+    "call_order": "single evaluation in lexical source order; overlapping loans across later argument evaluation",
+    "breakage": "old implicitly consuming class formals require an explicit, versioned migration; owned-formal grammar pending",
+    "cross_actor": "no raw actor-local borrow crosses actor/isolate/send/await boundaries without independently proven capability",
+    "returned_borrow": "Borrow<T> distinguishes borrowed result; infer result lifetime only when all returns originate from one provable borrowed parameter or self",
+    "named_lifetimes": "lt! a binder (lifetime! a alias), lt=a named generic lifetime; multiple candidate return sources need explicit checked relationships",
+    "nll": "lifetime last-use expiry closes loan interval but never grants the borrowed alias drop/move ownership",
+    "escape": "no returned local/temporary, unproved await, actor crossing or captured escaping reference",
+    "same_call_aliasing": "multiple ordinary readonly arguments to one owner create overlapping verified shared loans; no copy, move, refcount or Pointer<T> required",
+    "same_call_order": "a borrow then take! of one owner in later arguments conflicts with the live loan; take! then borrow is use-after-move; diagnose before any guest output"
+  },
+  "required_cases": [
+    {
+      "id": "IB_P_01",
+      "kind": "pass",
+      "path": "fixtures/implicit-borrow/pass/readonly_preserves_owner.atto",
+      "expected_exit": 42,
+      "proof": "compiled guest must execute and preserve caller ownership"
+    },
+    {
+      "id": "IB_P_02",
+      "kind": "pass",
+      "path": "fixtures/implicit-borrow/pass/explicit_read_equivalence.atto",
+      "expected_exit": 42,
+      "proof": "compiled guest must execute and preserve caller ownership"
+    },
+    {
+      "id": "IB_P_03",
+      "kind": "pass",
+      "path": "fixtures/implicit-borrow/pass/same_owner_two_readers.atto",
+      "expected_exit": 42,
+      "proof": "compiled guest must execute and preserve caller ownership"
+    },
+    {
+      "id": "IB_P_04",
+      "kind": "pass",
+      "path": "fixtures/implicit-borrow/pass/explicit_mutable_loan.atto",
+      "expected_exit": 42,
+      "proof": "compiled guest must execute and preserve caller ownership"
+    },
+    {
+      "id": "IB_P_05",
+      "kind": "pass",
+      "path": "fixtures/implicit-borrow/pass/method_borrow_preserves_owner.atto",
+      "expected_exit": 42,
+      "proof": "compiled guest must execute and preserve caller ownership"
+    },
+    {
+      "id": "IB_P_06",
+      "kind": "pass",
+      "path": "fixtures/implicit-borrow/pass/explicit_and_inferred_reader_same_owner.atto",
+      "expected_exit": 42,
+      "proof": "compiled guest must execute and preserve caller ownership"
+    },
+    {
+      "id": "IB_F_01",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/mutation_missing_mut.atto",
+      "expected_error": "E_BORROW_MUT_REQUIRED",
+      "proof": "reject before artifact emission with a deterministic ownership diagnostic"
+    },
+    {
+      "id": "IB_F_02",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/shared_read_conflicts_with_mut.atto",
+      "expected_error": "E_BORROW",
+      "proof": "reject before artifact emission with a deterministic ownership diagnostic"
+    },
+    {
+      "id": "IB_F_03",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/returned_borrow_as_owner.atto",
+      "expected_error": "E_BORROW",
+      "proof": "reject before artifact emission with a deterministic ownership diagnostic"
+    },
+    {
+      "id": "IB_F_04",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/caller_owner_after_take.atto",
+      "expected_error": "E_MOVED",
+      "proof": "reject before artifact emission with a deterministic ownership diagnostic"
+    },
+    {
+      "id": "IB_F_05",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/temporary_without_proven_place.atto",
+      "expected_error": "E_BORROW_AMBIGUOUS",
+      "proof": "reject before artifact emission with a deterministic ownership diagnostic"
+    },
+    {
+      "id": "IB_F_06",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/borrow_not_ownership_transfer.atto",
+      "expected_error": "E_BORROW",
+      "proof": "reject before artifact emission with a deterministic ownership diagnostic"
+    },
+    {
+      "id": "IB_F_07",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/shared_alias_no_hidden_write.atto",
+      "expected_error": "E_BORROW",
+      "proof": "reject before artifact emission with a deterministic ownership diagnostic"
+    },
+    {
+      "id": "IB_F_08",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/explicit_borrow_does_not_escape.atto",
+      "expected_error": "E_BORROW",
+      "proof": "reject before artifact emission with a deterministic ownership diagnostic"
+    },
+    {
+      "id": "IB_F_09",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/named_argument_conflict.atto",
+      "expected_error": "E_BORROW",
+      "proof": "reject before artifact emission with a deterministic ownership diagnostic"
+    },
+    {
+      "id": "IB_P_07",
+      "kind": "pass",
+      "path": "fixtures/implicit-borrow/pass/single_input_borrowed_return.atto",
+      "expected_exit": 42,
+      "proof": "must compile and run a guest; returned-borrow source must be tracked through NLL"
+    },
+    {
+      "id": "IB_P_08",
+      "kind": "pass",
+      "path": "fixtures/implicit-borrow/pass/method_self_borrowed_return.atto",
+      "expected_exit": 42,
+      "proof": "must compile and run a guest; returned-borrow source must be tracked through NLL"
+    },
+    {
+      "id": "IB_P_09",
+      "kind": "pass",
+      "path": "fixtures/implicit-borrow/pass/named_lifetime_two_inputs.atto",
+      "expected_exit": 42,
+      "proof": "must compile and run a guest; returned-borrow source must be tracked through NLL"
+    },
+    {
+      "id": "IB_P_10",
+      "kind": "pass",
+      "path": "fixtures/implicit-borrow/pass/nll_returned_view_last_use.atto",
+      "expected_exit": 42,
+      "proof": "must compile and run a guest; returned-borrow source must be tracked through NLL"
+    },
+    {
+      "id": "IB_F_10",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/borrowed_return_from_local.atto",
+      "expected_error": "E_LIFETIME",
+      "proof": "must reject before code emission with owner/alias provenance and lifetime diagnostic"
+    },
+    {
+      "id": "IB_F_11",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/multiple_input_return_without_provenance.atto",
+      "expected_error": "E_LIFETIME",
+      "proof": "must reject before code emission with owner/alias provenance and lifetime diagnostic"
+    },
+    {
+      "id": "IB_F_12",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/wrong_named_lifetime_return.atto",
+      "expected_error": "E_LIFETIME",
+      "proof": "must reject before code emission with owner/alias provenance and lifetime diagnostic"
+    },
+    {
+      "id": "IB_F_13",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/borrowed_return_outlives_source.atto",
+      "expected_error": "E_LIFETIME",
+      "proof": "must reject before code emission with owner/alias provenance and lifetime diagnostic"
+    },
+    {
+      "id": "IB_F_14",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/returned_loan_conflicts_with_mutation.atto",
+      "expected_error": "E_BORROW",
+      "proof": "must reject before code emission with owner/alias provenance and lifetime diagnostic"
+    },
+    {
+      "id": "IB_F_15",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/unknown_lifetime_binder.atto",
+      "expected_error": "E_LIFETIME",
+      "proof": "must reject before code emission with owner/alias provenance and lifetime diagnostic"
+    },
+    {
+      "id": "IB_F_16",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/implicit_borrow_returned_as_owned.atto",
+      "expected_error": "E_BORROW",
+      "proof": "must reject before code emission with owner/alias provenance and lifetime diagnostic"
+    },
+    {
+      "id": "IB_P_11",
+      "kind": "pass",
+      "path": "fixtures/implicit-borrow/pass/two_readonly_arguments_same_owner.atto",
+      "expected_exit": 42,
+      "proof": "compiled guest must accept two simultaneous immutable argument loans to one class owner without an implicit copy or move"
+    },
+    {
+      "id": "IB_F_17",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/read_then_take_same_call.atto",
+      "expected_error": "E_BORROW",
+      "proof": "reject second-argument take! because first argument's implicit readonly loan remains live through argument evaluation; emit no guest"
+    },
+    {
+      "id": "IB_F_18",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/take_then_read_same_call.atto",
+      "expected_error": "E_MOVED",
+      "proof": "reject second-argument implicit borrow after first-argument take! invalidates the owner; emit no guest"
+    },
+    {
+      "id": "IB_P_12",
+      "kind": "pass",
+      "path": "fixtures/implicit-borrow/pass/mixed_readers_same_call.atto",
+      "expected_exit": 42,
+      "proof": "native and wasm guests compile/execute the two orderings of explicit and implicit readonly loans to one class owner; both calls retain owner identity and perform no implicit copy"
+    }
+  ],
+  "backend_status": {
+    "rs-browser": "NOT_EXECUTED",
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm-independent": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
+    "hdl": "NOT_EXECUTED",
+    "realtime": "NOT_EXECUTED",
+    "atto-selfhost": "NOT_EXECUTED"
+  },
+  "evidence_rule": "Source-only contract; status values are target slots, not a claim of compiler admission. Each atto-source.* repository requires exact-head native/wasm/guest execution or a reasoned UNSUPPORTED determination signed off after review, with real no-output rejection for invalid ownership. No registry/host-only validation can certify PASS; zero-step CI remains NOT_EXECUTED.",
+  "backend_repositories": {
+    "rs-browser": "atto-lang/atto-source.rs",
+    "java": "atto-lang/atto-source.java",
+    "llvm": "atto-lang/atto-source.llvm",
+    "net": "atto-lang/atto-source.net",
+    "wasm-independent": "atto-lang/atto-source.wasm",
+    "forge": "atto-lang/atto-source.forge",
+    "cranelift": "atto-lang/atto-source.cranelift",
+    "js": "atto-lang/atto-source.js",
+    "hdl": "atto-lang/atto-source.hdl",
+    "realtime": "atto-lang/atto-source.realtime",
+    "atto-selfhost": "atto-lang/atto-source.atto"
+  }
+}

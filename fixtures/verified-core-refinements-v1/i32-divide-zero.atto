@@ -1,0 +1,6 @@
+type Positive = i32 where self > 0;
+
+pub fnc main() -> int {
+    val Positive value = 42;
+    return value / 0;
+}

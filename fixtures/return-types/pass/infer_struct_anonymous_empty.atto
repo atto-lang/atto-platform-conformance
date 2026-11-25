@@ -1,0 +1,4 @@
+pub fnc main(): int {
+    const empty = infer struct {};
+    return 5;
+}

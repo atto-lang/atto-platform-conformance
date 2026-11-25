@@ -51,9 +51,6 @@ function checkCommon(report) {
   check(report.job_conclusion === 'success', 'job conclusion');
   check(Array.isArray(report.cases) && report.cases.length > 0 && report.cases.length <= 100, 'cases');
 }
-// Exit 124–127 conventionally mean timeout, launcher failure or missing binary;
-// 128+ can encode signals. Those are infrastructure/compiler crashes, not
-// evidence that the guest source was intentionally rejected.
 function checkCaseIdentity(c, ids) {
   check(isObject(c), 'case object');
   check(typeof c.id === 'string' && CASE_ID.test(c.id) && !ids.has(c.id), 'case ID');
@@ -108,6 +105,12 @@ function validateV2(report) {
           'process-exit cannot carry the full typed i64 result');
         check(Number.isSafeInteger(c.run_exit) && c.run_exit === Number(value),
           'process-exit result must match observed exit status');
+      } else if (c.run_exit !== undefined) {
+        // Native/stdout/export results are not process-exit values. A supplied
+        // nonzero process exit means the enclosing guest failed even when
+        // the receipt claims a matching typed i64 result.
+        check(Number.isSafeInteger(c.run_exit) && c.run_exit === 0,
+          'positive guest process exit');
       }
     } else {
       check(c.failure_stage === 'compile' || c.failure_stage === 'runtime', 'negative failure stage');

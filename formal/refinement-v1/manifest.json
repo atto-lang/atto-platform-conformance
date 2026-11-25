@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "contract": "attolang.formal-actor-runtime-refinement.v1",
+  "evidenceLevel": "design-trace-shape-only",
+  "verifiedCompilerGuestBackends": [],
+  "traceVerifier": "formal/refinement-v1/replay.mjs",
+  "guestFixture": {
+    "path": "formal/refinement-v1/reliable-join-receive.atto",
+    "gitBlobSha1": "fe10d9e5018a3f030a10bc31586e851198aaa4a3",
+    "status": "CANDIDATE_NOT_COMPILED",
+    "dialect": "suspends",
+    "expectedStdout": "subscribed|p-1",
+    "candidateOrigin": "contracts/v1/message-data-310/fixtures/P03-topic-string.atto",
+    "priorDialectConflict": "earlier candidate uses retired pub async routine; this file proposes pub suspends fnc, compiler admission unverified"
+  },
+  "relatedFormalPullRequests": {
+    "actorCriticalGeneration": {"number":458,"head":"36756f78d0b1a07c0733f32e8e45507ddb9b1582"},
+    "panicControl": {"number":459,"head":"c31a04e1d6c3ee70b4df2486cc2ee375e047b887"},
+    "reliablePubsub": {"number":460,"head":"1c18689718d6648b533685fcf3aa0886c33f619f"},
+    "pubsubGeneration": {"number":461,"head":"677344370305f1d90fbc987536d008de0af8c794"}
+  },
+  "scenarios": ["critical-generation", "panic-control", "reliable-pubsub"],
+  "backends": {
+    "java": {"status":"NOT_EXECUTED","guestCompiled":false,"guestExecuted":false,"executedSteps":0},
+    "llvm": {"status":"NOT_EXECUTED","guestCompiled":false,"guestExecuted":false,"executedSteps":0},
+    "net": {"status":"NOT_EXECUTED","guestCompiled":false,"guestExecuted":false,"executedSteps":0},
+    "wasm": {"status":"NOT_EXECUTED","guestCompiled":false,"guestExecuted":false,"executedSteps":0},
+    "forge": {"status":"NOT_EXECUTED","guestCompiled":false,"guestExecuted":false,"executedSteps":0}
+  },
+  "requiredAuthentication": [
+    "source_org_job_steps_with_positive_runner_id_and_matching_run_attempt",
+    "compiler_and_runtime_artifact_digests_read_back_from_authoritative_provider",
+    "exact_backend_source_head_and_git_tree_identity",
+    "guest_fixture_blob_identity_and_actual_compiler_exit_status",
+    "runtime_trace_or_diagnostic_bound_to_real_compiled_guest",
+    "reviewed_nonzero_step_receipt_with_negative_cases",
+    "untrusted_guest_trace_shape_is_never_self_authenticating"
+  ],
+  "notEstablishedByReplay": [
+    "real_AttoLang_guest_compilation",
+    "actual_backend_actor_scheduling",
+    "actor_memory_and_physical_stack_isolation",
+    "nonblocking_carrier_threads_under_RELIABLE_backpressure",
+    "unbounded_model_checking_or_cross_backend_parity",
+    "merge_readiness_or_independent_approval"
+  ],
+  "mergeEligible": false
+}

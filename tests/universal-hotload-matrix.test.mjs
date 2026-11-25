@@ -5,14 +5,15 @@ import {UHL1_BACKENDS,UHL1_CASES,pendingUhl1Report,evaluateUhl1Report}
 
 const SHA='a'.repeat(40),TREE='b'.repeat(40),BINARY='c'.repeat(64);
 function syntheticEvidence(backend,scenario,mode='pass_executed'){
-  const unsupported=mode==='unsupported_confirmed';
-  return {source_sha:SHA,source_tree:TREE,compiler_sha256:BINARY,
-    image_sha256:unsupported?null:BINARY,
+  const unsupported=mode==='unsupported_confirmed',hostOnly=mode==='host_only_executed';
+  return {source_sha:SHA,source_tree:TREE,compiler_sha256:hostOnly?null:BINARY,
+    image_sha256:unsupported||hostOnly?null:BINARY,
     runner:{head_sha:SHA,run_id:11,job_id:22,run_attempt:1,steps_executed:3,backend},
-    compiler_executed:true,guest_executed:!unsupported,
+    compiler_executed:!hostOnly,guest_executed:!unsupported&&!hostOnly,
     negative_proof_sha256:BINARY,
-    checks:unsupported?{denied_before_publish:true,no_guest_image_emitted:true}:
-      Object.fromEntries(UHL1_CASES[scenario].map(key=>[key,true]))};
+    checks:hostOnly?{host_reference_passed:true,no_guest_image_emitted:true}:
+      unsupported?{denied_before_publish:true,no_guest_image_emitted:true}:
+        Object.fromEntries(UHL1_CASES[scenario].map(key=>[key,true]))};
 }
 function syntheticGreen(){
   const r=pendingUhl1Report();
@@ -64,6 +65,34 @@ test('honestly failing pre-image compilation remains failure, not fabricated ima
   assert.equal(result.structurally_passing,0);
   assert.equal(result.production_hot_load_certified,false);
 });
+test('stepful host-only reference evidence stays separate from guest parity',()=>{
+  const r=pendingUhl1Report(),c=r.records[0];
+  c.status='host_only_executed';
+  c.evidence=syntheticEvidence(c.backend,c.scenario,c.status);
+  const result=evaluateUhl1Report(r);
+  assert.deepEqual(result.host_only,[c.backend+'|'+c.scenario]);
+  assert.equal(result.structurally_passing,0);
+  assert.equal(result.pending.length,39);
+  assert.equal(result.authenticated_execution,false);
+  assert.equal(result.production_hot_load_certified,false);
+});
+function hostOnlyMutation(label,mutate){
+  test(label,()=>{
+    const r=pendingUhl1Report(),c=r.records[0];
+    c.status='host_only_executed';
+    c.evidence=syntheticEvidence(c.backend,c.scenario,c.status);
+    mutate(c.evidence);
+    assert.throws(()=>evaluateUhl1Report(r),/UHL1 evidence rejected/);
+  });
+}
+hostOnlyMutation('host-only forged compiler execution rejected',e=>e.compiler_executed=true);
+hostOnlyMutation('host-only forged compiler digest rejected',e=>e.compiler_sha256=BINARY);
+hostOnlyMutation('host-only forged guest execution rejected',e=>e.guest_executed=true);
+hostOnlyMutation('host-only forged image emission rejected',e=>e.image_sha256=BINARY);
+hostOnlyMutation('host-only zero steps rejected',e=>e.runner.steps_executed=0);
+hostOnlyMutation('host-only missing negative receipt rejected',e=>e.negative_proof_sha256=null);
+hostOnlyMutation('host-only failed reference gate rejected',e=>e.checks.host_reference_passed=false);
+hostOnlyMutation('host-only fake extra authority rejected',e=>e.checks.production_certified=true);
 denies('reject missing backend/scenario row',r=>r.records.pop());
 denies('reject duplicate backend/scenario receipt',r=>r.records[7].scenario=r.records[0].scenario);
 denies('reject unknown backend',r=>r.records[0].backend='forge');

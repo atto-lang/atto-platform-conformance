@@ -1,0 +1,12 @@
+define dimension Time;
+define unit Millis: Time;
+type MillisValue = int where units in Millis;
+type PositiveMillis = i32 where self > 0 and units in Millis;
+
+fnc read(MillisValue input) -> MillisValue {
+    return input;
+}
+
+pub fnc main() -> int {
+    return (read(-1<Millis>) as PositiveMillis) / 1<Millis>;
+}

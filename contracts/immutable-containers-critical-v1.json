@@ -1,0 +1,231 @@
+{
+  "schemaVersion": 1,
+  "contract": "atto.immutable-containers-critical-publication.v1",
+  "status": "SOURCE_CONTRACT_ONLY_GUEST_EXECUTION_NOT_EXECUTED",
+  "backends": [
+    "java-graalvm",
+    "llvm",
+    "net-nativeaot",
+    "wasm",
+    "forge-cranelift"
+  ],
+  "containers": [
+    {
+      "kind": "PersistentMap<K,V>",
+      "mutability": "transitive-immutable",
+      "update": "with/without return a new root",
+      "lookup": "immutable-snapshot-read"
+    },
+    {
+      "kind": "PersistentSet<T>",
+      "mutability": "transitive-immutable",
+      "update": "insert/remove return a new root",
+      "lookup": "immutable-snapshot-read"
+    },
+    {
+      "kind": "PersistentList<T>",
+      "mutability": "transitive-immutable",
+      "update": "prepend/append return a new root",
+      "lookup": "immutable-snapshot-read"
+    }
+  ],
+  "rules": {
+    "sourceImplementation": "portable .atto library behavior; host only for checked allocations, atomic commit and lifetime primitives",
+    "immutableSnapshotReadNoCriticalNeeded": true,
+    "rootAndRevisionReadMustBeAtomic": true,
+    "rootPublicationRequiresCriticalOrEquivalentVerifiedAtomicTransaction": true,
+    "criticalBodyMaySuspend": false,
+    "criticalEntryContentionMaySuspendEligibleCaller": true,
+    "criticalFunctionModifier": "critical fnc",
+    "criticalSuspendsFunctionForbidden": true,
+    "suspendsCriticalFunctionForbidden": true,
+    "criticalBlockInsideSuspendsFunctionAllowed": true,
+    "buildNewRootOutsideCritical": true,
+    "sharedRootIsVersioned": true,
+    "publishChecksExpectedVersion": true,
+    "failedCommitDoesNotMutatePublishedRoot": true,
+    "snapshotOldVersionRemainsValid": true,
+    "snapshotReclamationWaitsForReaders": true,
+    "transitiveFreezeRequired": true,
+    "rejectMutableElementAlias": true,
+    "rejectCapturingClosure": true,
+    "rejectRawActorHeapRef32CrossingActor": true,
+    "sharedSnapshotRequiresExplicitSendableSharedRegionCapability": true,
+    "sendableDoesNotImplySerializable": true,
+    "mutableActorStateRemainsOwnerOnly": true,
+    "guestRefFieldBits": 32,
+    "atomicity": "critical compare-and-publish root+revision is one indivisible logical operation",
+    "noFfiOrBlockingIoInsideCritical": true,
+    "noRetryLoopUnderCritical": true,
+    "failureIsActorScoped": true,
+    "boundedAllocationQuota": true
+  },
+  "vectors": [
+    {
+      "id": "ICC-01",
+      "scenario": "transitively immutable snapshot permits concurrent reads",
+      "expect": "accept"
+    },
+    {
+      "id": "ICC-02",
+      "scenario": "two writers begin from same revision; exactly one publishes",
+      "expect": "one-winner"
+    },
+    {
+      "id": "ICC-03",
+      "scenario": "outdated expected revision cannot overwrite root",
+      "expect": "reject-conflict"
+    },
+    {
+      "id": "ICC-04",
+      "scenario": "persistent update does not mutate old snapshot",
+      "expect": "accept"
+    },
+    {
+      "id": "ICC-05",
+      "scenario": "mutable nested list or map cannot be frozen by wrapper alone",
+      "expect": "reject-type"
+    },
+    {
+      "id": "ICC-06",
+      "scenario": "actor-local 32-bit reference cannot be shared as immutable root",
+      "expect": "reject-escape"
+    },
+    {
+      "id": "ICC-07",
+      "scenario": "async await in critical body",
+      "expect": "reject-effect"
+    },
+    {
+      "id": "ICC-08",
+      "scenario": "critical suspends fnc and suspends critical fnc",
+      "expect": "reject-effect"
+    },
+    {
+      "id": "ICC-09",
+      "scenario": "failed allocation before critical cannot publish partial root",
+      "expect": "reject-no-mutation"
+    },
+    {
+      "id": "ICC-10",
+      "scenario": "old snapshot reader pins lifetime through root replacement",
+      "expect": "retain-until-reader-drops"
+    },
+    {
+      "id": "ICC-11",
+      "scenario": "suspends fnc can enter critical after waiting; body never suspends",
+      "expect": "accept"
+    },
+    {
+      "id": "ICC-12",
+      "scenario": "sending guest closure in container",
+      "expect": "reject-type"
+    },
+    {
+      "id": "ICC-13",
+      "scenario": "immutable Sendable does not become Serializable implicitly",
+      "expect": "reject-wire"
+    },
+    {
+      "id": "ICC-14",
+      "scenario": "root+revision snapshot uses one atomic observation",
+      "expect": "accept"
+    },
+    {
+      "id": "ICC-15",
+      "scenario": "failed critical compare does not consume or drop an old snapshot",
+      "expect": "accept"
+    },
+    {
+      "id": "ICC-16",
+      "scenario": "shared immutable root requires explicit shared-region auth not per-actor offset",
+      "expect": "reject-foreign"
+    }
+  ],
+  "sourceCases": [
+    {
+      "id": "positive-critical-root-swap",
+      "role": "candidate-positive-unverified",
+      "source": "suspends fnc publish(expected_revision: int, candidate: FrozenMap<string, int>) -> bool { critical { return commit_if_revision(expected_revision, candidate); } }"
+    },
+    {
+      "id": "negative-await-under-critical",
+      "role": "expected-compile-reject",
+      "diagnostic": "E_CRITICAL_SUSPEND",
+      "source": "suspends fnc bad() -> int { critical { await sleep(1); return 1; } }"
+    },
+    {
+      "id": "negative-critical-suspends-order",
+      "role": "expected-compile-reject",
+      "diagnostic": "E_CRITICAL_SUSPENDS_DECL",
+      "source": "critical suspends fnc bad() -> int { return 1; }"
+    },
+    {
+      "id": "negative-suspends-critical-order",
+      "role": "expected-compile-reject",
+      "diagnostic": "E_CRITICAL_SUSPENDS_DECL",
+      "source": "suspends critical fnc bad() -> int { return 1; }"
+    },
+    {
+      "id": "negative-actorlocal-ref-escape",
+      "role": "expected-compile-reject",
+      "diagnostic": "E_ACTOR_REF32_ESCAPE",
+      "source": "fnc bad(local: ActorManagedRef<int>) -> SharedSnapshot<int> { return share(local); }"
+    }
+  ],
+  "evidence": {
+    "java-graalvm": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net-nativeaot": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge-cranelift": "NOT_EXECUTED"
+  },
+  "guestFixtures": [
+    {
+      "id": "ICC-G01",
+      "file": "positive-immutable-record-snapshot.atto",
+      "expect": "accept",
+      "oracle": "15",
+      "proof": "old record snapshot preserved while new record shares fields"
+    },
+    {
+      "id": "ICC-G02",
+      "file": "positive-critical-versioned-commit.atto",
+      "expect": "accept",
+      "oracle": "compiler-effect-only",
+      "proof": "suspends function permits non-suspending critical body"
+    },
+    {
+      "id": "ICC-G03",
+      "file": "negative-await-inside-critical.atto",
+      "expect": "reject",
+      "diagnostic": "E_CRITICAL_SUSPEND"
+    },
+    {
+      "id": "ICC-G04",
+      "file": "negative-critical-suspends-declaration.atto",
+      "expect": "reject",
+      "diagnostic": "E_CRITICAL_SUSPENDS_DECL"
+    },
+    {
+      "id": "ICC-G05",
+      "file": "negative-suspends-critical-declaration.atto",
+      "expect": "reject",
+      "diagnostic": "E_CRITICAL_SUSPENDS_DECL"
+    },
+    {
+      "id": "ICC-G06",
+      "file": "negative-immutable-root-rebind.atto",
+      "expect": "reject",
+      "diagnostic": "E_IMMUTABLE_BINDING"
+    },
+    {
+      "id": "ICC-G07",
+      "file": "negative-shared-actor-ref32-escape.atto",
+      "expect": "reject",
+      "diagnostic": "E_ACTOR_REF32_ESCAPE"
+    }
+  ],
+  "guestFixturePath": "fixtures/immutable-containers-critical-v1",
+  "guestFixtureExecution": "NOT_EXECUTED_ALL_BACKENDS"
+}

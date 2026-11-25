@@ -1,0 +1,35 @@
+name: Atto std.fs source-policy inventory gate
+on:
+  pull_request:
+    paths:
+      - 'contracts/hosted-fs-source-policy-parity-v1.json'
+      - 'contracts/hosted-fs-file-handle-port-v1.json'
+      - 'tests/test_hosted_fs_source_parity_v1.py'
+      - 'tests/test_hosted_fs_file_port_v1.py'
+      - '.github/workflows/hosted-fs-source-parity-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inventory:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact PR head without saved credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Check exact-head integrity and inventory unit tests
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          git hash-object contracts/hosted-fs-source-policy-parity-v1.json contracts/hosted-fs-file-handle-port-v1.json tests/test_hosted_fs_source_parity_v1.py tests/test_hosted_fs_file_port_v1.py
+          python3 -m unittest discover -s tests -p 'test_hosted_fs_*_v1.py' -v
+      - name: Report policy-only scope
+        run: |
+          echo "ATTO_FS_SOURCE_INVENTORY_ONLY=1"
+          echo "ATTO_FS_GUEST_EXECUTION=NOT_EXECUTED"
