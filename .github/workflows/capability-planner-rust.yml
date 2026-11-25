@@ -1,0 +1,51 @@
+name: Rust-only AOT and 11-backend read-only conformance plans
+on:
+  pull_request:
+    paths:
+      - 'bin/plan-capabilities.rs'
+      - 'tests/fixtures/capability-inventory-v1.tsv'
+      - 'docs/capability-inventory-provenance.md'
+      - 'contracts/aot-gc-tenant-evidence-v1.json'
+      - '.github/workflows/capability-planner-rust.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'bin/plan-capabilities.rs'
+      - 'tests/fixtures/capability-inventory-v1.tsv'
+      - 'docs/capability-inventory-provenance.md'
+      - 'contracts/aot-gc-tenant-evidence-v1.json'
+      - '.github/workflows/capability-planner-rust.yml'
+permissions:
+  contents: read
+jobs:
+  source-only-rust-planner:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact immutable Git head
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          git diff --quiet HEAD --
+      - name: Pin independently recorded source Git blobs
+        run: |
+          test "$(git hash-object contracts/aot-gc-tenant-evidence-v1.json)" = b31f8a5b86a4d9529b89cd1ff2a8b379c33d3dfa
+          test "$(git hash-object tests/fixtures/capability-inventory-v1.tsv)" = c2ffbd435f1360a82c47162fc97a56fee05bc282
+      - name: Run dependency-free Rust planner tests
+        run: |
+          rustc --edition=2021 --test bin/plan-capabilities.rs -o "$RUNNER_TEMP/plan-tests"
+          "$RUNNER_TEMP/plan-tests" --nocapture
+      - name: Execute both source-only CLI planners
+        run: |
+          rustc --edition=2021 bin/plan-capabilities.rs -o "$RUNNER_TEMP/plan"
+          "$RUNNER_TEMP/plan" --aot-contract contracts/aot-gc-tenant-evidence-v1.json --backend llvm > "$RUNNER_TEMP/aot-plan.json"
+          "$RUNNER_TEMP/plan" --inventory tests/fixtures/capability-inventory-v1.tsv --backend realtime > "$RUNNER_TEMP/capability-plan.json"
+          grep -q '"certification":"NOT_CERTIFIED"' "$RUNNER_TEMP/aot-plan.json"
+          grep -q '"certification":"NOT_CERTIFIED"' "$RUNNER_TEMP/capability-plan.json"
+          grep -q '"guest_executed":false' "$RUNNER_TEMP/capability-plan.json"
+      - name: Evidence boundary
+        run: echo 'SOURCE_ONLY_NOT_CERTIFIED; NO_COMPILED_ATTO_GUEST_EXECUTED'

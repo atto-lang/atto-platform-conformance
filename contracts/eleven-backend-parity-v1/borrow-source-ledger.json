@@ -1,0 +1,384 @@
+{
+  "schema": "atto.core-option-borrow-source-ledger.v1",
+  "as_of": "2026-11-22",
+  "registry_link": "contracts/eleven-backend-parity-v1/core-option-dashboard.json",
+  "authority": "source_metadata_observed_only",
+  "release_qualified": false,
+  "notes": "Exact Git head/root tree and selected blob hashes identify independently owned backend source candidates. This metadata is not an authenticated test receipt. Borrow queries do not authorize moving affine payloads. No compiled guest, typed-negative, AOT, or sanitizer passes are claimed.",
+  "backends": [
+    {
+      "id": "java",
+      "repository": "atto-lang/atto-source.java",
+      "source_head_sha": "7385b682ff28239d1ce1c52fa6d7aedcb4f6b337",
+      "root_tree_sha": "03981bf0f0540f913a45cbc951934783b61794b5",
+      "stage": "borrow_source_candidate",
+      "source_artifacts": [
+        {
+          "path": ".github/workflows/core-option-result-jvm-borrow-exact-head.yml",
+          "blob_sha": "1821c6732b79c090f9cfc93121e3ea20e7a40fc2"
+        },
+        {
+          "path": "core/option.atto",
+          "blob_sha": "4400fae94588587fbb85474256e82cac6c26256c"
+        },
+        {
+          "path": "core/result.atto",
+          "blob_sha": "6bae249740af1088e069c3592ff8fb2bc72f1216"
+        },
+        {
+          "path": "src/main/java/dev/oreslang/compiler/OresCompiler.java",
+          "blob_sha": "c60883bf73abf36b89343a2b18feb11565c11c03"
+        },
+        {
+          "path": "src/main/java/dev/oreslang/types/CoreTypeRegistry.java",
+          "blob_sha": "bc9c3574f0e653218ea8a68f85d4effbd6722eeb"
+        },
+        {
+          "path": "src/main/java/dev/oreslang/types/OwnershipChecker.java",
+          "blob_sha": "6be88b5f3717f70759440be6a3012a0411f2315b"
+        },
+        {
+          "path": "src/main/java/dev/oreslang/types/TypeChecker.java",
+          "blob_sha": "3c1061d47c087d701f578e39a71ff34ce3197341"
+        },
+        {
+          "path": "src/test/java/dev/oreslang/AutomaticPreludeTest.java",
+          "blob_sha": "0e354f5478a0651127f746e63e86bb5a591bca74"
+        },
+        {
+          "path": "src/test/java/dev/oreslang/CoreOptionResultBorrowSafetyTest.java",
+          "blob_sha": "d44dfe085ed6728e5f5b50be889a1c56bf78bc39"
+        },
+        {
+          "path": "src/test/java/dev/oreslang/CoreOptionResultSourceTest.java",
+          "blob_sha": "ef08bcc9f3165a04a8e57a59525769ad66e7116f"
+        },
+        {
+          "path": "tests/core_option_result/borrowed_queries.atto",
+          "blob_sha": "35f77b9020812364d1d0885e35f53a071cb50134"
+        }
+      ],
+      "checks": {
+        "compiled_guest": "not_executed",
+        "semantic_borrow_negative": "not_executed",
+        "native_aot": "not_executed",
+        "memory_safety": "not_executed"
+      },
+      "release_qualified": false
+    },
+    {
+      "id": "llvm",
+      "repository": "atto-lang/atto-source.llvm",
+      "source_head_sha": "cae1f89e5a10b2feabe36808c0b07263b4c5a07d",
+      "root_tree_sha": "1861bf7efb93c51f76cfb8767907bde210c50a38",
+      "stage": "borrow_source_candidate",
+      "source_artifacts": [
+        {
+          "path": "library/ores.core/option.atto",
+          "blob_sha": "ca4534b771c9e1981777ce4be00630bd6398631d"
+        },
+        {
+          "path": "library/ores.core/result.atto",
+          "blob_sha": "8f09c5b60b99f6510583be9f722ac70320e2b93f"
+        },
+        {
+          "path": "tests/core_option_result/borrowed_read_42.atto",
+          "blob_sha": "9baff7ba4753686e69d7bbf5134e5b82f6da5a65"
+        },
+        {
+          "path": "tests/core_option_result/negative_affine_borrow_escape.atto",
+          "blob_sha": "8326c4abf663e97c41e28795e9febdbf7e78f4b5"
+        }
+      ],
+      "checks": {
+        "compiled_guest": "not_executed",
+        "semantic_borrow_negative": "not_executed",
+        "native_aot": "not_executed",
+        "memory_safety": "not_executed"
+      },
+      "release_qualified": false
+    },
+    {
+      "id": "rs",
+      "repository": "atto-lang/atto-source.rs",
+      "source_head_sha": "e1310a921d41f0fc4ab18b28b7ce4f297b95b754",
+      "root_tree_sha": "0dae60e39422674e4c242fbd441e5cf6707d73b6",
+      "stage": "borrow_source_candidate",
+      "source_artifacts": [
+        {
+          "path": ".github/workflows/core-option-result-borrow-exact-head.yml",
+          "blob_sha": "05c8853c15986b35fd5d376b417b34b9f1968eb4"
+        },
+        {
+          "path": "core/OPTION_RESULT_STATUS.md",
+          "blob_sha": "b336c29035e94e3f594182f9bdf122fc33fa6600"
+        },
+        {
+          "path": "core/option.atto",
+          "blob_sha": "46acf6c4fadb462255d418bd65a70f616016aa0a"
+        },
+        {
+          "path": "core/result.atto",
+          "blob_sha": "2c88acd11d79e6df52eee092f4a03d5448e02d06"
+        },
+        {
+          "path": "src/check.rs",
+          "blob_sha": "0b6da174e5cde0d277db1846ac5106f79370d852"
+        },
+        {
+          "path": "tests/core_option_result_scalar.rs",
+          "blob_sha": "abba37f5762afe01d8a8624ac8bc6a938158b3e3"
+        },
+        {
+          "path": "tests/core_option_result/borrowed_read_42.atto",
+          "blob_sha": "797d5f1ce30684f78cddf7d1735643cf190540c0"
+        },
+        {
+          "path": "tests/core_option_result/negative_affine_borrow_escape.atto",
+          "blob_sha": "3815a07ee254c30541bf8069f3a17cfd7be01138"
+        },
+        {
+          "path": "tests/core_option_result/negative_borrow_mut_option.atto",
+          "blob_sha": "fbca2779ca3268afedabd146c6c09b771a8f2a3f"
+        },
+        {
+          "path": "tests/core_option_result/negative_borrow_option_return.atto",
+          "blob_sha": "9fce98079881ca8e23e27738715178ff3f2bd093"
+        },
+        {
+          "path": "tests/core_option_result/negative_borrow_option_temporary.atto",
+          "blob_sha": "c40331a00c8ad8b912f02c2c2bfac04ece716508"
+        },
+        {
+          "path": "tests/core_option_result/negative_unproved_affine_option.atto",
+          "blob_sha": "6f4cde94cf54a65b0271bb8fbbc79dd32b7f014a"
+        }
+      ],
+      "checks": {
+        "compiled_guest": "not_executed",
+        "semantic_borrow_negative": "not_executed",
+        "native_aot": "not_executed",
+        "memory_safety": "not_executed"
+      },
+      "release_qualified": false
+    },
+    {
+      "id": "net",
+      "repository": "atto-lang/atto-source.net",
+      "source_head_sha": "2b4bc19a87c81545a0dd154e35d6e53b7f0e63c7",
+      "root_tree_sha": "3a9c6a3f365fa008edb195be31cb9723cd1e8c4f",
+      "stage": "borrow_source_candidate",
+      "source_artifacts": [
+        {
+          "path": "library/atto.core/option.atto",
+          "blob_sha": "0c22fdf444c46b0865f84a6d131fed0da67d1013"
+        },
+        {
+          "path": "library/atto.core/result.atto",
+          "blob_sha": "6d62baabf8271dc090644943cd4a47f5928283e7"
+        },
+        {
+          "path": "tests/core_option_result/borrowed_read_42.atto",
+          "blob_sha": "9baff7ba4753686e69d7bbf5134e5b82f6da5a65"
+        },
+        {
+          "path": "tests/core_option_result/negative_affine_borrow_escape.atto",
+          "blob_sha": "8326c4abf663e97c41e28795e9febdbf7e78f4b5"
+        }
+      ],
+      "checks": {
+        "compiled_guest": "not_executed",
+        "semantic_borrow_negative": "not_executed",
+        "native_aot": "not_executed",
+        "memory_safety": "not_executed"
+      },
+      "release_qualified": false
+    },
+    {
+      "id": "wasm",
+      "repository": "atto-lang/atto-source.wasm",
+      "source_head_sha": "d7642727c43147c83d6c594389080f83993c5b8e",
+      "root_tree_sha": "be83842d1a51e43c397e41e9ea43366cd0a09476",
+      "stage": "borrow_source_candidate",
+      "source_artifacts": [
+        {
+          "path": "core/option.atto",
+          "blob_sha": "bb90d49469e689ca1f298b7f5d9e9f54b5c1d7d8"
+        },
+        {
+          "path": "core/result.atto",
+          "blob_sha": "469aa451725fffb94d9dcd50b47191979849c658"
+        },
+        {
+          "path": "tests/core_option_result/borrowed_read_42.atto",
+          "blob_sha": "a548d4c187bfe7d620addb334f549956dfcd366b"
+        },
+        {
+          "path": "tests/core_option_result/negative_affine_borrow_escape.atto",
+          "blob_sha": "90dbdfed9cde95f0ed9bd192f947c640d27f7cb7"
+        }
+      ],
+      "checks": {
+        "compiled_guest": "not_executed",
+        "semantic_borrow_negative": "not_executed",
+        "native_aot": "not_executed",
+        "memory_safety": "not_executed"
+      },
+      "release_qualified": false
+    },
+    {
+      "id": "forge",
+      "repository": "atto-lang/atto-source.forge",
+      "source_head_sha": "1a892433ba615af863523701d310eace9513028c",
+      "root_tree_sha": "610e0d6e87e91c9ff65befa24ddfa9de5bbc463f",
+      "stage": "borrow_source_candidate",
+      "source_artifacts": [
+        {
+          "path": "core/option.atto",
+          "blob_sha": "eda1116be794be1bdb280ae959ff1a77a533a4af"
+        },
+        {
+          "path": "core/result.atto",
+          "blob_sha": "c8ba43d3b5c3737bab85e1893648492c6bec3128"
+        },
+        {
+          "path": "tests/core_option_result/borrowed_read_42.atto",
+          "blob_sha": "a548d4c187bfe7d620addb334f549956dfcd366b"
+        },
+        {
+          "path": "tests/core_option_result/negative_affine_borrow_escape.atto",
+          "blob_sha": "90dbdfed9cde95f0ed9bd192f947c640d27f7cb7"
+        }
+      ],
+      "checks": {
+        "compiled_guest": "not_executed",
+        "semantic_borrow_negative": "not_executed",
+        "native_aot": "not_executed",
+        "memory_safety": "not_executed"
+      },
+      "release_qualified": false
+    },
+    {
+      "id": "cranelift",
+      "repository": "atto-lang/atto-source.cranelift",
+      "source_head_sha": "9dc2ee61c1d75815b80460a22c860916a8f147b2",
+      "root_tree_sha": "8a4f920d423a63b16c9692f3a218844c4966bb22",
+      "stage": "borrow_source_candidate",
+      "source_artifacts": [
+        {
+          "path": "core/option.atto",
+          "blob_sha": "114caf65f17d6b87f5440b2b17fe6b9deab8f4c4"
+        },
+        {
+          "path": "core/result.atto",
+          "blob_sha": "2d60346c041330a8ed40c4fc23ad1e5d66197723"
+        },
+        {
+          "path": "tests/core_option_result/borrowed_read_42.atto",
+          "blob_sha": "a548d4c187bfe7d620addb334f549956dfcd366b"
+        },
+        {
+          "path": "tests/core_option_result/negative_affine_borrow_escape.atto",
+          "blob_sha": "90dbdfed9cde95f0ed9bd192f947c640d27f7cb7"
+        }
+      ],
+      "checks": {
+        "compiled_guest": "not_executed",
+        "semantic_borrow_negative": "not_executed",
+        "native_aot": "not_executed",
+        "memory_safety": "not_executed"
+      },
+      "release_qualified": false
+    },
+    {
+      "id": "js",
+      "repository": "atto-lang/atto-source.js",
+      "source_head_sha": "b5d4358e50828012512eb95fcc96cff1ba39490a",
+      "root_tree_sha": "fc03ac64dfcbceef0f12ab5525731f22a6449894",
+      "stage": "concrete_scalar_no_generic_borrow",
+      "source_artifacts": [
+        {
+          "path": "core/option.atto",
+          "blob_sha": "06fa440dd3d7f055028a49a88d50a098dc9607c3"
+        },
+        {
+          "path": "core/result.atto",
+          "blob_sha": "f398a518e40a1c0bd6445c5eacdf382d87946ac9"
+        },
+        {
+          "path": "tests/core-option-result-source.test.mjs",
+          "blob_sha": "f7b70e10d432027254f94a155fd22f6b52dd8a17"
+        },
+        {
+          "path": "core/OPTION_RESULT_STATUS.md",
+          "blob_sha": "77a86e3290a54c744780cba3b924788c42ef08da"
+        }
+      ],
+      "checks": {
+        "compiled_guest": "not_executed",
+        "semantic_borrow_negative": "not_executed",
+        "native_aot": "not_executed",
+        "memory_safety": "not_executed"
+      },
+      "release_qualified": false
+    },
+    {
+      "id": "hdl",
+      "repository": "atto-lang/atto-source.hdl",
+      "source_head_sha": "0ae7590bef154ae6501f87189de116bb371a0770",
+      "root_tree_sha": "0049cc6c08ce824b7323caa4d5c2fa8b1ed1f884",
+      "stage": "rtl_scalar_unsynthesized",
+      "source_artifacts": [
+        {
+          "path": "core/option.atto",
+          "blob_sha": "402b12d369f6e84362dcc1cb7c1231a184b2f050"
+        },
+        {
+          "path": "core/result.atto",
+          "blob_sha": "c1633e21a65ea1fd555b0324a8c3416e630f46b1"
+        },
+        {
+          "path": "core/OPTION_RESULT_STATUS.md",
+          "blob_sha": "1447838587094eeb52e0abb9e0717af01fb6f485"
+        }
+      ],
+      "checks": {
+        "compiled_guest": "not_executed",
+        "semantic_borrow_negative": "not_executed",
+        "native_aot": "not_executed",
+        "memory_safety": "not_executed"
+      },
+      "release_qualified": false
+    },
+    {
+      "id": "atto",
+      "repository": "atto-lang/atto-source.atto",
+      "source_head_sha": null,
+      "root_tree_sha": null,
+      "stage": "no_borrow_candidate",
+      "source_artifacts": [],
+      "checks": {
+        "compiled_guest": "not_executed",
+        "semantic_borrow_negative": "not_executed",
+        "native_aot": "not_executed",
+        "memory_safety": "not_executed"
+      },
+      "release_qualified": false
+    },
+    {
+      "id": "realtime",
+      "repository": "atto-lang/atto-source.realtime",
+      "source_head_sha": null,
+      "root_tree_sha": null,
+      "stage": "no_borrow_candidate",
+      "source_artifacts": [],
+      "checks": {
+        "compiled_guest": "not_executed",
+        "semantic_borrow_negative": "not_executed",
+        "native_aot": "not_executed",
+        "memory_safety": "not_executed"
+      },
+      "release_qualified": false
+    }
+  ]
+}

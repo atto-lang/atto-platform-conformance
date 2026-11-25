@@ -1,0 +1,12 @@
+// CANDIDATE SOURCE: Err and None are distinct, both must be handled.
+// NOT_EXECUTED on all production compiler backends.
+define pub fnc send_notice(int id) -> Result[void, Error] as
+  do maybe
+    Ok(user) ?= fetch_user(id);
+    Some(email) ?= user.email;
+    return Ok(void);
+  else
+    Err(reason) -> return Err(reason);
+    None -> return Err(MissingEmail);
+  end
+end

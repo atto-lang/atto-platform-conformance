@@ -1,0 +1,1218 @@
+{
+  "schema": "atto.typed-pattern-fragments.v1/1",
+  "status": "TARGET_SOURCE_ONLY",
+  "spec": "atto-spec/language/typed-pattern-fragments-v1.md",
+  "spec_pr": "https://github.com/atto-lang/atto-spec/pull/59",
+  "spec_blob_sha": "cd6b01241e9a77b3cb1c93d36f60aa0dce8b075c",
+  "evidence": {
+    "kind": "HOST_ONLY",
+    "guest_execution": "NOT_EXECUTED",
+    "host_ci": "NOT_EXECUTED_CURRENT_HEAD",
+    "note": "Cases are portable targets, not compiler or executed guest evidence. Expanded to 11 backends/roles; wasm-host is not an independent compiler."
+  },
+  "backends": [
+    "rust-wasm",
+    "java",
+    "llvm",
+    "net",
+    "forge",
+    "wasm-host",
+    "cranelift",
+    "js",
+    "atto-selfhost",
+    "hdl",
+    "realtime"
+  ],
+  "cases": [
+    {
+      "id": "PFV1-001",
+      "name": "inferred-typed-rest-three-binders",
+      "kind": "match",
+      "subject": {
+        "type": "List<int>",
+        "items": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
+      },
+      "pattern": "List.of(pattern.of(\"...\"), is int as val a, is int as val b, is int as val c, pattern.of(\"...\"))",
+      "expected": {
+        "matched": true,
+        "bindings": {
+          "a": 1,
+          "b": 2,
+          "c": 3
+        },
+        "result": 6
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-002",
+      "name": "explicit-typed-rest-three-binders",
+      "kind": "match",
+      "subject": {
+        "type": "List<int>",
+        "items": [
+          9,
+          2,
+          3,
+          4,
+          5
+        ]
+      },
+      "pattern": "List.of(pattern.of<int>(\"...\"), is int as val a, is int as val b, is int as val c, pattern.of<int>(\"...\"))",
+      "expected": {
+        "matched": true,
+        "bindings": {
+          "a": 9,
+          "b": 2,
+          "c": 3
+        },
+        "result": 14
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-003",
+      "name": "empty-leading-trailing-rest",
+      "kind": "match",
+      "subject": {
+        "type": "List<int>",
+        "items": [
+          1,
+          2,
+          3
+        ]
+      },
+      "pattern": "List.of(pattern.of(\"...\"), 1, 2, 3, pattern.of(\"...\"))",
+      "expected": {
+        "matched": true,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-004",
+      "name": "rest-prefix-anchor",
+      "kind": "match",
+      "subject": {
+        "type": "List<int>",
+        "items": [
+          1,
+          2,
+          3
+        ]
+      },
+      "pattern": "List.of(1, pattern.of(\"...\"))",
+      "expected": {
+        "matched": true,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-005",
+      "name": "rest-suffix-anchor",
+      "kind": "match",
+      "subject": {
+        "type": "List<int>",
+        "items": [
+          1,
+          2,
+          3
+        ]
+      },
+      "pattern": "List.of(pattern.of(\"...\"), 3)",
+      "expected": {
+        "matched": true,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-006",
+      "name": "rest-with-missing-literal",
+      "kind": "match",
+      "subject": {
+        "type": "List<int>",
+        "items": [
+          1,
+          3,
+          4
+        ]
+      },
+      "pattern": "List.of(pattern.of(\"...\"), 2, pattern.of(\"...\"))",
+      "expected": {
+        "matched": false,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-007",
+      "name": "counted-typed-fragment",
+      "kind": "match",
+      "subject": {
+        "type": "List<int>",
+        "items": [
+          1,
+          2,
+          3
+        ]
+      },
+      "pattern": "List.of(pattern.of<int>(\"...(3 of int)\"))",
+      "expected": {
+        "matched": true,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-008",
+      "name": "counted-fragment-not-search",
+      "kind": "match",
+      "subject": {
+        "type": "List<int>",
+        "items": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "pattern": "List.of(pattern.of<int>(\"...(3 of int)\"))",
+      "expected": {
+        "matched": false,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-009",
+      "name": "counted-fragment-with-search",
+      "kind": "match",
+      "subject": {
+        "type": "List<int>",
+        "items": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "pattern": "List.of(pattern.of(\"...\"), pattern.of<int>(\"...(3 of int)\"))",
+      "expected": {
+        "matched": true,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-010",
+      "name": "counted-literal-fragment",
+      "kind": "match",
+      "subject": {
+        "type": "List<int>",
+        "items": [
+          7,
+          7,
+          7
+        ]
+      },
+      "pattern": "List.of(pattern.of<int>(\"...(3 of 7)\"))",
+      "expected": {
+        "matched": true,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-011",
+      "name": "heterogeneous-type-test",
+      "kind": "match",
+      "subject": {
+        "type": "List<Any>",
+        "items": [
+          "x",
+          2,
+          true
+        ]
+      },
+      "pattern": "List.of(pattern.of<Any>(\"...\"), pattern.of<Any>(\"is int\"), pattern.of<Any>(\"...\"))",
+      "expected": {
+        "matched": true,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-012",
+      "name": "heterogeneous-type-test-false",
+      "kind": "match",
+      "subject": {
+        "type": "List<Any>",
+        "items": [
+          true,
+          false
+        ]
+      },
+      "pattern": "List.of(pattern.of<Any>(\"...\"), pattern.of<Any>(\"is int\"), pattern.of<Any>(\"...\"))",
+      "expected": {
+        "matched": false,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-013",
+      "name": "quoted-literal-fragment",
+      "kind": "match",
+      "subject": {
+        "type": "List<string>",
+        "items": [
+          "a as b"
+        ]
+      },
+      "pattern": "List.of(pattern.of<string>(\"\\\"a as b\\\"\"))",
+      "expected": {
+        "matched": true,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-014",
+      "name": "compile-time-constant-reuse",
+      "kind": "match",
+      "subject": {
+        "type": "List<int>",
+        "items": [
+          1,
+          2
+        ]
+      },
+      "pattern": "List.of(rest_ints, 2)",
+      "expected": {
+        "matched": true,
+        "bindings": {},
+        "requires": "define const pattern.SeqPart<int> rest_ints = pattern.of<int>(\"...\")"
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-015",
+      "name": "borrowed-rest-capture-span",
+      "kind": "match",
+      "subject": {
+        "type": "List<Any>",
+        "items": [
+          false,
+          1,
+          2,
+          3,
+          true
+        ]
+      },
+      "pattern": "List.of(pattern.of<Any>(\"...\") as val before, is int as val a, is int as val b, is int as val c, pattern.of<Any>(\"...\") as val after)",
+      "expected": {
+        "matched": true,
+        "bindings": {
+          "a": 1,
+          "b": 2,
+          "c": 3
+        },
+        "borrowed_spans": {
+          "before": [
+            0,
+            1
+          ],
+          "after": [
+            4,
+            5
+          ]
+        }
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-016",
+      "name": "guard-not-retried",
+      "kind": "match",
+      "subject": {
+        "type": "List<int>",
+        "items": [
+          1,
+          8
+        ]
+      },
+      "pattern": "List.of(pattern.of(\"...\"), is int as val x, pattern.of(\"...\")) when x > 5",
+      "expected": {
+        "arm_selected": false,
+        "bindings": {},
+        "fallback_result": 0,
+        "guard_evaluations": 1,
+        "matched": true
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-017",
+      "name": "runtime-fragment-source",
+      "kind": "reject",
+      "source": "val text = os.read_env(\"P\"); on List.of(pattern.of(text)) -> 1",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_CONSTEXPR",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-018",
+      "name": "runtime-env-backed-module-const",
+      "kind": "reject",
+      "source": "define const string template = os.read_env(\"P\"); on List.of(pattern.of(template)) -> 1",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_CONSTEXPR",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-019",
+      "name": "single-quoted-multichar",
+      "kind": "reject",
+      "source": "on List.of(pattern.of('...')) -> 1",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_SOURCE",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-020",
+      "name": "explicit-element-type-mismatch",
+      "kind": "reject",
+      "source": "val items: List<string> = List.of(\"x\"); on List.of(pattern.of<int>(\"...\")) -> 1",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_TYPE",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-021",
+      "name": "any-is-not-int-rest",
+      "kind": "reject",
+      "source": "val items: List<Any> = List.of(1); on List.of(pattern.of<int>(\"...\")) -> 1",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_TYPE",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-022",
+      "name": "bind-inside-string",
+      "kind": "reject",
+      "source": "on List.of(pattern.of<Any>(\"is int as val x\")) -> x",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_BINDING",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-023",
+      "name": "dynamic-callback-in-string",
+      "kind": "reject",
+      "source": "on List.of(pattern.of(\"user_predicate()\")) -> 1",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_SOURCE",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-024",
+      "name": "suspend-in-string",
+      "kind": "reject",
+      "source": "on List.of(pattern.of(\"await read()\")) -> 1",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_SOURCE",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-025",
+      "name": "nested-repeat",
+      "kind": "reject",
+      "source": "on List.of(pattern.of(\"...(2 of ...(3 of int))\")) -> 1",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_SOURCE",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-026",
+      "name": "repeat-count-overflow",
+      "kind": "reject",
+      "source": "on List.of(pattern.of(\"...(9999999999999999999999 of int)\")) -> 1",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_BUDGET",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-027",
+      "name": "adjacent-rest-in-fragment",
+      "kind": "reject",
+      "source": "on List.of(pattern.of(\"..., ...\")) -> 1",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_SOURCE",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-028",
+      "name": "adjacent-rest-after-expansion",
+      "kind": "reject",
+      "source": "on List.of(pattern.of(\"...\"), ...) -> 1",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_SOURCE",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-029",
+      "name": "capture-multiple-items",
+      "kind": "reject",
+      "source": "on List.of(pattern.of(\"1, 2, 3\") as val x) -> x",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_BINDING",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-030",
+      "name": "duplicate-capture",
+      "kind": "reject",
+      "source": "on List.of(... as val x, pattern.of(\"...\") as val x) -> 1",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_BINDING",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-031",
+      "name": "spoofed-module-identity",
+      "kind": "reject",
+      "source": "on List.of(user_pattern.of(\"...\")) -> 1",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_CONTEXT",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-032",
+      "name": "tuple-rest-fragment",
+      "kind": "reject",
+      "source": "on Tuple.of(pattern.of(\"...\"), 1) -> 1",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_CONTEXT",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-033",
+      "name": "runtime-pattern-as-structural-intrinsic",
+      "kind": "reject",
+      "source": "val p = pattern.parse_seq<int>(text, limits); on List.of(p) -> 1",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_CONTEXT",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-034",
+      "name": "fragment-outside-pattern",
+      "kind": "reject",
+      "source": "val p = pattern.of<int>(\"...\"); use_as_runtime_value(p);",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_CONTEXT",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-035",
+      "name": "borrowed-rest-escape",
+      "kind": "reject",
+      "source": "on List.of(... as val before, is int as val x) -> return before",
+      "expected": {
+        "diagnostic_category": "E_UNSUPPORTED",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-036",
+      "name": "cross-tenant-borrow",
+      "kind": "reject",
+      "source": "on List.of(... as val before, is int as val x) -> other_tenant.send(before)",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_BINDING",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-037",
+      "name": "malformed-template",
+      "kind": "reject",
+      "source": "on List.of(pattern.of(\"...(3 of int\")) -> 1",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_SOURCE",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-038",
+      "name": "runtime-variable-count",
+      "kind": "reject",
+      "source": "on List.of(pattern.of(\"...(n of int)\")) -> 1",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_SOURCE",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    }
+  ],
+  "backend_roles": {
+    "rust-wasm": "Rust source compiler emitting Wasm guest",
+    "java": "JVM and GraalVM Native Image compiler",
+    "llvm": "independent native LLVM compiler (not Rust-hosted prototype)",
+    "net": "CIL and Windows/Linux NativeAOT compiler",
+    "forge": "independent C++ Forge compiler/AOT",
+    "wasm-host": "artifact admission/worker guest host, not independent frontend",
+    "cranelift": "Cranelift native experimental compiler",
+    "js": "JavaScript code-generation and worker runtime",
+    "atto-selfhost": "bootstrap/self-hosted compiler; not self-hosted yet",
+    "hdl": "synthesizable restricted hardware profile; may reject dynamic patterns",
+    "realtime": "hard-real-time restricted profile requiring bounded WCET"
+  },
+  "portable_guest_fixtures": [
+    {
+      "path": "fixtures/typed-pattern-fragments/positive_typed_fragment_60.atto",
+      "blob_sha": "0f0535d1dfe177a8ab80de6c7925d59544841af6",
+      "kind": "positive",
+      "expected_exit_code": 60,
+      "paired_with": "fixtures/typed-pattern-fragments/positive_native_rest_60.atto"
+    },
+    {
+      "path": "fixtures/typed-pattern-fragments/positive_native_rest_60.atto",
+      "blob_sha": "9e2058f5cf48799cc13e6cd839c39d0ac0d70b2f",
+      "kind": "positive",
+      "expected_exit_code": 60,
+      "paired_with": "fixtures/typed-pattern-fragments/positive_typed_fragment_60.atto"
+    },
+    {
+      "path": "fixtures/typed-pattern-fragments/negative_dynamic_template.atto",
+      "blob_sha": "c0c0dc250f8692a1d087248057d175f386a2a6a8",
+      "kind": "reject",
+      "expected_diagnostic": "E_PATTERN_CONSTEXPR",
+      "guest_artifact": false
+    },
+    {
+      "path": "fixtures/typed-pattern-fragments/negative_bind_inside_template.atto",
+      "blob_sha": "8307638ce3e4ca0bd836bf209164d59d7e3d6134",
+      "kind": "reject",
+      "expected_diagnostic": "E_PATTERN_BINDING",
+      "guest_artifact": false
+    },
+    {
+      "path": "fixtures/typed-pattern-fragments/negative_type_confusion.atto",
+      "blob_sha": "939c46202979031a96a134ba56f240ff49927725",
+      "kind": "reject",
+      "expected_diagnostic": "E_PATTERN_TYPE",
+      "guest_artifact": false
+    },
+    {
+      "path": "fixtures/typed-pattern-fragments/negative_adjacent_rest.atto",
+      "blob_sha": "f6f8c536ecb6d624b313e7b1caa8b80e20b6ce16",
+      "kind": "reject",
+      "expected_diagnostic": "E_PATTERN_SOURCE",
+      "guest_artifact": false
+    },
+    {
+      "path": "fixtures/typed-pattern-fragments/negative_runtime_evaluation.atto",
+      "blob_sha": "a871ae8640cf973f3402ed43d998d19e10c795f2",
+      "kind": "reject",
+      "expected_diagnostic": "E_PATTERN_SOURCE",
+      "guest_artifact": false
+    },
+    {
+      "path": "fixtures/typed-pattern-fragments/list-pattern-guard-once-0.atto",
+      "blob_sha": "cdaf912597d63c9cf5e6e8127d0ecb5ac2e42958",
+      "kind": "positive",
+      "expected_exit_code": 0,
+      "assertion": "first witness guard false; no re-search"
+    },
+    {
+      "path": "fixtures/typed-pattern-fragments/list-pattern-infix-30.atto",
+      "blob_sha": "99249635fb38a60a85ade0756b8dd655fdb44fb1",
+      "kind": "positive",
+      "expected_exit_code": 30,
+      "assertion": "find first literal 20 then bind next int"
+    },
+    {
+      "path": "fixtures/typed-pattern-fragments/list-pattern-anchored-no-match-7.atto",
+      "blob_sha": "02d1ed663d6cfec0691097dbb0f22ec8a70cd39c",
+      "kind": "positive",
+      "expected_exit_code": 7,
+      "assertion": "prefix mismatch falls to wildcard default"
+    },
+    {
+      "path": "fixtures/typed-pattern-fragments/list-pattern-overflow-panic.atto",
+      "blob_sha": "51ffb97b826b1f5a713764223b30ebad903a4cd4",
+      "kind": "trap",
+      "expected_panic_code": 1,
+      "assertion": "matched arm checked i64 arithmetic must trap"
+    },
+    {
+      "path": "fixtures/typed-pattern-fragments/list-pattern-full-width-1.atto",
+      "blob_sha": "e6e82512319dea89e03ddbab69af1d9a27ddb37a",
+      "kind": "positive",
+      "expected_exit_code": 1,
+      "assertion": "exact-width literal sequence matching"
+    },
+    {
+      "path": "fixtures/typed-pattern-fragments/list-pattern-leftmost-3.atto",
+      "blob_sha": "266496f3fe9c32d347d65fe1cfc296b5176e34fb",
+      "kind": "positive",
+      "expected_exit_code": 3,
+      "assertion": "leftmost-shortest capture witness"
+    },
+    {
+      "path": "fixtures/typed-pattern-fragments/list-pattern-max-length-32.atto",
+      "blob_sha": "5c7264ae2461a708032a6069182ca0c6d5567213",
+      "kind": "positive",
+      "expected_exit_code": 32,
+      "assertion": "bounded 32-element guest collection"
+    },
+    {
+      "path": "fixtures/typed-pattern-fragments/list-pattern-standalone-rest-11.atto",
+      "blob_sha": "5a9bcaaa503828d309f0f5e6de7072ec1ec4ed8b",
+      "kind": "positive",
+      "expected_exit_code": 11,
+      "assertion": "standalone rest must match every bounded List length including 32"
+    },
+    {
+      "path": "fixtures/typed-pattern-fragments/list-pattern-empty-list-9.atto",
+      "blob_sha": "b73c0566b278717c4ec7ad8e132600a81cb06f38",
+      "kind": "positive",
+      "expected_exit_code": 9,
+      "assertion": "exact empty List pattern matches only an empty List"
+    },
+    {
+      "path": "fixtures/typed-pattern-fragments/list-pattern-empty-rest-13.atto",
+      "blob_sha": "99b16e83b151545698f1ef1d4096e0906104e2e7",
+      "kind": "positive",
+      "expected_exit_code": 13,
+      "assertion": "standalone rest must match an empty List"
+    }
+  ],
+  "implementation_candidates": {
+    "rust_wasm": {
+      "repo": "atto-lang/atto-source.rs",
+      "pr": 415,
+      "head": "638ffab8dc949b75ef9ad7f6d027b57b08de0a66",
+      "scope": "fixed-local-List<int>-native-rest-only",
+      "guest_status": "NOT_EXECUTED",
+      "caveat": "10 positive guest source inputs (including standalone rest and empty List) plus overflow and negative fixtures authored; exact-head Cargo/Clippy/compiler-generated guest verification NOT EXECUTED because runners fail at admission.",
+      "tree": "6f8ea71a49b8f525c09c11631ff0a27ad1924649",
+      "verification_script": "scripts/verify-list-pattern-guest.sh",
+      "runner_status": "ZERO_STEPS_SOURCE_CI"
+    },
+    "forge_native": {
+      "repo": "atto-lang/atto-source.forge",
+      "pr": 43,
+      "scope": "fixed-local-List<int>-native-rest-only",
+      "compiler_path": "forge_scalar .atto -> validated C++20 -> native executable",
+      "guest_status": "NOT_EXECUTED",
+      "caveat": "real compiled guest candidate authored with eight exact Rust source blobs; native compiler and sanitizer run not yet verified",
+      "head": "e3437deafc56a4d765ba007cf2eef6e7aa8dbeef",
+      "tree": "27c01647ed770c477ae25d3d5abdae8de70c8eae"
+    }
+  }
+}

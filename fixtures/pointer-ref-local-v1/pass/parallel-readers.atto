@@ -1,0 +1,10 @@
+pub fnc main(): int {
+  let value: int = 42;
+  val Pointer<int> first = rt ref value;
+  val Pointer<int> second = rt ref value;
+  val answer = deref! first;
+  val same = rt deref second;
+  rt unref first;
+  unref! second;
+  return answer;
+}

@@ -1,0 +1,18 @@
+// EXPECTED: main returns 42, never 17: catch handles throw, not raise.
+// Design-intent source; compiler guest execution is still NOT_EXECUTED.
+fnc int <- evaluate(int input)
+raises Error
+begin
+  if input > 3 then
+    raise! Error("escalate");
+  fi
+  return input;
+end
+
+pub fnc main(): int raises Error {
+  recover |err, next| -> {
+    return 42;
+  };
+  try { return evaluate(4); }
+  catch (Error e) { return 17; }
+}

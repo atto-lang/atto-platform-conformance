@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "contract": "attolang.actor-pubsub-generation.design-v1",
+  "evidenceLevel": "bounded-design-model-only",
+  "model": "formal/pubsub_generation.bounded.mjs",
+  "bounds": {
+    "subscribers": 1,
+    "maxJoinGenerations": 2,
+    "queueCapacity": 2,
+    "maxDeliveries": 2
+  },
+  "backendExecutionStatus": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED"
+  },
+  "zeroStepCiCountsAsExecution": false,
+  "sourceGuestCompilation": "NOT_EXECUTED",
+  "modelCases": [
+    {
+      "id": "rejoin_generation",
+      "invariant": "NoStaleDelivery",
+      "expected": "queued message tagged with old generation may be discarded but never delivered after rejoin"
+    },
+    {
+      "id": "group_close_publish",
+      "invariant": "NoPostClosePublication",
+      "expected": "publication after close has no accepted successor state"
+    },
+    {
+      "id": "queue_capacity",
+      "invariant": "QueueBounded",
+      "expected": "a queue at capacity two cannot accept another publish"
+    },
+    {
+      "id": "unsubscribe_delivery",
+      "invariant": "NoStaleDelivery",
+      "expected": "delivery requires a joined subscriber on the exact publication generation"
+    }
+  ],
+  "negativeControls": [
+    {
+      "id": "deliver_old_generation",
+      "mustViolate": "NoStaleDelivery"
+    },
+    {
+      "id": "publish_after_close",
+      "mustViolate": "NoPostClosePublication"
+    }
+  ],
+  "outstandingRefinement": [
+    "Actual typed ActorGroup/Topic/Subscription .atto guest compilation",
+    "FIFO per publisher-subscription edge under concurrent publishers",
+    "RELIABLE backpressure and cancellation without carrier-thread blocking",
+    "Actor termination, supervisor restart and resubscription",
+    "Cross-backend compiler receipts with exact source tree and nonzero steps"
+  ]
+}

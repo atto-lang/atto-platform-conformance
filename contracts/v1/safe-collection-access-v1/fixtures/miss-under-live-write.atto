@@ -1,0 +1,8 @@
+// expect-error: E_LOAN_CONFLICT (semantic, not parser rejection)
+// A statically obvious None cannot bypass the rooted exclusive WRITE loan.
+pub fnc main() -> int {
+  let values = [10, 20];
+  val write = values.get_mut(0);
+  val miss = values.get(-1);
+  return write.is_some() ? 42 : 0;
+}

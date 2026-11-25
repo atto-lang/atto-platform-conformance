@@ -1,0 +1,10 @@
+// Expected E_PATTERN_SOURCE, NO GUEST ARTIFACT. Pattern text is NOT Atto code.
+import module pattern from "std.pattern";
+
+pub fnc main(): int {
+  val items: List<Any> = List.of(1, 2, 3);
+  return match<int> items over
+    on List.of(pattern.of<Any>("call_user_function()")) -> 1,
+    on _ -> 0
+  end;
+}

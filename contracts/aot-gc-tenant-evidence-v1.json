@@ -1,0 +1,177 @@
+{
+  "schema": "atto.aot-gc-tenant-evidence.v1",
+  "version": 1,
+  "status": "NOT_EXECUTED_ALL_BACKENDS",
+  "canonical_contract": "atto-common-source/contracts/aot-memory-isolation-v1.json",
+  "fixtures": [
+    {
+      "id": "counter",
+      "path": "fixtures/aot-tenant/counter.atto",
+      "git_blob_sha": "afbc114956b286394e069e64faf18c9b6094ddcd",
+      "origin": "ores-truffle-oreslang/oreslang-source.llvm@5fb92b40f12f4554c80ebbbef7de6e3b3eb00944/tests/tenant-vm/lowered/atto/counter.atto",
+      "status": "CANDIDATE_NEEDS_BACKEND_GUEST_EXECUTION"
+    },
+    {
+      "id": "fleet",
+      "path": "fixtures/aot-tenant/fleet.atto",
+      "git_blob_sha": "faef434ee5dc23ad52181f2385c4fa2dba09c581",
+      "origin": "ores-truffle-oreslang/oreslang-source.llvm@5fb92b40f12f4554c80ebbbef7de6e3b3eb00944/tests/tenant-vm/lowered/atto/fleet.atto",
+      "status": "CANDIDATE_NEEDS_BACKEND_GUEST_EXECUTION"
+    }
+  ],
+  "profiles": {
+    "llvm-native-aot": {
+      "backend": "llvm",
+      "artifact_kind": "native-executable",
+      "full_native_aot": true,
+      "strict_zero_gc": true,
+      "selected_gc": "none"
+    },
+    "graal-native-epsilon-aot": {
+      "backend": "java",
+      "artifact_kind": "native-image",
+      "full_native_aot": true,
+      "strict_zero_gc": true,
+      "selected_gc": "epsilon"
+    },
+    "graal-native-managed-aot": {
+      "backend": "java",
+      "artifact_kind": "native-image",
+      "full_native_aot": true,
+      "strict_zero_gc": false,
+      "selected_gc": "serial"
+    },
+    "java-jvm-low-gc": {
+      "backend": "java",
+      "artifact_kind": "jvm-bytecode",
+      "full_native_aot": false,
+      "strict_zero_gc": false,
+      "selected_gc": "managed"
+    },
+    "wasm-precompiled-aot": {
+      "backend": "wasm",
+      "artifact_kind": "wasmtime-aot-module",
+      "full_native_aot": true,
+      "strict_zero_gc": false,
+      "selected_gc": "wasm"
+    },
+    "forge-native-aot": {
+      "backend": "forge",
+      "artifact_kind": "native-executable",
+      "full_native_aot": true,
+      "strict_zero_gc": true,
+      "selected_gc": "none"
+    },
+    "net-native-aot": {
+      "backend": "net",
+      "artifact_kind": "native-executable",
+      "full_native_aot": true,
+      "strict_zero_gc": false,
+      "selected_gc": "managed"
+    }
+  },
+  "cases": [
+    {
+      "id": "counter-source-aot",
+      "fixture": "counter",
+      "kind": "compiled-guest",
+      "require_tenant_security": false
+    },
+    {
+      "id": "fleet-source-aot",
+      "fixture": "fleet",
+      "kind": "compiled-guest",
+      "require_tenant_security": false
+    },
+    {
+      "id": "two-tenant-state-isolation",
+      "fixture": "counter",
+      "kind": "tenant-security",
+      "require_tenant_security": true
+    },
+    {
+      "id": "stale-actor-handle-denial",
+      "fixture": "counter",
+      "kind": "tenant-security",
+      "require_tenant_security": true
+    },
+    {
+      "id": "actor-tenant-recycling-soak",
+      "fixture": "fleet",
+      "kind": "memory-soak",
+      "require_tenant_security": false
+    },
+    {
+      "id": "cross-tenant-unauthorized-pointer",
+      "fixture": "counter",
+      "kind": "tenant-security",
+      "require_tenant_security": true
+    }
+  ],
+  "default_statuses": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED"
+  },
+  "states": [
+    "passed",
+    "failed",
+    "unsupported",
+    "not_executed"
+  ],
+  "evidence": {
+    "structural_not_authenticating": true,
+    "allowed_security_boundaries": [
+      "validated-wasm-isolate",
+      "os-process",
+      "audited-native-code-cage",
+      "graal-verified-tenant-isolate"
+    ],
+    "forbidden_security_boundaries": [
+      "actor-arena-only",
+      "jvm-classloader",
+      "shared-native-process-without-validated-lowering"
+    ],
+    "source_verified_fields": [
+      "source_head_sha",
+      "compiler_head_sha",
+      "fixture_blob_sha",
+      "artifact_sha256",
+      "workflow_url",
+      "run_id",
+      "executed_job_steps",
+      "command",
+      "exit_code",
+      "guest_executed",
+      "runtime_jit_used"
+    ],
+    "soak_required": [
+      "actor_operations",
+      "tenant_restarts",
+      "heap_samples",
+      "heap_start_bytes",
+      "heap_end_bytes",
+      "heap_high_water_bytes",
+      "managed_heap_budget_bytes",
+      "peak_rss_bytes",
+      "rss_budget_bytes",
+      "arena_bytes_before",
+      "arena_bytes_after",
+      "arena_slack_bytes",
+      "gc_collections_before",
+      "gc_collections_after",
+      "gc_pause_p99_ms",
+      "gc_pause_budget_p99_ms"
+    ],
+    "soak_minimums": {
+      "actor_operations": 100000,
+      "tenant_restarts": 100,
+      "heap_samples": 10
+    },
+    "no_gc_rule": "Epsilon disables collector activity but does not reclaim managed allocations; a passed no-collection mode also requires actual bounded heap/RSS and arena reclamation evidence.",
+    "execution_rule": "Do not accept parser-only, host-model, synthetic fixture, fake Native Image, no-step CI, JIT launcher, source-organizational CI failures, or absent metrics as proof.",
+    "provenance_rule": "The receipt validator checks only format and internal consistency. Authentic GitHub workflows, source tree identity, executed binaries and artifact provenance must be independently checked before certification."
+  }
+}

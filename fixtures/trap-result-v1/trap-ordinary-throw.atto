@@ -1,0 +1,8 @@
+fnc fail(): int throws Error { throw Error("bad id"); }
+pub fnc main(): int {
+  val result: Result<int, Error> = trap fail();
+  return match result over
+    on Ok(_) -> 0,
+    on Err() -> 42
+  end;
+}

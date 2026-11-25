@@ -1,0 +1,211 @@
+{
+  "schema": "attolang.value-block-range.parity.v0",
+  "status": "GAPS_AUDITED_NOT_PARITY_VERIFIED",
+  "as_of": "2026-11-11",
+  "source_contract": {
+    "repo": "ores-truffle-oreslang/attolang-language-spec.md",
+    "pr": 32,
+    "branch": "design/value-block-ternary-range-loops-20261110",
+    "file": "contracts/atto-value-block-range-v0.json",
+    "git_blob_sha": "dc27b558d9afdebf83488bca7c8aabb1484cdedb",
+    "revision": "all-nine-toolchains-ten-lanes-20261111",
+    "range_witness_fix": "Range-count fixtures now print JSON visited values; local exit-code-only observations are insufficient."
+  },
+  "required_guest_lanes": [
+    "java-interpreter",
+    "java-native-image",
+    "llvm-native",
+    "wasm32",
+    "forge-native",
+    "net-native-aot",
+    "rs-native",
+    "cranelift-native",
+    "js-worker",
+    "hdl-rtl-simulation"
+  ],
+  "backend_audit": [
+    {
+      "backend": "java",
+      "repo": "ores-truffle-oreslang/oreslang-source.java",
+      "main_sha": "6d8eb70048eafc9a84c5aebe9c1bb06104f16e76",
+      "observed": "conditional_expr_ast_parser_and_type_tests_exist",
+      "gaps": [
+        "BlockExpr",
+        "RangeExpr",
+        "for_in",
+        "guest_aot_parity"
+      ],
+      "candidate": {
+        "pr": 2874,
+        "sha": "ccf138f4652f328379b8bdf6d8d5fb2a66a3f505",
+        "tree": "3a26ac537e85aabbcf768b74bf22d29b3aadd446",
+        "branch": "parity/value-block-range-contract-v0-20261111",
+        "state": "DRAFT_NOT_GUEST_CERTIFIED"
+      }
+    },
+    {
+      "backend": "llvm",
+      "repo": "ores-truffle-oreslang/oreslang-source.llvm",
+      "main_sha": "0ee037ca3e5dd9ac6ac1e9cc3d40f19ee6326a9c",
+      "observed": "scalar_conditional_expression_ast_exists",
+      "gaps": [
+        "value_blocks",
+        "range_tokens_and_ir",
+        "for_in",
+        "executed_guest_parity"
+      ],
+      "candidate": {
+        "pr": 1696,
+        "sha": "12724395572a6380b14b72f0927b8537c5725969",
+        "tree": "7fbb485ed1faf3352440e74c166035868a6dc7f0",
+        "branch": "parity/value-block-range-contract-v0-20261111",
+        "state": "DRAFT_NOT_GUEST_CERTIFIED"
+      }
+    },
+    {
+      "backend": "wasm",
+      "repo": "ores-truffle-oreslang/oreslang-source.wasm",
+      "main_sha": "2c6ce5988592080ea47b8877e2b8c1d3df5cb9bd",
+      "observed": "real_compiler_uses_pinned_llvm_wasm32_path",
+      "gaps": [
+        "pinned_llvm_support",
+        "wasm_guest_execution",
+        "wasm_memory_no_host_fallback"
+      ],
+      "candidate": {
+        "pr": 473,
+        "sha": "43a362f1f72ac893e3fdebc89fbb59fe0b1ee36a",
+        "tree": "ace53b5306324777badc663453fe4dc788dfbe6e",
+        "branch": "parity/value-block-range-contract-v0-20261111",
+        "state": "DRAFT_NOT_GUEST_CERTIFIED"
+      }
+    },
+    {
+      "backend": "forge",
+      "repo": "ores-truffle-oreslang/oreslang-source.forge",
+      "main_sha": "2acf59d589f8016f879581f17a27df144fa73075",
+      "observed": "ternary_explicitly_rejected_by_stage0_frontend",
+      "gaps": [
+        "ternary_bool_cfg",
+        "value_blocks",
+        "range_ir",
+        "for_in",
+        "native_guest"
+      ],
+      "candidate": {
+        "pr": 264,
+        "sha": "97a4e9a8e65574499eb29e98b7d0c7d1761cc022",
+        "tree": "f77b4f547a1522a6c73e456821d845c5d35694ad",
+        "branch": "parity/value-block-range-contract-v0-20261111",
+        "state": "DRAFT_NOT_GUEST_CERTIFIED"
+      }
+    },
+    {
+      "backend": "net",
+      "repo": "ores-truffle-oreslang/oreslang-source.net",
+      "main_sha": "3f3606cc3ef81dad117047b4cb57609ad1a92672",
+      "observed": "ternary_explicitly_rejected_by_scalar_native_aot_frontend",
+      "gaps": [
+        "ternary_bool_cfg",
+        "value_blocks",
+        "range_ir",
+        "for_in",
+        "native_aot_guest"
+      ],
+      "candidate": {
+        "pr": 483,
+        "sha": "46a056fea70b2ea632f0575c50957c02bc073512",
+        "tree": "3a661dd0a5de9f73785fd79783e4418199318094",
+        "branch": "parity/value-block-range-contract-v0-20261111",
+        "state": "DRAFT_NOT_GUEST_CERTIFIED"
+      }
+    },
+    {
+      "backend": "rs",
+      "repo": "ores-truffle-oreslang/oreslang-source.rs",
+      "main_sha": "e0b8124c69d486c2bd919fb2d0124ea4eb87159e",
+      "observed": "narrow Rust/Cranelift compiler; typed lazy ternary implementation exists in draft PR #40, not in default branch",
+      "gaps": [
+        "block_values_in_any_expression_position",
+        "range_lex_ast",
+        "for_in",
+        "exact_head_guest"
+      ],
+      "candidate": {
+        "pr": 59,
+        "sha": "7953acfc9f8c5040777113b133ddbcd1b7d07726",
+        "tree": "2b26d588a52b521670acbf9736bbacff2f408fbd",
+        "branch": "parity/value-block-range-contract-v0-20261111",
+        "state": "DRAFT_NOT_GUEST_CERTIFIED"
+      }
+    },
+    {
+      "backend": "cranelift",
+      "repo": "ores-truffle-oreslang/oreslang-source.cranelift",
+      "main_sha": "d3227330a58ef0e170c0c2512b53f60c1eee29e8",
+      "observed": "standalone Rust Cranelift narrow expression parser, not general value-block/range frontend",
+      "gaps": [
+        "typed_ternary",
+        "block_values",
+        "range_ir",
+        "for_in",
+        "native_guest"
+      ],
+      "candidate": {
+        "pr": 110,
+        "sha": "cc01c3881c481b670445a15e564445d726f0d7f0",
+        "tree": "799010e7df3657a9bfd69b1c9fa3083d15a83676",
+        "branch": "parity/value-block-range-contract-v0-20261111",
+        "state": "DRAFT_NOT_GUEST_CERTIFIED"
+      }
+    },
+    {
+      "backend": "js",
+      "repo": "ores-truffle-oreslang/oreslang-source.js",
+      "main_sha": "b341ee620694db8c211e15cf36330a408373854a",
+      "observed": "standalone JavaScript compiler and guest runner with existing conditional test coverage; new block/range profile not verified",
+      "gaps": [
+        "block_values",
+        "range_iteration",
+        "for_in",
+        "worker_guest"
+      ],
+      "candidate": {
+        "pr": 246,
+        "sha": "723ac8d9893ada296efcbba165de9b50cf2b26c4",
+        "tree": "a3099475d5701dee90ce87c7f30934d2ad780d51",
+        "branch": "parity/value-block-range-contract-v0-20261111",
+        "state": "DRAFT_NOT_GUEST_CERTIFIED"
+      }
+    },
+    {
+      "backend": "hdl",
+      "repo": "ores-truffle-oreslang/oreslang-source.hdl",
+      "main_sha": "022936b799740ba12b17f0d009b1e81a2bdd6549",
+      "observed": "narrow RTL/source compiler; hardware does not provide general heap/actor/collection semantics",
+      "gaps": [
+        "synthesizable_conditional_block",
+        "static_finite_range_unroll",
+        "for_in",
+        "rtl_simulator_evidence"
+      ],
+      "candidate": {
+        "pr": 41,
+        "sha": "98736b5d6f39105a818db5104f667c8bb9adb849",
+        "tree": "70eb2e51d8922ba9d35e29e44154ab061dfadbdc",
+        "branch": "parity/value-block-range-contract-v0-20261111",
+        "state": "DRAFT_NOT_GUEST_CERTIFIED"
+      }
+    }
+  ],
+  "verified_guest_receipts": [],
+  "verification_rule": "Only a pinned candidate head SHA/tree, independently verified compiler binary, phase-correct diagnostics and exact guest evidence may certify a supported lane. Source-free and hardware-unsupported cases cannot pass.",
+  "audited_compiler_count": 9,
+  "semantic_alignment_blocker": {
+    "scope": "unresolved: canonical generic block expressions vs Java implementation draft #2797 ternary-arm-only BlockValueExpr",
+    "canonical_target": "standalone expression-position blocks evaluate final unterminated expression; ordinary return exits enclosing callable; no implicit lambda invocation",
+    "observed_java_pr": "ternary-arm-only blocks normalize return expression as arm result and auto-call bare zero-argument lambdas",
+    "resolution": "Reconcile spec PR #32 with Java PR #2797 and formatter PR #133 before marking any cross-backend complete"
+  },
+  "hardware_profile_note": "HDL RTL is a restricted hardware compilation profile. Dynamic heap arrays/actors are not applicable until proven; reject unsupported guest source, do not mark skipped cases as pass."
+}

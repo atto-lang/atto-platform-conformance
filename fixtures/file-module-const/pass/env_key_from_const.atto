@@ -1,0 +1,7 @@
+// expect-exit: 1
+define const string key = "ATTO_TEST_KEY";
+define const string value as os.read_env(key);
+pub fnc main(): int {
+  if value eq "allowed" then return 1;
+  else return 0; fi
+}

@@ -1,0 +1,12 @@
+// SOURCE-ONLY CONTRACT: forward public export resolves the local class.
+// expect: ACCEPT. Browser compiler support is not assumed.
+export pub Foo;
+define class Foo as
+  pub answer(): int {
+    return 42;
+  }
+end
+pub fnc main(): int {
+  val value = new Foo();
+  return value.answer();
+}

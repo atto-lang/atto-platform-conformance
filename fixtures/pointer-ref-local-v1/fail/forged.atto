@@ -1,0 +1,4 @@
+pub fnc main(): int {
+  val Pointer<int> ptr = 42 as Pointer<int>;
+  return deref! ptr;
+}

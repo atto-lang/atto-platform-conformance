@@ -1,0 +1,468 @@
+{
+  "schema": "atto.actor.base-lifecycle/2",
+  "status": "PROPOSED_SOURCE_FREE_NOT_GUEST_VERIFIED",
+  "stacks_on": "atto.actor.external-entrypoints/1",
+  "authority": "COMPILER_RUNTIME_OWNED",
+  "base": {
+    "nominal_type": "Actor",
+    "cannot_be_user_defined": true,
+    "final_operations": [
+      "spawn",
+      "send",
+      "send_async",
+      "get_ready",
+      "get_done",
+      "stop",
+      "graceful_stop",
+      "cancel",
+      "is_alive",
+      "actor_identity",
+      "supervisor_notice"
+    ],
+    "cannot_override_lifecycle_state_machine": true,
+    "actor_ref_not_serializable": true
+  },
+  "roles": {
+    "init": {
+      "entry": "external",
+      "requirement": "optional",
+      "max_invocations_per_incarnation": 1,
+      "default": "no_op",
+      "effect": "actor_owned_pre_ready",
+      "return": "void",
+      "direct_guest_call": false
+    },
+    "receive": {
+      "entry": "external",
+      "requirement": "required_for_mailbox_actor",
+      "default": "none",
+      "param": "ActorMail<T>",
+      "effect": "serialized_actor_mailbox_turn",
+      "direct_guest_call": false
+    },
+    "tear_down": {
+      "entry": "runtime_only",
+      "requirement": "optional",
+      "max_invocations_per_incarnation": 1,
+      "default": "no_op",
+      "effect": "bounded_cooperative_graceful_cleanup",
+      "direct_guest_call": false,
+      "may_suspend": false,
+      "invoked_on": [
+        "GRACEFUL_STOP"
+      ],
+      "not_invoked_on": [
+        "PANIC",
+        "FORCE_KILL",
+        "INIT_FAILURE"
+      ]
+    },
+    "on_throw": {
+      "entry": "runtime_only",
+      "requirement": "optional",
+      "max_invocations_per_failure": 1,
+      "default": "no_op",
+      "effect": "diagnostic_observer_only",
+      "cannot_swallow": true,
+      "not_guest_callable": true
+    },
+    "on_raise": {
+      "entry": "runtime_only",
+      "requirement": "optional",
+      "max_invocations_per_failure": 1,
+      "default": "no_op",
+      "effect": "diagnostic_observer_only",
+      "cannot_swallow": true,
+      "not_guest_callable": true
+    },
+    "on_panic": {
+      "entry": "supervisor_only",
+      "requirement": "not_actor_hook",
+      "guest_implementable": false
+    }
+  },
+  "role_compatibility": {
+    "legacy_on_start": "versioned_adapter_only_never_together_with_init",
+    "legacy_on_message": "versioned_adapter_only_never_together_with_receive",
+    "reject_duplicate_slots_across_files": true,
+    "reject_public_external_hooks": true,
+    "reject_unmarked_runtime_entrypoint": true,
+    "external_is_not_public_rpc": true
+  },
+  "state_contract": {
+    "state_storage": "actor_owned_sealed",
+    "schema_enforcement": "compiler_owned_nominal_state_witness",
+    "actor_trait_behavioral_only": true,
+    "trait_can_require_methods_and_output_types": true,
+    "trait_must_not_grant_state_critical_or_supervisor_authority": true,
+    "required_state_fields_must_be_verified_against_attached_state_schema": true,
+    "uninitialized_required_fields": "compile_error",
+    "mutable_state_access": "checked_critical_read_or_critical_write_loan_only",
+    "direct_field_access": "compile_error",
+    "state_alias_crossing_turn_or_await": "compile_error",
+    "initializer_before_ready": "REQUIRED"
+  },
+  "lifecycle": {
+    "phases": [
+      "ALLOCATED",
+      "INITIALIZING",
+      "READY",
+      "TURN_RUNNING",
+      "STOPPING",
+      "DRAINING",
+      "TEARDOWN",
+      "TERMINATED"
+    ],
+    "terminal_outcomes": [
+      "COMPLETED",
+      "FAILED",
+      "CANCELLED",
+      "PANICKED",
+      "QUARANTINED"
+    ],
+    "allowed_transitions": {
+      "ALLOCATED": [
+        "INITIALIZING",
+        "STOPPING"
+      ],
+      "INITIALIZING": [
+        "READY",
+        "STOPPING"
+      ],
+      "READY": [
+        "TURN_RUNNING",
+        "STOPPING"
+      ],
+      "TURN_RUNNING": [
+        "READY",
+        "STOPPING"
+      ],
+      "STOPPING": [
+        "DRAINING"
+      ],
+      "DRAINING": [
+        "TEARDOWN",
+        "TERMINATED"
+      ],
+      "TEARDOWN": [
+        "TERMINATED"
+      ],
+      "TERMINATED": []
+    },
+    "ready": "success_only_after_complete_state_init; failure_on_stop_before_ready",
+    "done": "settles_only_after_physical_retirement_including_tasks_resource_loans_and_callbacks",
+    "restart": "new_incarnation_strictly_increasing_generation_after_prior_physical_retirement",
+    "non_reentrancy": "one_physical_guest_turn_per_incarnation; runtime may enqueue bounded pending mail before READY",
+    "control_lane": "supervisor_failure_and_panic_not_guest_data"
+  },
+  "events": [
+    {
+      "name": "SPAWN_ACCEPTED",
+      "origin": "runtime",
+      "authority": "CONTROL"
+    },
+    {
+      "name": "INIT_STARTED",
+      "origin": "runtime",
+      "authority": "CONTROL"
+    },
+    {
+      "name": "READY_PUBLISHED",
+      "origin": "runtime",
+      "authority": "CONTROL"
+    },
+    {
+      "name": "MAIL_ACCEPTED",
+      "origin": "mailbox",
+      "authority": "DATA",
+      "phase_gate": "BOUNDED_PRE_READY_QUEUE_PERMITTED; NEVER_DELIVER_BEFORE_READY"
+    },
+    {
+      "name": "TURN_STARTED",
+      "origin": "runtime",
+      "authority": "CONTROL"
+    },
+    {
+      "name": "TURN_SETTLED",
+      "origin": "runtime",
+      "authority": "CONTROL"
+    },
+    {
+      "name": "STOP_REQUESTED",
+      "origin": "runtime",
+      "authority": "CONTROL"
+    },
+    {
+      "name": "MAILBOX_SEALED",
+      "origin": "runtime",
+      "authority": "CONTROL"
+    },
+    {
+      "name": "DRAIN_COMPLETED",
+      "origin": "runtime",
+      "authority": "CONTROL"
+    },
+    {
+      "name": "TEARDOWN_STARTED",
+      "origin": "runtime",
+      "authority": "CONTROL"
+    },
+    {
+      "name": "TEARDOWN_COMPLETED",
+      "origin": "runtime",
+      "authority": "CONTROL"
+    },
+    {
+      "name": "PHYSICALLY_RETIRED",
+      "origin": "runtime",
+      "authority": "CONTROL"
+    },
+    {
+      "name": "FAILURE_REPORTED",
+      "origin": "supervisor",
+      "authority": "CONTROL"
+    },
+    {
+      "name": "RESTART_ADMITTED",
+      "origin": "supervisor",
+      "authority": "CONTROL"
+    }
+  ],
+  "evidence_policy": {
+    "status_precedence": [
+      "SOURCE_FREE_MODEL",
+      "PARSED",
+      "TYPED",
+      "COMPILED",
+      "GUEST_EXECUTED",
+      "NATIVE_AOT_EXECUTED"
+    ],
+    "no_synthetic_promotion": true,
+    "expected_targets": [
+      "java",
+      "llvm",
+      "net",
+      "wasm",
+      "forge"
+    ],
+    "required": [
+      "exact_commit_and_tree_sha",
+      "verified_fixture_blob_sha",
+      "actual_compiler_diagnostics",
+      "stepful_runner_receipts",
+      "real_guest_init_receive_stop",
+      "supervisor_failure_notice",
+      "physical_retirement",
+      "restart_generation_fence",
+      "aot_when_supported"
+    ]
+  },
+  "cases": [
+    {
+      "id": "L2-01",
+      "name": "default_init_once",
+      "expect": "ready_is_reusable",
+      "verified_backends": [],
+      "source_status": "DESIGN_CASE_NOT_EXECUTED"
+    },
+    {
+      "id": "L2-02",
+      "name": "init_failure",
+      "expect": "ready_fails_and_no_receive",
+      "verified_backends": [],
+      "source_status": "DESIGN_CASE_NOT_EXECUTED"
+    },
+    {
+      "id": "L2-03",
+      "name": "stop_during_init",
+      "expect": "ready_fails_no_resurrection",
+      "verified_backends": [],
+      "source_status": "DESIGN_CASE_NOT_EXECUTED"
+    },
+    {
+      "id": "L2-04",
+      "name": "ready_during_stop",
+      "expect": "cannot_publish_ready_after_stop",
+      "verified_backends": [],
+      "source_status": "DESIGN_CASE_NOT_EXECUTED"
+    },
+    {
+      "id": "L2-05",
+      "name": "duplicate_init_across_namespace_files",
+      "expect": "compile_reject",
+      "verified_backends": [],
+      "source_status": "DESIGN_CASE_NOT_EXECUTED"
+    },
+    {
+      "id": "L2-06",
+      "name": "missing_receive_on_mailbox_actor",
+      "expect": "compile_reject",
+      "verified_backends": [],
+      "source_status": "DESIGN_CASE_NOT_EXECUTED"
+    },
+    {
+      "id": "L2-07",
+      "name": "source_only_actor_without_receive",
+      "expect": "accept_if_explicit_non_mailbox_role",
+      "verified_backends": [],
+      "source_status": "DESIGN_CASE_NOT_EXECUTED"
+    },
+    {
+      "id": "L2-08",
+      "name": "direct_or_public_external_receive",
+      "expect": "compile_reject",
+      "verified_backends": [],
+      "source_status": "DESIGN_CASE_NOT_EXECUTED"
+    },
+    {
+      "id": "L2-09",
+      "name": "mixed_legacy_on_start_and_init",
+      "expect": "compile_reject",
+      "verified_backends": [],
+      "source_status": "DESIGN_CASE_NOT_EXECUTED"
+    },
+    {
+      "id": "L2-10",
+      "name": "ordinary_user_trait_named_ActorLifecycle",
+      "expect": "compile_reject",
+      "verified_backends": [],
+      "source_status": "DESIGN_CASE_NOT_EXECUTED"
+    },
+    {
+      "id": "L2-11",
+      "name": "trait_missing_required_config_method",
+      "expect": "compile_reject",
+      "verified_backends": [],
+      "source_status": "DESIGN_CASE_NOT_EXECUTED"
+    },
+    {
+      "id": "L2-12",
+      "name": "required_state_field_missing_or_wrong_type",
+      "expect": "compile_reject",
+      "verified_backends": [],
+      "source_status": "DESIGN_CASE_NOT_EXECUTED"
+    },
+    {
+      "id": "L2-13",
+      "name": "direct_or_await_spanning_private_state_loan",
+      "expect": "compile_reject",
+      "verified_backends": [],
+      "source_status": "DESIGN_CASE_NOT_EXECUTED"
+    },
+    {
+      "id": "L2-14",
+      "name": "saturated_mailbox_then_panic",
+      "expect": "control_delivered_no_user_handler",
+      "verified_backends": [],
+      "source_status": "DESIGN_CASE_NOT_EXECUTED"
+    },
+    {
+      "id": "L2-15",
+      "name": "unhandled_throw_to_raise_to_panic",
+      "expect": "no_guest_panic_intercept",
+      "verified_backends": [],
+      "source_status": "DESIGN_CASE_NOT_EXECUTED"
+    },
+    {
+      "id": "L2-16",
+      "name": "on_raise_observation",
+      "expect": "cannot_swallow_error",
+      "verified_backends": [],
+      "source_status": "DESIGN_CASE_NOT_EXECUTED"
+    },
+    {
+      "id": "L2-17",
+      "name": "graceful_stop",
+      "expect": "teardown_once_after_drain",
+      "verified_backends": [],
+      "source_status": "DESIGN_CASE_NOT_EXECUTED"
+    },
+    {
+      "id": "L2-18",
+      "name": "cancel_or_panic",
+      "expect": "skip_cooperative_teardown",
+      "verified_backends": [],
+      "source_status": "DESIGN_CASE_NOT_EXECUTED"
+    },
+    {
+      "id": "L2-19",
+      "name": "teardown_failure",
+      "expect": "supervisor_notice_no_false_done_success",
+      "verified_backends": [],
+      "source_status": "DESIGN_CASE_NOT_EXECUTED"
+    },
+    {
+      "id": "L2-20",
+      "name": "repeated_stop_cancel_and_done_observation",
+      "expect": "idempotent_no_early_done",
+      "verified_backends": [],
+      "source_status": "DESIGN_CASE_NOT_EXECUTED"
+    },
+    {
+      "id": "L2-21",
+      "name": "old_generation_mail_or_future_wake",
+      "expect": "rejected_after_restart",
+      "verified_backends": [],
+      "source_status": "DESIGN_CASE_NOT_EXECUTED"
+    },
+    {
+      "id": "L2-22",
+      "name": "resource_loan_still_live",
+      "expect": "no_physical_retirement_or_arena_reclaim",
+      "verified_backends": [],
+      "source_status": "DESIGN_CASE_NOT_EXECUTED"
+    },
+    {
+      "id": "L2-23",
+      "name": "multi_actor_one_file_distinct_receivers",
+      "expect": "bind_per_nominal_actor",
+      "verified_backends": [],
+      "source_status": "DESIGN_CASE_NOT_EXECUTED"
+    },
+    {
+      "id": "L2-24",
+      "name": "error_hook_is_not_foreign_actor_receiver",
+      "expect": "compile_reject",
+      "verified_backends": [],
+      "source_status": "DESIGN_CASE_NOT_EXECUTED"
+    },
+    {
+      "id": "L2-25",
+      "name": "late_control_callback_after_retirement",
+      "expect": "reject_without_reactivating_actor",
+      "verified_backends": [],
+      "source_status": "DESIGN_CASE_NOT_EXECUTED"
+    }
+  ],
+  "candidate_implementations": [
+    {
+      "backend": "java",
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "pr": 3084,
+      "role": "runtime_stop_fence_and_stateless_default_init",
+      "status": "AUTHORED_NOT_EXECUTED",
+      "source_guest_certified": false
+    },
+    {
+      "backend": "java",
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "pr": 3085,
+      "role": "static_actor_contract_state_witness",
+      "status": "AUTHORED_NOT_EXECUTED",
+      "source_guest_certified": false
+    }
+  ],
+  "corpus": {
+    "stateless_no_explicit_init": "fixtures/actor-base-lifecycle-v2/stateless-no-init.atto",
+    "state_witness_package": "fixtures/actor-base-lifecycle-v2/state-witness/",
+    "status": "SOURCE_ONLY_NOT_EXECUTED",
+    "owner": "atto.actor.base-lifecycle/2",
+    "git_blob_sha1": {
+      "stateless-no-init.atto": "e09f99f793f0fc6d83d36e72bcae2d752ff283a3",
+      "state-witness/actor.atto": "85ca85b56061ca7a3923bc3b2f4f6a9cd53e857f",
+      "state-witness/contract.atto": "7afcfe2bcb5f490e58b17d67decd09e249ffc7b4",
+      "state-witness/method.atto": "e9070b07fb9d2bdf1f454015a8c15ca308284ce3",
+      "state-witness/state.atto": "814b5778a5a8b22eabcd13f045e6b4c5ab336c75"
+    }
+  }
+}

@@ -1,0 +1,3 @@
+// MUST reject in Core-only without an allocator provider.
+import module buffer from "atto.alloc/int_buffer";
+pub fnc probe(int x): int { return x; }

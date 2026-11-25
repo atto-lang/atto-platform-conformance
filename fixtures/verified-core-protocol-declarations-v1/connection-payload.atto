@@ -1,0 +1,18 @@
+define dimension Time;
+define unit Second: Time;
+define unit Millis: Time = Second / 1000;
+define unit Tick: Time = Millis;
+
+type Timeout = i32 where self > 0 and self <= 60_000 and units in Millis;
+type Replacement = i32 where self >= 1 and self < 60_001 and units in Tick;
+
+define protocol Connection as
+    initial Disconnected;
+    Disconnected -> Connecting on connect(Timeout timeout);
+    Connecting -> Connected on ready;
+    Connecting -> Failed on fail;
+    Connected -> Connecting on connect(Replacement timeout);
+    terminal Failed;
+end
+
+pub fnc main() -> int { return 42; }

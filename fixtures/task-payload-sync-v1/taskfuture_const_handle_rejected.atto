@@ -1,0 +1,4 @@
+pub susp fnc main(): int {
+  const TaskFuture<int> t = task<int> { return 42; };
+  return await t;
+}

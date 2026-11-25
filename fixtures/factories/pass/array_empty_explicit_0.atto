@@ -1,0 +1,5 @@
+// TARGET, NOT EXECUTED. Expected type fixes an otherwise unconstrained T.
+pub fnc main(): int {
+  val Array<int> empty = Array.of();
+  return 0;
+}

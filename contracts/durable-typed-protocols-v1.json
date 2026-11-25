@@ -1,0 +1,137 @@
+{
+  "schema": "atto.actor.durable-typed-protocols.conformance.v1",
+  "status": "TARGET_ONLY_NO_GUEST_EXECUTION",
+  "spec": "atto-lang/atto-spec/language/durable-typed-protocols-v1.md",
+  "extends": "contracts/actor-event-sourcing-v1.json",
+  "contractGuarantee": "LOCAL_ATOMICITY_AND_AT_LEAST_ONCE_ATTEMPTS",
+  "noExactlyOnceNetworkDelivery": true,
+  "requiredTransaction": [
+    "inbox_dedupe",
+    "state_or_event_batch",
+    "outbox_intents",
+    "commit_receipt"
+  ],
+  "versionRules": {
+    "originalWireDigestPinned": true,
+    "explicitMigrationEdges": true,
+    "unknownFutureReject": true,
+    "oldEpochBeforeDedupe": true,
+    "failedMigrationRollback": true
+  },
+  "evidenceRules": {
+    "hostModelOnly": true,
+    "sourceParserCertified": false,
+    "sqlDurabilityCertified": false,
+    "crashRecoveryCertified": false,
+    "backendParityCertified": false
+  },
+  "backendStatus": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "rs": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED"
+  },
+  "cases": [
+    {
+      "id": "old-version-upcast",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "1->2 message conversion is explicit; original digest preserved"
+    },
+    {
+      "id": "unknown-future-reject",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "unsupported future schema does not enter a handler"
+    },
+    {
+      "id": "migration-missing-edge",
+      "phase": "semantic",
+      "expect": "REJECT_TARGET_ONLY",
+      "diagnostic": "E_DURABLE_MIGRATION",
+      "scenario": "declared compatibility window has no adjacent migration edge"
+    },
+    {
+      "id": "migration-rollback",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "failed copy-then-switch leaves schema and state unchanged"
+    },
+    {
+      "id": "original-digest-dedupe",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "retry after upcast uses canonical original wire digest"
+    },
+    {
+      "id": "conflicting-idempotency",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "same scoped idempotency key and different payload rejects"
+    },
+    {
+      "id": "epoch-before-dedupe",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "stale lease fails before duplicate-result lookup"
+    },
+    {
+      "id": "atomic-outbox",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "state, dedupe and outbox intents commit or roll back together"
+    },
+    {
+      "id": "crash-after-commit-lost-receipt",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "receipt loss forces reconciliation, no second commit"
+    },
+    {
+      "id": "stale-outbox-claim",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "expired/outdated claim token cannot settle another claimant"
+    },
+    {
+      "id": "at-least-once-duplicate-window",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "crash after remote application before local ACK permits redelivery"
+    },
+    {
+      "id": "journal-gap-recovery",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "missing journal sequence blocks activation with no partial publish"
+    },
+    {
+      "id": "cross-tenant-reject",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "wrong tenant, actor identity or producer authority fails closed"
+    },
+    {
+      "id": "no-uncommitted-publication",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "no visible state or effect before authoritative commit receipt"
+    },
+    {
+      "id": "lease-expiry-redelivery",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "pending outbox work can be reclaimed only after expiry/fencing"
+    },
+    {
+      "id": "unsupported-provider-fail-closed",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "provider without atomic inbox/state/outbox capability is rejected"
+    }
+  ]
+}

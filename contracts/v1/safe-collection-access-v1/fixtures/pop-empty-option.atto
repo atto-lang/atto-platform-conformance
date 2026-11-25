@@ -1,0 +1,6 @@
+// CANDIDATE API: pop from an empty Vector returns None; no sentinel or panic.
+pub fnc main() -> int {
+  let values = Vector[int] {};
+  val result = values.pop();
+  return result.unwrap_or(42);
+}

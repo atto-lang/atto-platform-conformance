@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "profile": "verified-core-protocol-declarations-v1",
+  "cases": [
+    {
+      "source": "connection-payload.atto",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "source": "payment-protocol.atto",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "source": "contextual-protocol-keywords.atto",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "source": "missing-initial.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_PROTOCOL_INITIAL"
+      }
+    },
+    {
+      "source": "duplicate-initial.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_PROTOCOL_INITIAL"
+      }
+    },
+    {
+      "source": "terminal-edge.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_PROTOCOL_TERMINAL"
+      }
+    },
+    {
+      "source": "unknown-terminal.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_PROTOCOL_TERMINAL"
+      }
+    },
+    {
+      "source": "duplicate-terminal.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_PROTOCOL_TERMINAL"
+      }
+    },
+    {
+      "source": "duplicate-edge.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_PROTOCOL_DUPLICATE"
+      }
+    },
+    {
+      "source": "duplicate-protocol.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_PROTOCOL_DUPLICATE"
+      }
+    },
+    {
+      "source": "inconsistent-payload-carrier.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_PROTOCOL_PAYLOAD"
+      }
+    },
+    {
+      "source": "inconsistent-payload-bounds.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_PROTOCOL_PAYLOAD"
+      }
+    },
+    {
+      "source": "inconsistent-payload-scale.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_PROTOCOL_PAYLOAD"
+      }
+    },
+    {
+      "source": "unknown-payload.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_PROTOCOL_PAYLOAD"
+      }
+    },
+    {
+      "source": "duplicate-payload-field.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_PROTOCOL_PAYLOAD"
+      }
+    },
+    {
+      "source": "missing-message-tag.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_PROTOCOL_SYNTAX"
+      }
+    },
+    {
+      "source": "reserved-state-name.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_PROTOCOL_SYNTAX"
+      }
+    }
+  ]
+}

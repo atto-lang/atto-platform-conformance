@@ -1,0 +1,4 @@
+// ACTOR_EXTERNAL_REQUIRED: only the runtime may invoke marked mailbox ingress.
+namespace actor_external_unmarked_receive;
+declare actor Worker;
+define mtd (Worker w) receive(ActorMail<int> mail): void { return; }

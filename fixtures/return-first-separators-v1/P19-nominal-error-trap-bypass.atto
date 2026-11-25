@@ -1,0 +1,19 @@
+// EXPECTED: 42; a Foo raised-object tag bypasses legacy Option trap.
+define class Foo extends Error as end
+
+fnc int <- risky(int value)
+raises Foo ::
+  if value > 3 then
+    raise! new Foo();
+  fi
+  return value;
+end
+
+pub fnc main(): int raises Foo {
+  recover |err, cursor| -> {
+    if err.is_type(Foo) then return 42; fi
+    return 0;
+  };
+  val Option<int> ignored = trap risky(4);
+  return 17;
+}

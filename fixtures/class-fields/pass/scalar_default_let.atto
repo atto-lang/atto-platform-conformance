@@ -1,0 +1,12 @@
+// expect-exit: 20
+define class Meter as
+  pub int implicit = 2;
+  pub let int explicit = 3;
+  pub val int stable = 4;
+  pub final int fixed = 5;
+  pub const int limit = 6;
+end
+pub fnc main(): int {
+  val Meter meter = new Meter();
+  return meter.implicit + meter.explicit + meter.stable + meter.fixed + meter.limit;
+}

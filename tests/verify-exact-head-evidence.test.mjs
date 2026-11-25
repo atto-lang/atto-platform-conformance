@@ -36,6 +36,30 @@ test('runner admission failure is distinguished from guest failure', () => {
   x.jobs.jobs[0].runner_id = 0; x.jobs.jobs[0].steps = [];
   assert.equal(grade(x), 'RUNNER_ADMISSION_FAILURE');
 });
+test('failed manual dispatch without an impossible checkout receipt is admission-only', () => {
+  const failed = fixture('workflow_dispatch');
+  delete failed.checkout; // No checkout step ran, so no runner-generated receipt exists.
+  failed.run.conclusion = 'failure';
+  failed.jobs.jobs[0].conclusion = 'failure';
+  failed.jobs.jobs[0].runner_id = 0;
+  failed.jobs.jobs[0].steps = [];
+  assert.equal(grade(failed), 'RUNNER_ADMISSION_FAILURE');
+  for (const edit of [
+    x => x.jobs.jobs[0].runner_id = 99,
+    x => x.jobs.jobs[0].steps = [{ number: 1, name: 'Some step', status: 'completed', conclusion: 'failure' }],
+    x => x.jobs.jobs[0].head_sha = a,
+    x => x.jobs.jobs[0].run_attempt = 1,
+    x => x.run.conclusion = 'cancelled',
+  ]) {
+    const x = structuredClone(failed);
+    edit(x);
+    assert.equal(grade(x), 'UNVERIFIED');
+  }
+  const passed = fixture('workflow_dispatch');
+  delete passed.checkout;
+  assert.equal(grade(passed), 'UNVERIFIED'); // Success still requires exact-tree checkout.
+});
+
 test('recorded failing steps cannot be relabeled as runner admission', () => {
   const x = fixture();
   x.run.conclusion = 'failure';

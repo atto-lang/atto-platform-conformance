@@ -1,0 +1,5 @@
+// Candidate canonical AttoLang Core-only guest. Compile/run evidence required.
+import module numeric from "atto.core/numeric";
+pub fnc atto_core_entry(int x): int {
+  return numeric.clamp_int(x, 0, 42);
+}

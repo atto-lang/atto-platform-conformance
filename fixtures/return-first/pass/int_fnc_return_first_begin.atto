@@ -1,0 +1,4 @@
+// expect-exit: 42
+// return-first syntax variant int_fnc_return_first_begin; compiled guest proof still pending
+fnc int <- calculate(int x) begin return x * 2; end
+pub fnc main() -> int { return calculate(21); }
