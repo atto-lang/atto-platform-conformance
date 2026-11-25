@@ -20,7 +20,7 @@ Required later: compile the same source blob with every declared backend, execut
 
 ## Numerical semantics v1 (target only)
 
-The [51-case exact numeric registry](contracts/numeric-semantics-v1.json) and [source-free BigInt-based oracle test](tests/numeric-semantics-v1.test.mjs) check proposed integer, decimal, fixed-point, vector and dimensional results. The separate [10-fixture guest-source manifest](fixtures/numeric-guest-v1/manifest.json) pins candidate `.atto` quotient/remainder, `trap`, NaN, signed-zero and exact integer-vs-float comparison cases; [source-integrity tests](tests/numeric-guest-source-v1.test.mjs) reject duplicate IDs and mismatched Git blob identities. Run `node --test tests/numeric-semantics-v1.test.mjs tests/numeric-guest-source-v1.test.mjs`. **These tests do not execute an AttoLang compiler or prove full guest AOT; every backend remains not_executed until authenticated guest evidence is added.**
+The [51-case exact numeric registry](contracts/numeric-semantics-v1.json) and [source-free BigInt-based oracle test](tests/numeric-semantics-v1.test.mjs) check proposed integer, decimal, fixed-point, vector and dimensional results. The separate [11-fixture guest-source manifest](fixtures/numeric-guest-v1/manifest.json) pins candidate `.atto` quotient/remainder, `trap`, NaN, signed-zero and exact integer-vs-float comparison cases; [source-integrity tests](tests/numeric-guest-source-v1.test.mjs) reject duplicate IDs and mismatched Git blob identities. Run `node --test tests/numeric-semantics-v1.test.mjs tests/numeric-guest-source-v1.test.mjs`. **These tests do not execute an AttoLang compiler or prove full guest AOT; every backend remains not_executed until authenticated guest evidence is added.**
 
 ## Purpose
 
