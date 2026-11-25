@@ -984,3 +984,68 @@ test("capture oracle detects unpublished child leak", () => {
 test("capture oracle detects unrelated sibling cancellation", () => {
   assert.throws(() => verifyOwnedCaptureAndCancellation(false, false, true));
 });
+
+
+// Reference-only independent CONTROL reservation oracle. The mutation routes
+// terminal notification through DATA and must be detected under saturation.
+function verifyReservedTerminalControl(routeThroughData = false) {
+  const parent = { data: [1, 2], slots: [], capacity: 2 };
+  const other = { data: [], slots: [], capacity: 2 };
+  let epoch = 0;
+  const register = (p, id) => {
+    if (p.slots.length >= p.capacity) return null;
+    const slot = { parent: p, id, epoch: ++epoch, notice: null };
+    p.slots.push(slot);
+    return slot;
+  };
+  const retire = (slot, kind) => {
+    const p = slot.parent;
+    const index = p.slots.indexOf(slot);
+    if (index < 0 || slot.notice !== null) return false;
+    if (routeThroughData && p.data.length === 2) return false;
+    slot.notice = { id: slot.id, epoch: slot.epoch, kind };
+    p.slots.splice(index, 1);
+    p.slots.push(slot);
+    return true;
+  };
+  const take = p => {
+    const i = p.slots.findIndex(s => s.notice !== null);
+    if (i < 0) return null;
+    return p.slots.splice(i, 1)[0].notice;
+  };
+  const a = register(parent, 7);
+  const b = register(parent, 8);
+  assert.ok(a && b);
+  assert.equal(register(parent, 9), null);
+  assert.equal(take(parent), null);
+  assert.equal(retire(b, "Failed"), true);
+  assert.equal(retire(a, "Cancelled"), true);
+  assert.equal(retire(b, "Failed"), false);
+  assert.equal(parent.data.length, 2);
+  assert.equal(register(parent, 9), null);
+  assert.equal(take(other), null);
+  const first = take(parent);
+  assert.equal(first.id, 8);
+  assert.equal(first.epoch, b.epoch);
+  assert.equal(first.kind, "Failed");
+  const replacement = register(parent, 8);
+  assert.ok(replacement);
+  assert.notEqual(replacement.epoch, b.epoch);
+  const second = take(parent);
+  assert.equal(second.id, 7);
+  assert.equal(second.kind, "Cancelled");
+  assert.equal(take(parent), null);
+  assert.equal(retire(b, "Failed"), false);
+  assert.equal(retire(replacement, "Stopped"), true);
+  assert.equal(take(parent).epoch, replacement.epoch);
+  assert.equal(take(parent), null);
+  assert.equal(parent.slots.length, 0);
+}
+
+test("terminal CONTROL reserves direct-parent capacity independently of saturated DATA", () => {
+  verifyReservedTerminalControl();
+});
+
+test("terminal CONTROL oracle detects routing through saturated DATA mutation", () => {
+  assert.throws(() => verifyReservedTerminalControl(true));
+});
