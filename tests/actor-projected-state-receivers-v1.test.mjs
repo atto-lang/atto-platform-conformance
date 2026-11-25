@@ -120,3 +120,60 @@ test('concrete parsed actor state schemas are fail-closed without guest promotio
     assert.match(item.sourceUnits['src/worker.atto'], /define actor Foo/);
   }
 });
+
+
+// Source-free authority oracle. This is NOT a compiler, physical state-loan
+// runtime, or generated guest receipt. Exercise the policy independently of
+// Java/.NET representation so a nested read cannot regain an ancestor's write.
+function verifyNestedStateAuthority(allowEscalation = false) {
+  let generation = 1;
+  const stack = [];
+  const begin = writable => {
+    const parent = stack.at(-1);
+    if (!allowEscalation && writable && parent && !parent.writable)
+      throw new Error('E_READONLY');
+    const ticket = Object.freeze({generation: generation++, writable});
+    stack.push(ticket);
+    return ticket;
+  };
+  const validate = (ticket, write = false) =>
+    stack.at(-1) === ticket && (!write || ticket.writable);
+  const end = ticket => {
+    if (!validate(ticket)) throw new Error('E_LOAN_ORDER');
+    stack.pop();
+  };
+  const outer = begin(true);
+  const read = begin(false);
+  const nextGeneration = generation;
+  assert.throws(() => begin(true), /E_READONLY/);
+  assert.equal(generation, nextGeneration);
+  assert.equal(validate(read), true);
+  assert.equal(validate(read, true), false);
+  assert.equal(validate(outer, true), false);
+  const readChild = begin(false);
+  assert.equal(readChild.generation, nextGeneration);
+  assert.throws(() => end(read), /E_LOAN_ORDER/);
+  assert.equal(validate(readChild), true);
+  end(readChild);
+  end(read);
+  assert.equal(validate(read), false);
+  assert.equal(validate(outer, true), true);
+  const writeChild = begin(true);
+  assert.equal(validate(writeChild, true), true);
+  assert.equal(validate(outer, true), false);
+  end(writeChild);
+  end(outer);
+  const rootRead = begin(false);
+  assert.throws(() => begin(true), /E_READONLY/);
+  assert.equal(validate(rootRead), true);
+  end(rootRead);
+  assert.equal(stack.length, 0);
+}
+
+test('nested state reborrow authority is monotonic and denial is atomic', () => {
+  verifyNestedStateAuthority();
+});
+
+test('nested state authority oracle detects the escalation mutation', () => {
+  assert.throws(() => verifyNestedStateAuthority(true));
+});
