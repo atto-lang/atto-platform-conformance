@@ -265,6 +265,28 @@ The [33 proposed collection test vectors](contracts/collection-slice-spread-v1.j
 
 [`contracts/collection-layout-v1/`](contracts/collection-layout-v1/README.md) defines proposed AoS, SoA and AoSoA named-generic Array fixtures. All backend statuses are **NOT_EXECUTED** until exact-source actual guest tests; the dedicated Node test is registry-only and cannot promote support.
 
+## Proposed implicit argument borrowing
+
+[Target registry](contracts/implicit-argument-borrow-v1.json): `python3 bin/validate_implicit_argument_borrow.py` validates the 30 source-only fixture expectations and registry paths against all 11 active atto-source.* repositories, including same-call borrow/move exclusions, inferred borrowed-return and named `lt!` lifetime cases. Run `python3 -O tests/implicit_argument_borrow_validator_smoke.py` to confirm invalid manifests fail closed even with assertions disabled (eight deliberate tamper variants). Neither command compiles or executes AttoLang guests. Each compiler/backend needs independent exact-head guest and no-artifact evidence; backend states remain `NOT_EXECUTED`.
+
+## Ownership-bang interpretation for implicit-call fixtures
+
+Treat a normal nonprimitive call `inspect(owner)` as an implicit readonly
+`borrow!` under the target language contract. The paired spelling
+`inspect(borrow! owner)` must yield identical scoped loan rights and retain
+the original owner; neither permits mutation or an owned return. Mutable
+`update(mut owner)` and explicit `update(borrow! mut owner)` require unique
+write authority. Consuming calls must use `take!` at the formal and caller.
+
+Related operations remain separate: `share!` requires frozen or guarded
+shared authority; `copy!` is a proven shallow copy and `copy!!` an
+independent deep graph; `pin! take!` fixes pointee storage but does not
+extend borrows across await/actor boundaries; `drop!` consumes only after
+loans end. Add paired negative guests for every authority change instead of
+promoting host-only manifest validation as compiler evidence. The existing
+implicit-borrow registry's status stays `NOT_EXECUTED` until actual guests
+compile and run on exact compiler + fixture trees.
+
 ## Canonical lambda v1 target fixtures
 
 [`fixtures/lambda-v1/manifest.json`](fixtures/lambda-v1/manifest.json) contains five positive and five rejection `.atto` cases for the canonical `|x| -> expression` syntax (typed arguments, captures, shadowing, `|>`, and rejected captures/placeholders). Their SHA-256 bytes are pinned. The **only** currently implemented check is fixture integrity and fail-closed manifest status validation:
