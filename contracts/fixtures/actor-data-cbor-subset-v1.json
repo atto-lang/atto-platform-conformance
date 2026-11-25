@@ -1,6 +1,6 @@
 {
   "contract": "actor-data-cbor-subset-v1",
-  "status": "HOST_REFERENCE_NOT_GUEST",
+  "status": "HOST_PREFLIGHT_EXECUTED_NOT_GUEST",
   "spec": "https://github.com/atto-lang/atto-spec/pull/229",
   "implementation": "https://github.com/atto-lang/atto-serialization-and-validation/pull/38",
   "vectors": [
@@ -63,5 +63,13 @@
     "typed shape pinning and materialization",
     "shared cumulative budget across preflight and decode",
     "actual runtime and guest parity"
-  ]
+  ],
+  "receipt": {
+    "head": "13a0e75775e9fe8e7c319670827f63ad33a0dede",
+    "tree": "04daf2aa920ac467546b1be7f371303c06418077",
+    "run": 45653789056,
+    "tests": 6,
+    "mutation_inputs": 4096,
+    "failures": 0
+  }
 }
