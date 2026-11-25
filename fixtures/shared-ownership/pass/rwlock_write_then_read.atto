@@ -1,0 +1,10 @@
+// expect-exit: 42
+// TARGET library API: exclusive writer then readonly snapshot
+define class Box as pub let int value = 0; end
+pub fnc main(): int {
+  val state = share! RwLock(new Box());
+  val a = share! state;
+  val b = share! state;
+  a.with_write(|mut box| -> { box.value = 42; });
+  return b.with_read(|box| -> box.value);
+}

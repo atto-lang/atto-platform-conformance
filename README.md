@@ -358,3 +358,10 @@ Every listed backend is currently `not_executed`; this does NOT compile Atto sou
 ## All eleven source repositories: checked-i64 parity
 
 [Checked-i64 all-backends v1](contracts/checked-i64-all-backends-v1/README.md) pins the exact shared 15-case arithmetic corpus and the 11 `atto-source.*` main snapshots. Its source-only BigInt oracle and negative mutation tests explicitly **do not** claim compiled guest parity; individual compiler/target receipts remain required.
+
+## Shared ownership and explicit guard conformance (TARGET)
+
+- [Versioned target registry](contracts/shared-ownership-and-guards-v1.json): 6 proposed positive and 12 proposed negative guest fixtures for `share!`, deep freeze, owner invalidation and explicit `RwLock<T>` guards.
+- `python3 bin/validate_shared_ownership_and_guards.py` checks source/manifest integrity **only**. It cannot certify parser, compiler, runtime behavior or backend parity.
+- A backend may claim **PASS** only after positive guests execute and negatives reject with zero emitted guest bytes at the exact source SHA, with meaningful stepful CI receipts; guard race/scheduler/cancellation testing is also required.
+- [Normative draft specification](https://github.com/atto-lang/atto-spec/pull/90). Until executable implementation catches up, cases are `TARGET_NOT_EXECUTED`.

@@ -1,0 +1,9 @@
+// expect-error: E_SHARE_ALIAS
+// a read loan is not the authority to create a permanent shared owner
+define class Box as pub let int value = 42; end
+pub fnc main(): int {
+  val b = new Box();
+  val view = borrow! b;
+  val frozen = share! view;
+  return frozen.value;
+}
