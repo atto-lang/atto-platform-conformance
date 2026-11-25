@@ -1,0 +1,64 @@
+# Rust-only source-identity and host-reference tests, NOT AttoLang guest parity.
+# Runs in the source repository; no cross-org checkout or source mirror.
+name: Actor message v1 Rust identity (NOT guest parity)
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/actor-message-v1-rust-integrity.yml'
+      - 'tools/actor-message-contract-v1/**'
+      - 'contracts/actor-message-v1/**'
+  push:
+    paths:
+      - '.github/workflows/actor-message-v1-rust-integrity.yml'
+      - 'tools/actor-message-contract-v1/**'
+      - 'contracts/actor-message-v1/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  actor-message-v1-rust:
+    name: rust-identity-and-reference-only
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      CARGO_NET_OFFLINE: 'true'
+    steps:
+      - name: Check out exact PR head without persistent credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Refuse mismatched checkout; record source commit and root tree
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_HEAD" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          printf 'SOURCE_HEAD=%s\nSOURCE_TREE=%s\n' "$EXPECTED_HEAD" "$(git rev-parse 'HEAD^{tree}')"
+      - name: Require local Rust, rustfmt, Clippy, and Git
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustc --version
+          cargo --version
+          cargo fmt --version
+          cargo clippy --version
+          git --version
+      - name: Rust formatting (identity and reference tests)
+        run: cargo fmt --manifest-path tools/actor-message-contract-v1/Cargo.toml -- --check
+      - name: Rust Clippy (no warnings)
+        run: cargo clippy --offline --manifest-path tools/actor-message-contract-v1/Cargo.toml --all-targets -- -D warnings
+      - name: Run fixture SHA pins, mutation negatives, and Rust reference oracle
+        run: cargo test --offline --manifest-path tools/actor-message-contract-v1/Cargo.toml --all-targets
+      - name: Report non-promoting evidence boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo 'RUST_ACTOR_MESSAGE_V1_HOST_ONLY=PASS'
+          echo 'ATTO_COMPILER_EXECUTED=false'
+          echo 'ACTOR_CONTROL_DATA_GUEST_PARITY=NOT_EXECUTED'
+          echo 'AOT_GUEST_PARITY=NOT_EXECUTED'
