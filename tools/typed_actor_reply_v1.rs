@@ -10,6 +10,7 @@ struct Ticket { index: usize, generation: u64, incarnation: u64 }
 struct Slot {
     generation: u64,
     active: bool,
+    retired: bool,
     mode: Mode,
     queued: VecDeque<i64>,
     terminal: bool,
@@ -17,7 +18,7 @@ struct Slot {
 }
 impl Slot {
     fn new() -> Self {
-        Self { generation: 1, active: false, mode: Mode::OneWay,
+        Self { generation: 1, active: false, retired: false, mode: Mode::OneWay,
             queued: VecDeque::new(), terminal: false, failed: false }
     }
 }
@@ -30,7 +31,7 @@ impl Ledger {
     fn admit(&mut self, mode: Mode) -> Result<Ticket, Fault> {
         if mode == Mode::OneWay { return Err(Fault::Unsupported); }
         let (index, s) = self.slots.iter_mut().enumerate()
-            .find(|(_, s)| !s.active).ok_or(Fault::Full)?;
+            .find(|(_, s)| !s.active && !s.retired).ok_or(Fault::Full)?;
         s.active = true;
         s.mode = mode;
         s.queued.clear();
@@ -70,8 +71,11 @@ impl Ledger {
     }
     fn retire(s: &mut Slot) {
         s.active = false; s.queued.clear();
-        // Production must permanently retire generation-exhausted slots.
-        s.generation = s.generation.checked_add(1).expect("generation exhausted");
+        // An exhausted slot can never be recycled or wrap to an old ticket.
+        match s.generation.checked_add(1) {
+            Some(next) => s.generation = next,
+            None => s.retired = true,
+        }
     }
     fn receive(&mut self, t: Ticket) -> Result<Option<i64>, Fault> {
         let s = self.slot(t)?;
@@ -160,6 +164,29 @@ mod tests {
         let mut l = Ledger::new(1, 1, 5);
         let a = l.admit(Mode::Stream).unwrap(); l.abort(a).unwrap();
         assert_eq!(l.receive(a), Err(Fault::Terminated));
+    }
+    #[test] fn exhausted_stream_slot_is_tombstoned_without_panic_or_aba() {
+        let mut l = Ledger::new(2, 1, 5);
+        l.slots[0].generation = u64::MAX;
+        let t = l.admit(Mode::Stream).unwrap();
+        l.emit(t, 42).unwrap();
+        l.close_stream(t).unwrap();
+        assert_eq!(l.receive(t), Ok(Some(42)));
+        assert_eq!(l.receive(t), Ok(None));
+        assert_eq!(l.emit(t, 99), Err(Fault::Stale));
+        let sibling = l.admit(Mode::Unary).unwrap();
+        assert_eq!(sibling.index, 1);
+        assert_eq!(l.admit(Mode::Stream), Err(Fault::Full));
+        l.emit(sibling, 7).unwrap();
+        assert_eq!(l.receive(sibling), Ok(Some(7)));
+    }
+    #[test] fn exhausted_unary_cancel_does_not_panic_or_reuse() {
+        let mut l = Ledger::new(1, 1, 5);
+        l.slots[0].generation = u64::MAX;
+        let t = l.admit(Mode::Unary).unwrap();
+        l.cancel(t).unwrap();
+        assert_eq!(l.admit(Mode::Unary), Err(Fault::Full));
+        assert_eq!(l.receive(t), Err(Fault::Stale));
     }
     #[test] fn admission_does_not_mean_reply_ready() {
         let mut l = Ledger::new(1, 1, 5);
