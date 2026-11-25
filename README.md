@@ -332,3 +332,7 @@ execution and an artifact digest. Prose-only scenarios are categorically
 ineligible for executed-guest receipts until converted into real fixtures and
 a real target harness. Do not use the inspector's schema tests as CI parity
 proof, and do not silently substitute a host-only or source-only canary.
+
+## Specification / formatter parity tracking
+
+[Specification-derived formatter matrix](contracts/specification-formatter-conformance-v1.json) tracks rule IDs and negative/positive vectors from atto-spec, separately for atto-format and legacy oreslang-format. **No parser, compiled guest or cross-formatter parity has been executed for this new matrix.** [Protocol](docs/specification-formatter-conformance-v1.md).
