@@ -1,0 +1,341 @@
+{
+  "schemaVersion": 1,
+  "contract": "atto.virtual-actor-activation-supervision/1",
+  "status": "CANDIDATE_UNATTESTED",
+  "dependsOn": "https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/pull/630",
+  "sourceType": "canonical .atto fixture required for promotion; this contract does not provide a compiler fixture",
+  "scope": [
+    "lookup",
+    "activation",
+    "admission",
+    "restart",
+    "nonreentrancy",
+    "supervisor"
+  ],
+  "backends": [
+    "java",
+    "llvm",
+    "net",
+    "wasm",
+    "forge"
+  ],
+  "cases": [
+    {
+      "id": "lookup.id_address_nonallocating",
+      "scenario": "Inspect unknown and known logical IDs and canonical atto-va1 addresses with capacity saturated.",
+      "expected": "Inspection never activates, reserves an entry, leaks existence across tenants, or grants an ActorRef.",
+      "backendStatus": {
+        "java": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "llvm": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "net": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "wasm": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "forge": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        }
+      }
+    },
+    {
+      "id": "activation.single_flight",
+      "scenario": "Race two concurrent first sends and one explicit activation reservation for one logical key.",
+      "expected": "One initializer wins; exactly one physical live incarnation; no duplicate publication.",
+      "backendStatus": {
+        "java": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "llvm": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "net": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "wasm": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "forge": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        }
+      }
+    },
+    {
+      "id": "activation.failed_init_burns_generation",
+      "scenario": "Abort initializer for generation N and repeat activation.",
+      "expected": "N is burned, N+1 is greater; stale N publication, writes and CONTROL are denied.",
+      "backendStatus": {
+        "java": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "llvm": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "net": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "wasm": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "forge": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        }
+      }
+    },
+    {
+      "id": "admission.before_ready",
+      "scenario": "Send during INITIALIZING and while mailbox is at limit.",
+      "expected": "Precisely admitted work is delivered once after publish in FIFO; rejected work consumes no quota.",
+      "backendStatus": {
+        "java": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "llvm": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "net": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "wasm": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "forge": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        }
+      }
+    },
+    {
+      "id": "admission.stop_race",
+      "scenario": "Race send/STOP/restart and await physical completion.",
+      "expected": "Single linearization winner; stale ActorRef cannot enqueue; quotas not double refunded.",
+      "backendStatus": {
+        "java": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "llvm": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "net": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "wasm": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "forge": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        }
+      }
+    },
+    {
+      "id": "restart.identity_retention",
+      "scenario": "Restart N into N+1 after physical STOP with identity lookup by both ID and address.",
+      "expected": "Logical ID/address stable; new physical ActorId and generation; old capability never retargets.",
+      "backendStatus": {
+        "java": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "llvm": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "net": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "wasm": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "forge": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        }
+      }
+    },
+    {
+      "id": "restart.supervisor_fence",
+      "scenario": "Race old generation terminal CONTROL against new generation publication.",
+      "expected": "Only exact supervisor and matching generation may reconcile or restart; delayed N receipt cannot retire N+1.",
+      "backendStatus": {
+        "java": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "llvm": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "net": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "wasm": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "forge": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        }
+      }
+    },
+    {
+      "id": "nonreentrancy.await_suspension",
+      "scenario": "Suspend handler A at await while handler B arrives and A wake is queued.",
+      "expected": "No B start before A completes; one physical lease per actor; FIFO A then B, regardless of wake order.",
+      "backendStatus": {
+        "java": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "llvm": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "net": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "wasm": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "forge": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        }
+      }
+    },
+    {
+      "id": "nonreentrancy.cancel_cleanup",
+      "scenario": "Cancel suspended A with held actor-local loans and queued B.",
+      "expected": "Physical cleanup completes and loans are revoked before restart; B never overlaps A or sees reclaimed state.",
+      "backendStatus": {
+        "java": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "llvm": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "net": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "wasm": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "forge": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        }
+      }
+    },
+    {
+      "id": "security.supervisor_owner_unique",
+      "scenario": "Attempt to bind a worker owned by another supervisor and inspect from a foreign tenant/session.",
+      "expected": "Exact owner and authenticated CONTROL required; ActorGroup membership, UUID and address are not authority.",
+      "backendStatus": {
+        "java": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "llvm": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "net": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "wasm": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "forge": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        }
+      }
+    },
+    {
+      "id": "isolation.sibling_survives",
+      "scenario": "Fault or exhaust actor A while sibling B is queued on same tenant runtime.",
+      "expected": "Only A terminates; B replies; no shared stack/heap contamination or supervisor CONTROL drop.",
+      "backendStatus": {
+        "java": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "llvm": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "net": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "wasm": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        },
+        "forge": {
+          "status": "NOT_EXECUTED",
+          "guestReceipt": null
+        }
+      }
+    }
+  ],
+  "evidencePolicy": {
+    "untrustedSources": [
+      "PR descriptions",
+      "workflow conclusions without job steps",
+      "host-only canaries",
+      "source-free model checks",
+      "zero-step or runner_id=0 jobs"
+    ],
+    "runnerAdmission": "steps=[] or null, or runnerId=0: UNVERIFIED_RUNNER_ADMISSION",
+    "requiredForIndependentPromotion": [
+      "exact PR head SHA and Git tree",
+      "canonical .atto fixture SHA-256",
+      "nonzero steps on that head",
+      "actual compiler plus native/managed guest execution",
+      "complete job/run URLs and raw output digest",
+      "negative mutation execution receipts",
+      "independent reviewer"
+    ],
+    "status": "All cases NOT_EXECUTED; a host-only model/manifest test is NOT a guest test."
+  }
+}
