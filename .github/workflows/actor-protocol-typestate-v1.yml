@@ -1,0 +1,30 @@
+name: Actor protocol typestate source fixture integrity (not guest execution)
+on:
+  pull_request:
+    paths:
+      - 'contracts/actor-protocol-typestate-v1.json'
+      - 'fixtures/actor-protocol-typestate-v1/**'
+      - 'test/actor-protocol-typestate-fixtures.test.mjs'
+      - '.github/workflows/actor-protocol-typestate-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'contracts/actor-protocol-typestate-v1.json'
+      - 'fixtures/actor-protocol-typestate-v1/**'
+      - 'test/actor-protocol-typestate-fixtures.test.mjs'
+      - '.github/workflows/actor-protocol-typestate-v1.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  source-fixtures-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate fixture manifest only — NOT backend/compiler proof
+        run: node --test test/actor-protocol-typestate-fixtures.test.mjs

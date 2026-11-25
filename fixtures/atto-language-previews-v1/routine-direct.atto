@@ -1,0 +1,8 @@
+// SOURCE-ONLY CONTRACT: a direct-call-only nonrecursive routine must return 42.
+// expect: ACCEPT, result: 42. No compiler execution is claimed.
+routine double(int value): int {
+  return value * 2;
+}
+pub fnc main(): int {
+  return double(21);
+}

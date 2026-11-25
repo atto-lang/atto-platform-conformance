@@ -1,0 +1,17 @@
+name: Atto source-free carrier capacity
+on:
+  push:
+    branches:
+      - 'ci/atto-capacity-*'
+permissions:
+  contents: read
+jobs:
+  source-free-check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - name: ADMISSION_PROOF
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s\n' 'ATTO_SOURCE_FREE_ADMISSION_PROOF'

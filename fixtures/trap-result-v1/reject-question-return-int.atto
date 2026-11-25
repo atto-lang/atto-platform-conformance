@@ -1,0 +1,5 @@
+fnc checked(): Result<int, Error> { return Err(Error("bad")); }
+pub fnc main(): int {
+  val n = checked()?;
+  return n;
+}

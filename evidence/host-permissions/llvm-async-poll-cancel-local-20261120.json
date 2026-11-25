@@ -1,0 +1,60 @@
+{
+  "schema": "atto.host_security.async_poll_cancel_local_observation.v1",
+  "classification": "HOST_ONLY_MOCK_TEST_NOT_GUEST_CONFORMANCE",
+  "source_repo": "atto-lang/atto-source.llvm",
+  "source_pr": "https://github.com/atto-lang/atto-source.llvm/pull/62",
+  "observed_source_head": "274d183f6e07b82a0834689b60ef4284998823f8",
+  "exact_git_blob_sha": {
+    "native/src/host_fs_async.c": "9631a901af2e75bf7648047152e49fc46fd1ed16",
+    "native/tests/host_fs_async_test.c": "d2da08fe2a271a4c120bce95122cf0eaed0e05e1",
+    "native/src/host_fs_broker.c": "de21030e28c7ae211b3026cc2729bfb05d88d08d",
+    "src/main/cpp/oreslang/runtime/TenantVmSignedFsLoader.cpp": "5531bdda945c410001aa0407d4d7233586e2c477",
+    "tests/tenant-vm/signed_fs_loader_test.cpp": "a72587e0949690843bc96cee3bb0b0f7fca30402",
+    "native/tests/host_fs_async_broker_test.c": "7ae746b1e9281ce34ceed1f2511f1a8a54b2b71a"
+  },
+  "local_execution": {
+    "toolchains": [
+      "GCC 14.2.0",
+      "Clang 17.0.0"
+    ],
+    "optimization": [
+      "O1",
+      "O2"
+    ],
+    "flags": [
+      "-Wall",
+      "-Wextra",
+      "-Wconversion",
+      "-Werror",
+      "-pedantic",
+      "-pthread",
+      "-fsanitize=address,undefined"
+    ],
+    "results": "4/4 locally executed host mock cases PASS; subsequent 25 runs per toolchain/optimization (100/100 PASS) prior to final one-line test extension; final exact test blob recompiled GCC/Clang O1/O2 and 4/4 PASS",
+    "test_marker": "ATTO_FS_ASYNC_HOST_ONLY_TEST_PASS",
+    "uses_mock_broker": true,
+    "coverage": [
+      "poll uses service trylock and returns -EAGAIN on contention",
+      "broker final publish uses trylock and returns -EAGAIN while filesystem worker holds gate",
+      "pending publication does not consume one-shot ticket",
+      "cancellation is nonparking",
+      "queued write cancellation does not execute or commit",
+      "running cancelled write reported as indeterminate -EINPROGRESS, not definitive safe rollback",
+      "repeat cancellation of terminal queued job returns -EALREADY and preserves poll status",
+      "stale actor and wrong actor tickets rejected"
+    ]
+  },
+  "nonexecuted": [
+    "current-head real Linux broker+async sanitizer test",
+    "current-head sealed C++ loader CTest",
+    "new ABI v5 actual host dispatch",
+    "actual compiler-lowered .atto std.fs guest",
+    "complete native CMake/CTest current-head CI"
+  ],
+  "github_actions": {
+    "run_id": 44681118745,
+    "status": "FAILED_BEFORE_ANY_TEST_STEPS",
+    "executed_steps": 0
+  },
+  "release_gate": "All 11 backend guest permission statuses remain NOT_EXECUTED. Never use host mock results as proof of signed artifact, authenticated actor turn, syscall isolation, or compiled guest parity."
+}

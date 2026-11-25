@@ -1,0 +1,6 @@
+// Expected compile failure: Observable<T> is not a one-result Awaitable.
+pub fnc main(): void {
+  const Observable<int> obs = Observable.from_task(task { return 10; });
+  const int invalid = await obs;
+  return;
+}

@@ -1,0 +1,108 @@
+{
+  "contract": "attolang.dop.inverted-mixed-i64-bool-f64-guest-v1",
+  "evidence_class": "SOURCE_COPY_VERIFIED_ONLY",
+  "guest_execution": "NOT_EXECUTED",
+  "llvm_origin_repository": "ores-truffle-oreslang/oreslang-source.llvm",
+  "llvm_origin_pr": 1488,
+  "llvm_origin_head": "3d88e15b4340227ca74c137f67b6004897a40fc5",
+  "llvm_unified_emitter_pr": 1497,
+  "llvm_unified_emitter_head_at_copy": "56b87b6593bb5bd7f281541f0ed9d10ccea9cb5d",
+  "companion_pair_manifest": "contracts/dop-inverted-bool-i64-v1/manifest.json",
+  "source_extension": ".atto",
+  "scalar_fields": [
+    "i64",
+    "bool",
+    "f64"
+  ],
+  "scalar_field_order": "nominal_declared_order",
+  "runtime_layout": "stack_local_soa",
+  "optimization_levels": [
+    "-O0",
+    "-O2"
+  ],
+  "expected_native_exit_runs": 4,
+  "expected_native_signal_runs": 2,
+  "expected_compile_rejections": 5,
+  "backend_status": {
+    "llvm": "NOT_EXECUTED",
+    "java-graalvm": "NOT_EXECUTED",
+    "dotnet-nativeaot": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge-cranelift": "NOT_EXECUTED"
+  },
+  "exclusions": [
+    "native compiler execution",
+    "linked/FFI no-GC certification",
+    "cross-backend guest parity",
+    "actor-owned memory",
+    "stable row handles",
+    "SIMD",
+    "GPU"
+  ],
+  "cases": [
+    {
+      "id": "positive-mixed-swap",
+      "file": "fixtures/dop-inverted-mixed-v1/positive-mixed-swap.atto",
+      "kind": "native_exit",
+      "exit_code": 42,
+      "git_blob_sha1": "040c96b1380d29b1d7530d4413fff4f02e1a01d2",
+      "source_sha256": "0ec543bb070d4b1be29fb50504eabf3ae27a5a10bac6c87e1c080c7700dea7df"
+    },
+    {
+      "id": "positive-permuted-columns",
+      "file": "fixtures/dop-inverted-mixed-v1/positive-permuted-columns.atto",
+      "kind": "native_exit",
+      "exit_code": 42,
+      "git_blob_sha1": "bd4356ed643a7b418d78c9447349a1dcaa52e282",
+      "source_sha256": "c47f05d333cabee7c809deb9ff47ccfbd5392e7ad92d72a30d666602207004e5"
+    },
+    {
+      "id": "negative-stale-dense-index",
+      "file": "fixtures/dop-inverted-mixed-v1/negative-stale-dense-index.atto",
+      "kind": "native_signal",
+      "expectation": "SIGILL_OR_SIGTRAP",
+      "git_blob_sha1": "3693b7536da4891bfc980128211ec4834236a017",
+      "source_sha256": "4592ebde14b98440da13af90f7b4a847d68885100154376933b9f3bb843dde9b"
+    },
+    {
+      "id": "negative-bool-as-int",
+      "file": "fixtures/dop-inverted-mixed-v1/negative-bool-as-int.atto",
+      "kind": "compiler_reject",
+      "expectation": "mixed inverted bool column",
+      "git_blob_sha1": "92eda107bcf7f543ca57ef5e143e49987bb59101",
+      "source_sha256": "865d4618da8a7c955d1ecd22cd6d97232ae1c08cecc54967a11897dd8d1e640a"
+    },
+    {
+      "id": "negative-f64-from-int",
+      "file": "fixtures/dop-inverted-mixed-v1/negative-f64-from-int.atto",
+      "kind": "compiler_reject",
+      "expectation": "mixed inverted f64 column",
+      "git_blob_sha1": "b541891a220af10efcf16be8977530aa79c16b62",
+      "source_sha256": "7cf8bd1ae9f7aeb59df58693e073d61095cef644d885dae708a429f6e926fbc3"
+    },
+    {
+      "id": "negative-immutable-bool-write",
+      "file": "fixtures/dop-inverted-mixed-v1/negative-immutable-bool-write.atto",
+      "kind": "compiler_reject",
+      "expectation": "immutable inverted field",
+      "git_blob_sha1": "58f964edb872ef6d6133e5ee2951935320a1c1cf",
+      "source_sha256": "c2b7806c4f9c2725f73e0635dc9953c09e75f327e7a592f13fb6b5ba0bf4794d"
+    },
+    {
+      "id": "negative-f64-return",
+      "file": "fixtures/dop-inverted-mixed-v1/negative-f64-return.atto",
+      "kind": "compiler_reject",
+      "expectation": "mixed inverted int main",
+      "git_blob_sha1": "7937d1e303424166a01c092bfd8c97abf620482e",
+      "source_sha256": "6393d703dbb3b3b9990266786290c9b8166126131f65a4f0dca0523a49b9e07f"
+    },
+    {
+      "id": "negative-f64-infinite",
+      "file": "fixtures/dop-inverted-mixed-v1/negative-f64-infinite.atto",
+      "kind": "compiler_reject",
+      "expectation": "mixed inverted f64 literal",
+      "git_blob_sha1": "4d09aebe353a4b1fc78c9da5d6d3dcc54449c727",
+      "source_sha256": "517362433eb50f4e0bdea15c7f8a0181fcde43de13b4697fe4eadfcf6f0a4756"
+    }
+  ]
+}

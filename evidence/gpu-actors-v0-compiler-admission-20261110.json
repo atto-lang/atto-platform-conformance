@@ -1,0 +1,90 @@
+{
+  "schema": "atto.gpu-actors-compiler-admission-evidence/0",
+  "recordedAt": "2026-11-10",
+  "scope": "source-level parser admission only; NOT GPU actor execution",
+  "language": "AttoLang",
+  "java": {
+    "repo": "ores-truffle-oreslang/oreslang-source.java",
+    "pullRequest": 2760,
+    "headCommit": "74b58718170c603366d25bd1cb21e23a5e03ed12",
+    "files": [
+      {
+        "path": "src/main/java/dev/oreslang/ast/Ast.java",
+        "blob": "47880fa949c8393aa809b96cd1f7f4f460563001"
+      },
+      {
+        "path": "src/main/java/dev/oreslang/parser/Parser.java",
+        "blob": "aabde7b01309645eec934d03b186ebd2ce0041b1"
+      },
+      {
+        "path": "src/main/java/dev/oreslang/types/TypeChecker.java",
+        "blob": "e01faa563fdd45936d243668cc80c460498b5cb6"
+      },
+      {
+        "path": "src/test/java/dev/oreslang/GpuActorDeclarationAdmissionTest.java",
+        "blob": "aec3346547b9aca960d29f35430426ad93d5ecb2"
+      }
+    ],
+    "carrier": {
+      "repo": "scintilla-run/scintilla-run-e2e",
+      "runId": 42902834118,
+      "runUrl": "https://github.com/scintilla-run/scintilla-run-e2e/actions/runs/42902834118",
+      "jobId": 130133049960,
+      "exactBlobVerification": true,
+      "toolchain": "JDK 25, javac --release 21",
+      "compiledActualParserAst": true,
+      "standaloneSmokeAssertions": 18,
+      "smokeSucceeded": true
+    },
+    "claims": {
+      "distinctGpuActorAst": true,
+      "parserSmokePassed": true,
+      "typeCheckerSourceGateAdded": true,
+      "fullTypeCheckerExecutableTest": false,
+      "junitGuestExecution": false,
+      "codegen": false
+    }
+  },
+  "llvm": {
+    "repo": "ores-truffle-oreslang/oreslang-source.llvm",
+    "pullRequest": 1645,
+    "headCommit": "1620fcf3e3d60e7e8fe1f3d2b7cdbd99599b91b5",
+    "files": [
+      {
+        "path": "src/main/cpp/oreslang/frontend/Parser.cpp",
+        "blob": "942dfc1d7a4a6d6645ebd460504430dc37cf50e6"
+      },
+      {
+        "path": "src/main/cpp/oreslang/types/NativeScalarTypes.cpp",
+        "blob": "d2ffde1c117c79cca000c1adfffa6de9b55f50a8"
+      },
+      {
+        "path": "tests/gpu_actor_source_admission_test.cpp",
+        "blob": "eaf5a8d8da15ce0b7a872f4fb96c136f2e63fc87"
+      }
+    ],
+    "carrier": {
+      "repo": "scintilla-run/scintilla-run-e2e",
+      "runId": 42904561133,
+      "runUrl": "https://github.com/scintilla-run/scintilla-run-e2e/actions/runs/42904561133",
+      "jobId": 130139043528,
+      "exactBlobVerification": true,
+      "compiledProductionParserCpp": true,
+      "nativeAdmissionExecutableSucceeded": true
+    },
+    "claims": {
+      "specificFailClosedSourceGate": true,
+      "nativeParserCompiled": true,
+      "nativeAstForGpuActors": false,
+      "physicalGpu": false
+    }
+  },
+  "canonicalPromotion": {
+    "allFiveBackendsCompilerGuest": "NOT_EXECUTED",
+    "physicalGpu": "NOT_EXECUTED",
+    "realActorPopulation": "NOT_EXECUTED",
+    "gpuKernelDispatch": "NOT_EXECUTED",
+    "strictNoCpuFallback": true,
+    "independentReviewRequired": true
+  }
+}

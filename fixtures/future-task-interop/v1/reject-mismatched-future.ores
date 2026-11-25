@@ -1,0 +1,8 @@
+// Must fail type checking: a result-projection adapter cannot convert int -> float.
+pub fnc main(): void {
+  let Task<int> producer = task {
+    return 42;
+  };
+  let Future<float> invalid = Future.from_task(producer);
+  return;
+}

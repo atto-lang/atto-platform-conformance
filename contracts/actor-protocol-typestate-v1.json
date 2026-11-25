@@ -1,0 +1,133 @@
+{
+  "schema": "attolang.actor-protocol-typestate-source.v1",
+  "status": "STATIC_PREFLIGHT_PROPOSED_NOT_GUEST_EXECUTION",
+  "design_pr": "https://github.com/atto-lang/atto-spec/pull/203",
+  "compiler_pr_status": "DRAFT_SOURCE_ONLY",
+  "conformance_issue": "https://github.com/atto-lang/atto-platform-conformance/issues/561",
+  "source_root": "fixtures/actor-protocol-typestate-v1",
+  "cases": [
+    {
+      "id": "connection_static_valid",
+      "file": "connection-static-valid.atto",
+      "expected_static": "PASS",
+      "expected_guest": "E_PROTOCOL_RUNTIME_UNSUPPORTED",
+      "requires": [
+        "unary_state_legal",
+        "terminal_complete",
+        "affine_handle"
+      ]
+    },
+    {
+      "id": "disconnected_query",
+      "file": "disconnected-query.atto",
+      "expected_static": "E_PROTOCOL_ILLEGAL_MESSAGE_STATE"
+    },
+    {
+      "id": "affine_reuse",
+      "file": "affine-reuse.atto",
+      "expected_static": "E_PROTOCOL_AFFINE_HANDLE"
+    },
+    {
+      "id": "missing_reply",
+      "file": "missing-reply.atto",
+      "expected_static": "E_PROTOCOL_REPLY_REQUIRED"
+    },
+    {
+      "id": "early_terminal",
+      "file": "early-terminal.atto",
+      "expected_static": "E_PROTOCOL_TERMINAL_INCOMPLETE"
+    },
+    {
+      "id": "stream_unary_confusion",
+      "file": "stream-unary-confusion.atto",
+      "expected_static": "E_PROTOCOL_REPLY_MISMATCH"
+    },
+    {
+      "id": "wrong_actor_kind",
+      "file": "wrong-actor-kind.atto",
+      "expected_static": "E_PROTOCOL_IMPLEMENTATION_MISMATCH"
+    },
+    {
+      "id": "typed_reply_static_valid",
+      "file": "typed-reply-static-valid.atto",
+      "expected_static": "PASS",
+      "expected_guest": "E_PROTOCOL_RUNTIME_UNSUPPORTED",
+      "requires": [
+        "nominal_reply_type_ascription",
+        "terminal_complete"
+      ]
+    },
+    {
+      "id": "wrong_nominal_reply",
+      "file": "wrong-nominal-reply.atto",
+      "expected_static": "E_PROTOCOL_REPLY_MISMATCH"
+    },
+    {
+      "id": "nonlinear_if",
+      "file": "nonlinear-if.atto",
+      "expected_static": "E_PROTOCOL_CFG_UNSUPPORTED"
+    },
+    {
+      "id": "effectful_call_argument",
+      "file": "effectful-call-argument.atto",
+      "expected_static": "E_PROTOCOL_CFG_UNSUPPORTED"
+    },
+    {
+      "id": "handle_argument_escape",
+      "file": "handle-argument-escape.atto",
+      "expected_static": "E_PROTOCOL_AFFINE_HANDLE"
+    },
+    {
+      "id": "forward_declaration_only",
+      "file": "forward-declaration-only.atto",
+      "expected_static": "E_PROTOCOL_UNPROVEN_STATE"
+    }
+  ],
+  "invariants": [
+    "one existing actor kind",
+    "state-specific legal message set",
+    "all-state union-safe sending",
+    "reply cardinality matching",
+    "consume and invalidate old handle",
+    "no unproven actor ref authority",
+    "no success on timeout/restart/cancel",
+    "only terminal with no outstanding reply completes",
+    "supervisor CONTROL separate from protocol DATA",
+    "sealed critical state loans cannot cross await",
+    "runtime protocol descriptor in full guest AOT without interpreter/JIT",
+    "nominal reply annotation agrees with protocol declaration",
+    "static protocol proof must fail closed on CFG and effectful argument expressions",
+    "a declaration-only actor does not mint protocol state authority"
+  ],
+  "target_backends": [
+    "java",
+    "llvm",
+    "wasm",
+    "net",
+    "forge",
+    "rs",
+    "js",
+    "cranelift",
+    "hdl"
+  ],
+  "backend_status": {
+    "java": "NOT_VERIFIED",
+    "llvm": "NOT_VERIFIED",
+    "wasm": "NOT_VERIFIED",
+    "net": "NOT_VERIFIED",
+    "forge": "NOT_VERIFIED",
+    "rs": "NOT_VERIFIED",
+    "js": "NOT_VERIFIED",
+    "cranelift": "NOT_VERIFIED",
+    "hdl": "NOT_VERIFIED"
+  },
+  "evidence_policy": {
+    "current_source_rust_tests": "NOT_EXECUTED",
+    "host_fixture_only_is_backend_evidence": false,
+    "exact_head_required": true,
+    "real_guest_required_for_runtime_certification": true,
+    "zero_step_actions_runs_pass": false,
+    "alternate_org_mirror_requires_per_blob_sha": true,
+    "secret_free_private_mirroring": true
+  }
+}

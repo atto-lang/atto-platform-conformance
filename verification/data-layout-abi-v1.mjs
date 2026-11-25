@@ -36,13 +36,18 @@ function normalizeFields(fields) {
   if (!Array.isArray(fields) || fields.length === 0) throw new TypeError('fields required');
   const seen = new Set();
   return fields.map((field, index) => {
-    if (!field || typeof field.name !== 'string' ||
-        !/^[$A-Z_a-z][$\w]*$/.test(field.name) ||
-        seen.has(field.name) || !Object.hasOwn(TYPES, field.type)) {
+    // Capture user-controlled descriptor properties exactly once. A getter
+    // that changes type between checking and allocation must not publish
+    // a mismatched declared scalar type and physical byte width.
+    if (!field) throw new TypeError(`invalid field ${index}`);
+    const name = field.name;
+    const type = field.type;
+    if (typeof name !== 'string' || !/^[$A-Z_a-z][$A-Z_a-z0-9]*$/.test(name) ||
+        seen.has(name) || typeof type !== 'string' || !Object.hasOwn(TYPES, type)) {
       throw new TypeError(`invalid field ${index}`);
     }
-    seen.add(field.name);
-    return Object.freeze({name:field.name,type:field.type,...TYPES[field.type]});
+    seen.add(name);
+    return Object.freeze({name,type,...TYPES[type]});
   });
 }
 
@@ -108,13 +113,20 @@ function computeLayoutAbi({layout, fields, capacity, tileWidth, groups, maxSegme
     if (tileWidth !== undefined || !Array.isArray(groups) || groups.length === 0) {
       throw new TypeError('SoAoS groups required');
     }
-    const flat = groups.flat();
+    // Groups are also untrusted descriptors. Copy each membership once,
+    // then validate and calculate offsets from that same canonical snapshot.
+    const canonicalGroups = groups.map(group => {
+      if (!Array.isArray(group)) throw new TypeError('empty SoAoS group');
+      const copy = Array.from(group);
+      if (copy.length === 0) throw new TypeError('empty SoAoS group');
+      return copy;
+    });
+    const flat = canonicalGroups.flat();
     if (flat.length !== normalized.length || new Set(flat).size !== normalized.length ||
         flat.some(name => !Object.hasOwn(byName, name))) {
       throw new TypeError('SoAoS groups must exactly partition fields');
     }
-    groups.forEach((group, segment) => {
-      if (!Array.isArray(group) || group.length === 0) throw new TypeError('empty SoAoS group');
+    canonicalGroups.forEach((group, segment) => {
       const shape = recordShape(group.map(name => byName[name]));
       segments.push({align:shape.align,bytes:shape.stride*count,stride:shape.stride,fields:[...group]});
       for (const name of group) {

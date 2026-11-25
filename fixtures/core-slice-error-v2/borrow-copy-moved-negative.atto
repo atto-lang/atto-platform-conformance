@@ -1,0 +1,11 @@
+// CANDIDATE negative guest. Moving an Array owner into another callable
+// must not let the source helper return None from a now-invalid owner.
+import module slice from "core/slice";
+fnc consume(Array<int> values): void { return; }
+pub fnc main(): int {
+  let mut Array<int> values = new Array<int>();
+  values.add(42);
+  consume(values);
+  val Option<int> missing = slice.get_copy_int(rt borrow values, 0, 1, -7);
+  return missing.unwrap_or(0);
+}

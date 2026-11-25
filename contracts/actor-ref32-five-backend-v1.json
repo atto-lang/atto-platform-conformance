@@ -1,0 +1,203 @@
+{
+  "schemaVersion": 1,
+  "id": "actor-ref32-five-backend-v1",
+  "date": "2026-11-11",
+  "sourceExtension": ".atto",
+  "status": "SOURCE_ONLY_NOT_CERTIFIED",
+  "scope": "one actor-owned typed object graph and fail-closed memory semantics",
+  "physicalReferenceRepresentation": "backend-private; no cross-actor wire ABI",
+  "referenceFieldTarget": "checked nullable local object reference; 4-byte ref32 layout is .NET's current implementation candidate",
+  "zeroGcCertified": false,
+  "fixture": {
+    "path": "fixtures/actor-ref32-five-backend-v1/node_graph.atto",
+    "gitBlobSha1": "c910d7bf4ef6a816878be74fff69a471a615f051",
+    "status": "source-only",
+    "expected": "two linked nodes preserve i64 42 and 99; second.next.value = 42; no stale or foreign aliases"
+  },
+  "backends": [
+    {
+      "id": "java",
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "observedMainHead": "6d8eb70048eafc9a84c5aebe9c1bb06104f16e76",
+      "implementation": "actor native-region host infrastructure; guest object lowering unverified",
+      "guestExecuted": false,
+      "exactHeadReceipt": null,
+      "certified": false
+    },
+    {
+      "id": "llvm",
+      "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+      "observedMainHead": "0ee037ca3e5dd9ac6ac1e9cc3d40f19ee6326a9c",
+      "implementation": "actor native heap host infrastructure; compiler-linked actor graph unverified",
+      "guestExecuted": false,
+      "exactHeadReceipt": null,
+      "certified": false
+    },
+    {
+      "id": "wasm",
+      "repository": "ores-truffle-oreslang/oreslang-source.wasm",
+      "observedMainHead": "2c6ce5988592080ea47b8877e2b8c1d3df5cb9bd",
+      "implementation": "host WebAssembly linear-memory actor arena; guest lowering unverified",
+      "guestExecuted": false,
+      "exactHeadReceipt": null,
+      "certified": false
+    },
+    {
+      "id": "forge",
+      "repository": "ores-truffle-oreslang/oreslang-source.forge",
+      "observedMainHead": "2acf59d589f8016f879581f17a27df144fa73075",
+      "implementation": "native actor incarnation heap/stack host infrastructure; compiled guest graph unverified",
+      "guestExecuted": false,
+      "exactHeadReceipt": null,
+      "certified": false
+    },
+    {
+      "id": "net",
+      "repository": "ores-truffle-oreslang/oreslang-source.net",
+      "observedMainHead": "3f3606cc3ef81dad117047b4cb57609ad1a92672",
+      "implementation": "actor-private Ref32 runtime PR #437 plus narrow opt-in .atto emitter PR #449; stepful NativeAOT guest execution unverified",
+      "guestExecuted": false,
+      "exactHeadReceipt": null,
+      "certified": false
+    }
+  ],
+  "compilerDependencies": {
+    "netRuntimeDraft": "https://github.com/ores-truffle-oreslang/oreslang-source.net/pull/437",
+    "netCompilerDraft": "https://github.com/ores-truffle-oreslang/oreslang-source.net/pull/449",
+    "allBackends": "actual checked .atto source, nominal type/layout identity, ownership/effect/type checking and executable guest code"
+  },
+  "cases": [
+    {
+      "id": "typed-two-node-graph",
+      "kind": "execute-guest",
+      "phase": "compiler-native",
+      "expected": "Node(99,Node(42,None)).next.value==42",
+      "sourceFixture": "node_graph.atto",
+      "mandatory": true
+    },
+    {
+      "id": "independent-actors",
+      "kind": "execute-guest",
+      "phase": "runtime",
+      "expected": "equal local reference words cannot access foreign actor memory",
+      "sourceFixture": null,
+      "mandatory": true
+    },
+    {
+      "id": "stale-slot-reuse",
+      "kind": "execute-guest",
+      "phase": "runtime",
+      "expected": "stale generation fails closed after slot reuse",
+      "sourceFixture": null,
+      "mandatory": true
+    },
+    {
+      "id": "generation-exhaustion",
+      "kind": "execute-guest",
+      "phase": "runtime",
+      "expected": "reference generation never wraps into a live alias",
+      "sourceFixture": null,
+      "mandatory": true
+    },
+    {
+      "id": "wrong-nominal-target",
+      "kind": "execute-guest",
+      "phase": "runtime",
+      "expected": "linking wrong nominal class is rejected",
+      "sourceFixture": null,
+      "mandatory": true
+    },
+    {
+      "id": "reference-field-raw-write",
+      "kind": "execute-guest",
+      "phase": "runtime",
+      "expected": "raw byte write cannot forge a typed reference field",
+      "sourceFixture": null,
+      "mandatory": true
+    },
+    {
+      "id": "typed-scalar-tearing",
+      "kind": "execute-guest",
+      "phase": "runtime",
+      "expected": "unaligned or partial typed i64 writes rejected",
+      "sourceFixture": null,
+      "mandatory": true
+    },
+    {
+      "id": "cross-actor-reference-send",
+      "kind": "compile-reject",
+      "phase": "compiler",
+      "expected": "private reference cannot cross actor/tenant/FFI boundary as raw scalar",
+      "sourceFixture": null,
+      "mandatory": true
+    },
+    {
+      "id": "drop-under-read-loan",
+      "kind": "compile-reject",
+      "phase": "compiler",
+      "expected": "drop/rt take invalid with outstanding read loan",
+      "sourceFixture": null,
+      "mandatory": true
+    },
+    {
+      "id": "turn-retained-loan",
+      "kind": "execute-guest",
+      "phase": "runtime",
+      "expected": "read loan survives turns without giving old turn dereference rights",
+      "sourceFixture": null,
+      "mandatory": true
+    },
+    {
+      "id": "stop-physical-reclaim",
+      "kind": "execute-guest",
+      "phase": "runtime",
+      "expected": "STOP seals admission; physical refund after loan/pin release exactly once",
+      "sourceFixture": null,
+      "mandatory": true
+    },
+    {
+      "id": "allocation-failure-transactional",
+      "kind": "execute-guest",
+      "phase": "runtime",
+      "expected": "failed allocation does not consume slot/type identity or native budget",
+      "sourceFixture": null,
+      "mandatory": true
+    },
+    {
+      "id": "panic-raise-throw-cleanup",
+      "kind": "execute-guest",
+      "phase": "runtime",
+      "expected": "owned objects clean up on panic, raise and throw, with correct supervisor notices",
+      "sourceFixture": null,
+      "mandatory": true
+    },
+    {
+      "id": "await-suspension-borrow",
+      "kind": "compile-reject",
+      "phase": "compiler",
+      "expected": "borrow cannot cross suspension without checked pinned continuation",
+      "sourceFixture": null,
+      "mandatory": true
+    },
+    {
+      "id": "whole-actor-zero-gc",
+      "kind": "measure",
+      "phase": "performance",
+      "expected": "whole-actor GC behavior requires separate real guest measurement and platform-specific definition",
+      "sourceFixture": null,
+      "mandatory": false
+    }
+  ],
+  "promotion": {
+    "requiresExactHead": true,
+    "requiresExactSourceBlob": true,
+    "requiresSourceCompiler": true,
+    "requiresGuestBinaryExecution": true,
+    "requiresNonzeroJobSteps": true,
+    "requiresHostGuestEvidenceSeparation": true,
+    "requiresAllMandatoryCases": true,
+    "requiresIndependentSecurityReviewForPrivateExport": true,
+    "sourceFreeRunMayPromote": false,
+    "unapprovedMirroringAllowed": false
+  }
+}

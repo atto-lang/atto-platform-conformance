@@ -1,0 +1,11 @@
+// SOURCE-ONLY CONTRACT: routine may not directly recur.
+// expect: REJECT, diagnostic: RECURSIVE_ROUTINE, no output artifact.
+routine self_cycle(int remaining): int {
+  if remaining eq 0 then
+    return 42;
+  fi
+  return self_cycle(remaining - 1);
+}
+pub fnc main(): int {
+  return self_cycle(2);
+}

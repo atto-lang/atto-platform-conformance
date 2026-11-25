@@ -1,0 +1,20 @@
+// expect-exit: 69
+define class Foo as
+    pub let int foo = 5;
+end
+
+define class Handler as
+    pub handle(rebind mut Foo f): int {
+        f.foo = 6;
+        f = new Foo();
+        f.foo = 9;
+        return f.foo;
+    }
+end
+
+pub fnc main(): int {
+    val Handler handler = new Handler();
+    val mut Foo original = new Foo();
+    val replacement_value = handler.handle(mut original);
+    return original.foo * 10 + replacement_value;
+}

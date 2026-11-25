@@ -1,6 +1,6 @@
 {
   "schema": "atto.caller-trap-cross-backend.v1",
-  "status": "acceptance-contract-only-NOT-full-runtime-parity",
+  "status": "LEGACY_OPTION_TRAP_ORACLE_NOT_CANONICAL",
   "sourceExtension": ".atto",
   "semanticReference": "ores-truffle-oreslang/oreslang-source.java/docs/TRAP_EXPRESSION_UNWRAP.md",
   "backends": [
@@ -122,6 +122,9 @@
       "real Java/GraalVM",
       "real LLVM native",
       "real .NET NativeAOT"
-    ]
-  }
+    ],
+    "canonicalWarning": "Old Option-returning trap expectations are historical only and cannot certify canonical Result-returning trap semantics."
+  },
+  "historicalStatus": "acceptance-contract-only-NOT-full-runtime-parity",
+  "canonicalReplacement": "contracts/v2/trap-result-v2.json"
 }

@@ -1,0 +1,45 @@
+{
+  "schema": "atto.actor-isolation.source-only-evidence.v1",
+  "scope": "TWO_EXACT_GIT_BLOBS_ONLY",
+  "status": "PASS_SOURCE_ONLY",
+  "source_repo": "atto-lang/atto-platform-conformance",
+  "source_pr": 33,
+  "source_head_at_export": "f217d0084993ee41565875546487cf03706c2372",
+  "blobs": [
+    {
+      "path": "tools/actor_isolation_types_v1.rs",
+      "git_blob_sha": "2ed736970b5f7da1d2291b4396f1b2df66e73a59"
+    },
+    {
+      "path": "contracts/actor-isolation-types-v1.tsv",
+      "git_blob_sha": "298b4d23e526951394aa7fa7eefb1ecbc423cfe4"
+    }
+  ],
+  "carrier_repo": "usa-acc/atto-ci",
+  "carrier_private": true,
+  "carrier_commit": "afd236dfea732613e1bcc60befba6259ef34bb19",
+  "carrier_tree": "7714c69d4836b31155b2282eb82cc2dd20697844",
+  "github_actions_url": "https://github.com/usa-acc/atto-ci/actions/runs/44662076919",
+  "run_id": 44662076919,
+  "job_id": 136042448898,
+  "toolchain": "rustc 1.100.0 (0ef1bc386 2026-11-09)",
+  "checked_steps": [
+    "checkout",
+    "authenticate_exact_blobs",
+    "rustc_test",
+    "rustc_binary",
+    "run_reference_binary"
+  ],
+  "rust_unit_tests": {
+    "passed": 12,
+    "failed": 0,
+    "ignored": 0
+  },
+  "contract_rows_validated": 36,
+  "atto_compiler_executed": false,
+  "atto_guest_executed": false,
+  "host_tenantvm_isolation_proved": false,
+  "full_repo_tree_verified": false,
+  "source_workflow_ci_satisfied": false,
+  "notes": "A tiny private two-file carrier verifies an isolated Rust oracle only. It cannot promote any backend, compiler, guest or security sandbox to PASS. Source Actions in the original organization failed before steps."
+}

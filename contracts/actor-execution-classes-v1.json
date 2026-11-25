@@ -1,0 +1,588 @@
+{
+  "schema": "atto.actor-execution-classes.v1",
+  "status": "TARGET_NOT_GUEST_EXECUTED",
+  "normative": "atto-spec/language/actor-execution-classes-v1.md",
+  "dependencies": [
+    "atto-spec/language/actor-scheduler-domains-v1.md",
+    "atto-spec#63",
+    "atto-spec#105",
+    "atto-spec#28",
+    "atto-common-source#1"
+  ],
+  "backend_targets": [
+    "java",
+    "llvm",
+    "net",
+    "forge",
+    "wasm",
+    "rs",
+    "cranelift",
+    "js",
+    "atto"
+  ],
+  "expected_statuses": [
+    "passed",
+    "failed",
+    "unsupported",
+    "not_executed"
+  ],
+  "rules": {
+    "default_domain": "shared",
+    "exclusive_domain_modifiers": [
+      "shared",
+      "isolated",
+      "untrusted"
+    ],
+    "storage_modifiers_orthogonal": [
+      "persistent",
+      "durable"
+    ],
+    "storage_mutually_exclusive": true,
+    "domain_marker_implementation": "compiler_only_sealed",
+    "actor_mutable_state": "sealed",
+    "guest_security_floor": "host_authenticated_non_downgradable",
+    "sandbox_unavailable": "DENIED_OR_UNSUPPORTED_NOT_TRUSTED_FALLBACK",
+    "untrusted_io": "DEFAULT_DENY_BROKER_ONLY",
+    "cross_tenant_transfer": "BOUNDED_BROKER_COPY",
+    "hostile_principals": "SEPARATE_TENANT_VM",
+    "no_guest_parity_claim": true
+  },
+  "cases": [
+    {
+      "id": "aex-default-shared",
+      "expect": "parse_accept",
+      "phase": "parser",
+      "source": "define actor DefaultShared receives int as\n  susp receive(ActorMail<int> mail): void { }\nend\npub fnc main(): int { return 0; }\n",
+      "reason": "Default shared execution class",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed"
+      }
+    },
+    {
+      "id": "aex-explicit-shared",
+      "expect": "parse_accept",
+      "phase": "parser",
+      "source": "define shared actor ExplicitShared receives int as\n  susp receive(ActorMail<int> mail): void { }\nend\npub fnc main(): int { return 0; }\n",
+      "reason": "Explicit shared is a synonym for default",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed"
+      }
+    },
+    {
+      "id": "aex-isolated",
+      "expect": "parse_accept",
+      "phase": "parser",
+      "source": "define isolated actor PrivateWorker receives int as\n  susp receive(ActorMail<int> mail): void { }\nend\npub fnc main(): int { return 0; }\n",
+      "reason": "Private scheduling class",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed"
+      }
+    },
+    {
+      "id": "aex-untrusted",
+      "expect": "parse_accept",
+      "phase": "parser",
+      "source": "define untrusted actor SandboxWorker receives int as\n  susp receive(ActorMail<int> mail): void { }\nend\npub fnc main(): int { return 0; }\n",
+      "reason": "TenantVM required despite declaration-only parse",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed"
+      }
+    },
+    {
+      "id": "aex-pub-isolated-durable",
+      "expect": "parse_accept",
+      "phase": "parser",
+      "source": "define pub isolated durable actor DurableWorker receives int as\n  susp receive(ActorMail<int> mail): void { }\nend\npub fnc main(): int { return 0; }\n",
+      "reason": "Storage and execution domains are independent",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed"
+      }
+    },
+    {
+      "id": "aex-serial-untrusted",
+      "expect": "parse_accept",
+      "phase": "parser",
+      "source": "define untrusted serial http actor Gateway receives int as\n  susp receive(ActorMail<int> mail): void { }\nend\npub fnc main(): int { return 0; }\n",
+      "reason": "Serial and HTTP modifiers do not grant socket authority",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed"
+      }
+    },
+    {
+      "id": "aex-two-domains",
+      "expect": "parse_reject",
+      "phase": "parser",
+      "source": "define isolated untrusted actor Conflict receives int as\n  susp receive(ActorMail<int> mail): void { }\nend\npub fnc main(): int { return 0; }\n",
+      "reason": "Exactly one domain modifier",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed"
+      }
+    },
+    {
+      "id": "aex-duplicate-shared",
+      "expect": "parse_reject",
+      "phase": "parser",
+      "source": "define shared shared actor Double receives int as\n  susp receive(ActorMail<int> mail): void { }\nend\npub fnc main(): int { return 0; }\n",
+      "reason": "No repeated execution-domain modifiers",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed"
+      }
+    },
+    {
+      "id": "aex-storage-conflict",
+      "expect": "parse_reject",
+      "phase": "parser",
+      "source": "define persistent durable actor Collision receives int as\n  susp receive(ActorMail<int> mail): void { }\nend\npub fnc main(): int { return 0; }\n",
+      "reason": "Durable and persistent are exclusive storage modes",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed"
+      }
+    },
+    {
+      "id": "aex-out-of-order",
+      "expect": "parse_reject",
+      "phase": "parser",
+      "source": "define durable isolated actor BadOrder receives int as\n  susp receive(ActorMail<int> mail): void { }\nend\npub fnc main(): int { return 0; }\n",
+      "reason": "Domain modifier must precede storage modifier",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed"
+      }
+    },
+    {
+      "id": "aex-duplicate-transport",
+      "expect": "parse_reject",
+      "phase": "parser",
+      "source": "define http ws actor DuplicateTransport receives int as\n  susp receive(ActorMail<int> mail): void { }\nend\npub fnc main(): int { return 0; }\n",
+      "reason": "No conflicting transport shorthand",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed"
+      }
+    },
+    {
+      "id": "aex-marker-implements",
+      "expect": "type_reject",
+      "phase": "typechecker",
+      "source": "define actor MarkerForgery receives int implements UntrustedActor as\n  susp receive(ActorMail<int> mail): void { }\nend\npub fnc main(): int { return 0; }\n",
+      "reason": "Compiler-only marker may not be implemented",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed"
+      }
+    },
+    {
+      "id": "aex-marker-extends",
+      "expect": "type_reject",
+      "phase": "typechecker",
+      "source": "define untrusted actor InvalidBase receives int extends SharedActor as\n  susp receive(ActorMail<int> mail): void { }\nend\npub fnc main(): int { return 0; }\n",
+      "reason": "Cannot inherit execution authority",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed"
+      }
+    },
+    {
+      "id": "aex-state-direct-access",
+      "expect": "type_reject",
+      "phase": "typechecker",
+      "source": "define isolated actor PrivateState receives int as\n  state count: int = 0;\n  susp receive(ActorMail<int> mail): void { count = 1; }\nend\npub fnc main(): int { return 0; }\n",
+      "reason": "Sealed actor state cannot be directly mutated",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed"
+      }
+    },
+    {
+      "id": "aex-trusted-shared-pool",
+      "expect": "runtime",
+      "phase": "runtime",
+      "reason": "Trusted shared actors use bounded common carrier pool, not shared mutable state",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed"
+      }
+    },
+    {
+      "id": "aex-private-lazy-pool",
+      "expect": "runtime",
+      "phase": "runtime",
+      "reason": "Distinct isolated actor instances have lazily allocated non-fallback pools",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed"
+      }
+    },
+    {
+      "id": "aex-guest-shared-floor",
+      "expect": "runtime",
+      "phase": "host_admission",
+      "reason": "Untrusted source declaring shared may never escape its tenant security floor",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed"
+      }
+    },
+    {
+      "id": "aex-host-mints-tenant",
+      "expect": "runtime",
+      "phase": "host_admission",
+      "reason": "No guest string, marker, cast, or fabricated metadata grants tenant authority",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed"
+      }
+    },
+    {
+      "id": "aex-untrusted-deny-no-sandbox",
+      "expect": "runtime",
+      "phase": "host_admission",
+      "reason": "Unsupported sandbox must fail closed, never run native on trusted carrier",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed"
+      }
+    },
+    {
+      "id": "aex-hostile-siblings-separate",
+      "expect": "runtime",
+      "phase": "host_admission",
+      "reason": "Mutually hostile actors use distinct TenantVMs even within one customer account",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed"
+      }
+    },
+    {
+      "id": "aex-cross-tenant-pointer",
+      "expect": "runtime",
+      "phase": "broker",
+      "reason": "Cross-tenant raw pointers and mutable aliases denied",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed"
+      }
+    },
+    {
+      "id": "aex-cross-tenant-serialization",
+      "expect": "runtime",
+      "phase": "broker",
+      "reason": "Serializable alone cannot launder a forged capability or native handle",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed"
+      }
+    },
+    {
+      "id": "aex-socket-no-grant",
+      "expect": "runtime",
+      "phase": "broker",
+      "reason": "No guest direct syscall, file, FFI or unauthorized socket access",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed"
+      }
+    },
+    {
+      "id": "aex-tenant-stale-resume",
+      "expect": "runtime",
+      "phase": "runtime",
+      "reason": "Generation-fenced continuation replay rejected",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed"
+      }
+    },
+    {
+      "id": "aex-private-cap-exhaustion",
+      "expect": "runtime",
+      "phase": "runtime",
+      "reason": "Atomic private pool admission refusal with no fallback",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed"
+      }
+    },
+    {
+      "id": "aex-panic-priority",
+      "expect": "runtime",
+      "phase": "runtime",
+      "reason": "Untrusted actor cannot consume or forge supervisor CONTROL",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed"
+      }
+    },
+    {
+      "id": "aex-kill-neighbor-survives",
+      "expect": "runtime",
+      "phase": "runtime",
+      "reason": "Sandbox-enforced tenant termination preserves other tenants on expected guest traps",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed"
+      }
+    },
+    {
+      "id": "aex-tenant-local-isolated",
+      "expect": "runtime",
+      "phase": "runtime",
+      "reason": "Hostile guest requesting isolated scheduling stays inside original TenantVM",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed"
+      }
+    }
+  ],
+  "receipts": {
+    "pass_requires": [
+      "case_id",
+      "backend",
+      "backend_head_sha",
+      "tree_sha",
+      "source_blob_sha",
+      "compiler_sha256",
+      "artifact_sha256",
+      "toolchain",
+      "workflow_url",
+      "executed_steps",
+      "actual_guest_result",
+      "sandbox_boundary_evidence"
+    ],
+    "no_source_only_pass": true,
+    "not_executed_without_verified_real_guest": true
+  }
+}

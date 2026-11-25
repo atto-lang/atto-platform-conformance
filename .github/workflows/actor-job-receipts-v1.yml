@@ -1,0 +1,35 @@
+name: Actor job receipt Rust host model v1
+
+on:
+  push:
+    paths:
+      - 'tests/actor_job_receipts_v1.rs'
+      - 'contracts/actor-job-receipts-v1.json'
+      - '.github/workflows/actor-job-receipts-v1.yml'
+  pull_request:
+    paths:
+      - 'tests/actor_job_receipts_v1.rs'
+      - 'contracts/actor-job-receipts-v1.json'
+      - '.github/workflows/actor-job-receipts-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rust-host-reference:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Rust model ONLY — no Atto guest execution
+        run: |
+          rustc --version
+          mkdir -p target
+          rustc --edition=2021 --test -D warnings tests/actor_job_receipts_v1.rs -o target/actor-job-receipts-v1
+          target/actor-job-receipts-v1 --nocapture
+      - name: Refuse claims of compiled guest or persistence
+        run: |
+          node -e "const c=require('./contracts/actor-job-receipts-v1.json');if(c.status!=='CANDIDATE_RUST_HOST_MODEL_ONLY'||c.evidence.compiled_atto_job_id_handler!=='NOT_EXECUTED'||c.evidence.durable_recovery!=='NOT_IMPLEMENTED'){process.exit(1)}"

@@ -1,0 +1,23 @@
+// target-stdout: empty:7
+// An immediate empty read must not leave a waiter or consume later data.
+import module channel from "std/channel";
+
+pub routine main(): void {
+  val Channel<int> ch = channel.bounded<int>(1);
+  val Option<int> first = channel.try_receive<int>(ch);
+  do match first over
+    on None -> { stdio.stdout.write("empty"); }
+    on Some(value) -> { stdio.stdout.write("unexpected"); }
+  end
+  writech ch, 7;
+  val Option<int> second = channel.try_receive<int>(ch);
+  do match second over
+    on None -> { stdio.stdout.write("unexpected"); }
+    on Some(value) -> {
+      stdio.stdout.write(":");
+      stdio.stdout.write(value);
+    }
+  end
+  channel.close<int>(ch);
+  return;
+}

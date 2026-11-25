@@ -1,0 +1,11 @@
+fnc accepted_id(): Result<int, Error> { return Ok(5); }
+fnc rejected_id(): Result<int, Error> { return Err(new Error("negative id")); }
+
+pub fnc main(): int {
+  val Result<int, Error> scalar = trap! (3 + 2);
+  val Result<int, Error> success = trap accepted_id();
+  val Result<int, Error> failure = trap! rejected_id();
+  val Result<Option<int>, Error> option = trap! Some(0);
+  return scalar.unwrap() + success.unwrap() + failure.unwrap_or(4)
+      + option.unwrap().unwrap() - 7;
+}

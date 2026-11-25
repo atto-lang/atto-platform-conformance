@@ -1,0 +1,142 @@
+{
+  "version": 1,
+  "id": "type-declaration-not-runtime-value-v1",
+  "status": "NOT_EXECUTED",
+  "requirements": {
+    "diagnostic_category": "TYPE_NOT_VALUE",
+    "types": [
+      "class",
+      "trait",
+      "interface",
+      "type_alias"
+    ],
+    "allowed": [
+      "class-typed instance return",
+      "class-typed instance argument",
+      "static member call",
+      "trait generic bound",
+      "lexical value shadowing of class names"
+    ],
+    "rejected": [
+      "bare class return",
+      "bare class argument",
+      "bare class local initializer",
+      "bare class expression statement",
+      "bare trait argument",
+      "bare trait return",
+      "bare alias as value",
+      "type namespace as actor message",
+      "type declaration in unknown-generic value slot",
+      "class declaration nested in aggregate elements",
+      "type namespace used in equality operands",
+      "bare interface value"
+    ]
+  },
+  "cases": [
+    {
+      "id": "class-return",
+      "expect": "reject",
+      "code": "define class Person as end\nfnc bad(): Person { return Person; }"
+    },
+    {
+      "id": "class-argument",
+      "expect": "reject",
+      "code": "define class Person as end\nfnc inspect(Person p): void { return; }\nfnc bad(): void { inspect(Person); }"
+    },
+    {
+      "id": "class-inferred",
+      "expect": "reject",
+      "code": "define class Person as end\nfnc bad(): void { val x = Person; }"
+    },
+    {
+      "id": "class-expression",
+      "expect": "reject",
+      "code": "define class Person as end\nfnc bad(): void { Person; }"
+    },
+    {
+      "id": "trait-bare-value",
+      "expect": "reject",
+      "code": "define trait Printable as end\nfnc bad(): void { val x = Printable; }"
+    },
+    {
+      "id": "alias-bare-value",
+      "expect": "reject",
+      "code": "define type Code = int;\nfnc bad(): void { val x = Code; }"
+    },
+    {
+      "id": "class-instance-return",
+      "expect": "accept",
+      "code": "define class Person as end\nfnc make(): Person { return new Person(); }"
+    },
+    {
+      "id": "class-instance-argument",
+      "expect": "accept",
+      "code": "define class Person as end\nfnc inspect(Person p): int { return 42; }\nfnc main(): int { return inspect(new Person()); }"
+    },
+    {
+      "id": "static-class-member",
+      "expect": "accept",
+      "code": "define class Person as\n pub static fnc answer(): int { return 42; }\nend\nfnc main(): int { return Person.answer(); }"
+    },
+    {
+      "id": "class-list-element",
+      "expect": "reject",
+      "code": "define class Person as end\nfnc bad(): void { val values = [Person]; }"
+    },
+    {
+      "id": "class-generic-value",
+      "expect": "reject",
+      "code": "define class Person as end\nfnc identity<T>(T value): T { return value; }\nfnc bad(): void { val escaped = identity(Person); }"
+    },
+    {
+      "id": "class-equality-operand",
+      "expect": "reject",
+      "code": "define class Person as end\nfnc bad(): bool { return Person eq Person; }"
+    },
+    {
+      "id": "interface-bare-value",
+      "expect": "reject",
+      "code": "define interface Endpoint as end\nfnc bad(): void { val escaped = Endpoint; }"
+    },
+    {
+      "id": "value-name-shadows-class",
+      "expect": "accept",
+      "code": "define class Person as end\nfnc echo(int Person): int { return Person; }\nfnc main(): int { return echo(42); }"
+    }
+  ],
+  "registry": "atto-platform-conformance",
+  "specification": "https://github.com/atto-lang/atto-spec/pull/201",
+  "required_backends": [
+    "java",
+    "rust_wasm",
+    "llvm",
+    "wasm",
+    "net",
+    "forge",
+    "cranelift",
+    "js",
+    "hdl"
+  ],
+  "execution": {
+    "java": "NOT_EXECUTED",
+    "rust_wasm": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
+    "hdl": "NOT_EXECUTED"
+  },
+  "proof_requirements": {
+    "same_source_positive_and_negative_vectors": true,
+    "compiler_rejection_precedes_artifact": true,
+    "actual_guest_execution_of_positive_cases": true,
+    "exact_head_sha": true,
+    "verified_runner_steps_nonzero": true,
+    "source_free_oracle_does_not_count_as_compiler_parity": true,
+    "explicitly_authorized_private_ci_carrier_required": true,
+    "explicit_unsupported_target_profile_is_not_positive_parity": true
+  },
+  "profile_scope": "Backends lacking class/trait guest execution (including experimental HDL profiles) must prove an explicit compile-time unsupported result without artifacts. This is a separate outcome, not a passing positive runtime case."
+}

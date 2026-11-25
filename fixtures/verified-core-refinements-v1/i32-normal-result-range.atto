@@ -1,0 +1,12 @@
+type Largest = i32 where self eq 2147483647;
+
+fnc increment(i32 value) -> Largest
+    requires value >= 2147483646
+{
+    return value + 1;
+}
+
+pub fnc main() -> int {
+    val int result = increment(2147483646);
+    return result - 2147483605;
+}

@@ -1,0 +1,382 @@
+{
+  "schema": "atto.conformance.http3.codec.v1",
+  "status": "RS_WASM_AND_LLVM_ELF_SCALAR_GUESTS_PASSED_NO_HTTP3_WIRE",
+  "canonical_source_repo": "atto-lang/atto-common-source",
+  "canonical_atto_sources": [
+    {
+      "path": "stdlib/net/quic_varint.atto",
+      "git_blob_sha": "838929f85b66a646fb7b018dd0a882e7fe96a5d5"
+    },
+    {
+      "path": "stdlib/net/http3_frames.atto",
+      "git_blob_sha": "a30d5301be194e91737fa17ac8c17d976619929a"
+    }
+  ],
+  "fixtures": [
+    {
+      "path": "fixtures/net/quic_varint_rfc9000.atto",
+      "git_blob_sha": "cc92894305401e8858561d2cd3d62c6e37b1be63",
+      "cases": 308,
+      "expected_exit_code": 42
+    },
+    {
+      "path": "fixtures/net/http3_frame_rfc9114.atto",
+      "git_blob_sha": "70f70bdfa037468e78496dc7637ce9851e1a66aa",
+      "cases": 435,
+      "expected_exit_code": 42
+    },
+    {
+      "path": "fixtures/net/http3_request_state_guards.atto",
+      "git_blob_sha": "6bdf5f7f9b1c5b8f3fcf6774b5ffcf94508fffc1",
+      "cases": 256,
+      "expected_exit_code": 42
+    },
+    {
+      "path": "fixtures/net/http3_push_state_guards.atto",
+      "git_blob_sha": "789ce50b79c4f73b2ba0796d4898aae7bf6418c7",
+      "cases": 256,
+      "expected_exit_code": 42
+    }
+  ],
+  "guest_evidence": {
+    "backend": "rs",
+    "execution_profile": "rust_native_compiler_to_wasm_guest",
+    "carrier_repo": "athlet-o/athleto-e2e",
+    "carrier_workflow_run": "https://github.com/athlet-o/athleto-e2e/actions/runs/43645771501",
+    "carrier_head": "20fa8c4e421d5a438c1db337868bd66bbeb7a184",
+    "compiler_source_head": "860137bcdc50684ab6cb6aa8f89932506b3beec4",
+    "compiler_slice_tree": "3a6eadd731418b979a5154b6d8b00739d23d883e",
+    "toolchain": "rustc 1.85.1",
+    "results": [
+      {
+        "kind": "quic_varint",
+        "cases": 308,
+        "artifact_sha256": "c3345d79ca64c02c596cd988fbc17285ff6c487148ab81633194e71f20ba94f9",
+        "actual_exit_code": 42
+      },
+      {
+        "kind": "http3_frame",
+        "cases": 406,
+        "artifact_sha256": "87e35a17d6b16b63031a19f03088604c6d52ab6ad325ca83df5f935f3fb2b161",
+        "actual_exit_code": 42
+      }
+    ],
+    "deterministic_wasm": true,
+    "host_imports": 0,
+    "native_machine_aot_test": false,
+    "actual_network_io": false,
+    "evidence_scope": "HISTORICAL_GUEST_BEFORE_62BIT_AND_STATE_HARDENING"
+  },
+  "targets": [
+    {
+      "backend": "llvm",
+      "guest_codec_execution": "PASS_LLVM_NATIVE_ELF_SCALAR_AOT",
+      "http3_wire": "NOT_IMPLEMENTED",
+      "client_server_loopback": "NOT_EXECUTED",
+      "scalar_zero_guest_gc": true,
+      "actor_runtime": "PASS_BOUNDED_NATIVE_LEGACY_ACTOR_ONLY",
+      "actor_vm_or_jit_required": false,
+      "native_actor_arena_isolated": true,
+      "new_receiver_mtd_supported": true,
+      "sealed_state_critical_supported": true,
+      "actor_supervisor_control_supported": false,
+      "target_actor_mtd": "PASS_BOUNDED_NATIVE_SCALAR_CRITICAL_ONLY",
+      "sealed_state_scope": "ONE_READ_OR_PURE_ASSIGNMENT_PER_CALLBACK_SERIALIZED_ACTOR_WORKER",
+      "full_borrow_checker": false,
+      "concurrent_rw_locks": false,
+      "new_receiver_mtd_scope": "CONCRETE_LOCAL_NATIVE_SCALAR_ONLY"
+    },
+    {
+      "backend": "java",
+      "guest_codec_execution": "NOT_EXECUTED",
+      "http3_wire": "NOT_IMPLEMENTED",
+      "client_server_loopback": "NOT_EXECUTED"
+    },
+    {
+      "backend": "net",
+      "guest_codec_execution": "NOT_EXECUTED",
+      "http3_wire": "NOT_IMPLEMENTED",
+      "client_server_loopback": "NOT_EXECUTED"
+    },
+    {
+      "backend": "rs",
+      "guest_codec_execution": "PASS_RUST_TO_WASM",
+      "http3_wire": "NOT_IMPLEMENTED",
+      "client_server_loopback": "NOT_EXECUTED"
+    },
+    {
+      "backend": "wasm",
+      "guest_codec_execution": "NOT_EXECUTED",
+      "http3_wire": "NOT_IMPLEMENTED",
+      "client_server_loopback": "NOT_EXECUTED"
+    }
+  ],
+  "never_infer": [
+    "Physical source bytes do not establish compilation or runtime parity",
+    "Executed pure codec guest is not HTTP3 or QUIC interoperability",
+    "Network I/O, QPACK, full AOT and actor-owned buffer lifecycle remain separately gated"
+  ],
+  "hardening_evidence": {
+    "runner": "athlet-o/athleto-e2e",
+    "run": "https://github.com/athlet-o/athleto-e2e/actions/runs/43647064377",
+    "carrier_head": "943f4186932bc9a49a1067e0f5535273cd0d2665",
+    "source_compiler_commit": "860137bcdc50684ab6cb6aa8f89932506b3beec4",
+    "compiler_source_slice_tree": "3a6eadd731418b979a5154b6d8b00739d23d883e",
+    "execution_profile": "RS_HOST_COMPILER_ATTO_GUEST_WASM",
+    "guest_wasm_compiled": true,
+    "guest_wasm_executed": true,
+    "deterministic_artifacts": true,
+    "host_imports": 0,
+    "expected_exit_code": 42,
+    "cases": 1255,
+    "additional_cases_vs_pre_hardening": 541,
+    "fixture_artifacts": [
+      {
+        "path": "fixtures/net/quic_varint_rfc9000.atto",
+        "sha256": "c3345d79ca64c02c596cd988fbc17285ff6c487148ab81633194e71f20ba94f9"
+      },
+      {
+        "path": "fixtures/net/http3_frame_rfc9114.atto",
+        "sha256": "62c42ec1713d4fde4579b4dc594de76a38f4f3618d45cc928b2407ab682c4ba1"
+      },
+      {
+        "path": "fixtures/net/http3_request_state_guards.atto",
+        "sha256": "1b5138de2b0292a1d3ced5c5f4d7348803c1d33b3563158e114b57e833ce1e7a"
+      },
+      {
+        "path": "fixtures/net/http3_push_state_guards.atto",
+        "sha256": "42bd614c4fb7ad69f1fab6366c667d11b10c61b2ee8938ef506c41989700af77"
+      }
+    ],
+    "negative_input": "E_UNBOUND_FAIL_CLOSED",
+    "network_execution": false,
+    "other_backend_execution": false,
+    "native_machine_aot": false
+  },
+  "llvm_native_aot_evidence": {
+    "receipt": "contracts/native-llvm-aot-v1.json",
+    "git_blob_sha": "f46dbc38b78b7d891229b9e543661fb397e72b9f",
+    "url": "https://github.com/athlet-o/athleto-e2e/actions/runs/43649930185",
+    "verified_source_head": "034c4b00f357c1456ed4d1840437dadfa6924d85",
+    "verified_source_tree": "d02b401e5c7a3a524c4a70db8db8520c6ae408ee",
+    "scalar_pure_cases": 1255,
+    "compile_to_real_elf": true,
+    "execution_exit_code": 42,
+    "had_guest_vm": false,
+    "checked_i64_overflow_and_sanitizers_passed": true,
+    "actor_runtime": false,
+    "quic_tls_network": false,
+    "full_language_aot": false
+  },
+  "llvm_native_aot_output_hardening": {
+    "evidence": "contracts/native-llvm-aot-hardening-v1.json",
+    "git_blob_sha": "e3914edcd5a6d7c885c504f56c6f6edafe83e716",
+    "executed_run": "https://github.com/athlet-o/athleto-e2e/actions/runs/43651073559",
+    "exact_source_commit": "ec2c04024b10f0dc1005c90fa73c6e741615df39",
+    "exact_source_tree": "bf71ea154bf87bb80c7534678e716d5daa94f455",
+    "native_guests": 1255,
+    "compile_and_execute_native": true,
+    "verified_protect_existing_outputs": true,
+    "verified_reject_fake_clang_success": true,
+    "quic_tls_wire_executed": false,
+    "actor_runtime_executed": false
+  },
+  "llvm_actor_native_evidence": {
+    "baseline_receipt": "contracts/native-llvm-actor-aot-v1.json",
+    "baseline_sha": "b6511bfb60d2a837db08b555aa6acacc1034bac6",
+    "baseline_url": "https://github.com/athlet-o/athleto-e2e/actions/runs/43657189906",
+    "baseline_exact_tree": "f40cb5044af7ffb55cbd05dd7024cc7963d6042d",
+    "hardening_receipt": "contracts/native-llvm-actor-capacity-v1.json",
+    "hardening_sha": "d5384b231710387420417f9853795815ae807d2b",
+    "hardening_url": "https://github.com/athlet-o/athleto-e2e/actions/runs/43657779372",
+    "hardening_exact_tree": "099b089383525f0da89dd734fc7d86e659450f2c",
+    "guest_executions": 80,
+    "native_actor_pass_fixtures": 4,
+    "negative_actor_fixtures": 3,
+    "concurrent_mailbox_messages": 8000,
+    "actor_instance_limit_proven": 32,
+    "actor_runtime_scope": "BOUNDED_LEGACY_ACTORS_ONLY",
+    "actual_quic_tls_http3_network": false,
+    "full_actor_model": false
+  },
+  "actor_fixtures": [
+    {
+      "path": "fixtures/actors/pass/180-two-types-state.atto",
+      "git_blob_sha": "31a7248917db4fad90069af7d2c236d7a257dfa0",
+      "executions": 20,
+      "result": "PASS_LLVM_NATIVE_ELF"
+    },
+    {
+      "path": "fixtures/actors/pass/181-same-type-separate-state.atto",
+      "git_blob_sha": "08b2d59fb772886508eda38ff03de2c61e1dfd5a",
+      "executions": 20,
+      "result": "PASS_LLVM_NATIVE_ELF"
+    },
+    {
+      "path": "fixtures/actors/pass/182-method-and-fifo.atto",
+      "git_blob_sha": "fd6c08535705b52972427afc940476a8ebfb6e46",
+      "executions": 20,
+      "result": "PASS_LLVM_NATIVE_ELF"
+    },
+    {
+      "path": "fixtures/actors/pass/183-bool-mail.atto",
+      "git_blob_sha": "bcbf4c0a4e72abca113a0cda21c9333cd467da2a",
+      "executions": 20,
+      "result": "PASS_LLVM_NATIVE_ELF"
+    },
+    {
+      "path": "fixtures/actors/fail/184-actor-ref-state-access.atto",
+      "git_blob_sha": "977b3259bcec01b2000f0b0f10efde53f370d533",
+      "result": "REJECTED_LLVM_COMPILER"
+    },
+    {
+      "path": "fixtures/actors/fail/185-actor-message-mismatch.atto",
+      "git_blob_sha": "3adaa75dd908bf5a5c6dfdb1e9f567e8a5d4b0af",
+      "result": "REJECTED_LLVM_COMPILER"
+    },
+    {
+      "path": "fixtures/actors/fail/186-declare-mtd-not-lowered.atto",
+      "git_blob_sha": "e729fc5c1e973f64cb832cce184910b7351c4995",
+      "result": "REJECTED_LLVM_COMPILER"
+    },
+    {
+      "path": "fixtures/actors/pass/187-namespace-two-receivers.atto",
+      "git_blob_sha": "bc8cbe1d9a6d14163bc4c1ac860e50bf08a21579",
+      "executions": 20,
+      "result": "PASS_LLVM_NATIVE_ELF_TARGET_MTD"
+    },
+    {
+      "path": "fixtures/actors/pass/188-critical-read-write.atto",
+      "git_blob_sha": "3550660aa86317c4d9c08366e278e2b25ff8c68d",
+      "executions": 20,
+      "result": "PASS_LLVM_NATIVE_ELF_TARGET_MTD"
+    },
+    {
+      "path": "fixtures/actors/fail/189-target-direct-state-in-receive.atto",
+      "git_blob_sha": "63aa2946aaad15324b70987500891b83f8e9694c",
+      "diagnostic": "E_SEALED",
+      "result": "REJECTED_LLVM_TARGET_GUARD"
+    },
+    {
+      "path": "fixtures/actors/fail/190-target-direct-state-in-mtd.atto",
+      "git_blob_sha": "934c03a336000d9f446c322ab724ec5fe8b5fea8",
+      "diagnostic": "E_SEALED",
+      "result": "REJECTED_LLVM_TARGET_GUARD"
+    },
+    {
+      "path": "fixtures/actors/fail/191-target-critical-read-mutation.atto",
+      "git_blob_sha": "823ca9b9de6ce0647a281548f43194d978e7da33",
+      "diagnostic": "E_READONLY",
+      "result": "REJECTED_LLVM_TARGET_GUARD"
+    },
+    {
+      "path": "fixtures/actors/fail/192-target-critical-state-escape.atto",
+      "git_blob_sha": "345f02958e2ce250531398992f58173e183c9eb2",
+      "diagnostic": "E_ESCAPE",
+      "result": "REJECTED_LLVM_TARGET_GUARD"
+    },
+    {
+      "path": "fixtures/actors/fail/193-target-critical-suspension.atto",
+      "git_blob_sha": "6012ef9237241940d2aa301bad6892530d7744f1",
+      "diagnostic": "E_BORROW",
+      "result": "REJECTED_LLVM_TARGET_GUARD"
+    },
+    {
+      "path": "fixtures/actors/fail/194-target-unlinked-forward.atto",
+      "git_blob_sha": "f38dbb70875c6e333037cacfb597daabc0c6bb0a",
+      "diagnostic": "E_UNLINKED",
+      "result": "REJECTED_LLVM_TARGET_GUARD"
+    },
+    {
+      "path": "fixtures/actors/fail/195-target-mtd-duplicate.atto",
+      "git_blob_sha": "c8e4111ea700a76213f6badb53bc142ce429772d",
+      "diagnostic": "E_DUPLICATE",
+      "result": "REJECTED_LLVM_TARGET_GUARD"
+    },
+    {
+      "path": "fixtures/actors/fail/196-target-immutable-critical-write.atto",
+      "git_blob_sha": "ae14c1de73d52b9438aa92f1406734c6e94cde91",
+      "diagnostic": "E_MUTABILITY",
+      "result": "REJECTED_LLVM_TARGET_GUARD"
+    },
+    {
+      "path": "fixtures/actors/fail/197-target-critical-host-effect.atto",
+      "git_blob_sha": "cfeddf3e4fdc916426744f549fcbd167b964dd03",
+      "diagnostic": "E_UNSUPPORTED_CRITICAL",
+      "result": "REJECTED_LLVM_TARGET_GUARD"
+    },
+    {
+      "path": "fixtures/actors/fail/198-target-nested-critical.atto",
+      "git_blob_sha": "8e923d56656aa71f38cb17cc4399846e51d9b373",
+      "diagnostic": "E_BORROW",
+      "result": "REJECTED_LLVM_TARGET_GUARD"
+    },
+    {
+      "path": "fixtures/actors/fail/199-target-read-complex-unsupported.atto",
+      "git_blob_sha": "369216a000b68001e918d74860e66dba243081ed",
+      "diagnostic": "E_UNSUPPORTED_CRITICAL",
+      "result": "REJECTED_LLVM_TARGET_GUARD"
+    },
+    {
+      "path": "fixtures/actors/fail/200-target-unrelocated-type.atto",
+      "git_blob_sha": "fcc06e6926b715ae9c2a3f8b079e2c27be803ec8",
+      "diagnostic": "E_UNSUPPORTED_NATIVE_TYPE",
+      "result": "REJECTED_LLVM_TARGET_GUARD"
+    },
+    {
+      "path": "fixtures/actors/fail/201-target-public-sealed-state.atto",
+      "git_blob_sha": "b7fa449891da4ec771a80d38c95f4eb89f99279a",
+      "diagnostic": "E_SEALED",
+      "result": "REJECTED_LLVM_TARGET_GUARD"
+    },
+    {
+      "path": "fixtures/actors/fail/202-target-unrelocated-local-named-type.atto",
+      "git_blob_sha": "68147baea5078c2e92ce663b13af6779abc97818",
+      "diagnostic": "E_TYPE_INDEX",
+      "result": "REJECTED_LLVM_TARGET_GUARD"
+    },
+    {
+      "path": "fixtures/actors/fail/203-target-unrelocated-local-actorref.atto",
+      "git_blob_sha": "41420a845eec9cdb5996d4b7aaa791d5980ccd6f",
+      "diagnostic": "E_TYPE_INDEX",
+      "result": "REJECTED_LLVM_TARGET_GUARD"
+    },
+    {
+      "path": "fixtures/actors/fail/204-target-unrelocated-receiver-local.atto",
+      "git_blob_sha": "5cd43aa71bf55135284c011215f4726d7447b94b",
+      "diagnostic": "E_TYPE_INDEX",
+      "result": "REJECTED_LLVM_TARGET_GUARD"
+    }
+  ],
+  "llvm_target_mtd_evidence": {
+    "receipt": "contracts/native-llvm-target-mtd-v1.json",
+    "sha": "62a95b145ab596db38cbf2068f1e92c6b5399934",
+    "native_runner": "https://github.com/athlet-o/athleto-e2e/actions/runs/43666674489",
+    "exact_llvm_source_commit": "93e20d12b0284233e1dcb6aa98076f4fd119d2ed",
+    "exact_llvm_source_tree": "a6d2f2ab5155fac02d29fec426c2014c30ad4a98",
+    "native_guest_runs": 120,
+    "negative_compilation_tests": 15,
+    "legacy_actor_state_access_allowed_outside_target_profile": true,
+    "target_direct_state_access_rejected": true,
+    "real_quic_tls_http3_wire": false,
+    "general_critical_callbacks": false,
+    "supervisor_control": false,
+    "full_actor_borrow_model": false
+  },
+  "llvm_nominal_sealed_hardening": {
+    "receipt": "contracts/native-llvm-nominal-sealed-hardening-v1.json",
+    "git_blob": "17416105b9604afc190668414ef3d10fd908012f",
+    "source_commit": "b80020c46d1a496b663243e1a4a942edcfb208f6",
+    "exact_llvm_source_tree": "c5e1f150fa628f3985a535efd83bcfcbffb03cb0",
+    "private_run": "https://github.com/athlet-o/athleto-e2e/actions/runs/43669072054",
+    "native_actor_guest_executions": 120,
+    "actor_negative_compilation_diagnostics": 19,
+    "additional_adversarial_fixtures": 4,
+    "native_actor_state_public_fields_rejected": true,
+    "nominal_index_bounds_checked": true,
+    "exact_receiver_signature_enforced": true,
+    "full_actor_borrow_checker": false,
+    "concurrent_reader_writer_lock": false,
+    "http3_wire_tested": false
+  }
+}

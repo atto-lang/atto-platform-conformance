@@ -1,0 +1,5 @@
+// Wrong Result nesting: must return Option<ActorStateSnapshot<State>>.
+define persistent actor Counter as
+    susp fnc load_state(ctx: PersistenceContext):
+        Result<CheckpointReceipt, PersistenceError>;
+end
