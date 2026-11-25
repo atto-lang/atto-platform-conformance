@@ -203,7 +203,7 @@
           true
         ],
         [
-          "shared",
+          "common",
           "namespace",
           true
         ],
@@ -3489,13 +3489,13 @@
     {
       "id": "context-grandparent",
       "stage": "resolution",
-      "source": "use namespace network.http;\nimport super.super.shared;",
-      "reference": "shared",
+      "source": "use namespace network.http;\nimport super.super.common;",
+      "reference": "common",
       "fixture": "contextual-root",
       "expect": {
         "outcome": "identity",
         "identity": "@foo/bar/baz",
-        "declaration": "shared"
+        "declaration": "common"
       },
       "currentNamespace": "network.http"
     },
@@ -3543,7 +3543,7 @@
     {
       "id": "context-negative-escape",
       "stage": "resolution",
-      "source": "use namespace network.http;\nimport super.super.super.shared;",
+      "source": "use namespace network.http;\nimport super.super.super.common;",
       "reference": "config",
       "fixture": "contextual-root",
       "expect": {
