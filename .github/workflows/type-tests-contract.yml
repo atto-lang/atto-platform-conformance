@@ -1,0 +1,25 @@
+name: Type-test capture portable contract (host integrity only)
+on:
+  push:
+    paths:
+      - 'contracts/type-tests-casts-v1.json'
+      - 'fixtures/type-tests/**'
+      - 'tests/type-tests-contract.test.mjs'
+      - '.github/workflows/type-tests-contract.yml'
+  pull_request:
+    paths:
+      - 'contracts/type-tests-casts-v1.json'
+      - 'fixtures/type-tests/**'
+      - 'tests/type-tests-contract.test.mjs'
+      - '.github/workflows/type-tests-contract.yml'
+permissions:
+  contents: read
+jobs:
+  manifest-only:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Verify manifest and fixture integrity (NOT guest execution)
+        run: node --test tests/type-tests-contract.test.mjs
