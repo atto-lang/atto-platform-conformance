@@ -1,0 +1,45 @@
+{
+  "contract": "actor-data-runtime-bound-route-v1",
+  "status": "SOURCE_ONLY_NOT_EXECUTED",
+  "reference": "https://github.com/atto-lang/atto-source.java/pull/1815",
+  "scope": "Host route registry and transport handoff; not actor guest or TenantVM-wide runtime proof",
+  "cases": [
+    {
+      "id": "foreign_artifact",
+      "expect": "reject before registration"
+    },
+    {
+      "id": "invalid_queue_policy",
+      "expect": "reject and release provisional session; route reusable"
+    },
+    {
+      "id": "duplicate_live_route",
+      "expect": "reject without replacing active route"
+    },
+    {
+      "id": "foreign_retire",
+      "expect": "reject exact-object mismatch"
+    },
+    {
+      "id": "stale_retire",
+      "expect": "old session cannot remove registered replacement"
+    },
+    {
+      "id": "runtime_close",
+      "expect": "close registered sessions and reject late opens"
+    },
+    {
+      "id": "shared_runtime_contention",
+      "expect": "16 workers, 256 rounds, 4 simultaneous 64-byte leases; 1024 admissions, 3072 backpressure, zero credits after each round"
+    }
+  ],
+  "remaining": [
+    "registry scope is runtime, not tenant across multiple runtimes",
+    "enforce parent policy ceilings and receiver heap plus control-lane memory accounting",
+    "monotonic route epoch/incarnation from authoritative actor registry, not caller-supplied metadata",
+    "bind selected codec/schema to admitted artifact, actual decode and publication to exact ActorRef under existing lifecycle lock and supervisor escrow permit",
+    "release popped delivery only after receiver budget ownership transfer or reject/cancel",
+    "no guest publication on stale route, auth, schema, quota or cancellation failures",
+    "actual compiler-backed supervised child fixture; no parser-only pass"
+  ]
+}
