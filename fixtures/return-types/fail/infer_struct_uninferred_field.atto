@@ -1,0 +1,4 @@
+pub fnc main(): int {
+    const s = infer struct { payload: None };
+    return 5;
+}
