@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { expandQuantityCases } from "../lib/verified-core-quantity-expansion.mjs";
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -17,11 +18,12 @@ assert.ok([
   "verified-core-protocol-declarations-v1",
   "verified-core-protocol-handlers-v1",
 ].includes(fixtureProfile));
-const fixtures = fileURLToPath(new URL(`../fixtures/${fixtureProfile}/`, import.meta.url));
-const { schemaVersion, profile, cases } = JSON.parse(readFileSync(join(fixtures, "cases.json"), "utf8"));
-assert.equal(schemaVersion, 1);
-assert.equal(profile, fixtureProfile);
+const originalFixtures = fileURLToPath(new URL(`../fixtures/${fixtureProfile}/`, import.meta.url));
+const manifest = JSON.parse(readFileSync(join(originalFixtures, "cases.json"), "utf8"));
+assert.equal(manifest.schemaVersion, 1);
+assert.equal(manifest.profile, fixtureProfile);
 const work = mkdtempSync(join(tmpdir(), "atto-quantities-native-"));
+let fixtures, cases;
 
 const javaRuntimeErrors = {
   divisionByZero: "E_I64_DIV_ZERO",
@@ -137,6 +139,7 @@ function checkLlvm() {
 }
 
 try {
+  ({ fixtures, cases } = expandQuantityCases(originalFixtures, work, manifest));
   if (backend === "java") checkJava();
   else checkLlvm();
   console.log(`verified ${cases.length} cases through ${backend === "java" ? "the Java compiler and Truffle guest" : "the LLVM compiler and linked native guest"}`);
