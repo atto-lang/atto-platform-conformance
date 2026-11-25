@@ -6,12 +6,12 @@ const doc = JSON.parse(readFileSync(new URL('../fixtures/import-v2/cases.json', 
 test('v2 corpus is explicit about evidence level and stage counts', () => {
   assert.equal(doc.schema, 'atto.static-import-v2.corpus.v1');
   assert.equal(doc.status, 'CORPUS_ONLY_NOT_BACKEND_EXECUTION');
-  assert.equal(doc.cases.length, 265);
-  assert.equal(new Set(doc.cases.map(c => c.id)).size, 265);
-  assert.equal(new Set(doc.cases.map(c => [c.stage,c.source,c.reference ?? ''].join('\\0'))).size, 265);
+  assert.equal(doc.cases.length, 300);
+  assert.equal(new Set(doc.cases.map(c => c.id)).size, 300);
+  assert.equal(new Set(doc.cases.map(c => [c.stage,c.source,c.reference ?? ''].join('\\0'))).size, 300);
   assert.equal(doc.cases.filter(c => c.stage === 'guest').length, 56);
   assert.equal(doc.cases.filter(c => c.stage === 'typed-bindings').length, 62);
-  assert.equal(doc.cases.filter(c => c.stage === 'resolution').length, 147);
+  assert.equal(doc.cases.filter(c => c.stage === 'resolution').length, 182);
 });
 test('mixed delimiter permutations share one ordered binding expectation', () => {
   const cases = doc.cases.filter(c => c.id.startsWith('mixed-permutation-'));
@@ -75,3 +75,14 @@ test('multi-file namespace export targets', () => { assert.equal(doc.cases.filte
 test('nominal export targets', () => { assert.equal(doc.cases.filter(c => c.id.startsWith('nominal-')).length,10); });
 
 test('cross-package class resolution targets', () => { assert.equal(doc.cases.filter(c => c.id.startsWith('cross-class-')).length,10); });
+
+test('nominal-kind matrix covers selection and atomic failure for each declaration kind', () => {
+  const cases=doc.cases.filter(c=>c.id.startsWith('nominal-matrix-'));
+  assert.equal(cases.length,35);
+  for(const kind of ['class','enum','actor','type','fnc']) {
+    const group=cases.filter(c=>c.id.startsWith('nominal-matrix-'+kind+'-'));
+    assert.equal(group.length,7);
+    assert.equal(group.filter(c=>c.expect.outcome==='identity').length,4);
+    assert.equal(group.filter(c=>c.expect.outcome==='reject'&&c.expect.atomic).length,3);
+  }
+});
