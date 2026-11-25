@@ -1,0 +1,7 @@
+define class Box as pub let int value = 1; end
+pub fnc main(): int {
+  let mut Box editable = new Box();
+  editable.value = 41;
+  editable = new Box();
+  return editable.value;
+}

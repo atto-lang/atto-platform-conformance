@@ -1,0 +1,124 @@
+{
+  "schema": "atto.owner-semantic-reconciliation.v1",
+  "date": "2026-11-20",
+  "status": "DRAFT_SOURCE_ONLY_NO_GUEST_PARITY",
+  "spec_pr": "https://github.com/atto-lang/atto-spec/pull/151",
+  "topics": [
+    {
+      "id": "class-field",
+      "decision": "implicit val; explicit let for rebinding; mut for referent access",
+      "canonical": "contracts/class-field-binding-defaults-v2.json"
+    },
+    {
+      "id": "trap",
+      "decision": "Result; catch ordinary throw in trap expression, bypass raise/panic/cancel",
+      "canonical": "contracts/v2/trap-result-v2.json",
+      "historical": "contracts/v1/caller-trap-parity/manifest.json"
+    },
+    {
+      "id": "tenant",
+      "decision": "untrusted same-process guests require independently verified TenantVM isolation, not mandatory separate OS process",
+      "canonical": "contracts/tenant-isolation-v2.json"
+    },
+    {
+      "id": "caret-xor",
+      "decision": "^ return; ^^ integer XOR; Boolean Xor(bool,bool); never infix ^",
+      "related": "atto-spec #143"
+    },
+    {
+      "id": "shift",
+      "decision": "shift distance 0..63, else language-level checked failure; Java/LLVM native error mapping pending"
+    },
+    {
+      "id": "actor-state",
+      "decision": "sealed state via checked critical read/write callbacks, including in receive; construction initialized separately"
+    },
+    {
+      "id": "match",
+      "decision": "all match arms require on; wildcard on _; default switch only",
+      "related": "atto-platform-conformance #234"
+    },
+    {
+      "id": "division",
+      "decision": "int/int yields floating result; explicit integer div_trunc as named API; exact library spelling pending"
+    },
+    {
+      "id": "return-first",
+      "decision": "both contiguous <- and exact U+2022 •; identical callable semantics",
+      "canonical": "contracts/v2/return-first-separators-v1.json"
+    },
+    {
+      "id": "imports",
+      "decision": "unified import * as x from +/pkg; legacy import module compatibility only"
+    }
+  ],
+  "backends": {
+    "java": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_receipt": null,
+      "release_qualified": false
+    },
+    "llvm": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_receipt": null,
+      "release_qualified": false
+    },
+    "rs": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_receipt": null,
+      "release_qualified": false
+    },
+    "net": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_receipt": null,
+      "release_qualified": false
+    },
+    "forge": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_receipt": null,
+      "release_qualified": false
+    },
+    "js": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_receipt": null,
+      "release_qualified": false
+    },
+    "cranelift": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_receipt": null,
+      "release_qualified": false
+    },
+    "wasm": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_receipt": null,
+      "release_qualified": false
+    },
+    "atto": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_receipt": null,
+      "release_qualified": false
+    },
+    "hdl": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_receipt": null,
+      "release_qualified": false
+    },
+    "realtime": {
+      "status": "NOT_EXECUTED",
+      "compiler_sha": null,
+      "guest_receipt": null,
+      "release_qualified": false
+    }
+  },
+  "policy": "Keep older exact receipts immutable; reconcile source and adapter semantics before PASS. A host-only Node integrity run is not compiler/guest execution."
+}

@@ -1,0 +1,10 @@
+// EXPECT_REJECT: no implicit conversion of Result[int, NetworkError]
+// to Result[int, DatabaseError] or the handler's assumed Err(DatabaseError).
+define pub fnc wrong_error(int id) -> Result[int, DatabaseError] as
+  return maybe
+    Ok(value) ?= network_lookup(id);
+    return Ok(value)
+  else
+    Err(reason) -> return Err(reason)
+  end;
+end

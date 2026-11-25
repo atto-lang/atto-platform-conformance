@@ -1,0 +1,8 @@
+// expect-error: E_LOAN_READ_ONLY (semantic, not parser rejection)
+// A read lease, even inside Option, must not expose mutable capabilities.
+pub fnc main() -> int {
+  let values = [10, 20];
+  val read = values.get(0);
+  read.unwrap().set(42);
+  return 0;
+}

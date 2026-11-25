@@ -1,0 +1,8 @@
+// expect-error: E_LOAN_CONFLICT (semantic, not parser rejection)
+// Structural growth invalidates all projected element views.
+pub fnc main() -> int {
+  let values = [10, 20];
+  val read = values.get(0);
+  values.push(30);
+  return read.is_some() ? 42 : 0;
+}

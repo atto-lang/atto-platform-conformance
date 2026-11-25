@@ -1,0 +1,5 @@
+// expect-error: E_PRIVATE
+define class Cell as
+  let int secret = 1;
+end
+pub fnc main(): int { let mut Cell x = new Cell(); x.secret = 2; return 0; }

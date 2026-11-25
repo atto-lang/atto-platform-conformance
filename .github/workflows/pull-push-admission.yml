@@ -1,0 +1,18 @@
+name: Pull/push candidate-contract integrity (no guest execution)
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  target-only-manifest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate target manifest and deny fabricated guest PASS
+        run: node --test tests/pull-push-admission.test.mjs

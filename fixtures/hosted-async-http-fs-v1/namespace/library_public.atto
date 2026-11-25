@@ -1,0 +1,9 @@
+// Source fixture, not a compiler-owned std.http replacement.
+// Public module exports are separate from the file's public namespace.
+use namespace namespace_contract;
+define pub module http3 as
+  pub fnc version(): int { return 3; }
+end
+define module internal as
+  pub fnc secret(): int { return 7; }
+end

@@ -1,0 +1,44 @@
+# AttoLang singleton, Symbol, shared-region integration — additive candidate V1
+
+**Status: DRAFT CANDIDATE / NOT_EXECUTED / NOT_CERTIFIED.** This does not enable singleton syntax, alter existing actor state gates, or certify a backend. The JSON contract and its test are a source-free structural regression floor, **not** a concurrency proof. Existing 20-case `singleton-shared-state-v1` stays normative and unchanged.
+
+## Design resolution
+
+1. **Singleton definition**: `define singleton` denotes exactly one canonical declaration identity **within one application/tenant domain**, across all actors and actor memory slices. Compiler-resolved module + declaration, not guest-supplied names, selects the identity. An import alias does not allocate another instance. A different tenant/domain has a different identity. Never assert one OS-wide instance across unrelated tenants or processes.
+2. **Initialize once**: publication is atomic and complete; concurrent first accesses coalesce; failure is sticky; dependency cycles fail with finite diagnostics; cancellation/STOP cannot publish a second incarnation. Immutable scalar/graph fields are recursively frozen; mutable state is **not** exposed as a raw singleton field.
+3. **Mutable singleton**: its shared state lives in a **separate runtime-owned, generation-fenced shared region**, not inside any actor-private arena/stack or a reused ref32 slot. One authority owns the region; multiple authenticated executions may borrow reads OR one may borrow a write, never both. Owner and writer are distinct roles: a delegated write loan does not create a second owner. Existing `critical-read` / `critical-write` semantics should be reused rather than adding new syntax. Compiler must reject raw state access, aliased mutable escape, live loans across await/select, and unproven captures.
+4. **RW scheduling**: fair bounded nonparking writer-barrier admission, no scheduler carrier parking or guest callback while a metadata lock is held. Release and cancellation are authenticated to logical execution+slot+generation. STOP rejects new admission, but cannot free backing until physical loans, FFI pins, callbacks and guest turns drain. Owner transfer is allowed only after quiescence, with generation/authority revocation. Supervisors are NOT automatically owners of child state.
+5. **Symbols**: `#name` is an immutable nominal Symbol, distinct from String and from any raw memory pointer. Public core/process Symbols are canonical within the application domain; dynamic userland Symbol sharing requires trusted publication/explicit manifests. LOCAL Symbols stay actor-local. Normalize NFC, validate keys, budget interning, and never intern arbitrary untrusted wire input; ordinary wire decode is lookup-only. Untrusted actor ingress checks the recursively frozen message graph against a bounded core allowlist. Cross-isolate identity is **logical** via stable tagged keys, not host pointer equality.
+6. **Security boundaries**: distinct domains/tenants never share mutable authority or Symbol intern pools by accident. Same-domain native isolates, Wasm workers, or different processes require a trusted coordinator or an explicit shared-memory transport with authentication; copying immutable Symbols or serializing a singleton handle does not expose a private heap pointer. No shared-state access on FFI/raw-pointer bypass paths.
+
+## Reconciliation with existing work
+
+- Canonical five-backend singleton floor: conformance [#242](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/pull/242); nine-source inventory [#651](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/pull/651).
+- Actor/supervisor unique owner and fair RW source-free reference: conformance [#656](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/pull/656), Java runtime [#2747](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2747).
+- Java `singleton` check-only compiler [#2749](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2749), contextual fail-closed gate [#2316](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2316). Semantic conflict: per-slot mutable singleton [#160](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/160) versus process-immutable [#665](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/665). Resolve in a reviewed language-level ADR before enabling guest lowering.
+- Symbols: Java [#2596](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2596) and common-source [#22](https://github.com/ores-truffle-oreslang/oreslang-common-source/pull/22). Avoid silently substituting old `:symbol` draft syntax for the current `#symbol` decision.
+
+## Execution gates — not satisfied by this PR
+
+1. Run `node --test tests/singleton-symbol-shared-domain-v1.test.mjs` with a nonzero-step authenticated source-org CI job; source-free tests alone never promote.
+2. Compile one identical accepted guest and negative guest program per canonical backend. Enforce the exact 26 scenario IDs, shared Symbol maps, owner/loans and explicit singleton identity at the compiler/type-checker/MIR boundary.
+3. Run real two-actor same-domain and distinct-domain/in-isolate guests on Java/Graal and Native Image, LLVM native (ASan/UBSan), .NET CIL+NativeAOT, Wasm across workers, and Forge native (ASan/UBSan). Require true concurrent schedules, STOP/restart, stale capability attempts, writer-before-late-reader and no raw alias publication.
+4. Pin source and compiler hashes, Git tree, runner/job IDs, nonzero steps, log/test case XML, backend and isolation mode; independently review before certifying any stage. **Do not infer execution from source-authored tests or zero-step Actions failures.**
+
+Use the integrated JSON fixture as a **candidate-only bridge**, never as proof of guest semantics.
+
+## Executable source-free reference model (added 2026-11-10)
+
+\`tests/singleton-domain-operational-model.test.mjs\` is a **Node-only reference state machine**, not AttoLang guest code, a real multi-threaded RW mutex, or the backend implementation. It adds seven separately executed model tests for:
+
+- Domain-bound canonical singleton identity, deep-frozen snapshots, once-only initialization, sticky failure, and cycle rejection.
+- Simultaneous logical reader cohorts, FIFO writer barrier, late-reader exclusion, transactional writes, and disallowing \`await\` in a synchronous write loan.
+- Runtime-minted principal identity, unforgeable grant-object admission, non-burn of a grant on queue overflow, quiescent owner transfer, epoch fencing, and denial of foreign release.
+- STOP logical revocation, pending-queue failure, and retained physical loans until their release.
+- Bounded \`#symbol\` interning, NFC, String/Symbol distinction, lookup-only untrusted decoding, and domain separation.
+- Cancellation of a queued writer without starving readers behind it.
+- Side-effect-free snapshot validation: reject getters/accessors, hidden and Symbol-keyed properties, non-finite numeric values, over-budget strings, and tampering with domain/quota configuration.
+
+**Local execution:** Node v22.16.0, \`node --test tests/singleton-domain-operational-model.test.mjs\`: **7 passed / 0 failed**. Source file Git blob SHA \`f2e26cbc4d4d674cbd1f7104f9569e6c838409f6a\` was independently checked after push. The test workflow now runs both the original 21-check structural suite and this seven-test operational model, but **GitHub-hosted execution and compiled guest parity still require exact-head, stepful evidence**.
+
+The model intentionally does **not** prove that a compiler rejects borrow escape, that JVM/LLVM/.NET mutexes are thread-safe, or that native isolates have shared backing. The owner/principal constructors are trusted test-driver interfaces, not a proposed guest-callable API. Production lowering must use unforgeable runtime context, generation-fenced capabilities, actor-private heap barriers, bounded key/queue allocation, and explicitly coordinated multi-isolate access.

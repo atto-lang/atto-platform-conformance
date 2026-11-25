@@ -1,0 +1,16 @@
+// expect-error: E_OWNERSHIP
+// A method can transitively publish self before initialization finishes.
+define class Counter as
+    pub let int value = 0;
+    get_value(): int { return self.value; }
+end
+
+constructor(Counter) (int initial): self {
+    self.get_value();
+    self.value = initial;
+}
+
+pub fnc main(): int {
+    val c = new Counter(42);
+    return c.value;
+}

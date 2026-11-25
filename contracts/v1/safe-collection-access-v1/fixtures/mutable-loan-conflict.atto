@@ -1,0 +1,8 @@
+// expect-error: E_LOAN_CONFLICT (semantic, not parser rejection)
+// Borrowing disjoint positions conservatively locks the whole collection root.
+pub fnc main() -> int {
+  val values = [10, 20];
+  val read = values.get(0);
+  val write = values.get_mut(1);
+  return read.is_some() ? 42 : 0;
+}

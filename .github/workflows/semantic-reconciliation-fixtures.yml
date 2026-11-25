@@ -1,0 +1,46 @@
+name: Atto owner semantic reconciliation fixture integrity
+on:
+  pull_request:
+    paths:
+      - 'contracts/v2/**'
+      - 'contracts/v1/caller-trap-parity/**'
+      - 'contracts/v1/function-effects-v1.json'
+      - 'contracts/actor-service-v1.json'
+      - 'fixtures/return-first-separators-v1/**'
+      - 'tests/semantic-reconciliation-20261120.test.mjs'
+      - '.github/workflows/semantic-reconciliation-fixtures.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  fixture-integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact HEAD and tracked source modes
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_HEAD" =~ ^[a-f0-9]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          git diff --exit-code HEAD --
+          test -z "$(git ls-files --others --exclude-standard)"
+          for path in contracts/v2/return-first-separators-v1.json tests/semantic-reconciliation-20261120.test.mjs; do
+            test "$(git ls-files -s -- "$path" | cut -d' ' -f1)" = "100644"
+          done
+          printf 'head=%s tree=%s\n' "$EXPECTED_HEAD" "$(git rev-parse HEAD^{tree})"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+      - name: Validate source-only fixtures and contracts
+        run: |
+          node --check tests/semantic-reconciliation-20261120.test.mjs
+          node --test tests/semantic-reconciliation-20261120.test.mjs
+      - name: State evidence boundary
+        run: |
+          echo "SOURCE_ONLY fixture-integrity gate, NOT executed guest/backend parity"

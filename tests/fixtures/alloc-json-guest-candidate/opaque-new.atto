@@ -1,0 +1,6 @@
+// Negative: must reject construction of the opaque canonical runtime type.
+import class JsonValue from "alloc/json";
+pub fnc main(): void {
+  val forged = new JsonValue();
+  return;
+}

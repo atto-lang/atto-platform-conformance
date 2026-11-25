@@ -1,0 +1,8 @@
+define class Box as
+  let int value=42;
+  hidden():int{return self.value;}
+end
+pub fnc main():int{
+  let Box b=new Box();
+  return b.hidden();
+}

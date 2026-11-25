@@ -233,6 +233,358 @@
         "forge"
       ],
       "confirmedBackends": []
+    },
+    {
+      "id": "max-tag",
+      "file": "max-tag.ores",
+      "rule": "signed-i32-max-valid",
+      "expect": "accept",
+      "expectedStdout": "7\n",
+      "sourceGitBlobSha1": "b0d58c31c25afd871f739ed8538f0e17196aaa3e",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "option-result-partitions",
+      "file": "option-result-partitions.ores",
+      "rule": "finite-option-result-partitions",
+      "expect": "accept",
+      "expectedStdout": "1\n0\n3\n6\n",
+      "sourceGitBlobSha1": "71815d126707ab13ed54b9dde4ba2645c7c8472b",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "implicit-tag-overflow",
+      "file": "implicit-tag-overflow.ores",
+      "rule": "implicit-tag-must-not-wrap",
+      "expect": "reject",
+      "diagnosticCategory": "INVALID_ENUM_TAG",
+      "sourceGitBlobSha1": "b9dac9768bbfc93f422bdc6b0765e1a9a01b9116",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "guarded-not-exhaustive",
+      "file": "guarded-not-exhaustive.ores",
+      "rule": "guards-do-not-prove-totality",
+      "expect": "reject",
+      "diagnosticCategory": "NONEXHAUSTIVE_ENUM_MATCH",
+      "sourceGitBlobSha1": "80795a49084538e1c4e3ba79197edcff92ddf2aa",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "nullary-extra-arg",
+      "file": "nullary-extra-arg.ores",
+      "rule": "nullary-constructor-arity",
+      "expect": "reject",
+      "diagnosticCategory": "ENUM_CONSTRUCTOR_ARITY",
+      "sourceGitBlobSha1": "29cd80fb91b8f57ebb95f61896597dc7792341bc",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "payload-missing-arg",
+      "file": "payload-missing-arg.ores",
+      "rule": "payload-constructor-arity",
+      "expect": "reject",
+      "diagnosticCategory": "ENUM_CONSTRUCTOR_ARITY",
+      "sourceGitBlobSha1": "d52e4ed67615eda8089d6a4b5af43a3b0f1d8607",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "foreign-owner-return",
+      "file": "foreign-owner-return.ores",
+      "rule": "foreign-result-owner",
+      "expect": "reject",
+      "diagnosticCategory": "FOREIGN_ENUM_OWNER",
+      "sourceGitBlobSha1": "2722c4df52b145ff4b6f7b4acfdcb78e351bc4b8",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "option-partial-bool",
+      "file": "option-partial-bool.ores",
+      "rule": "finite-option-bool-not-total",
+      "expect": "reject",
+      "diagnosticCategory": "NONEXHAUSTIVE_ADT_MATCH",
+      "sourceGitBlobSha1": "d27c78a4244d6a02f86358107a93ddc3d26ca86b",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "nested-foreign-payload",
+      "file": "nested-foreign-payload.ores",
+      "rule": "nested-foreign-enum-payload",
+      "expect": "reject",
+      "diagnosticCategory": "FOREIGN_ENUM_OWNER",
+      "sourceGitBlobSha1": "53755c22c73bd7e8d3ad1ecade60e8c6acabbeea",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "unreachable-after-wildcard",
+      "file": "unreachable-after-wildcard.ores",
+      "rule": "wildcard-excludes-later-arms",
+      "expect": "reject",
+      "diagnosticCategory": "UNREACHABLE_CASE_ARM",
+      "sourceGitBlobSha1": "6b0df5efe9c64847b73162569e111dfbb9d860c1",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "enum-bool-partition",
+      "file": "enum-bool-partition.ores",
+      "rule": "finite-enum-bool-payload",
+      "expect": "accept",
+      "expectedStdout": "3\n4\n5\n",
+      "sourceGitBlobSha1": "1c6711df16c1d2f5f2935a8184f61d6c1b1049cb",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "enum-tag-gap",
+      "file": "enum-tag-gap.ores",
+      "rule": "positive-increasing-tag-gaps",
+      "expect": "accept",
+      "expectedStdout": "2\n50\n",
+      "sourceGitBlobSha1": "6947d63f48d50cb1c40b51785b88cbdf05326961",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "guarded-then-unguarded",
+      "file": "guarded-then-unguarded.ores",
+      "rule": "ordered-guard-fallthrough",
+      "expect": "accept",
+      "expectedStdout": "7\n9\n",
+      "sourceGitBlobSha1": "65d2ef9882fe67ada190edd726f2eedfa5d3b98e",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "negative-tag",
+      "file": "negative-tag.ores",
+      "rule": "negative-enum-tag",
+      "expect": "reject",
+      "diagnosticCategory": "INVALID_ENUM_TAG",
+      "sourceGitBlobSha1": "ebb3ecaef83858bd231ad9d8954d36ec3757cbaa",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "empty-enum",
+      "file": "empty-enum.ores",
+      "rule": "nonempty-closed-case-domain",
+      "expect": "reject",
+      "diagnosticCategory": "EMPTY_ENUM",
+      "sourceGitBlobSha1": "fc790c9361bb05830b20717aef5f5542fc050ae1",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "direct-unboxed-recursion",
+      "file": "direct-unboxed-recursion.ores",
+      "rule": "reject-direct-value-recursion",
+      "expect": "reject",
+      "diagnosticCategory": "UNBOXED_RECURSIVE_ENUM",
+      "sourceGitBlobSha1": "5c0179babb71ab3ccc4ee60c7141e13e90ede4f2",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "wrong-pattern-arity",
+      "file": "wrong-pattern-arity.ores",
+      "rule": "typed-pattern-argument-arity",
+      "expect": "reject",
+      "diagnosticCategory": "ENUM_PATTERN_ARITY",
+      "sourceGitBlobSha1": "49e0af067e334189fa820139295b9f7e848308c7",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "unknown-constructor",
+      "file": "unknown-constructor.ores",
+      "rule": "unknown-case-constructor",
+      "expect": "reject",
+      "diagnosticCategory": "UNKNOWN_ENUM_CASE",
+      "sourceGitBlobSha1": "69de4b25a2472b06a43a3ad70bcffe8035ed5f5d",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "option-partial-int",
+      "file": "option-partial-int.ores",
+      "rule": "infinite-some-payload-not-total",
+      "expect": "reject",
+      "diagnosticCategory": "NONEXHAUSTIVE_ADT_MATCH",
+      "sourceGitBlobSha1": "9af4f4c1bdd1fa8547ea86607b386415a6c6bf2e",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "result-partial-bool",
+      "file": "result-partial-bool.ores",
+      "rule": "partial-result-bool-not-total",
+      "expect": "reject",
+      "diagnosticCategory": "NONEXHAUSTIVE_ADT_MATCH",
+      "sourceGitBlobSha1": "c56cb551f244e137f00e5375fd50c3c7f06d5550",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "guard-not-bool",
+      "file": "guard-not-bool.ores",
+      "rule": "match-guard-must-be-bool",
+      "expect": "reject",
+      "diagnosticCategory": "MATCH_GUARD_TYPE",
+      "sourceGitBlobSha1": "6586c7d655810fdeaf8a50c84ca3ed1d5e0ccee2",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "unreachable-after-bool-partition",
+      "file": "unreachable-after-bool-partition.ores",
+      "rule": "sum-of-products-dead-arm",
+      "expect": "reject",
+      "diagnosticCategory": "UNREACHABLE_CASE_ARM",
+      "sourceGitBlobSha1": "6fc79dd1a7e357f1f726fc1957ebea337b8a45b0",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "confirmedBackends": []
     }
   ]
 }
