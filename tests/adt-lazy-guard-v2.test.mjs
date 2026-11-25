@@ -54,7 +54,13 @@ test('all browser input fixtures have pinned original Git blob hashes',()=>{
     assert.equal(blobSha(bytes),row.git_blob_sha1,row.id);
     const src=bytes.toString('utf8');
     assert.match(src,/\bwhen\b/);
-    assert.match(src,/\b(?:match|switch)<int>/);
+    if(row.path==='fixtures/adt-lazy-guard-v2/pass/non-returning-arm-selects-once.atto'){
+      assert.match(src,/\bmatch\s+optional\(\)\s+over\b/);
+      assert.match(src,/\bresult\s*=\s*42\s*;/);
+      assert.match(src,/\breturn\s+result\s*;/);
+    }else{
+      assert.match(src,/\b(?:match|switch)<int>/);
+    }
     assert.equal(row.expect.return_value,42);
     assert.equal(row.expect.kind,'executed_compiled_wasm_guest');
   }
