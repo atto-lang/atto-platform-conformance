@@ -1,0 +1,283 @@
+{
+  "schema": "atto.return-first-callables.v1",
+  "version": 1,
+  "status": "RUST_BROWSER_GUEST_VERIFIED_WITH_DISTINCT_FAILING_CLASS_FIELD_GATE",
+  "owner": "atto-lang/atto-spec",
+  "spec": "language/return-first-and-begin-callables-v1.md",
+  "semantics": {
+    "left_arrow": "Contiguous <- in declaration headers; not assignment or expression operator",
+    "return_first": [
+      "fnc T <- name(params)",
+      "T <- name(params)"
+    ],
+    "return_types": [
+      "int",
+      "void",
+      "infer"
+    ],
+    "bodies": [
+      "{ statement... }",
+      "statement; ... end",
+      "begin statement; ... end"
+    ],
+    "name_first_colon_arrow": "fnc name(params): T -> { ... }",
+    "signature_equivalence": "All syntaxes lower to same nominal signature; duplicates rejected by owner/name/arity",
+    "inference": "Explicit infer only; no omitted annotation",
+    "empty_void": "Allowed with braces, bare end, or begin/end; nonvoid must return",
+    "legacy_erlang": "Comma/end tail-expression semantics retained independently"
+  },
+  "required_cases": [
+    {
+      "id": "int_name_arrow_brace",
+      "kind": "pass",
+      "path": "fixtures/return-first/pass/int_name_arrow_brace.atto",
+      "expected_exit": 42,
+      "verification": "COMPILED_GUEST_EXECUTION_REQUIRED"
+    },
+    {
+      "id": "int_name_colon_brace",
+      "kind": "pass",
+      "path": "fixtures/return-first/pass/int_name_colon_brace.atto",
+      "expected_exit": 42,
+      "verification": "COMPILED_GUEST_EXECUTION_REQUIRED"
+    },
+    {
+      "id": "int_name_colon_arrow_brace",
+      "kind": "pass",
+      "path": "fixtures/return-first/pass/int_name_colon_arrow_brace.atto",
+      "expected_exit": 42,
+      "verification": "COMPILED_GUEST_EXECUTION_REQUIRED"
+    },
+    {
+      "id": "int_fnc_return_first_brace",
+      "kind": "pass",
+      "path": "fixtures/return-first/pass/int_fnc_return_first_brace.atto",
+      "expected_exit": 42,
+      "verification": "COMPILED_GUEST_EXECUTION_REQUIRED"
+    },
+    {
+      "id": "int_bare_return_first_brace",
+      "kind": "pass",
+      "path": "fixtures/return-first/pass/int_bare_return_first_brace.atto",
+      "expected_exit": 42,
+      "verification": "COMPILED_GUEST_EXECUTION_REQUIRED"
+    },
+    {
+      "id": "int_bare_return_first_end",
+      "kind": "pass",
+      "path": "fixtures/return-first/pass/int_bare_return_first_end.atto",
+      "expected_exit": 42,
+      "verification": "COMPILED_GUEST_EXECUTION_REQUIRED"
+    },
+    {
+      "id": "int_bare_return_first_begin",
+      "kind": "pass",
+      "path": "fixtures/return-first/pass/int_bare_return_first_begin.atto",
+      "expected_exit": 42,
+      "verification": "COMPILED_GUEST_EXECUTION_REQUIRED"
+    },
+    {
+      "id": "int_fnc_return_first_begin",
+      "kind": "pass",
+      "path": "fixtures/return-first/pass/int_fnc_return_first_begin.atto",
+      "expected_exit": 42,
+      "verification": "COMPILED_GUEST_EXECUTION_REQUIRED"
+    },
+    {
+      "id": "void_name_arrow_brace",
+      "kind": "pass",
+      "path": "fixtures/return-first/pass/void_name_arrow_brace.atto",
+      "expected_exit": 0,
+      "verification": "COMPILED_GUEST_EXECUTION_REQUIRED"
+    },
+    {
+      "id": "void_name_colon_brace",
+      "kind": "pass",
+      "path": "fixtures/return-first/pass/void_name_colon_brace.atto",
+      "expected_exit": 0,
+      "verification": "COMPILED_GUEST_EXECUTION_REQUIRED"
+    },
+    {
+      "id": "void_name_colon_arrow_brace",
+      "kind": "pass",
+      "path": "fixtures/return-first/pass/void_name_colon_arrow_brace.atto",
+      "expected_exit": 0,
+      "verification": "COMPILED_GUEST_EXECUTION_REQUIRED"
+    },
+    {
+      "id": "void_fnc_return_first_brace",
+      "kind": "pass",
+      "path": "fixtures/return-first/pass/void_fnc_return_first_brace.atto",
+      "expected_exit": 0,
+      "verification": "COMPILED_GUEST_EXECUTION_REQUIRED"
+    },
+    {
+      "id": "void_bare_return_first_brace",
+      "kind": "pass",
+      "path": "fixtures/return-first/pass/void_bare_return_first_brace.atto",
+      "expected_exit": 0,
+      "verification": "COMPILED_GUEST_EXECUTION_REQUIRED"
+    },
+    {
+      "id": "void_bare_return_first_end",
+      "kind": "pass",
+      "path": "fixtures/return-first/pass/void_bare_return_first_end.atto",
+      "expected_exit": 0,
+      "verification": "COMPILED_GUEST_EXECUTION_REQUIRED"
+    },
+    {
+      "id": "void_bare_return_first_begin",
+      "kind": "pass",
+      "path": "fixtures/return-first/pass/void_bare_return_first_begin.atto",
+      "expected_exit": 0,
+      "verification": "COMPILED_GUEST_EXECUTION_REQUIRED"
+    },
+    {
+      "id": "void_fnc_return_first_begin",
+      "kind": "pass",
+      "path": "fixtures/return-first/pass/void_fnc_return_first_begin.atto",
+      "expected_exit": 0,
+      "verification": "COMPILED_GUEST_EXECUTION_REQUIRED"
+    },
+    {
+      "id": "infer_name_arrow_brace",
+      "kind": "pass",
+      "path": "fixtures/return-first/pass/infer_name_arrow_brace.atto",
+      "expected_exit": 42,
+      "verification": "COMPILED_GUEST_EXECUTION_REQUIRED"
+    },
+    {
+      "id": "infer_name_colon_brace",
+      "kind": "pass",
+      "path": "fixtures/return-first/pass/infer_name_colon_brace.atto",
+      "expected_exit": 42,
+      "verification": "COMPILED_GUEST_EXECUTION_REQUIRED"
+    },
+    {
+      "id": "infer_name_colon_arrow_brace",
+      "kind": "pass",
+      "path": "fixtures/return-first/pass/infer_name_colon_arrow_brace.atto",
+      "expected_exit": 42,
+      "verification": "COMPILED_GUEST_EXECUTION_REQUIRED"
+    },
+    {
+      "id": "infer_fnc_return_first_brace",
+      "kind": "pass",
+      "path": "fixtures/return-first/pass/infer_fnc_return_first_brace.atto",
+      "expected_exit": 42,
+      "verification": "COMPILED_GUEST_EXECUTION_REQUIRED"
+    },
+    {
+      "id": "infer_bare_return_first_brace",
+      "kind": "pass",
+      "path": "fixtures/return-first/pass/infer_bare_return_first_brace.atto",
+      "expected_exit": 42,
+      "verification": "COMPILED_GUEST_EXECUTION_REQUIRED"
+    },
+    {
+      "id": "infer_bare_return_first_end",
+      "kind": "pass",
+      "path": "fixtures/return-first/pass/infer_bare_return_first_end.atto",
+      "expected_exit": 42,
+      "verification": "COMPILED_GUEST_EXECUTION_REQUIRED"
+    },
+    {
+      "id": "infer_bare_return_first_begin",
+      "kind": "pass",
+      "path": "fixtures/return-first/pass/infer_bare_return_first_begin.atto",
+      "expected_exit": 42,
+      "verification": "COMPILED_GUEST_EXECUTION_REQUIRED"
+    },
+    {
+      "id": "infer_fnc_return_first_begin",
+      "kind": "pass",
+      "path": "fixtures/return-first/pass/infer_fnc_return_first_begin.atto",
+      "expected_exit": 42,
+      "verification": "COMPILED_GUEST_EXECUTION_REQUIRED"
+    },
+    {
+      "id": "duplicate_return_type",
+      "kind": "fail",
+      "path": "fixtures/return-first/fail/duplicate_return_type.atto",
+      "expected_error": "E_RETURN_ANNOTATION",
+      "verification": "COMPILER_NO_ARTIFACT_PROOF_REQUIRED"
+    },
+    {
+      "id": "split_left_arrow",
+      "kind": "fail",
+      "path": "fixtures/return-first/fail/split_left_arrow.atto",
+      "expected_error": "E_TOPLEVEL",
+      "verification": "COMPILER_NO_ARTIFACT_PROOF_REQUIRED"
+    },
+    {
+      "id": "missing_end",
+      "kind": "fail",
+      "path": "fixtures/return-first/fail/missing_end.atto",
+      "expected_error": "E_EOF",
+      "verification": "COMPILER_NO_ARTIFACT_PROOF_REQUIRED"
+    },
+    {
+      "id": "nonvoid_empty_begin",
+      "kind": "fail",
+      "path": "fixtures/return-first/fail/nonvoid_empty_begin.atto",
+      "expected_error": "E_RETURN",
+      "verification": "COMPILER_NO_ARTIFACT_PROOF_REQUIRED"
+    },
+    {
+      "id": "nonvoid_empty_bare_end",
+      "kind": "fail",
+      "path": "fixtures/return-first/fail/nonvoid_empty_bare_end.atto",
+      "expected_error": "E_RETURN",
+      "verification": "COMPILER_NO_ARTIFACT_PROOF_REQUIRED"
+    },
+    {
+      "id": "duplicate_spelling",
+      "kind": "fail",
+      "path": "fixtures/return-first/fail/duplicate_spelling.atto",
+      "expected_error": "E_DUPLICATE",
+      "verification": "COMPILER_NO_ARTIFACT_PROOF_REQUIRED"
+    },
+    {
+      "id": "mtd_return_first_brace",
+      "kind": "pass",
+      "path": "fixtures/return-first/pass/mtd_return_first_brace.atto",
+      "expected_exit": 42,
+      "verification": "COMPILED_GUEST_EXECUTION_REQUIRED"
+    },
+    {
+      "id": "mtd_return_first_begin",
+      "kind": "pass",
+      "path": "fixtures/return-first/pass/mtd_return_first_begin.atto",
+      "expected_exit": 42,
+      "verification": "COMPILED_GUEST_EXECUTION_REQUIRED"
+    },
+    {
+      "id": "mtd_return_first_bare_end",
+      "kind": "pass",
+      "path": "fixtures/return-first/pass/mtd_return_first_bare_end.atto",
+      "expected_exit": 42,
+      "verification": "COMPILED_GUEST_EXECUTION_REQUIRED"
+    }
+  ],
+  "backend_status": {
+    "rs-browser": "GUEST_VERIFIED_27_POSITIVE_6_NEGATIVE_WITH_SEPARATE_CLASS_DEFAULT_GATE_FAILURE",
+    "java": "NOT_VERIFIED",
+    "llvm": "NOT_VERIFIED",
+    "net": "NOT_VERIFIED",
+    "wasm-independent": "NOT_VERIFIED",
+    "forge": "NOT_VERIFIED",
+    "cranelift": "NOT_VERIFIED",
+    "js": "NOT_VERIFIED",
+    "hdl": "NOT_VERIFIED"
+  },
+  "evidence_rule": "Tests require real guest execution or negative compiler diagnostic with no artifact, exact compiler/source/target/runtime SHAs. Static fixture presence and parser acceptance are not guest proof.",
+  "evidence": [
+    {
+      "path": "evidence/return-first/rs-browser-20261119.json",
+      "source_sha": "5aa1168f8d9d146553c7fa8adccfb354a80904f3",
+      "conformance_fixture_sha": "8bb92ecbee4d48f0f49cc642a2eccc63738ebae3",
+      "run_url": "https://github.com/declarative-migrations/atto-ci/actions/runs/44445002912",
+      "note": "Individual return-syntax steps passed; overall workflow failed because the class-field default contract has four unrelated failures. Full repo and other backends not verified."
+    }
+  ]
+}

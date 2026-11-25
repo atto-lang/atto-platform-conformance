@@ -1,0 +1,136 @@
+{
+  "schema": "atto.return-first.source-isolated-evidence.v1",
+  "recorded_on": "2026-11-21",
+  "conformance": {
+    "repo": "atto-lang/atto-platform-conformance",
+    "fixture_head_sha": "01d9934cea558842e3d269dff45ddab61b7663c3",
+    "contract": "contracts/return-first-callables-v1.json"
+  },
+  "javascript": {
+    "repo": "atto-lang/atto-source.js",
+    "head_sha": "185b54884b87c6a04c4226fac34fd44073a61d5b",
+    "root_tree_sha": "1e046fa835969dac6da7e2894eaa6a29a2e40ea6",
+    "program_v2_blob_sha": "79c6afb766e9e04ad4572c1d59a22c56195f9012",
+    "program_ir_v2_blob_sha": "10f152458e72cb6065936022a24e0f7b1ff97798",
+    "test_blob_sha": "2b8b6fc5c34d221771ca57ecc3bf99d008ab6213",
+    "scope": "ISOLATED_V8_REAL_COMPILER_GENERATED_ESM_EXECUTION_NOT_NODE_CI",
+    "regression_test_groups_passed": 20,
+    "regression_test_groups_failed": 0,
+    "canonical_guest_cases_passed": 24,
+    "canonical_pass_case_ids": [
+      "int_name_arrow_brace",
+      "int_name_colon_brace",
+      "int_name_colon_arrow_brace",
+      "int_fnc_return_first_brace",
+      "int_bare_return_first_brace",
+      "int_bare_return_first_end",
+      "int_bare_return_first_begin",
+      "int_fnc_return_first_begin",
+      "infer_name_arrow_brace",
+      "infer_name_colon_brace",
+      "infer_name_colon_arrow_brace",
+      "infer_fnc_return_first_brace",
+      "infer_bare_return_first_brace",
+      "infer_bare_return_first_end",
+      "infer_bare_return_first_begin",
+      "infer_fnc_return_first_begin",
+      "void_name_arrow_brace",
+      "void_name_colon_brace",
+      "void_name_colon_arrow_brace",
+      "void_fnc_return_first_brace",
+      "void_bare_return_first_brace",
+      "void_bare_return_first_end",
+      "void_bare_return_first_begin",
+      "void_fnc_return_first_begin"
+    ],
+    "canonical_negative_rejected_ids": [
+      "duplicate_return_type",
+      "split_left_arrow",
+      "missing_end",
+      "nonvoid_empty_begin",
+      "nonvoid_empty_bare_end",
+      "duplicate_spelling"
+    ],
+    "canonical_unsupported_ids": [
+      "mtd_return_first_brace",
+      "mtd_return_first_begin",
+      "mtd_return_first_bare_end"
+    ],
+    "limitations": [
+      "Actual compiler source and generated ESM ran inside adapted V8 harness; ES module imports and exports were bound for invocation, with compatible UTF-8 byte-count shim; full Node.js CI was not run.",
+      "No native actor/mtd/effect certification or 11-backend parity claim.",
+      "All six canonical negative fixtures expose exact E_* codes in this JS backend; other backends have not been certified at this revision."
+    ],
+    "canonical_negative_code_verified_count": 6,
+    "canonical_negative_errors": [
+      {
+        "id": "duplicate_return_type",
+        "code": "E_RETURN_ANNOTATION"
+      },
+      {
+        "id": "split_left_arrow",
+        "code": "E_TOPLEVEL"
+      },
+      {
+        "id": "missing_end",
+        "code": "E_EOF"
+      },
+      {
+        "id": "nonvoid_empty_begin",
+        "code": "E_RETURN"
+      },
+      {
+        "id": "nonvoid_empty_bare_end",
+        "code": "E_RETURN"
+      },
+      {
+        "id": "duplicate_spelling",
+        "code": "E_DUPLICATE"
+      }
+    ],
+    "hardening_addendum": {
+      "type": "INFER_AFTER_CHECKED_PURE_VOID_SEQUENCE",
+      "result": "EXECUTED_IN_ISOLATED_V8",
+      "positive_source_tests": [
+        "inferred int return after single direct pure-void call",
+        "inferred int return after two void calls",
+        "named argument pure-void call preceding inferred int",
+        "conditional void call executed exactly once on matching branch"
+      ],
+      "negative_source_tests": [
+        "nonvoid discard remains rejected",
+        "void return value cannot justify integer inference",
+        "unproven bool inference rejected",
+        "missing explicit return rejected"
+      ]
+    }
+  },
+  "hdl": {
+    "repo": "atto-lang/atto-source.hdl",
+    "head_sha": "6987bc59df4d2cd67af53ae7d472d1e4c4bdad6c",
+    "root_tree_sha": "57a5230c18281f04f1a0678ab76779537ebb0e33",
+    "compiler_blob_sha": "5b87d20ab20488ce52ff255c057cbfbce8226527",
+    "test_blob_sha": "b8c20e5342afbee352de4d8a3de95264ce435c0f",
+    "scope": "ISOLATED_V8_ACTUAL_COMPILER_AST_RTL_REFERENCE_EVALUATOR_NOT_RTL_SIMULATION",
+    "regression_test_groups_passed": 5,
+    "regression_test_groups_failed": 0,
+    "limitations": [
+      "Only bounded unsigned u1..u64 hardware subset; not a general Atto runtime.",
+      "No SystemVerilog simulator, synthesis, or full Node/GitHub Actions execution."
+    ]
+  },
+  "ci": {
+    "js": "NOT_EXECUTED_ZERO_STEP",
+    "hdl": "NOT_EXECUTED_ZERO_STEP",
+    "alternate_public_source_canary": "STEPFUL_RUN_44952055501_SOURCE_FREE_ONLY",
+    "private_source_mirror": "DENIED_PENDING_INDEPENDENT_EXACT_SOURCE_CARRIER_APPROVAL",
+    "approval_issue": "https://github.com/atto-lang/atto-platform-conformance/issues/548",
+    "javascript_zero_step_runs": [
+      44955725587,
+      44955725582
+    ],
+    "source_org_billing_root_cause": "UNKNOWN_RUNNER_ADMISSION",
+    "alternate_latest_stepful_candidate": "memebank/atto-ci#44953770628 5 jobs 62 steps (previously observed capacity only)"
+  },
+  "certification": "SOURCE_ISOLATED_SUPPLEMENT_ONLY_NOT_RELEASE_OR_COMPILER_PARITY"
+}
