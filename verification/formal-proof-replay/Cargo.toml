@@ -1,0 +1,11 @@
+[package]
+name = "oreslang-formal-proof-replay"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[[bin]]
+name = "oreslang-formal-proof-replay"
+path = "src/main.rs"
+
+[dependencies]
