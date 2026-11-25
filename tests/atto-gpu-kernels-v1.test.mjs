@@ -70,9 +70,9 @@ test('GPU contract is explicitly non-promoting across five compiler backends', (
 });
 
 test('proposed native AttoLang syntax is separate from implemented task v2', () => {
-  assert.match(doc, /PROPOSED/);
+  assert.match(doc, /proposed/i);
   assert.match(doc, /NOT ACCEPTED BY CURRENT PARSER/);
-  assert.match(doc, /No CPU fallback/);
+  assert.match(doc, /no CPU fallback/i);
   assert.match(doc, /steps=\[\]/);
   assert.match(fixture, /compute fnc saxpy/);
   assert.match(fixture, /gpu task \{/);
