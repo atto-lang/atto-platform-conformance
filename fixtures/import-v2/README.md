@@ -1,6 +1,6 @@
 # Static import v2 shared corpus
 
-Draft specification: [atto-spec #227](https://github.com/atto-lang/atto-spec/pull/227). This is independently authored test input, not copied compiler implementation. The 255 cases consist of 56 real-guest expectations, 62 typed-binding/negative expectations, and 137 resolution expectations. The 48 delimiter permutations intentionally exercise grammar equivalence. The ledger is CORPUS_ONLY_NOT_BACKEND_EXECUTION.
+Draft specification: [atto-spec #227](https://github.com/atto-lang/atto-spec/pull/227). This is independently authored test input, not copied compiler implementation. The 265 cases consist of 56 real-guest expectations, 62 typed-binding/negative expectations, and 147 resolution expectations. The 48 delimiter permutations intentionally exercise grammar equivalence. The ledger is CORPUS_ONLY_NOT_BACKEND_EXECUTION.
 
 - guest: compile the supplied source with the actual backend and execute the entrypoint; negative cases must reject without artifact.
 - typed-bindings: resolve using the named synthetic authenticated export fixture; compare exact local name, kind and remote identity, and verify atomic rejection. Parsing alone does not pass.
@@ -23,3 +23,5 @@ Ten additional mixed-provider cases cover one namespace containing literal const
 Ten multi-file namespace export-resolution targets model public cross-file exports and rejection of private or mismatched leaves. Actual multi-file guest execution remains a separate compiler test.
 
 Ten nominal export-resolution targets cover class, enum and actor aliases, qualified identity, wrong kind, private exports and atomic selection. These are synthetic declaration graph expectations, not runtime layout or ABI evidence.
+
+Ten cross-package class resolution cases cover same-spelling declarations, namespace distinction, aliases, ambiguity, visibility and kind rejection. These remain corpus-only expectations, not external object ABI evidence.
