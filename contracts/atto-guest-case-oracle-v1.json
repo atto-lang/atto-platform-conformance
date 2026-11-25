@@ -1,0 +1,320 @@
+{
+  "schema_version": 1,
+  "scope": "untrusted_draft_case_normalization",
+  "as_of": "2026-11-06T22:40:00Z",
+  "required_backends": [
+    "java",
+    "llvm",
+    "wasm",
+    "forge",
+    "net"
+  ],
+  "suites": [
+    {
+      "id": "actor-channel-v1",
+      "source": {
+        "pr": 457,
+        "pr_head": "7d1841d0ab85765ca779674e034cd61a0d70cb26",
+        "manifest_blob_sha": "68401237c65beb48b2e3d680e01830d0afe79f51",
+        "original_backends": [
+          "java",
+          "llvm",
+          "net",
+          "wasm",
+          "cranelift"
+        ]
+      },
+      "cases": [
+        {
+          "id": "actor-channel-roundtrip",
+          "fixture_path": "verification/fixtures/five-backend-actor-channel-v1/actor-channel-roundtrip.atto",
+          "fixture_blob_sha": "bc5c42d269b3e7e6dc5f90aa648db4eab33e4870",
+          "expect": {
+            "kind": "positive",
+            "expected_stdout_text": "42",
+            "expected_stdout_hex": null,
+            "expected_exit_code": null,
+            "oracle_state": "PENDING_EXACT_EXIT_STDOUT_BYTES"
+          }
+        },
+        {
+          "id": "channel-select-roundtrip",
+          "fixture_path": "verification/fixtures/five-backend-actor-channel-v1/channel-select-roundtrip.atto",
+          "fixture_blob_sha": "076a26cefbd816151c2a4f72ee22bce7b841561b",
+          "expect": {
+            "kind": "positive",
+            "expected_stdout_text": "0:10",
+            "expected_stdout_hex": null,
+            "expected_exit_code": null,
+            "oracle_state": "PENDING_EXACT_EXIT_STDOUT_BYTES"
+          }
+        },
+        {
+          "id": "cancel-scoped-wait",
+          "fixture_path": "verification/fixtures/five-backend-actor-channel-v1/cancel-scoped-wait.atto",
+          "fixture_blob_sha": "5684868c9608d224545e92d39737d124af6b96d9",
+          "expect": {
+            "kind": "positive",
+            "expected_stdout_text": "cancelled",
+            "expected_stdout_hex": null,
+            "expected_exit_code": null,
+            "oracle_state": "PENDING_EXACT_EXIT_STDOUT_BYTES"
+          }
+        },
+        {
+          "id": "reject-critical-suspends",
+          "fixture_path": "verification/fixtures/five-backend-actor-channel-v1/reject-critical-suspends.atto",
+          "fixture_blob_sha": "06bdab0ecfc2bc1c403f143d738ce58ea614b475",
+          "expect": {
+            "kind": "negative",
+            "expected_diagnostic_pattern": "critical.{0,100}suspends|suspends.{0,100}critical",
+            "expected_diagnostic_category": null,
+            "expected_phase": null,
+            "oracle_state": "PENDING_EXACT_DIAGNOSTIC"
+          }
+        },
+        {
+          "id": "reject-borrowed-thread-capture",
+          "fixture_path": "verification/fixtures/five-backend-actor-channel-v1/reject-borrowed-thread-capture.atto",
+          "fixture_blob_sha": "d9fc34719fbc7a7b3622a67a2a9c54ca637cafd9",
+          "expect": {
+            "kind": "negative",
+            "expected_diagnostic_pattern": "borrow|escape|owned|thread.{0,100}capture",
+            "expected_diagnostic_category": null,
+            "expected_phase": null,
+            "oracle_state": "PENDING_EXACT_DIAGNOSTIC"
+          }
+        },
+        {
+          "id": "reject-function-message",
+          "fixture_path": "verification/fixtures/five-backend-actor-channel-v1/reject-function-message.atto",
+          "fixture_blob_sha": "b322b46b3622f4d534cf65f9025398b8c2811396",
+          "expect": {
+            "kind": "negative",
+            "expected_diagnostic_pattern": "sendable|serializ|closure|function.{0,100}channel",
+            "expected_diagnostic_category": null,
+            "expected_phase": null,
+            "oracle_state": "PENDING_EXACT_DIAGNOSTIC"
+          }
+        }
+      ]
+    },
+    {
+      "id": "portable-task-v1",
+      "source": {
+        "pr": 465,
+        "pr_head": "908fd95d8ad4238f539b37a63fc2840a7c495624",
+        "manifest_blob_sha": "5a53b01ad864805809d06c4747fb8a18430de77e",
+        "original_backends": [
+          "java",
+          "llvm",
+          "wasm",
+          "forge",
+          "net"
+        ]
+      },
+      "cases": [
+        {
+          "id": "eager-before-await",
+          "fixture_path": "fixtures/portable-task-v1/eager-before-await.atto",
+          "fixture_blob_sha": "3e1411fad3c9932b4c616a7f0d2f9b378aa3a3ad",
+          "expect": {
+            "kind": "positive",
+            "expected_exit_code": 42,
+            "required_observations": [
+              "child_started"
+            ],
+            "forbidden_observations": [],
+            "expected_stdout_hex": null,
+            "oracle_state": "PENDING_CANONICAL_EVENT_OUTPUT"
+          }
+        },
+        {
+          "id": "fire-and-continue",
+          "fixture_path": "fixtures/portable-task-v1/fire-and-continue.atto",
+          "fixture_blob_sha": "3c7526ccabb1cdec84ce58e78d003700137a920a",
+          "expect": {
+            "kind": "positive",
+            "expected_exit_code": 42,
+            "required_observations": [
+              "parent_continued",
+              "child_entered"
+            ],
+            "forbidden_observations": [],
+            "expected_stdout_hex": null,
+            "oracle_state": "PENDING_CANONICAL_EVENT_OUTPUT"
+          }
+        },
+        {
+          "id": "typed-int",
+          "fixture_path": "fixtures/portable-task-v1/typed-int.atto",
+          "fixture_blob_sha": "3443577caabbc1acdb137dcfa3477f6dbca38096",
+          "expect": {
+            "kind": "positive",
+            "expected_exit_code": 42,
+            "required_observations": [],
+            "forbidden_observations": [],
+            "expected_stdout_hex": null,
+            "oracle_state": "PENDING_CANONICAL_EVENT_OUTPUT"
+          }
+        },
+        {
+          "id": "typed-string",
+          "fixture_path": "fixtures/portable-task-v1/typed-string.atto",
+          "fixture_blob_sha": "6152fc129d3b3955a2dc380153f345ec552b148c",
+          "expect": {
+            "kind": "positive",
+            "expected_exit_code": 42,
+            "required_observations": [],
+            "forbidden_observations": [],
+            "expected_stdout_hex": null,
+            "oracle_state": "PENDING_CANONICAL_EVENT_OUTPUT"
+          }
+        },
+        {
+          "id": "generic-hasfuture-once",
+          "fixture_path": "fixtures/portable-task-v1/generic-hasfuture-once.atto",
+          "fixture_blob_sha": "aa03c587c6b279cf2db312df2e32f5dc22db1552",
+          "expect": {
+            "kind": "positive",
+            "expected_exit_code": 42,
+            "required_observations": [
+              "projection_count=1"
+            ],
+            "forbidden_observations": [],
+            "expected_stdout_hex": null,
+            "oracle_state": "PENDING_CANONICAL_EVENT_OUTPUT"
+          }
+        },
+        {
+          "id": "actorref-readiness",
+          "fixture_path": "fixtures/portable-task-v1/actorref-readiness.atto",
+          "fixture_blob_sha": "9eb4f6906e832a9ce57883d59a04c38f5f5e358a",
+          "expect": {
+            "kind": "positive",
+            "expected_exit_code": 42,
+            "required_observations": [
+              "actor_ref_same=true"
+            ],
+            "forbidden_observations": [],
+            "expected_stdout_hex": null,
+            "oracle_state": "PENDING_CANONICAL_EVENT_OUTPUT"
+          }
+        },
+        {
+          "id": "cancel-before-start",
+          "fixture_path": "fixtures/portable-task-v1/cancel-before-start.atto",
+          "fixture_blob_sha": "c66e1777977a120de0fafa16d6137e7222dbd815",
+          "expect": {
+            "kind": "positive",
+            "expected_exit_code": 42,
+            "required_observations": [
+              "physical_done=true"
+            ],
+            "forbidden_observations": [
+              "should_not_start"
+            ],
+            "expected_stdout_hex": null,
+            "oracle_state": "PENDING_CANONICAL_EVENT_OUTPUT"
+          }
+        },
+        {
+          "id": "cancel-while-suspended",
+          "fixture_path": "fixtures/portable-task-v1/cancel-while-suspended.atto",
+          "fixture_blob_sha": "8f200e44fb98dcf6b06bcf0bb468c27c94b512b6",
+          "expect": {
+            "kind": "positive",
+            "expected_exit_code": 42,
+            "required_observations": [
+              "entered",
+              "physical_done=true"
+            ],
+            "forbidden_observations": [
+              "post_cancel_forbidden"
+            ],
+            "expected_stdout_hex": null,
+            "oracle_state": "PENDING_CANONICAL_EVENT_OUTPUT"
+          }
+        },
+        {
+          "id": "cancel-owned-descendants",
+          "fixture_path": "fixtures/portable-task-v1/cancel-owned-descendants.atto",
+          "fixture_blob_sha": "5edd5b33ac8bcba544f0bd2ce7c56b98c4056e93",
+          "expect": {
+            "kind": "positive",
+            "expected_exit_code": 42,
+            "required_observations": [
+              "descendants_retired=true",
+              "sibling_survived=true"
+            ],
+            "forbidden_observations": [],
+            "expected_stdout_hex": null,
+            "oracle_state": "PENDING_CANONICAL_EVENT_OUTPUT"
+          }
+        },
+        {
+          "id": "physical-cleanup-before-done",
+          "fixture_path": "fixtures/portable-task-v1/physical-cleanup-before-done.atto",
+          "fixture_blob_sha": "1f4087ba81b1ac696425aff6fd93bd7dbac26b15",
+          "expect": {
+            "kind": "positive",
+            "expected_exit_code": 42,
+            "required_observations": [
+              "cleanup_once",
+              "physical_done=true"
+            ],
+            "forbidden_observations": [],
+            "expected_stdout_hex": null,
+            "oracle_state": "PENDING_CANONICAL_EVENT_OUTPUT"
+          }
+        },
+        {
+          "id": "reject-duck-hasfuture",
+          "fixture_path": "fixtures/portable-task-v1/reject-duck-hasfuture.atto",
+          "fixture_blob_sha": "0072db5d74cd72430b3116eef51cb7237faae901",
+          "expect": {
+            "kind": "negative",
+            "expected_diagnostic_category": "ATTO_TASK_E_HASFUTURE_WITNESS",
+            "expected_phase": null,
+            "oracle_state": "PENDING_EXACT_DIAGNOSTIC_PHASE"
+          }
+        },
+        {
+          "id": "reject-actor-self-capture",
+          "fixture_path": "fixtures/portable-task-v1/reject-actor-self-capture.atto",
+          "fixture_blob_sha": "297f6a5e908a36a181cd85b469031e9ac45fdcac",
+          "expect": {
+            "kind": "negative",
+            "expected_diagnostic_category": "ATTO_TASK_E_ACTOR_SELF_CAPTURE",
+            "expected_phase": null,
+            "oracle_state": "PENDING_EXACT_DIAGNOSTIC_PHASE"
+          }
+        },
+        {
+          "id": "reject-mut-borrow-capture",
+          "fixture_path": "fixtures/portable-task-v1/reject-mut-borrow-capture.atto",
+          "fixture_blob_sha": "51b5fa322b24d10a84b408b9d11e983a0beb9667",
+          "expect": {
+            "kind": "negative",
+            "expected_diagnostic_category": "ATTO_TASK_E_MUT_BORROW_CAPTURE",
+            "expected_phase": null,
+            "oracle_state": "PENDING_EXACT_DIAGNOSTIC_PHASE"
+          }
+        },
+        {
+          "id": "reject-await-in-critical",
+          "fixture_path": "fixtures/portable-task-v1/reject-await-in-critical.atto",
+          "fixture_blob_sha": "5b7c4958a9e93274ed84f563da8dd8829d72ac1f",
+          "expect": {
+            "kind": "negative",
+            "expected_diagnostic_category": "ATTO_TASK_E_CRITICAL_SUSPEND",
+            "expected_phase": null,
+            "oracle_state": "PENDING_EXACT_DIAGNOSTIC_PHASE"
+          }
+        }
+      ]
+    }
+  ],
+  "evidence": [],
+  "note": "20 exact GitHub .atto fixture blobs. No compiler guest execution is represented. Actor source roster lacks Forge and lists Cranelift; no backend substitution. All unresolved byte-level positive oracles and exact negative diagnostic phases/categories remain PENDING; no certification possible."
+}
