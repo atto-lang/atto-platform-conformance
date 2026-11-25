@@ -301,3 +301,34 @@ python3 -m unittest discover -s tests -p 'test_run_lambda_v1.py' -v
 `npm test` now discovers both the Node fixture tests and a Node wrapper that runs the six Python AOT harness unit tests. To attempt **real** guest execution, invoke `scripts/run_lambda_v1.py` with an exact Git-tree SHA and checkout, a source commit SHA, a concrete `--compile-command` and `--run-command`, and a target native/WASM `--artifact-format` and `--evidence-file`. The runner refuses missing prerequisites, refuses host-script artifacts and records `RUNNER-CANDIDATE-REQUIRES-INDEPENDENT-CI-PROVENANCE`, not parity certification, even if every guest command succeeds.
 
 This produces `FIXTURE_INTEGRITY_ONLY_NOT_GUEST_EXECUTION` — **not** a compiler pass. Actual five-backend certification still requires immutable tree and compiler provenance, strict AOT artifact inspection, execution of each guest, and independent CI-run verification under the existing parity evidence policy.
+
+## Candidate AttoLang / Erlang-OTP strict-AOT parity (not promoted)
+
+See [the candidate contract](contracts/erl-otp-strict-aot-v1.json) and
+[the shared language design](https://github.com/ores-truffle-oreslang/oreslang-common-source/pull/261).
+The manifest currently tracks **20 feature areas, 34 non-promoted oracles**:
+12 source-backed compile candidates and 22 illustrative runtime/AOT scenarios.
+All are **NOT_EXECUTED** as guest parity evidence. Function-head clause dispatch
+is deferred; `eq`, `neq`, and candidate atomic `!eq` use a versioned strict
+AttoLang profile without silently breaking existing `.ores` syntax.
+
+Run host-side manifest and receipt inspector tests only:
+
+```sh
+node --test test/erl-otp-strict-aot-contract.test.mjs test/erl-otp-strict-aot-receipt.test.mjs
+```
+
+`node bin/verify-erl-otp-aot-receipt.mjs /path/to/claim.json` is **not a
+verification or promotion gate**, despite its historical filename. It is a
+**read-only, fail-closed structural inspector**, and always exits nonzero
+because self-reported JSON cannot independently establish source-tree
+identity, a runner attempt's actual executed steps, reviewer independence,
+compiler and artifact hashes, or compiler-guest execution. `ok=false` and
+`verified=false` are intentional even when `structurallyValid=true`.
+
+Compile-negative fixtures must produce no executable, an expected diagnostic,
+and no guest execution; positive fixtures require real compiled AOT guest
+execution and an artifact digest. Prose-only scenarios are categorically
+ineligible for executed-guest receipts until converted into real fixtures and
+a real target harness. Do not use the inspector's schema tests as CI parity
+proof, and do not silently substitute a host-only or source-only canary.
