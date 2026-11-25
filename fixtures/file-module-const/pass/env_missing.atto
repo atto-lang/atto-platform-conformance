@@ -1,0 +1,6 @@
+// expect-exit: 1
+define const string required as os.read_env("ATTO_REQUIRED_ENV");
+pub fnc main(): int {
+  if required eq "" then return 1;
+  else return 0; fi
+}

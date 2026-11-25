@@ -1,0 +1,8 @@
+// expect-exit: 1 or 2 depending on provided environment
+define const string region as os.read_env("ATTO_TEST_REGION");
+pub fnc main(): int {
+  if region eq "east" then return 1;
+  elif region eq "west" then return 2;
+  else return 0;
+  fi
+}

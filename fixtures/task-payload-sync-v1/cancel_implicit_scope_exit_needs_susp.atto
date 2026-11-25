@@ -1,0 +1,8 @@
+pub fnc main(): int {
+  do task<void> {
+    loop {
+      await task<void> { return; };
+    }
+  };
+  return 42;
+}

@@ -1,0 +1,23 @@
+name: Native Atto HTTP3 codec conformance source evidence
+on:
+  pull_request:
+    paths: ['fixtures/net/**', 'contracts/net-http3-codec-v1.json', 'tests/test_net_http3_codec_source.py', '.github/workflows/net-http3-codec-source.yml']
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  source-only-conformance:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Bind checks to exact commit
+        env:
+          EXPECTED: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED"
+      - name: Audit native Atto fixture SHAs and executed guest receipt only
+        run: python3 -m unittest discover -s tests -p 'test_net_http3_codec_source.py' -v

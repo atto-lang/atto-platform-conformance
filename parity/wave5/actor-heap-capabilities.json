@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "status": "audited-candidate-not-certified",
+  "certifiedSemanticActorHeapParity": false,
+  "certifiedZeroGcFullAotParity": false,
+  "levels": [
+    "host-reference",
+    "host-runtime",
+    "compiled-scalar",
+    "compiled-general"
+  ],
+  "reclamationModes": [
+    "gc-dependent",
+    "deterministic-native",
+    "deterministic-capacity-reuse"
+  ],
+  "backends": [
+    {
+      "backend": "java",
+      "allocationLevel": "host-runtime",
+      "reclamation": "deterministic-native",
+      "aotLevel": "not-certified",
+      "zeroGcClaim": "none",
+      "hostBoundary": "jvm-managed-control-plane",
+      "generalGuestHeap": false,
+      "refs": ["java#1134"],
+      "verified": false
+    },
+    {
+      "backend": "llvm",
+      "allocationLevel": "compiled-scalar",
+      "reclamation": "deterministic-native",
+      "aotLevel": "partial-native-subsets",
+      "zeroGcClaim": "compiled-scalar-only",
+      "hostBoundary": "native-no-tracing-gc",
+      "generalGuestHeap": false,
+      "refs": ["llvm#563"],
+      "verified": true
+    },
+    {
+      "backend": "net",
+      "allocationLevel": "host-runtime",
+      "reclamation": "deterministic-native",
+      "aotLevel": "not-certified",
+      "zeroGcClaim": "none",
+      "hostBoundary": "dotnet-managed-control-plane",
+      "generalGuestHeap": false,
+      "refs": ["net#36", "net#64"],
+      "verified": false
+    },
+    {
+      "backend": "forge",
+      "allocationLevel": "host-runtime",
+      "reclamation": "deterministic-native",
+      "aotLevel": "not-certified",
+      "zeroGcClaim": "none",
+      "hostBoundary": "native-runtime",
+      "generalGuestHeap": false,
+      "refs": ["forge#29", "forge#60"],
+      "verified": false
+    },
+    {
+      "backend": "wasm",
+      "allocationLevel": "host-runtime",
+      "reclamation": "deterministic-capacity-reuse",
+      "aotLevel": "not-certified",
+      "zeroGcClaim": "none",
+      "hostBoundary": "javascript-host-managed",
+      "generalGuestHeap": false,
+      "refs": ["wasm#64"],
+      "verified": false
+    }
+  ],
+  "promotionRequirements": [
+    "all ordinary mutable guest allocations are compiler-lowered into actor-owned domains",
+    "persistent state survives turns and legal carrier migration while scratch cannot cross suspension",
+    "foreign actor, stale generation and stolen carrier authority are rejected",
+    "actor retirement is race-safe, retryable and does not refund physically pinned native bytes",
+    "cycles do not require cross-actor circular ownership or a process-global guest tracing collector",
+    "exact-head backend tests execute with visible runner steps and artifact/source provenance",
+    "native backends prove full AOT with no guest interpreter or JIT fallback"
+  ]
+}

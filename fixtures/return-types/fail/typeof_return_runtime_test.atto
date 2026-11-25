@@ -1,0 +1,1 @@
+pub fnc run(): int { val tbr: int = 5; if typeof(tbr) == int then return 5; fi return 0; }

@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "int-arithmetic",
+      "file": "int-arithmetic.ores",
+      "expect": "accept",
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ]
+    },
+    {
+      "id": "unresolved-identifier",
+      "file": "unresolved-identifier.ores",
+      "expect": "reject",
+      "diagnostic": "nonexistent_symbol",
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ]
+    },
+    {
+      "id": "generator-sync",
+      "file": "generator-sync.ores",
+      "expect": "accept",
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "unsupportedBackends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ]
+    },
+    {
+      "id": "generator-async",
+      "file": "generator-async.ores",
+      "expect": "accept",
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "unsupportedBackends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ]
+    },
+    {
+      "id": "generator-suspend",
+      "file": "generator-suspend.ores",
+      "expect": "accept",
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "unsupportedBackends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ]
+    },
+    {
+      "id": "liveview-revision-order",
+      "file": "liveview-revision.ores",
+      "expect": "accept",
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ]
+    }
+  ]
+}

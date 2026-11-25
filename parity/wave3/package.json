@@ -1,0 +1,1 @@
+{"name":"@oreslang/platform-parity-wave3","private":true,"type":"module","engines":{"node":">=22"},"scripts":{"test":"node --test tests/*.test.mjs","validate":"node bin/wave3.mjs --validate"}}

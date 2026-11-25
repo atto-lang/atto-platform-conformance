@@ -1,0 +1,6 @@
+define class Box as pub let int value = 41; end
+pub fnc main(): int {
+  val Box original = new Box();
+  val Box transferred = rt take original;
+  return original.value;
+}

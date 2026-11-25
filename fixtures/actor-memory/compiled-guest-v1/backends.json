@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 2,
+  "scope": "compiled-actor-private-heaps-v2",
+  "sourceGitBlobSha1": "430565092d8a4ff114f601a54b771ef3d42eae58",
+  "sourceSha256": "8a09c21d17e8f78b8964f0bda575301e9953295f5a78386d6a04e6772d4ff211",
+  "negativeCases": {
+    "foreign-state": {
+      "sourceSha256": "3071307899db9c4f4f3acc44465d60dd77d2ee2d2c0930d4bcc23e7fd9a8e94c",
+      "requiredDiagnosticClass": "FOREIGN_ACTOR_STATE_DENIED",
+      "requireNoOutputArtifact": true
+    },
+    "read-loan-write": {
+      "sourceSha256": "9af717d6cea42dbb6e1192981c227222ad837a8e54785ce205c676d1d33be3b5",
+      "requiredDiagnosticClass": "WRITE_WITH_READ_LOAN_DENIED",
+      "requireNoOutputArtifact": true
+    }
+  },
+  "verifiedGuestBackends": [],
+  "backends": {
+    "java": "UNSUPPORTED_OR_NOT_VERIFIED",
+    "llvm": "UNSUPPORTED_OR_NOT_VERIFIED",
+    "net": "UNSUPPORTED_OR_NOT_VERIFIED",
+    "wasm": "UNSUPPORTED_OR_NOT_VERIFIED",
+    "cranelift": "UNSUPPORTED_OR_NOT_VERIFIED",
+    "forge": "UNSUPPORTED_OR_NOT_VERIFIED"
+  },
+  "hostTestsAreGuestEvidence": false,
+  "sourceFreeTestsAreGuestEvidence": false,
+  "selfAttestedTraceIsGuestEvidence": false
+}

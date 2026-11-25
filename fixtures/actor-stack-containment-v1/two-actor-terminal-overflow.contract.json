@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "contract": "atto.actor-stack-terminal-two-actor.v1",
+  "source": "two-actor-terminal-overflow.atto",
+  "sourceGitBlobSha1": "641edcf1d7cc2cb829ae1aca0871535e713aa570",
+  "certification": "NOT_CERTIFIED",
+  "designOnly": true,
+  "executionEvidence": "NOT_EXECUTED",
+  "requiredSetup": {
+    "sameCarrierRequired": true,
+    "guestMaxFrames": 8,
+    "guestStackBytes": 512,
+    "depth": 100000,
+    "guestFaultMustPrecedeHostFault": true,
+    "processCrashDisallowed": true
+  },
+  "expected": {
+    "failedActor": "TERMINAL_ACTOR_STACK_OVERFLOW_PANIC",
+    "faultedActorResumes": false,
+    "panicRecoveredByCatch": false,
+    "panicRecoveredByRecover": false,
+    "actorOnPanic": {
+      "invocation": "BEST_EFFORT_ONLY_AFTER_SAFE_UNWIND",
+      "maySuppress": false,
+      "mayResume": false
+    },
+    "actorOnRaiseInvocations": 0,
+    "actorOnThrowInvocations": 0,
+    "supervisorTerminalControlNotices": 1,
+    "supervisorControlIndependentOfDataMailbox": true,
+    "peerProcessedMessages": [
+      1,
+      2
+    ],
+    "peerFinalState": 3,
+    "peerCarrierSurvives": true,
+    "failedActorHeapReclaimed": true,
+    "failedActorFramesReclaimed": true,
+    "failedActorContinuationsRevoked": true,
+    "staleActorHandlesInvalid": true
+  },
+  "backends": {
+    "java": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED"
+  },
+  "evidenceRules": {
+    "sourceOnlyDoesNotCertifyGuest": true,
+    "hostOnlyDoesNotCertifyGuest": true,
+    "exactHeadRequired": true,
+    "blobVerificationRequired": true,
+    "oneRunnerJobWithActualStepsRequired": true,
+    "successfulCompilerRequired": true,
+    "compiledActorGuestRequired": true,
+    "sameCarrierSiblingRequired": true,
+    "supervisorTraceRequired": true,
+    "independentReviewRequired": true
+  }
+}

@@ -1,0 +1,147 @@
+{
+  "schema": "attolang.live-devtools-mcp/1",
+  "protocol": "2026-07-28",
+  "description": "Evidence-first AttoLang Live Runtime DevTools MCP contract. Manifest checks are not guest compiler/runtime evidence.",
+  "backends": [
+    "java",
+    "llvm",
+    "wasm",
+    "forge",
+    "net"
+  ],
+  "cases": [
+    {
+      "id": "mcp.loopback_only",
+      "tier": "host-protocol",
+      "expected": "non-loopback binding refused",
+      "status": "NOT_EXECUTED",
+      "evidence": []
+    },
+    {
+      "id": "mcp.auth_required",
+      "tier": "host-protocol",
+      "expected": "missing/invalid bearer fails before tool disclosure",
+      "status": "HOST_PROTOCOL_TESTED",
+      "evidence": [
+        {
+          "commit_sha": "667ed007d9f12bd3c6514f8852aa3756eedfba0c",
+          "command": "javac --release 21; java dev.oreslang.runtime.devtools.Smoke; java dev.oreslang.runtime.devtools.DiscoverySmoke; node sdk-client.mjs",
+          "run_url": "https://github.com/voxletra/voxletra-e2e/actions/runs/41394418670",
+          "steps_executed": true,
+          "result": "PASS",
+          "execution_target": "synthetic-java-mcp-transport",
+          "source_blob_shas": [
+            "a9abedd06e971e59d43d0de2e38f4743871c0912",
+            "14341e69ff6588c02abfac2eca14cf896e462df4",
+            "f8076bd8c0455884e1975676e4a434eb1c3ee571"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mcp.origin_host_rebinding",
+      "tier": "host-protocol",
+      "expected": "forged Origin/Host cannot access devtools",
+      "status": "NOT_EXECUTED",
+      "evidence": []
+    },
+    {
+      "id": "mcp.version_headers",
+      "tier": "host-protocol",
+      "expected": "2026-07-28 stateless headers and body agree",
+      "status": "HOST_PROTOCOL_TESTED",
+      "evidence": [
+        {
+          "commit_sha": "667ed007d9f12bd3c6514f8852aa3756eedfba0c",
+          "command": "javac --release 21; java dev.oreslang.runtime.devtools.Smoke; java dev.oreslang.runtime.devtools.DiscoverySmoke; node sdk-client.mjs",
+          "run_url": "https://github.com/voxletra/voxletra-e2e/actions/runs/41394418670",
+          "steps_executed": true,
+          "result": "PASS",
+          "execution_target": "synthetic-java-mcp-transport",
+          "source_blob_shas": [
+            "a9abedd06e971e59d43d0de2e38f4743871c0912",
+            "14341e69ff6588c02abfac2eca14cf896e462df4",
+            "f8076bd8c0455884e1975676e4a434eb1c3ee571"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mcp.bad_json_bounded",
+      "tier": "host-protocol",
+      "expected": "duplicate keys, oversized bodies, excess nesting rejected",
+      "status": "NOT_EXECUTED",
+      "evidence": []
+    },
+    {
+      "id": "mcp.discover_tools_read_only",
+      "tier": "host-protocol",
+      "expected": "discovery and tool list omit mutations and redact secrets",
+      "status": "HOST_PROTOCOL_TESTED",
+      "evidence": [
+        {
+          "commit_sha": "667ed007d9f12bd3c6514f8852aa3756eedfba0c",
+          "command": "javac --release 21; java dev.oreslang.runtime.devtools.Smoke; java dev.oreslang.runtime.devtools.DiscoverySmoke; node sdk-client.mjs",
+          "run_url": "https://github.com/voxletra/voxletra-e2e/actions/runs/41394418670",
+          "steps_executed": true,
+          "result": "PASS",
+          "execution_target": "synthetic-java-mcp-transport",
+          "source_blob_shas": [
+            "a9abedd06e971e59d43d0de2e38f4743871c0912",
+            "14341e69ff6588c02abfac2eca14cf896e462df4",
+            "f8076bd8c0455884e1975676e4a434eb1c3ee571"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "runtime.real_actor_count",
+      "tier": "runtime",
+      "expected": "real ActorRuntime actor count responds to spawn/stop",
+      "status": "NOT_EXECUTED",
+      "evidence": []
+    },
+    {
+      "id": "runtime.actor_state_sealed",
+      "tier": "runtime",
+      "expected": "guest actor cannot introspect private state or install listener",
+      "status": "NOT_EXECUTED",
+      "evidence": []
+    },
+    {
+      "id": "runtime.snapshot_consistency",
+      "tier": "runtime",
+      "expected": "typed redacted snapshot at sealed-state safepoint; not raw memory",
+      "status": "NOT_EXECUTED",
+      "evidence": []
+    },
+    {
+      "id": "hotload.generation_quiescence",
+      "tier": "backend",
+      "expected": "no frame calls unloaded generation",
+      "status": "NOT_EXECUTED",
+      "evidence": []
+    },
+    {
+      "id": "hotload.migration_rollback",
+      "tier": "backend",
+      "expected": "atomic schema migration failure leaves previous generation active",
+      "status": "NOT_EXECUTED",
+      "evidence": []
+    },
+    {
+      "id": "hotload.aot_capability_denial",
+      "tier": "backend",
+      "expected": "unsupported hot loading denies before execution",
+      "status": "NOT_EXECUTED",
+      "evidence": []
+    }
+  ],
+  "promotion_rules": [
+    "HOST_PROTOCOL_TESTED requires actual HTTP server test command, run, and exact commit/tree SHA.",
+    "REAL_RUNTIME_EXECUTED requires a true ActorRuntime process with authenticated MCP requests and actor lifecycle proof.",
+    "BACKEND_PARITY_VERIFIED requires independently executed exact .atto guest fixtures for each listed backend.",
+    "Contract validation or a zero-step Actions run can never advance runtime/backend evidence.",
+    "Upgrade and snapshot tools remain unadvertised while safety predicates are unimplemented."
+  ]
+}

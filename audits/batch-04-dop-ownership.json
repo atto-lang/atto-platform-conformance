@@ -1,0 +1,96 @@
+{
+  "schema": 1,
+  "batch": 4,
+  "snapshotDate": "2026-10-20",
+  "purpose": "Original user-requested tasks 31-40, not a different hot-reload/IPC batch",
+  "items": [
+    {
+      "task": 31,
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "number": 1424,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/1424",
+      "gate": "DOP_GUEST_INVERTED_CLASS",
+      "state": "PENDING_REAL_GUEST_EVIDENCE"
+    },
+    {
+      "task": 32,
+      "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+      "number": 658,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/issues/658",
+      "gate": "NATIVE_SOURCE_SOA_LOWERING",
+      "state": "PENDING_REAL_GUEST_EVIDENCE"
+    },
+    {
+      "task": 33,
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "number": 1349,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/1349",
+      "gate": "SEALED_ACTOR_RW_GUEST",
+      "state": "PENDING_REAL_GUEST_EVIDENCE"
+    },
+    {
+      "task": 34,
+      "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+      "number": 635,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/issues/635",
+      "gate": "NATIVE_LINEAR_RW_GUARDS",
+      "state": "PENDING_REAL_GUEST_EVIDENCE"
+    },
+    {
+      "task": 35,
+      "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+      "number": 636,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/issues/636",
+      "gate": "NATIVE_STOP_CONTROL_RW",
+      "state": "PENDING_REAL_GUEST_EVIDENCE"
+    },
+    {
+      "task": 36,
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "number": 853,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/853",
+      "gate": "WRITABLE_RECORD_INVARIANCE",
+      "state": "PENDING_REAL_GUEST_EVIDENCE"
+    },
+    {
+      "task": 37,
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "number": 821,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/821",
+      "gate": "RECORD_STRUCT_CONTRACT",
+      "state": "PENDING_REAL_GUEST_EVIDENCE"
+    },
+    {
+      "task": 38,
+      "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+      "number": 579,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/issues/579",
+      "gate": "OWNERSHIP_PROVEN_SIMD",
+      "state": "PENDING_REAL_GUEST_EVIDENCE"
+    },
+    {
+      "task": 39,
+      "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+      "number": 462,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/issues/462",
+      "gate": "NATIVE_IMMUTABLE_REDUCER",
+      "state": "PENDING_REAL_GUEST_EVIDENCE"
+    },
+    {
+      "task": 40,
+      "repository": "ores-truffle-oreslang/oreslang-data-science",
+      "number": 9,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-data-science/issues/9",
+      "gate": "OWNED_NDARRAY_ABI",
+      "state": "PENDING_REAL_GUEST_EVIDENCE"
+    }
+  ],
+  "evidence": {
+    "sourceFreeChecks": "NON_CERTIFYING",
+    "guestRuntime": "NOT_ATTESTED",
+    "javaCompiler": "NOT_ATTESTED",
+    "llvmCompiler": "NOT_ATTESTED",
+    "branchProtection": "INDEPENDENT_VERIFICATION_REQUIRED",
+    "privateSourceExport": "DENIED_WITHOUT_APPROVAL"
+  }
+}

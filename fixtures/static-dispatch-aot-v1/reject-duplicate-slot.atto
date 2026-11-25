@@ -1,0 +1,6 @@
+define class Counter as
+  let int value=42;
+  pub read():int{return self.value;}
+  pub read():int{return 0;}
+end
+pub fnc main():int{return 0;}

@@ -1,0 +1,10 @@
+define class Counter as
+  let int value=40;
+  pub read():int{return self.value;}
+  pub add(mut self)(int n):void{self.value=self.value+n;return;}
+end
+pub fnc main():int{
+  let mut Counter c=new Counter();
+  c.add(2);
+  return c.read();
+}

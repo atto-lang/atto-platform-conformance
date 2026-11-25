@@ -1,0 +1,12 @@
+// PRELUDE V1 CANDIDATE: read_only_borrow; profile=core; expected=guest_exit_42
+// Not an executed guest or compiler receipt.
+fnc query(borrow Option<int> input): bool {
+  return input.is_some();
+}
+pub fnc main(): int {
+  val Option<int> value = Some(42);
+  if query(borrow! value); do
+    return value.unwrap();
+  fi
+  return 0;
+}

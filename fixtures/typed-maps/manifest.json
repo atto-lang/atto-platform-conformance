@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "scope": "typed-open-map-v1",
+  "javaCompilerHead": "75296fec267b65ca68368c493afafbcb7076ce5a",
+  "javaGraalEvidence": "https://github.com/akrion-sim/akrion-sim-e2e/actions/runs/38170085994",
+  "notes": "All four standalone typed Map fixtures are verified against the exact GraalVM source: one positive guest program with exact stdout and three --check rejections with expected diagnostics. The same run passed Maven verify with 192 selected Java tests and 2 manifest integrity tests. Other Java test classes and LLVM/Wasm/browser parity remain pending.",
+  "cases": [
+    {
+      "id": "typed-map-hooks-and-open-keys",
+      "file": "known-open-hooks.ores",
+      "sourceGitBlobSha1": "d5a25bf5577141d0c953537fad61b3dcf016755a",
+      "expect": "accept",
+      "expectedStdout": "PPGhelloGtrueRGtrue",
+      "javaGraal": "equivalent-source-junit-verified",
+      "exactFixtureExecution": "verified",
+      "otherBackends": {
+        "llvm": "pending",
+        "wasm": "pending",
+        "browser": "pending"
+      },
+      "exactFixtureEvidence": "https://github.com/akrion-sim/akrion-sim-e2e/actions/runs/38170085994"
+    },
+    {
+      "id": "typed-map-borrow-escape",
+      "file": "borrow-escape-reject.ores",
+      "sourceGitBlobSha1": "c0b04917c398720cf9b4d63a17316b254a812f79",
+      "expect": "reject",
+      "diagnosticClass": "borrow-escape",
+      "javaGraal": "equivalent-source-junit-verified",
+      "exactFixtureExecution": "verified",
+      "otherBackends": {
+        "llvm": "pending",
+        "wasm": "pending",
+        "browser": "pending"
+      },
+      "exactFixtureEvidence": "https://github.com/akrion-sim/akrion-sim-e2e/actions/runs/38170085994"
+    },
+    {
+      "id": "typed-map-readonly-put",
+      "file": "readonly-put-reject.ores",
+      "sourceGitBlobSha1": "ce2e07fb12d37610f5af65cacef230259c1a8b6d",
+      "expect": "reject",
+      "diagnosticClass": "exclusive-mutable-receiver",
+      "javaGraal": "equivalent-source-junit-verified",
+      "exactFixtureExecution": "verified",
+      "otherBackends": {
+        "llvm": "pending",
+        "wasm": "pending",
+        "browser": "pending"
+      },
+      "exactFixtureEvidence": "https://github.com/akrion-sim/akrion-sim-e2e/actions/runs/38170085994"
+    },
+    {
+      "id": "typed-map-owned-get",
+      "file": "owned-read-reject.ores",
+      "sourceGitBlobSha1": "c88267ab7f276f3706cc90c0987656c0b032a2ec",
+      "expect": "reject",
+      "diagnosticClass": "non-copy-read",
+      "javaGraal": "equivalent-source-junit-verified",
+      "exactFixtureExecution": "verified",
+      "otherBackends": {
+        "llvm": "pending",
+        "wasm": "pending",
+        "browser": "pending"
+      },
+      "exactFixtureEvidence": "https://github.com/akrion-sim/akrion-sim-e2e/actions/runs/38170085994"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+// BCV1-022 lt_binder fail: target AttoLang semantics, NOT_EXECUTED.
+// Expected compiler rejection E_LIFETIME with NO guest artifact.
+define class Foo as pub let int value = 42; end
+fnc broken(Borrow<Foo, lt=unknown> item): Borrow<Foo, lt=unknown> {
+  return item; // no lt! unknown binder
+}
+pub fnc main(): int { return 42; }

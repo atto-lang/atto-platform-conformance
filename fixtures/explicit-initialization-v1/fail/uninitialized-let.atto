@@ -1,0 +1,5 @@
+pub fnc main(): int {
+  let int value;
+  value = 42;
+  return value;
+}

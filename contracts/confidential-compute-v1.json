@@ -1,0 +1,178 @@
+{
+  "schema": "atto.confidential-compute.v1",
+  "version": 1,
+  "status": "SOURCE_FREE_REFERENCE_NOT_HARDWARE_EXECUTION",
+  "scope": "Host-side attestation; independent of TenantVM and actor isolation",
+  "providers": [
+    "amd-sev-snp",
+    "intel-tdx"
+  ],
+  "boundaries": {
+    "host_tee": "Hardware isolates entire protected workload from untrusted host in documented threat model",
+    "tenant_vm": "Mutually untrusted tenant memory, pointer, capabilities, sockets, scheduler and lifecycle require independent enforced boundary",
+    "actor": "Sealed actor state and actor heap/turn controls remain required"
+  },
+  "preflight_states": [
+    "CREATED",
+    "CHALLENGE_ISSUED",
+    "UNVERIFIED_CLAIMS_MATCH",
+    "REJECTED"
+  ],
+  "preflight_may_authorize_execution": false,
+  "preflight_may_release_secrets": false,
+  "crypto_verifier_implemented": false,
+  "required_hardware_gates": [
+    "vendor_signed_evidence_and_endorsements",
+    "approved_measurement_and_runtime_image",
+    "nonce_freshness_and_ephemeral_key_report_data_binding",
+    "minimum_tcb_and_revocation",
+    "debug_mode_denied",
+    "encrypted_attestation_bound_secret_channel",
+    "tenant_generation_key_fence",
+    "capability_scoped_socket_io",
+    "tenant_isolation_adversarial_guest",
+    "exact_head_hardware_execution_evidence"
+  ],
+  "fixture": {
+    "provider": "amd-sev-snp",
+    "measurement_sha256": "0707070707070707070707070707070707070707070707070707070707070707",
+    "nonce": "0909090909090909090909090909090909090909090909090909090909090909",
+    "tcb": 5,
+    "min_tcb": 5,
+    "issued_at_ms": 1000,
+    "now_ms": 1001,
+    "challenge_issued_at_ms": 1000,
+    "challenge_ttl_ms": 50,
+    "max_evidence_age_ms": 100,
+    "debug_enabled": false,
+    "revoked": false,
+    "quote_hex": "01"
+  },
+  "preflight_vectors": [
+    {
+      "id": "matching-untrusted-metadata",
+      "patch": {},
+      "expect": "UNVERIFIED_CLAIMS_MATCH"
+    },
+    {
+      "id": "provider-mismatch",
+      "patch": {
+        "provider": "intel-tdx"
+      },
+      "expect": "REJECTED_PROVIDER"
+    },
+    {
+      "id": "nonce-mismatch",
+      "patch": {
+        "nonce": "0808080808080808080808080808080808080808080808080808080808080808"
+      },
+      "expect": "REJECTED_NONCE"
+    },
+    {
+      "id": "measurement-mismatch",
+      "patch": {
+        "measurement_sha256": "0808080808080808080808080808080808080808080808080808080808080808"
+      },
+      "expect": "REJECTED_MEASUREMENT"
+    },
+    {
+      "id": "low-tcb",
+      "patch": {
+        "tcb": 4
+      },
+      "expect": "REJECTED_TCB"
+    },
+    {
+      "id": "debug-enabled",
+      "patch": {
+        "debug_enabled": true
+      },
+      "expect": "REJECTED_DEBUG"
+    },
+    {
+      "id": "revoked-claim",
+      "patch": {
+        "revoked": true
+      },
+      "expect": "REJECTED_REVOKED"
+    },
+    {
+      "id": "empty-opaque-quote",
+      "patch": {
+        "quote_hex": ""
+      },
+      "expect": "REJECTED_EVIDENCE"
+    },
+    {
+      "id": "invalid-nonce-length",
+      "patch": {
+        "nonce": "09090909090909090909090909090909090909090909090909090909090909"
+      },
+      "expect": "REJECTED_EVIDENCE"
+    },
+    {
+      "id": "issued-before-challenge",
+      "patch": {
+        "issued_at_ms": 999
+      },
+      "expect": "REJECTED_FRESHNESS"
+    },
+    {
+      "id": "expired-challenge",
+      "patch": {
+        "now_ms": 1051
+      },
+      "expect": "REJECTED_FRESHNESS"
+    },
+    {
+      "id": "future-quote",
+      "patch": {
+        "issued_at_ms": 1100
+      },
+      "expect": "REJECTED_FRESHNESS"
+    }
+  ],
+  "session_vectors": [
+    {
+      "id": "check-before-issue",
+      "expect": "REJECTED_STATE"
+    },
+    {
+      "id": "replay-after-match",
+      "expect": "REJECTED_STATE"
+    },
+    {
+      "id": "retry-after-rejection",
+      "expect": "REJECTED_STATE"
+    },
+    {
+      "id": "issue-second-challenge",
+      "expect": "REJECTED_STATE"
+    }
+  ],
+  "hardware_negative_cases": [
+    "tampered_signed_quote",
+    "untrusted_vendor_root",
+    "revoked_endorsement",
+    "stale_signed_report",
+    "wrong_ephemeral_channel_binding",
+    "replayed_secret_ticket",
+    "tenant_restart_generation_replay",
+    "cross_tenant_pointer",
+    "cross_tenant_socket",
+    "neighbor_survival_under_hostile_guest"
+  ],
+  "backend_evidence": {
+    "java": {
+      "pr": "https://github.com/atto-lang/atto-source.java/pull/218",
+      "preflight": "HOST_ONLY",
+      "hardware": "NOT_EXECUTED"
+    },
+    "llvm": {
+      "pr": "https://github.com/atto-lang/atto-source.llvm/pull/294",
+      "preflight": "HOST_ONLY",
+      "hardware": "NOT_EXECUTED"
+    }
+  },
+  "evidence_rule": "Do not report HARDWARE_ATTESTED without verified signed quote and endorsed TCB, independently reviewed verifier and key release, approved hardware, exact artifact/source SHA, executed positive+negative guest checks and nonzero CI steps."
+}

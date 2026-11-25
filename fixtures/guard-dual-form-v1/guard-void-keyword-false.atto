@@ -1,0 +1,7 @@
+fnc process_explicit() -> void
+    guard false else ^ void end
+end
+pub fnc main(): int {
+    process_explicit();
+    return 42;
+}

@@ -1,0 +1,135 @@
+{
+  "schema": 1,
+  "batch": 4,
+  "covers": "Original ten items 31-40 from Oreslang 100-task backlog",
+  "claim": "PARTIAL_IMPLEMENTATION_DO_NOT_CLOSE_ISSUES",
+  "directlyChangedSource": {
+    "repository": "ores-truffle-oreslang/oreslang-source.java",
+    "pr": 1471,
+    "kind": "physical_done_safety_fix_only",
+    "liveness": "NOT_ESTABLISHED",
+    "stackedOn": "feat/source-linear-actorstream-authenticated-routing-current-20261017"
+  },
+  "priorDrafts": {
+    "nativeCodeOwner": 602,
+    "javaRouteTransfer": 1270,
+    "javaActorStream": 1145
+  },
+  "privacy": {
+    "privateSourceMirroring": "BLOCKED_PENDING_ADMIN_AND_INDEPENDENT_APPROVAL",
+    "stepsNull": "EXECUTION_UNOBSERVED",
+    "skipIsPass": false
+  },
+  "tasks": [
+    {
+      "index": 31,
+      "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+      "kind": "issue",
+      "number": 606,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/issues/606",
+      "title": "LLVM source actor code-lease and FFI/await pin integration",
+      "releaseGate": "LLVM_GUEST_CODE_LEASE_LOWERING",
+      "status": "PENDING_SOURCE_LEVEL_EXECUTION",
+      "conformanceModel": "SOURCE_FREE_ONLY"
+    },
+    {
+      "index": 32,
+      "repository": "ores-truffle-oreslang/oreslang-common-source",
+      "kind": "issue",
+      "number": 73,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-common-source/issues/73",
+      "title": "Hot reload protocol for AOT/JIT, arenas and untrusted actor placement",
+      "releaseGate": "SIGNED_IMAGE_AND_GUEST_UPGRADE_PARITY",
+      "status": "PENDING_SOURCE_LEVEL_EXECUTION",
+      "conformanceModel": "SOURCE_FREE_ONLY"
+    },
+    {
+      "index": 33,
+      "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+      "kind": "issue",
+      "number": 628,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/issues/628",
+      "title": "NativeSupervisorCodeSlot registry-owner authority",
+      "releaseGate": "EXACT_HEAD_NATIVE_OWNER_TESTS",
+      "status": "PENDING_SOURCE_LEVEL_EXECUTION",
+      "conformanceModel": "SOURCE_FREE_ONLY"
+    },
+    {
+      "index": 34,
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "kind": "issue",
+      "number": 1343,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/1343",
+      "title": "Separate incarnation, route epoch and code generation",
+      "releaseGate": "JAVA_GUEST_ROUTE_RESTART_TESTS",
+      "status": "PENDING_SOURCE_LEVEL_EXECUTION",
+      "conformanceModel": "SOURCE_FREE_ONLY"
+    },
+    {
+      "index": 35,
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "kind": "issue",
+      "number": 1342,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/1342",
+      "title": "Linearize logical output stream subscriptions",
+      "releaseGate": "JAVA_COMPILED_OUTPUT_REGISTRATION_RACES",
+      "status": "PENDING_SOURCE_LEVEL_EXECUTION",
+      "conformanceModel": "SOURCE_FREE_ONLY"
+    },
+    {
+      "index": 36,
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "kind": "issue",
+      "number": 1341,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/1341",
+      "title": "Make source actor transfers single-consumer and publication-bound",
+      "releaseGate": "JAVA_TRANSFER_DOUBLE_RESTORE_STRESS",
+      "status": "PENDING_SOURCE_LEVEL_EXECUTION",
+      "conformanceModel": "SOURCE_FREE_ONLY"
+    },
+    {
+      "index": 37,
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "kind": "issue",
+      "number": 1340,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/1340",
+      "title": "Bounded ActorStream edge credit and cancellation commit",
+      "releaseGate": "GUEST_AWAITABLE_EDGE_FLOW_CONTROL",
+      "status": "PENDING_SOURCE_LEVEL_EXECUTION",
+      "conformanceModel": "SOURCE_FREE_ONLY"
+    },
+    {
+      "index": 38,
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "kind": "issue",
+      "number": 1339,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/1339",
+      "title": "ActorStream get_done after all physical stages and frames",
+      "releaseGate": "LIFECYCLE_LIVENESS_AND_PHYSICAL_EXIT",
+      "status": "PENDING_SOURCE_LEVEL_EXECUTION",
+      "conformanceModel": "SOURCE_FREE_ONLY"
+    },
+    {
+      "index": 39,
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "kind": "issue",
+      "number": 1344,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/1344",
+      "title": "Reserve MessagePack transient encode/decode scratch before allocation",
+      "releaseGate": "JAVA_TRANSPORT_SCRATCH_INTEGRATION",
+      "status": "PENDING_SOURCE_LEVEL_EXECUTION",
+      "conformanceModel": "SOURCE_FREE_ONLY"
+    },
+    {
+      "index": 40,
+      "repository": "ores-truffle-oreslang/oreslang-common-source",
+      "kind": "issue",
+      "number": 79,
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-common-source/issues/79",
+      "title": "IPC delivery, crash ambiguity, replay and receipt semantics",
+      "releaseGate": "AUTHENTICATED_IPC_GUEST_PARITY",
+      "status": "PENDING_SOURCE_LEVEL_EXECUTION",
+      "conformanceModel": "SOURCE_FREE_ONLY"
+    }
+  ]
+}

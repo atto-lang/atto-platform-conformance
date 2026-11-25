@@ -1,0 +1,220 @@
+{
+  "schemaVersion": 1,
+  "contract": "singleton-shared-state-v1",
+  "status": "candidate-unattested",
+  "backendTargets": [
+    "java",
+    "llvm",
+    "net",
+    "wasm",
+    "forge"
+  ],
+  "languageSurface": {
+    "singletonDeclaration": "define singleton",
+    "sharedTableGuestApi": "canonical-api-pending",
+    "note": "The semantic contract is frozen before guest API spelling. Backends may not claim parity from host-only adapters or syntax rejection."
+  },
+  "semantics": {
+    "singletonIdentityScope": "application-domain",
+    "initialization": "exactly-once-complete-publication",
+    "initializationFailure": "sticky",
+    "mutableSharedState": "capability-checked-bounded-table",
+    "callerIdentity": "runtime-derived-opaque-actor-incarnation",
+    "tableAtomicity": "single-operation-linearizable",
+    "staleAuthority": "must-not-authorize-replacement-or-restarted-actor",
+    "singletonDeclarationIdentity": "compiler-resolved-module-and-declaration-id-not-guest-supplied"
+  },
+  "scenarios": [
+    {
+      "id": "singleton-concurrent-first-access-once",
+      "kind": "runtime",
+      "requires": [
+        "one-initializer",
+        "complete-publication",
+        "same-identity"
+      ]
+    },
+    {
+      "id": "singleton-sticky-initializer-failure",
+      "kind": "runtime",
+      "requires": [
+        "one-attempt",
+        "same-failure",
+        "no-partial-publication"
+      ]
+    },
+    {
+      "id": "singleton-direct-initialization-cycle",
+      "kind": "runtime",
+      "requires": [
+        "deterministic-cycle-error",
+        "no-deadlock",
+        "no-partial-publication"
+      ]
+    },
+    {
+      "id": "singleton-cross-task-initialization-cycle",
+      "kind": "runtime",
+      "requires": [
+        "deterministic-cycle-error",
+        "finite-completion",
+        "no-partial-publication"
+      ]
+    },
+    {
+      "id": "singleton-import-alias-same-identity",
+      "kind": "runtime",
+      "requires": [
+        "module-identity",
+        "one-cell"
+      ]
+    },
+    {
+      "id": "singleton-domain-isolation",
+      "kind": "runtime",
+      "requires": [
+        "distinct-domain-identity",
+        "no-raw-cross-domain-authority"
+      ]
+    },
+    {
+      "id": "singleton-prepublication-self-escape",
+      "kind": "compile",
+      "requires": [
+        "semantic-rejection",
+        "stable-diagnostic-category"
+      ]
+    },
+    {
+      "id": "singleton-mutable-alias-publication",
+      "kind": "compile",
+      "requires": [
+        "deep-immutability-check",
+        "semantic-rejection"
+      ]
+    },
+    {
+      "id": "singleton-cancel-shutdown-no-duplicate-incarnation",
+      "kind": "runtime",
+      "requires": [
+        "no-late-publication",
+        "no-second-initializer",
+        "finite-shutdown"
+      ]
+    },
+    {
+      "id": "table-caller-identity-not-guest-forgeable",
+      "kind": "runtime",
+      "requires": [
+        "runtime-derived-caller",
+        "opaque-incarnation-authority",
+        "ffi-cannot-mint-context"
+      ]
+    },
+    {
+      "id": "table-stale-actor-incarnation-rejected",
+      "kind": "runtime",
+      "requires": [
+        "restart-fence",
+        "stale-capability-denied",
+        "fresh-incarnation-no-implicit-authority"
+      ]
+    },
+    {
+      "id": "table-private-protected-public-rights",
+      "kind": "runtime",
+      "requires": [
+        "private-owner-only",
+        "protected-read-delegation",
+        "public-explicit-delegation"
+      ]
+    },
+    {
+      "id": "table-concurrent-counter-exact",
+      "kind": "runtime",
+      "requires": [
+        "linearizable-update",
+        "checked-overflow",
+        "no-lost-update"
+      ]
+    },
+    {
+      "id": "table-insert-new-single-winner",
+      "kind": "runtime",
+      "requires": [
+        "one-winner",
+        "linearizable-insert"
+      ]
+    },
+    {
+      "id": "table-cas-single-winner",
+      "kind": "runtime",
+      "requires": [
+        "one-winner",
+        "linearizable-cas"
+      ]
+    },
+    {
+      "id": "table-capacity-failure-preserves-contents",
+      "kind": "runtime",
+      "requires": [
+        "bounded-slots",
+        "no-partial-mutation"
+      ]
+    },
+    {
+      "id": "table-overflow-failure-preserves-value",
+      "kind": "runtime",
+      "requires": [
+        "checked-i64",
+        "no-partial-mutation"
+      ]
+    },
+    {
+      "id": "table-owner-retirement-revokes-access",
+      "kind": "runtime",
+      "requires": [
+        "automatic-owner-lifecycle-registration",
+        "bounded-lifecycle-resource-registry",
+        "close-restart-destruction-retire-owned-tables",
+        "inflight-operation-linearization"
+      ]
+    },
+    {
+      "id": "table-replacement-rejects-stale-capability",
+      "kind": "runtime",
+      "requires": [
+        "table-generation-identity",
+        "no-authority-resurrection"
+      ]
+    },
+    {
+      "id": "table-worker-isolate-shared-identity",
+      "kind": "runtime",
+      "requires": [
+        "cross-worker-or-isolate-proof",
+        "not-process-global-only",
+        "same-domain-ordering-documented"
+      ]
+    }
+  ],
+  "promotion": {
+    "hostUnitTestsAloneSufficient": false,
+    "guestSourceCheckingRequired": true,
+    "guestSourceExecutionRequired": true,
+    "identicalScenarioIdsAcrossFiveBackends": true,
+    "exactHeadRequired": true,
+    "compilerExecutableSha256Required": true,
+    "runnerAssignmentRequired": true,
+    "executedJobStepsRequired": true,
+    "zeroStepActionRunCountsAsEvidence": false,
+    "unsupportedSyntaxRejectionCountsAsSafetyPass": false,
+    "unsupportedSyntaxRejectionCountsAsParityPass": false,
+    "sanitizerPassRequiredForNativeBackends": [
+      "llvm",
+      "forge"
+    ],
+    "wasmWorkerOrIsolateExecutionRequired": true,
+    "noSleepBasedRaceProof": true
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "schema": "oreslang.actor-registered-resource-quota.v1",
+  "version": 1,
+  "verification": "SOURCE_FREE_REFERENCE_NOT_COMPILED_GUEST_PROOF",
+  "purpose": "Five-backend actor subtree quotas for registered native handles and trusted accounted bytes",
+  "ownership": "Only trusted native host adapters mint registration and retirement receipts. Guest labels cannot forge identity.",
+  "contract": [
+    "Quota boundaries: process/context cap and immutable actor-permission ancestor caps all apply (intersection).",
+    "Registered native resources charge each permission-scope ancestor until host-owned physical close or explicitly trusted unregister ownership transfer.",
+    "Outstanding physical loans defer unregister transfer completion and quota refund until last loan leaves.",
+    "Logical actor STOP/revocation does not refund existing registered-resource credits. New admission must fail against exact actor incarnation.",
+    "Accounted bytes are trusted host declarations, not actual heap/OS measurement. Unknown-byte registrations still consume one handle.",
+    "Native handle creation before registration can exceed a post-registration limit. Trusted brokers must pre-reserve OS creation credits for hard enforcement.",
+    "Post-shutdown late resource publication is rejected but retained/quarantined until physical resource closure; no false clean retirement.",
+    "Failed close retains registered resources and actor liveness until retry or quarantine.",
+    "Actor/native context shutdown requires bounded repeated physical joins; never report a stop before resource retirement."
+  ],
+  "backendStatus": {
+    "java": "PENDING_EXECUTED_NATIVE_AND_GUEST_PROOF",
+    "llvm": "PENDING_EXECUTED_NATIVE_AND_GUEST_PROOF",
+    "wasm": "PENDING_EXECUTED_NATIVE_AND_GUEST_PROOF",
+    "net": "PENDING_EXECUTED_NATIVE_AND_GUEST_PROOF",
+    "forge": "PENDING_EXECUTED_NATIVE_AND_GUEST_PROOF"
+  },
+  "minimumScenarios": [
+    "child-handle-budget",
+    "parent-sibling-intersection",
+    "accounted-byte-limit",
+    "unknown-byte-count-still-charged",
+    "revoke-preserves-active-resource",
+    "deferred-unregister-last-loan",
+    "failed-native-close-preserves-ownership",
+    "stale-incarnation-registration-rejected",
+    "shutdown-late-resource-quarantine",
+    "exactly-once-retirement",
+    "actor-native-join-retry",
+    "forged-resource-receipt-rejected"
+  ],
+  "promotion": {
+    "sourceFreeModelIsBackendProof": false,
+    "actualCompiledOreslangGuestRequired": true,
+    "exactSourceSHAAndExecutableStepsRequired": true,
+    "zeroStepActionsAccepted": false,
+    "independentSecurityReviewRequired": true,
+    "unauthorizedPrivateMirrorAccepted": false
+  }
+}

@@ -1,0 +1,13 @@
+define enum Message as
+  Compute Tuple[string, int] 1
+  Result Tuple[string, int] 2
+end
+
+define actor WorkerActor as
+  @Implements
+  receive(Message m): void {
+    self.respond(Message.Result("first", 1));
+    self.respond(Message.Result("second", 2));
+    self.done();
+  }
+end

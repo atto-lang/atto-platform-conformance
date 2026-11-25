@@ -1,0 +1,21 @@
+type Smallest = int where self eq -9223372036854775808;
+
+define protocol Reset as
+    initial Waiting;
+    Waiting -> Ready on reset;
+    terminal Ready;
+end
+
+define protocol Limits as
+    initial Waiting;
+    Waiting -> Done on finish(Smallest minimum, i32 second);
+    terminal Done;
+end
+
+define actor ResetActor implements Reset as
+    reset() -> void { transition Ready; }
+end
+
+define actor LimitsActor implements Limits as
+    finish(Smallest minimum, i32 second) -> void { transition Done; }
+end

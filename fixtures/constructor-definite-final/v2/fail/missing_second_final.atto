@@ -1,0 +1,7 @@
+// expect-error: E_INIT
+define class Pair as
+    pub final int left; pub final int right;
+    constructor(int initial) { self.left = initial; }
+    pub total(): int { return self.left + self.right; }
+end
+pub fnc main(): int { val p = new Pair(42); return p.total(); }
