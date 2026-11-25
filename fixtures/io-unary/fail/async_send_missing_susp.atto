@@ -1,0 +1,4 @@
+// A potentially waiting channel write requires susp/suspends.
+pub fnc bad(Channel<int> c): Result<void,IoError> {
+  return c << 42;
+}

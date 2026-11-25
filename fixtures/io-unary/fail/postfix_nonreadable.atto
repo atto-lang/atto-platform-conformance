@@ -1,0 +1,4 @@
+// Only statically readable capabilities support a postfix channel read.
+pub susp fnc bad(int n): Result<Option<int>, IoError> using io, suspend {
+    return (n >>);
+}

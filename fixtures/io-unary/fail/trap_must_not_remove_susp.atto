@@ -1,0 +1,3 @@
+pub fnc bad_trap(Channel<int> c): void using io {
+    val result = trap << c;
+}

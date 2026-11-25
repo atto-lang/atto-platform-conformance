@@ -1,0 +1,4 @@
+// Numeric 42 cannot masquerade as Channel<int>.
+pub susp fnc bad(int c): Result<void,IoError> {
+  return c << 42;
+}

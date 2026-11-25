@@ -1,0 +1,5 @@
+// Admission errors cannot be silently discarded.
+pub susp fnc bad(Channel<int> c): Result<Option<int>,IoError> {
+  c << 42;
+  return (c >>);
+}

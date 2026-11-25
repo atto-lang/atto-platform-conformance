@@ -1,0 +1,4 @@
+// Writing a string into a typed int channel is invalid.
+pub susp fnc bad(Channel<int> c): Result<void,IoError> {
+  return c << "bad";
+}

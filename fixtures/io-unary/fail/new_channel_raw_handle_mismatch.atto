@@ -1,0 +1,5 @@
+// new Channel<int> returns a checked Result, never a bare channel handle.
+pub fnc reject_unchecked_handle(): int {
+    val Channel<int> ch = new Channel<int>(2);
+    return 0;
+}

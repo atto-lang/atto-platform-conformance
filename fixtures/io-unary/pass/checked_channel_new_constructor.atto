@@ -1,0 +1,7 @@
+// Fallible Channel<int> constructor aliases must preserve Err and checked reads.
+pub susp fnc checked_open(): Result<Option<int>, IoError> using io, suspend {
+    match new Channel<int>(2) over
+        on Ok(ch) -> { return (ch >>); }
+        on Err(error) -> { return Err(error); }
+    end
+}

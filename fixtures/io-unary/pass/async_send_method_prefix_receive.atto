@@ -1,0 +1,7 @@
+// send_async is checked/cooperative, not a nonparking try_send alias.
+pub susp fnc exchange(Channel<int> c): Result<Option<int>,IoError> {
+  match c.send_async(42) over
+    on Ok() -> { return (<< c); }
+    on Err(error) -> { return Err(error); }
+  end
+}

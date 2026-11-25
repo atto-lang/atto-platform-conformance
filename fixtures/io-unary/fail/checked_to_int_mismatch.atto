@@ -1,0 +1,5 @@
+// CANDIDATE: frontend/type/effect contract, not a verified guest execution.
+pub susp fnc bad_type(Channel<int> c): int using io, suspend {
+    val int value = << c;
+    return value;
+}

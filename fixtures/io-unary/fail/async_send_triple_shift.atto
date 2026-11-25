@@ -1,0 +1,4 @@
+// Triple-angle numeric operators are not channel sends.
+pub susp fnc bad(Channel<int> c): Result<void,IoError> {
+  return c <<< 42;
+}

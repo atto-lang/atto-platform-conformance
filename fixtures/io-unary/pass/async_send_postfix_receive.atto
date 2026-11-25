@@ -1,0 +1,7 @@
+// Checked write admission precedes checked postfix read; both may suspend.
+pub susp fnc exchange(Channel<int> c): Result<Option<int>,IoError> {
+  match c << 42 over
+    on Ok() -> { return (c >>); }
+    on Err(error) -> { return Err(error); }
+  end
+}
