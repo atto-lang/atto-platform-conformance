@@ -1,0 +1,310 @@
+{
+  "schemaVersion": 1,
+  "contract": "singleton-symbol-shared-domain-v1",
+  "status": "candidate-unattested",
+  "extends": [
+    "contracts/singleton-shared-state-v1.json",
+    "oreslang-platform-conformance#656",
+    "oreslang-platform-conformance#651"
+  ],
+  "backendTargets": [
+    "java",
+    "llvm",
+    "net",
+    "wasm",
+    "forge"
+  ],
+  "scope": "logical-application-domain-not-operating-system-global",
+  "invariants": {
+    "singletonScope": "application-domain",
+    "singletonIdentity": "compiler-resolved-module-and-declaration",
+    "perSlotShadowSingletons": "forbidden",
+    "singletonInitialization": "exactly-once-complete-publication",
+    "singletonFailure": "sticky",
+    "defaultSingletonFields": "deep-immutable-or-guarded",
+    "mutableStorage": "separate-runtime-owned-shared-region",
+    "actorPrivateHeapPointers": "never-shared-raw",
+    "actorStateSupervisorOwner": "not-implicit",
+    "regionOwner": "exactly-one-runtime-minted-owner",
+    "readWrite": "many-readers-or-one-writer",
+    "admission": "bounded-writer-fair-nonparking",
+    "loanSuspension": "reject-await-select-capture-until-proven",
+    "lifecycle": "generation-fenced-stop-and-physical-quiescence",
+    "crossIsolate": "coordinator-or-explicit-shared-memory-not-pointer",
+    "symbolSyntax": "#name",
+    "symbolProcessCore": "immutable-domain-canonical",
+    "symbolUserland": "explicit-trusted-domain-publication",
+    "symbolLocal": "actor-local-not-wire",
+    "symbolInterning": "bounded-nfc-validation",
+    "symbolWireDecode": "lookup-only-untrusted",
+    "untrustedSymbolAdmission": "recursive-frozen-snapshot-core-allowlist",
+    "stringAndSymbol": "distinct-nominal-keys"
+  },
+  "scenarios": [
+    {
+      "id": "singleton-canonical-across-actors-and-slices",
+      "kind": "runtime",
+      "requires": [
+        "one-application-domain-identity",
+        "same-compiler-declaration-id",
+        "no-slot-shadow-instance"
+      ]
+    },
+    {
+      "id": "singleton-concurrent-first-access-once",
+      "kind": "runtime",
+      "requires": [
+        "one-initializer",
+        "complete-publication",
+        "same-identity"
+      ]
+    },
+    {
+      "id": "singleton-sticky-failure",
+      "kind": "runtime",
+      "requires": [
+        "no-partial-publication",
+        "one-attempt",
+        "same-error"
+      ]
+    },
+    {
+      "id": "singleton-initializer-cycle",
+      "kind": "runtime",
+      "requires": [
+        "finite-diagnostic",
+        "no-deadlock",
+        "no-partial-publication"
+      ]
+    },
+    {
+      "id": "singleton-alias-import-same-cell",
+      "kind": "runtime",
+      "requires": [
+        "resolved-definition-identity",
+        "one-cell"
+      ]
+    },
+    {
+      "id": "singleton-cross-domain-distinct",
+      "kind": "runtime",
+      "requires": [
+        "tenant-isolation",
+        "no-cross-domain-authority"
+      ]
+    },
+    {
+      "id": "singleton-immutable-snapshot-freeze",
+      "kind": "runtime",
+      "requires": [
+        "deep-immutability",
+        "read-only-sharing"
+      ]
+    },
+    {
+      "id": "singleton-mutable-state-guarded",
+      "kind": "compile",
+      "requires": [
+        "no-raw-mutable-field-alias",
+        "critical-read-write-only"
+      ]
+    },
+    {
+      "id": "singleton-state-owner-unique",
+      "kind": "runtime",
+      "requires": [
+        "exactly-one-owner-token",
+        "no-supervisor-implicit-owner"
+      ]
+    },
+    {
+      "id": "singleton-shared-readers",
+      "kind": "runtime",
+      "requires": [
+        "multiple-readers",
+        "no-simultaneous-writer"
+      ]
+    },
+    {
+      "id": "singleton-exclusive-writer",
+      "kind": "runtime",
+      "requires": [
+        "at-most-one-writer",
+        "no-concurrent-readers"
+      ]
+    },
+    {
+      "id": "singleton-writer-queue-fairness",
+      "kind": "runtime",
+      "requires": [
+        "writer-barrier",
+        "bounded-pending-queue",
+        "nonparking"
+      ]
+    },
+    {
+      "id": "singleton-owner-transfer-fence",
+      "kind": "runtime",
+      "requires": [
+        "quiescence-before-transfer",
+        "revoke-old-authority",
+        "generation-bump"
+      ]
+    },
+    {
+      "id": "singleton-no-borrow-across-await",
+      "kind": "compile",
+      "requires": [
+        "reject-live-loan-await",
+        "reject-capture-escape"
+      ]
+    },
+    {
+      "id": "singleton-cancel-stop-quiescence",
+      "kind": "runtime",
+      "requires": [
+        "physical-pins-survive-stop",
+        "no-stale-publication",
+        "finite-cleanup"
+      ]
+    },
+    {
+      "id": "singleton-forged-authority-denied",
+      "kind": "runtime",
+      "requires": [
+        "runtime-minted-principal",
+        "reject-cross-domain-or-incarnation"
+      ]
+    },
+    {
+      "id": "singleton-allocation-not-actor-private-alias",
+      "kind": "runtime",
+      "requires": [
+        "separate-shared-region",
+        "no-raw-actor-heap-pointer"
+      ]
+    },
+    {
+      "id": "singleton-cross-isolate-transport",
+      "kind": "runtime",
+      "requires": [
+        "explicit-coordinator-or-shared-memory",
+        "same-logical-identity",
+        "no-pointer-equality-claim"
+      ]
+    },
+    {
+      "id": "symbol-core-canonical-domain",
+      "kind": "runtime",
+      "requires": [
+        "immutable-canonical-core",
+        "same-domain-equality"
+      ]
+    },
+    {
+      "id": "symbol-userland-explicit-publication",
+      "kind": "runtime",
+      "requires": [
+        "no-automatic-cross-domain-export",
+        "allowlist-required"
+      ]
+    },
+    {
+      "id": "symbol-distinct-from-string",
+      "kind": "runtime",
+      "requires": [
+        "nominal-tagged-equality",
+        "separate-map-key-domains"
+      ]
+    },
+    {
+      "id": "symbol-nfc-validated-bounded",
+      "kind": "runtime",
+      "requires": [
+        "normalized-keys",
+        "bounded-memory",
+        "failed-admission-no-leak"
+      ]
+    },
+    {
+      "id": "symbol-local-not-exported",
+      "kind": "runtime",
+      "requires": [
+        "actor-local-identity",
+        "not-sendable",
+        "not-wire"
+      ]
+    },
+    {
+      "id": "symbol-wire-lookup-only",
+      "kind": "runtime",
+      "requires": [
+        "no-attacker-controlled-intern",
+        "tagged-domain-identity"
+      ]
+    },
+    {
+      "id": "symbol-untrusted-nested-transport",
+      "kind": "runtime",
+      "requires": [
+        "recursive-snapshot-check",
+        "public-core-only-by-default"
+      ]
+    },
+    {
+      "id": "symbol-cross-isolate-semantic-identity",
+      "kind": "runtime",
+      "requires": [
+        "stable-wire-key",
+        "never-wire-raw-pointer"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "backend": "java",
+      "semanticCompile": "NOT_EXECUTED",
+      "guestExecution": "NOT_EXECUTED",
+      "crossIsolate": "NOT_EXECUTED",
+      "certification": "NOT_CERTIFIED"
+    },
+    {
+      "backend": "llvm",
+      "semanticCompile": "NOT_EXECUTED",
+      "guestExecution": "NOT_EXECUTED",
+      "crossIsolate": "NOT_EXECUTED",
+      "certification": "NOT_CERTIFIED"
+    },
+    {
+      "backend": "net",
+      "semanticCompile": "NOT_EXECUTED",
+      "guestExecution": "NOT_EXECUTED",
+      "crossIsolate": "NOT_EXECUTED",
+      "certification": "NOT_CERTIFIED"
+    },
+    {
+      "backend": "wasm",
+      "semanticCompile": "NOT_EXECUTED",
+      "guestExecution": "NOT_EXECUTED",
+      "crossIsolate": "NOT_EXECUTED",
+      "certification": "NOT_CERTIFIED"
+    },
+    {
+      "backend": "forge",
+      "semanticCompile": "NOT_EXECUTED",
+      "guestExecution": "NOT_EXECUTED",
+      "crossIsolate": "NOT_EXECUTED",
+      "certification": "NOT_CERTIFIED"
+    }
+  ],
+  "promotion": {
+    "sourceFreeOnly": true,
+    "conformant": false,
+    "guestCompilerRequired": true,
+    "guestRuntimeRequired": true,
+    "exactHeadRequired": true,
+    "stepfulRunnerRequired": true,
+    "independentReviewRequired": true,
+    "asANotProofOfRuntime": true
+  }
+}

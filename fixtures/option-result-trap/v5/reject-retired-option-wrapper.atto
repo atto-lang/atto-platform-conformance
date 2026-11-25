@@ -1,0 +1,6 @@
+fnc read(): Result<int, Error> { return Ok(7); }
+
+pub fnc main(): int {
+  val Option<Result<int, Error>> value = trap! read();
+  return 0;
+}

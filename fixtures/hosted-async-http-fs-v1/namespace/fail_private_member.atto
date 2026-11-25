@@ -1,0 +1,5 @@
+// Compile/link must reject private helper access through a wildcard namespace.
+import * as p from "./library_private.atto";
+pub routine main(): void {
+  stdio.println(p.secret());
+}

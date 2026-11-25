@@ -1,0 +1,9 @@
+// Typed select must be either truly lowered or explicitly refused.
+pub fnc main(): int {
+  do select<int> over
+    default: {
+      return 7;
+    }
+  end
+  return 0;
+}

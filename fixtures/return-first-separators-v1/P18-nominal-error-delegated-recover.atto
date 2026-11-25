@@ -1,0 +1,21 @@
+// EXPECTED: 42; cursor.next() must rethrow the original Foo tag and handle.
+define class Foo extends Error as end
+
+fnc int <- risky(int value)
+raises Foo ::
+  recover |err, cursor| -> {
+    cursor.next();
+  };
+  if value > 3 then
+    raise! new Foo();
+  fi
+  return value;
+end
+
+pub fnc main(): int raises Foo {
+  recover |err, cursor| -> {
+    if err.is_type(Foo) then return 42; fi
+    return 17;
+  };
+  return risky(4);
+}

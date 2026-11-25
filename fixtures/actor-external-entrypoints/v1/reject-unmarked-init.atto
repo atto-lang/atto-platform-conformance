@@ -1,0 +1,4 @@
+// ACTOR_EXTERNAL_REQUIRED: canonical declared lifecycle entrypoint needs 'external'.
+namespace actor_external_unmarked_init;
+declare actor Worker;
+define mtd (Worker w) init(): void { return; }

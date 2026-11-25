@@ -1,0 +1,152 @@
+{
+  "schema_version": 1,
+  "contract_id": "safe-collection-access-v1",
+  "status": "CANDIDATE_UNATTESTED",
+  "precedence": "Adds bounds/Option/loan semantics to existing collection-ownership-sync-v1; does not replace it.",
+  "canonical_language": "AttoLang",
+  "api_spelling_status": "CANDIDATE_NOT_ADMITTED_ON_ALL_BACKENDS",
+  "rules": {
+    "read": "Array/List/Vector/Slice.get(index) -> Option<ReadLoan<T>>; Map.get(key) -> Option<ReadLoan<V>>; all loan-bearing Option variants retain owner provenance",
+    "write": "get_mut -> Option<WriteLoan<T>> requires unique mutable access; overlap is a static error; write view cannot outlive owner",
+    "copy": "get_copy -> Option<T> requires Copy<T>; never implicitly copies move-only elements",
+    "owned_remove": "pop/remove -> Option<T> moves out an owned element after exclusive access and shape update",
+    "index": "index operator is always range-checked; out-of-range is a contained actor trap; get is the non-panicking default",
+    "range": "negative and high unsigned indices return None for get without signed wrap; no unchecked 32-bit arithmetic",
+    "mutation": "resize, insert, erase, compact, sort, reserve-relocate forbidden while any root loan/iterator/view exists (conservative root locking)",
+    "suspension": "v1 requires no live collection loan across await/select/task suspension or actor-turn completion until pinned continuations and quiescence are proven",
+    "escape": "loans including Option<ReadLoan<T>>/Result/tuples/closure captures cannot escape via return, channel, shared cell, actor transport, persistence or FFI",
+    "move": "rt take owner prohibited while loans live; later sender access rejected; actor and generation fenced",
+    "sharing": "readonly view is not deep freeze or Sync; immutable Share requires transitive Sync/Share proof, without mutable aliases",
+    "layout": "32-bit dense index alone is not persistent identity: root allocation, actor, epoch and generation separately verified",
+    "option": "Some/None explicit, no null sentinel, no automatic Option<Option<T>> flattening",
+    "iterator": "iterators are rooted READ loans; mutable iterators exclusive; mutation while iterating fails closed",
+    "diagnostic": "negative fixtures require a semantic ownership/type/bounds diagnostic, not parse-only unsupported feature"
+  },
+  "scopes": [
+    "Array",
+    "FixedArray",
+    "Vector",
+    "List",
+    "Slice",
+    "Tuple",
+    "Map",
+    "Set",
+    "iterator",
+    "actor-state collection",
+    "SharedMutex critical guard"
+  ],
+  "source_reference_model": "contracts/v1/safe-collection-access-v1/reference.mjs",
+  "reference_model_limitations": [
+    "source-free alias ledger, not a compile-time borrow checker",
+    "no guest values or actual allocation",
+    "no optimizer/lowering, lock, lifetime analysis, or native ABI proof",
+    "does not authenticate 32-bit handles or model zero-GC",
+    "not a substitute for positive and negative compiler guest fixtures"
+  ],
+  "backends": [
+    "java-graal",
+    "llvm",
+    "dotnet-nativeaot",
+    "wasm",
+    "forge-cranelift",
+    "rust-cranelift",
+    "js-transpiler"
+  ],
+  "cases": [
+    {
+      "id": "get-hit-and-miss-option",
+      "expect": "compile_and_execute",
+      "path": "fixtures/get-hit-and-miss-option.atto",
+      "result": "42",
+      "attestation": "NOT_EXECUTED"
+    },
+    {
+      "id": "copy-get-explicit-ownership",
+      "expect": "compile_and_execute",
+      "path": "fixtures/copy-get-explicit-ownership.atto",
+      "result": "42",
+      "attestation": "NOT_EXECUTED"
+    },
+    {
+      "id": "pop-empty-option",
+      "expect": "compile_and_execute",
+      "path": "fixtures/pop-empty-option.atto",
+      "result": "42",
+      "attestation": "NOT_EXECUTED"
+    },
+    {
+      "id": "mutable-loan-conflict",
+      "expect": "compile_reject",
+      "path": "fixtures/mutable-loan-conflict.atto",
+      "diagnostic": "E_LOAN_CONFLICT",
+      "attestation": "NOT_EXECUTED"
+    },
+    {
+      "id": "grow-under-read-loan",
+      "expect": "compile_reject",
+      "path": "fixtures/grow-under-read-loan.atto",
+      "diagnostic": "E_LOAN_CONFLICT",
+      "attestation": "NOT_EXECUTED"
+    },
+    {
+      "id": "borrowed-option-escapes",
+      "expect": "compile_reject",
+      "path": "fixtures/borrowed-option-escapes.atto",
+      "diagnostic": "E_LOAN_ESCAPE",
+      "attestation": "NOT_EXECUTED"
+    },
+    {
+      "id": "actor-loan-suspension",
+      "expect": "compile_reject",
+      "path": "fixtures/actor-loan-suspension.atto",
+      "diagnostic": "E_LOAN_SUSPEND",
+      "attestation": "NOT_EXECUTED"
+    },
+    {
+      "id": "move-under-loan",
+      "expect": "compile_reject",
+      "path": "fixtures/move-under-loan.atto",
+      "diagnostic": "E_LOAN_CONFLICT",
+      "attestation": "NOT_EXECUTED"
+    },
+    {
+      "id": "read-loan-mutation",
+      "expect": "compile_reject",
+      "path": "fixtures/read-loan-mutation.atto",
+      "diagnostic": "E_LOAN_READ_ONLY",
+      "attestation": "NOT_EXECUTED"
+    },
+    {
+      "id": "read-only-view-share",
+      "expect": "compile_reject",
+      "path": "fixtures/read-only-view-share.atto",
+      "diagnostic": "E_SHARE_NOT_FROZEN",
+      "attestation": "NOT_EXECUTED"
+    }
+  ],
+  "promotion": {
+    "compiler_head_sha_required": true,
+    "executable_guest_source_required": true,
+    "positive_runtime_outputs_required": true,
+    "semantic_negative_diagnostic_required": true,
+    "zero_emitted_executable_code_on_negative": true,
+    "runner_job_started_steps_required": true,
+    "zero_step_ci_counts": false,
+    "parser_only_failure_counts": false,
+    "host_reference_tests_count_as_backend_parity": false,
+    "actor_suspension_containment_test_required": true,
+    "native_asan_ubsan_required": [
+      "llvm",
+      "forge-cranelift"
+    ]
+  },
+  "per_backend_evidence": {
+    "java-graal": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "dotnet-nativeaot": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge-cranelift": "NOT_EXECUTED",
+    "rust-cranelift": "NOT_EXECUTED",
+    "js-transpiler": "NOT_EXECUTED"
+  }
+}

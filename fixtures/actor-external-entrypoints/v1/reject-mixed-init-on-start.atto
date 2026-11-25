@@ -1,0 +1,5 @@
+// ACTOR_INIT_ON_START_CONFLICT: never double-initialize one actor incarnation.
+namespace actor_mixed_bootstrap;
+declare actor Worker;
+define external mtd (Worker w) init(): void { return; }
+define mtd (Worker w) on_start(): void { return; }

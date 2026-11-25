@@ -1,0 +1,7 @@
+define enum Packet as
+  Empty = 1
+end
+
+fnc invalid(): Packet {
+  return Packet.Empty(1);
+}

@@ -1,0 +1,26 @@
+name: Actor trace-context v1 reference
+on:
+  pull_request:
+    paths:
+      - 'contracts/actor-trace-context-v1.json'
+      - 'lib/actor-trace-context-v1.mjs'
+      - 'test/actor-trace-context-v1.test.mjs'
+      - '.github/workflows/actor-trace-context-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  trace-context-reference:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Check exact source head
+        run: test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+      - name: Run W3C trace-context reference checks
+        run: node --test test/actor-trace-context-v1.test.mjs
+      - name: Label evidence honestly
+        run: echo 'REFERENCE_ONLY; no Atto guest, native actor, or OTLP exporter executed.'

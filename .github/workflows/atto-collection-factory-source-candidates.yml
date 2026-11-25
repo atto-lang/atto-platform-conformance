@@ -1,0 +1,33 @@
+# Source-only fixture validation; do not mistake this for guest compilation.
+name: Atto collection factory candidate source-only checks
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/atto-collection-factory-source-candidates.yml"
+      - "fixtures/collection-factories/v1/**"
+      - "src/collection-factory-corpus-v1.mjs"
+      - "tests/collection-factory-manifest.test.mjs"
+  push:
+    paths:
+      - ".github/workflows/atto-collection-factory-source-candidates.yml"
+      - "fixtures/collection-factories/v1/**"
+      - "src/collection-factory-corpus-v1.mjs"
+      - "tests/collection-factory-manifest.test.mjs"
+permissions:
+  contents: read
+jobs:
+  candidate-source-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact branch without persisting credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Validate unexecuted candidate registry
+        run: node --test tests/collection-factory-manifest.test.mjs
+      - name: Unambiguous evidence scope
+        run: |
+          echo "SOURCE_EXPECTATIONS_ONLY"
+          echo "compiled guest=NOT_EXECUTED"
+          echo "backends verified=0"

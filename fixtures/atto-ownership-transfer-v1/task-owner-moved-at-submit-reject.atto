@@ -1,0 +1,7 @@
+define class Box as pub let int value = 1; end
+pub async fnc main(): int {
+  val Box owner = new Box();
+  let Future<int> child = task { return owner.value; };
+  stdio.println(owner.value);
+  return await child;
+}

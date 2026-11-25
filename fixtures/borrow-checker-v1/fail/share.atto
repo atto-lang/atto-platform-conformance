@@ -1,0 +1,9 @@
+// BCV1-012 share fail: target AttoLang semantics, NOT_EXECUTED.
+// Expected compiler rejection E_SHARED_MUTATION with NO guest artifact.
+define class Snapshot as pub let int revision = 1; end
+pub fnc main(): int {
+  val original = new Snapshot();
+  val frozen = share! original;
+  frozen.revision = 42; // shared ordinary data are readonly
+  return frozen.revision;
+}

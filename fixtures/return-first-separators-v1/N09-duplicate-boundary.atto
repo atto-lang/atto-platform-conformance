@@ -1,0 +1,5 @@
+// expect-diagnostic: E_SYNTAX; no executable artifact
+int <- double_answer(int value) ::
+  :: return value * 2;
+end
+pub fnc main(): int { return 0; }

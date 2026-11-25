@@ -1,0 +1,105 @@
+{
+  "version": 1,
+  "backends": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED"
+  },
+  "cases": [
+    {
+      "id": "scalar_control",
+      "mode": "execute",
+      "expectedExit": 43
+    },
+    {
+      "id": "throw_integer",
+      "mode": "compile-rejection",
+      "reason": "non-error-operand"
+    },
+    {
+      "id": "throw_string",
+      "mode": "compile-rejection",
+      "reason": "non-error-operand"
+    },
+    {
+      "id": "throw_null",
+      "mode": "compile-rejection",
+      "reason": "non-error-operand"
+    },
+    {
+      "id": "raise_integer",
+      "mode": "compile-rejection",
+      "reason": "non-error-operand"
+    },
+    {
+      "id": "raise_string",
+      "mode": "compile-rejection",
+      "reason": "non-error-operand"
+    },
+    {
+      "id": "raise_null",
+      "mode": "compile-rejection",
+      "reason": "non-error-operand"
+    },
+    {
+      "id": "panic_integer",
+      "mode": "compile-rejection",
+      "reason": "non-error-operand"
+    },
+    {
+      "id": "panic_string",
+      "mode": "compile-rejection",
+      "reason": "non-error-operand"
+    },
+    {
+      "id": "panic_null",
+      "mode": "compile-rejection",
+      "reason": "non-error-operand"
+    },
+    {
+      "id": "caught_throw_integer",
+      "mode": "compile-rejection",
+      "reason": "non-error-operand"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "nominal_error",
+      "expected": [
+        "canonical Error operand admitted",
+        "nominal subclass operand admitted",
+        "forged Error, lookalike, nullable, borrowed and unknown operands rejected"
+      ]
+    },
+    {
+      "id": "catch_and_recover",
+      "expected": [
+        "matching catch consumes throw",
+        "uncaught throw escalates to raise",
+        "raise skips ordinary catch",
+        "direct deferred recover consumes the failure once inside the same logical invocation",
+        "cleanup runs once in LIFO order"
+      ]
+    },
+    {
+      "id": "supervisor_control",
+      "expected": [
+        "actor panic bypasses local catch, trap and recover",
+        "cleanup completes",
+        "exactly one immutable CONTROL notice reaches owning supervisor even when supervisor DATA is full",
+        "notice records actor, parent, kind and incarnation",
+        "callback runs on supervisor lane",
+        "unrecovered raise reaches the same terminal path"
+      ]
+    },
+    {
+      "id": "post_await_control",
+      "expected": [
+        "supervisor_control assertions hold after real suspension and resume",
+        "detached work cannot consume another invocation's failure"
+      ]
+    }
+  ]
+}
