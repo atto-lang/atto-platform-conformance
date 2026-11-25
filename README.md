@@ -286,3 +286,18 @@ loans end. Add paired negative guests for every authority change instead of
 promoting host-only manifest validation as compiler evidence. The existing
 implicit-borrow registry's status stays `NOT_EXECUTED` until actual guests
 compile and run on exact compiler + fixture trees.
+
+## Canonical lambda v1 target fixtures
+
+[`fixtures/lambda-v1/manifest.json`](fixtures/lambda-v1/manifest.json) contains five positive and five rejection `.atto` cases for the canonical `|x| -> expression` syntax (typed arguments, captures, shadowing, `|>`, and rejected captures/placeholders). Their SHA-256 bytes are pinned. The **only** currently implemented check is fixture integrity and fail-closed manifest status validation:
+
+```sh
+node bin/validate-lambda-v1.mjs
+node --test test/lambda-v1-manifest.test.mjs
+python3 scripts/run_lambda_v1.py --check-manifest
+python3 -m unittest discover -s tests -p 'test_run_lambda_v1.py' -v
+```
+
+`npm test` now discovers both the Node fixture tests and a Node wrapper that runs the six Python AOT harness unit tests. To attempt **real** guest execution, invoke `scripts/run_lambda_v1.py` with an exact Git-tree SHA and checkout, a source commit SHA, a concrete `--compile-command` and `--run-command`, and a target native/WASM `--artifact-format` and `--evidence-file`. The runner refuses missing prerequisites, refuses host-script artifacts and records `RUNNER-CANDIDATE-REQUIRES-INDEPENDENT-CI-PROVENANCE`, not parity certification, even if every guest command succeeds.
+
+This produces `FIXTURE_INTEGRITY_ONLY_NOT_GUEST_EXECUTION` — **not** a compiler pass. Actual five-backend certification still requires immutable tree and compiler provenance, strict AOT artifact inspection, execution of each guest, and independent CI-run verification under the existing parity evidence policy.
