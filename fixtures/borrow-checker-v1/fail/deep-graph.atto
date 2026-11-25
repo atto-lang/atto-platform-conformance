@@ -1,0 +1,10 @@
+// BCV1-018 deep_graph fail: target AttoLang semantics, NOT_EXECUTED.
+// Expected compiler rejection E_COPY_GRAPH_UNPROVEN with NO guest artifact.
+// TARGET cycle construction and hook must be denied until a verified graph plan exists.
+define class Node as pub let Option<Node> next = None; end
+pub fnc main(): int {
+  val mut n = new Node();
+  n.next = Some(n);
+  val clone = copy!! n; // cannot admit an unproven cycle copier
+  return 42;
+}

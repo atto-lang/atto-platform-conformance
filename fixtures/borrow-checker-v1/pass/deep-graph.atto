@@ -1,0 +1,11 @@
+// BCV1-017 deep_graph pass: target AttoLang semantics, NOT_EXECUTED.
+// Expected success and exit value 42.
+// TARGET graph construction: repeated child references must remain repeated *inside* clone.
+define class Graph as pub let Array<Array<int>> edges = Array.of(); end
+pub fnc main(): int {
+  val mut inner = Array.of(42);
+  val source = new Graph();
+  source.edges = Array.of(inner, inner);
+  val detached = copy!! source;
+  return detached.edges[1][0];
+}

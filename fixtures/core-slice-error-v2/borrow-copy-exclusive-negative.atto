@@ -1,0 +1,11 @@
+// CANDIDATE negative guest. Must fail with a semantic ownership diagnostic,
+// not because source imports, get_copy lowering, or parsing are unsupported.
+import module slice from "core/slice";
+pub fnc main(): int {
+  let mut Array<int> values = new Array<int>();
+  values.add(42);
+  val borrow mut Array<int> exclusive = rt mut borrow values;
+  val Option<int> missing = slice.get_copy_int(rt borrow values, 0, 1, -7);
+  stdio.stdout.write(exclusive.size);
+  return missing.unwrap_or(0);
+}

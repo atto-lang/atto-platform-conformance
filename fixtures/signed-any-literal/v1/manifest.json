@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "scope": "signed-scalar-literals-in-bounded-monomorphic-Any-v1",
+  "title": "AttoLang negative numeric literals and static Any type guards",
+  "notes": [
+    "Language expectations; NO real compiler/backend execution is claimed by this registry.",
+    "Rust/Wasm browser currently implements bounded static scalar Any specialization only, not general runtime Any, boxing or dynamic tags.",
+    "This test suite is independent conformance target data; native execution, diagnostic matching and fail-closed artifact checks must be performed by each backend.",
+    "No private compiler sources, artifacts, or Git objects are copied to other organizations in this conformance suite."
+  ],
+  "referenceSource": {
+    "repo": "atto-lang/atto-source.rs",
+    "pullRequest": 508,
+    "headAtAuthoring": "1711c978d4e4cd053c4934c3b18e5d5198786157",
+    "status": "DRAFT_UNTESTED"
+  },
+  "backendEvidence": {
+    "rs-browser-wasm": "NOT_EXECUTED",
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED"
+  },
+  "actualGuestExecution": false,
+  "backendParityCertified": false,
+  "cases": [
+    {
+      "id": "signed-minus-42",
+      "file": "signed-minus-42.atto",
+      "sourceGitBlobSha1": "3f0445c5c38d5ee566794abdad1e77a15f3a087d",
+      "expect": "accept",
+      "guestMainI64": "42"
+    },
+    {
+      "id": "signed-minus-zero",
+      "file": "signed-minus-zero.atto",
+      "sourceGitBlobSha1": "822a50b6cd81b278ffa5655cb76e3d091d138ab5",
+      "expect": "accept",
+      "guestMainI64": "42"
+    },
+    {
+      "id": "signed-i64-min",
+      "file": "signed-i64-min.atto",
+      "sourceGitBlobSha1": "047db405ba7555476d949ff5129cd8bb677e12be",
+      "expect": "accept",
+      "guestMainI64": "42"
+    },
+    {
+      "id": "signed-binary",
+      "file": "signed-binary.atto",
+      "sourceGitBlobSha1": "ced7eb7e6b8a45dbdb60d8016cc51cd18c321ea7",
+      "expect": "accept",
+      "guestMainI64": "42"
+    },
+    {
+      "id": "signed-float",
+      "file": "signed-float.atto",
+      "sourceGitBlobSha1": "0f47b927a2f8f42193c03283a77f67e96830de8f",
+      "expect": "accept",
+      "guestMainI64": "42"
+    },
+    {
+      "id": "signed-negative-is-not-positive",
+      "file": "signed-negative-is-not-positive.atto",
+      "sourceGitBlobSha1": "f711d9d3a552562bf5d9ebe9ebbd414f93bf4204",
+      "expect": "accept",
+      "guestMainI64": "42"
+    },
+    {
+      "id": "reject-signed-computed",
+      "file": "reject-signed-computed.atto",
+      "sourceGitBlobSha1": "7f37a2e94418cc2a09aecd5a9d408cdd4de78ec6",
+      "expect": "reject",
+      "diagnosticCode": "E_UNSUPPORTED_TYPE",
+      "artifactExpected": false
+    },
+    {
+      "id": "reject-signed-parenthesized",
+      "file": "reject-signed-parenthesized.atto",
+      "sourceGitBlobSha1": "6f8c8fea4e41f2c46c79ca95b66d04ca8d0529ff",
+      "expect": "reject",
+      "diagnosticCode": "E_UNSUPPORTED_TYPE",
+      "artifactExpected": false
+    },
+    {
+      "id": "reject-signed-bool",
+      "file": "reject-signed-bool.atto",
+      "sourceGitBlobSha1": "3bb96408390353fc518b7ae9612c30120132e5bd",
+      "expect": "reject",
+      "diagnosticCode": "E_UNSUPPORTED_TYPE",
+      "artifactExpected": false
+    },
+    {
+      "id": "reject-signed-i64-underflow",
+      "file": "reject-signed-i64-underflow.atto",
+      "sourceGitBlobSha1": "a0a223639879abf4149788e2b9541425af1cebc6",
+      "expect": "reject",
+      "diagnosticCode": "E_INTEGER_RANGE",
+      "artifactExpected": false
+    }
+  ]
+}

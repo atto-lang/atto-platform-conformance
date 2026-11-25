@@ -1,0 +1,11 @@
+// SOURCE-ONLY CONTRACT: export kind must agree with the local declaration.
+// expect: REJECT, diagnostic: EXPORT_KIND_MISMATCH, no output artifact.
+export pub actor Foo;
+define class Foo as
+  pub value(): int {
+    return 42;
+  }
+end
+pub fnc main(): int {
+  return 0;
+}

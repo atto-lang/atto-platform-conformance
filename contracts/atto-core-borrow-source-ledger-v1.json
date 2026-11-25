@@ -1,0 +1,169 @@
+{
+  "schema": "atto-core-borrow-source-ledger-v1",
+  "date": "2026-11-22",
+  "contract_git_blob": "a6e35b7605c758559c9bdc094aacde152be7f2c0",
+  "authority": "read-only historical source-model snapshot, not a current CI/live head or native compiler proof",
+  "scope": "bounded scalar range/slot arithmetic; typed borrow checking must occur in compiler MIR",
+  "compiler_negative_gates_authored": {
+    "llvm": {
+      "native_alias_cases": 144,
+      "native_task_rejections": 8,
+      "status": "NOT_EXECUTED"
+    },
+    "java": {
+      "integrated_ownership_junit_methods": 4,
+      "status": "NOT_EXECUTED"
+    }
+  },
+  "backends": [
+    {
+      "backend": "atto",
+      "source_policy": "NOT_AUDITED",
+      "source_model_vectors": 0,
+      "mutation_negative_cases": 0,
+      "source_commit_snapshot": null,
+      "source_blob_snapshot": null,
+      "compiler_owned_loan_proof": "NOT_EXECUTED",
+      "native_guest": "NOT_EXECUTED",
+      "executed_runner_steps": 0,
+      "compiler_mir_provenance": null,
+      "pr": null
+    },
+    {
+      "backend": "cranelift",
+      "source_policy": "SOURCE_MODEL_ONLY",
+      "source_model_vectors": 64,
+      "mutation_negative_cases": 7,
+      "source_commit_snapshot": "31180c15af58dbe7a2bc0be7884a4e458f472d70",
+      "source_blob_snapshot": "1256a02e0003bfd4d453797e5eb6217950a52631",
+      "compiler_owned_loan_proof": "NOT_EXECUTED",
+      "native_guest": "NOT_EXECUTED",
+      "executed_runner_steps": 0,
+      "compiler_mir_provenance": null,
+      "pr": "https://github.com/atto-lang/atto-source.cranelift/pull/93"
+    },
+    {
+      "backend": "forge",
+      "source_policy": "SOURCE_MODEL_ONLY",
+      "source_model_vectors": 64,
+      "mutation_negative_cases": 7,
+      "source_commit_snapshot": "512e70a20da562c1692de79973fa24229ce0bdd6",
+      "source_blob_snapshot": "381233baac7f245d8338830e0d200050711a19d6",
+      "compiler_owned_loan_proof": "NOT_EXECUTED",
+      "native_guest": "NOT_EXECUTED",
+      "executed_runner_steps": 0,
+      "compiler_mir_provenance": null,
+      "pr": "https://github.com/atto-lang/atto-source.forge/pull/221"
+    },
+    {
+      "backend": "hdl",
+      "source_policy": "NOT_AUDITED",
+      "source_model_vectors": 0,
+      "mutation_negative_cases": 0,
+      "source_commit_snapshot": null,
+      "source_blob_snapshot": null,
+      "compiler_owned_loan_proof": "NOT_EXECUTED",
+      "native_guest": "NOT_EXECUTED",
+      "executed_runner_steps": 0,
+      "compiler_mir_provenance": null,
+      "pr": null
+    },
+    {
+      "backend": "java",
+      "source_policy": "SOURCE_MODEL_ONLY",
+      "source_model_vectors": 64,
+      "mutation_negative_cases": 7,
+      "source_commit_snapshot": "d31ecc03d0798869aea7414e9716e2652d08778d",
+      "source_blob_snapshot": "bb283c595eaf64077ca46317915c4f6103dc52ce",
+      "compiler_owned_loan_proof": "NOT_EXECUTED",
+      "native_guest": "NOT_EXECUTED",
+      "executed_runner_steps": 0,
+      "compiler_mir_provenance": null,
+      "pr": "https://github.com/atto-lang/atto-source.java/pull/1756"
+    },
+    {
+      "backend": "js",
+      "source_policy": "SOURCE_MODEL_ONLY",
+      "source_model_vectors": 64,
+      "mutation_negative_cases": 7,
+      "source_commit_snapshot": "e91bf5122f90646b78d25174c28e9d97f5e7d210",
+      "source_blob_snapshot": "03bbb4b57e0a8fde82a47843804c2413535d8634",
+      "compiler_owned_loan_proof": "NOT_EXECUTED",
+      "native_guest": "NOT_EXECUTED",
+      "executed_runner_steps": 0,
+      "compiler_mir_provenance": null,
+      "pr": "https://github.com/atto-lang/atto-source.js/pull/134"
+    },
+    {
+      "backend": "llvm",
+      "source_policy": "SOURCE_MODEL_ONLY",
+      "source_model_vectors": 64,
+      "mutation_negative_cases": 7,
+      "source_commit_snapshot": "91a84e4201c98b77eff12bb8df397eee544a508c",
+      "source_blob_snapshot": "66cd79d00875f59e988140b40650ab13c10a563c",
+      "compiler_owned_loan_proof": "NOT_EXECUTED",
+      "native_guest": "NOT_EXECUTED",
+      "executed_runner_steps": 0,
+      "compiler_mir_provenance": null,
+      "pr": "https://github.com/atto-lang/atto-source.llvm/pull/883"
+    },
+    {
+      "backend": "net",
+      "source_policy": "SOURCE_MODEL_ONLY",
+      "source_model_vectors": 64,
+      "mutation_negative_cases": 7,
+      "source_commit_snapshot": "06707a3947b1bde50a7b5ccfae014a4338512375",
+      "source_blob_snapshot": "ea99208eb3936a2e46b8c36750709b95672793d1",
+      "compiler_owned_loan_proof": "NOT_EXECUTED",
+      "native_guest": "NOT_EXECUTED",
+      "executed_runner_steps": 0,
+      "compiler_mir_provenance": null,
+      "pr": "https://github.com/atto-lang/atto-source.net/pull/209"
+    },
+    {
+      "backend": "realtime",
+      "source_policy": "NOT_AUDITED",
+      "source_model_vectors": 0,
+      "mutation_negative_cases": 0,
+      "source_commit_snapshot": null,
+      "source_blob_snapshot": null,
+      "compiler_owned_loan_proof": "NOT_EXECUTED",
+      "native_guest": "NOT_EXECUTED",
+      "executed_runner_steps": 0,
+      "compiler_mir_provenance": null,
+      "pr": null
+    },
+    {
+      "backend": "rs",
+      "source_policy": "SOURCE_MODEL_ONLY",
+      "source_model_vectors": 64,
+      "mutation_negative_cases": 7,
+      "source_commit_snapshot": "b7eb57a4c75d724cefc040706439704bba89af92",
+      "source_blob_snapshot": "b3ce766a59e4811dd9137d29286204e834d0509a",
+      "compiler_owned_loan_proof": "NOT_EXECUTED",
+      "native_guest": "NOT_EXECUTED",
+      "executed_runner_steps": 0,
+      "compiler_mir_provenance": null,
+      "pr": "https://github.com/atto-lang/atto-source.rs/pull/538"
+    },
+    {
+      "backend": "wasm",
+      "source_policy": "SOURCE_MODEL_ONLY",
+      "source_model_vectors": 64,
+      "mutation_negative_cases": 7,
+      "source_commit_snapshot": "01a6552a481a23cd9de2e14fca857e698a3b834c",
+      "source_blob_snapshot": "9d1f56a48a970d6e164243561e803f55c5fcf5a1",
+      "compiler_owned_loan_proof": "NOT_EXECUTED",
+      "native_guest": "NOT_EXECUTED",
+      "executed_runner_steps": 0,
+      "compiler_mir_provenance": null,
+      "pr": "https://github.com/atto-lang/atto-source.wasm/pull/269"
+    }
+  ],
+  "carrier_admission": "NO_PRIVATE_SOURCE_TRANSFER; source-side approval and verified protected carrier required",
+  "evidence_denial": [
+    "no model-only or C++/Java parser-only check can mint a loan",
+    "no queued or 0-step run counts as execution",
+    "no exact source SHA can substitute for compiler-generated MIR and executed guest results"
+  ]
+}

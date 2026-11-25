@@ -1,0 +1,15 @@
+// BCV1-015 copy_deep pass: actual bounded flat-class compiler path already merged in #265.
+// expect-exit: 42
+// java: rejects
+define class Parcel as
+  pub let int value = 42;
+end
+pub fnc main(): int {
+  let original = new Parcel();
+  let detached = copy!! original;
+  block {
+    val writer = borrow! mut detached;
+    writer.value = 99;
+  }
+  return original.value;
+}
