@@ -1,0 +1,43 @@
+name: std/time 11-backend candidate contract and anti-forgery gate
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/std-time-parity-v1.yml'
+      - 'fixtures/std-time-parity-v1/**'
+      - 'fixtures/task-timer-hard-rt-v1/**'
+      - 'fixtures/async-await-task-timers-v1/**'
+      - 'test/std-time-parity-v1.test.mjs'
+      - 'test/task-timer-hard-rt-v1.test.mjs'
+      - 'test/async-await-task-timers-v1.test.mjs'
+  push:
+    branches:
+      - 'feat/task-timers-hard-rt-contract-20261110'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  candidate-contract-not-guest:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - name: Checkout only this source repository; no external repo token
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify exact local source revision
+        run: |
+          git rev-parse HEAD
+          git rev-parse 'HEAD^{tree}'
+          git status --porcelain
+      - name: Candidate contract/model tests (NOT Atto guest execution)
+        run: |
+          node --test \
+            test/std-time-parity-v1.test.mjs \
+            test/task-timer-hard-rt-v1.test.mjs \
+            test/async-await-task-timers-v1.test.mjs
+      - name: Report source-only scope
+        run: echo 'STD_TIME_SOURCE_ONLY_NOT_GUEST_PARITY'

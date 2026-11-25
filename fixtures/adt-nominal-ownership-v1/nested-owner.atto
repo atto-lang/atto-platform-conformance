@@ -1,0 +1,12 @@
+define enum Inner as
+  Ready = 1
+end
+define enum Outer as
+  Wrapped: Inner = 1
+end
+
+pub fnc main(): void {
+  val Outer value = Outer.Wrapped(Inner.Ready());
+  stdio.println(value eq Outer.Wrapped(Inner.Ready()));
+  return;
+}

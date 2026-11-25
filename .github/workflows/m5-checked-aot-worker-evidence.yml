@@ -1,0 +1,32 @@
+name: M5 checked native compiler and async worker observed CI receipt
+on:
+  push:
+    branches: [evidence/m5-checked-aot-worker-memory-20261107]
+  pull_request:
+    paths:
+      - 'evidence/m5/checked-actor-native-and-worker-20261107.json'
+      - 'tests/test_m5_checked_aot_worker_evidence.py'
+      - '.github/workflows/m5-checked-aot-worker-evidence.yml'
+permissions:
+  contents: read
+jobs:
+  historical-observed-record:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact source commit
+        env:
+          EXPECTED: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED"
+          git diff --quiet HEAD --
+      - name: Run 20 exact-run and unearned-release-gate negative checks
+        run: python3 -m unittest discover -s tests -p test_m5_checked_aot_worker_evidence.py -v
+      - name: Evidence scope
+        run: |
+          echo 'REFERENCE_RECORD_ONLY_NOT_SIGNED_ATTESTATION'
+          echo 'Native worker concurrency observed but 8MiB managed-heap sustainable release bound NOT_QUALIFIED'

@@ -24,11 +24,54 @@ const expectedRepositories=Object.freeze({
   asic:"ores-truffle-oreslang/oreslang-platform.asic"
 });
 
+/* v1 is a closed-world contract. Validate the policy itself, not merely the
+ * receipts: otherwise an edited registry can misrepresent a promotion gate. */
+const expectedTargetClasses=Object.freeze({
+  mobile:"mobile-native",
+  desktop:"desktop-native",
+  embedded:"freestanding-mcu",
+  iot:"iot-gateway",
+  fpga:"fpga",
+  asic:"asic"
+});
+const expectedPromotionRules=Object.freeze({
+  all:["exact-head","executed-steps","target-artifact-digest"],
+  "abi-link":["abi-linked"],
+  "compiler-guest":["abi-linked","compiler-produced","compiler-source-revision","compiler-binary-digest","not-host-reference-only"],
+  "target-execution":["target-executed"],
+  "physical-hardware":["physical-hardware-evidence"]
+});
+const expectedNonEvidence=Object.freeze([
+  "zero-step-workflow",
+  "queued-workflow",
+  "host-stub-for-compiler-guest",
+  "declared-source-sha-without-binary-provenance",
+  "documentation-only-claim"
+]);
+function sameOrderedStrings(value,expected) {
+  return Array.isArray(value) && value.length===expected.length &&
+    value.every((part,index)=>part===expected[index]);
+}
+function exactObjectKeys(value,expected) {
+  if(!value || typeof value!=="object" || Array.isArray(value))
+    return false;
+  const actual=Object.keys(value).sort();
+  const wanted=[...expected].sort();
+  return sameOrderedStrings(actual,wanted);
+}
+const expectedContractKeys=Object.freeze([
+  "schemaVersion","contract","stageOrder","platforms","promotionRules","nonEvidence"
+]);
+const expectedPlatformKeys=Object.freeze(["repository","targetClass"]);
+
+
 function validateContractV1(contract) {
   const errors=[];
   if(!contract || contract.schemaVersion!==1 ||
      contract.contract!=="oreslang.platform-capability/1")
     return ["unsupported or missing contract"];
+  if(!exactObjectKeys(contract,expectedContractKeys))
+    errors.push("contract top-level field registry does not match v1");
   if(!Array.isArray(contract.stageOrder) ||
      contract.stageOrder.length!==expectedStages.length ||
      contract.stageOrder.some((value,index)=>value!==expectedStages[index]))
@@ -41,7 +84,24 @@ function validateContractV1(contract) {
   for(const [name,repo] of Object.entries(expectedRepositories)) {
     if(contract.platforms?.[name]?.repository!==repo)
       errors.push(`contract repository mismatch for ${name}`);
+    if(contract.platforms?.[name]?.targetClass!==expectedTargetClasses[name])
+      errors.push(`contract targetClass mismatch for ${name}`);
+    if(!exactObjectKeys(contract.platforms?.[name],expectedPlatformKeys))
+      errors.push(`contract platform fields mismatch for ${name}`);
   }
+  const rules=contract.promotionRules;
+  const actualRuleKeys=rules && typeof rules==="object" && !Array.isArray(rules)
+    ? Object.keys(rules).sort() : [];
+  const expectedRuleKeys=Object.keys(expectedPromotionRules).sort();
+  if(!sameOrderedStrings(actualRuleKeys,expectedRuleKeys)) {
+    errors.push("contract promotionRules keys do not match v1");
+  }
+  for(const [stage,expected] of Object.entries(expectedPromotionRules)) {
+    if(!sameOrderedStrings(rules?.[stage],expected))
+      errors.push(`contract promotionRules mismatch for ${stage}`);
+  }
+  if(!sameOrderedStrings(contract.nonEvidence,expectedNonEvidence))
+    errors.push("contract nonEvidence policy does not match v1");
   return errors;
 }
 
@@ -134,7 +194,7 @@ if(invoked) {
       for(const error of result.errors) console.error(`platform receipt: ${error}`);
       process.exit(1);
     }
-    console.log("platform capability receipt: PASS");
+    console.log("platform capability receipt: PASS (SCHEMA_ONLY; NOT_AUTHENTICATED; independent CI/artifact review required)");
   } catch(error) {
     console.error(`platform receipt: ${error instanceof Error ? error.message : String(error)}`);
     process.exit(1);
