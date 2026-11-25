@@ -1,0 +1,128 @@
+{
+  "schema": "oreslang.option-result-trap.modular/v2",
+  "status": "authored_not_executed",
+  "backends": [
+    "java",
+    "llvm",
+    "wasm",
+    "cranelift",
+    "net"
+  ],
+  "normative_contract": "ores-truffle-oreslang/oreslang-source.java:docs/TRAP.md",
+  "cases": [
+    {
+      "id": "ORT2-OPTION_SCALAR",
+      "path": "fixtures/option-result-trap/v2/option_scalar.ores",
+      "kind": "guest_stdout",
+      "assertion_count": 10,
+      "assertions": [
+        "some_zero_tag",
+        "some_zero_payload",
+        "none_tag",
+        "none_fallback",
+        "some_false_tag",
+        "some_false_payload",
+        "nested_some_none_tag",
+        "nested_some_none_inner",
+        "nested_outer_none",
+        "nested_value"
+      ],
+      "expected_stdout": "ORT2:option_scalar:1111111111:END"
+    },
+    {
+      "id": "ORT2-RESULT_SCALAR",
+      "path": "fixtures/option-result-trap/v2/result_scalar.ores",
+      "kind": "guest_stdout",
+      "assertion_count": 10,
+      "assertions": [
+        "result_ok_tag",
+        "result_ok_payload",
+        "result_err_tag",
+        "result_err_fallback",
+        "nested_outer_ok",
+        "nested_inner_err",
+        "ok_false_tag",
+        "ok_false_payload",
+        "ok_zero_tag",
+        "ok_zero_payload"
+      ],
+      "expected_stdout": "ORT2:result_scalar:1111111111:END"
+    },
+    {
+      "id": "ORT2-TRAP_SCALAR",
+      "path": "fixtures/option-result-trap/v2/trap_scalar.ores",
+      "kind": "guest_stdout",
+      "assertion_count": 7,
+      "assertions": [
+        "trap_value_some",
+        "trap_value_payload",
+        "trap_absent_outer",
+        "trap_absent_inner",
+        "trap_present_outer",
+        "trap_present_payload",
+        "trap_void_some"
+      ],
+      "expected_stdout": "ORT2:trap_scalar:1111111:END"
+    },
+    {
+      "id": "ORT2-TRAP_RESULT_DATA",
+      "path": "fixtures/option-result-trap/v2/trap_result_data.ores",
+      "kind": "guest_stdout",
+      "assertion_count": 5,
+      "assertions": [
+        "error_data_outer_some",
+        "error_data_inner_err",
+        "success_outer_some",
+        "success_inner_ok",
+        "success_inner_payload"
+      ],
+      "expected_stdout": "ORT2:trap_result_data:11111:END"
+    },
+    {
+      "id": "ORT2-TRAP_CAST",
+      "path": "fixtures/option-result-trap/v2/trap_cast.ores",
+      "kind": "guest_stdout",
+      "assertion_count": 2,
+      "assertions": [
+        "cast_failure_none",
+        "cast_success_some"
+      ],
+      "expected_stdout": "ORT2:trap_cast:11:END"
+    },
+    {
+      "id": "ORT2-NEG-NO_OPTION_TO_RESULT",
+      "path": "fixtures/option-result-trap/v2/negative/no_option_to_result.ores",
+      "kind": "compile_reject",
+      "expected_diagnostic_category": "type",
+      "must_not_launch_guest": true
+    },
+    {
+      "id": "ORT2-NEG-NO_RESULT_TO_OPTION",
+      "path": "fixtures/option-result-trap/v2/negative/no_result_to_option.ores",
+      "kind": "compile_reject",
+      "expected_diagnostic_category": "type",
+      "must_not_launch_guest": true
+    },
+    {
+      "id": "ORT2-NEG-NO_NESTED_OPTION_FLATTEN",
+      "path": "fixtures/option-result-trap/v2/negative/no_nested_option_flatten.ores",
+      "kind": "compile_reject",
+      "expected_diagnostic_category": "type",
+      "must_not_launch_guest": true
+    },
+    {
+      "id": "ORT2-NEG-NO_NESTED_RESULT_FLATTEN",
+      "path": "fixtures/option-result-trap/v2/negative/no_nested_result_flatten.ores",
+      "kind": "compile_reject",
+      "expected_diagnostic_category": "type",
+      "must_not_launch_guest": true
+    },
+    {
+      "id": "ORT2-NEG-NO_TRAP_RESULT_FLATTEN",
+      "path": "fixtures/option-result-trap/v2/negative/no_trap_result_flatten.ores",
+      "kind": "compile_reject",
+      "expected_diagnostic_category": "type",
+      "must_not_launch_guest": true
+    }
+  ]
+}

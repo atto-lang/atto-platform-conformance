@@ -1,0 +1,6 @@
+// PRELUDE V1 CANDIDATE: err_ambiguous; profile=core; expected=compile_reject
+// Not an executed guest or compiler receipt.
+pub fnc main(): int {
+  val failure = Err("bad");
+  return 42;
+}

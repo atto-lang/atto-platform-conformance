@@ -735,7 +735,7 @@ mod tests {
         symlink(&backing, &policy).expect("swap to symlink of identical inode");
         let err = read_policy_after_stat(&policy, &before)
             .expect_err("O_NOFOLLOW must deny symlink-to-same-inode substitution");
-        assert!(err.starts_with("policy open failed:"), "{err}");
+        assert!(err.starts_with("policy openat2 denied"), "{err}");
         fs::remove_dir_all(&root).expect("remove test root");
     }
 
