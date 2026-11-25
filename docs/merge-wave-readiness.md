@@ -4,23 +4,29 @@ This is a **read-only provider evidence checker**, not a merging bot or branch-p
 
 Run with Node.js 22+ and a read-capable scoped GitHub token:
 
-    GITHUB_TOKEN=<token> node bin/merge-wave-readiness.mjs evidence/merge-wave-20261107-public-prs.json
+    GITHUB_TOKEN=<token> node bin/merge-wave-readiness.mjs evidence/merge-wave-20261111-mainline-prs.json
     node --test tests/merge-wave-*.test.mjs
 
 The tool has only GET GitHub API calls. It exits nonzero on unknown or drifted PR heads, base branches, changes-requested reviews, stale/self approvals, draft/dirty PRs, runner_id=0, steps=[] or null, absent required test-step names, failed/pending CI and unmerged dependencies. A successful setup step is never a substitute for an actual required test step.
 
 **Output is advisory only.** Even a clean report always has mergeAuthorized=false. Inspect branch rulesets, CODEOWNERS, security holds, approvals and discussion threads before any merge. A static source-head/CI snapshot is not a live deployment proof or a guest parity proof.
 
+## Current main-targeted wave (November 11, 2026)
+
+The active manifest pins five distinct `main` candidates spanning three public repositories: Website #91/#92/#93, consolidated Sublime #162, and consolidated CLI #176. The immutable head, main-base and actual executed workflow/job/step names below were checked against authenticated GitHub. They are **NOT** evidence of independent approval, code-owner authority, or enforced protection: latest readback found all five without a genuinely independent `APPROVED` review, Sublime #162 in DRAFT, and all three `main` branches unprotected without rulesets.
+
+A reviewer request to `@ORESoftware` is not proof of separate trust-domain control. CLI DRAFT #158 proposes CODEOWNERS with this unresolved identity and cannot be promoted as-is. Administrator remediation is tracked at [CLI #163](https://github.com/ores-truffle-oreslang/oreslang-cli/issues/163); wave provenance and agent claims at [conformance #582](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/582). Never self-approve, waive source-owned CI, merge to a temporary parent, export private LLVM source, or treat this read-only checker as merge authorization.
+
 ## Five-PR merge procedure
 
 1. Coordinate exclusive editing and review in [conformance issue #582](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/582). An existing GitHub review request does not count as approval.
 2. Confirm all checks and independently submitted approvals after the final code changes. The connected the1mills account cannot self-approve its own PRs.
-3. Merge website #91 then #92, rechecking target main and semantic changes after each merge.
-4. Merge Sublime #142, preserving symlink destination restrictions; independently reconcile overlapping #143 before landing it.
-5. Merge CLI #153 first. CLI #154 is stacked on #153, must be retargeted to main, semantically rechecked, and have fresh exact-head CI plus valid independent review before merging.
+3. Revalidate Website #91, then #92, then #93 against the new base after each mainline merge, including full review and exact-head CI applicability.
+4. Revalidate consolidated Sublime #162; require independent review and executed exact-head CI before promoting this DRAFT. Do not double-count superseded publisher PRs.
+5. Revalidate main-targeted CLI #176; root-signed trust-registry CLI #154 is separate and must not be silently counted in this five-PR wave.
 6. Use GitHub's expected-head-SHA precondition for every merge call, count only confirmed merges to main with returned SHAs, and stop if a head or base changes unexpectedly.
 
-The manifest is deliberately pinned to the original 2026-11-07 wave. Base SHAs will become stale as main advances: refresh from authenticated GitHub after every merge, not by suppressing gate errors.
+The active advisory manifest is `evidence/merge-wave-20261111-mainline-prs.json` (Website #91/#92/#93, Sublime #162, CLI #176). The older `evidence/merge-wave-20261107-public-prs.json` is preserved as **historical evidence** of a different, partly stacked queue. Both are pinned, non-authorizing inputs. Main-base SHA pins must be refreshed from authenticated GitHub after each verified merge, not by suppressing gate errors.
 
 ## Known external blockers
 
@@ -124,3 +130,29 @@ The governance evaluator now independently requires `name=main`, `protected=true
 **Administrator action:** Independently configure protected `main` with required independent review, CODEOWNERS, stale-review dismissal, administrator enforcement, strict executed status checks and no bypass, as tracked by [#170](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/170). Obtain supported read-only policy verification and resolve GitHub Actions admission separately under [#315](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/315). Do not export private sources or make private repositories public to work around unsupported rulesets.
 
 **Latest test evidence:** 287/287 test bodies passed in the **isolated V8 harness**, including the earlier 272 and 15 new branch-state, base-move and partial-provider-proof controls. This is **not** a native Node or hosted exact-head run. Verify with `npm test` under Node 22 on a trusted runner after admission is restored. Even a passing advisory never authorizes merging.
+
+
+## Read-only post-merge integration attestation (2026-11-08)
+
+After **actual authorized mainline merges**, invoke the second CLI:
+
+    GITHUB_TOKEN=<read-capable-token> node bin/merge-wave-postmerge.mjs path/to/pinned-postmerge.json
+
+Do not invent merge SHAs, fabricate a sample "completed" five-PR manifest, or run this as a substitute for independent reviews and branch rules. A valid manifest has 1–20 entries. A five-merge report only qualifies if **at least five individually verified merges span at least three distinct repositories**. Each entry must contain:
+
+- \`repo\` and \`number\` (the actual GitHub repository and original PR)
+- \`expectedSourceHead\` (the exact reviewed PR source head)
+- \`expectedMergeCommit\` (a **separately observed** exact 40-hex \`merge_commit_sha\` from the merged PR)
+- \`expectedMergeTree\` (the root \`commit.tree.sha\` fetched for that exact merge commit)
+- \`requiredPostMergeWorkflows\` (at least one pinned \`workflowId\`, \`workflowName\`, \`jobName\`, \`testStepName\` that must execute successfully in a **push** run on the currently observed \`main\` SHA)
+- For stacked dependencies, \`dependsOn\` and \`expectedParentHead\` matching another entry in the same manifest. The parent's completed/verified merge timestamp must be strictly **earlier** than the child's; failures propagate transitively.
+
+The verifier checks the immutable merged PR metadata and source head, \`closed + merged\` state, merge SHA, merge tree, target \`main\`, live \`main.protected=true\`, and that the merge commit is an ancestor of the current \`main\` HEAD. It calls the real GitHub \`compare/{mergeCommit}...{mainHead}\` REST endpoint and requires matching \`base_commit.sha\` plus \`merge_base_commit.sha\`, consistent ahead/identical counts and \`behind_by=0\`. **GitHub REST's compare response may not contain \`head_commit\`; its absence is not evidence of failure.** The readback also requires the current main commit tree, plus an unchanged main branch and PR snapshot after evidence retrieval.
+
+The same exact-main \`push\` run must have the pinned workflow identity, current main head/repository/branch, correct run attempt, a real admitted runner, a completed successful named test step, and no failed/runnerless jobs. Absent or duplicated runs, zero-step jobs, stale attempts, foreign CI repositories and missing steps are blockers. The result records \`sourceHead\`, \`mergeCommit\`, \`mergeTree\`, \`mainHead\`, \`mainTree\`, \`mergedAt\` and blockers; \`mergeAuthorized=false\` **always**. It uses a read-only GitHub client with no mutation methods; exceptions are converted to sanitized fail-closed evidence blockers.
+
+**Semantic boundary:** A squash/rebase merge can produce a different tree than the original PR head; this checker does not infer byte-identical integration or semantic correctness. Source review, exact-head PR CI, actual required approvals, CODEOWNERS/security gates and any conflict resolutions must be validated separately before merging.
+
+**Original proposed merge-wave order:** website #91 then #92, Sublime #142, CLI #153 then retarget/retest/re-review stacked CLI #154 against \`main\`. Never double-count overlapping main-targeted alternatives such as CLI #176 (integrated stack) or Sublime #159 (combined package hardening) alongside their constituent PRs; coordinate in issue #582 before selecting the five. Until successful mainline merges exist, there is **no legitimate post-merge receipt** for these entries.
+
+This change adds 52 focused \`node:test\` cases on top of the previous 287: ancestry, source SHA/merged tree, main branch races, exact-main push job execution, replay and zero-step negatives, and parent dependencies. The **339/339 test-body result** was obtained in an isolated JavaScript harness with compatibility shims, **not hosted or native Node 22 execution of the complete repository**. The first-party Node 22 workflow now requires at least 339 executed passing merge-wave cases before emitting a source-head/tree-bound, **non-authorizing** test receipt. Real private Actions admission remains blocked (#315); live main protection and policy access remain blocked (#170).
