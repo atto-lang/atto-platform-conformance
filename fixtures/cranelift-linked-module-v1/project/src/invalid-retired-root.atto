@@ -1,0 +1,5 @@
+import increment from "+/src/lib/helpers.atto";
+
+pub fnc main(): int {
+  return increment(41);
+}
