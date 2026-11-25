@@ -362,7 +362,7 @@
         "tests/borrow_v1_guest.mjs": "22e833fabeca840a3be830c86704ced170c5aacf",
         ".github/workflows/ci.yml": "548bf0ac19384b91f412490cab95984584e1224c"
       },
-      "check": "Guarded compiler resolver and forged local-type AST regression in legacy+borrow-v1 modes; native/browser compiled guest suite emits per-case machine-readable receipts with exact source head/tree, toolchain, compiler hashes, fixture hashes, expected/actual outcomes, and zero-artifact negative witnesses.",
+      "check": "Guarded compiler resolver and forged local-type AST regression requires E_UNKNOWN_TYPE in legacy+borrow-v1 modes; native/browser compiled guest suite emits per-case machine-readable receipts with exact source head/tree, toolchain, compiler hashes, fixture hashes, expected/actual outcomes, and zero-artifact negative witnesses.",
       "compilation": "NOT_EXECUTED",
       "guest": "NOT_EXECUTED",
       "latestActions": {
@@ -383,7 +383,7 @@
         ".github/workflows/ci.yml": "68c0464969bffad4a54ddd57ca0188fecb746b37",
         "src/test/java/dev/oreslang/CoreFourGuestTest.java": "8d37869b10d4787fba17f4faa6ada50694b8db13"
       },
-      "check": "The active main CI workflow explicitly runs CoreFourGuestTest; linked core/cell borrow negatives must reject through both validate and actual LinkedProgramRunner guest-launch entrypoint before stdout. The draft-only specialized workflow is supplemental.",
+      "check": "The active main CI workflow explicitly runs CoreFourGuestTest; linked core/cell borrow negatives must reject through both validate and real guest launch via the actual LinkedProgramRunner entrypoint before stdout. The draft-only specialized workflow is supplemental.",
       "compilation": "NOT_EXECUTED",
       "guest": "NOT_EXECUTED",
       "latestActions": [
@@ -414,7 +414,7 @@
         ".github/workflows/ci.yml": "25df3d7171dc902e2eb35b5a9ac1a30c5229d7ef",
         "scripts/test-core-four-llvm-native.sh": "c3885edf7bd54d747cae23e2529205bc09cadaca"
       },
-      "check": "The active main CI workflow explicitly runs the exact-head core-four LLVM O0/O2 native guest gate and requires ownership-specific diagnostics plus zero emitted IR for use-after-take, borrow-escape and conflicting-loans.",
+      "check": "The active main CI workflow explicitly runs the exact-head core-four LLVM O0/O2 native guest gate and requires ownership-specific diagnostics plus zero emitted IR (IR=NONE) for use-after-take, borrow-escape and conflicting-loans.",
       "compilation": "NOT_EXECUTED",
       "guest": "NOT_EXECUTED",
       "latestActions": [
