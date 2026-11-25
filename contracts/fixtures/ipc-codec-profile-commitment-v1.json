@@ -1,0 +1,37 @@
+{
+  "contract": "ipc-codec-profile-commitment-v1",
+  "status": "HOST_VECTOR_CANDIDATE",
+  "spec": "https://github.com/atto-lang/atto-spec/pull/229",
+  "java": "https://github.com/atto-lang/atto-source.java/pull/1815",
+  "profile": {
+    "codec": "messagepack",
+    "version": 2,
+    "schema": "order.v1",
+    "shape_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+    "message_abi_sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+  },
+  "commitment": "4315f8e976accccee7c327178d5b1b78d22cc97236be95dc02e9de9b8e541950",
+  "negative": [
+    "codec label changed",
+    "version changed",
+    "schema changed",
+    "shape digest changed",
+    "ABI digest changed",
+    "unknown codec",
+    "zero version",
+    "LF in schema",
+    "invalid hex",
+    "denied codec",
+    "unsupported codec",
+    "unknown mask bits"
+  ],
+  "route_negative": [
+    "reuse retired epoch",
+    "skip next epoch",
+    "initial incarnation != 1",
+    "initial epoch != 1",
+    "skip incarnation",
+    "bounded tombstones exhausted"
+  ],
+  "evidence": "Java standalone two-file blob-exact host execution; all backend/guest/runtime route cases require separate receipts"
+}
