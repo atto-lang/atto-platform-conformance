@@ -1,0 +1,32 @@
+name: Import-root +/ reference contract
+on:
+  pull_request:
+    paths:
+      - 'contracts/import-root-plus-v1/**'
+      - 'tools/resolve-import-root-reference.mjs'
+      - 'tests/import-root-plus-v1.test.mjs'
+      - '.github/workflows/import-root-plus-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  reference-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact tracked source head
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          test -z "$(git status --porcelain)"
+      - name: Execute import-root reference negative tests
+        run: |
+          node --check tools/resolve-import-root-reference.mjs
+          node --test tests/import-root-plus-v1.test.mjs
