@@ -1,0 +1,5 @@
+// Expect E_SYNTAX, no guest artifact.
+pub fnc main(): int {
+    let Entry<string, int> e = "foo" => 5 => 6;
+    return 0;
+}
