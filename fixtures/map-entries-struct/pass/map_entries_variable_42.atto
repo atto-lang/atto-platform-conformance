@@ -1,0 +1,5 @@
+pub fnc main(): int {
+  val Entry<int,bool> item = Entry.of(5,true);
+  val m = Map.of_entries<int,bool>(take! item);
+  return m[5] eq true ? 42 : 0;
+}

@@ -1,0 +1,4 @@
+pub fnc main(): int {
+  val m = Map.of_entries<int,bool>(5 => true, 8 => false, 9 => true);
+  return m[5] eq true ? 42 : 0;
+}

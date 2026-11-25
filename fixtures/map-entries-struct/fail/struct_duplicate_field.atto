@@ -1,0 +1,2 @@
+define struct Point as int x; int y; end
+pub fnc main(): int {val p=Point{x:40,x:41,y:2};return 0;}
