@@ -1,0 +1,17 @@
+// expect-error: E_OWNERSHIP
+// Under-construction self is not a publishable or borrowable object.
+define class Counter as
+    pub let int value = 0;
+end
+
+fnc publish(Counter value): void { }
+
+constructor (Counter) (int initial): self {
+    publish(self);
+    self.value = initial;
+}
+
+pub fnc main(): int {
+    val c = new Counter(42);
+    return c.value;
+}

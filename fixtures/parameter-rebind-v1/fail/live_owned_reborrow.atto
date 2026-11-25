@@ -1,0 +1,11 @@
+// expect-error: E_BORROW
+define class Foo as
+    pub let int foo = 5;
+end
+
+pub fnc replace(rebind mut Foo f): int {
+    f = new Foo();
+    val z = borrow! mut f;
+    f = new Foo();
+    return z.foo;
+}

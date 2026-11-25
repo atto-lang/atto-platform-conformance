@@ -1,0 +1,106 @@
+{
+  "schema": "atto.language.previews.source-v1",
+  "evidence_class": "SOURCE_ONLY_NOT_COMPILER_EXECUTION",
+  "status": "NOT_EXECUTED",
+  "canonical_extension": ".atto",
+  "backend_status": {
+    "java": "UNVERIFIED",
+    "llvm": "UNVERIFIED",
+    "net": "UNVERIFIED",
+    "wasm": "UNVERIFIED",
+    "forge": "UNVERIFIED",
+    "rust_browser": "UNVERIFIED"
+  },
+  "compiler_receipts": [],
+  "existing_contracts": {
+    "guard": "contracts/guard-v1.json",
+    "explicit_exports": "contracts/explicit-exports-v1.json",
+    "routine_tailcalls": "contracts/tail-calls-v1.json"
+  },
+  "fixtures": [
+    {
+      "id": "guard-success",
+      "path": "fixtures/guard-v1/canonical-scalar.atto",
+      "git_blob": "c86ac476e55074031c0bcda02f5eaf3cb1399477",
+      "kind": "ACCEPT",
+      "expected_result": 42
+    },
+    {
+      "id": "guard-fallthrough-reject",
+      "path": "fixtures/guard-v1/reject-fallthrough.atto",
+      "git_blob": "1ff87aa95ed2537839347e80984c69ae46fdfa17",
+      "kind": "REJECT",
+      "diagnostic_class": "GUARD_FALLTHROUGH"
+    },
+    {
+      "id": "guard-else-reject",
+      "path": "fixtures/guard-v1/reject-else.atto",
+      "git_blob": "b2bbee98cd3b95ac19462b4efd95a2e98b469154",
+      "kind": "REJECT",
+      "diagnostic_class": "GUARD_ELSE_FORBIDDEN"
+    },
+    {
+      "id": "routine-direct",
+      "path": "fixtures/atto-language-previews-v1/routine-direct.atto",
+      "git_blob": "66d9dad98958809bae20d3608ff7f8621c1484e2",
+      "kind": "ACCEPT",
+      "expected_result": 42
+    },
+    {
+      "id": "fnc-recursive",
+      "path": "fixtures/atto-language-previews-v1/fnc-recursive.atto",
+      "git_blob": "4c07c9df1e3a4090b746e59076dea2dd7c91f887",
+      "kind": "ACCEPT",
+      "expected_result": 42
+    },
+    {
+      "id": "routine-self-reject",
+      "path": "fixtures/atto-language-previews-v1/routine-self-reject.atto",
+      "git_blob": "09b26694926ba306786ea9230bf9c8611d0b6a2a",
+      "kind": "REJECT",
+      "diagnostic_class": "RECURSIVE_ROUTINE"
+    },
+    {
+      "id": "routine-mutual-reject",
+      "path": "fixtures/atto-language-previews-v1/routine-mutual-reject.atto",
+      "git_blob": "f157ce9590d90439caaee1f269620025c5466a21",
+      "kind": "REJECT",
+      "diagnostic_class": "RECURSIVE_ROUTINE"
+    },
+    {
+      "id": "routine-value-reject",
+      "path": "fixtures/atto-language-previews-v1/routine-value-reject.atto",
+      "git_blob": "76117416e4cc96cc08d59222399687b38e035fab",
+      "kind": "REJECT",
+      "diagnostic_class": "ROUTINE_NOT_FIRST_CLASS"
+    },
+    {
+      "id": "export-forward",
+      "path": "fixtures/atto-language-previews-v1/export-forward.atto",
+      "git_blob": "4a7fe76ab77d14bee1c00176087fd116d87be09c",
+      "kind": "ACCEPT",
+      "expected_result": 42
+    },
+    {
+      "id": "export-trailing-pkg",
+      "path": "fixtures/atto-language-previews-v1/export-trailing-pkg.atto",
+      "git_blob": "1896ee7a5d1ff694ec19f4dcbca9fc2da256120f",
+      "kind": "ACCEPT",
+      "expected_result": 42
+    },
+    {
+      "id": "export-kind-reject",
+      "path": "fixtures/atto-language-previews-v1/export-kind-reject.atto",
+      "git_blob": "a7d77c52e57c966fe6211288f5d450146fc719d5",
+      "kind": "REJECT",
+      "diagnostic_class": "EXPORT_KIND_MISMATCH"
+    },
+    {
+      "id": "export-unknown-reject",
+      "path": "fixtures/atto-language-previews-v1/export-unknown-reject.atto",
+      "git_blob": "2384d5c5417719e2d7178bed576e9ac49ee4806e",
+      "kind": "REJECT",
+      "diagnostic_class": "EXPORT_UNKNOWN_TARGET"
+    }
+  ]
+}

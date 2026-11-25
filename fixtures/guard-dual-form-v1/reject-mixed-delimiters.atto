@@ -1,0 +1,7 @@
+// Reject: mixing braced failure block with postfix else/end.
+pub fnc main(): int {
+  guard true { return 0; } else
+    return 1;
+  end
+  return 42;
+}

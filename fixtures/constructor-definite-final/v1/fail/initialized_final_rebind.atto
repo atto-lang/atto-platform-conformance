@@ -1,0 +1,10 @@
+// expect-error: E_IMMUTABLE
+define class Ticket as
+    pub final int id = 7;
+    constructor(int initial) { self.id = initial; }
+    pub get_id(): int { return self.id; }
+end
+pub fnc main(): int {
+    val ticket = new Ticket(42);
+    return ticket.get_id();
+}
