@@ -244,3 +244,21 @@ test('compile infrastructure status cannot impersonate a compiler rejection',()=
     }
   }
 });
+
+test('compile-rejection hardening keeps runtime negative semantics unchanged',()=>{
+ const receipt=v2();
+ const runtime=receipt.cases.find(c=>c.failure_stage==='runtime');
+ assert.equal(runtime.compile_exit,0);
+ assert.equal(validateParityReceipt(receipt).consistent,true);
+ runtime.compile_exit=1;
+ assert.throws(()=>validateParityReceipt(receipt),/negative runtime execution/);
+});
+test('optional non-process exit remains compatible without granting attestation',()=>{
+  for(const channel of ['stdout','wasm-export','native-return','host-call']){
+    const receipt=v2(); receipt.cases[0].result_channel=channel;
+    const result=validateParityReceipt(receipt);
+    assert.equal(result.consistent,true);
+    assert.equal(result.authenticity_attested,false);
+    assert.equal(result.publicly_promotable,false);
+  }
+});
