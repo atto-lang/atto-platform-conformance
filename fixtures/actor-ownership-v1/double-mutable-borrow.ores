@@ -1,0 +1,7 @@
+// OW02 candidate: two mutable loans to the same owner are forbidden.
+fnc bad(): void {
+  let int number = 7;
+  val first = rt mut borrow number;
+  val second = rt mut borrow number;
+  return;
+}
