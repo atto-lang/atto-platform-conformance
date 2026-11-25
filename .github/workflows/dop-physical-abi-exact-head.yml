@@ -4,6 +4,8 @@ on:
     paths:
       - 'verification/data-layout-abi-v1.mjs'
       - 'verification/dop-layout-physical-certifier-v1.mjs'
+      - 'verification/dop-i64-shared-source-envelope-v1.mjs'
+      - 'test/dop-i64-shared-source-envelope-v1.test.mjs'
       - 'test/dop-layout-physical-*.test.mjs'
       - 'test/dop-layout-canonical-geometry.test.mjs'
       - '.github/workflows/dop-physical-abi-exact-head.yml'
@@ -53,7 +55,7 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
-      - name: Execute all four DOP physical ABI test files
+      - name: Execute DOP physical ABI and shared source-envelope reference test files
         shell: bash
         run: |
           set -euo pipefail
@@ -62,9 +64,11 @@ jobs:
             test/dop-layout-physical-certifier-v1.test.mjs \
             test/dop-layout-physical-certifier-snapshot.test.mjs \
             test/dop-layout-physical-metamorphic.test.mjs \
-            test/dop-layout-canonical-geometry.test.mjs
+            test/dop-layout-canonical-geometry.test.mjs \
+            test/dop-i64-shared-source-envelope-v1.test.mjs
       - name: Mark exact-head source-free boundary only after test execution
         run: |
           echo DOP_ABI_SOURCE_FREE_REFERENCE_TESTED=true
+          echo DOP_I64_COMMON_ENVELOPE_SOURCE_FREE_TESTED=true
           echo DOP_JAVA_LLVM_COMPILER_GUEST_PARITY=NOT_TESTED
           echo DOP_MERGE_OR_RELEASE_AUTHORIZATION=NOT_GRANTED
