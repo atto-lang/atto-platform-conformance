@@ -1,0 +1,15 @@
+// Non-tail callback invocation must retain its caller's routine ancestry.
+// The runtime must reject reentry, never consume a carrier stack indefinitely.
+fnc apply(Fnc<int, int> callback, int value): int {
+  return 1 + callback(value);
+}
+fnc bounce(int value): int {
+  return step(value);
+}
+routine step(int value): int {
+  return apply(bounce, value);
+}
+pub routine main(): void {
+  stdio.stdout.write(step(1));
+  return;
+}
