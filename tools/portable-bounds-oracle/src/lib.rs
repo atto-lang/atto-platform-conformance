@@ -38,11 +38,19 @@ mod tests {
                 continue;
             }
             let fields: Vec<_> = line.split('\t').collect();
-            assert_eq!(fields.len(), 7, "invalid column count on line {}", line_number + 1);
-            assert!(names.insert(fields[0]), "duplicate vector ID: {}", fields[0]);
-            let parse = |idx: usize| -> i64 {
-                fields[idx].parse::<i64>().expect("invalid i64 fixture")
-            };
+            assert_eq!(
+                fields.len(),
+                7,
+                "invalid column count on line {}",
+                line_number + 1
+            );
+            assert!(
+                names.insert(fields[0]),
+                "duplicate vector ID: {}",
+                fields[0]
+            );
+            let parse =
+                |idx: usize| -> i64 { fields[idx].parse::<i64>().expect("invalid i64 fixture") };
             let offset = parse(2);
             let stride = parse(3);
             let amount = parse(4);
@@ -61,28 +69,40 @@ mod tests {
             assert_eq!(actual, expected, "contract mismatch at {}", fields[0]);
             count += 1;
         }
-        assert!(count >= 40, "the acceptance fixture is unexpectedly truncated");
+        assert!(
+            count >= 40,
+            "the acceptance fixture is unexpectedly truncated"
+        );
     }
 
     #[test]
     fn exhaustive_small_signed_ranges_match_wide_integer_math() {
         for length in -3i64..=10 {
             for offset in -3i64..=10 {
-                assert_eq!(index(offset, length), length > 0 && offset >= 0 && offset < length);
+                assert_eq!(
+                    index(offset, length),
+                    length > 0 && offset >= 0 && offset < length
+                );
                 for amount in -3i64..=10 {
                     let expected_slice = length >= 0
-                        && offset >= 0 && amount >= 0
+                        && offset >= 0
+                        && amount >= 0
                         && (offset as i128) + (amount as i128) <= length as i128;
                     assert_eq!(slice(offset, amount, length), expected_slice);
                     for stride in -3i64..=10 {
-                        let expected_strided = length >= 0 && offset >= 0
-                            && offset <= length && stride > 0 && amount >= 0
+                        let expected_strided = length >= 0
+                            && offset >= 0
+                            && offset <= length
+                            && stride > 0
+                            && amount >= 0
                             && (amount == 0
-                                || (offset as i128)
-                                    + ((amount as i128 - 1) * stride as i128)
-                                        < length as i128);
-                        assert_eq!(strided(offset, stride, amount, length), expected_strided,
-                            "offset={offset} stride={stride} amount={amount} length={length}");
+                                || (offset as i128) + ((amount as i128 - 1) * stride as i128)
+                                    < length as i128);
+                        assert_eq!(
+                            strided(offset, stride, amount, length),
+                            expected_strided,
+                            "offset={offset} stride={stride} amount={amount} length={length}"
+                        );
                     }
                 }
             }
