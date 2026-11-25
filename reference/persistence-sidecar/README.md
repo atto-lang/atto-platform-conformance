@@ -51,3 +51,25 @@ See [the persistence RFC](../../docs/PERSISTENCE_SIDECARS_RFC.md) and [the virtu
 - Epoch fences precede persisted op-id deduplication both during queue admission and SQLite transaction commit. A stale activation may not retrieve a previously committed success receipt.
 - Tenant, actor, state and operation identifiers reject ASCII control characters, malformed Unicode surrogates and noncanonical NFC spellings.
 - Local Node 22.16 host SQLite model: **11/11 tests passed**. GitHub Actions for this exact source head failed before any recorded job steps; that run is NOT_EXECUTED for test purposes.
+
+
+## Command-index integrity and SIGKILL crash gates (November 2026)
+
+**Status: source-committed draft only.** The host-only `enqueueCommand` / `verifyCommand` protocol commits multiple events and a durable command result in one SQLite transaction, independently of actor epoch. `checkpointAndCompact` writes an epoch-fenced, stream-CAS checkpoint and prunes committed events **atomically**, retaining immutable `command_commits` records. The policy and bank-account references can restore indexed checkpoints; legacy snapshots remain excluded.
+
+A checkpoint now also writes a `checkpoint_index_manifests` row with stable SHA-256 of **all command identities and results through the checkpoint version**, their count and ordered version coverage. On recovery, the provider recomputes that digest and rejects a missing, truncated, altered or non-contiguous command index; both checkpoint and manifest were committed in the same SQLite transaction. SQLite `BEFORE UPDATE/DELETE` triggers prevent ordinary alteration or pruning of committed command records. This is integrity against accidental writes or missing rows, **not cryptographic authentication against a malicious database controller** who can drop the triggers and rewrite all tables.
+
+Recovery has two independent bounds: `maxReplayEvents` (default 65,536) for the uncompacted journal suffix, and `maxIndexedCommands` (default 262,144) for the full retained command-history integrity scan. These bounds deliberately fail closed; a scalable production system will require a reviewed Merkle/incremental index or durable archive before those limits are exceeded. The manifest is not a replacement for an explicit durable dedupe-retention policy. Checkpoints written by earlier draft schema versions without a manifest fail `COMMAND_INDEX_MANIFEST_REQUIRED` pending a safe migration; do not manufacture one without verifying historical data.
+
+**Required test command on an authorized exact-SHA runner:**
+
+```sh
+node --version
+node --disable-warning=ExperimentalWarning --test reference/persistence-sidecar/*.test.mjs
+```
+
+The 7 new `event-sourcing-sigkill.sqlite.test.mjs` cases spawn actual Node child processes against the real SQLite WAL/FULL provider and kill them at admission-only, committed-before-ACK, checkpoint-committed, checkpoint-tail-committed-before-ACK, rollback-after-trigger-abort, second-event-insert rollback, and **inside an open checkpoint transaction** using a `node:sqlite` registered function called by an `events` DELETE trigger. The last scenario must leave neither an uncommitted checkpoint nor a manifest and must preserve the prior journal after SQLite recovery. This is **process termination, not electrical power-loss testing**.
+
+As of this draft, targeted SQLite test files contain 21 checkpoint/manifest, 14 command transaction, 5 policy bridge, 7 bank, and 7 SIGKILL scenarios (**54 checked-in cases**), in addition to other existing host regression tests. **These 54 scenarios do not have an exact-head CI execution result.** The source-org Actions jobs fail before checkout/any job steps; this is not established as a test failure or proven billing exhaustion. A separate local Node 22.16 SQL probe independently verified 7 manifest/trigger/transaction assertions and 3 in-flight-SIGKILL SQLite rollback assertions, but did **not** execute these repository files. No compiled AttoLang code, trusted distributed fencing or async actor-lane I/O has been executed.
+
+A full exact-commit runner log with positive job steps and recorded tree/blob identity is mandatory before merge. No cross-organization private-source mirror without explicit destination-bound approval and SHA receipts.
