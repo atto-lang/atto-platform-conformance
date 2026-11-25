@@ -28,8 +28,8 @@ test('mutex fixture sources are present, unique and declare exact outcomes', () 
     const src = readFileSync(full,'utf8');
     if (c.feature === 'value_struct') {
       assert.match(src, /define struct Point/, 'value struct must be declared');
-      assert.match(src, /Point\\(x=1, y=2\\)/, 'struct call without new must remain valid');
-      assert.doesNotMatch(src, /new Point\\(/);
+      assert.match(src, /Point\(x=1, y=2\)/, 'struct call without new must remain valid');
+      assert.doesNotMatch(src, /new Point\(/);
     } else if (c.feature === 'constructor_unimplemented') {
       assert.match(src,/\bnew\s+Mutex\s*</, 'canonical resource class construction is explicit');
       assert.doesNotMatch(src,/\block_async\s*\(/, 'unlowered constructor case must remain without scoped runtime');
