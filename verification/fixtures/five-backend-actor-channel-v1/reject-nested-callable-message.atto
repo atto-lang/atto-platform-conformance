@@ -1,0 +1,5 @@
+// MUST REJECT: a callable hidden in nested Option/Result/List is not channel MessageData.
+// A compiler syntax error is not proof of semantic transport rejection.
+fnc bad(Channel<Option<Result<int, List<Fnc<int, int>>>>> values): void {
+  return;
+}
