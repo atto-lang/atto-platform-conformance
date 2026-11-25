@@ -1,0 +1,7 @@
+async fnc ready(): int { return 42; }
+async trap fnc work(): int { throw! new Error("before"); }
+pub async fnc main(): int {
+    val Future<Result<int, Error>> f = work();
+    val Result<int, Error> r = await f;
+    return r.is_err() ? 42 : 0;
+}

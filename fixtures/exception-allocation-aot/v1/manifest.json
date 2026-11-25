@@ -1,0 +1,383 @@
+{
+  "schema": "atto.exception-allocation-aot.guest.v1",
+  "status": "TARGET_NOT_CERTIFIED",
+  "backend_names": [
+    "atto",
+    "cranelift",
+    "forge",
+    "hdl",
+    "java",
+    "js",
+    "llvm",
+    "net",
+    "realtime",
+    "rs",
+    "wasm"
+  ],
+  "authority_refs": [
+    {
+      "path": "contracts/full-aot-executable-gates-v1.json",
+      "git_blob_sha1": "40984e89e6e44b6963e5fe77f442184baf497368"
+    },
+    {
+      "path": "contracts/aot-gc-tenant-evidence-v1.json",
+      "git_blob_sha1": "b31f8a5b86a4d9529b89cd1ff2a8b379c33d3dfa"
+    },
+    {
+      "path": "contracts/strict-guest-aot-lanes-v1.json",
+      "git_blob_sha1": "b248557221715796482b1a88831c5322d8a09284"
+    }
+  ],
+  "cases": [
+    {
+      "id": "scalar-dynamic",
+      "path": "scalar-dynamic.atto",
+      "expected": {
+        "kind": "guest_return",
+        "return_i64": "42",
+        "stdout": [],
+        "required_observations": [
+          "static_call_target",
+          "no_runtime_compile",
+          "measure_dynamic_argument_calls"
+        ],
+        "allocation_policy": {
+          "measured_region": "guest invocation after initialization; no constant folding substitute for dynamic paths",
+          "max_guest_heap_allocations": 0,
+          "require_exact_retirement": false,
+          "host_gc_disclosed": true
+        }
+      },
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "14d21301743b8e2e4d575e45692d42622e101d09"
+    },
+    {
+      "id": "inline-task",
+      "path": "inline-task.atto",
+      "expected": {
+        "kind": "guest_return",
+        "return_i64": "42",
+        "stdout": [],
+        "required_observations": [
+          "no_child_task_allocation",
+          "no_continuation_allocation",
+          "no_promise_required"
+        ],
+        "allocation_policy": {
+          "measured_region": "guest invocation after initialization; no constant folding substitute for dynamic paths",
+          "max_guest_heap_allocations": 0,
+          "require_exact_retirement": false,
+          "host_gc_disclosed": true
+        }
+      },
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "35b6ac99828f7d4a35cc2a395eeb3d75a81611fa"
+    },
+    {
+      "id": "inline-task-cooperate",
+      "path": "inline-task-cooperate.atto",
+      "expected": {
+        "kind": "guest_return",
+        "return_i64": "42",
+        "stdout": [],
+        "required_observations": [
+          "cooperation_not_suspension",
+          "no_child_task_allocation"
+        ],
+        "allocation_policy": {
+          "measured_region": "guest invocation after initialization; no constant folding substitute for dynamic paths",
+          "max_guest_heap_allocations": 0,
+          "require_exact_retirement": false,
+          "host_gc_disclosed": true
+        }
+      },
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "f0b07ad2786261a8fc23920b172e88f3c50f141a"
+    },
+    {
+      "id": "trap-scalar-unboxed",
+      "path": "trap-scalar-unboxed.atto",
+      "expected": {
+        "kind": "guest_return",
+        "return_i64": "42",
+        "stdout": [],
+        "required_observations": [
+          "unboxed_non_escaping_result",
+          "single_operand_evaluation"
+        ],
+        "allocation_policy": {
+          "measured_region": "guest invocation after initialization; no constant folding substitute for dynamic paths",
+          "max_guest_heap_allocations": 0,
+          "require_exact_retirement": false,
+          "host_gc_disclosed": true
+        }
+      },
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "0de4328578463c172f218074862f7f305fc70889"
+    },
+    {
+      "id": "trap-option-unboxed",
+      "path": "trap-option-unboxed.atto",
+      "expected": {
+        "kind": "guest_return",
+        "return_i64": "42",
+        "stdout": [],
+        "required_observations": [
+          "unboxed_non_escaping_option_result",
+          "nested_discriminants_preserved"
+        ],
+        "allocation_policy": {
+          "measured_region": "guest invocation after initialization; no constant folding substitute for dynamic paths",
+          "max_guest_heap_allocations": 0,
+          "require_exact_retirement": false,
+          "host_gc_disclosed": true
+        }
+      },
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "592db43f926796ea91433d9dea8903a74e808c31"
+    },
+    {
+      "id": "trap-result-unboxed",
+      "path": "trap-result-unboxed.atto",
+      "expected": {
+        "kind": "guest_return",
+        "return_i64": "42",
+        "stdout": [],
+        "required_observations": [
+          "unboxed_non_escaping_result",
+          "existing_result_not_wrapped"
+        ],
+        "allocation_policy": {
+          "measured_region": "guest invocation after initialization; no constant folding substitute for dynamic paths",
+          "max_guest_heap_allocations": 0,
+          "require_exact_retirement": false,
+          "host_gc_disclosed": true
+        }
+      },
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "59b2a9fa8c3548b35e97886f0ef30b159a2e5edb"
+    },
+    {
+      "id": "arithmetic-error-bounded",
+      "path": "arithmetic-error-bounded.atto",
+      "expected": {
+        "kind": "guest_return",
+        "return_i64": "42",
+        "stdout": [],
+        "required_observations": [
+          "division_by_zero_nominal_error",
+          "bounded_error_storage",
+          "no_mandatory_trace_allocation",
+          "error_payload_retirement"
+        ],
+        "allocation_policy": {
+          "measured_region": "error path including capture and retirement",
+          "max_guest_heap_allocations": null,
+          "require_exact_retirement": true,
+          "require_bounded_error_storage": true,
+          "host_gc_disclosed": true
+        }
+      },
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "e69f952c32f175355cf4f538b55b8d257b54a3d4"
+    },
+    {
+      "id": "caught-error-retirement",
+      "path": "caught-error-retirement.atto",
+      "expected": {
+        "kind": "guest_return",
+        "return_i64": "42",
+        "stdout": [],
+        "required_observations": [
+          "original_error_retired_once",
+          "no_mandatory_stack_trace_allocation"
+        ],
+        "allocation_policy": {
+          "measured_region": "guest invocation after initialization; no constant folding substitute for dynamic paths",
+          "max_guest_heap_allocations": null,
+          "require_exact_retirement": true,
+          "host_gc_disclosed": true
+        }
+      },
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "7dc1f103e0b29c5b6a9f327667a5c953bfd7ed87"
+    },
+    {
+      "id": "move-unwind-retirement",
+      "path": "move-unwind-retirement.atto",
+      "expected": {
+        "kind": "guest_return",
+        "return_i64": "42",
+        "stdout": [],
+        "required_observations": [
+          "one_parcel_allocation",
+          "source_invalidated",
+          "one_parcel_retirement",
+          "one_error_retirement"
+        ],
+        "allocation_policy": {
+          "measured_region": "guest invocation after initialization; no constant folding substitute for dynamic paths",
+          "max_guest_heap_allocations": null,
+          "require_exact_retirement": true,
+          "host_gc_disclosed": true
+        }
+      },
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "de273d89ad0dadaacecbead49b413459a101c731"
+    },
+    {
+      "id": "repeated-exception-retirement",
+      "path": "repeated-exception-retirement.atto",
+      "expected": {
+        "kind": "guest_return",
+        "return_i64": "42",
+        "stdout": [],
+        "required_observations": [
+          "all_three_errors_observed",
+          "no_retained_error_payloads",
+          "repeat_artifact_in_same_runtime"
+        ],
+        "allocation_policy": {
+          "measured_region": "guest invocation after initialization; no constant folding substitute for dynamic paths",
+          "max_guest_heap_allocations": null,
+          "require_exact_retirement": true,
+          "host_gc_disclosed": true
+        },
+        "repeat_policy": {
+          "minimum_invocations": 100000,
+          "require_live_guest_bytes_return_to_baseline": true,
+          "require_peak_and_rss_budget_declared_before_run": true
+        }
+      },
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "079aadeff4b69b3cc2737dc798cacf7ef6871503"
+    }
+  ],
+  "profiles": {
+    "source_aot": "pre-emitted source artifact, engine JIT policy disclosed",
+    "native_aot": "program-specific native artifact, no runtime compiler/interpreter/JIT fallback",
+    "zero_guest_gc": "no guest tracing collector and measured bounded deterministic reclamation",
+    "zero_process_gc": "separate actual collector and host memory proof"
+  },
+  "measurement_policy": "Zero allocation cases are prospective optimization targets for nonescaping values, not a blanket language guarantee. A null ceiling is not a pass: declare numeric bounds before execution and verify live-byte retirement. Do not count source constant folding as dynamic allocation evidence; invoke independently parameterized functions where specified. Record guest and host allocations separately."
+}

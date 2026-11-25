@@ -1,0 +1,4 @@
+fnc one(int n): int { val r = trap! (n / 0); return r.is_err() ? 1 : 0; }
+pub fnc main(): int {
+    return one(1) + one(2) + one(3) + 39;
+}

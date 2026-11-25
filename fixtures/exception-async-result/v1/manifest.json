@@ -1,0 +1,397 @@
+{
+  "schema": "atto.exception-async-result.guest.v1",
+  "status": "TARGET_NOT_CERTIFIED",
+  "backend_names": [
+    "atto",
+    "cranelift",
+    "forge",
+    "hdl",
+    "java",
+    "js",
+    "llvm",
+    "net",
+    "realtime",
+    "rs",
+    "wasm"
+  ],
+  "authority_refs": [
+    {
+      "path": "contracts/execution-context-unwind-v1.json",
+      "git_blob_sha1": "676536b204ba120de8c53469cdae382d35057036"
+    },
+    {
+      "path": "fixtures/task-blocks/v1/manifest.json",
+      "git_blob_sha1": "9d82fac7283ecd12a876256cb1ad90631d9e54f8"
+    }
+  ],
+  "cases": [
+    {
+      "id": "success-after-await",
+      "path": "success-after-await.atto",
+      "expected": {
+        "kind": "guest_return",
+        "return_i64": "42",
+        "stdout": [],
+        "required_observations": [
+          "waiter_registered",
+          "real_suspend",
+          "gate_released",
+          "same_invocation_resumed",
+          "single_result_completion"
+        ]
+      },
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "fd6fa8913cefe3a1919bc698b35b5c69dd7c911f"
+    },
+    {
+      "id": "throw-before-await",
+      "path": "throw-before-await.atto",
+      "expected": {
+        "kind": "guest_return",
+        "return_i64": "42",
+        "stdout": [],
+        "required_observations": [
+          "original_error_identity",
+          "single_result_completion",
+          "no_suspension_required"
+        ]
+      },
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "6a0c5e5c9f309ae78c111cb0b53586c2669903f5"
+    },
+    {
+      "id": "throw-after-await",
+      "path": "throw-after-await.atto",
+      "expected": {
+        "kind": "guest_return",
+        "return_i64": "42",
+        "stdout": [],
+        "required_observations": [
+          "waiter_registered",
+          "real_suspend",
+          "gate_released",
+          "same_invocation_resumed",
+          "original_error_identity",
+          "single_result_completion"
+        ]
+      },
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "32d46aac782c9f4d3940c07a61ad7d28c2d66dfe"
+    },
+    {
+      "id": "option-some-after-await",
+      "path": "option-some-after-await.atto",
+      "expected": {
+        "kind": "guest_return",
+        "return_i64": "42",
+        "stdout": [],
+        "required_observations": [
+          "waiter_registered",
+          "real_suspend",
+          "gate_released",
+          "same_invocation_resumed",
+          "ok_some_not_flattened"
+        ]
+      },
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "09d1fb177b092d8f425d4d0fb164a5a4ef5eb385"
+    },
+    {
+      "id": "option-none-after-await",
+      "path": "option-none-after-await.atto",
+      "expected": {
+        "kind": "guest_return",
+        "return_i64": "42",
+        "stdout": [],
+        "required_observations": [
+          "waiter_registered",
+          "real_suspend",
+          "gate_released",
+          "same_invocation_resumed",
+          "ok_none_not_err"
+        ]
+      },
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "91d0c52fed778f2715fa1d1fe2ee433b248c9657"
+    },
+    {
+      "id": "preserve-result-err",
+      "path": "preserve-result-err.atto",
+      "expected": {
+        "kind": "guest_return",
+        "return_i64": "42",
+        "stdout": [],
+        "required_observations": [
+          "waiter_registered",
+          "real_suspend",
+          "gate_released",
+          "same_invocation_resumed",
+          "returned_err_identity_preserved",
+          "not_exception",
+          "no_outer_result_wrap"
+        ]
+      },
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "9631331e8a3f4bbc0b8ca483ff601a49794c4b2b"
+    },
+    {
+      "id": "raise-after-await",
+      "path": "raise-after-await.atto",
+      "expected": {
+        "kind": "escaping_guest_effect",
+        "effect": "raise",
+        "message": "raised",
+        "stdout": [],
+        "required_observations": [
+          "waiter_registered",
+          "real_suspend",
+          "gate_released",
+          "same_invocation_resumed",
+          "not_err",
+          "single_terminal_completion"
+        ]
+      },
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "1dacd99c4422a4be5a1079a629cde3fa3ed1c784"
+    },
+    {
+      "id": "panic-after-await",
+      "path": "panic-after-await.atto",
+      "expected": {
+        "kind": "escaping_guest_effect",
+        "effect": "panic",
+        "message": "fatal",
+        "stdout": [],
+        "required_observations": [
+          "waiter_registered",
+          "real_suspend",
+          "gate_released",
+          "same_invocation_resumed",
+          "not_err",
+          "no_recovery",
+          "single_terminal_completion"
+        ]
+      },
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "e9826e97ffc49bd1be7e8124b9ae607d1ca1a565"
+    },
+    {
+      "id": "throw-cleanup-after-await",
+      "path": "throw-cleanup-after-await.atto",
+      "expected": {
+        "kind": "guest_return",
+        "return_i64": "42",
+        "stdout": [
+          "cleanup"
+        ],
+        "required_observations": [
+          "waiter_registered",
+          "real_suspend",
+          "gate_released",
+          "same_invocation_resumed",
+          "cleanup_before_result_completion",
+          "original_error_identity",
+          "defer_once"
+        ]
+      },
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "8a53bd68804034186995914e183b9076d1e0c812"
+    },
+    {
+      "id": "cancel-suspended-trap",
+      "path": "cancel-suspended-trap.atto",
+      "expected": {
+        "kind": "scheduled_observation",
+        "trigger": "cancel worker after real suspension",
+        "stdout": [
+          "cleanup"
+        ],
+        "forbidden_stdout": [
+          "unexpected return"
+        ],
+        "terminal": "cancelled_after_physical_cleanup",
+        "required_observations": [
+          "real_suspend",
+          "authenticated_cancel",
+          "not_err",
+          "defer_once",
+          "waiter_retired",
+          "physical_completion_after_cleanup",
+          "no_double_resume",
+          "borrowed_producer_not_cancelled"
+        ]
+      },
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "0ff193c57cb8e2c952d46320e0b4848a720dc00e"
+    },
+    {
+      "id": "borrow-across-await",
+      "path": "borrow-across-await.atto",
+      "expected": {
+        "kind": "compile_rejection",
+        "diagnostic": "borrow_across_suspension"
+      },
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "2cd3f891b74aeac7f6c9b12f91875d86e060e096"
+    },
+    {
+      "id": "retired-option-boundary",
+      "path": "retired-option-boundary.atto",
+      "expected": {
+        "kind": "compile_rejection",
+        "diagnostic": "future_result_option_type_mismatch"
+      },
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "a2cd8cf04580343378cd698340511d810e9e37b4"
+    }
+  ],
+  "syntax_status": "DESIGN_INTENT_ASYNC_TRAP_DECLARATION_ALIAS_PENDING_CANONICAL_DECISION",
+  "harness": {
+    "pending_i64": "returns a genuine pending Future<int> released to 42 after waiter observation except cancellation scenario",
+    "rule": "Only boundary scheduling hooks; guest effects, cleanup and result conversion must execute compiled source."
+  }
+}
