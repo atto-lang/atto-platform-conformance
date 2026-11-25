@@ -437,6 +437,347 @@
         "actorStackStorage",
         "actorSurvival"
       ]
+    },
+    {
+      "id": "actor-return-record-same-carrier-new-turn-denied",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "stale-physical-turn",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "actor-return-record-cross-task-handle-denied",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "foreign-task-execution",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-lexical-detached-task-copy-move-denied",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "forbidden-task-capture",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "actor-frame-scalar-tag-payload-corruption-fail-stop",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "actor-generation-poison",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-scalar-NaN-raw-bits-survive-cooperate",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "actor-env-snapshot-same-source-task-across-await",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "actor-env-snapshot-other-source-task-same-actor-denied",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "foreign-task-execution",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-env-snapshot-after-owner-retirement-denied",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "stale-task-execution",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-env-snapshot-corrupt-execution-owner-denied",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "stale-task-execution",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "actor-scalar-iterative-non-tail-call-return-pcs",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-iterative-proper-tail-100k-constant-frames",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-scalar-iterative-mutual-tail-no-jvm-recursion",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-scalar-iterative-non-tail-budget-denial",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "actor-stack-budget",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-iterative-overflow-sibling-survives",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "actor-stack-budget",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorSurvival",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-iterative-caller-operand-preservation",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "actor-scalar-iterative-pc-callee-id-corruption-fail-stop",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "actor-generation-poison",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-scalar-iterative-unsupported-reference-effect-fallback",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "unsupported-compiler-subset",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-int-bool-type-admission-must-precede-execution",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "unsupported-compiler-subset",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-val-const-parameter-rebind-rejected",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "immutable-binding-reassignment",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-scalar-synthetic-integer-literal-no-implicit-widening",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "implicit-conversion",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-forged-operand-sp-fail-stop",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "actor-generation-poison",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-mixed-primitive-tags-fail-stop",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "actor-generation-poison",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-scalar-exact-boolean-equality-condition",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-scalar-cfg-join-operand-depth-mismatch-pre-admission",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "unsupported-compiler-subset",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-cfg-join-primitive-kinds-mismatch-pre-admission",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "unsupported-compiler-subset",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-scalar-cfg-local-definite-assignment-at-branch-joins",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "uninitialized-scalar-local",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-cfg-loop-backedge-local-definite-assignment",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "uninitialized-scalar-local",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-scalar-cfg-callee-arity-and-tail-live-operands",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "invalid-scalar-call",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-cfg-ret-conditional-and-stack-overflow-typed",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "invalid-typed-stack",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-cfg-reachable-fallthrough-invalid",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "missing-return",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-cfg-noncanonical-unreachable-opcode-fields",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "invalid-bytecode-image",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
     }
   ],
   "promotion": {
@@ -540,6 +881,99 @@
     "javaCompilerReturnRecordAbiStatus": "HOST_ABI_AUTHORED_NOT_EXECUTED",
     "javaCompilerReturnRecordUsedByGuestDispatcher": false,
     "javaCompilerNativeActorStackFaultSurvival": "NOT_EXECUTED",
-    "javaM32Note": "Java #2643 changes actual SourceTask Env scalar local load/store to actor-owned bytes, preserving JVM shadow and fallback after bounded six slots; 48-byte call/return record is ABI-only, NOT used by a guest iterative dispatcher. 10 host JUnit + one canonical .atto actor fixture/test AUTHORED_NOT_EXECUTED."
+    "javaM32Note": "Java #2643 changes actual SourceTask Env scalar local load/store to actor-owned bytes, preserving JVM shadow and fallback after bounded six slots; 48-byte call/return record is ABI-only, NOT used by a guest iterative dispatcher. 10 host JUnit + one canonical .atto actor fixture/test AUTHORED_NOT_EXECUTED.",
+    "javaM32HardeningSourceReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2643",
+    "javaM32HardeningStatus": "AUTHORED_NOT_EXECUTED",
+    "javaM32HardeningFollowupReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2662",
+    "javaM32PhysicalTurnIdentityFenced": true,
+    "javaM32SchedulerTaskIdentityFenced": true,
+    "javaM32JvmScalarShadowTaskCaptureAllowed": false,
+    "javaM32ShadowSnapshotEscapeGuard": "COPY_AND_MOVE_DENIED",
+    "javaM32CorruptScalarPayloadHostTestExecuted": "NOT_EXECUTED",
+    "javaM32CorruptReturnDescriptorHostTestExecuted": "NOT_EXECUTED",
+    "javaM32NewHostJUnitMethodsAuthored": 11,
+    "javaM32NewHostJUnitMethodsExecuted": 0,
+    "javaM32HardenedGuestCompilerExecution": "NOT_EXECUTED",
+    "javaM32HardenedNativeStackIsolation": "NOT_EXECUTED",
+    "javaM32HardenedNote": "Hardening child branches on Java #2643 and conformance #581. Exact physical turn and SourceTask identity now gate host return record read/close, COPY/MOVE of an arena-backed scalar JVM shadow is denied, and 11 adversarial JUnit methods are authored. No Java host or .atto execution has passed.",
+    "javaM33EnvSnapshotReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2665",
+    "javaM33EnvSnapshotStatus": "AUTHORED_NOT_EXECUTED",
+    "javaM33EnvSnapshotJUnitMethodsAuthored": 3,
+    "javaM33EnvSnapshotJUnitMethodsExecuted": 0,
+    "javaM33EnvSnapshotRetiredReadDenied": true,
+    "javaM33EnvSnapshotSameTaskAwaitAllowed": "AUTHORED_NOT_EXECUTED",
+    "javaM33EnvSnapshotCrossTaskReadDenied": true,
+    "javaM33EnvSnapshotCrossTaskArenaPoisonAllowed": false,
+    "javaM33EnvSnapshotExactExecutionIdentityFenced": true,
+    "javaM33EnvReflectionFixtureSignatureRepaired": true,
+    "javaM33EnvSnapshotCompiledAttoEvidence": "NOT_EXECUTED",
+    "javaM33EnvSnapshotActualCallbackParity": "NOT_EXECUTED",
+    "javaM33EnvSnapshotIterativeDispatcher": false,
+    "javaM33EnvSnapshotNativeStackProof": "NOT_EXECUTED",
+    "javaM33Note": "Java #2665 introduces exact SourceTask ExecutionContext identity checks in actor-bound lexical Env Slot read/write/snapshot; corrects reflective Env.define signature; adds three host JUnit methods. No compiler-backed .atto closure/callback execution, stackless guest dispatch or native stack isolation has been verified.",
+    "javaM33aIterativeSourceReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2667",
+    "javaM33aIterativeStatus": "AUTHORED_NOT_EXECUTED",
+    "javaM33aWholeGraphFailClosed": true,
+    "javaM33aScalarFnEnabled": true,
+    "javaM33aActualNonTailGuestDispatcher": "AUTHORED_NOT_EXECUTED",
+    "javaM33aScalarFrameHeaderBytes": 16,
+    "javaM33aTypedScalarSlotBytes": 9,
+    "javaM33aInstructionsPerSafepoint": 128,
+    "javaM33aHostJUnitAuthored": 33,
+    "javaM33aParserJUnitAuthored": 16,
+    "javaM33aAttoJUnitAuthored": 5,
+    "javaM33aJUnitExecuted": 0,
+    "javaM33aCompiledAttoGuestEvidence": "NOT_EXECUTED",
+    "javaM33aNonScalarJvmFallbackStillRecursive": true,
+    "javaM33aActorMethodsLowered": false,
+    "javaM33aClosuresLowered": false,
+    "javaM33aSuspendedGuestReturnPCsLowered": false,
+    "javaM33aGeneralReturnRecordAbiConnected": false,
+    "javaM33aNativeActorStackFaultProof": "NOT_EXECUTED",
+    "javaM33aLLVMGuest": "NOT_EXECUTED",
+    "javaM33aNETGuest": "NOT_EXECUTED",
+    "javaM33aWasmGuest": "NOT_EXECUTED",
+    "javaM33aForgeGuest": "NOT_EXECUTED",
+    "javaM33aNote": "Java PR #2667 authors a restrictive pure int fnc source call graph compiler and iterative actor-owned frame dispatcher with real scalar CALL/RET and tail replacement; 54 new JUnit methods authored. The 48-byte general return record remains unused; real compiled .atto actor execution and all non-Java backends remain NOT_EXECUTED.",
+    "javaM33bSourceReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2668",
+    "javaM33bTypedAdmissionStatus": "AUTHORED_NOT_EXECUTED",
+    "javaM33bExactPrimitiveKindsGuarded": true,
+    "javaM33bRebindOnlyExplicitLet": true,
+    "javaM33bImplicitJvmIntegerWideningAllowed": false,
+    "javaM33bMixedPrimitiveEqualityAllowed": false,
+    "javaM33bForgedOperandStackPointerFailsClosed": true,
+    "javaM33bActorRuntimeHostTestsAuthored": 38,
+    "javaM33bParserNegativeTestsAuthored": 32,
+    "javaM33bAttoGuestTestsAuthored": 5,
+    "javaM33bTotalJUnitTestsAuthored": 75,
+    "javaM33bJUnitTestsExecuted": 0,
+    "javaM33bTypedAttoGuestEvidence": "NOT_EXECUTED",
+    "javaM33bNativeStackFailureContainment": "NOT_EXECUTED",
+    "javaM33bFiveBackendParity": "NOT_EXECUTED",
+    "javaM33bNote": "Java #2668 hardens M3.3a scalar fnc expression typing and binding kind, rejecting implicit primitive conversions before actor execution, and validates runtime SP and scalar opcode tags. +21 JUnit methods authored, none executed.",
+    "javaM33cVerifierSourceReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2669",
+    "javaM33cVerifierStatus": "AUTHORED_NOT_EXECUTED",
+    "javaM33cVerifierRunsBeforeActorFrameAdmission": true,
+    "javaM33cRequiresExactOperandJoinTypes": true,
+    "javaM33cDefiniteAssignmentIntersection": true,
+    "javaM33cLoopBackedgeFixedPoint": true,
+    "javaM33cCallArityAndTailOperandsChecked": true,
+    "javaM33cCanonicalUnreachableBytecodeFields": true,
+    "javaM33cFullGraphFallbackOnVerificationFailure": true,
+    "javaM33cNewVerifierJUnitAuthored": 39,
+    "javaM33cTotalStackedJUnitAuthored": 114,
+    "javaM33cHostedJUnitExecuted": 0,
+    "javaM33cLocalJavaVersion": "21",
+    "javaM33cLocalSmokeAssertionsPassed": 40,
+    "javaM33cLocalSmokeAssertionsTotal": 40,
+    "javaM33cLocalExactVerifierBlob": "0cd147ac955aaa08eb4346a2d342025123102331",
+    "javaM33cLocalSmokeClassification": "STUBBED_STANDALONE_JAVA_NOT_PROJECT",
+    "javaM33cCompiledAttoGuestEvidence": "NOT_EXECUTED",
+    "javaM33cNativeActorStackProof": "NOT_EXECUTED",
+    "javaM33cLLVMGuest": "NOT_EXECUTED",
+    "javaM33cNETGuest": "NOT_EXECUTED",
+    "javaM33cWasmGuest": "NOT_EXECUTED",
+    "javaM33cForgeGuest": "NOT_EXECUTED",
+    "javaM33cNote": "Java #2669 adds a control-flow-aware scalar bytecode verifier (exact typed operand stack, definite locals at joins/loops, call/return arity and noncanonical image fields). 39 new JUnit methods are authored, not executed; a separate JDK 21 standalone stub-harness compiled the exact verifier blob and passed 40/40 smoke assertions, not Maven/Graal/AttoLang guest."
   }
 }
