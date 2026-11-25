@@ -25,7 +25,7 @@ The staged Java fixes for nested loan escape, canonical source parsing, and guar
 
 ## Candidate test matrix
 
-`contracts/rt-ownership-admission-v1.json` contains **16** self-contained `.atto` source strings: 3 positive guest oracles (exit code 42) and 13 negative ownership-semantic admission cases. Their `reason` values are **proposed normalized diagnostics**, not diagnostic codes already implemented by each compiler. The new `UNTRACKED_SELECTION` fixture is an outer `rt take` on a ternary; LLVM child #1455 diagnoses it as `E_TAKE_UNTRACKED_SELECT`, while the Java nested source-place contract uses its own error text. Do not assert diagnostic equivalence until independently mapped and observed.
+`contracts/rt-ownership-admission-v1.json` contains **17** self-contained `.atto` source strings: 3 positive guest oracles (exit code 42) and 14 negative ownership-semantic admission cases. Their `reason` values are **proposed normalized diagnostics**, not diagnostic codes already implemented by each compiler. The new `UNTRACKED_SELECTION` fixture is an outer `rt take` on a ternary; LLVM child #1455 diagnoses it as `E_TAKE_UNTRACKED_SELECT`, while the Java nested source-place contract uses its own error text. Do not assert diagnostic equivalence until independently mapped and observed.
 
 Additional uncovered risk cases are listed in `outstandingCasesWithoutValidatedSource`. A test rejected because a syntax form is unsupported does **not** prove the expected ownership invariant.
 
