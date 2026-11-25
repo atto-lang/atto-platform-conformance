@@ -6,12 +6,12 @@ const doc = JSON.parse(readFileSync(new URL('../fixtures/import-v2/cases.json', 
 test('v2 corpus is explicit about evidence level and stage counts', () => {
   assert.equal(doc.schema, 'atto.static-import-v2.corpus.v1');
   assert.equal(doc.status, 'CORPUS_ONLY_NOT_BACKEND_EXECUTION');
-  assert.equal(doc.cases.length, 96);
-  assert.equal(new Set(doc.cases.map(c => c.id)).size, 96);
-  assert.equal(new Set(doc.cases.map(c => [c.stage,c.source,c.reference ?? ''].join('\\0'))).size, 96);
-  assert.equal(doc.cases.filter(c => c.stage === 'guest').length, 15);
+  assert.equal(doc.cases.length, 150);
+  assert.equal(new Set(doc.cases.map(c => c.id)).size, 150);
+  assert.equal(new Set(doc.cases.map(c => [c.stage,c.source,c.reference ?? ''].join('\\0'))).size, 150);
+  assert.equal(doc.cases.filter(c => c.stage === 'guest').length, 33);
   assert.equal(doc.cases.filter(c => c.stage === 'typed-bindings').length, 62);
-  assert.equal(doc.cases.filter(c => c.stage === 'resolution').length, 19);
+  assert.equal(doc.cases.filter(c => c.stage === 'resolution').length, 55);
 });
 test('mixed delimiter permutations share one ordered binding expectation', () => {
   const cases = doc.cases.filter(c => c.id.startsWith('mixed-permutation-'));
@@ -35,5 +35,15 @@ test('expectations have valid stages, fixtures, and no fake receipts', () => {
       for(const [,kind,remote] of c.expect.bindings) assert.ok(exports.some(([path,k,pub]) => path===remote && k===kind && pub));
     }
     assert.equal(c.evidence,undefined);
+  }
+});
+
+test('expanded cases include executable relative functions and distinct tree/manifest negatives', () => {
+  assert.equal(doc.cases.filter(c => c.id.startsWith('relative-')).length,18);
+  assert.equal(doc.cases.filter(c => c.id.startsWith('tree-')).length,20);
+  assert.equal(doc.cases.filter(c => c.id.startsWith('manifest-')).length,16);
+  assert.ok(doc.fixtures['relative-functions'].files['math.atto'].includes('pub fnc square'));
+  for (const c of doc.cases.filter(c => c.id.startsWith('tree-') || c.id.startsWith('manifest-'))) {
+    if(c.expect.outcome==='identity' && c.expect.declaration) assert.ok(doc.fixtures[c.fixture].exports.some(([p,,pub])=>p===c.expect.declaration&&pub));
   }
 });
