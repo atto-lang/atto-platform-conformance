@@ -212,3 +212,7 @@ and [source-free model](https://github.com/atto-lang/atto-rx-channels/pull/3) tr
 ## Result/Option payload-discard contract (draft)
 
 - [Versioned six-fixture matrix](contracts/adt-payload-discard-v1.json) with [verification notes](docs/adt-payload-discard-v1.md) tracks `Ok()`, `Err()`, `Ok(_)`, `Err(_)` and guarded binders; only the scoped Rust/Wasm compiled guest suite has PASS evidence. Java, LLVM, .NET and Forge are NOT_EXECUTED.
+
+## Source-free actor fault-claim admission (draft contract)
+
+[Actor fault claim admission v1](docs/ACTOR_FAULT_CLAIM_V1.md) rejects inconsistent actor/tenant containment assertions for native segfaults, host OOM, process termination and VM corruption. It always reports `certified:false` and `releaseReady:false`: model-only checks never prove an executing guest or fault isolation.
