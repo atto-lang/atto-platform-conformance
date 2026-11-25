@@ -1,0 +1,11 @@
+pub fnc increment(int value): int {
+  return value + 1;
+}
+
+pub fnc twice(int value): int {
+  return value + value;
+}
+
+fnc private_helper(int value): int {
+  return value + 1;
+}

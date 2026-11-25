@@ -337,6 +337,35 @@ proof, and do not silently substitute a host-only or source-only canary.
 
 [Specification-derived formatter matrix](contracts/specification-formatter-conformance-v1.json) tracks rule IDs and negative/positive vectors from atto-spec, separately for atto-format and legacy oreslang-format. **No parser, compiled guest or cross-formatter parity has been executed for this new matrix.** [Protocol](docs/specification-formatter-conformance-v1.md).
 
+## Unsafe block and host-authorization contract (target-only)
+
+[24 source-level cases](contracts/unsafe-blocks-v1.json) cover `unsafe { }`, explicit `unsafe fnc` call-site obligations, nested lexical scopes, misleading string/comment/Symbol/identifier tokens, denied untrusted TenantVM use, raw pointer/FFI grants, host authority, and suspension/lease escapes.
+
+`node --test tests/unsafe-blocks-v1.test.mjs` validates **registry integrity only**. **Latest exact-source Rust security audit:** [private CI run #44660939495](https://github.com/usa-acc/atto-ci/actions/runs/44660939495) checked all 51 original Rust source/Cargo Git blobs, passed `cargo check --all-targets`, **65/65** Rust library tests and **4/4** SHA-matched conformance-registry integrity tests. Real `attoc` compiled and executed safe and near-miss Wasm guests returning `42`, while direct, nested, callable, check-only and imported unsafe source failed with `E_UNSAFE_DOMAIN` without producing unsafe guest Wasm. [Machine-readable scoped receipt](evidence/unsafe/rs-unsafe-ast-security-audit-v1-20261119.json). The registry's **24 cases × 9 target backends remain NOT_EXECUTED** as case-specific conformance; no native unsafe execution was enabled.
+
+**Executed Rust browser guest receipt:** exact-SHA 51-file compiler mirror and [run 44659649666](https://github.com/usa-acc/atto-ci/actions/runs/44659649666) passed `cargo check --all-targets`, **63/63 Rust library tests**, executed a compiled safe `.atto` Wasm guest returning `42`, and rejected both direct unsafe source and an unsafe imported module with `E_UNSAFE_DOMAIN` and no emitted `.wasm` artifacts. See [machine-readable guest-denial evidence](evidence/unsafe/rs-exact-guest-denial-v1-20261119.json). This proves only the Rust browser fail-closed profile, **not** runnable unsafe code or nine-backend parity. The 24-case target registry remains **NOT_EXECUTED** pending actual case-by-case execution.
+
+**Scoped host-only receipt:** the three SHA-matched Rust lexer/diagnostic/unsafe-preflight source files compiled in a private isolated Rust crate. The latest exact-blob [run 44657207731](https://github.com/usa-acc/atto-ci/actions/runs/44657207731) passed **6/6** host structural tests, including closure-scope rejection ([latest machine-readable receipt](evidence/unsafe/rs-host-structural-g1-closure-20261119.json)); the prior [5/5 run](https://github.com/usa-acc/atto-ci/actions/runs/44656809437) remains recorded in the [historical receipt](evidence/unsafe/rs-host-structural-g1-20261119.json). At the time of that **historical host-only receipt**, full compiler and guest execution were **NOT_EXECUTED**; the newer exact-source receipts above supersede that execution-status claim. Independent backend parity and case-by-case target registry verification remain **NOT_EXECUTED**.
+
+Every listed backend is currently `not_executed`; this does NOT compile Atto sources, produce guest artifacts, or establish unsafe-call support. Cases containing proposed `RawPointer<T>`, native intrinsics and grants require ABI definitions before executable compiler parity can be claimed. The normative contract is [atto-spec unsafe v1](https://github.com/atto-lang/atto-spec/blob/feat/unsafe-block-contract-v1-20261119/language/unsafe-blocks-v1.md).
+
+## Interface/trait receiver conformance target matrix
+
+[Unified `implements` receiver conformance v1](contracts/implements-receiver-conformance-v1.json) carries 29 proposed AttoLang source programs covering actor/class/struct implementation, out-of-line `mtd`, inherited/default methods and fail-closed contracts. [Host-only Node test](tests/implements-receiver-conformance-v1.test.mjs) validates the registry. **The 29 portable registry cases remain NOT_EXECUTED.** A separately scoped [executed Rust native compiler → WebAssembly guest receipt](evidence/implements-rs-native-guest-20261119.json) records 42 SHA-matched compiler-crate files, 15 isolated Rust tests, 63 real compiler tests, one compiled guest returning 42n, and three negative no-artifact compilations on [successful private runner #44453297940](https://github.com/usa-acc/atto-ci/actions/runs/44453297940). This is **not** actor/struct guest ABI verification or cross-backend parity. See [atto-spec contract](https://github.com/atto-lang/atto-spec/blob/feat/implements-receiver-contract-v1-20261118/language/implements-receiver-conformance-v1.md).
+
+**Actor-local executable milestone:** [Scoped SHA-verified Rust native compiler → actor Wasm receipt](evidence/implements-actor-local-rs-native-guest-20261119.json) documents [real private run #44456387901](https://github.com/usa-acc/atto-ci/actions/runs/44456387901): 45 exact compiler-crate blobs, 42 library + 11 actor receiver + 14 contract + 9 abstract trait + 15 isolated Rust tests passed, real `actor_receive` producing `42\n`, and fail-closed negative checks. **Only stateless, same-source immutable actor-local mtd is demonstrated; struct guest ABI, stateful actors, browser-hosted compiler and independent backend parity remain unverified. The 29 portable registry case statuses are unchanged.**
+
+## All eleven source repositories: checked-i64 parity
+
+[Checked-i64 all-backends v1](contracts/checked-i64-all-backends-v1/README.md) pins the exact shared 15-case arithmetic corpus and the 11 `atto-source.*` main snapshots. Its source-only BigInt oracle and negative mutation tests explicitly **do not** claim compiled guest parity; individual compiler/target receipts remain required.
+
+## Shared ownership and explicit guard conformance (TARGET)
+
+- [Versioned target registry](contracts/shared-ownership-and-guards-v1.json): 6 proposed positive and 12 proposed negative guest fixtures for `share!`, deep freeze, owner invalidation and explicit `RwLock<T>` guards.
+- `python3 bin/validate_shared_ownership_and_guards.py` checks source/manifest integrity **only**. It cannot certify parser, compiler, runtime behavior or backend parity.
+- A backend may claim **PASS** only after positive guests execute and negatives reject with zero emitted guest bytes at the exact source SHA, with meaningful stepful CI receipts; guard race/scheduler/cancellation testing is also required.
+- [Normative draft specification](https://github.com/atto-lang/atto-spec/pull/90). Until executable implementation catches up, cases are `TARGET_NOT_EXECUTED`.
+
 ## Channel / return-position match conformance v1
 
 - [Contract and backend evidence matrix](contracts/channel-return-ownership-v1.json)

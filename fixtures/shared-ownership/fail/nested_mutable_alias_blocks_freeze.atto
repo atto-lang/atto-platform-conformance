@@ -1,0 +1,10 @@
+// expect-error: E_SHARE_ALIAS
+// transitive graph includes still-writable nested storage
+define class Leaf as pub let int value = 42; end
+define class Root as pub let Leaf child = new Leaf(); end
+pub fnc main(): int {
+  val mut root = new Root();
+  val writer = borrow! mut root.child;
+  val shared = share! root;
+  return writer.value + shared.child.value;
+}
