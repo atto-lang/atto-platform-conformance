@@ -48,7 +48,7 @@ function validatePending(matrix) {
   }
   assert.equal(matrix.requirements.nativeStackOverflowRecoverableOnSharedCarrier, false);
   assert.equal(matrix.requirements.untrustedArbitraryNativeCodeRequiresKillableWorker, true);
-  assert.ok(matrix.scenarios.length >= 56);
+  assert.ok(matrix.scenarios.length >= 64);
   assert.match(matrix.javaFrameArenaReference, /\/pull\/2627$/);
   const bootstrap = matrix.frameStorageBootstrap;
   assert.equal(bootstrap.javaHostPrimitive, 'MANAGED_BYTES_ONLY');
@@ -195,6 +195,29 @@ function validatePending(matrix) {
   assert.equal(bootstrap.javaM33bTypedAttoGuestEvidence, 'NOT_EXECUTED');
   assert.equal(bootstrap.javaM33bNativeStackFailureContainment, 'NOT_EXECUTED');
   assert.equal(bootstrap.javaM33bFiveBackendParity, 'NOT_EXECUTED');
+  assert.match(bootstrap.javaM33cVerifierSourceReference, /\/pull\/2669$/);
+  assert.equal(bootstrap.javaM33cVerifierStatus, 'AUTHORED_NOT_EXECUTED');
+  assert.equal(bootstrap.javaM33cVerifierRunsBeforeActorFrameAdmission, true);
+  assert.equal(bootstrap.javaM33cRequiresExactOperandJoinTypes, true);
+  assert.equal(bootstrap.javaM33cDefiniteAssignmentIntersection, true);
+  assert.equal(bootstrap.javaM33cLoopBackedgeFixedPoint, true);
+  assert.equal(bootstrap.javaM33cCallArityAndTailOperandsChecked, true);
+  assert.equal(bootstrap.javaM33cCanonicalUnreachableBytecodeFields, true);
+  assert.equal(bootstrap.javaM33cFullGraphFallbackOnVerificationFailure, true);
+  assert.equal(bootstrap.javaM33cNewVerifierJUnitAuthored, 39);
+  assert.equal(bootstrap.javaM33cTotalStackedJUnitAuthored, 114);
+  assert.equal(bootstrap.javaM33cHostedJUnitExecuted, 0);
+  assert.equal(bootstrap.javaM33cLocalJavaVersion, '21');
+  assert.equal(bootstrap.javaM33cLocalSmokeAssertionsPassed, 40);
+  assert.equal(bootstrap.javaM33cLocalSmokeAssertionsTotal, 40);
+  assert.equal(bootstrap.javaM33cLocalExactVerifierBlob, '0cd147ac955aaa08eb4346a2d342025123102331');
+  assert.equal(bootstrap.javaM33cLocalSmokeClassification, 'STUBBED_STANDALONE_JAVA_NOT_PROJECT');
+  assert.equal(bootstrap.javaM33cCompiledAttoGuestEvidence, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaM33cNativeActorStackProof, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaM33cLLVMGuest, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaM33cNETGuest, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaM33cWasmGuest, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaM33cForgeGuest, 'NOT_EXECUTED');
   assert.equal(bootstrap.javaAuthoredLegacyCompilerGuestTests, 1);
   assert.equal(bootstrap.javaLegacyCompilerGuestTestExecuted, 'NOT_EXECUTED');
   assert.equal(bootstrap.javaGuardedInvocationByteFrames,
@@ -343,6 +366,20 @@ test('fake pass, duplicate backend, deleted proof and false promotion are reject
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33bNativeStackFailureContainment = 'PASS';})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33bFiveBackendParity = 'PASS';})));
   assert.throws(() => validatePending(mutate(m => {delete m.frameStorageBootstrap.javaM33bSourceReference;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33cVerifierStatus = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33cVerifierRunsBeforeActorFrameAdmission = false;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33cRequiresExactOperandJoinTypes = false;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33cDefiniteAssignmentIntersection = false;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33cLoopBackedgeFixedPoint = false;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33cCallArityAndTailOperandsChecked = false;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33cCanonicalUnreachableBytecodeFields = false;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33cFullGraphFallbackOnVerificationFailure = false;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33cHostedJUnitExecuted = 114;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33cLocalSmokeClassification = 'HOSTED_JUNIT';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33cCompiledAttoGuestEvidence = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33cNativeActorStackProof = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33cLLVMGuest = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {delete m.frameStorageBootstrap.javaM33cVerifierSourceReference;})));
   assert.throws(() => validatePending(mutate(m => {delete m.frameStorageBootstrap.javaCompilerReturnRecordReference;})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaCompilerLexicalGuestExecution = 'PASS';})));
   assert.throws(() => validatePending(mutate(m => {delete m.frameStorageBootstrap.javaCompilerScalarParameterReference;})));
@@ -656,5 +693,40 @@ test('M3.3b typed scalar admission remains distinct from executed .atto proof', 
   assert.equal(data.javaM33bAttoGuestTestsAuthored, 5);
   assert.equal(data.javaM33bJUnitTestsExecuted, 0);
   assert.equal(data.javaM33bFiveBackendParity, 'NOT_EXECUTED');
+  assert.equal(matrix.promotion.certified, false);
+});
+
+test('M3.3c CFG verifier proofs remain distinct from hosted compiler and native actor stacks', async () => {
+  const matrix = validatePending(await load());
+  const cases = [
+    'actor-scalar-cfg-join-operand-depth-mismatch-pre-admission',
+    'actor-scalar-cfg-join-primitive-kinds-mismatch-pre-admission',
+    'actor-scalar-cfg-local-definite-assignment-at-branch-joins',
+    'actor-scalar-cfg-loop-backedge-local-definite-assignment',
+    'actor-scalar-cfg-callee-arity-and-tail-live-operands',
+    'actor-scalar-cfg-ret-conditional-and-stack-overflow-typed',
+    'actor-scalar-cfg-reachable-fallthrough-invalid',
+    'actor-scalar-cfg-noncanonical-unreachable-opcode-fields'
+  ];
+  for (const id of cases) {
+    const scenario = matrix.scenarios.find(s => s.id === id);
+    assert.ok(scenario, 'missing M3.3c compiler/CFG proof gate: ' + id);
+    assert.equal(scenario.source, null, 'do not fabricate compiled guest fixture execution');
+    assert.ok(scenario.requiredEvidence.includes('compilerGuest'));
+  }
+  const m = matrix.frameStorageBootstrap;
+  assert.equal(m.javaM33cVerifierRunsBeforeActorFrameAdmission, true);
+  assert.equal(m.javaM33cDefiniteAssignmentIntersection, true);
+  assert.equal(m.javaM33cCanonicalUnreachableBytecodeFields, true);
+  assert.equal(m.javaM33cNewVerifierJUnitAuthored, 39);
+  assert.equal(m.javaM33cTotalStackedJUnitAuthored, 114);
+  assert.equal(m.javaM33cHostedJUnitExecuted, 0);
+  assert.equal(m.javaM33cLocalSmokeAssertionsPassed, 40);
+  assert.equal(m.javaM33cLocalSmokeClassification, 'STUBBED_STANDALONE_JAVA_NOT_PROJECT');
+  assert.equal(m.javaM33cCompiledAttoGuestEvidence, 'NOT_EXECUTED');
+  for (const backend of matrix.backends) {
+    assert.equal(backend.compilerGuest, 'NOT_EXECUTED');
+    assert.equal(backend.actorStackStorage, 'NOT_EXECUTED');
+  }
   assert.equal(matrix.promotion.certified, false);
 });

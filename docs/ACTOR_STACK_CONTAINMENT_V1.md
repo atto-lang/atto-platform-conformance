@@ -467,3 +467,45 @@ frame SP poisoning and premature full native actor stack parity.
 The legacy source fallback for unsupported objects/closures/effects,
 and all LLVM/.NET NativeAOT/Wasm/Forge guest evidence remain
 `NOT_EXECUTED` until exact-head nonzero-step compiler receipts.
+
+
+## Java M3.3c independent CFG and typed-bytecode verification
+
+[Java draft #2669](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2669)
+is stacked on #2668 and adds a second independent bytecode verifier
+to the restricted actor-owned scalar `fnc` dispatcher. Unlike the
+source lowerer's linear operand peak estimate, this immutable Program
+gate uses a bounded, nonrecursive control-flow worklist to prove exact
+`INT`/`BOOL` operand stacks, matching types/depth at branch joins,
+definite initialization of locals along **every** incoming path,
+convergence across loop backedges, valid CALL/TAIL_CALL argument kinds
+and arities, INT return with no leftover operands, and no reachable
+fallthrough or excess stack capacity. A full-image pass rejects
+noncanonical unused instruction fields even on unreachable bytecode.
+
+A malformed Program now fails **before** actor allocation/poisoning.
+The source lowering falls back the complete graph to the existing
+evaluator on CFG rejection, preserving normal compiler/typechecker
+admission. Existing host tests that had expected malformed unverified
+images to fail inside an actor were revised to expect program
+construction rejection; genuine corruption of already verified
+actor-owned frame bytes continues to fail-stop the owning actor.
+
+The Java PR adds **39 new JUnit verifier methods**, making the
+M3.3a+b+c aggregate **38 runtime actor-machine, 32 parser/compiler,
+five compiled `.atto`, 39 verifier = 114 authored JUnit tests**,
+all hosted Java execution `NOT_EXECUTED` as of this contract. One
+limited local test did execute: OpenJDK 21 compiled the byte-identical
+verifier source blob `0cd147ac955aaa08eb4346a2d342025123102331`
+against a **stubbed Function/Program** and passed **40/40 standalone
+smoke assertions**. This demonstrates only the verifier algorithm,
+not a project Maven/JUnit pass, compiled AttoLang actor execution,
+physical low-native-stack survival, or any LLVM/.NET/Wasm/Forge parity.
+
+Eight new pending scenarios bring the matrix to **64**. Conformance
+mutations reject fabricated hosted JUnit execution, confusion of the
+stubbed Java smoke with compiled guest proof, weakened per-PC
+verification or noncanonical instruction admission, and premature
+native/five-backend parity promotion. Require real, nonzero-step
+exact-head Actions receipts, test XML, source fixture outputs and
+independent review before merging or claiming stack containment.
