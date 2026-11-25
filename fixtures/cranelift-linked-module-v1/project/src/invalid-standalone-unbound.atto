@@ -1,0 +1,2 @@
+fnc no_such_callee(int value): int { return missing(value); }
+pub fnc main(): int { return no_such_callee(42); }

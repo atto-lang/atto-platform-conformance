@@ -1,0 +1,8 @@
+// expect-error: E_BORROW
+// Named-argument slot permutation cannot bypass original evaluation order.
+define class Box as pub let int value = 1; end
+fnc inspect(Box first, Box second): int { return first.value + second.value; }
+pub fnc main(): int {
+  val b = new Box();
+  return inspect(second: take! b, first: b);
+}

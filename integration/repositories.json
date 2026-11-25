@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "organization": "ores-truffle-oreslang",
-  "snapshotDate": "2026-10-17",
+  "snapshotDate": "2026-11-05",
   "status": "coordination-only",
   "note": "Declared integration touchpoints, NOT dependency resolution, code compatibility, release readiness, test execution or cross-backend parity.",
   "repositories": [
@@ -278,6 +278,15 @@
       "evidence": "not-attested"
     },
     {
+      "name": "oreslang-source.cranelift",
+      "role": "compiler",
+      "upstreams": [
+        "oreslang-common-source",
+        "oreslang-target-profiles"
+      ],
+      "evidence": "not-attested"
+    },
+    {
       "name": "oreslang-source.forge",
       "role": "compiler",
       "upstreams": [
@@ -324,6 +333,15 @@
     },
     {
       "name": "oreslang-source.net",
+      "role": "compiler",
+      "upstreams": [
+        "oreslang-common-source",
+        "oreslang-target-profiles"
+      ],
+      "evidence": "not-attested"
+    },
+    {
+      "name": "oreslang-source.rs",
       "role": "compiler",
       "upstreams": [
         "oreslang-common-source",

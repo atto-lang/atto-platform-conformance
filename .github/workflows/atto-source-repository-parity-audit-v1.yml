@@ -1,0 +1,75 @@
+name: Atto eleven-source parity registry integrity (source-free)
+on:
+  pull_request:
+    paths:
+      - 'contracts/std-udp-11-backend-evidence-v1.json'
+      - 'tests/std-udp-11-backend-evidence-v1.test.mjs'
+      - 'contracts/std-protocol-11-backend-evidence-v1.json'
+      - 'tests/std-protocol-11-backend-evidence-v1.test.mjs'
+      - 'contracts/atto-source-repository-parity-audit-v1.json'
+      - 'tests/atto-source-repository-parity-audit-v1.test.mjs'
+      - 'tests/git-replace-integrity-v1.test.mjs'
+      - 'tests/exception-control-bang-source-audit-v1.test.mjs'
+      - 'contracts/exception-control-bang-source-audit-v1.json'
+      - 'contracts/ci-recovery-evidence-20261121-v1.json'
+      - 'tests/ci-recovery-evidence-20261121-v1.test.mjs'
+      - 'contracts/control-actor-memory-11-backend-audit-v1.json'
+      - 'contracts/control-ref32-bit-vectors-v1.json'
+      - 'tests/control-ref32-bit-vectors-v1.test.mjs'
+      - 'tests/control-actor-memory-11-backend-audit-v1.test.mjs'
+      - 'docs/ATTO_SOURCE_11_REPOSITORY_PARITY.md'
+      - '.github/workflows/atto-source-repository-parity-audit-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'contracts/std-udp-11-backend-evidence-v1.json'
+      - 'tests/std-udp-11-backend-evidence-v1.test.mjs'
+      - 'contracts/std-protocol-11-backend-evidence-v1.json'
+      - 'tests/std-protocol-11-backend-evidence-v1.test.mjs'
+      - 'contracts/atto-source-repository-parity-audit-v1.json'
+      - 'tests/atto-source-repository-parity-audit-v1.test.mjs'
+      - 'tests/git-replace-integrity-v1.test.mjs'
+      - 'tests/exception-control-bang-source-audit-v1.test.mjs'
+      - 'contracts/exception-control-bang-source-audit-v1.json'
+      - 'contracts/ci-recovery-evidence-20261121-v1.json'
+      - 'tests/ci-recovery-evidence-20261121-v1.test.mjs'
+      - 'contracts/control-actor-memory-11-backend-audit-v1.json'
+      - 'contracts/control-ref32-bit-vectors-v1.json'
+      - 'tests/control-ref32-bit-vectors-v1.test.mjs'
+      - 'tests/control-actor-memory-11-backend-audit-v1.test.mjs'
+      - 'docs/ATTO_SOURCE_11_REPOSITORY_PARITY.md'
+      - '.github/workflows/atto-source-repository-parity-audit-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-free-parity-registry:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - name: Checkout exact submitted source head without persisting token
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact source revision before source-free inventory tests
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          # No Git replace-ref may rewrite a claimed exact source commit/tree.
+          export GIT_NO_REPLACE_OBJECTS=1
+          test "$(git --no-replace-objects rev-parse --verify HEAD)" = "$EXPECTED_SHA"
+          test "$(git --no-replace-objects cat-file -t "$EXPECTED_SHA")" = commit
+          TREE="$(git --no-replace-objects rev-parse --verify 'HEAD^{tree}')"
+          test "$(git --no-replace-objects cat-file -t "$TREE")" = tree
+          test -z "$(git status --porcelain --untracked-files=all)"
+          echo "SOURCE_HEAD=$EXPECTED_SHA"
+          echo "SOURCE_TREE=$TREE"
+          echo "NO_COMPILER_OR_GUEST_CLAIM=TRUE"
+      - name: Check historical 11-repository source inventory and negative mutations
+        run: |
+          set -euo pipefail
+          node --version
+          node -e "if (+process.versions.node.split('.')[0] < 20) process.exit(2)"
+          node --test tests/atto-source-repository-parity-audit-v1.test.mjs tests/exception-control-bang-source-audit-v1.test.mjs tests/ci-recovery-evidence-20261121-v1.test.mjs tests/control-actor-memory-11-backend-audit-v1.test.mjs tests/control-ref32-bit-vectors-v1.test.mjs tests/git-replace-integrity-v1.test.mjs tests/std-protocol-11-backend-evidence-v1.test.mjs tests/std-udp-11-backend-evidence-v1.test.mjs

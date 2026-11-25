@@ -1,0 +1,6 @@
+fnc choose(int? missing, int required) -> int ::
+  return required
+end
+fnc main() -> int ::
+  return choose(required: 42)
+end

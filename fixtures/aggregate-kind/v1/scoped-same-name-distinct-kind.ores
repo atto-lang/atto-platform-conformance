@@ -1,0 +1,8 @@
+fnc first(): T {
+    type T = struct { foo: int };
+    return struct { foo: int } { foo: 1 };
+}
+fnc second(): T {
+    type T = record { foo: int };
+    return record { foo: 2 };
+}

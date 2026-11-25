@@ -1,0 +1,5 @@
+pub fnc main(): int {
+  const first = infer record{x: 20};
+  const extended = infer record{...first, y: 24};
+  return extended.x + extended.y;
+}

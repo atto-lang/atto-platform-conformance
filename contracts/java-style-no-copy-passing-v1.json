@@ -1,0 +1,546 @@
+{
+  "contract": "atto-java-style-no-copy-passing-v1",
+  "status": "TARGET_ONLY_NOT_EXECUTED",
+  "spec_refs": [
+    "atto-lang/atto-spec#185",
+    "atto-lang/atto-spec#89",
+    "atto-lang/atto-spec#18",
+    "atto-lang/atto-spec#39"
+  ],
+  "backends": [
+    "atto-source.java",
+    "atto-source.llvm",
+    "atto-source.net",
+    "atto-source.rs",
+    "atto-source.wasm",
+    "atto-source.forge",
+    "atto-source.cranelift",
+    "atto-source.js",
+    "atto-source.hdl",
+    "atto-source.atto",
+    "atto-source.realtime"
+  ],
+  "notes": "Design test plan, not an executed Atto compiler or guest test. Verify runtime/object identity and allocation where required, and no bytes on negative cases. No backend is certified by this manifest.",
+  "cases": [
+    {
+      "id": "JNP-001",
+      "verdict": "ALLOW",
+      "scenario": "implicit readonly class call has same allocation identity without graph clone",
+      "oracle": "same_identity_no_guest_payload_allocation",
+      "admission": "TARGET_ONLY",
+      "backend_status": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "JNP-002",
+      "verdict": "ALLOW",
+      "scenario": "same owner in two simultaneous read-only arguments",
+      "oracle": "two_shared_loans_no_copy",
+      "admission": "TARGET_ONLY",
+      "backend_status": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "JNP-003",
+      "verdict": "ALLOW",
+      "scenario": "exclusive mut formal writes through to original allocation",
+      "oracle": "original_mutated_no_copy",
+      "admission": "TARGET_ONLY",
+      "backend_status": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "JNP-004",
+      "verdict": "REJECT",
+      "scenario": "readonly call cannot mutate the original without a mut actual",
+      "oracle": "E_BORROW_MUT_REQUIRED",
+      "admission": "TARGET_ONLY",
+      "backend_status": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "JNP-005",
+      "verdict": "REJECT",
+      "scenario": "shared read and mutable loan overlapping across argument evaluation",
+      "oracle": "E_BORROW",
+      "admission": "TARGET_ONLY",
+      "backend_status": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "JNP-006",
+      "verdict": "REJECT",
+      "scenario": "mutable loan then read loan overlapping across argument evaluation",
+      "oracle": "E_BORROW",
+      "admission": "TARGET_ONLY",
+      "backend_status": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "JNP-007",
+      "verdict": "REJECT",
+      "scenario": "two overlapping mutable arguments on one owner",
+      "oracle": "E_BORROW",
+      "admission": "TARGET_ONLY",
+      "backend_status": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "JNP-008",
+      "verdict": "REJECT",
+      "scenario": "use after explicit take! ownership transfer",
+      "oracle": "E_MOVED",
+      "admission": "TARGET_ONLY",
+      "backend_status": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "JNP-009",
+      "verdict": "ALLOW",
+      "scenario": "copy! with proved Copyable creates shallow independent root only on request",
+      "oracle": "explicit_shallow_copy_only",
+      "admission": "TARGET_ONLY",
+      "backend_status": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "JNP-010",
+      "verdict": "ALLOW",
+      "scenario": "copy!! with proved DeepCopyable creates independent mutable graph only on request",
+      "oracle": "explicit_deep_copy_only",
+      "admission": "TARGET_ONLY",
+      "backend_status": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "JNP-011",
+      "verdict": "REJECT",
+      "scenario": "shallow copy with unshareable unique mutable child",
+      "oracle": "E_COPY_SHALLOW_ALIAS",
+      "admission": "TARGET_ONLY",
+      "backend_status": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "JNP-012",
+      "verdict": "ALLOW",
+      "scenario": "read-only borrowed Pointer<T> argument preserves unique caller handle and referent",
+      "oracle": "same_handle_and_pointee_no_clone",
+      "admission": "TARGET_ONLY",
+      "backend_status": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "JNP-013",
+      "verdict": "REJECT",
+      "scenario": "callee tries unref! on borrowed Pointer<T> argument",
+      "oracle": "E_POINTER_NOT_OWNER",
+      "admission": "TARGET_ONLY",
+      "backend_status": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "JNP-014",
+      "verdict": "REJECT",
+      "scenario": "copy! of Pointer<T> capability even with Copyable<T>",
+      "oracle": "E_POINTER_NONCOPY",
+      "admission": "TARGET_ONLY",
+      "backend_status": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "JNP-015",
+      "verdict": "REJECT",
+      "scenario": "copy!! of Pointer<T> capability even with DeepCopyable<T>",
+      "oracle": "E_POINTER_NONCOPY",
+      "admission": "TARGET_ONLY",
+      "backend_status": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "JNP-016",
+      "verdict": "REJECT",
+      "scenario": "double unref! on one borrowed-local pointer token",
+      "oracle": "E_DOUBLE_UNREF",
+      "admission": "TARGET_ONLY",
+      "backend_status": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "JNP-017",
+      "verdict": "REJECT",
+      "scenario": "deref! on consumed or stale handle",
+      "oracle": "E_POINTER_STALE",
+      "admission": "TARGET_ONLY",
+      "backend_status": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "JNP-018",
+      "verdict": "REJECT",
+      "scenario": "Pointer<T> argument or captured token crosses actor/tenant/isolate boundary",
+      "oracle": "E_POINTER_DOMAIN",
+      "admission": "TARGET_ONLY",
+      "backend_status": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "JNP-019",
+      "verdict": "REJECT",
+      "scenario": "same numeric Ref32 token from a different actor cannot authenticate as caller origin",
+      "oracle": "E_POINTER_ORIGIN",
+      "admission": "TARGET_ONLY",
+      "backend_status": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "JNP-020",
+      "verdict": "REJECT",
+      "scenario": "borrowed parameter returned as independently owned T",
+      "oracle": "E_BORROW_ESCAPE",
+      "admission": "TARGET_ONLY",
+      "backend_status": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "JNP-021",
+      "verdict": "ALLOW",
+      "scenario": "Borrow<T> result tied to unique proven owner outlives the use",
+      "oracle": "borrowed_result_provenance",
+      "admission": "TARGET_ONLY",
+      "backend_status": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "JNP-022",
+      "verdict": "REJECT",
+      "scenario": "checked handle cleanup skipped on throwing, raising or cancellation exit",
+      "oracle": "E_HANDLE_UNWIND",
+      "admission": "TARGET_ONLY",
+      "backend_status": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "JNP-023",
+      "verdict": "ALLOW",
+      "scenario": "128-bit value register with 32-bit actor-local Ref32 handle",
+      "oracle": "large_scalar_in_compact_domain",
+      "admission": "TARGET_ONLY",
+      "backend_status": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "JNP-024",
+      "verdict": "REJECT",
+      "scenario": "binding alias cannot silently mint second independently droppable owner",
+      "oracle": "E_ALIAS_OWNER",
+      "admission": "TARGET_ONLY",
+      "backend_status": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "JNP-025",
+      "verdict": "REJECT",
+      "scenario": "Pointer<T> serialization or message send even if pointee Serializable/Sendable",
+      "oracle": "E_POINTER_NOT_SENDABLE",
+      "admission": "TARGET_ONLY",
+      "backend_status": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "JNP-026",
+      "verdict": "REJECT",
+      "scenario": "virtual/FFI/unknown callable missing checked mutability or noescape contract",
+      "oracle": "E_EFFECT_UNPROVEN",
+      "admission": "TARGET_ONLY",
+      "backend_status": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+pub async fnc main(): void {
+  val owner = infer struct{value: 1};
+  val view = rt borrow owner;
+  let Future<int> child = task { return view.value; };
+  return;
+}

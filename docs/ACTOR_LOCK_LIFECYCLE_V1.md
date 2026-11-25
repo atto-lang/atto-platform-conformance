@@ -23,6 +23,19 @@ An actor death is **not** a normal guard close from an arbitrary host thread. A 
 4. **REVOKE**: After quiescence, invalidate outstanding permits and release in O(held + waiting) via an actor/task reverse index. Poison any shared mutable region whose recovery invariants cannot be proven after an abnormal incomplete write. Wake eligible next waiters only after the previous owner is fully inactive and the value is safe.
 5. **DONE**: Publish terminal actor/Task completion only after revocation and required cleanup bookkeeping. If quiescence or resource-specific safety cannot be proven, **quarantine** the grant/region and report a terminal cleanup failure rather than grant to a new actor.
 
+### Actor identity reuse / incarnation monotonicity
+
+A stable actor ID may not have two active incarnations. After `STOP`, the old
+incarnation remains authoritative for cleanup until **physical quiescence,
+permit revocation, and retirement** complete; a replacement using that actor
+ID must be rejected before retirement. The next incarnation must be a strictly
+higher positive integer than every generation previously admitted for that ID.
+A stale/replayed or decreasing generation is rejected even if the earlier
+incarnation has retired. Different actor IDs remain independent. Stale task
+handles from earlier incarnations cannot obtain new grants or revoke permits
+belonging to the successor. This is a bounded **source-free model contract**;
+it does not by itself establish any compiler/runtime backend enforcement.
+
 Both release and grant must be linearizable. A queued Future cancellation racing with direct handoff must have one winner; if grant wins, the permit remains owned and cannot be stolen until the new owner's quiescent cleanup. Never invoke guest callbacks or Future subscribers while holding lifecycle, CONTROL, queue, or supervisor metadata locks. Keep wait/unlink and retirement bookkeeping bounded.
 
 ### Failure effects

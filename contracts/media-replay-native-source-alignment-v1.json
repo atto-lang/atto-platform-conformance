@@ -1,0 +1,64 @@
+{
+  "contract": "oreslang.native-replay-source-alignment/1",
+  "status": "five .atto source blobs aligned, guest test bodies aligned except relative imports; native execution NOT VERIFIED",
+  "checked_utc": "2026-11-03",
+  "source_code_blob_sha": "ec6927a7a76eab469908a033806e863416126fcd",
+  "guest_test_default_blob_sha": "18cfff90b96e3654888f3853f920d4679de3e215",
+  "java_test_blob_sha": "d157e9c9ad311adafa0607f3bf287f502e6b6fe2",
+  "guest_fixture_claim": "80 unique AttoLang .atto guest checks pinned by exact Git blob SHA; no compiler-backed guest execution proven.",
+  "backends": [
+    {
+      "name": "java",
+      "repo": "ores-truffle-oreslang/oreslang-source.java",
+      "pr": 2445,
+      "head": "bdeb6a9e95678f32aa025e9b1e567fa4c3ea508d",
+      "source_path": "stdlib/replay_stream.atto",
+      "test_path": "examples/native-replay-stream-contract.atto",
+      "test_blob_sha": "d157e9c9ad311adafa0607f3bf287f502e6b6fe2",
+      "admission": "not_verified"
+    },
+    {
+      "name": "llvm",
+      "repo": "ores-truffle-oreslang/oreslang-source.llvm",
+      "pr": 1298,
+      "head": "32fa373d61ccd713655c5a6042a68b5a6073bfd3",
+      "source_path": "contracts/replay_stream_v1/replay_stream.atto",
+      "test_path": "contracts/replay_stream_v1/native-replay-stream-contract.atto",
+      "test_blob_sha": "18cfff90b96e3654888f3853f920d4679de3e215",
+      "admission": "not_verified"
+    },
+    {
+      "name": "wasm",
+      "repo": "ores-truffle-oreslang/oreslang-source.wasm",
+      "pr": 266,
+      "head": "a23706e05d4f32e1facc76d986750eec80710f31",
+      "source_path": "contracts/replay_stream_v1/replay_stream.atto",
+      "test_path": "contracts/replay_stream_v1/native-replay-stream-contract.atto",
+      "test_blob_sha": "18cfff90b96e3654888f3853f920d4679de3e215",
+      "admission": "not_verified"
+    },
+    {
+      "name": "cranelift",
+      "repo": "ores-truffle-oreslang/oreslang-source.cranelift",
+      "pr": 79,
+      "head": "d57f87c66f8c720b927444df7e38976461ac30e5",
+      "source_path": "contracts/replay_stream_v1/replay_stream.atto",
+      "test_path": "contracts/replay_stream_v1/native-replay-stream-contract.atto",
+      "test_blob_sha": "18cfff90b96e3654888f3853f920d4679de3e215",
+      "admission": "not_verified"
+    },
+    {
+      "name": "net",
+      "repo": "ores-truffle-oreslang/oreslang-source.net",
+      "pr": 330,
+      "head": "11e12e9865e4e80f182d57758286d863371f44e9",
+      "source_path": "contracts/replay_stream_v1/replay_stream.atto",
+      "test_path": "contracts/replay_stream_v1/native-replay-stream-contract.atto",
+      "test_blob_sha": "18cfff90b96e3654888f3853f920d4679de3e215",
+      "admission": "not_verified"
+    }
+  ],
+  "warning": "Historical oreslang.* contract IDs and repository names are retained for v1 wire/API compatibility. .atto is the canonical source extension. Forge and independent Cranelift remain separate. Private-source cross-org mirroring remains under incident hold.",
+  "displayLanguage": "AttoLang",
+  "sourceExtension": ".atto"
+}

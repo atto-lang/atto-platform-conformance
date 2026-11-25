@@ -1,0 +1,8 @@
+// OW04: detached task cannot capture a nested borrowed value.
+pub async fnc bad(Option<borrow int> wrapped): void {
+  let Future<int> child = task {
+    return wrapped;
+  };
+  await child;
+  return;
+}

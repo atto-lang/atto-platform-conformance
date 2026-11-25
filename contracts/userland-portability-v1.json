@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "contract": "oreslang.userland-portability/1",
+  "fixtureRepository": "ores-truffle-oreslang/oreslang-proof-of-concepts",
+  "fixtureCommitSha": "b7e92b77e86ffe2be29fa9163e61787285c2b245",
+  "profiles": {
+    "java": "ores-truffle-oreslang/oreslang-source.java",
+    "llvm": "ores-truffle-oreslang/oreslang-source.llvm",
+    "wasm": "ores-truffle-oreslang/oreslang-source.wasm",
+    "cranelift": "ores-truffle-oreslang/oreslang-source.cranelift",
+    "net": "ores-truffle-oreslang/oreslang-source.net",
+    "forge": "ores-truffle-oreslang/oreslang-source.forge"
+  },
+  "fixtures": [
+    {
+      "id": "vec",
+      "sourcePath": "src/libraries/oreslang-vec/example.ores",
+      "sourceBlobSha": "12cfffbd3f78962f7435bdce08f9889e72a8137c",
+      "oraclePath": "src/libraries/oreslang-vec/expected.stdout",
+      "oracleBlobSha": "64965160a50580063f249e97f868840387754657",
+      "stdout": "PASS:oreslang-vec\n"
+    },
+    {
+      "id": "hashmap",
+      "sourcePath": "src/libraries/oreslang-hashmap/example.ores",
+      "sourceBlobSha": "df075e03dda1c1ccb7bba9303b5b6d90bc79e74b",
+      "oraclePath": "src/libraries/oreslang-hashmap/expected.stdout",
+      "oracleBlobSha": "b8bcc26944d1cfd8d970378b01d5b5225a6514c9",
+      "stdout": "PASS:oreslang-hashmap\n"
+    },
+    {
+      "id": "dop",
+      "sourcePath": "src/libraries/oreslang-dop/example.ores",
+      "sourceBlobSha": "6ea6ce4ff326dc46b6b4447f30dc13bf1eabefb8",
+      "oraclePath": "src/libraries/oreslang-dop/expected.stdout",
+      "oracleBlobSha": "9e9c7590a4e428cdbe3c2f50b691610cf47db6fe",
+      "stdout": "PASS:oreslang-dop\n"
+    },
+    {
+      "id": "iter",
+      "sourcePath": "src/libraries/oreslang-iter/example.ores",
+      "sourceBlobSha": "401d6676e55f6a3726ded4bcf789dcdd72fc897f",
+      "oraclePath": "src/libraries/oreslang-iter/expected.stdout",
+      "oracleBlobSha": "6f002d5cf0cabb616636ad6bb7398081b245299d",
+      "stdout": "PASS:oreslang-iter\n"
+    },
+    {
+      "id": "channels",
+      "sourcePath": "src/libraries/oreslang-channels/example.ores",
+      "sourceBlobSha": "2e927308f0df7bbad98770aaeb7c42b8b8091b49",
+      "oraclePath": "src/libraries/oreslang-channels/expected.stdout",
+      "oracleBlobSha": "9d8535985fe49492d815d60de5add9fdf5634fa0",
+      "stdout": "PASS:oreslang-channels\n"
+    }
+  ]
+}

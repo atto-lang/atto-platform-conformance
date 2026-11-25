@@ -1,0 +1,8 @@
+define dimension Time;
+define unit Second: Time;
+define unit Millis: Time = Second / 1000;
+type PositiveMillis = i32 where self > 0 and units in Millis;
+
+pub fnc main() -> int {
+    return (42<Second> as PositiveMillis) / 1<Millis>;
+}

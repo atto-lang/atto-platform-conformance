@@ -1,0 +1,195 @@
+{
+  "schema_version": 1,
+  "id": "lambda-four-styles-v1",
+  "normative_spec": "atto-lang/atto-spec#149",
+  "scope": "Target-only: separate syntax, static callable storage, typing and guest behavior; none executed on any backend",
+  "expected_guest_exit_for_positive": 42,
+  "caveat": "Every backend status is NOT_EXECUTED; parsing/compilation/execution must be evidenced separately at exact current SHA. No source-only check may mark guest parity.",
+  "cases": [
+    {
+      "id": "type-first-infer",
+      "path": "fixtures/lambda-four-styles-v1/positive/type-first-infer.atto",
+      "expectation": "ACCEPT_AND_EXIT_42",
+      "expected_type_or_diagnostic": "void",
+      "parameter_style": "type_first",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "name-first-infer",
+      "path": "fixtures/lambda-four-styles-v1/positive/name-first-infer.atto",
+      "expectation": "ACCEPT_AND_EXIT_42",
+      "expected_type_or_diagnostic": "void",
+      "parameter_style": "name_first",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "name-first-arrow-void",
+      "path": "fixtures/lambda-four-styles-v1/positive/name-first-arrow-void.atto",
+      "expectation": "ACCEPT_AND_EXIT_42",
+      "expected_type_or_diagnostic": "void",
+      "parameter_style": "name_first",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "name-first-colon-void",
+      "path": "fixtures/lambda-four-styles-v1/positive/name-first-colon-void.atto",
+      "expectation": "ACCEPT_AND_EXIT_42",
+      "expected_type_or_diagnostic": "void",
+      "parameter_style": "name_first",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "duplicate-param",
+      "path": "fixtures/lambda-four-styles-v1/negative/duplicate-param.atto",
+      "expectation": "REJECT_WITHOUT_ARTIFACT",
+      "expected_type_or_diagnostic": "E_DUPLICATE",
+      "parameter_style": "mixed",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "void-return-value",
+      "path": "fixtures/lambda-four-styles-v1/negative/void-return-value.atto",
+      "expectation": "REJECT_WITHOUT_ARTIFACT",
+      "expected_type_or_diagnostic": "E_TYPE",
+      "parameter_style": "name_first",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "void-parameter",
+      "path": "fixtures/lambda-four-styles-v1/negative/void-parameter.atto",
+      "expectation": "REJECT_WITHOUT_ARTIFACT",
+      "expected_type_or_diagnostic": "E_TYPE",
+      "parameter_style": "type_first",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "legacy-result-missing-block",
+      "path": "fixtures/lambda-four-styles-v1/negative/legacy-result-missing-block.atto",
+      "expectation": "REJECT_WITHOUT_ARTIFACT",
+      "expected_type_or_diagnostic": "E_SYNTAX",
+      "parameter_style": "name_first",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    }
+  ],
+  "backend_tracking": {
+    "java": "https://github.com/atto-lang/atto-source.java/pull/477",
+    "llvm": "https://github.com/atto-lang/atto-source.llvm/issues/185",
+    "rs": "https://github.com/atto-lang/atto-source.rs/pull/303",
+    "wasm": "https://github.com/atto-lang/atto-source.wasm/issues/12",
+    "net": "https://github.com/atto-lang/atto-source.net/issues/121",
+    "forge": "https://github.com/atto-lang/atto-source.forge/issues/108",
+    "js": "https://github.com/atto-lang/atto-source.js/pull/76",
+    "cranelift": "https://github.com/atto-lang/atto-source.cranelift/issues/77",
+    "atto": "https://github.com/atto-lang/atto-source.atto/issues/14",
+    "hdl": "https://github.com/atto-lang/atto-source.hdl/issues/22",
+    "realtime": "https://github.com/atto-lang/atto-source.realtime/issues/7"
+  },
+  "validation_requirements": [
+    "AST_TYPE_RETURN_EQUIVALENCE",
+    "NEGATIVE_NO_ARTIFACT",
+    "EXECUTED_GUEST_OR_ELIGIBLE_PROFILE_REJECTION",
+    "EXACT_HEAD_SOURCE_AND_RUNTIME_SHA",
+    "OWNERSHIP_TENANTVM_EFFECT_SECURITY"
+  ],
+  "implementation_notes": {
+    "js": "Draft atto-source.js #76 head 3b80b9719d0d8e6be64d0b2aaab21001dd12a090 mirrors all 8 byte-identical fixtures with Git-blob SHA assertions and authored real compiler-to-ESM/guest tests. Local standalone lexer-adapter/emitter execution: 8/8 shared fixtures passed (4 exit-42, 4 expected diagnostics); exact-head repository CI and full compiler integration NOT_EXECUTED. Closed direct-call noncapturing profile only; no general closure or 11-backend parity claim.",
+    "java": "Draft PR #477 now includes actual positive/negative guest fixtures and source SHA checks. Current-head execution NOT_EXECUTED.",
+    "rs": "Draft #303 is the direct closed local const-v callable/guest-fixture implementation candidate (all eight source fixtures mirrored into executable Wasm runner). Draft #300 adds overlapping typed parameter and const fnc/named-call work; reconcile before merge. New exact-head Cargo and guest execution NOT_EXECUTED; no broader first-class closure parity claim."
+  }
+}

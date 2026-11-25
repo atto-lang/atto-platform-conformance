@@ -1,0 +1,214 @@
+{
+  "schemaVersion": 1,
+  "scope": "aggregate-kind-exact-shapes-v1",
+  "referenceJavaPr": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2181",
+  "dependencies": [
+    "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2177",
+    "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2180"
+  ],
+  "exactJavaHead": "9cf102b3e4a2bdaab31d6d48f0ddb4f8eb67dba5",
+  "semantics": {
+    "struct": "exact closed structural shape, not nominal local declaration",
+    "record": "readonly structural shape, cannot implicitly substitute for exact struct",
+    "aliases": "only callable prologue, lexical transparent alias, no nominal identity",
+    "constructor": "single-field positional or named multi-field; evaluate explicit expressions once in lexical source order"
+  },
+  "evidence": {
+    "exactHeadMaven": false,
+    "exactHeadNative": false,
+    "llvmGuest": false,
+    "wasm32Guest": false,
+    "netNativeAot": false,
+    "forgeGuest": false,
+    "formatterRoundtrip": false
+  },
+  "backendClaims": {
+    "java-graalvm": "pending-exact-head",
+    "llvm": "not-yet-proven",
+    "wasm": "not-yet-proven",
+    "net": "not-yet-proven",
+    "forge": "not-yet-proven"
+  },
+  "cases": [
+    {
+      "id": "exact-struct-return",
+      "file": "exact-struct-return.ores",
+      "sourceGitBlobSha1": "3e08bf98bf28a03a307908b7ccfbcf1ec5458955",
+      "expect": "accept",
+      "stage": "typecheck",
+      "confirmedBackends": [],
+      "runtimeVerified": false
+    },
+    {
+      "id": "inferred-struct-binding",
+      "file": "inferred-struct-binding.ores",
+      "sourceGitBlobSha1": "2c0bbb08acdd8aafa43452dee9e54e51dc29bae7",
+      "expect": "accept",
+      "stage": "typecheck",
+      "confirmedBackends": [],
+      "runtimeVerified": false
+    },
+    {
+      "id": "local-record-alias-return",
+      "file": "local-record-alias-return.ores",
+      "sourceGitBlobSha1": "c1893537273e2095ba5d93a59a20b15d666e739b",
+      "expect": "accept",
+      "stage": "typecheck",
+      "confirmedBackends": [],
+      "runtimeVerified": false
+    },
+    {
+      "id": "local-struct-alias-return",
+      "file": "local-struct-alias-return.ores",
+      "sourceGitBlobSha1": "f46c1ea2be3d1dbbceb2fdcc286e4e4ff44a939a",
+      "expect": "accept",
+      "stage": "typecheck",
+      "confirmedBackends": [],
+      "runtimeVerified": false
+    },
+    {
+      "id": "named-constructor-source-order",
+      "file": "named-constructor-source-order.ores",
+      "sourceGitBlobSha1": "eba3e5dd913a6f79d1134362c4d9a390c29252c4",
+      "expect": "accept",
+      "stage": "typecheck",
+      "confirmedBackends": [],
+      "runtimeVerified": false
+    },
+    {
+      "id": "readonly-record-return",
+      "file": "readonly-record-return.ores",
+      "sourceGitBlobSha1": "721927671a66b791b8406792cd69d52fbd98da4e",
+      "expect": "accept",
+      "stage": "typecheck",
+      "confirmedBackends": [],
+      "runtimeVerified": false
+    },
+    {
+      "id": "reject-alias-after-statement",
+      "file": "reject-alias-after-statement.ores",
+      "sourceGitBlobSha1": "480f8990648cde250a643b322144932cbd27dd87",
+      "expect": "reject",
+      "stage": "parser",
+      "confirmedBackends": [],
+      "runtimeVerified": false
+    },
+    {
+      "id": "reject-alias-cross-scope",
+      "file": "reject-alias-cross-scope.ores",
+      "sourceGitBlobSha1": "d491a8606343d7addf5e7fe392d7e198f0f438a3",
+      "expect": "reject",
+      "stage": "parser-or-typecheck",
+      "confirmedBackends": [],
+      "runtimeVerified": false
+    },
+    {
+      "id": "reject-builtin-alias-shadow",
+      "file": "reject-builtin-alias-shadow.ores",
+      "sourceGitBlobSha1": "d04928485cbc2c214ad0a9524f86a86f0199d318",
+      "expect": "reject",
+      "stage": "parser",
+      "confirmedBackends": [],
+      "runtimeVerified": false
+    },
+    {
+      "id": "reject-duplicate-constructor-field",
+      "file": "reject-duplicate-constructor-field.ores",
+      "sourceGitBlobSha1": "cb9c81e23eedb4637a1b701532e9da4d5f22c63f",
+      "expect": "reject",
+      "stage": "parser-or-typecheck",
+      "confirmedBackends": [],
+      "runtimeVerified": false
+    },
+    {
+      "id": "reject-generic-local-alias",
+      "file": "reject-generic-local-alias.ores",
+      "sourceGitBlobSha1": "07cccb2a19bf4e0f77143bfd0e18daabea0017dc",
+      "expect": "reject",
+      "stage": "parser",
+      "confirmedBackends": [],
+      "runtimeVerified": false
+    },
+    {
+      "id": "reject-missing-constructor-field",
+      "file": "reject-missing-constructor-field.ores",
+      "sourceGitBlobSha1": "0a110b41450d3ddfce491f90968ac00e0021280d",
+      "expect": "reject",
+      "stage": "typecheck",
+      "confirmedBackends": [],
+      "runtimeVerified": false
+    },
+    {
+      "id": "reject-multifield-positional",
+      "file": "reject-multifield-positional.ores",
+      "sourceGitBlobSha1": "066c8468103b0abbf3b92a715ff033ceaacf28b3",
+      "expect": "reject",
+      "stage": "parser",
+      "confirmedBackends": [],
+      "runtimeVerified": false
+    },
+    {
+      "id": "reject-nominal-local-struct",
+      "file": "reject-nominal-local-struct.ores",
+      "sourceGitBlobSha1": "98f5ac9527b6dea2d5d922d6911e4b0f001107e2",
+      "expect": "reject",
+      "stage": "parser",
+      "confirmedBackends": [],
+      "runtimeVerified": false
+    },
+    {
+      "id": "reject-record-as-struct",
+      "file": "reject-record-as-struct.ores",
+      "sourceGitBlobSha1": "30d4a9aad4e41954b473d20bbc4e1f70931f4ebf",
+      "expect": "reject",
+      "stage": "typecheck",
+      "confirmedBackends": [],
+      "runtimeVerified": false
+    },
+    {
+      "id": "reject-recursive-local-alias",
+      "file": "reject-recursive-local-alias.ores",
+      "sourceGitBlobSha1": "0813028e79c59cd7c2abfb84dbd12bc1e9556931",
+      "expect": "reject",
+      "stage": "parser-or-typecheck",
+      "confirmedBackends": [],
+      "runtimeVerified": false
+    },
+    {
+      "id": "reject-struct-as-record",
+      "file": "reject-struct-as-record.ores",
+      "sourceGitBlobSha1": "8ac9b4c9b12c2ec4ec7c2fb00e216be052d4ed83",
+      "expect": "reject",
+      "stage": "typecheck",
+      "confirmedBackends": [],
+      "runtimeVerified": false
+    },
+    {
+      "id": "reject-unknown-constructor-field",
+      "file": "reject-unknown-constructor-field.ores",
+      "sourceGitBlobSha1": "db10e26006295ca195cb1e31cb953976cf8769e0",
+      "expect": "reject",
+      "stage": "parser",
+      "confirmedBackends": [],
+      "runtimeVerified": false
+    },
+    {
+      "id": "scoped-same-name-distinct-kind",
+      "file": "scoped-same-name-distinct-kind.ores",
+      "sourceGitBlobSha1": "e6b07e44e0512c98503daadb2092cc7a9143b3d0",
+      "expect": "accept",
+      "stage": "typecheck",
+      "confirmedBackends": [],
+      "runtimeVerified": false
+    },
+    {
+      "id": "single-field-constructor",
+      "file": "single-field-constructor.ores",
+      "sourceGitBlobSha1": "c2a4731f4471aa6f3873303204851348353f89c2",
+      "expect": "accept",
+      "stage": "typecheck",
+      "confirmedBackends": [],
+      "runtimeVerified": false
+    }
+  ]
+}

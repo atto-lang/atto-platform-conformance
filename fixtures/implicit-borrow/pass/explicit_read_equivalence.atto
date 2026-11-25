@@ -1,0 +1,8 @@
+// expect-exit: 42
+// Explicit borrow! and inferred loan must have identical borrow rights.
+define class Box as pub let int value = 21; end
+fnc read(Box b): int { return b.value; }
+pub fnc main(): int {
+  val b = new Box();
+  return read(b) + read(borrow! b);
+}

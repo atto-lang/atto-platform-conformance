@@ -1,0 +1,6 @@
+// MUST REJECT: lexical closures/functions are not Sendable data over channels.
+pub fnc main(): void {
+  let Channel<fnc() -> int> ch = Channel.new<fnc() -> int>(1);
+  writech ch, || -> int { return 42; };
+  return;
+}

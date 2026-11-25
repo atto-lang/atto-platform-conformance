@@ -1,0 +1,18 @@
+// PROPOSED guest-source positive: exactly one Vec3 column, never x/y/z flattening.
+define struct Vec3 as
+    float x;
+    float y;
+    float z;
+end
+
+define inverted class Particle as
+    Vec3 position;
+    float mass;
+end
+
+fnc main(): int {
+    let rows = InvertedArray<Particle>.with_capacity(2);
+    let h = rows.push(Particle { position: Vec3 { x: 1.0, y: 2.0, z: 3.0 }, mass: 4.0 });
+    if rows[h].position.y neq 2.0 then return 1; fi
+    return 0;
+}

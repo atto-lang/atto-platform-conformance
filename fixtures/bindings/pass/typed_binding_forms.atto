@@ -1,0 +1,10 @@
+// expect-exit: 14
+pub fnc main(): int {
+  val x: int = 1;
+  val mut y: int = 2;
+  let z: int = 3;
+  let mut w: int = 4;
+  z = 5;
+  w = 6;
+  return x + y + z + w;
+}

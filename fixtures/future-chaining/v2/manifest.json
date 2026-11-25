@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 2,
+  "contract": "future-chaining-explicit-layers-v2",
+  "status": "proposal-not-executable",
+  "sourceExecutionVerified": false,
+  "runtimeVerified": false,
+  "caseStatusDefault": "pending",
+  "backendStatus": {
+    "java-graalvm": "pending",
+    "llvm": "pending",
+    "wasm": "pending",
+    "forge": "pending",
+    "net": "pending"
+  },
+  "evidence": [],
+  "cases": [
+    {
+      "id": "flat-map-one-layer",
+      "source": "flat-map-one-layer.ores",
+      "sourceGitBlobSha1": "db7006ae3b564c8ebcb80680ac113a72c065f507",
+      "kind": "positive",
+      "expected": {
+        "stdout": "42",
+        "type": "Future<int>"
+      },
+      "assert": [
+        "canonical_flat_map",
+        "one_async_stage",
+        "single_layer_composition"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "map-preserves-nested",
+      "source": "map-preserves-nested.ores",
+      "sourceGitBlobSha1": "c62fbae210bc2c501cb1b30a6887219086f78391",
+      "kind": "positive",
+      "expected": {
+        "stdout": "42",
+        "type": "Future<Future<int>>"
+      },
+      "assert": [
+        "map_does_not_flatten",
+        "await_one_layer",
+        "producer_not_replayed"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "flatten-one-layer",
+      "source": "flatten-one-layer.ores",
+      "sourceGitBlobSha1": "ce032c78f574d0d61f0496a719d881af63dc580c",
+      "kind": "positive",
+      "expected": {
+        "stdout": "42",
+        "type": "Future<int>"
+      },
+      "assert": [
+        "explicit_flatten",
+        "one_layer_only",
+        "no_implicit_map_flatten"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "reject-flat-map-scalar",
+      "source": "reject-flat-map-scalar.ores",
+      "sourceGitBlobSha1": "5f9f51d91f32bb1a7154f7bc1d1a4ece1015d94c",
+      "kind": "compile_reject",
+      "expected": {
+        "diagnosticCategory": "FUTURE_CALLBACK_NOT_FUTURE"
+      },
+      "assert": [
+        "flat_map_callback_must_return_future"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "reject-implicit-map-flatten",
+      "source": "reject-implicit-map-flatten.ores",
+      "sourceGitBlobSha1": "8a2f07c2453763ed585462556cf1c4c5330774fd",
+      "kind": "compile_reject",
+      "expected": {
+        "diagnosticCategory": "WRAPPER_LAYER_MISMATCH"
+      },
+      "assert": [
+        "map_preserves_nested_future"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "reject-one-await-flatten",
+      "source": "reject-one-await-flatten.ores",
+      "sourceGitBlobSha1": "e99a49f2b30964cbdbba4cb6250859fbc1180fd6",
+      "kind": "compile_reject",
+      "expected": {
+        "diagnosticCategory": "WRAPPER_LAYER_MISMATCH"
+      },
+      "assert": [
+        "await_unwraps_one_layer"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "flat-map-preserves-deeper-nesting",
+      "source": "flat-map-preserves-deeper-nesting.ores",
+      "sourceGitBlobSha1": "2cf2bff1a2f516fde2b8f85272bacf52de180d55",
+      "kind": "positive",
+      "expected": {
+        "stdout": "84",
+        "type": "Future<Future<int>>"
+      },
+      "assert": [
+        "flat_map_exactly_one_layer",
+        "inner_future_kept",
+        "two_awaits",
+        "value_84"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "reject-flat-map-deeper-nesting",
+      "source": "reject-flat-map-deeper-nesting.ores",
+      "sourceGitBlobSha1": "979ea56ccb11c8e90ca2dcc7029ff081364eb8e4",
+      "kind": "compile_reject",
+      "expected": {
+        "diagnosticCategory": "WRAPPER_LAYER_MISMATCH"
+      },
+      "assert": [
+        "flat_map_does_not_recursively_flatten"
+      ],
+      "status": "pending",
+      "verified": false
+    }
+  ]
+}

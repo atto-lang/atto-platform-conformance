@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "contract": "atto-unsafe-blocks-v1",
+  "evidence_kind": "isolated_host_rust_source_model_only",
+  "recorded_utc": "2026-11-20T01:53:18Z",
+  "source_repository": "atto-lang/atto-source.rs",
+  "source_pr": "https://github.com/atto-lang/atto-source.rs/pull/414",
+  "source_head": "3255c91ad43a8e0114f86b0c8c909141545917b5",
+  "mirrored_exact_git_blob_shas": {
+    "src/lexer.rs": "a2d7bd4fe8c6e6eb3c6a49761650d53915be2388",
+    "src/diag.rs": "b9a5b982251315604e90680066bbbbfc49ab1a2a",
+    "src/unsafe_admission.rs": "63c9888c208397b2d73491f40ef7acd14284eacd"
+  },
+  "carrier_repository": "usa-acc/atto-ci",
+  "carrier_pr": "https://github.com/usa-acc/atto-ci/pull/3",
+  "carrier_head_sha": "0d5616970fea439a1dc54d360dac05c20d45be0e",
+  "carrier_workflow_run": "https://github.com/usa-acc/atto-ci/actions/runs/44656809437",
+  "carrier_run_id": 44656809437,
+  "carrier_job_id": 136024930973,
+  "runner_os": "ubuntu-26.04.1",
+  "rustc_version": "1.100.0 (0ef1bc386 2026-11-09)",
+  "verification": {
+    "git_blob_shas": "passed",
+    "focused_rust_compilation": "passed",
+    "isolated_host_structural_tests": {
+      "passed": 5,
+      "failed": 0
+    },
+    "entire_atto_source_rs_compile": "not_executed",
+    "production_parser_integration": "not_executed",
+    "imported_module_loader_behavior": "not_executed",
+    "compiled_atto_guest": "not_executed",
+    "independent_backends": "not_executed"
+  },
+  "evidence_scope": "Cargo crate constructed from the exact mirrored lexer, diagnostics, and unsafe structural-admission production sources. Source file unit-test module stripped because it references the full compiler; five separately written host tests run. The production import_link.rs, parser.rs, and full compile entry were not in this carrier build.",
+  "status": "host_source_model_only",
+  "notes": [
+    "The initial carrier attempt failed because a malformed test-extraction step included full-compiler unit tests; this was corrected and the exact-blobs rerun passed.",
+    "Every case in contracts/unsafe-blocks-v1.json remains not_executed until an actual Atto compiler and guest or verified unsupported target admission independently runs it.",
+    "No privileged raw memory, FFI or TenantVM native unsafe execution was enabled."
+  ]
+}

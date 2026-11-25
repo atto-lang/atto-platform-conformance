@@ -1,0 +1,6 @@
+// expect-error: E_LOAN_ESCAPE (semantic, not parser rejection)
+// The Option wrapper must preserve the nested loan's original root/lifetime.
+fnc leak(Array[int] values) -> Option<ReadLoan<int>> {
+  return values.get(0);
+}
+pub fnc main() -> int { return 42; }

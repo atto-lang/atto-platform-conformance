@@ -1,0 +1,12 @@
+// SOURCE-ONLY CONTRACT: export may follow the declaration and retain kind.
+// expect: ACCEPT. Package-scoped visibility is not public exposure.
+define class Bar as
+  pub answer(): int {
+    return 42;
+  }
+end
+export pub[pkg] class Bar;
+pub fnc main(): int {
+  val value = new Bar();
+  return value.answer();
+}

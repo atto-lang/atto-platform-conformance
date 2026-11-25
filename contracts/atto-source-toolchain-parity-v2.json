@@ -1,0 +1,204 @@
+{
+  "schema": "attolang.source-toolchain-parity/2",
+  "status": "INCOMPLETE_SELECTED_PROOFS",
+  "fullExecutableParityCertified": false,
+  "canonicalManifest": "contracts/atto-canonical-syntax-v1.json",
+  "canonicalSourceCases": 26,
+  "coreBackends": [
+    "java",
+    "llvm",
+    "wasm",
+    "forge",
+    "net"
+  ],
+  "extendedBackends": [
+    "js",
+    "rs",
+    "cranelift",
+    "hdl"
+  ],
+  "sourceRepositories": [
+    {
+      "id": "java",
+      "tier": "core",
+      "repo": "ores-truffle-oreslang/oreslang-source.java",
+      "target": "graalvm-jvm-native-image"
+    },
+    {
+      "id": "llvm",
+      "tier": "core",
+      "repo": "ores-truffle-oreslang/oreslang-source.llvm",
+      "target": "llvm-native-aot"
+    },
+    {
+      "id": "wasm",
+      "tier": "core",
+      "repo": "ores-truffle-oreslang/oreslang-source.wasm",
+      "target": "wasm32-worker"
+    },
+    {
+      "id": "forge",
+      "tier": "core",
+      "repo": "ores-truffle-oreslang/oreslang-source.forge",
+      "target": "forge-native"
+    },
+    {
+      "id": "net",
+      "tier": "core",
+      "repo": "ores-truffle-oreslang/oreslang-source.net",
+      "target": "dotnet-native-aot"
+    },
+    {
+      "id": "js",
+      "tier": "additional",
+      "repo": "ores-truffle-oreslang/oreslang-source.js",
+      "target": "node-esm"
+    },
+    {
+      "id": "rs",
+      "tier": "additional",
+      "repo": "ores-truffle-oreslang/oreslang-source.rs",
+      "target": "rust-native"
+    },
+    {
+      "id": "cranelift",
+      "tier": "additional",
+      "repo": "ores-truffle-oreslang/oreslang-source.cranelift",
+      "target": "cranelift-native"
+    },
+    {
+      "id": "hdl",
+      "tier": "additional",
+      "repo": "ores-truffle-oreslang/oreslang-source.hdl",
+      "target": "systemverilog-hardware"
+    }
+  ],
+  "promotionGates": [
+    "source-head-sha-and-selected-blob-verification",
+    "real-compiler-parse-type-ownership",
+    "generated-guest-execution-exit-42",
+    "reject-nonzero-and-no-usable-artifact",
+    "actor-state-capability-isolation",
+    "full-source-build-and-compiled-aot-where-applicable",
+    "independent-security-review"
+  ],
+  "fullCorpusEvidence": {
+    "java": "NOT_CERTIFIED",
+    "llvm": "NOT_CERTIFIED",
+    "wasm": "NOT_CERTIFIED",
+    "forge": "NOT_CERTIFIED",
+    "net": "NOT_CERTIFIED",
+    "js": "NOT_CERTIFIED",
+    "rs": "NOT_CERTIFIED",
+    "cranelift": "NOT_CERTIFIED",
+    "hdl": "NOT_CERTIFIED"
+  },
+  "selectedReceipts": [
+    {
+      "backend": "java",
+      "scope": "literal-only populated typed map + readonly record and scalar match selected JUnit/Truffle guest",
+      "sourceSha": "0dfb08a95868351eb960d5442ac5ea4f284d76d5",
+      "sourcePr": 2793,
+      "carrierSha": "2f966503d4458bb3cb13ed7850edebb0c7035ba7",
+      "carrierRun": 42923471351,
+      "carrierJob": 130203875962,
+      "sourceBlobs": 323,
+      "selectedTests": 31,
+      "guestKind": "truffle-jvm-interpreter",
+      "scopeIsFullRepo": false,
+      "evidenceClass": "compiled-guest-subset"
+    },
+    {
+      "backend": "llvm",
+      "scope": "scalar match default and negative native CTest selected source",
+      "sourceSha": "2ed5498098856cd7d1e8823934efa34a31c78914",
+      "sourcePr": 1641,
+      "carrierSha": "565190cf9ca9b7dde8db04abc3b252a56ae96b3e",
+      "carrierRun": 42918083696,
+      "carrierJob": 130185587513,
+      "sourceBlobs": 61,
+      "selectedTests": 32,
+      "guestKind": "llvm-clang-native-ctest",
+      "scopeIsFullRepo": false,
+      "evidenceClass": "compiled-guest-subset"
+    },
+    {
+      "backend": "forge",
+      "scope": "stage-0 parser refuses unsupported match and tilde, baseline scalar 42; real GCC/Clang frontend with sanitizer",
+      "sourceSha": "af153431e3d393d4fc30232f1388201a2972e6ad",
+      "sourcePr": 268,
+      "carrierSha": "6893980c12b01a7a956de1fc4289592cfbf5b52d",
+      "carrierRun": 43036553579,
+      "carrierJob": 130576780575,
+      "sourceBlobs": 6,
+      "selectedTests": 9,
+      "guestKind": "forge-cpp20-native-frontend-no-match-map-codegen",
+      "scopeIsFullRepo": false,
+      "evidenceClass": "compile-reject-safety-subset"
+    },
+    {
+      "backend": "net",
+      "scope": "C# structured parser and CFG reject match and tilde, scalar 42 admitted; .NET10 compiler-core",
+      "sourceSha": "79fb122db3aa6e628369bcce8b4d90bff8ac7b44",
+      "sourcePr": 487,
+      "carrierSha": "11eda958ac890ab54f60a45df8d55ba99f125c22",
+      "carrierRun": 43035985080,
+      "carrierJob": 130574791444,
+      "sourceBlobs": 22,
+      "selectedTests": 13,
+      "guestKind": "dotnet10-structured-parser-cfg-no-cil-for-unsupported",
+      "scopeIsFullRepo": false,
+      "evidenceClass": "compile-reject-safety-subset"
+    },
+    {
+      "backend": "js",
+      "scope": "typed scalar match default generated ESM guest + negative source gates",
+      "sourceSha": "8f60c341f88a34cf0d75a88bb372ca4168a4434d",
+      "sourcePr": 243,
+      "carrierSha": "9125c45bb7b23c848dba86b690b29ffee5b8b387",
+      "carrierRun": 43033265050,
+      "carrierJob": 130565457037,
+      "sourceBlobs": 6,
+      "selectedTests": 12,
+      "guestKind": "node-esm-v2",
+      "scopeIsFullRepo": false,
+      "evidenceClass": "compiled-guest-subset"
+    },
+    {
+      "backend": "rs",
+      "scope": "real Rust/Cranelift native object compiler rejects ten unsupported map/match programs; baseline scalar 42 emits ELF",
+      "sourceSha": "5f1894c5e829e1f190498c91dd0c4dde9e48a3e6",
+      "sourcePr": 60,
+      "carrierSha": "30038861f25f3e88c87a3c87d4611aaec66b8aec",
+      "carrierRun": 43037382611,
+      "carrierJob": 130579717954,
+      "sourceBlobs": 18,
+      "selectedTests": 2,
+      "guestKind": "rust-cranelift-native-elf-object-scalar-only",
+      "scopeIsFullRepo": false,
+      "evidenceClass": "compile-reject-safety-subset"
+    }
+  ],
+  "knownDivergences": [
+    {
+      "feature": "populated-typed-map",
+      "target": "all-nine",
+      "message": "Java has one executed literal-only selected slice; independent lowerings and actor/ownership/rollback proof absent in other targets"
+    },
+    {
+      "feature": "canonical-match-default",
+      "target": "all-nine",
+      "message": "Java/LLVM selected slices and JS program-v2 compiled ESM tests exist; other toolchains have no executed canonical fixture receipt"
+    },
+    {
+      "feature": "legacy-on-default",
+      "target": "all-nine",
+      "message": "Canonical grammar requires rejection; candidate manifest previously mislabeled it as accepted, corrected in stacked parity draft"
+    },
+    {
+      "feature": "structural-record-pattern",
+      "target": "all-nine",
+      "message": "Partial draft implementions exist; no nine-backend executable conformance proof"
+    }
+  ]
+}

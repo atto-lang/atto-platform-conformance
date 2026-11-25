@@ -1,0 +1,128 @@
+{
+  "contract": "oreslang.video-replay-guest-smoke/1",
+  "version": 1,
+  "status": "SOURCE_ONLY_NOT_EXECUTED",
+  "summary": "Smallest cross-toolchain executable candidate: 2 opaque encoded-byte chunks, sender write admission, receiver-applied ACK, reconnect from offset, generation fence.",
+  "non_goals": [
+    "real video codec",
+    "actual TCP/UDP/WebSocket transport",
+    "actor scheduler execution",
+    "five-backend native parity",
+    "whole-process memory bound"
+  ],
+  "outputs": {
+    "passPrefix": "VIDEO-REPLAY-PASS|",
+    "orderedLabels": [
+      "capacity",
+      "first-chunk",
+      "second-chunk",
+      "sent",
+      "receiver-committed",
+      "resume-missing",
+      "stale-generation-denied"
+    ],
+    "terminal": "VIDEO-REPLAY-SMOKE-DONE",
+    "expectedExitCode": 0
+  },
+  "expectedGuestChecks": 7,
+  "backends": [
+    {
+      "name": "java",
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "pr": 2445,
+      "head": "bdeb6a9e95678f32aa025e9b1e567fa4c3ea508d",
+      "guestPath": "examples/replay-video-disconnect-smoke.atto",
+      "guestBlobSha": "d334800e067a4f6f4bcd95fa2adf104c52c39f49",
+      "execution": "UNVERIFIED"
+    },
+    {
+      "name": "llvm",
+      "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+      "pr": 1298,
+      "head": "32fa373d61ccd713655c5a6042a68b5a6073bfd3",
+      "guestPath": "contracts/replay_stream_v1/replay-video-disconnect-smoke.atto",
+      "guestBlobSha": "663976aeeb2cd258d854269490c46e522f879777",
+      "execution": "UNVERIFIED"
+    },
+    {
+      "name": "wasm",
+      "repository": "ores-truffle-oreslang/oreslang-source.wasm",
+      "pr": 266,
+      "head": "a23706e05d4f32e1facc76d986750eec80710f31",
+      "guestPath": "contracts/replay_stream_v1/replay-video-disconnect-smoke.atto",
+      "guestBlobSha": "663976aeeb2cd258d854269490c46e522f879777",
+      "execution": "UNVERIFIED"
+    },
+    {
+      "name": "cranelift",
+      "repository": "ores-truffle-oreslang/oreslang-source.cranelift",
+      "pr": 79,
+      "head": "d57f87c66f8c720b927444df7e38976461ac30e5",
+      "guestPath": "contracts/replay_stream_v1/replay-video-disconnect-smoke.atto",
+      "guestBlobSha": "663976aeeb2cd258d854269490c46e522f879777",
+      "execution": "UNVERIFIED"
+    },
+    {
+      "name": "net",
+      "repository": "ores-truffle-oreslang/oreslang-source.net",
+      "pr": 330,
+      "head": "11e12e9865e4e80f182d57758286d863371f44e9",
+      "guestPath": "contracts/replay_stream_v1/replay-video-disconnect-smoke.atto",
+      "guestBlobSha": "663976aeeb2cd258d854269490c46e522f879777",
+      "execution": "UNVERIFIED"
+    }
+  ],
+  "javaGuestRunner": "scripts/run-replay-video-smoke.sh",
+  "javaGuestCommand": "mvn -B -ntp -q -DskipTests exec:java -Dexec.args=examples/replay-video-disconnect-smoke.atto",
+  "admission": "Run the actual compiler + AttoLang guest at the pinned exact head, require 7 exact ordered receipts and terminal, exit zero, concrete executed CI job steps and independent provenance. Any missing executable, unsupported parser feature, no CI runner, or mock-only execution is NOT VERIFIED.",
+  "sourceIdentity": "Git blob SHA in each backend is pinned; import paths differ; no binary parity established.",
+  "security": "No cross-org private source mirror without independent incident disposition and approved protected private-carrier gate.",
+  "javaCiWorkflow": ".github/workflows/ci.yml",
+  "javaCiAddedStep": "Execute 7-receipt replay guest (actual Java/Graal AttoLang compiler)",
+  "javaReceiptValidator": {
+    "source": "scripts/run-replay-video-smoke.sh",
+    "adversarialTests": "scripts/test-replay-video-smoke-runner.sh",
+    "localExecutedCanaries": 16,
+    "localExecutionScope": "Maven CLI stub tests receipt gate only; not Oreslang compiler or guest runtime",
+    "executedNativeGuest": false,
+    "requiredCiStep": "Adversarial receipt-gate selftest (source-free, not a guest pass)",
+    "runnerBlobSha": "0e56ae324841a8595b2e8f4a3e3dad94f841a4de",
+    "selftestBlobSha": "2e6bc6892e8d8b02e84670890474fd6be86c45cf",
+    "localVerification": "Exact GitHub blobs matched local git hash-object; 16/16 local Bash Maven-stub selftests passed including compile-only stdout/stderr guest-output injection; no real AttoLang compiler execution.",
+    "guestCheckCommand": "mvn -B -ntp -q -DskipTests exec:java -Dexec.args=\"--check examples/replay-video-disconnect-smoke.atto\"",
+    "guestRuntimeExecuted": false
+  },
+  "displayLanguage": "AttoLang",
+  "sourceExtension": ".atto",
+  "javaAotPackagingGate": {
+    "status": "CODE_AND_REGRESSION_TEST_ADDED_NOT_EXECUTED",
+    "pomChange": "stdlib resources include both **/*.atto and **/*.ores",
+    "unitTest": "src/test/java/dev/oreslang/config/PackagedAttoStdlibTest.java",
+    "assertion": "dev/oreslang/std/replay_stream.atto must be present on JVM classpath; this is necessary but not sufficient to prove Native Image runtime loading",
+    "pomInclude": [
+      "**/*.atto",
+      "**/*.ores"
+    ],
+    "junitTest": "src/test/java/dev/oreslang/config/PackagedAttoStdlibTest.java",
+    "notes": "Resource inclusion and classpath test authored; Maven/JUnit and Native Image not executed."
+  },
+  "javaAotGuestGate": {
+    "status": "CI_STEPS_AUTHORED_NO_EXECUTION",
+    "script": "scripts/run-replay-video-aot-smoke.sh",
+    "scriptBlobSha": "c6451f8782415dc282e92583ea798efd6164104a",
+    "sourceFreeCanaries": "scripts/test-replay-video-aot-runner.sh",
+    "canariesBlobSha": "76414b45cd704afa126e8c7d6e24c23c71fcdf42",
+    "canariesPassedLocally": 18,
+    "execution": "Native Image --check cannot emit any guest receipt on stdout/stderr; actual guest stdout must match the eight-line expected file byte-for-byte (seven receipts plus terminal), runtime stderr must be empty, and exit status zero. Both compressed32 and native64 AOT jobs wired.",
+    "notVerified": "Exact-head Java/Graal CI has not run any steps. Source-free 18/18 Native AOT fake-executable cases passed locally, with matching exact Git blobs; no Native Image guest compilation/execution evidence.",
+    "sourceExport": "FORBIDDEN pending eight P0 transfer dispositions and explicit approved private carrier",
+    "alternateRunner": {
+      "status": "SOURCE_FREE_ONLY",
+      "repository": "gha-indie-worker/gha-indie-worker-docs",
+      "run_id": 41395768031,
+      "verified_latest_attempt": "SUCCESS_4_EXECUTED_STEPS",
+      "source_transferred": false,
+      "actions_minutes_balance": "UNKNOWN"
+    }
+  }
+}

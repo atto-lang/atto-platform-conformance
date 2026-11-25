@@ -46,8 +46,8 @@ function makeGeometry(schema, layout, capacity, width, groups) {
     }};
   }
   if (layout === 'aosoa') {
-    if (!Number.isSafeInteger(width) || width < 2 || width > 64 || (width & (width - 1)) !== 0)
-      throw new RangeError('AoSoA width must be a power of two in [2,64]');
+    if (!Number.isSafeInteger(width) || width < 1 || width > 1024 || (width & (width - 1)) !== 0)
+      throw new RangeError('AoSoA width must be a power of two in [1,1024]');
     let stride = 0, alignment = 1;
     for (const field of schema) {
       const type = TYPES[field.type];
@@ -187,8 +187,15 @@ export class LayoutStore {
   }
   #checkRow(row) {
     if (!row || typeof row !== 'object' || Array.isArray(row)) throw new TypeError('row must be a record');
-    const keys = Object.keys(row);
-    if (keys.length !== this.#schema.length) throw new TypeError('row field set differs from schema');
+    // Include non-enumerable and Symbol keys: Object.keys silently discards
+    // hidden payload fields and wrongly admits a non-exact row schema.
+    const keys = Reflect.ownKeys(row);
+    const own = new Set(keys);
+    if (this.#schema.some(field => !own.has(field.name)))
+      throw new TypeError('missing row field');
+    if (keys.length !== this.#schema.length ||
+        keys.some(key => typeof key !== 'string' || !this.#types.has(key)))
+      throw new TypeError('row field set differs from schema');
     const snapshot = Object.create(null);
     for (const f of this.#schema) {
       if (!Object.hasOwn(row, f.name)) throw new TypeError('missing row field');

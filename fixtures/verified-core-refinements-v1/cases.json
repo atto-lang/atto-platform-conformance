@@ -1,0 +1,378 @@
+{
+  "schemaVersion": 1,
+  "profile": "verified-core-refinements-v1",
+  "cases": [
+    {
+      "source": "halve.atto",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      },
+      "privateHelpers": [
+        "halve"
+      ]
+    },
+    {
+      "source": "relational-lemma-chain.atto",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      },
+      "privateHelpers": [
+        "halve",
+        "delegated"
+      ]
+    },
+    {
+      "source": "bounded-parameter.atto",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      },
+      "privateHelpers": [
+        "forward"
+      ]
+    },
+    {
+      "source": "dimensionless-refinement.atto",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      },
+      "privateHelpers": [
+        "raise_score"
+      ]
+    },
+    {
+      "source": "zero-divisor.atto",
+      "expected": {
+        "kind": "arithmeticFailure",
+        "category": "divisionByZero"
+      }
+    },
+    {
+      "source": "signed-divide-overflow.atto",
+      "expected": {
+        "kind": "arithmeticFailure",
+        "category": "integerOverflow"
+      }
+    },
+    {
+      "source": "contradictory-alias.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_REFINEMENT_EMPTY"
+      }
+    },
+    {
+      "source": "contradictory-precondition.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_REFINEMENT_EMPTY"
+      }
+    },
+    {
+      "source": "refinement-binding.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_REFINEMENT_BINDING"
+      }
+    },
+    {
+      "source": "requires-at-call.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_REFINEMENT_PRECONDITION"
+      }
+    },
+    {
+      "source": "requires-not-inferred-from-caller.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_REFINEMENT_PRECONDITION"
+      }
+    },
+    {
+      "source": "refinement-return.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_REFINEMENT_RETURN"
+      }
+    },
+    {
+      "source": "unproven-constant-postcondition.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_REFINEMENT_POSTCONDITION"
+      }
+    },
+    {
+      "source": "unproven-relational-postcondition.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_REFINEMENT_POSTCONDITION"
+      }
+    },
+    {
+      "source": "negative-division-relational-postcondition.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_REFINEMENT_POSTCONDITION"
+      }
+    },
+    {
+      "source": "unit-scale-at-call.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_UNIT_SCALE"
+      }
+    },
+    {
+      "source": "unit-scale-in-contract.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_UNIT_SCALE"
+      }
+    },
+    {
+      "source": "unit-erasure-at-return.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_UNIT_ERASURE"
+      }
+    },
+    {
+      "source": "export-refined-signature.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_REFINEMENT_EXPORT"
+      }
+    },
+    {
+      "source": "mutable-binding.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_REFINEMENT_BODY"
+      }
+    },
+    {
+      "source": "unverified-recursion.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_REFINEMENT_CALL"
+      }
+    },
+    {
+      "source": "arity-at-call.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_REFINEMENT_CALL"
+      }
+    },
+    {
+      "source": "halve-i32.atto",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      },
+      "privateHelpers": [
+        "halve"
+      ]
+    },
+    {
+      "source": "i32-normal-result-range.atto",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      },
+      "privateHelpers": [
+        "increment"
+      ]
+    },
+    {
+      "source": "i32-widen-before-arithmetic.atto",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "source": "i32-add-before-cancellation.atto",
+      "expected": {
+        "kind": "arithmeticFailure",
+        "category": "i32Overflow"
+      }
+    },
+    {
+      "source": "i32-multiply-overflow.atto",
+      "expected": {
+        "kind": "arithmeticFailure",
+        "category": "i32Overflow"
+      }
+    },
+    {
+      "source": "i32-negate-overflow.atto",
+      "expected": {
+        "kind": "arithmeticFailure",
+        "category": "i32Overflow"
+      }
+    },
+    {
+      "source": "i32-divide-overflow.atto",
+      "expected": {
+        "kind": "arithmeticFailure",
+        "category": "i32Overflow"
+      }
+    },
+    {
+      "source": "i32-divide-zero.atto",
+      "expected": {
+        "kind": "arithmeticFailure",
+        "category": "divisionByZero"
+      }
+    },
+    {
+      "source": "i32-binding-out-of-range.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_REFINEMENT_BINDING"
+      }
+    },
+    {
+      "source": "i32-operand-out-of-range.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_I32_RANGE"
+      }
+    },
+    {
+      "source": "i32-empty-alias.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_REFINEMENT_EMPTY"
+      }
+    },
+    {
+      "source": "i32-reserved-carrier.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_REFINEMENT_DUPLICATE"
+      }
+    },
+    {
+      "source": "checked-refinement-call.atto",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      },
+      "privateHelpers": [
+        "read",
+        "consume_value"
+      ]
+    },
+    {
+      "source": "checked-refinement-intersection.atto",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      },
+      "privateHelpers": [
+        "intersect"
+      ]
+    },
+    {
+      "source": "checked-refinement-relation.atto",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      },
+      "privateHelpers": [
+        "narrow"
+      ]
+    },
+    {
+      "source": "checked-refinement-quantity.atto",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "source": "checked-refinement-lower-failure.atto",
+      "expected": {
+        "kind": "refinementFailure",
+        "category": "refinementViolation"
+      }
+    },
+    {
+      "source": "checked-refinement-upper-failure.atto",
+      "expected": {
+        "kind": "refinementFailure",
+        "category": "refinementViolation"
+      }
+    },
+    {
+      "source": "checked-refinement-predicate-upper-failure.atto",
+      "expected": {
+        "kind": "refinementFailure",
+        "category": "refinementViolation"
+      }
+    },
+    {
+      "source": "checked-refinement-operand-failure.atto",
+      "expected": {
+        "kind": "arithmeticFailure",
+        "category": "divisionByZero"
+      }
+    },
+    {
+      "source": "checked-refinement-implicit-rejected.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_REFINEMENT_BINDING"
+      }
+    },
+    {
+      "source": "checked-refinement-unproved-precondition.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_REFINEMENT_PRECONDITION"
+      }
+    },
+    {
+      "source": "checked-refinement-unit-dimension.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_UNIT_DIMENSION"
+      }
+    },
+    {
+      "source": "checked-refinement-unit-scale.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_UNIT_SCALE"
+      }
+    },
+    {
+      "source": "checked-refinement-optional-rejected.atto",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_REFINEMENT_CAST"
+      }
+    },
+    {
+      "source": "checked-refinement-signed-boundary.atto",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "source": "checked-refinement-disjoint.atto",
+      "expected": {
+        "kind": "refinementFailure",
+        "category": "refinementViolation"
+      }
+    }
+  ]
+}

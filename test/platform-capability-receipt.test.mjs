@@ -49,7 +49,7 @@ test("rejects host stub promoted as compiler guest",()=>{
   receipt.evidence.compilerProduced=false;
   const result=verifyPlatformCapabilityReceipt(receipt,contract);
   assert.equal(result.ok,false);
-  assert.match(result.errors.join("\n"),/host-reference-only/);
+  assert.match(result.errors.join("\n"),/hostReferenceOnly=false/);
   assert.match(result.errors.join("\n"),/compilerProduced/);
 });
 
@@ -81,6 +81,17 @@ test("rejects alternate contract repository substitution",()=>{
   const result=verifyPlatformCapabilityReceipt(baseReceipt(),weakened);
   assert.equal(result.ok,false);
   assert.match(result.errors.join("\n"),/repository mismatch for desktop/);
+});
+
+test("rejects inherited platform names and missing canonical repository",()=>{
+  for(const name of ["__proto__","toString","constructor","valueOf"]) {
+    const receipt=baseReceipt();
+    receipt.platform=name;
+    delete receipt.repository;
+    const result=verifyPlatformCapabilityReceipt(receipt,contract);
+    assert.equal(result.ok,false,name);
+    assert.match(result.errors.join("\n"),/unknown platform/);
+  }
 });
 
 test("rejects repository/platform substitution",()=>{
@@ -117,4 +128,27 @@ test("compiler promotion requires exact compiler revision and binary digest",()=
   assert.equal(result.ok,false);
   assert.match(result.errors.join("\n"),/compilerSourceCommit/);
   assert.match(result.errors.join("\n"),/compilerBinarySha256/);
+});
+
+test("rejects missing and non-success workflow conclusions at every stage",()=>{
+  for(const conclusion of [undefined,null,"","queued","in_progress","failure","cancelled","skipped","timed_out","neutral"]) {
+    const receipt=baseReceipt();
+    receipt.evidence.workflowConclusion=conclusion;
+    for(const stage of ["host-reference","abi-link","compiler-guest"]) {
+      receipt.stage=stage;
+      const result=verifyPlatformCapabilityReceipt(receipt,contract);
+      assert.equal(result.ok,false,stage + " must reject " + String(conclusion));
+      assert.match(result.errors.join("\n"),/workflowConclusion/);
+    }
+  }
+});
+
+test("rejects non-safe or noninteger executedSteps even when conclusion is success",()=>{
+  for(const value of [Number.MAX_SAFE_INTEGER+1,1.5,-1,NaN,Infinity]) {
+    const receipt=baseReceipt();
+    receipt.evidence.executedSteps=value;
+    const result=verifyPlatformCapabilityReceipt(receipt,contract);
+    assert.equal(result.ok,false,String(value));
+    assert.match(result.errors.join("\n"),/executedSteps/);
+  }
 });

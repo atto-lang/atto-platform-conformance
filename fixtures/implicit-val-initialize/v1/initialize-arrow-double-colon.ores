@@ -1,0 +1,10 @@
+define class Connection as
+  final int connection_id;
+  initialize(int id) -> void ::
+    self.connection_id = id;
+  end
+end
+pub fnc main(): int {
+  val Connection c = new Connection(42);
+  return c.connection_id;
+}

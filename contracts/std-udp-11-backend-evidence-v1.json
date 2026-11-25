@@ -1,0 +1,410 @@
+{
+  "schema": "atto.std-udp-11-backend-evidence.v1",
+  "capture_date_utc": "2026-11-22",
+  "scope": "SOURCE_AND_HOST_EVIDENCE_ONLY_NO_COMPILED_ATTO_UDP_GUEST_PASS",
+  "compiler_repository_count": 11,
+  "semantics": "same behavioral contract; independent per-backend .atto and native implementations",
+  "required_end_to_end": "compiled .atto guest physical UDP loopback returns exit 42 and passes ownership, permission, cancellation, truncation and zero-length packet negatives",
+  "status_vocabulary": [
+    "passed",
+    "failed",
+    "unsupported",
+    "not_executed",
+    "not_implemented"
+  ],
+  "source": [
+    {
+      "repository": "atto-lang/atto-source.atto",
+      "backend": "atto",
+      "reference": {
+        "kind": "main_bootstrap",
+        "head_sha": "5b9a274490a4567ed9d1088fd1ff304dbe383357"
+      },
+      "phase": "bootstrap",
+      "host": {
+        "status": "not_executed",
+        "receipt": null
+      },
+      "compiled_atto_guest": {
+        "status": "not_implemented",
+        "receipt": null
+      },
+      "aot": {
+        "status": "not_implemented",
+        "receipt": null
+      },
+      "unsupported_raw_udp_profile": "not_claimed",
+      "source_model_is_not_guest": true
+    },
+    {
+      "repository": "atto-lang/atto-source.net",
+      "backend": "net",
+      "reference": {
+        "kind": "draft_pr",
+        "pr": 212,
+        "branch": "feat/std-net-udp-datagram-policy-20261122",
+        "head_sha": "76fcf0bffcfff38267595763f194ba2ffde0f918"
+      },
+      "phase": "candidate",
+      "host": {
+        "status": "not_executed",
+        "receipt": null
+      },
+      "compiled_atto_guest": {
+        "status": "not_executed",
+        "receipt": null
+      },
+      "aot": {
+        "status": "not_executed",
+        "receipt": null
+      },
+      "unsupported_raw_udp_profile": "not_claimed",
+      "source_model_is_not_guest": true
+    },
+    {
+      "repository": "atto-lang/atto-source.hdl",
+      "backend": "hdl",
+      "reference": {
+        "kind": "draft_pr",
+        "pr": 65,
+        "branch": "feat/std-net-udp-datagram-policy-20261122",
+        "head_sha": "bd9d2b314fd65b69f38cf93b2715ad4456f8085c"
+      },
+      "phase": "policy_only",
+      "host": {
+        "status": "not_executed",
+        "receipt": null
+      },
+      "compiled_atto_guest": {
+        "status": "not_executed",
+        "receipt": null
+      },
+      "aot": {
+        "status": "not_executed",
+        "receipt": null
+      },
+      "unsupported_raw_udp_profile": "browser_or_non_socket_target_unverified_guard",
+      "source_model_is_not_guest": true
+    },
+    {
+      "repository": "atto-lang/atto-source.java",
+      "backend": "java",
+      "reference": {
+        "kind": "draft_pr",
+        "pr": 1762,
+        "branch": "feat/std-net-udp-datagram-policy-20261122",
+        "head_sha": "9ff8ea0958488f61711c9891ebac85dc0ba5b2b7"
+      },
+      "phase": "candidate",
+      "host": {
+        "status": "passed",
+        "receipt": {
+          "kind": "jdk21_shim_bridge_real_socket",
+          "cases": 1,
+          "repetitions": 1,
+          "blob_sha": [
+            "dee6e5a6926ea1924d23a609f4a3f655cb490815",
+            "edd67eee2bf6835dc3f7501d93e61cdce2de2363",
+            "ef1d62c2051902ba68898dbe43d43fd9bd47a134"
+          ],
+          "caveat": "real UDP loopback, VM/future/reactor replaced by stand-ins; no JDK25 or compiled Atto guest"
+        }
+      },
+      "compiled_atto_guest": {
+        "status": "not_executed",
+        "receipt": null
+      },
+      "aot": {
+        "status": "not_executed",
+        "receipt": null
+      },
+      "unsupported_raw_udp_profile": "not_claimed",
+      "source_model_is_not_guest": true
+    },
+    {
+      "repository": "atto-lang/atto-source.realtime",
+      "backend": "realtime",
+      "reference": {
+        "kind": "main_bootstrap",
+        "head_sha": "4f6449470ab075cdad17884c7a1aee2a6e2ab54c"
+      },
+      "phase": "bootstrap",
+      "host": {
+        "status": "not_executed",
+        "receipt": null
+      },
+      "compiled_atto_guest": {
+        "status": "not_implemented",
+        "receipt": null
+      },
+      "aot": {
+        "status": "not_implemented",
+        "receipt": null
+      },
+      "unsupported_raw_udp_profile": "not_claimed",
+      "source_model_is_not_guest": true
+    },
+    {
+      "repository": "atto-lang/atto-source.rs",
+      "backend": "rs",
+      "reference": {
+        "kind": "draft_pr",
+        "pr": 542,
+        "branch": "feat/std-net-udp-datagram-policy-20261122",
+        "head_sha": "4b8425da5e4ce30c858e2ad47a24d5671149de49"
+      },
+      "phase": "unsupported_guard_candidate",
+      "host": {
+        "status": "not_executed",
+        "receipt": null
+      },
+      "compiled_atto_guest": {
+        "status": "not_executed",
+        "receipt": null
+      },
+      "aot": {
+        "status": "not_executed",
+        "receipt": null
+      },
+      "unsupported_raw_udp_profile": "browser_or_non_socket_target_unverified_guard",
+      "source_model_is_not_guest": true
+    },
+    {
+      "repository": "atto-lang/atto-source.llvm",
+      "backend": "llvm",
+      "reference": {
+        "kind": "draft_pr",
+        "pr": 863,
+        "branch": "feat/std-net-udp-datagram-policy-20261122",
+        "head_sha": "079615210375bfaa02893e495b4d1203b1484e09"
+      },
+      "phase": "candidate",
+      "host": {
+        "status": "passed",
+        "receipt": {
+          "kind": "native_c11_host_socket",
+          "cases": 1,
+          "repetitions": 3,
+          "blob_sha": [
+            "af20a9fed12823d9e72ceb43af75717d45fe507c",
+            "36aad206df9203ec1077385855faab56d446a83c"
+          ],
+          "caveat": "GCC, Clang, GCC ASan+UBSan+leak detection, host C only"
+        }
+      },
+      "compiled_atto_guest": {
+        "status": "not_executed",
+        "receipt": null
+      },
+      "aot": {
+        "status": "not_executed",
+        "receipt": null
+      },
+      "unsupported_raw_udp_profile": "not_claimed",
+      "source_model_is_not_guest": true
+    },
+    {
+      "repository": "atto-lang/atto-source.js",
+      "backend": "js",
+      "reference": {
+        "kind": "draft_pr",
+        "pr": 136,
+        "branch": "feat/std-net-udp-datagram-policy-20261122",
+        "head_sha": "f237ea6def27c9e8eeb4515708188af682d8e2e6"
+      },
+      "phase": "host_candidate",
+      "host": {
+        "status": "passed",
+        "receipt": {
+          "kind": "node_v22_host_adapter",
+          "cases": 13,
+          "repetitions": 20,
+          "blob_sha": [
+            "effedb5710875fa8b5a1336973f916d8bcb4294b",
+            "e9072aa718d0c0a08cdefb67f62f6cad28346125"
+          ],
+          "caveat": "Node physical host adapter only, not compiled guest"
+        }
+      },
+      "compiled_atto_guest": {
+        "status": "not_executed",
+        "receipt": null
+      },
+      "aot": {
+        "status": "not_executed",
+        "receipt": null
+      },
+      "unsupported_raw_udp_profile": "not_claimed",
+      "source_model_is_not_guest": true
+    },
+    {
+      "repository": "atto-lang/atto-source.forge",
+      "backend": "forge",
+      "reference": {
+        "kind": "draft_pr",
+        "pr": 232,
+        "branch": "feat/std-net-udp-datagram-policy-20261122",
+        "head_sha": "1f26b44edac1aa4fdd96ace3c5a02a6bed28e845"
+      },
+      "phase": "unsupported_guard_candidate",
+      "host": {
+        "status": "not_executed",
+        "receipt": null
+      },
+      "compiled_atto_guest": {
+        "status": "not_executed",
+        "receipt": null
+      },
+      "aot": {
+        "status": "not_executed",
+        "receipt": null
+      },
+      "unsupported_raw_udp_profile": "not_claimed",
+      "source_model_is_not_guest": true
+    },
+    {
+      "repository": "atto-lang/atto-source.wasm",
+      "backend": "wasm",
+      "reference": {
+        "kind": "draft_pr",
+        "pr": 273,
+        "branch": "feat/std-net-udp-datagram-policy-20261122",
+        "head_sha": "29270a7ac3482eb392ecca4d58a0d4a2ec7170f5"
+      },
+      "phase": "host_candidate",
+      "host": {
+        "status": "passed",
+        "receipt": {
+          "kind": "node_v22_host_adapter",
+          "cases": 13,
+          "repetitions": 20,
+          "blob_sha": [
+            "8f5538bdc6847547b5dc61330627e3ba5f1de42d",
+            "e9072aa718d0c0a08cdefb67f62f6cad28346125"
+          ],
+          "caveat": "Node host adapter only; browser Wasm cannot open raw UDP sockets"
+        }
+      },
+      "compiled_atto_guest": {
+        "status": "not_executed",
+        "receipt": null
+      },
+      "aot": {
+        "status": "not_executed",
+        "receipt": null
+      },
+      "unsupported_raw_udp_profile": "browser_or_non_socket_target_unverified_guard",
+      "source_model_is_not_guest": true
+    },
+    {
+      "repository": "atto-lang/atto-source.cranelift",
+      "backend": "cranelift",
+      "reference": {
+        "kind": "draft_pr",
+        "pr": 96,
+        "branch": "feat/std-net-udp-datagram-policy-20261122",
+        "head_sha": "f91cc0ea4f569996c9aa1a922cf00e347b36ff02"
+      },
+      "phase": "unsupported_guard_candidate",
+      "host": {
+        "status": "not_executed",
+        "receipt": null
+      },
+      "compiled_atto_guest": {
+        "status": "not_executed",
+        "receipt": null
+      },
+      "aot": {
+        "status": "not_executed",
+        "receipt": null
+      },
+      "unsupported_raw_udp_profile": "not_claimed",
+      "source_model_is_not_guest": true
+    }
+  ],
+  "shared_source_model": {
+    "status": "passed",
+    "scope": "translated JS model, not .atto parser or compiler",
+    "cases": 3,
+    "repetitions": 1
+  },
+  "ci": {
+    "source_actions": "queued_without_executed_compiler_steps; alternative sonus source-free capacity verified; private export not authorized",
+    "source_free_carriers_observed": [
+      {
+        "repository": "benefactor-cc/atto-ci",
+        "run_id": 45050095837,
+        "executed_steps": 0,
+        "result": "runner_admission_failure_not_compiler_result"
+      },
+      {
+        "repository": "voxletra/voxletra-e2e",
+        "run_id": 45056785816,
+        "executed_steps": 0,
+        "result": "runner_admission_failure_not_compiler_result"
+      },
+      {
+        "repository": "scintilla-run/atto-ci",
+        "run_id": 45050199115,
+        "executed_steps": 0,
+        "result": "runner_admission_failure_not_compiler_result"
+      },
+      {
+        "repository": "athlet-o/atto-ci",
+        "run_id": 44959154671,
+        "executed_steps": 0,
+        "result": "runner_admission_failure_not_compiler_result"
+      },
+      {
+        "repository": "agent-pontifex/agent-pontifex-docs",
+        "run_id": 45047659405,
+        "executed_steps": 0,
+        "result": "runner_admission_failure_not_compiler_result"
+      },
+      {
+        "repository": "akrion-sim/atto-ci",
+        "run_id": 44953794858,
+        "executed_steps": 0,
+        "result": "runner_admission_failure_not_compiler_result"
+      },
+      {
+        "repository": "zed-pkg-test/atto-ci",
+        "run_id": 44969089286,
+        "executed_steps": 0,
+        "result": "runner_admission_failure_not_compiler_result"
+      },
+      {
+        "repository": "honeypot-r-us-test/atto-ci",
+        "run_id": 44969091456,
+        "executed_steps": 0,
+        "result": "runner_admission_failure_not_compiler_result"
+      },
+      {
+        "repository": "sonus-auris-test/atto-ci",
+        "run_id": 45059875505,
+        "executed_steps": 6,
+        "result": "source_free_capacity_proven_no_export",
+        "carrier_head_sha": "3d7a582fc61df3fcf5cadc6656a0c5b91a5e665e",
+        "carrier_repo_id": "1458331448"
+      }
+    ],
+    "private_source_mirrored": false,
+    "authenticated_export_clearance": false,
+    "carrier_capacity_proven": true,
+    "source_mirror_permitted": false
+  },
+  "guest_pass_admission": {
+    "minimum_actual_steps": 1,
+    "required_fields": [
+      "compiler_head_sha",
+      "source_tree_sha",
+      "target",
+      "toolchain",
+      "positive_guest_exit",
+      "negative_guest_results",
+      "actual_run_id",
+      "executed_steps"
+    ],
+    "must_not_promote_host_or_source_model": true
+  }
+}

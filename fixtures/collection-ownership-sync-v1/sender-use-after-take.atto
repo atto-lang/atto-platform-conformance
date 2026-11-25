@@ -1,0 +1,6 @@
+pub fnc main(): void {
+  val values = [1, 2];
+  val moved = rt take values;
+  values.get(0);
+  return;
+}

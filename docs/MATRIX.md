@@ -68,10 +68,21 @@ The manifest now carries three positive source-admission targets for every compi
 - `async gen* values(): AsyncIterator<int>`
 - `suspend gen* values(): AsyncIterator<int>`
 
-These are **parity targets, not support claims**. A backend that cannot parse/type-check
-one of these fixtures must report a mismatch/unsupported state until it has a real
-implementation. In particular, accepting the syntax without lowering lazy pulls,
-typed `yield`/`yield*`, close/cancellation cleanup, and async continuation semantics
-does not establish runtime parity. Java implementation work is tracked in
-`oreslang-source.java#2110`; the scheduler-owned async-generator proof remains
-separately blocked by Java #721/#883/#677.
+These are **parity targets, not support claims**. The manifest carries an
+`unsupportedBackends` capability ledger for positive targets that have not landed
+in a backend's merged main. A configured run reports those rows as `UNSUPPORTED`
+without invoking the compiler for that fixture; `UNSUPPORTED` is a parity gap and
+counts non-green. It is never promoted to `VERIFIED`, and an incidental parser
+failure is never treated as proof of an intentional capability boundary.
+
+At this revision all six merged backend mains are explicitly unsupported for the
+three generator target rows. Candidate implementation PRs (for example Java #2130,
+LLVM #1075 and JS #85) do not change the shared ledger until their implementation
+actually lands. When a backend gains a target on main, remove only that backend from
+the corresponding `unsupportedBackends` row; the exact same fixture then becomes
+an executable acceptance gate.
+
+Accepting syntax without lowering lazy pulls, typed `yield`/`yield*`,
+close/cancellation cleanup, and async continuation semantics does not establish
+runtime parity. Java's public host async-generator proof remains separately blocked
+by Java #721/#883/#677.
