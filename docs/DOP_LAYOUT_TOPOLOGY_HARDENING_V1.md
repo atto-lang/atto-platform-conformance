@@ -11,6 +11,8 @@
 | AoSoA (array of structs of arrays) | Fixed-size tiles, each with its own per-field columns | Requires explicit tile width (power of two, 2..64 in this *host model*) |
 | SoAoS (struct of arrays of structs) | Arrays of *field-group records*, e.g. hot [position, velocity] and cold [mass, state] | Requires an exact partition of fields into explicitly selected groups |
 
+**Column mutability is part of the schema.** In source, `let position: int;` is mutable after owner insertion, while `position: int;` is implicitly immutable. The host layout oracle now requires an *explicit boolean* `mutable` flag on every schema field and enforces write authority after insertion, without conferring guest access or any borrow right. Inserting or internally relocating a whole logical row initializes/copies immutable fields; direct updates do not.
+
 **AoSoA and SoAoS are different.** AoSoA groups *rows* into tiled columns. SoAoS groups *fields* into bundles of row-major records. Neither is silently equivalent to the canonical one-physical-column-per-direct-field SoA definition for `InvertedArray<T>` v1. They are **candidate explicit layout extensions**; this test introduces no new source keyword or implicit layout selection.
 
 For field index f, physical row r, field count F, number of rows N, tile width W, and eight-byte scalar cells, the checked reference offsets are:

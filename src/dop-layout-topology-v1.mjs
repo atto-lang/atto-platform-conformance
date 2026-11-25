@@ -32,12 +32,16 @@ function validatedSchema(schema) {
   return Object.freeze(schema.map((field) => {
     const name = ownData(field, 'name', 'field');
     const type = ownData(field, 'type', 'field');
+    // Explicit bool rather than host truthiness: the compiler must retain
+    // per-field 'let' authority instead of guessing it during lowering.
+    const mutable = ownData(field, 'mutable', 'field');
+    if (typeof mutable !== 'boolean') fail('field mutable must be explicit boolean');
     if (typeof name !== 'string' || !/^[a-z][a-z0-9_]*$/.test(name) || FORBIDDEN.has(name))
       fail('invalid field name');
     if (seen.has(name)) fail('duplicate field name');
     seen.add(name);
     if (type !== 'i64') fail('v1 host model supports i64 only');
-    return Object.freeze({name, type, width: 8});
+    return Object.freeze({name, type, mutable, width: 8});
   }));
 }
 function validatedGroups(groups, fields) {
@@ -112,6 +116,7 @@ export function createDopLayoutStore(options) {
   const view = new DataView(new ArrayBuffer(plan.byteLength));
   let length = 0;
   const names = plan.schema.map(f => f.name);
+  const mutableNames = new Set(plan.schema.filter(f => f.mutable).map(f => f.name));
   function checkedRow(index) { return checkedIndex(index, length); }
   function validatedRow(value) {
     const result = Object.create(null);
@@ -122,6 +127,8 @@ export function createDopLayoutStore(options) {
   function get(field, row) { return view.getBigInt64(plan.offset(checkedRow(row), field), true); }
   function set(field, row, value) {
     const at = plan.offset(checkedRow(row), field);
+    if (!mutableNames.has(field))
+      throw new TypeError('immutable field cannot be written after insertion');
     view.setBigInt64(at, checkedI64(value), true);
   }
   function snapshot(row) {

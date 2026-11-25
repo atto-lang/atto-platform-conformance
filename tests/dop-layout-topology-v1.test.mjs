@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createDopLayoutPlan, createDopLayoutStore} from '../src/dop-layout-topology-v1.mjs';
 
-const schema = Object.freeze(['p', 'v', 'mass', 'kind'].map(name => Object.freeze({name, type: 'i64'})));
+const schema = Object.freeze(['p', 'v', 'mass', 'kind'].map(name =>
+  Object.freeze({name, type: 'i64', mutable: name === 'p'})));
 const choices = [
   {kind: 'aos'},
   {kind: 'soa'},
@@ -101,6 +102,35 @@ test('swap-delete scrubs removed row slots and keeps every group/column coherent
   }
 });
 
+test('per-field let mutability is explicit, preserved and enforced after row insertion', () => {
+  for (const choice of choices) {
+    const store = mk(choice, 2);
+    store.push(value(1)); // immutable val fields can be initialized at push.
+    assert.deepEqual(store.plan.schema.map(f => f.mutable), [true, false, false, false]);
+    const before = store.bytesSnapshot();
+    for (const name of ['v', 'mass', 'kind']) {
+      assert.throws(() => store.set(name, 0, 99n), /immutable field/);
+      assert.throws(() => store.addI64(name, 0, 1n), /immutable field/);
+    }
+    assert.deepEqual(store.bytesSnapshot(), before);
+    store.set('p', 0, -11n);
+    assert.equal(store.get('p', 0), -11n);
+    const after = store.bytesSnapshot();
+    assert.throws(() => store.set('p', 0, '42'), /signed i64 BigInt/);
+    assert.deepEqual(store.bytesSnapshot(), after);
+  }
+  for (const mutable of [undefined, 1, 'true', null, new Boolean(true)]) {
+    assert.throws(() => createDopLayoutPlan({
+      kind: 'soa', capacity: 1, schema: [{name: 'p', type: 'i64', mutable}]
+    }), /mutable must be explicit boolean/);
+  }
+  assert.throws(() => createDopLayoutPlan({
+    kind: 'soa', capacity: 1, schema: [{
+      name: 'p', type: 'i64', get mutable() { throw Error('getter must never run'); }
+    }]
+  }), /mutable must be own data/);
+});
+
 test('invalid push and i64 overflow fail atomically without byte mutation', () => {
   for (const choice of choices) {
     const store = mk(choice, 2);
@@ -139,7 +169,7 @@ test('SoAoS grouping must be an exact partition, and no topology is selected imp
 });
 
 test('schema is copied, validated without invoking getters, and cannot be mutated after admission', () => {
-  const field = {name: 'p', type: 'i64'};
+  const field = {name: 'p', type: 'i64', mutable: true};
   const original = [field];
   const plan = createDopLayoutPlan({kind: 'soa', schema: original, capacity: 2});
   field.name = 'evil'; original.push({name: 'z', type: 'i64'});
@@ -147,14 +177,14 @@ test('schema is copied, validated without invoking getters, and cannot be mutate
   assert.equal(plan.schema.length, 1);
   assert.ok(Object.isFrozen(plan.schema));
   assert.throws(() => createDopLayoutPlan({kind: 'soa', capacity: 1,
-    schema: [{get name() {throw new Error('should not run');}, type: 'i64'}]}),
+    schema: [{get name() {throw new Error('should not run');}, type: 'i64', mutable: true}]}),
     /name must be own data/);
   assert.throws(() => createDopLayoutPlan({kind: 'soa', capacity: 1,
-    schema: [{name: '__proto__', type: 'i64'}]}), /invalid field name/);
+    schema: [{name: '__proto__', type: 'i64', mutable: true}]}), /invalid field name/);
   assert.throws(() => createDopLayoutPlan({kind: 'soa', capacity: 1,
-    schema: [{name: 'p', type: 'i64'}, {name: 'p', type: 'i64'}]}), /duplicate/);
+    schema: [{name: 'p', type: 'i64', mutable: true}, {name: 'p', type: 'i64', mutable: false}]}), /duplicate/);
   assert.throws(() => createDopLayoutPlan({kind: 'soa', capacity: 1,
-    schema: [{name: 'p', type: 'pointer'}]}), /i64 only/);
+    schema: [{name: 'p', type: 'pointer', mutable: true}]}), /i64 only/);
 });
 
 test('deterministic randomized traces have identical results across four topologies', () => {
