@@ -1,0 +1,90 @@
+{
+  "schema": "atto.critical-runner-admission-three-private-repository-comparison/1",
+  "date": "2026-11-02",
+  "jobs_definition_identical": true,
+  "job": "runner-admission",
+  "runner_label": "ubuntu-24.04",
+  "sources": {
+    "alternate": {
+      "repository": "gha-indie-worker/gha-indie-worker-docs",
+      "repo_id": 1351003564,
+      "private": true,
+      "commit": "63b98a78298a83123b53f867a6536828b413f742",
+      "tree": "3549f7d5728706abe06b6a5851e5fe6bb9d3e929",
+      "workflow_blob": "14160547d13290a80edfbbffced00cc227ff7e3a",
+      "run_id": 41395768031,
+      "attempts": [
+        {
+          "attempt": 1,
+          "job_id": 125116643102,
+          "steps": 4,
+          "conclusion": "success"
+        },
+        {
+          "attempt": 2,
+          "job_id": 125119186846,
+          "steps": 4,
+          "conclusion": "success"
+        }
+      ]
+    },
+    "conformance": {
+      "repository": "ores-truffle-oreslang/oreslang-platform-conformance",
+      "repo_id": 1413795502,
+      "private": true,
+      "commit": "3d5bdf454c65d87a915c5d23c2349522c80a958f",
+      "tree": "20e4e66740aa03560ce5360f26ad8814a4de4688",
+      "workflow_blob": "9fdf367e37c56c7c013b8a21222b0bbc4ad3c499",
+      "run_id": 41395829396,
+      "attempts": [
+        {
+          "attempt": 1,
+          "job_id": 125116825246,
+          "steps": 0,
+          "conclusion": "failure"
+        },
+        {
+          "attempt": 2,
+          "job_id": 125119194631,
+          "steps": 0,
+          "conclusion": "failure"
+        }
+      ]
+    },
+    "java": {
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "repo_id": 1400792274,
+      "private": true,
+      "commit": "1a7682c46edd9751414194c42b31783aec643216",
+      "tree": "543f8710a53c04c57c5533b7d88d01c253a0fb96",
+      "workflow_blob": "249a4fb67f314a4666b8bb5097f8276c02a6ad32",
+      "run_id": 41396996294,
+      "attempts": [
+        {
+          "attempt": 1,
+          "job_id": 125120359237,
+          "steps": 0,
+          "conclusion": "failure"
+        }
+      ]
+    }
+  },
+  "private_source_mirrored": false,
+  "unknowns": [
+    "source organization billing minute balance",
+    "underlying runner admission failure reason",
+    "alternate org remaining billing balance"
+  ],
+  "conclusion": "REPEATED_SOURCE_ORGANIZATION_RUNNER_ADMISSION_DIVERGENCE_ONLY",
+  "security": {
+    "source_main_protected": false,
+    "private_mirror_authorized": false,
+    "incidents_open": [
+      22,
+      77,
+      127
+    ]
+  },
+  "native_compiler_tests_executed": false,
+  "native_guest_tests_executed": false
+}
