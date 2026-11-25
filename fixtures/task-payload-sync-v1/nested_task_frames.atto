@@ -1,0 +1,10 @@
+pub susp fnc main(): int {
+  val Future<int> parent = task<int> {
+    val Future<int> nested = task<int> {
+      return 40;
+    };
+    val int result = await nested;
+    return result + 2;
+  };
+  return await parent;
+}
