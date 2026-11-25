@@ -1,0 +1,8 @@
+// expect-error: E_LOAN_CONFLICT (semantic, not parser rejection)
+// A rooted collection iterator prevents growth while it remains live.
+pub fnc main() -> int {
+  let values = [10, 20];
+  val cursor = values.iter();
+  values.push(30);
+  return cursor.next().is_some() ? 42 : 0;
+}
