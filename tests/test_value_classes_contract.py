@@ -77,7 +77,7 @@ class ValueClassContractAudit(unittest.TestCase):
         }.issubset(codes))
 
 
-    def test_case_registry_matches_fixture_tree_and_readme(self):
+    def test_case_registry_matches_fixture_tree_and_contract_guide(self):
         """Detect unregistered fixtures and stale human-facing case totals."""
         cases = self.data["required_cases"]
         root = ROOT / "fixtures" / "value-classes"
@@ -99,7 +99,7 @@ class ValueClassContractAudit(unittest.TestCase):
 
         positive = sum(c["kind"] == "pass" for c in cases)
         negative = sum(c["kind"] == "fail" for c in cases)
-        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        readme = (ROOT / "docs" / "value-classes-v1.md").read_text(encoding="utf-8")
         self.assertIn(
             f"contains {positive} positive and {negative} negative `.atto` fixtures.",
             readme,
