@@ -1,0 +1,720 @@
+{
+  "schema": "atto.std-protocol-11-backend-evidence.v1",
+  "snapshot_date_utc": "2026-11-22",
+  "status": "PROPOSED_11_BACKEND_SOURCE_PARITY_NO_EXECUTED_GUEST_PROOF",
+  "tracked_feature": "std/websocket+std/quic+std/compute",
+  "repo_count": 11,
+  "source_backends_with_draft": 9,
+  "source_helpers_per_authored_backend": 42,
+  "smoke_cases_per_backend": 37,
+  "boundary_cases_per_backend": 109,
+  "guest_cases_per_authored_backend": 146,
+  "source_implementations": "INDEPENDENT_BACKEND_OWNED_ATTO_FILES",
+  "cross_backend_execution_parity": "NOT_VERIFIED",
+  "guest_execution_certified_backends": [],
+  "private_carrier": {
+    "repo": "sonus-auris-test/atto-ci",
+    "source_free_run_id": 45054599005,
+    "recorded_job_steps": 3,
+    "source_free_run_conclusion": "success",
+    "source_snapshot_export_authorized": false,
+    "transferred_private_source": false,
+    "provenance_scope": "HOSTED_RUNNER_CAPACITY_ONLY_NOT_GUEST_OR_SOURCE_EXPORT_EVIDENCE",
+    "protocol_reference_run": {
+      "repo_id": 1458331448,
+      "run_id": 45058040904,
+      "job_id": 137317561550,
+      "carrier_head_sha": "2fcd30702c2fdb2ad1a3f74f72ba2071293ed482",
+      "carrier_root_tree_sha": "7b1fcc5953061bb8d3f92b1b0fd9305a9c9d87f2",
+      "source_free_workflow_blob": "f8d6e2e6d0a4e3f0b4534808935cb212efacde40",
+      "source_free_reference_test_blob": "f840e68f8d01826f574ef03e3d52c514c8121a7a",
+      "actual_job_steps": 6,
+      "node_tests_passed": 4,
+      "node_tests_failed": 0,
+      "checked_arithmetic_pairs": 20660,
+      "run_conclusion": "success",
+      "scope": "HOSTED_SOURCE_FREE_REFERENCE_NOT_COMPILED_ATTO",
+      "source_snapshot_export_authorized": false,
+      "transferred_private_atto_source": false
+    },
+    "borrow_reference_run": {
+      "repo_id": 1458331448,
+      "run_id": 45059875505,
+      "job_id": 137323186804,
+      "carrier_head_sha": "3d7a582fc61df3fcf5cadc6656a0c5b91a5e665e",
+      "carrier_root_tree_sha": "9b5edded4df406ec43edf739ec293f92ec80bce9",
+      "source_free_borrow_test_blob": "76dd59ccbd32dfd21617507bb59817cea83fb9f0",
+      "source_free_math_test_blob": "f840e68f8d01826f574ef03e3d52c514c8121a7a",
+      "workflow_blob": "eb37a6982d0632cc19c3ae009f28510844af4361",
+      "actual_job_steps": 6,
+      "node_tests_passed": 10,
+      "node_tests_failed": 0,
+      "borrow_reference_cases": 6,
+      "arithmetic_pairs": 20660,
+      "run_conclusion": "success",
+      "scope": "SOURCE_FREE_BORROW_AUTOMATON_NOT_ATTO_GUEST_COMPILER",
+      "private_source_export_authorized": false,
+      "transferred_private_source": false
+    }
+  },
+  "rows": [
+    {
+      "repo": "atto-lang/atto-source.atto",
+      "kind": "BOOTSTRAP_ONLY",
+      "candidate_pr": null,
+      "head_sha": null,
+      "root_tree_sha": null,
+      "source_blobs": null,
+      "source_fixture_cases": 0,
+      "source_helpers": 0,
+      "source_contract_status": "NO_PROTOCOL_SOURCE",
+      "execution_profile": "NO_COMPILER",
+      "compiled_guest_status": "NOT_EXECUTED",
+      "ci_status": "NOT_EXECUTED",
+      "executed_ci_steps": 0,
+      "verified_guest_receipts": [],
+      "private_export_approved": false,
+      "library_blobs": null,
+      "partial_workgroup_numeric_admission": "NOT_IMPLEMENTED",
+      "padded_invocation_bounds_guard": "NOT_APPLICABLE_BOOTSTRAP",
+      "borrow_core": null
+    },
+    {
+      "repo": "atto-lang/atto-source.net",
+      "kind": "BACKEND_OWNED_SOURCE_DRAFT",
+      "candidate_pr": 228,
+      "head_sha": "9a8212b014ab2a43a07c3da079069885d06809e4",
+      "root_tree_sha": "0c6b3aaf20d244c8e0936d3dcfc5b2509f1fcd8b",
+      "source_blobs": {
+        "tests/stdlib/websocket_quic_compute_smoke.atto": "9daec1444782870ba9b292d6f374b4af64faf743",
+        "tests/stdlib/protocol_boundaries.atto": "767a274beda8190200057b993036673beb0a0d23",
+        "tests/stdlib/source_contract.test.mjs": "5635e40064983c69ac7a3029c774a1e46c459c6a"
+      },
+      "source_fixture_cases": 146,
+      "smoke_cases": 37,
+      "boundary_cases": 109,
+      "source_helpers": 42,
+      "source_contract_status": "SOURCE_AUDIT_AUTHORED_LOCAL_REFERENCE_ONLY",
+      "execution_profile": "NET_NATIVEAOT_GUEST_NOT_VERIFIED",
+      "compiled_guest_status": "NOT_EXECUTED",
+      "ci_status": "QUEUED_OR_FAILED_NO_EXECUTED_STEPS",
+      "executed_ci_steps": 0,
+      "verified_guest_receipts": [],
+      "private_export_approved": false,
+      "library_blobs": {
+        "stdlib/std/websocket.atto": "886e8883b386a26770d29a58da6be7f781dd6f53",
+        "stdlib/std/quic.atto": "0e324d759ed412900dfe8b3d3071bc7ab053fddd",
+        "stdlib/std/compute.atto": "757649105ca8e510e5f7ed7dc2d4706e2d473791"
+      },
+      "partial_workgroup_numeric_admission": "SOURCE_AUTHORED_NOT_EXECUTED",
+      "padded_invocation_bounds_guard": "RUNTIME_REQUIRED_NOT_VERIFIED",
+      "borrow_core": {
+        "positive_fixture_path": "tests/stdlib/protocol_borrow_core.atto",
+        "positive_fixture_git_blob": "9ce7a029cff977e24b583bbe5967d8fcc29659dc",
+        "language_profile": "SCOPED_CLASS_READ_WRITE_LOANS_AND_TAKE",
+        "enforced_in": "CORE_COMPILER_FRONTEND_NOT_STDLIB_SHIM",
+        "linked_protocol_helpers": [
+          "websocket_backpressure_admit",
+          "quic_stream_range_fits",
+          "compute_buffer_range_fits",
+          "compute_upload_admit"
+        ],
+        "candidate_compile_status": "NOT_EXECUTED",
+        "negative_compiler_checks_authored": 0,
+        "negative_source_mutations_authored": 8,
+        "compiled_wasm_guest_required": false,
+        "guest_execution_status": "NOT_EXECUTED",
+        "resource_handle_borrow_safety": "NOT_VERIFIED",
+        "borrow_cross_await": "NOT_VERIFIED",
+        "borrow_ownership_transfer": "NOT_VERIFIED"
+      }
+    },
+    {
+      "repo": "atto-lang/atto-source.hdl",
+      "kind": "BACKEND_OWNED_SOURCE_DRAFT",
+      "candidate_pr": 70,
+      "head_sha": "965d48dbc40e97541b3bb62752339f211e654fc1",
+      "root_tree_sha": "49d00cebcd6b955a1ac0a4e7c58bd84755c619e9",
+      "source_blobs": {
+        "tests/stdlib/websocket_quic_compute_smoke.atto": "656eed3d274ab7bd6ae679497736b47ac8aff4b3",
+        "tests/stdlib/protocol_boundaries.atto": "45326a21daf9f15734436d4c3066866e5669dafc",
+        "tests/stdlib/source_contract.test.mjs": "5635e40064983c69ac7a3029c774a1e46c459c6a"
+      },
+      "source_fixture_cases": 146,
+      "smoke_cases": 37,
+      "boundary_cases": 109,
+      "source_helpers": 42,
+      "source_contract_status": "SOURCE_AUDIT_AUTHORED_LOCAL_REFERENCE_ONLY",
+      "execution_profile": "HDL_SCALAR_SYNTHESIS_UNVERIFIED",
+      "compiled_guest_status": "NOT_EXECUTED",
+      "ci_status": "QUEUED_OR_FAILED_NO_EXECUTED_STEPS",
+      "executed_ci_steps": 0,
+      "verified_guest_receipts": [],
+      "private_export_approved": false,
+      "library_blobs": {
+        "stdlib/std/websocket.atto": "5f4a58c0907487cef6c775b11f4ac3658998be3e",
+        "stdlib/std/quic.atto": "6ee44475c34e903d4aa3b4c3a25baada67670b43",
+        "stdlib/std/compute.atto": "5b17bb9b22ec0e9b8b78b8b54629482ea1e20871"
+      },
+      "partial_workgroup_numeric_admission": "SOURCE_AUTHORED_NOT_EXECUTED",
+      "padded_invocation_bounds_guard": "RUNTIME_REQUIRED_NOT_VERIFIED",
+      "borrow_core": {
+        "positive_fixture_path": "tests/stdlib/protocol_borrow_core.atto",
+        "positive_fixture_git_blob": "02bc04d93ee76dbf1944bcbd705051a5cad5c7d9",
+        "language_profile": "SCOPED_CLASS_READ_WRITE_LOANS_AND_TAKE",
+        "enforced_in": "CORE_COMPILER_FRONTEND_NOT_STDLIB_SHIM",
+        "linked_protocol_helpers": [
+          "websocket_backpressure_admit",
+          "quic_stream_range_fits",
+          "compute_buffer_range_fits",
+          "compute_upload_admit"
+        ],
+        "candidate_compile_status": "NOT_EXECUTED",
+        "negative_compiler_checks_authored": 0,
+        "negative_source_mutations_authored": 8,
+        "compiled_wasm_guest_required": false,
+        "guest_execution_status": "NOT_EXECUTED",
+        "resource_handle_borrow_safety": "NOT_VERIFIED",
+        "borrow_cross_await": "NOT_VERIFIED",
+        "borrow_ownership_transfer": "NOT_VERIFIED"
+      }
+    },
+    {
+      "repo": "atto-lang/atto-source.java",
+      "kind": "BACKEND_OWNED_SOURCE_DRAFT",
+      "candidate_pr": 1786,
+      "head_sha": "dc341fc007e61fdfe1d874e62819560b5b96f2a5",
+      "root_tree_sha": "accf238c23fbf3d14f1b6f61eca32fae9ede8736",
+      "source_blobs": {
+        "tests/stdlib/websocket_quic_compute_smoke.atto": "2fe74c554f4163d0436a2f45fb47eec13a904f80",
+        "tests/stdlib/protocol_boundaries.atto": "4d9985481f2f52b8fb94038a15de2135a3ad6aad",
+        "tests/stdlib/source_contract.test.mjs": "623e8625187044fa2c24729f42c11c8cbd997fcd"
+      },
+      "source_fixture_cases": 146,
+      "smoke_cases": 37,
+      "boundary_cases": 109,
+      "source_helpers": 42,
+      "source_contract_status": "SOURCE_AUDIT_AUTHORED_LOCAL_REFERENCE_ONLY",
+      "execution_profile": "JAVA_LINKED_GUEST_HARNESS_NOT_EXECUTED",
+      "compiled_guest_status": "NOT_EXECUTED",
+      "ci_status": "QUEUED_OR_FAILED_NO_EXECUTED_STEPS",
+      "executed_ci_steps": 0,
+      "verified_guest_receipts": [],
+      "private_export_approved": false,
+      "library_blobs": {
+        "stdlib/std/websocket.atto": "ee0f622bea3bd63707aff7ff667308d59f9da974",
+        "stdlib/std/quic.atto": "7694229c2fd13b6ab1ba6309369a909c1714dc1b",
+        "stdlib/std/compute.atto": "ee89c7aa787977391a363142283ec8d262a8bbe4"
+      },
+      "partial_workgroup_numeric_admission": "SOURCE_AUTHORED_NOT_EXECUTED",
+      "padded_invocation_bounds_guard": "RUNTIME_REQUIRED_NOT_VERIFIED",
+      "borrow_core": {
+        "positive_fixture_path": "tests/stdlib/protocol_borrow_core.atto",
+        "positive_fixture_git_blob": "2a53e3578bd5db1bc0ab828438606c2b8b21abe9",
+        "language_profile": "SCOPED_CLASS_READ_WRITE_LOANS_AND_TAKE",
+        "enforced_in": "CORE_COMPILER_FRONTEND_NOT_STDLIB_SHIM",
+        "linked_protocol_helpers": [
+          "websocket_backpressure_admit",
+          "quic_stream_range_fits",
+          "compute_buffer_range_fits",
+          "compute_upload_admit"
+        ],
+        "candidate_compile_status": "NOT_EXECUTED",
+        "negative_compiler_checks_authored": 0,
+        "negative_source_mutations_authored": 8,
+        "compiled_wasm_guest_required": false,
+        "guest_execution_status": "NOT_EXECUTED",
+        "resource_handle_borrow_safety": "NOT_VERIFIED",
+        "borrow_cross_await": "NOT_VERIFIED",
+        "borrow_ownership_transfer": "NOT_VERIFIED"
+      }
+    },
+    {
+      "repo": "atto-lang/atto-source.realtime",
+      "kind": "BOOTSTRAP_ONLY",
+      "candidate_pr": null,
+      "head_sha": null,
+      "root_tree_sha": null,
+      "source_blobs": null,
+      "source_fixture_cases": 0,
+      "source_helpers": 0,
+      "source_contract_status": "NO_PROTOCOL_SOURCE",
+      "execution_profile": "NO_COMPILER",
+      "compiled_guest_status": "NOT_EXECUTED",
+      "ci_status": "NOT_EXECUTED",
+      "executed_ci_steps": 0,
+      "verified_guest_receipts": [],
+      "private_export_approved": false,
+      "library_blobs": null,
+      "partial_workgroup_numeric_admission": "NOT_IMPLEMENTED",
+      "padded_invocation_bounds_guard": "NOT_APPLICABLE_BOOTSTRAP",
+      "borrow_core": null
+    },
+    {
+      "repo": "atto-lang/atto-source.rs",
+      "kind": "BACKEND_OWNED_SOURCE_DRAFT",
+      "candidate_pr": 546,
+      "head_sha": "72de4d8c0273085e5db2f84f9664a6ec3ca876c2",
+      "root_tree_sha": "bc7ab8075e98055a404b910a30741575aaa3bdf5",
+      "source_blobs": {
+        "tests/stdlib/websocket_quic_compute_smoke.atto": "7534eb2ed7abd2339988b42d5086f5e45a062b9d",
+        "tests/stdlib/protocol_boundaries.atto": "409cf612cadff0fed591cdda0d88853def3e4e54",
+        "tests/stdlib/source_contract.test.mjs": "f60cf9c7bc5e0961ceec28638d7aff1eb51f9be4"
+      },
+      "source_fixture_cases": 146,
+      "smoke_cases": 37,
+      "boundary_cases": 109,
+      "source_helpers": 42,
+      "source_contract_status": "SOURCE_AUDIT_AUTHORED_LOCAL_REFERENCE_ONLY",
+      "execution_profile": "RUST_WASM_GUEST_HARNESS_NOT_EXECUTED",
+      "compiled_guest_status": "NOT_EXECUTED",
+      "ci_status": "QUEUED_OR_FAILED_NO_EXECUTED_STEPS",
+      "executed_ci_steps": 0,
+      "verified_guest_receipts": [],
+      "private_export_approved": false,
+      "library_blobs": {
+        "stdlib/std/websocket.atto": "160fe1425abcfec3a5b666d15c1df14aea1eaaeb",
+        "stdlib/std/quic.atto": "944149db26c9accaf0a683b12c11142fe7dc23dd",
+        "stdlib/std/compute.atto": "903e172cd72bd3fc84744c9a225ddfefefce048c"
+      },
+      "partial_workgroup_numeric_admission": "SOURCE_AUTHORED_NOT_EXECUTED",
+      "padded_invocation_bounds_guard": "RUNTIME_REQUIRED_NOT_VERIFIED",
+      "borrow_core": {
+        "positive_fixture_path": "tests/stdlib/protocol_borrow_core.atto",
+        "positive_fixture_git_blob": "a5878d48f8d3ab314c9f74e74a3bf4296ec1344d",
+        "language_profile": "SCOPED_CLASS_READ_WRITE_LOANS_AND_TAKE",
+        "enforced_in": "CORE_COMPILER_FRONTEND_NOT_STDLIB_SHIM",
+        "linked_protocol_helpers": [
+          "websocket_backpressure_admit",
+          "quic_stream_range_fits",
+          "compute_buffer_range_fits",
+          "compute_upload_admit"
+        ],
+        "candidate_compile_status": "NOT_EXECUTED",
+        "negative_compiler_checks_authored": 7,
+        "negative_source_mutations_authored": 0,
+        "compiled_wasm_guest_required": true,
+        "guest_execution_status": "NOT_EXECUTED",
+        "resource_handle_borrow_safety": "NOT_VERIFIED",
+        "borrow_cross_await": "NOT_VERIFIED",
+        "borrow_ownership_transfer": "NOT_VERIFIED"
+      }
+    },
+    {
+      "repo": "atto-lang/atto-source.llvm",
+      "kind": "BACKEND_OWNED_SOURCE_DRAFT",
+      "candidate_pr": 884,
+      "head_sha": "a2e2d204fff1096a495eb2f558fb9f41b620e217",
+      "root_tree_sha": "066aee42cebd8aac0db50cd223d24c34231fc5b8",
+      "source_blobs": {
+        "tests/stdlib/websocket_quic_compute_smoke.atto": "4f984f5e0d39f2205b4e7b979ecdd4168bf587e6",
+        "tests/stdlib/protocol_boundaries.atto": "7e992ec38d953ec49cc7dabcf9f3fbd4b920dd92",
+        "tests/stdlib/source_contract.test.mjs": "5635e40064983c69ac7a3029c774a1e46c459c6a"
+      },
+      "source_fixture_cases": 146,
+      "smoke_cases": 37,
+      "boundary_cases": 109,
+      "source_helpers": 42,
+      "source_contract_status": "SOURCE_AUDIT_AUTHORED_LOCAL_REFERENCE_ONLY",
+      "execution_profile": "LLVM_NATIVE_GUEST_HARNESS_NOT_EXECUTED",
+      "compiled_guest_status": "NOT_EXECUTED",
+      "ci_status": "QUEUED_OR_FAILED_NO_EXECUTED_STEPS",
+      "executed_ci_steps": 0,
+      "verified_guest_receipts": [],
+      "private_export_approved": false,
+      "library_blobs": {
+        "stdlib/std/websocket.atto": "2be6c322fb9a4033ad70d369e7981645617bb004",
+        "stdlib/std/quic.atto": "154b86bdfe8d51cac7fd9dd213067db2c9c1a6eb",
+        "stdlib/std/compute.atto": "d2a0df787e7b8a9a9292ae086023e3db126fb100"
+      },
+      "partial_workgroup_numeric_admission": "SOURCE_AUTHORED_NOT_EXECUTED",
+      "padded_invocation_bounds_guard": "RUNTIME_REQUIRED_NOT_VERIFIED",
+      "borrow_core": {
+        "positive_fixture_path": "tests/stdlib/protocol_borrow_core.atto",
+        "positive_fixture_git_blob": "dca66c0f78986ce071768f3828955493beb03386",
+        "language_profile": "SCOPED_CLASS_READ_WRITE_LOANS_AND_TAKE",
+        "enforced_in": "CORE_COMPILER_FRONTEND_NOT_STDLIB_SHIM",
+        "linked_protocol_helpers": [
+          "websocket_backpressure_admit",
+          "quic_stream_range_fits",
+          "compute_buffer_range_fits",
+          "compute_upload_admit"
+        ],
+        "candidate_compile_status": "NOT_EXECUTED",
+        "negative_compiler_checks_authored": 0,
+        "negative_source_mutations_authored": 8,
+        "compiled_wasm_guest_required": false,
+        "guest_execution_status": "NOT_EXECUTED",
+        "resource_handle_borrow_safety": "NOT_VERIFIED",
+        "borrow_cross_await": "NOT_VERIFIED",
+        "borrow_ownership_transfer": "NOT_VERIFIED"
+      }
+    },
+    {
+      "repo": "atto-lang/atto-source.js",
+      "kind": "BACKEND_OWNED_SOURCE_DRAFT",
+      "candidate_pr": 141,
+      "head_sha": "23d7630a8550b71871e8c621642a8854596d47ad",
+      "root_tree_sha": "387173f4cc471587016da30baa30656021468808",
+      "source_blobs": {
+        "tests/stdlib/websocket_quic_compute_smoke.atto": "f0b3a7d79d8db3ee5dd51dc90b0439261a3355da",
+        "tests/stdlib/protocol_boundaries.atto": "288160e53aac3bcb32cadcbf20bcafdc48f0b72c",
+        "tests/stdlib/source_contract.test.mjs": "5635e40064983c69ac7a3029c774a1e46c459c6a"
+      },
+      "source_fixture_cases": 146,
+      "smoke_cases": 37,
+      "boundary_cases": 109,
+      "source_helpers": 42,
+      "source_contract_status": "SOURCE_AUDIT_AUTHORED_LOCAL_REFERENCE_ONLY",
+      "execution_profile": "JS_SCALAR_FRONTEND_REJECTS_UNLOWERED_PROTOCOL_AUTHORED_NOT_EXECUTED",
+      "compiled_guest_status": "NOT_EXECUTED",
+      "ci_status": "QUEUED_OR_FAILED_NO_EXECUTED_STEPS",
+      "executed_ci_steps": 0,
+      "verified_guest_receipts": [],
+      "private_export_approved": false,
+      "library_blobs": {
+        "stdlib/std/websocket.atto": "9e68e0e482f67bb765c77574db40fbe7d94fbc6a",
+        "stdlib/std/quic.atto": "37bfcb1ea955ab9f45eb2f294ced9d067d8d81d0",
+        "stdlib/std/compute.atto": "f4f857ffb9f2ab97021b6ad02a00bffecea6aaec"
+      },
+      "partial_workgroup_numeric_admission": "SOURCE_AUTHORED_NOT_EXECUTED",
+      "padded_invocation_bounds_guard": "RUNTIME_REQUIRED_NOT_VERIFIED",
+      "borrow_core": {
+        "positive_fixture_path": "tests/stdlib/protocol_borrow_core.atto",
+        "positive_fixture_git_blob": "f1eedf86f53567a610bacbc5531690d4d4e2fd1f",
+        "language_profile": "SCOPED_CLASS_READ_WRITE_LOANS_AND_TAKE",
+        "enforced_in": "CORE_COMPILER_FRONTEND_NOT_STDLIB_SHIM",
+        "linked_protocol_helpers": [
+          "websocket_backpressure_admit",
+          "quic_stream_range_fits",
+          "compute_buffer_range_fits",
+          "compute_upload_admit"
+        ],
+        "candidate_compile_status": "NOT_EXECUTED",
+        "negative_compiler_checks_authored": 0,
+        "negative_source_mutations_authored": 8,
+        "compiled_wasm_guest_required": false,
+        "guest_execution_status": "NOT_EXECUTED",
+        "resource_handle_borrow_safety": "NOT_VERIFIED",
+        "borrow_cross_await": "NOT_VERIFIED",
+        "borrow_ownership_transfer": "NOT_VERIFIED"
+      }
+    },
+    {
+      "repo": "atto-lang/atto-source.forge",
+      "kind": "BACKEND_OWNED_SOURCE_DRAFT",
+      "candidate_pr": 236,
+      "head_sha": "6cbf756c450c8bb91cdd1a08d6b59b86dffdcd2b",
+      "root_tree_sha": "5d09c626846aeb8802a808d7aaf51b1f57136229",
+      "source_blobs": {
+        "tests/stdlib/websocket_quic_compute_smoke.atto": "a6d1c99c308e2fe85b0dc8db09231c2da35ba3a7",
+        "tests/stdlib/protocol_boundaries.atto": "cea8847999701be6cff603d4c3c7458213acbb98",
+        "tests/stdlib/source_contract.test.mjs": "5635e40064983c69ac7a3029c774a1e46c459c6a"
+      },
+      "source_fixture_cases": 146,
+      "smoke_cases": 37,
+      "boundary_cases": 109,
+      "source_helpers": 42,
+      "source_contract_status": "SOURCE_AUDIT_AUTHORED_LOCAL_REFERENCE_ONLY",
+      "execution_profile": "FORGE_GUEST_NOT_VERIFIED",
+      "compiled_guest_status": "NOT_EXECUTED",
+      "ci_status": "QUEUED_OR_FAILED_NO_EXECUTED_STEPS",
+      "executed_ci_steps": 0,
+      "verified_guest_receipts": [],
+      "private_export_approved": false,
+      "library_blobs": {
+        "stdlib/std/websocket.atto": "febcc65011ea839020b07c2c0a59b1698f5be715",
+        "stdlib/std/quic.atto": "f4d4a77907adc42b6372d7d0a53b8b76cd09be72",
+        "stdlib/std/compute.atto": "75ec867aab3c29a0cb614b0e6e6d8c1d1bdf3616"
+      },
+      "partial_workgroup_numeric_admission": "SOURCE_AUTHORED_NOT_EXECUTED",
+      "padded_invocation_bounds_guard": "RUNTIME_REQUIRED_NOT_VERIFIED",
+      "borrow_core": {
+        "positive_fixture_path": "tests/stdlib/protocol_borrow_core.atto",
+        "positive_fixture_git_blob": "27fa151c44f09c149a35da09b8047e608104bb11",
+        "language_profile": "SCOPED_CLASS_READ_WRITE_LOANS_AND_TAKE",
+        "enforced_in": "CORE_COMPILER_FRONTEND_NOT_STDLIB_SHIM",
+        "linked_protocol_helpers": [
+          "websocket_backpressure_admit",
+          "quic_stream_range_fits",
+          "compute_buffer_range_fits",
+          "compute_upload_admit"
+        ],
+        "candidate_compile_status": "NOT_EXECUTED",
+        "negative_compiler_checks_authored": 0,
+        "negative_source_mutations_authored": 8,
+        "compiled_wasm_guest_required": false,
+        "guest_execution_status": "NOT_EXECUTED",
+        "resource_handle_borrow_safety": "NOT_VERIFIED",
+        "borrow_cross_await": "NOT_VERIFIED",
+        "borrow_ownership_transfer": "NOT_VERIFIED"
+      }
+    },
+    {
+      "repo": "atto-lang/atto-source.wasm",
+      "kind": "BACKEND_OWNED_SOURCE_DRAFT",
+      "candidate_pr": 291,
+      "head_sha": "2ed9b0fcdbe514887b53f66967bd66d44505fa68",
+      "root_tree_sha": "a46aeb297cd678e35b800554b14354c4daa2ca6b",
+      "source_blobs": {
+        "tests/stdlib/websocket_quic_compute_smoke.atto": "ced295c28708c747d4148977bda55568aa797179",
+        "tests/stdlib/protocol_boundaries.atto": "077e3a21d721a0df7ae05481e06650b07da6da8d",
+        "tests/stdlib/source_contract.test.mjs": "5635e40064983c69ac7a3029c774a1e46c459c6a"
+      },
+      "source_fixture_cases": 146,
+      "smoke_cases": 37,
+      "boundary_cases": 109,
+      "source_helpers": 42,
+      "source_contract_status": "SOURCE_AUDIT_AUTHORED_LOCAL_REFERENCE_ONLY",
+      "execution_profile": "SINGLE_FILE_BRIDGE_REJECTS_IMPORTS_AUTHORED_NOT_EXECUTED",
+      "compiled_guest_status": "NOT_EXECUTED",
+      "ci_status": "QUEUED_OR_FAILED_NO_EXECUTED_STEPS",
+      "executed_ci_steps": 0,
+      "verified_guest_receipts": [],
+      "private_export_approved": false,
+      "library_blobs": {
+        "stdlib/std/websocket.atto": "547976194bb2dc17a1bf2b64318a189d819e46d1",
+        "stdlib/std/quic.atto": "1e68c03d1ae0c8aead045ce67d8501530f1427e1",
+        "stdlib/std/compute.atto": "f4b44c8a49615f965a1e1aa893f917acaef65701"
+      },
+      "partial_workgroup_numeric_admission": "SOURCE_AUTHORED_NOT_EXECUTED",
+      "padded_invocation_bounds_guard": "RUNTIME_REQUIRED_NOT_VERIFIED",
+      "borrow_core": {
+        "positive_fixture_path": "tests/stdlib/protocol_borrow_core.atto",
+        "positive_fixture_git_blob": "405012fa6dfe0f812147c9a4fc979e23f88124c4",
+        "language_profile": "SCOPED_CLASS_READ_WRITE_LOANS_AND_TAKE",
+        "enforced_in": "CORE_COMPILER_FRONTEND_NOT_STDLIB_SHIM",
+        "linked_protocol_helpers": [
+          "websocket_backpressure_admit",
+          "quic_stream_range_fits",
+          "compute_buffer_range_fits",
+          "compute_upload_admit"
+        ],
+        "candidate_compile_status": "NOT_EXECUTED",
+        "negative_compiler_checks_authored": 0,
+        "negative_source_mutations_authored": 8,
+        "compiled_wasm_guest_required": false,
+        "guest_execution_status": "NOT_EXECUTED",
+        "resource_handle_borrow_safety": "NOT_VERIFIED",
+        "borrow_cross_await": "NOT_VERIFIED",
+        "borrow_ownership_transfer": "NOT_VERIFIED"
+      }
+    },
+    {
+      "repo": "atto-lang/atto-source.cranelift",
+      "kind": "BACKEND_OWNED_SOURCE_DRAFT",
+      "candidate_pr": 101,
+      "head_sha": "75da5bcebe47340c34430f96f0c31e6ca88d44de",
+      "root_tree_sha": "b70525bb0cd3c82211b2ef4a89531f4e86f15d4b",
+      "source_blobs": {
+        "tests/stdlib/websocket_quic_compute_smoke.atto": "303419396fbbac44c6f0a55c2c95ea2b94af2e62",
+        "tests/stdlib/protocol_boundaries.atto": "1c1e93ab36b55166844c8c66c397c127e6950597",
+        "tests/stdlib/source_contract.test.mjs": "5635e40064983c69ac7a3029c774a1e46c459c6a"
+      },
+      "source_fixture_cases": 146,
+      "smoke_cases": 37,
+      "boundary_cases": 109,
+      "source_helpers": 42,
+      "source_contract_status": "SOURCE_AUDIT_AUTHORED_LOCAL_REFERENCE_ONLY",
+      "execution_profile": "CRANELIFT_GUEST_NOT_VERIFIED",
+      "compiled_guest_status": "NOT_EXECUTED",
+      "ci_status": "QUEUED_OR_FAILED_NO_EXECUTED_STEPS",
+      "executed_ci_steps": 0,
+      "verified_guest_receipts": [],
+      "private_export_approved": false,
+      "library_blobs": {
+        "stdlib/std/websocket.atto": "bcbf71b39d5d7d8d93440f5ddd3758fb9946812b",
+        "stdlib/std/quic.atto": "75ded91cc10ba0fed5d2f0b601d8966a5806749e",
+        "stdlib/std/compute.atto": "e983b32a94d1d7511e3bcd84b64967158d082f64"
+      },
+      "partial_workgroup_numeric_admission": "SOURCE_AUTHORED_NOT_EXECUTED",
+      "padded_invocation_bounds_guard": "RUNTIME_REQUIRED_NOT_VERIFIED",
+      "borrow_core": {
+        "positive_fixture_path": "tests/stdlib/protocol_borrow_core.atto",
+        "positive_fixture_git_blob": "5614b518c10070dd947e1c94e4b77f0ccca95261",
+        "language_profile": "SCOPED_CLASS_READ_WRITE_LOANS_AND_TAKE",
+        "enforced_in": "CORE_COMPILER_FRONTEND_NOT_STDLIB_SHIM",
+        "linked_protocol_helpers": [
+          "websocket_backpressure_admit",
+          "quic_stream_range_fits",
+          "compute_buffer_range_fits",
+          "compute_upload_admit"
+        ],
+        "candidate_compile_status": "NOT_EXECUTED",
+        "negative_compiler_checks_authored": 0,
+        "negative_source_mutations_authored": 8,
+        "compiled_wasm_guest_required": false,
+        "guest_execution_status": "NOT_EXECUTED",
+        "resource_handle_borrow_safety": "NOT_VERIFIED",
+        "borrow_cross_await": "NOT_VERIFIED",
+        "borrow_ownership_transfer": "NOT_VERIFIED"
+      }
+    }
+  ],
+  "compute_dispatch_contract": "PARTIAL_WORKGROUPS_ALLOWED_NUMERIC_ONLY_RUNTIME_MUST_GUARD_PADDED_INVOCATIONS",
+  "core_borrow_contract": "COMPILER_ENFORCED_SCOPED_LOANS_NO_LIBRARY_RUNTIME_SUBSTITUTE",
+  "core_borrow_compiled_guest_parity": "NOT_VERIFIED",
+  "core_borrow_certified_backends": [],
+  "rust_borrow_core_harness_blobs": {
+    "tests/stdlib_native_guest.rs": "fcf2c32c04be92d4cca52217fa4f8003e10a05f2",
+    "tests/stdlib_native_guest_wasm.test.mjs": "c6d6e00ba49189214d5ddc0a508dac4d7aeb0b61",
+    "examples/stdlib_native_guest.rs": "5750616a0d04c6bbd24cd04f39ea4e60c2abb739",
+    ".github/workflows/std-native-guest.yml": "26c816ec3a86577113d1806efb862c521e93be4f"
+  },
+  "rust_borrow_mir_corpus": {
+    "contracts/borrow-mir-v1/semantic-cases.json": "b7bfa0fed6092ff28c8b407661d84fbb277797d1",
+    "tests/borrow-mir-v1-contract.test.mjs": "209e146b481b4ed9b08da3ac190427f8e9151a30",
+    "contracts/borrow-mir-v1/README.md": "f8424da5071be6449270a630f7414c787740bae8",
+    ".github/workflows/borrow-mir-v1-contract.yml": "8470aa93dfdfbf124cecdba95ae8618ceea08f69",
+    "cases": 24,
+    "protocol_lifecycle_case_ids": [
+      "C23",
+      "C24"
+    ],
+    "semantic_status": "SOURCE_FREE_MODEL_PASS_NOT_NATIVE_BACKEND_EXECUTION"
+  },
+  "borrow_mir_backend_replicas": {
+    "schema": "atto-borrow-mir-nine-backend-replicas.v1",
+    "shared_blob_inventory": {
+      "contracts/borrow-mir-v1/semantic-cases.json": "b7bfa0fed6092ff28c8b407661d84fbb277797d1",
+      "tests/borrow-mir-v1-contract.test.mjs": "209e146b481b4ed9b08da3ac190427f8e9151a30",
+      "contracts/borrow-mir-v1/README.md": "f8424da5071be6449270a630f7414c787740bae8",
+      ".github/workflows/borrow-mir-v1-contract.yml": "8470aa93dfdfbf124cecdba95ae8618ceea08f69"
+    },
+    "cases": 24,
+    "lifecycle_cases": [
+      "C23",
+      "C24"
+    ],
+    "evidence_status": "SOURCE_FREE_CONTRACT_REPLICAS_ONLY",
+    "compiled_backend_status": "NOT_EXECUTED",
+    "backends": {
+      "java": {
+        "repository": "atto-lang/atto-source.java",
+        "candidate_pr": 1786,
+        "head_sha": "dc341fc007e61fdfe1d874e62819560b5b96f2a5",
+        "root_tree_sha": "accf238c23fbf3d14f1b6f61eca32fae9ede8736",
+        "blob_inventory": {
+          "contracts/borrow-mir-v1/semantic-cases.json": "b7bfa0fed6092ff28c8b407661d84fbb277797d1",
+          "tests/borrow-mir-v1-contract.test.mjs": "209e146b481b4ed9b08da3ac190427f8e9151a30",
+          "contracts/borrow-mir-v1/README.md": "f8424da5071be6449270a630f7414c787740bae8",
+          ".github/workflows/borrow-mir-v1-contract.yml": "8470aa93dfdfbf124cecdba95ae8618ceea08f69"
+        },
+        "compiled_guest_status": "NOT_EXECUTED",
+        "borrow_checker_status": "EXISTING_CORE_CHECKER_NOT_PROTOCOL_GUEST_VERIFIED"
+      },
+      "llvm": {
+        "repository": "atto-lang/atto-source.llvm",
+        "candidate_pr": 884,
+        "head_sha": "a2e2d204fff1096a495eb2f558fb9f41b620e217",
+        "root_tree_sha": "066aee42cebd8aac0db50cd223d24c34231fc5b8",
+        "blob_inventory": {
+          "contracts/borrow-mir-v1/semantic-cases.json": "b7bfa0fed6092ff28c8b407661d84fbb277797d1",
+          "tests/borrow-mir-v1-contract.test.mjs": "209e146b481b4ed9b08da3ac190427f8e9151a30",
+          "contracts/borrow-mir-v1/README.md": "f8424da5071be6449270a630f7414c787740bae8",
+          ".github/workflows/borrow-mir-v1-contract.yml": "8470aa93dfdfbf124cecdba95ae8618ceea08f69"
+        },
+        "compiled_guest_status": "NOT_EXECUTED",
+        "borrow_checker_status": "LIMITED_I64_CORE_CHECKER_NOT_CLASS_PROTOCOL_VERIFIED"
+      },
+      "rs": {
+        "repository": "atto-lang/atto-source.rs",
+        "candidate_pr": 546,
+        "head_sha": "72de4d8c0273085e5db2f84f9664a6ec3ca876c2",
+        "root_tree_sha": "bc7ab8075e98055a404b910a30741575aaa3bdf5",
+        "blob_inventory": {
+          "contracts/borrow-mir-v1/semantic-cases.json": "b7bfa0fed6092ff28c8b407661d84fbb277797d1",
+          "tests/borrow-mir-v1-contract.test.mjs": "209e146b481b4ed9b08da3ac190427f8e9151a30",
+          "contracts/borrow-mir-v1/README.md": "f8424da5071be6449270a630f7414c787740bae8",
+          ".github/workflows/borrow-mir-v1-contract.yml": "8470aa93dfdfbf124cecdba95ae8618ceea08f69"
+        },
+        "compiled_guest_status": "NOT_EXECUTED",
+        "borrow_checker_status": "CORE_CLASS_LOAN_CHECKER_PROTOCOL_GUEST_NOT_EXECUTED"
+      },
+      "net": {
+        "repository": "atto-lang/atto-source.net",
+        "candidate_pr": 228,
+        "head_sha": "9a8212b014ab2a43a07c3da079069885d06809e4",
+        "root_tree_sha": "0c6b3aaf20d244c8e0936d3dcfc5b2509f1fcd8b",
+        "blob_inventory": {
+          "contracts/borrow-mir-v1/semantic-cases.json": "b7bfa0fed6092ff28c8b407661d84fbb277797d1",
+          "tests/borrow-mir-v1-contract.test.mjs": "209e146b481b4ed9b08da3ac190427f8e9151a30",
+          "contracts/borrow-mir-v1/README.md": "f8424da5071be6449270a630f7414c787740bae8",
+          ".github/workflows/borrow-mir-v1-contract.yml": "8470aa93dfdfbf124cecdba95ae8618ceea08f69"
+        },
+        "compiled_guest_status": "NOT_EXECUTED",
+        "borrow_checker_status": "FRONTEND_ADMISSION_PARTIAL_CORE_LOWERING_NOT_VERIFIED"
+      },
+      "wasm": {
+        "repository": "atto-lang/atto-source.wasm",
+        "candidate_pr": 291,
+        "head_sha": "2ed9b0fcdbe514887b53f66967bd66d44505fa68",
+        "root_tree_sha": "a46aeb297cd678e35b800554b14354c4daa2ca6b",
+        "blob_inventory": {
+          "contracts/borrow-mir-v1/semantic-cases.json": "b7bfa0fed6092ff28c8b407661d84fbb277797d1",
+          "tests/borrow-mir-v1-contract.test.mjs": "209e146b481b4ed9b08da3ac190427f8e9151a30",
+          "contracts/borrow-mir-v1/README.md": "f8424da5071be6449270a630f7414c787740bae8",
+          ".github/workflows/borrow-mir-v1-contract.yml": "8470aa93dfdfbf124cecdba95ae8618ceea08f69"
+        },
+        "compiled_guest_status": "NOT_EXECUTED",
+        "borrow_checker_status": "EXISTING_CONTINUATION_LOAN_CHECKS_PROTOCOL_GUEST_NOT_VERIFIED"
+      },
+      "forge": {
+        "repository": "atto-lang/atto-source.forge",
+        "candidate_pr": 236,
+        "head_sha": "6cbf756c450c8bb91cdd1a08d6b59b86dffdcd2b",
+        "root_tree_sha": "5d09c626846aeb8802a808d7aaf51b1f57136229",
+        "blob_inventory": {
+          "contracts/borrow-mir-v1/semantic-cases.json": "b7bfa0fed6092ff28c8b407661d84fbb277797d1",
+          "tests/borrow-mir-v1-contract.test.mjs": "209e146b481b4ed9b08da3ac190427f8e9151a30",
+          "contracts/borrow-mir-v1/README.md": "f8424da5071be6449270a630f7414c787740bae8",
+          ".github/workflows/borrow-mir-v1-contract.yml": "8470aa93dfdfbf124cecdba95ae8618ceea08f69"
+        },
+        "compiled_guest_status": "NOT_EXECUTED",
+        "borrow_checker_status": "CORE_OWNERSHIP_TESTS_PROTOCOL_GUEST_NOT_VERIFIED"
+      },
+      "cranelift": {
+        "repository": "atto-lang/atto-source.cranelift",
+        "candidate_pr": 101,
+        "head_sha": "75da5bcebe47340c34430f96f0c31e6ca88d44de",
+        "root_tree_sha": "b70525bb0cd3c82211b2ef4a89531f4e86f15d4b",
+        "blob_inventory": {
+          "contracts/borrow-mir-v1/semantic-cases.json": "b7bfa0fed6092ff28c8b407661d84fbb277797d1",
+          "tests/borrow-mir-v1-contract.test.mjs": "209e146b481b4ed9b08da3ac190427f8e9151a30",
+          "contracts/borrow-mir-v1/README.md": "f8424da5071be6449270a630f7414c787740bae8",
+          ".github/workflows/borrow-mir-v1-contract.yml": "8470aa93dfdfbf124cecdba95ae8618ceea08f69"
+        },
+        "compiled_guest_status": "NOT_EXECUTED",
+        "borrow_checker_status": "OWNERSHIP_ADMISSION_TESTS_PROTOCOL_GUEST_NOT_VERIFIED"
+      },
+      "js": {
+        "repository": "atto-lang/atto-source.js",
+        "candidate_pr": 141,
+        "head_sha": "23d7630a8550b71871e8c621642a8854596d47ad",
+        "root_tree_sha": "387173f4cc471587016da30baa30656021468808",
+        "blob_inventory": {
+          "contracts/borrow-mir-v1/semantic-cases.json": "b7bfa0fed6092ff28c8b407661d84fbb277797d1",
+          "tests/borrow-mir-v1-contract.test.mjs": "209e146b481b4ed9b08da3ac190427f8e9151a30",
+          "contracts/borrow-mir-v1/README.md": "f8424da5071be6449270a630f7414c787740bae8",
+          ".github/workflows/borrow-mir-v1-contract.yml": "8470aa93dfdfbf124cecdba95ae8618ceea08f69"
+        },
+        "compiled_guest_status": "NOT_EXECUTED",
+        "borrow_checker_status": "SOURCE_OWNERSHIP_TESTS_PROTOCOL_GUEST_NOT_VERIFIED"
+      },
+      "hdl": {
+        "repository": "atto-lang/atto-source.hdl",
+        "candidate_pr": 70,
+        "head_sha": "965d48dbc40e97541b3bb62752339f211e654fc1",
+        "root_tree_sha": "49d00cebcd6b955a1ac0a4e7c58bd84755c619e9",
+        "blob_inventory": {
+          "contracts/borrow-mir-v1/semantic-cases.json": "b7bfa0fed6092ff28c8b407661d84fbb277797d1",
+          "tests/borrow-mir-v1-contract.test.mjs": "209e146b481b4ed9b08da3ac190427f8e9151a30",
+          "contracts/borrow-mir-v1/README.md": "f8424da5071be6449270a630f7414c787740bae8",
+          ".github/workflows/borrow-mir-v1-contract.yml": "8470aa93dfdfbf124cecdba95ae8618ceea08f69"
+        },
+        "compiled_guest_status": "NOT_EXECUTED",
+        "borrow_checker_status": "STATIC_HDL_PROFILE_PROTOCOL_GUEST_NOT_VERIFIED"
+      }
+    }
+  }
+}
