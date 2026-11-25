@@ -11,6 +11,8 @@ on:
       - 'audit/ownership-origin-id-contract-*'
       - 'audit/ownership-identity-cfg-30cases-*'
       - 'audit/ownership-nll-gated-proof-v1-*'
+      - 'audit/nll-closed-world-source-*'
+      - 'audit/ownership-ssa-effect-inventory-v1-*'
   pull_request:
     paths:
       - 'contracts/rt-ownership-admission-v1.json'
@@ -32,6 +34,10 @@ on:
       - 'tests/ownership-identity-inventory-v1.test.mjs'
       - 'src/ownership-nll-last-use-v1.mjs'
       - 'tests/ownership-nll-last-use-v1.test.mjs'
+      - 'src/ownership-nll-closed-world-v1.mjs'
+      - 'tests/ownership-nll-closed-world-v1.test.mjs'
+      - 'src/ownership-ssa-effect-inventory-v1.mjs'
+      - 'tests/ownership-ssa-effect-inventory-v1.test.mjs'
       - '.github/workflows/rt-ownership-v1-source-evidence.yml'
   workflow_dispatch:
 
@@ -76,7 +82,11 @@ jobs:
             src/ownership-identity-inventory-v1.mjs \
             tests/ownership-identity-inventory-v1.test.mjs \
             src/ownership-nll-last-use-v1.mjs \
-            tests/ownership-nll-last-use-v1.test.mjs
+            tests/ownership-nll-last-use-v1.test.mjs \
+            src/ownership-nll-closed-world-v1.mjs \
+            tests/ownership-nll-closed-world-v1.test.mjs \
+            src/ownership-ssa-effect-inventory-v1.mjs \
+            tests/ownership-ssa-effect-inventory-v1.test.mjs
       - name: Execute source-only receipt validation and adversarial tests
         shell: bash
         run: |
@@ -137,6 +147,22 @@ jobs:
           grep -Eq '^# tests 20$' /tmp/atto-nll-lastuse-v1.tap
           grep -Eq '^# pass 20$' /tmp/atto-nll-lastuse-v1.tap
           grep -Eq '^# fail 0$' /tmp/atto-nll-lastuse-v1.tap
+          node --check src/ownership-nll-closed-world-v1.mjs
+          node --check tests/ownership-nll-closed-world-v1.test.mjs
+          node --test --test-reporter=tap \
+            tests/ownership-nll-closed-world-v1.test.mjs | tee /tmp/atto-nll-closed-world-v1.tap
+          grep -Eq '^# tests 30$' /tmp/atto-nll-closed-world-v1.tap
+          grep -Eq '^# pass 30$' /tmp/atto-nll-closed-world-v1.tap
+          grep -Eq '^# fail 0$' /tmp/atto-nll-closed-world-v1.tap
+          node --check src/ownership-ssa-effect-inventory-v1.mjs
+          node --check tests/ownership-ssa-effect-inventory-v1.test.mjs
+          node --test --test-reporter=tap \
+            tests/ownership-ssa-effect-inventory-v1.test.mjs | tee /tmp/atto-ssa-edge-v1.tap
+          grep -Eq '^# tests 30$' /tmp/atto-ssa-edge-v1.tap
+          grep -Eq '^# pass 30$' /tmp/atto-ssa-edge-v1.tap
+          grep -Eq '^# fail 0$' /tmp/atto-ssa-edge-v1.tap
+          echo "ATTO_SSA_EDGE_AND_STORE_INVENTORY=CANDIDATE_UNATTESTED"
+          echo "ATTO_NLL_CLOSED_WORLD=SOURCE_ONLY_NOT_SSA_PROVEN"
           echo "ATTO_NLL_LAST_USE=MODEL_ONLY_NOT_PROMOTING"
           echo "ATTO_TYPED_ORIGIN_ID_INVENTORY=CANDIDATE_UNATTESTED"
           echo "ATTO_TYPED_ORIGIN_IDS=SHAPE_ONLY_UNATTESTED"
