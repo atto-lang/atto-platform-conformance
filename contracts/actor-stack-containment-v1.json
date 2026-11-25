@@ -5,7 +5,7 @@
   "canonicalExtension": ".atto",
   "scope": "actor call-depth, guest frame budgeting, carrier survival and supervisor recovery",
   "javaReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2505",
-  "note": "All five backend guest evidence lanes remain NOT_EXECUTED. Java #2505 guards carrier recursion; #2624 owns logical budget; #2627 reserves 32-byte managed guard frames; #2628 authors 16-byte evaluator call descriptors within the existing frame. No duplicate charge or compiler-local/return-PC lowering is proven; full stack isolation and native process fault containment remain unimplemented. None proves compiler-lowered actor stacks, source-task continuation ownership, or native process-fault isolation. Java #2633 implements an authored closed pure-integer fnc iterative call/return machine with actor-owned primitive parameter slots and bounded host-heap operand/PC objects. No generic stackless Java execution, SourceTask continuation lowering, process native-stack survival, or guest exact-head receipts have been verified.",
+  "note": "All five backend guest evidence lanes remain NOT_EXECUTED. Java #2505 guards carrier recursion; #2624 owns logical budget; #2627 reserves 32-byte managed guard frames; #2628 authors 16-byte evaluator call descriptors within the existing frame. No duplicate charge or compiler-local/return-PC lowering is proven; full stack isolation and native process fault containment remain unimplemented. None proves compiler-lowered actor stacks, source-task continuation ownership, or native process-fault isolation. Java #2633 implements an authored closed pure-integer fnc iterative call/return machine with actor-owned primitive parameter slots and bounded host-heap operand/PC objects. No generic stackless Java execution, SourceTask continuation lowering, process native-stack survival, or guest exact-head receipts have been verified. Java #2639 M4 integrates the exact authored SourceTask #2631 scheduler leases with M3 #2633, fences synchronous calls to logical task/dispatch, and rejects leaked carrier frames at await/cooperate. This does NOT persist active recursive call frames through await, lower complete PC/operand state into actor-owned bytes, or certify guest/native/process/backend parity.",
   "requirements": {
     "separateHeapsAreNotStacks": true,
     "guestBudgetBeforeNativeOverflow": true,
@@ -388,6 +388,74 @@
         "actorStackStorage",
         "actorStackGeneration"
       ]
+    },
+    {
+      "id": "m4-source-task-64-plus-32-charged",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "m4-stable-source-task-id-new-dispatch",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "m4-leaked-sync-lease-rejected-before-await",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "guest-frame-suspension-forbidden",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "m4-leaked-sync-lease-rejected-before-cooperate",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "guest-frame-suspension-forbidden",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "m4-source-cooperate-between-scalar-calls",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest"
+      ]
+    },
+    {
+      "id": "m4-cancel-suspended-task-after-scalar",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "m4-await-inside-recursive-scalar-call",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "not-implemented",
+      "requiredEvidence": [
+        "compilerGuest"
+      ]
     }
   ],
   "promotion": {
@@ -445,6 +513,25 @@
     "javaStacklessRuntimeGuestExecution": "NOT_EXECUTED",
     "javaStacklessNativeStackSurvival": "NOT_EXECUTED",
     "javaStacklessSourceTaskContinuation": "NOT_EXECUTED",
-    "javaStacklessOtherBackends": "NOT_EXECUTED"
+    "javaStacklessOtherBackends": "NOT_EXECUTED",
+    "javaM4Reference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2639",
+    "javaM4SourceTaskBaseReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2631",
+    "javaM4StacklessScalarBaseReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2633",
+    "javaM4IntegrationStatus": "AUTHORED_NOT_EXECUTED",
+    "javaM4TaskBootstrapBytes": 64,
+    "javaM4InvocationFrameBytes": 32,
+    "javaM4OneTaskOneInvocationPeakBytes": 96,
+    "javaM4AdditionalHostTestsAuthored": 6,
+    "javaM4AdditionalGuestFixturesAuthored": 1,
+    "javaM4GuestExpectedOutput": "21|100000",
+    "javaM4GuestExecution": "NOT_EXECUTED",
+    "javaM4SameTaskAcrossAwait": "HOST_TEST_AUTHORED_NOT_EXECUTED",
+    "javaM4NewDispatchAcrossAwait": "HOST_TEST_AUTHORED_NOT_EXECUTED",
+    "javaM4LeakedCallAtAwaitRejected": "HOST_TEST_AUTHORED_NOT_EXECUTED",
+    "javaM4LeakedCallAtCooperateRejected": "HOST_TEST_AUTHORED_NOT_EXECUTED",
+    "javaM4NestedRecursiveGuestFrameSuspension": "NOT_IMPLEMENTED",
+    "javaM4CompilerLoweredReturnPcSpills": "NOT_IMPLEMENTED",
+    "javaM4NativeStackSurvival": "NOT_EXECUTED",
+    "javaM4OtherBackendParity": "NOT_EXECUTED"
   }
 }
