@@ -1,0 +1,30 @@
+name: Source admission Rust reference (NOT backend parity)
+
+on:
+  pull_request:
+    paths:
+      - "contracts/source-input-admission-v1.json"
+      - "test/rust-source-admission/**"
+      - ".github/workflows/source-admission-rust.yml"
+  push:
+    branches: [main]
+    paths:
+      - "contracts/source-input-admission-v1.json"
+      - "test/rust-source-admission/**"
+      - ".github/workflows/source-admission-rust.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-byte-rust-oracle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout originating repository only
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Display Rust version
+        run: rustc --version && cargo --version
+      - name: Run Rust byte oracle (host contract only)
+        run: cargo test --manifest-path test/rust-source-admission/Cargo.toml --all-targets --verbose

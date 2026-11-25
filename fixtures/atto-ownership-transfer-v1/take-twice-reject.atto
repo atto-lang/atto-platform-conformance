@@ -1,0 +1,7 @@
+define class Box as pub let int value = 41; end
+pub fnc main(): int {
+  val Box original = new Box();
+  val Box first = rt take original;
+  val Box second = rt take original;
+  return second.value;
+}

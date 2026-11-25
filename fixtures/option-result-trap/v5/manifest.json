@@ -1,0 +1,45 @@
+{
+  "format": "atto.trap-result.three-backend.v5",
+  "required_backend_proofs": [
+    "java-native-image",
+    "llvm-native-aot",
+    "dotnet-native-aot"
+  ],
+  "cases": [
+    {
+      "path": "preserve-result.atto",
+      "git_blob_sha1": "80575218ef513fb06b47d9646d3be0ad4458074c",
+      "expected": {
+        "result": 7
+      }
+    },
+    {
+      "path": "catch-guest-error.atto",
+      "git_blob_sha1": "941e118fe913a71d6893e27a4e41eb2b8432bbd2",
+      "expected": {
+        "result": 7
+      }
+    },
+    {
+      "path": "reject-retired-option-wrapper.atto",
+      "git_blob_sha1": "76b41bb3045e6607eb3390a11d1bd1dfc7b2984d",
+      "expected": {
+        "diagnostic": "result_option_type_mismatch"
+      }
+    },
+    {
+      "path": "reject-unmarked-throw.atto",
+      "git_blob_sha1": "b3e77f77f083af92766c5d8ec2d1faf983dcb201",
+      "expected": {
+        "diagnostic": "throw_requires_throwable"
+      }
+    },
+    {
+      "path": "panic-bypasses-trap.atto",
+      "git_blob_sha1": "62aed3a4e37bd7cefc0ce5bfbaf56f2665d805e4",
+      "expected": {
+        "runtime_failure": "uncaught_guest_panic"
+      }
+    }
+  ]
+}

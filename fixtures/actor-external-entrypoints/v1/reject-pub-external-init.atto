@@ -1,0 +1,6 @@
+// ACTOR_EXTERNAL_LIFECYCLE_PRIVATE: external init is spawn-owned, not public.
+namespace actor_external_bad_public_init;
+declare pub actor Worker;
+define pub external mtd (Worker w) init(): void {
+    return;
+}
