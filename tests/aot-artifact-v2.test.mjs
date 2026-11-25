@@ -199,3 +199,17 @@ test('resigned malformed PE and Mach-O headers fail structural executable checks
     rejected(()=>run(m,signEnvelope(m),changed));
   }
 });
+
+
+test('signed ELF PT_LOAD payload ranges must remain inside artifact bytes',()=>{
+  for(const mutate of [
+    buf=>{buf.writeBigUInt64LE(1024n,72);buf.writeBigUInt64LE(1n,96);buf.writeBigUInt64LE(1n,104);},
+    buf=>{buf.writeBigUInt64LE(127n,72);buf.writeBigUInt64LE(2n,96);buf.writeBigUInt64LE(2n,104);},
+    buf=>{buf.writeBigUInt64LE(0n,72);buf.writeBigUInt64LE(2n,96);buf.writeBigUInt64LE(1n,104);}
+  ]){
+    const forged=Buffer.from(binary);
+    mutate(forged);
+    const m=good();m.artifact.sha256=sha(forged);
+    rejected(()=>run(m,signEnvelope(m),forged));
+  }
+});
