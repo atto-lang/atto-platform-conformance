@@ -1,0 +1,5 @@
+// expect-error: E_MOVED
+define class Cell as
+  pub let int value = 1;
+end
+pub fnc main(): int { val mut Cell x = new Cell(); val Cell y = x; x.value = 2; return 0; }

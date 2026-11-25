@@ -1,0 +1,8 @@
+// BCV1-019 mut_binding pass: target AttoLang semantics, NOT_EXECUTED.
+// Expected success and exit value 42.
+define class Boxed as pub let int value = 1; end
+pub fnc main(): int {
+  val mut Boxed x = new Boxed();
+  x.value = 42;
+  return x.value;
+}

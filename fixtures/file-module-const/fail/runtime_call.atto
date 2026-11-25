@@ -1,0 +1,4 @@
+// expect-error: E_CONST
+define const int value = runtime_number();
+fnc runtime_number(): int { return 5; }
+pub fnc main(): int { return value; }

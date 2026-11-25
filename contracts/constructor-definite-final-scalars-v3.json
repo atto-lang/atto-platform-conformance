@@ -1,0 +1,116 @@
+{
+  "schema": "atto.constructor-definite-final-scalars.v3",
+  "status": "RUST_NATIVE_AND_WASM32_HOSTED_COMPILERS_EXECUTED",
+  "scope": "Exact eight portable .atto byte-identical fixtures executed by the native Rust compiler and the wasm32-compiled Rust compiler, producing executable guest WebAssembly or compiler errors with no output. Not independent language/backend implementation parity.",
+  "basis": "Explicit class final with checked constructor assignment; independent of conflicting class-field implicit let/val specs tracked at atto-spec#107.",
+  "compiler_pr": "https://github.com/atto-lang/atto-source.rs/pull/377",
+  "site_pr": "https://github.com/atto-lang/atto-lang.github.io/pull/165",
+  "cases": [
+    {
+      "id": "pass_deferred_final_bool",
+      "path": "fixtures/constructor-definite-final/v3/pass/deferred-final-bool.atto",
+      "git_blob_sha": "5669b3274ee4ecad0ff92e383bb9d6e753968cd6",
+      "kind": "pass",
+      "expected_exit": 42
+    },
+    {
+      "id": "pass_deferred_final_float",
+      "path": "fixtures/constructor-definite-final/v3/pass/deferred-final-float.atto",
+      "git_blob_sha": "7bb2cd849df8ae64dce98e36c9ddbdeb2f289b83",
+      "kind": "pass",
+      "expected_exit": 42
+    },
+    {
+      "id": "pass_deferred_final_string",
+      "path": "fixtures/constructor-definite-final/v3/pass/deferred-final-string.atto",
+      "git_blob_sha": "90a3e49779dc19d4ac1eb412d47ccc84b639ca65",
+      "kind": "pass",
+      "expected_exit": 42
+    },
+    {
+      "id": "pass_deferred_final_enum",
+      "path": "fixtures/constructor-definite-final/v3/pass/deferred-final-enum.atto",
+      "git_blob_sha": "746710080b6c3b96f2127034ffdcebdc73222d8e",
+      "kind": "pass",
+      "expected_exit": 42
+    },
+    {
+      "id": "fail_deferred_final_bool_partial",
+      "path": "fixtures/constructor-definite-final/v3/fail/deferred-final-bool-partial.atto",
+      "git_blob_sha": "8727b74ecfbe8700484eb7d05ed4215a43afc25d",
+      "kind": "fail",
+      "expected_error": "E_INIT",
+      "no_artifact": true
+    },
+    {
+      "id": "fail_deferred_final_float_premature_read",
+      "path": "fixtures/constructor-definite-final/v3/fail/deferred-final-float-premature-read.atto",
+      "git_blob_sha": "db8b9c28506d5a0ea2bcd6f7338df0c87e694b7c",
+      "kind": "fail",
+      "expected_error": "E_INIT_READ",
+      "no_artifact": true
+    },
+    {
+      "id": "fail_deferred_final_string_double_write",
+      "path": "fixtures/constructor-definite-final/v3/fail/deferred-final-string-double-write.atto",
+      "git_blob_sha": "bc8b857677f9cd9e31b392e1c5cc51d202a40566",
+      "kind": "fail",
+      "expected_error": "E_INIT_ONCE",
+      "no_artifact": true
+    },
+    {
+      "id": "fail_deferred_final_enum_preinitialized",
+      "path": "fixtures/constructor-definite-final/v3/fail/deferred-final-enum-preinitialized.atto",
+      "git_blob_sha": "633f09250f66c332d9e3c4392be9ac516b932eb0",
+      "kind": "fail",
+      "expected_error": "E_IMMUTABLE",
+      "no_artifact": true
+    }
+  ],
+  "backend_status": {
+    "rs-native-compiler-to-wasm-guest": "VERIFIED",
+    "rs-wasm32-hosted-compiler-to-wasm-guest": "VERIFIED",
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "wasm-independent": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED"
+  },
+  "evidence": {
+    "scope": "EXACT_SOURCE_NATIVE_AND_WASM32_HOSTED_RUST_COMPILER_EXECUTED_GUESTS",
+    "source_pr_head": "f3adef59570c373610ceffe09512e9a7fee943ce",
+    "src_tree_sha": "9a824aedbb69f1b66762d27ff67b9a027cd6b5bb",
+    "tests_tree_sha": "5632abf6aab86ccbcd624dde6059fff26f94a591",
+    "carrier_repo": "gha-indie-worker/gha-indie-worker-docs",
+    "carrier_commit": "9cfbfe93039a4be0af27b0d58ef950e3c38c0eab",
+    "run_url": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/44463703202",
+    "run_id": 44463703202,
+    "job_id": 135356300153,
+    "conclusion": "success",
+    "rust_tests": {
+      "passed": 580,
+      "failed": 0,
+      "summaries": 72
+    },
+    "browser_guest_conformance": {
+      "passed": 561,
+      "failed": 0,
+      "native_wasm_comparisons": 513
+    },
+    "portable_positive_guests": 4,
+    "portable_compile_negative_no_artifact": 4,
+    "site_candidate_class_blob_sha": "077eb223fdb35255e274be88fc7ad41ee0ea02ba",
+    "public_site_release": "BLOCKED_PINNED_BROWSER_COMPILER_E_UNSUPPORTED",
+    "excluded_backends": [
+      "java",
+      "llvm",
+      "net",
+      "forge",
+      "wasm-independent",
+      "cranelift",
+      "js"
+    ]
+  }
+}

@@ -1,0 +1,687 @@
+{
+  "schema": "atto.core-slice-error.v2",
+  "version": 2,
+  "status": "CANDIDATE_NOT_EXECUTED",
+  "evidence_policy": "Only a completed exact-head material compiler guest run with nonempty steps can move a backend to EXECUTED; source presence, model checks, zero-step Actions and host emulation are not proof.",
+  "import_contract": [
+    "core/slice",
+    "atto.core/slice",
+    "core/error",
+    "atto.core/error"
+  ],
+  "source_compatibility": "Public semantics must agree; independent backend source bytes, packages, and lowered representations may differ.",
+  "integer_encoding": "Signed i64 numeric values are represented as DECIMAL STRINGS to avoid JSON double rounding.",
+  "windows": "valid_range(offset,count,length) means offset/count; valid_endpoints(start,end,length) means explicit half-open endpoints (not necessarily ordered); valid_index checks only raw nonnegative positions; valid_signed_index normalizes -len <= i < len.",
+  "borrow_safety": "These helpers never authorize a live Slice<T> or a mutable loan; returning Option<int> from get_copy_int yields an owned Copy<int> value only. The source helpers require borrow Array<int> parameters and rt borrow at call sites; by-value Array ownership consumption is a negative fixture.",
+  "catalog": "Candidate atto-lang/atto-source.java#662 std/error 99-class manifest. Codes classify diagnostics only, never confer nominal error identity, panic/raise CONTROL or retry authority.",
+  "scalar_vectors": [
+    {
+      "id": "index-negative-one",
+      "op": "normalize_index",
+      "args": [
+        "-1",
+        "5"
+      ],
+      "expected": "4",
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "index-negative-length",
+      "op": "normalize_index",
+      "args": [
+        "-5",
+        "5"
+      ],
+      "expected": "0",
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "index-before-start",
+      "op": "normalize_index",
+      "args": [
+        "-6",
+        "5"
+      ],
+      "expected": "-1",
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "index-empty",
+      "op": "normalize_index",
+      "args": [
+        "0",
+        "0"
+      ],
+      "expected": "-1",
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "index-min-int",
+      "op": "normalize_index",
+      "args": [
+        "-9223372036854775808",
+        "9223372036854775807"
+      ],
+      "expected": "-1",
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "bound-min-negative",
+      "op": "normalize_bound",
+      "args": [
+        "-5",
+        "5"
+      ],
+      "expected": "0",
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "bound-one-past",
+      "op": "normalize_bound",
+      "args": [
+        "5",
+        "5"
+      ],
+      "expected": "5",
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "bound-negative-empty",
+      "op": "normalize_bound",
+      "args": [
+        "-1",
+        "0"
+      ],
+      "expected": "-1",
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "bound-min-int",
+      "op": "normalize_bound",
+      "args": [
+        "-9223372036854775808",
+        "9223372036854775807"
+      ],
+      "expected": "-1",
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "range-one-past-empty",
+      "op": "valid_range",
+      "args": [
+        "5",
+        "0",
+        "5"
+      ],
+      "expected": true,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "range-overflow-guard",
+      "op": "valid_range",
+      "args": [
+        "9223372036854775807",
+        "1",
+        "5"
+      ],
+      "expected": false,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "endpoints-opposite",
+      "op": "valid_endpoints",
+      "args": [
+        "4",
+        "1",
+        "5"
+      ],
+      "expected": true,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "endpoints-over-end",
+      "op": "valid_endpoints",
+      "args": [
+        "0",
+        "6",
+        "5"
+      ],
+      "expected": false,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "range-empty-opposite",
+      "op": "range_len",
+      "args": [
+        "4",
+        "1",
+        "5"
+      ],
+      "expected": "0",
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "range-negative-start",
+      "op": "range_len",
+      "args": [
+        "-2",
+        "5",
+        "5"
+      ],
+      "expected": "2",
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "window-at-end",
+      "op": "valid_window",
+      "args": [
+        "5",
+        "0",
+        "5"
+      ],
+      "expected": true,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "window-not-clipped",
+      "op": "valid_window",
+      "args": [
+        "5",
+        "1",
+        "5"
+      ],
+      "expected": false,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "stride-forward-last",
+      "op": "valid_strided_window",
+      "args": [
+        "0",
+        "2",
+        "3",
+        "5"
+      ],
+      "expected": true,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "stride-forward-overflow",
+      "op": "valid_strided_window",
+      "args": [
+        "1",
+        "2",
+        "3",
+        "5"
+      ],
+      "expected": false,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "stride-reverse-last",
+      "op": "valid_reverse_window",
+      "args": [
+        "2",
+        "-1",
+        "3",
+        "5"
+      ],
+      "expected": true,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "stride-reverse-beyond",
+      "op": "valid_reverse_window",
+      "args": [
+        "2",
+        "-2",
+        "3",
+        "5"
+      ],
+      "expected": false,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "stride-min-singleton",
+      "op": "valid_reverse_window",
+      "args": [
+        "0",
+        "-9223372036854775808",
+        "1",
+        "5"
+      ],
+      "expected": true,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "stride-min-double",
+      "op": "valid_reverse_window",
+      "args": [
+        "0",
+        "-9223372036854775808",
+        "2",
+        "5"
+      ],
+      "expected": false,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "error-known-root",
+      "op": "is_known_core_code",
+      "args": [
+        "0"
+      ],
+      "expected": true,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "error-known-fs-family",
+      "op": "is_known_core_code",
+      "args": [
+        "3090"
+      ],
+      "expected": true,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "error-unknown-gap",
+      "op": "is_known_core_code",
+      "args": [
+        "3091"
+      ],
+      "expected": false,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "error-bounds",
+      "op": "is_bounds_code",
+      "args": [
+        "1008"
+      ],
+      "expected": true,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "error-not-bounds",
+      "op": "is_bounds_code",
+      "args": [
+        "1009"
+      ],
+      "expected": false,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "error-retry-advisory",
+      "op": "is_retry_advisory_code",
+      "args": [
+        "4003"
+      ],
+      "expected": true,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "error-not-retry",
+      "op": "is_retry_advisory_code",
+      "args": [
+        "4004"
+      ],
+      "expected": false,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "error-actor-api",
+      "op": "is_actor_api_code",
+      "args": [
+        "2012"
+      ],
+      "expected": true,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "error-not-actor",
+      "op": "is_actor_api_code",
+      "args": [
+        "1009"
+      ],
+      "expected": false,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "error-group-fs",
+      "op": "code_group",
+      "args": [
+        "3001"
+      ],
+      "expected": {
+        "Some": "3000"
+      },
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "error-group-unknown",
+      "op": "code_group",
+      "args": [
+        "3091"
+      ],
+      "expected": "None",
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "error-msg-limit",
+      "op": "valid_message_length",
+      "args": [
+        "1024",
+        "1024"
+      ],
+      "expected": true,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "error-msg-over",
+      "op": "valid_message_length",
+      "args": [
+        "1025",
+        "1024"
+      ],
+      "expected": false,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "error-msg-negative",
+      "op": "valid_message_length",
+      "args": [
+        "-1",
+        "1024"
+      ],
+      "expected": false,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "index-raw-negative",
+      "op": "valid_index",
+      "args": [
+        "-1",
+        "5"
+      ],
+      "expected": false,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "index-raw-last",
+      "op": "valid_index",
+      "args": [
+        "4",
+        "5"
+      ],
+      "expected": true,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "index-raw-past-end",
+      "op": "valid_index",
+      "args": [
+        "5",
+        "5"
+      ],
+      "expected": false,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "index-signed-last",
+      "op": "valid_signed_index",
+      "args": [
+        "-1",
+        "5"
+      ],
+      "expected": true,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "index-signed-first",
+      "op": "valid_signed_index",
+      "args": [
+        "-5",
+        "5"
+      ],
+      "expected": true,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "index-signed-too-negative",
+      "op": "valid_signed_index",
+      "args": [
+        "-6",
+        "5"
+      ],
+      "expected": false,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "empty-zero",
+      "op": "is_empty",
+      "args": [
+        "0"
+      ],
+      "expected": true,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "empty-not-negative",
+      "op": "is_empty",
+      "args": [
+        "-1"
+      ],
+      "expected": false,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "split-at-end",
+      "op": "can_split_at",
+      "args": [
+        "4",
+        "4"
+      ],
+      "expected": true,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "split-past-end",
+      "op": "can_split_at",
+      "args": [
+        "4",
+        "5"
+      ],
+      "expected": false,
+      "guest_status": "NOT_EXECUTED"
+    }
+  ],
+  "owned_copy_vectors": [
+    {
+      "id": "zero-is-some-not-none",
+      "array": [
+        "0",
+        "20",
+        "30",
+        "40"
+      ],
+      "offset": "0",
+      "count": "4",
+      "index": "0",
+      "expected": {
+        "Some": "0"
+      },
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "relative-negative-last",
+      "array": [
+        "0",
+        "20",
+        "30",
+        "40"
+      ],
+      "offset": "1",
+      "count": "2",
+      "index": "-1",
+      "expected": {
+        "Some": "30"
+      },
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "too-negative",
+      "array": [
+        "0",
+        "20",
+        "30",
+        "40"
+      ],
+      "offset": "1",
+      "count": "2",
+      "index": "-3",
+      "expected": "None",
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "empty-window",
+      "array": [
+        "0",
+        "20",
+        "30",
+        "40"
+      ],
+      "offset": "4",
+      "count": "0",
+      "index": "0",
+      "expected": "None",
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "invalid-parent-window",
+      "array": [
+        "0",
+        "20",
+        "30",
+        "40"
+      ],
+      "offset": "3",
+      "count": "2",
+      "index": "0",
+      "expected": "None",
+      "guest_status": "NOT_EXECUTED"
+    }
+  ],
+  "negative_requirements": [
+    {
+      "id": "wrong-copy-element-type",
+      "category": "type",
+      "expect": "semantic type rejection of Array<String> passed to Array<int> checked-copy helper",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "live-exclusive-loan",
+      "category": "borrow",
+      "expect": "failed get_copy under exclusive mutable loan, including out-of-range attempts",
+      "status": "NOT_EXECUTED",
+      "fixture": "fixtures/core-slice-error-v2/borrow-copy-exclusive-negative.atto"
+    },
+    {
+      "id": "source-moved",
+      "category": "borrow",
+      "expect": "use-after-take/consume rejected before even an Option.None is returned",
+      "status": "NOT_EXECUTED",
+      "fixture": "fixtures/core-slice-error-v2/borrow-copy-moved-negative.atto"
+    },
+    {
+      "id": "borrowed-view-outlives-owner",
+      "category": "lifetime",
+      "expect": "true Slice<T> cannot escape owner lifetime",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "overlapping-slice-mut",
+      "category": "alias",
+      "expect": "two writable overlapping slices forbidden",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "borrow-across-await",
+      "category": "suspension",
+      "expect": "unverified live slice loan cannot cross await/select",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "actor-critical-read-escape",
+      "category": "actor",
+      "expect": "borrowed actor state view cannot escape critical-read",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "forged-error-code",
+      "category": "nominal",
+      "expect": "numeric error code cannot confer nominal Error identity or catch eligibility",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "cross-actor-error-control",
+      "category": "actor",
+      "expect": "ordinary Error value cannot spoof supervisor CONTROL raise/panic",
+      "status": "NOT_EXECUTED"
+    }
+  ],
+  "backend_evidence": {
+    "java": {
+      "guest": "NOT_EXECUTED",
+      "borrow_lifetime": "NOT_VERIFIED",
+      "nominal_error": "NOT_VERIFIED"
+    },
+    "llvm": {
+      "guest": "NOT_EXECUTED",
+      "borrow_lifetime": "NOT_VERIFIED",
+      "nominal_error": "NOT_VERIFIED"
+    },
+    "rs": {
+      "guest": "NOT_EXECUTED",
+      "borrow_lifetime": "NOT_VERIFIED",
+      "nominal_error": "NOT_VERIFIED"
+    },
+    "net": {
+      "guest": "NOT_EXECUTED",
+      "borrow_lifetime": "NOT_VERIFIED",
+      "nominal_error": "NOT_VERIFIED"
+    },
+    "wasm": {
+      "guest": "NOT_EXECUTED",
+      "borrow_lifetime": "NOT_VERIFIED",
+      "nominal_error": "NOT_VERIFIED"
+    },
+    "forge": {
+      "guest": "NOT_EXECUTED",
+      "borrow_lifetime": "NOT_VERIFIED",
+      "nominal_error": "NOT_VERIFIED"
+    },
+    "cranelift": {
+      "guest": "NOT_EXECUTED",
+      "borrow_lifetime": "NOT_VERIFIED",
+      "nominal_error": "NOT_VERIFIED"
+    },
+    "js": {
+      "guest": "NOT_EXECUTED",
+      "borrow_lifetime": "NOT_VERIFIED",
+      "nominal_error": "NOT_VERIFIED"
+    },
+    "hdl": {
+      "guest": "NOT_EXECUTED",
+      "borrow_lifetime": "NOT_VERIFIED",
+      "nominal_error": "NOT_VERIFIED"
+    }
+  },
+  "positive_guest_fixtures": [
+    {
+      "id": "borrowed-owned-copy-preserves-array",
+      "path": "fixtures/core-slice-error-v2/borrow-copy-positive.atto",
+      "expected_exit": 42,
+      "status": "NOT_EXECUTED"
+    }
+  ]
+}
