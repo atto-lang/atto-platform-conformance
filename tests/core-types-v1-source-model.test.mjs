@@ -110,6 +110,7 @@ test('secondary backend compiler gate blobs and current heads are pinned without
   const gates=manifest.evidence.backend_compiler_admission_v2;
   assert.equal(gates.length,6);
   assert.deepEqual(gates.map(x=>x.backend).sort(),['cranelift','forge','hdl','js','net','wasm']);
+  assert.deepEqual(gates.filter(gate=>gate.namespace_fixture_git_blobs).map(gate=>gate.backend).sort(),['cranelift','forge','hdl','net']);
   for(const gate of gates){
     const source=manifest.sources.find(x=>x.backend===gate.backend);
     assert.ok(source,'unknown backend '+gate.backend);
@@ -118,7 +119,7 @@ test('secondary backend compiler gate blobs and current heads are pinned without
       assert.match(gate[attr],/^[0-9a-f]{40}$/);
     if(gate.compiler_test_git_blob) assert.match(gate.compiler_test_git_blob,/^[0-9a-f]{40}$/);
     if(gate.namespace_fixture_git_blobs) {
-      assert.ok(gate.backend==='net'||gate.backend==='forge');
+      assert.ok(['net','forge','cranelift','hdl'].includes(gate.backend));
       assert.equal(gate.namespace_fixture_git_blobs.length,3);
       for(const sha of gate.namespace_fixture_git_blobs) assert.match(sha,/^[0-9a-f]{40}$/);
       assert.match(gate.header_parser_git_blob,/^[0-9a-f]{40}$/);
