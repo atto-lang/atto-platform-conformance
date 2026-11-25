@@ -1,0 +1,9 @@
+// EXPECT_REJECT: None is possible but no else arm covers it.
+define pub fnc require_email(Option[string] email) -> Result[string, Error] as
+  return maybe
+    Some(value) ?= email;
+    return Ok(value)
+  else
+    Err(reason) -> return Err(reason)
+  end;
+end
