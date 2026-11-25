@@ -1,0 +1,4 @@
+fnc fail_now(): int { panic! new Error("fatal"); }
+pub fnc main(): int {
+    val r = trap! fail_now(); return r.is_err() ? 42 : 0;
+}
