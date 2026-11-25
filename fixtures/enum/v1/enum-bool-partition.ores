@@ -1,0 +1,17 @@
+define enum Signal as
+    Flag: bool = 1
+    Empty = 2
+end
+fnc classify(Signal x): int {
+    match x over
+        on Signal.Flag(true) -> { return 3; }
+        on Signal.Flag(false) -> { return 4; }
+        on Signal.Empty -> { return 5; }
+    end
+}
+pub fnc main(): void {
+    stdio.println(classify(Signal.Flag(true)));
+    stdio.println(classify(Signal.Flag(false)));
+    stdio.println(classify(Signal.Empty()));
+    return;
+}
