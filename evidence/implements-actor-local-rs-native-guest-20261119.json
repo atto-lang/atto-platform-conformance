@@ -1,0 +1,66 @@
+{
+  "schema": "atto.implements.actor_local.rs_native_guest.v1",
+  "status": "PASS_SCOPED",
+  "observed_utc": "2026-11-19T04:10:03Z",
+  "source_repo": "atto-lang/atto-source.rs",
+  "source_pr": 374,
+  "source_sha": "ea0c199043114a3e2b936ba5b66e84ec6ac166de",
+  "merged_base_source_pr": 369,
+  "merged_base_sha": "209554e0c7f26e5525254b35321ffe4391d7f2fc",
+  "source_blobs_verified": 45,
+  "source_scope": "compiler crate src/**/*.rs, Cargo.toml and lockfile, and focused Rust tests; not all source repo files",
+  "carrier_repo": "usa-acc/atto-ci",
+  "carrier_pr": 2,
+  "carrier_sha": "8ea461b3de2614aafb804ffa606027f3d2413dd6",
+  "workflow_run_id": 44456387901,
+  "workflow_job_id": 135332315028,
+  "workflow_conclusion": "success",
+  "real_steps_executed": true,
+  "tests": {
+    "isolated_rust": 15,
+    "compiler_library": 42,
+    "actor_receiver_rust": 11,
+    "nominal_contract_rust": 14,
+    "abstract_trait_rust": 9,
+    "conformance_receipt_node": 4,
+    "failed": 0
+  },
+  "guest": {
+    "runtime": "real Node.js WebAssembly instantiated module",
+    "compiler": "Atto native Rust compiler",
+    "fixture_path": "compiler369/ci-fixtures/actor-implements-mtd-guest.atto",
+    "fixture_blob_sha": "52993734d6b1f30f6e7345bda2bbd4ce692738d4",
+    "bindings": [
+      "actor_init(0)",
+      "actor_receive(0,21n,1n)"
+    ],
+    "stdout": "42\n",
+    "wasm_deterministic": true,
+    "compiled_actor_local_immutable_mtd": true
+  },
+  "negative_cases": {
+    "existing_no_artifact": 3,
+    "actor_missing_method_no_artifact": true,
+    "direct_external_actorref_method_call": "E_UNSUPPORTED"
+  },
+  "admission_boundaries": [
+    "stateless actor receivers only",
+    "same-file nominal contract definitions",
+    "immutable mtd receivers",
+    "bounded scalar signatures",
+    "actor-local calls from receive",
+    "no direct synchronous ActorRef dispatch"
+  ],
+  "unsupported_or_unverified": [
+    "mutable actor receivers",
+    "sealed state locks/critical sections",
+    "trait default body lowering on actor",
+    "struct value receiver guest execution",
+    "cross-module and generics",
+    "ownership/effect inference parity",
+    "browser-hosted wasm32 compiler",
+    "Java/LLVM/.NET/Forge/independent Wasm/Cranelift/JS parity",
+    "all 29 portable registry cases"
+  ],
+  "claim_rule": "This proves exactly one actor-local mtd fixture and focused host compiler cases; leave all portable registry/backend statuses NOT_EXECUTED until independently run."
+}
