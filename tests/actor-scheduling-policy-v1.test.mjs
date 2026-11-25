@@ -760,3 +760,63 @@ test("automatic pump coalesces wakeups and resumes ready receives at quota", asy
 test("automatic pump oracle detects dropped publication wakeup", async () => {
   await assert.rejects(() => verifyPumpWakeups(true));
 });
+
+
+// Reference model only: capacity belongs to physical segments, not parked
+// logical receives. Cancellation must not refund a still-running carrier.
+function verifyPumpCarrierBound(refundOnCancel = false) {
+  const live = new Map();
+  let carrier = null;
+  const admit = actor => {
+    if (carrier !== null) return null;
+    const ticket = {actor};
+    live.set(ticket, 'running');
+    carrier = ticket;
+    return ticket;
+  };
+  const suspend = ticket => {
+    if (carrier !== ticket) return false;
+    live.set(ticket, 'parked');
+    carrier = null;
+    return true;
+  };
+  const resume = ticket => {
+    if (carrier !== null || live.get(ticket) !== 'parked') return false;
+    carrier = ticket;
+    live.set(ticket, 'running');
+    return true;
+  };
+  const cancel = ticket => {
+    if (carrier !== ticket) return false;
+    live.set(ticket, 'cancelling');
+    if (refundOnCancel) carrier = null;
+    return true;
+  };
+  const retire = ticket => {
+    if (carrier !== ticket) return false;
+    live.delete(ticket);
+    carrier = null;
+    return true;
+  };
+  const a = admit('a');
+  assert.ok(a);
+  assert.equal(admit('b'), null);
+  assert.equal(suspend(a), true);
+  const b = admit('b');
+  assert.ok(b);
+  assert.equal(resume(a), false);
+  assert.equal(cancel(b), true);
+  assert.equal(admit('c'), null);
+  assert.equal(resume(a), false);
+  assert.equal(retire(b), true);
+  assert.equal(resume(a), true);
+  assert.equal(retire(b), false);
+  assert.equal(retire(a), true);
+  assert.equal(live.size, 0);
+}
+test("tenant carrier quota is independent of suspended actor receives", () => {
+  verifyPumpCarrierBound();
+});
+test("carrier quota oracle detects premature cancellation refund", () => {
+  assert.throws(() => verifyPumpCarrierBound(true));
+});
