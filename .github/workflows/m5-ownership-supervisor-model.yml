@@ -1,0 +1,32 @@
+name: M5 owner and supervisor reference model – no guest certification
+on:
+  push:
+    branches: [feat/m5-ownership-supervisor-contract-20261107]
+  pull_request:
+    paths:
+      - 'contracts/m5-ownership-supervisor-v1.json'
+      - 'tests/test_m5_actor_owner_supervisor_model.py'
+      - '.github/workflows/m5-ownership-supervisor-model.yml'
+permissions:
+  contents: read
+jobs:
+  fail-closed-actor-reference-model:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Verify reviewed source SHA
+        env:
+          EXPECTED: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED"
+          git diff --quiet HEAD --
+      - name: Execute 21 ownership/mailbox/supervision tests including 256 randomized traces
+        run: python3 -m unittest discover -s tests -p test_m5_actor_owner_supervisor_model.py -v
+      - name: Evidence scope
+        run: |
+          echo 'M5_FINITE_REFERENCE_MODEL_PASSED_NOT_REAL_ATTO_LANG_BACKEND_COMPILER'
+          echo 'Actual compiler and runtime lanes require stepful exact-head guest execution'

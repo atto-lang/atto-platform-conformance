@@ -1,0 +1,31 @@
+{
+  "schema": "attolang.hpc.i64-differential-v1",
+  "status": "FIXTURE_ONLY_NOT_EXECUTED",
+  "source": "fixtures/hpc-reduction-v1/i64-parameterized-tiles.atto",
+  "sourceGitBlobSha1": "88795ff752006d020ea08c6585a8b3b03bf641c7",
+  "method": "tile_reduce8",
+  "type": "signed-i64",
+  "tileSize": 4,
+  "tileCount": 2,
+  "tileOrder": "left-folded-4; then tile0 + tile1",
+  "vectorEncoding": "eight canonical signed-decimal values comma-delimited with LF per vector",
+  "vectorCount": 107,
+  "curatedVectorCount": 11,
+  "generatedVectorCount": 96,
+  "prng": "xorshift64 u64, shift 13/7/17, unsigned remainder 1000001 then subtract 500000",
+  "seedHex": "5EEDF00DBADC0FFE",
+  "vectorMatrixSha256": "b921d3a36a08917bd5ce7681eb9e00c7b37bb62e8308e0b8615c0c7ffb3ff575",
+  "compilerExecution": {
+    "java": "NOT_EXECUTED",
+    "llvmO0": "NOT_EXECUTED",
+    "llvmO2": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED"
+  },
+  "limitations": [
+    "LLVM native execution uses a C ABI observer that only passes arguments and prints the actual compiled guest result",
+    "Java creates signed-i64 guest-call main expressions; it does not certify native ABI argument calling",
+    "Neither host fixture tests nor syntactic checks prove real backend execution, multicore parallelism, SIMD or speedup"
+  ]
+}

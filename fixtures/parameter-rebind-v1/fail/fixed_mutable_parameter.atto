@@ -1,0 +1,8 @@
+// expect-error: E_IMMUTABLE
+define class Foo as
+    pub let int foo = 5;
+end
+
+pub fnc replace(mut Foo f): void {
+    f = new Foo();
+}

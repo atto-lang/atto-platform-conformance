@@ -1,0 +1,9 @@
+// Future positive guest target: one logical span across continuation suspend/resume.
+// No Java ThreadLocal or duplicated enter/exit on carrier migration.
+// A real compiler runner must provide network/fs capability for the awaited operation.
+pub suspends fnc main(): int {
+  using telemetry.span("awaited") as span {
+    val exists = await fs.exists("./telemetry-fixture-file");
+    return exists ? 1 : 0;
+  }
+}

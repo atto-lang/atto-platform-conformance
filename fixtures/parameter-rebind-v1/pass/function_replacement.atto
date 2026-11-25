@@ -1,0 +1,21 @@
+// expect-exit: 69
+define class Foo as
+    pub let int foo = 5;
+end
+
+fnc handle_foo(rebind mut Foo f): int {
+    block {
+        val z = borrow! mut f;
+        z.foo = 8;
+    }
+    f.foo = 6;
+    f = new Foo();
+    f.foo = 9;
+    return f.foo;
+}
+
+pub fnc main(): int {
+    val mut Foo original = new Foo();
+    val replacement_value = handle_foo(mut original);
+    return original.foo * 10 + replacement_value;
+}

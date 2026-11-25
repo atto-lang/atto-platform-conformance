@@ -1,0 +1,12 @@
+// Candidate guest test: IEEE-754 -0.0 and +0.0 compare equal in ordering.
+// Expected main exit value 42. NO actual guest/AOT execution certified.
+pub fnc main(): int {
+  val float minus_zero = -0.0;
+  if minus_zero < 0.0 || minus_zero > 0.0 then
+    return 1;
+  fi
+  if minus_zero <= 0.0 && minus_zero >= 0.0 then
+    return 42;
+  fi
+  return 2;
+}
