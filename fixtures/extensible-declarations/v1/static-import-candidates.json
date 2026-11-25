@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.0.0-draft",
+  "status": "TARGET_ONLY_IMPORT_RESOLUTION_NOT_EXECUTED",
+  "spec": "https://github.com/atto-lang/atto-spec/pull/230",
+  "entry": "main.atto",
+  "invariants": [
+    "explicit_static_kind_imports",
+    "canonical_provider_symbol_identity",
+    "no_runtime_descriptor_registry",
+    "locked_source_and_schema_in_cache_key",
+    "ordinary_type_and_actor_checks_after_elaboration",
+    "no_residual_kind_nodes_in_executable_ir"
+  ],
+  "cases": [
+    {
+      "id": "explicit-public",
+      "units": {
+        "provider.atto": "define pub keyword entity as class\nend\ndefine pub class Control as end\n",
+        "main.atto": "import keyword entity from \"./provider.atto\";\ndefine entity Customer as end\npub fnc main(): int { return 42; }\n"
+      },
+      "target": "ACCEPT",
+      "native_exit": 42
+    },
+    {
+      "id": "private-descriptor",
+      "units": {
+        "provider.atto": "define keyword entity as class\nend\ndefine pub class Control as end\n",
+        "main.atto": "import keyword entity from \"./provider.atto\";\ndefine entity Customer as end\npub fnc main(): int { return 42; }\n"
+      },
+      "target": "REJECT",
+      "reason": "PRIVATE_KIND"
+    },
+    {
+      "id": "missing-descriptor",
+      "units": {
+        "provider.atto": "define pub class entity as end\n",
+        "main.atto": "import keyword entity from \"./provider.atto\";\ndefine entity Customer as end\npub fnc main(): int { return 42; }\n"
+      },
+      "target": "REJECT",
+      "reason": "WRONG_SYMBOL_CATEGORY"
+    },
+    {
+      "id": "conflicting-imports",
+      "units": {
+        "provider.atto": "define pub keyword entity as class\nend\ndefine pub class Control as end\n",
+        "other.atto": "define pub keyword entity as class\nend\ndefine pub class Control as end\n",
+        "main.atto": "import keyword entity from \"./provider.atto\";\nimport keyword entity from \"./other.atto\";\ndefine entity Customer as end\npub fnc main(): int { return 42; }\n"
+      },
+      "target": "REJECT",
+      "reason": "AMBIGUOUS_KIND"
+    },
+    {
+      "id": "wildcard-no-bare-kind",
+      "units": {
+        "provider.atto": "define pub keyword entity as class\nend\ndefine pub class Control as end\n",
+        "main.atto": "import * as provider from \"./provider.atto\";\ndefine entity Customer as end\npub fnc main(): int { return 42; }\n"
+      },
+      "target": "REJECT",
+      "reason": "NO_IMPLICIT_KIND"
+    },
+    {
+      "id": "provider-contract-identity",
+      "units": {
+        "provider.atto": "define pub keyword entity as class requires Entity; end\ndefine pub interface Entity as answer(): int; end\n",
+        "main.atto": "import keyword entity from \"./provider.atto\";\ndefine interface Entity as end\ndefine entity Customer as end\npub fnc main(): int { return 0; }\n"
+      },
+      "target": "REJECT",
+      "reason": "PROVIDER_CONTRACT_NOT_CONSUMER_SPELLING"
+    },
+    {
+      "id": "forward-local-descriptor",
+      "units": {
+        "main.atto": "define entity Customer as end\ndefine keyword entity as class end\npub fnc main(): int { return 42; }\n"
+      },
+      "target": "ACCEPT",
+      "native_exit": 42
+    }
+  ]
+}
