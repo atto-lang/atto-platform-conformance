@@ -1,0 +1,15 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {analyzeBlockerGraph} from '../tools/audit-blocker-graph-v1.mjs';
+const p=(num,cause='runner',dependsOn=[],status='OPEN')=>({id:`atto-lang/a#${num}`,cause,status,dependsOn});
+const issues=(r,kind)=>r.issues.some(x=>x.kind===kind);
+test('empty graph is structural candidate only',()=>{const r=analyzeBlockerGraph([]);assert.equal(r.status,'STRUCTURAL_CANDIDATE');assert.equal(r.releaseAuthorized,false);});
+test('topological order places prerequisites before dependents',()=>{const r=analyzeBlockerGraph([p(3,'audit',['atto-lang/a#2']),p(1),p(2,'audit',['atto-lang/a#1'])]);assert.deepEqual(r.order,['atto-lang/a#1','atto-lang/a#2','atto-lang/a#3']);});
+test('unresolved dependency marks incomplete',()=>assert.ok(issues(analyzeBlockerGraph([p(2,'audit',['atto-lang/a#1'])]),'MISSING_DEPENDENCY')));
+test('two-node cycle cannot be ranked',()=>{const r=analyzeBlockerGraph([p(1,'review',['atto-lang/a#2']),p(2,'review',['atto-lang/a#1'])]);assert.equal(r.status,'INCOMPLETE');assert.ok(issues(r,'CYCLE_OR_DOWNSTREAM'));});
+test('self-dependency and duplicate edge rejected',()=>{const r=analyzeBlockerGraph([p(1,'runner',['atto-lang/a#1','atto-lang/a#1'])]);assert.ok(issues(r,'SELF_DEPENDENCY'));assert.ok(issues(r,'DUPLICATE_EDGE'));});
+test('duplicate PR ID rejected even if cause differs',()=>assert.ok(issues(analyzeBlockerGraph([p(1),p(1,'review')]),'DUPLICATE_NODE')));
+test('resolved node with open dependency is inconsistent',()=>assert.ok(issues(analyzeBlockerGraph([p(1),p(2,'review',['atto-lang/a#1'],'RESOLVED')]),'RESOLVED_WITH_OPEN_DEPENDENCY')));
+test('clusters collapse repeated root cause with actual PR IDs',()=>{const r=analyzeBlockerGraph([p(1),p(2),p(3,'review')]);assert.equal(r.clusters.find(x=>x.cause==='runner').prs.length,2);assert.equal(r.clusters.find(x=>x.cause==='review').open,1);});
+test('unknown status is not resolved',()=>{const r=analyzeBlockerGraph([p(1,'review',[],'UNKNOWN')]);assert.equal(r.clusters[0].unknown,1);assert.deepEqual(r.roots,['atto-lang/a#1']);});
+test('malformed IDs and unsupported statuses fail closed',()=>{const r=analyzeBlockerGraph([{id:'../../../x',cause:'runner',dependsOn:[],status:'OPEN'},p(1,'runner',[],'MERGED')]);assert.ok(issues(r,'INVALID_NODE'));});
+test('explicit edge budget prevents unbounded expansion',()=>assert.ok(issues(analyzeBlockerGraph([p(1),p(2,'runner',['atto-lang/a#1'])],{maxEdges:0}),'EDGE_BUDGET_EXCEEDED')));

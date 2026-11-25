@@ -1,0 +1,203 @@
+{
+  "schemaVersion": 1,
+  "policy": "unattested-receipts-never-certify-parity",
+  "backends": [
+    "java",
+    "llvm",
+    "net",
+    "forge",
+    "wasm"
+  ],
+  "areas": [
+    "numeric",
+    "dispatch",
+    "capture",
+    "ownership",
+    "effects"
+  ],
+  "cases": [
+    {
+      "id": "numeric-exact-integer",
+      "area": "numeric",
+      "mode": "execute",
+      "file": "numeric-exact-integer.ores",
+      "gitBlob": "c9324c9713e8ccb1f30d01020a6dece9ba1c236c",
+      "oracle": {
+        "kind": "integer",
+        "value": 1
+      },
+      "targets": {
+        "java": "candidate",
+        "llvm": "candidate",
+        "net": "candidate",
+        "forge": "candidate",
+        "wasm": "candidate"
+      }
+    },
+    {
+      "id": "numeric-precedence",
+      "area": "numeric",
+      "mode": "execute",
+      "file": "numeric-precedence.ores",
+      "gitBlob": "a5c94f0ef1756f0c9637eaad9c8c23403b5fef5c",
+      "oracle": {
+        "kind": "integer",
+        "value": 42
+      },
+      "targets": {
+        "java": "candidate",
+        "llvm": "candidate",
+        "net": "candidate",
+        "forge": "candidate",
+        "wasm": "candidate"
+      }
+    },
+    {
+      "id": "dispatch-value-match",
+      "area": "dispatch",
+      "mode": "execute",
+      "file": "dispatch-value-match.ores",
+      "gitBlob": "017ab829caefec35ef215a21ba272f704f654a08",
+      "oracle": {
+        "kind": "integer",
+        "value": 43
+      },
+      "targets": {
+        "java": "candidate",
+        "llvm": "candidate",
+        "net": "not-targeted",
+        "forge": "not-targeted",
+        "wasm": "not-targeted"
+      }
+    },
+    {
+      "id": "dispatch-do-match",
+      "area": "dispatch",
+      "mode": "execute",
+      "file": "dispatch-do-match.ores",
+      "gitBlob": "eaea57aecc1f809e3c63733177fe69fc6cb544b9",
+      "oracle": {
+        "kind": "integer",
+        "value": 42
+      },
+      "targets": {
+        "java": "candidate",
+        "llvm": "candidate",
+        "net": "not-targeted",
+        "forge": "not-targeted",
+        "wasm": "not-targeted"
+      }
+    },
+    {
+      "id": "capture-explicit-lex",
+      "area": "capture",
+      "mode": "execute",
+      "file": "capture-explicit-lex.ores",
+      "gitBlob": "2ad91070e5413b735ca7e1fb9ad93c9cfb014539",
+      "oracle": {
+        "kind": "stdout",
+        "value": "7"
+      },
+      "targets": {
+        "java": "candidate",
+        "llvm": "not-targeted",
+        "net": "not-targeted",
+        "forge": "not-targeted",
+        "wasm": "not-targeted"
+      }
+    },
+    {
+      "id": "capture-implicit-self-reject",
+      "area": "capture",
+      "mode": "reject",
+      "file": "capture-implicit-self-reject.ores",
+      "gitBlob": "99858fcb8305b7cfe52bce6b032a099a84a2385f",
+      "oracle": {
+        "kind": "diagnostic",
+        "category": "capture",
+        "subject": "self"
+      },
+      "targets": {
+        "java": "candidate",
+        "llvm": "not-targeted",
+        "net": "not-targeted",
+        "forge": "not-targeted",
+        "wasm": "not-targeted"
+      }
+    },
+    {
+      "id": "ownership-ended-loan",
+      "area": "ownership",
+      "mode": "execute",
+      "file": "ownership-ended-loan.ores",
+      "gitBlob": "b98aa02b6c4c9f4daa2cf07d85279e4311a64d49",
+      "oracle": {
+        "kind": "stdout",
+        "value": "71"
+      },
+      "targets": {
+        "java": "candidate",
+        "llvm": "not-targeted",
+        "net": "not-targeted",
+        "forge": "not-targeted",
+        "wasm": "not-targeted"
+      }
+    },
+    {
+      "id": "ownership-live-loan-reject",
+      "area": "ownership",
+      "mode": "reject",
+      "file": "ownership-live-loan-reject.ores",
+      "gitBlob": "e33a48c741b8ead1d7de1458e15c4988a202d197",
+      "oracle": {
+        "kind": "diagnostic",
+        "category": "ownership",
+        "subject": "borrow"
+      },
+      "targets": {
+        "java": "candidate",
+        "llvm": "not-targeted",
+        "net": "not-targeted",
+        "forge": "not-targeted",
+        "wasm": "not-targeted"
+      }
+    },
+    {
+      "id": "effects-critical-write",
+      "area": "effects",
+      "mode": "check",
+      "file": "effects-critical-write.ores",
+      "gitBlob": "5738ca8b68ed43d8f6e22152970f569506b14b8a",
+      "oracle": {
+        "kind": "admission",
+        "value": "accepted"
+      },
+      "targets": {
+        "java": "candidate",
+        "llvm": "not-targeted",
+        "net": "not-targeted",
+        "forge": "not-targeted",
+        "wasm": "not-targeted"
+      }
+    },
+    {
+      "id": "effects-read-mutate-reject",
+      "area": "effects",
+      "mode": "reject",
+      "file": "effects-read-mutate-reject.ores",
+      "gitBlob": "2a611a093ce56c654bdca70c5dde9fda7a778187",
+      "oracle": {
+        "kind": "diagnostic",
+        "category": "effect",
+        "subject": "state"
+      },
+      "targets": {
+        "java": "candidate",
+        "llvm": "not-targeted",
+        "net": "not-targeted",
+        "forge": "not-targeted",
+        "wasm": "not-targeted"
+      }
+    }
+  ]
+}

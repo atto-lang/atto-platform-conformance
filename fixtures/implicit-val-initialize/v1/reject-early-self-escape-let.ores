@@ -1,0 +1,7 @@
+define class Connection as
+  let int request_count;
+  initialize(int id) -> void {
+    publish(self);
+    self.request_count = id;
+  }
+end

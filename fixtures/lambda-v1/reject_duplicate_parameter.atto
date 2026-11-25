@@ -1,0 +1,4 @@
+// REJECT: duplicate names in the same lambda parameter list.
+pub fnc main() -> int ::
+  return (|int x, int x| -> x)(3, 4)
+end

@@ -1,0 +1,54 @@
+name: Pointer capability source-free model (NOT native Atto guest AOT)
+on:
+  pull_request:
+    paths:
+      - 'models/pointer_capability_aot_v1.cpp'
+      - 'contracts/pointer-ref-local-v1.json'
+      - 'contracts/pointer-source-traits-operators-v1.json'
+      - 'fixtures/pointer-source-operators-v1/**'
+      - 'tests/pointer_source_traits_operators_v1.test.mjs'
+      - 'contracts/pointer-local-candidate-evidence-v1.json'
+      - 'tests/pointer_local_candidates_v1.test.mjs'
+      - 'fixtures/pointer-ref-local-v1/**'
+      - 'tests/pointer_ref_local_v1.test.mjs'
+      - 'tests/pointer_local_lease_oracle_v1.rs'
+      - 'docs/POINTER_AOT_PARITY_GATES_V1.md'
+      - '.github/workflows/pointer-capability-model.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  reference-model:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Prove exact source head/tree
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          git rev-parse HEAD
+          git rev-parse HEAD^{tree}
+      - name: Compile and execute optimized C++20 reference model
+        run: |
+          g++ -std=c++20 -O2 -Wall -Wextra -Werror -pedantic models/pointer_capability_aot_v1.cpp -o /tmp/atto_pointer_model
+          /tmp/atto_pointer_model
+      - name: Compile and execute Clang ASan/UBSan reference model
+        run: |
+          clang++ -std=c++20 -O1 -g -Wall -Wextra -Werror -pedantic -fsanitize=address,undefined -fno-omit-frame-pointer models/pointer_capability_aot_v1.cpp -o /tmp/atto_pointer_model_san
+          ASAN_OPTIONS=detect_leaks=1 /tmp/atto_pointer_model_san
+      - name: Verify pointer-local rt/bang fixture registry (SOURCE ONLY)
+        run: |
+          node --test tests/pointer_ref_local_v1.test.mjs tests/pointer_local_candidates_v1.test.mjs tests/pointer_source_traits_operators_v1.test.mjs
+      - name: Install pinned Rust toolchain for source-free lease model
+        run: rustup toolchain install 1.85.1 --profile minimal
+      - name: Execute Rust local-lease oracle (HOST ONLY, no Atto guest)
+        run: |
+          rustc +1.85.1 --edition=2021 -D warnings --test tests/pointer_local_lease_oracle_v1.rs -o "$RUNNER_TEMP/atto_local_lease_oracle_v1"
+          "$RUNNER_TEMP/atto_local_lease_oracle_v1" --nocapture
+      - name: Scope evidence accurately
+        run: |
+          echo "SOURCE_FREE_CPP_AND_RUST_MODELS_AND_SOURCE_ONLY_FIXTURE_CHECKS; No AttoLang compiler, guest Pointer<T>, native AOT artifact or backend parity was exercised."

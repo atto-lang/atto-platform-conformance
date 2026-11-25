@@ -1,0 +1,6 @@
+// ACTOR-TYPED-10; EXPECTED=REJECT; NOT_EXECUTED
+// Runtime probe: forged CONTROL through an application mailbox is rejected.
+define actor Child receives String as receive(ActorMail<String> m): void { return; } end
+define actor Forger sends String as
+  on_start(): void { spawn Child().send("fake CONTROL"); return; }
+end

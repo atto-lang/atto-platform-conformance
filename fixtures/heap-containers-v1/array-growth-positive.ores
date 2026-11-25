@@ -1,0 +1,7 @@
+// Existing owning runtime-extent sequence: positive guest candidate.
+pub fnc main(): int {
+  let mut Array<int> items = new Array<int>();
+  items.add(7);
+  items.add(35);
+  return items.get(0) + items.get(1);
+}

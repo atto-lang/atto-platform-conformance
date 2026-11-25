@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "contract": "untrusted-supervisor-outbound-admission-v1",
+  "status": "REFERENCE_ONLY",
+  "note": "Scenario inventory; no backend execution or security proof is implied.",
+  "backends": {
+    "java": "PENDING",
+    "llvm": "PENDING"
+  },
+  "scenarios": [
+    {
+      "id": "direct-child-send",
+      "path": "untrusted-child-to-supervisor",
+      "expected": "TRUSTED_QUOTA_REQUIRED"
+    },
+    {
+      "id": "actor-output-path",
+      "path": "untrusted-child-output-to-supervisor",
+      "expected": "TRUSTED_QUOTA_REQUIRED"
+    },
+    {
+      "id": "reply-path",
+      "path": "untrusted-child-reply-to-supervisor",
+      "expected": "TRUSTED_QUOTA_REQUIRED"
+    },
+    {
+      "id": "recovery-notice",
+      "path": "runtime-error-and-raise-notification",
+      "expected": "TRUSTED_QUOTA_REQUIRED"
+    },
+    {
+      "id": "child-restart-fanout",
+      "path": "restart-induced-supervisor-messages",
+      "expected": "TRUSTED_QUOTA_REQUIRED"
+    },
+    {
+      "id": "nested-descendant-fanout",
+      "path": "descendant-supervisor-relay",
+      "expected": "TRUSTED_QUOTA_REQUIRED"
+    },
+    {
+      "id": "alternate-transport",
+      "path": "ipc-or-proxy-send-to-supervisor",
+      "expected": "TRUSTED_QUOTA_REQUIRED"
+    },
+    {
+      "id": "capacity-zero",
+      "path": "zero-credit-supervisor-mailbox",
+      "expected": "REJECT_WITHOUT_ALLOCATING"
+    },
+    {
+      "id": "cancel-race",
+      "path": "send-cancel-versus-admission",
+      "expected": "SINGLE_TERMINAL_OUTCOME"
+    },
+    {
+      "id": "quota-rotation",
+      "path": "stale-capability-generation",
+      "expected": "REJECT_STALE_AUTHORITY"
+    },
+    {
+      "id": "priority-bypass",
+      "path": "untrusted-control-priority-escalation",
+      "expected": "NO_TRUST_ELEVATION"
+    },
+    {
+      "id": "quarantine-path",
+      "path": "post-quarantine-supervisor-send",
+      "expected": "REJECT_OR_BOUNDED_RUNTIME_ONLY"
+    }
+  ],
+  "promotion": {
+    "hostUnitTestsAloneSufficient": false,
+    "actualGuestExecutionRequired": true,
+    "exactSourceTreeAndCompilerDigestsRequired": true,
+    "zeroStepActionsAccepted": false,
+    "crossBackendParityRequiresBothExecuted": true
+  }
+}

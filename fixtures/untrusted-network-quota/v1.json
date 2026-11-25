@@ -1,0 +1,199 @@
+{
+  "schemaVersion": 1,
+  "status": "proposal-contract-only-no-backend-execution",
+  "defaults": {
+    "httpMaxInFlight": 10,
+    "httpRequestStartsPerSecond": 10,
+    "httpStartBurst": 2,
+    "tcpMaxActiveConnections": 10,
+    "tcpConnectionStartsPerSecond": 10,
+    "tcpStartBurst": 2,
+    "refundPublishedStartTokens": false
+  },
+  "scope": "supervisor-authorized-untrusted-network-egress",
+  "pendingBackends": [
+    "java-graalvm",
+    "llvm",
+    "wasm",
+    "forge",
+    ".net"
+  ],
+  "confirmedBackends": [],
+  "notes": "This registry is not a sandbox or active enforcement proof. Current UNTRUSTED network permission remains denied unless explicitly brokered in a protected runtime.",
+  "cases": [
+    {
+      "id": "http-ten-in-flight",
+      "description": "Ten outstanding HTTP requests may be admitted if each request start is within its independently metered start-rate budget",
+      "expected": "admit",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "http-eleventh-in-flight",
+      "description": "The eleventh simultaneously in-flight HTTP request is rejected before dispatch",
+      "expected": "too-many-in-flight",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "http-ten-starts-per-second",
+      "description": "A workload issuing HTTP starts at exactly the configured sustained rate can progress subject to token bucket burst semantics",
+      "expected": "bounded-rate",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "http-burst-exhausted",
+      "description": "After initial burst two without clock advancement, the third request start is rejected even with concurrency headroom",
+      "expected": "rate-limited",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "http-cancel-and-timeout",
+      "description": "Request cancellation or timeout may free its in-flight slot only once underlying host operation has terminated",
+      "expected": "release-once",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "tcp-ten-open",
+      "description": "Up to ten active and connecting outbound TCP sockets can hold slots",
+      "expected": "admit",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "tcp-eleventh-open",
+      "description": "The eleventh active outbound TCP connection is denied before DNS and socket creation",
+      "expected": "too-many-connections",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "tcp-connect-failure",
+      "description": "DNS failure, connect failure and socket-creation failure release reserved TCP slot once",
+      "expected": "release-once",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "tcp-rapid-reconnect",
+      "description": "Rapid disconnect and reconnect must remain subject to a separately configured socket-start attempt policy",
+      "expected": "bounded-starts",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "http2-and-keepalive",
+      "description": "HTTP2 multiplexing counts every in-flight request, while pooled physical sockets count against applicable aggregate open socket caps",
+      "expected": "same-egress-gate",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "redirect-and-dns",
+      "description": "Redirect, proxy, hostname and resolved destination addresses must not allow permission or quota bypass",
+      "expected": "capability-denied",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "restart-and-spawn",
+      "description": "Actor restart, descendant spawn and forged sender credentials cannot reset the trusted lineage budget",
+      "expected": "stable-lineage-quota",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "guest-control-mutation",
+      "description": "Guest must not mutate policy, clock, lease, counter or resource identity",
+      "expected": "capability-denied",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "shutdown-race",
+      "description": "Concurrent close, cancellation and actor shutdown cannot double-release or oversubscribe slots",
+      "expected": "release-once",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "delayed-cancel-no-token-refund",
+      "description": "An untrusted guest retains two uncommitted network starts through refill and later cancels them: refund only in-flight/socket slots",
+      "expected": "no-refund-of-published-start-token",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "revocation-prevents-commit",
+      "description": "Supervisor quota revocation after reservation but before the actual outbound dispatch must prevent committing and allow once-only credit cleanup",
+      "expected": "deny-new-commit-and-release-slot",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "hierarchical-internal-rollback",
+      "description": "A supervisor or tenant denies admission after child tentative debit and the host rolls all tentative state back atomically before returning",
+      "expected": "rollback-unpublished-only",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "revoked-hierarchy-all-or-nothing",
+      "description": "When any one trusted quota scope closes between admission and dispatch the entire composite lease must refuse before committing any component",
+      "expected": "deny-all-commit",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "java-direct-network-entry-denied",
+      "description": "An actual UNTRUSTED actor turn invoking the ordinary Java NativeIo outbound HTTP or TCP path is rejected before host networking",
+      "expected": "broker-required",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "http-caller-cancel-does-not-own-host-io",
+      "description": "Cancel the untrusted caller-visible HTTP result while a real host HTTP response is blocked; the underlying host transport alone settles the slot",
+      "expected": "host-owned-completion",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "tcp-actual-socket-closure",
+      "description": "A trusted broker opens real asynchronous TCP, then supervisor shutdown or cancellation closes that OS channel before it recycles the socket slot",
+      "expected": "physical-close-before-release",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "monotonic-clock-representation-wrap",
+      "description": "Rate accounting must handle a trusted monotonic sample crossing signed or unsigned integer representation wrap, rejecting backward samples without granting extra starts",
+      "expected": "bounded-refill",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "actor-context-broker-authentication",
+      "description": "An untrusted actor executes the broker intrinsic, which must derive sender and lineage from runtime-owned execution state and reject a different actor or runtime",
+      "expected": "runtime-provenance-required",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "broker-ticket-cap-and-replay",
+      "description": "A guest cannot submit more than sixteen outstanding bound network result tickets, cannot replay consumed results and cannot retain authority after host unbinding",
+      "expected": "bounded-one-shot-ticket",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "no-guest-future-callback-on-host",
+      "description": "Host I/O completion updates sealed immutable ticket state only and cannot execute guest-provided callbacks on privileged host executor threads",
+      "expected": "no-guest-callback-on-host",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "actor-termination-cached-ticket",
+      "description": "After automatic actor finalization, a cached trusted host bridge reference cannot consume a pending or completed result ticket, including when lookup preceded revocation",
+      "expected": "revoked-no-result",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "actor-termination-queued-dispatch",
+      "description": "A host I/O dispatch runnable queued before actor termination cannot initiate a network request after the broker's synchronized no-I/O revocation fence",
+      "expected": "no-post-revocation-dispatch",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "host-cleanup-capacity-exhausted",
+      "description": "When all bounded host cleanup reservations are consumed, new actor egress binding construction rejects without creating an untracked network broker",
+      "expected": "bounded-fail-closed",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "host-cleanup-retry-exhaustion",
+      "description": "A failing trusted host HTTP cancellation consumes a finite retry budget and retains resource reservations with observable failure until host cleanup succeeds",
+      "expected": "bounded-retry-and-capacity-retention",
+      "backendEvidence": "pending"
+    }
+  ]
+}

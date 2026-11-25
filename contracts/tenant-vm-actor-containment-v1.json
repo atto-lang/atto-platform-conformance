@@ -1,0 +1,40 @@
+{
+  "schema": "atto.tenant-vm-actor-containment.v1",
+  "parent": "oreslang.tenant-isolation.v2",
+  "proof": "SOURCE_FREE_REFERENCE",
+  "unit": "One authenticated tenant VM incarnation encloses many untrusted actors; each actor retains private sealed memory and mailbox ownership",
+  "guestAdmission": ["validated-wasm", "truffle-isolate"],
+  "refusedGuestAdmission": ["native", "cil"],
+  "trustModel": "Host authenticates tenant and actor execution; guest code never receives a tenant handle, root VM, raw mutable heap pointer, or actor ticket as ambient authority",
+  "requirements": {
+    "tenant": "Tenant identity consists of canonical ID, generation and opaque host-local authorization; no tenant lookup by guest-supplied string",
+    "actor": "Actor capability requires exact tenant incarnation and exact current actor incarnation; same ID or epoch from another root is never authority",
+    "memory": "Private actor relative heap plus bounded tenant aggregate; no borrowed references or shared mutable buffers cross actor or tenant domains",
+    "messaging": "Authenticated actor turn, bounded owned-copy mailboxes, aggregate tenant and host quotas; cross-tenant transport requires a distinct trusted serialization broker",
+    "lifecycle": "Quiescence must fence spawn, message and turn admission before drain; stale references and borrowed execution views never resurrect actors",
+    "kill": "Tenant termination revokes all actor grants and clears queues but full backend physical guest preemption and resource-loan retirement remain mandatory separate acceptance gates",
+    "scheduling": "Different actors in one tenant may make progress independently; same actor turns may not overlap; per-tenant fairness across the process root must be proven in the real scheduler"
+  },
+  "requiredScenarios": [
+    "same-tenant-many-untrusted-actors",
+    "same-tenant-separate-actor-private-state",
+    "cross-tenant-actor-ref-denied",
+    "foreign-root-and-forged-ref-denied",
+    "stale-actor-ref-after-reincarnation-denied",
+    "owned-byte-copy-on-send-and-receive",
+    "per-actor-tenant-and-host-mailbox-quotas",
+    "tenant-aggregate-actor-and-heap-quota",
+    "untrusted-native-cil-denied",
+    "same-actor-nonreentrant-borrowed-turn",
+    "quiescence-fences-admission-before-drain",
+    "tenant-kill-revokes-actors-without-neighbor-effects",
+    "real-compiled-guest-and-exact-head-stepful-ci-required-for-promotion"
+  ],
+  "backendEvidence": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NO_UNTRUSTED_PATH",
+    "net": "NOT_EXECUTED"
+  }
+}

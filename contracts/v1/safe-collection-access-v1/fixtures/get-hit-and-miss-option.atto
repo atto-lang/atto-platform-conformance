@@ -1,0 +1,8 @@
+// CANDIDATE API: positive guest fixture, NOT executed or admitted on all backends.
+// Required: get_copy returns owned Option<int>, miss is None, no implicit sentinel.
+pub fnc main() -> int {
+  val numbers = [12, 42];
+  val hit = numbers.get_copy(1);
+  val miss = numbers.get_copy(2);
+  return hit.unwrap_or(0) + miss.unwrap_or(0);
+}

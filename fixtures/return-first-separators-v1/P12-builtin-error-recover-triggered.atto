@@ -1,0 +1,19 @@
+// EXPECTED: main returns 42 after a triggered raise! reaches recover.
+// Design-intent source. Do not mark backend PASS without guest execution.
+fnc int • valid_port(int port)
+raises Error ::
+  if port > 3 then
+    raise! Error("invalid port");
+  fi
+  return port;
+end
+
+pub fnc main(): int raises Error {
+  recover |err, cursor| -> {
+    if err.is_raise then
+      return 42;
+    fi
+    return 0;
+  };
+  return valid_port(4);
+}

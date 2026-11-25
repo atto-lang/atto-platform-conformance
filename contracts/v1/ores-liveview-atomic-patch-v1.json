@@ -1,0 +1,348 @@
+{
+  "schema": "ores-liveview-atomic-patch-v1",
+  "purpose": "Data-only expected frame type for atomic DOM update admission across five toolchains; no guest execution claimed",
+  "cases": [
+    {
+      "id": "set-text",
+      "before": [
+        {
+          "tag": "span",
+          "id": "value",
+          "text": "0"
+        }
+      ],
+      "after": [
+        {
+          "tag": "span",
+          "id": "value",
+          "text": "1"
+        }
+      ],
+      "expected": "patch"
+    },
+    {
+      "id": "sibling-attrs",
+      "before": [
+        {
+          "tag": "div",
+          "id": "left",
+          "children": [],
+          "attrs": {
+            "class": "a"
+          }
+        },
+        {
+          "tag": "div",
+          "id": "right",
+          "children": [],
+          "attrs": {
+            "class": "a"
+          }
+        }
+      ],
+      "after": [
+        {
+          "tag": "div",
+          "id": "left",
+          "children": [],
+          "attrs": {
+            "class": "b"
+          }
+        },
+        {
+          "tag": "div",
+          "id": "right",
+          "children": [],
+          "attrs": {
+            "class": "b"
+          }
+        }
+      ],
+      "expected": "patch"
+    },
+    {
+      "id": "append-new-child",
+      "before": [
+        {
+          "tag": "div",
+          "id": "parent",
+          "children": [
+            {
+              "tag": "span",
+              "id": "one",
+              "text": "a"
+            }
+          ]
+        }
+      ],
+      "after": [
+        {
+          "tag": "div",
+          "id": "parent",
+          "children": [
+            {
+              "tag": "span",
+              "id": "one",
+              "text": "a"
+            },
+            {
+              "tag": "span",
+              "id": "two",
+              "text": "b"
+            }
+          ]
+        }
+      ],
+      "expected": "patch"
+    },
+    {
+      "id": "cross-parent-move",
+      "before": [
+        {
+          "tag": "div",
+          "id": "left",
+          "children": [
+            {
+              "tag": "span",
+              "id": "moving",
+              "text": "a"
+            }
+          ]
+        },
+        {
+          "tag": "div",
+          "id": "right",
+          "children": []
+        }
+      ],
+      "after": [
+        {
+          "tag": "div",
+          "id": "left",
+          "children": []
+        },
+        {
+          "tag": "div",
+          "id": "right",
+          "children": [
+            {
+              "tag": "span",
+              "id": "moving",
+              "text": "a"
+            }
+          ]
+        }
+      ],
+      "expected": "snapshot"
+    },
+    {
+      "id": "container-attr-children",
+      "before": [
+        {
+          "tag": "div",
+          "id": "parent",
+          "children": [
+            {
+              "tag": "span",
+              "id": "one",
+              "text": "a"
+            }
+          ],
+          "attrs": {
+            "class": "old"
+          }
+        }
+      ],
+      "after": [
+        {
+          "tag": "div",
+          "id": "parent",
+          "children": [
+            {
+              "tag": "span",
+              "id": "one",
+              "text": "a"
+            },
+            {
+              "tag": "span",
+              "id": "two",
+              "text": "b"
+            }
+          ],
+          "attrs": {
+            "class": "new"
+          }
+        }
+      ],
+      "expected": "snapshot"
+    },
+    {
+      "id": "whole-root-relocation",
+      "before": [
+        {
+          "tag": "div",
+          "id": "parent",
+          "children": [
+            {
+              "tag": "span",
+              "id": "moving",
+              "text": "a"
+            }
+          ]
+        }
+      ],
+      "after": [
+        {
+          "tag": "div",
+          "id": "parent",
+          "children": []
+        },
+        {
+          "tag": "span",
+          "id": "moving",
+          "text": "a"
+        }
+      ],
+      "expected": "patch"
+    },
+    {
+      "id": "sibling-identity-swap",
+      "before": [
+        {
+          "tag": "div",
+          "id": "left",
+          "children": [
+            {
+              "tag": "span",
+              "id": "a",
+              "text": "a"
+            }
+          ]
+        },
+        {
+          "tag": "div",
+          "id": "right",
+          "children": [
+            {
+              "tag": "span",
+              "id": "b",
+              "text": "b"
+            }
+          ]
+        }
+      ],
+      "after": [
+        {
+          "tag": "div",
+          "id": "left",
+          "children": [
+            {
+              "tag": "span",
+              "id": "b",
+              "text": "b"
+            }
+          ]
+        },
+        {
+          "tag": "div",
+          "id": "right",
+          "children": [
+            {
+              "tag": "span",
+              "id": "a",
+              "text": "a"
+            }
+          ]
+        }
+      ],
+      "expected": "snapshot"
+    },
+    {
+      "id": "independent-append",
+      "before": [
+        {
+          "tag": "div",
+          "id": "left",
+          "children": []
+        },
+        {
+          "tag": "div",
+          "id": "right",
+          "children": []
+        }
+      ],
+      "after": [
+        {
+          "tag": "div",
+          "id": "left",
+          "children": [
+            {
+              "tag": "span",
+              "id": "a",
+              "text": "a"
+            }
+          ]
+        },
+        {
+          "tag": "div",
+          "id": "right",
+          "children": [
+            {
+              "tag": "span",
+              "id": "b",
+              "text": "b"
+            }
+          ]
+        }
+      ],
+      "expected": "patch"
+    },
+    {
+      "id": "root-shape-replacement",
+      "before": [
+        {
+          "tag": "span",
+          "id": "first",
+          "text": "a"
+        }
+      ],
+      "after": [
+        {
+          "tag": "span",
+          "id": "first",
+          "text": "a"
+        },
+        {
+          "tag": "span",
+          "id": "second",
+          "text": "b"
+        }
+      ],
+      "expected": "patch"
+    },
+    {
+      "id": "same-target-text-attr",
+      "before": [
+        {
+          "tag": "div",
+          "id": "item",
+          "children": [],
+          "attrs": {
+            "class": "old"
+          }
+        }
+      ],
+      "after": [
+        {
+          "tag": "div",
+          "id": "item",
+          "attrs": {
+            "class": "new"
+          },
+          "text": "new"
+        }
+      ],
+      "expected": "snapshot"
+    }
+  ]
+}

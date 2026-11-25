@@ -1,0 +1,9 @@
+define struct Particle {
+    x: int;
+    y: int;
+    velocity: int;
+}
+
+fnc duplicate_layout() -> Array<Particle, layout=soa, layout=aos> {
+    return [];
+}

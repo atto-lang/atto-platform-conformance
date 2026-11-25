@@ -1,0 +1,6 @@
+// expect-error: E_CONST
+fnc runtime_number(): int { return 5; }
+define class Invalid as
+  pub const int limit = runtime_number();
+end
+pub fnc main(): int { return 0; }

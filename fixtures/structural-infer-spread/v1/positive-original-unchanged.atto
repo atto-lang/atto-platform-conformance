@@ -1,0 +1,5 @@
+pub fnc main(): int {
+  const original = record{x: 20};
+  const updated = record{...original, x: 46};
+  return updated.x - original.x + 20;
+}

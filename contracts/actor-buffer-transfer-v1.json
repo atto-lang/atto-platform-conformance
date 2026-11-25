@@ -1,0 +1,568 @@
+{
+  "schema": "actor-buffer-transfer-v1",
+  "version": 1,
+  "verification": "SOURCE_FREE_ONLY_NOT_GUEST_EVIDENCE",
+  "backends": {
+    "java": "PENDING_REAL_GUEST_EVIDENCE",
+    "llvm": "PENDING_REAL_GUEST_EVIDENCE",
+    "wasm": "PENDING_REAL_GUEST_EVIDENCE",
+    "forge": "PENDING_REAL_GUEST_EVIDENCE",
+    "net": "PENDING_REAL_GUEST_EVIDENCE"
+  },
+  "limits": {
+    "perTenantBytes": 16,
+    "perTenantBuffers": 2
+  },
+  "cases": [
+    {
+      "id": "same-tenant-move-is-zero-payload-copy",
+      "expectedPayloadCopies": 0,
+      "steps": [
+        {
+          "op": "alloc",
+          "handle": "h",
+          "tenant": "alpha",
+          "owner": "actor1@1",
+          "size": 4
+        },
+        {
+          "op": "write",
+          "handle": "h",
+          "as": "actor1@1",
+          "index": 0,
+          "value": 42
+        },
+        {
+          "op": "alias",
+          "handle": "h",
+          "out": "old"
+        },
+        {
+          "op": "take",
+          "handle": "h",
+          "as": "actor1@1",
+          "to": "actor2@1",
+          "out": "moved"
+        },
+        {
+          "op": "read",
+          "handle": "moved",
+          "as": "actor2@1",
+          "index": 0,
+          "expect": 42
+        },
+        {
+          "op": "read",
+          "handle": "old",
+          "as": "actor1@1",
+          "index": 0,
+          "reject": "STALE"
+        },
+        {
+          "op": "read",
+          "handle": "moved",
+          "as": "actor1@1",
+          "index": 0,
+          "reject": "OWNER"
+        }
+      ]
+    },
+    {
+      "id": "incarnation-is-part-of-owner",
+      "expectedPayloadCopies": 0,
+      "steps": [
+        {
+          "op": "alloc",
+          "handle": "h",
+          "tenant": "alpha",
+          "owner": "actor1@1",
+          "size": 1
+        },
+        {
+          "op": "read",
+          "handle": "h",
+          "as": "actor1@2",
+          "index": 0,
+          "reject": "OWNER"
+        }
+      ]
+    },
+    {
+      "id": "borrow-blocks-write-move-and-drop",
+      "expectedPayloadCopies": 0,
+      "steps": [
+        {
+          "op": "alloc",
+          "handle": "h",
+          "tenant": "alpha",
+          "owner": "actor1@1",
+          "size": 2
+        },
+        {
+          "op": "borrow",
+          "handle": "h",
+          "as": "actor1@1",
+          "reader": "actor2@1",
+          "loan": "l"
+        },
+        {
+          "op": "write",
+          "handle": "h",
+          "as": "actor1@1",
+          "index": 0,
+          "value": 1,
+          "reject": "BORROWED"
+        },
+        {
+          "op": "take",
+          "handle": "h",
+          "as": "actor1@1",
+          "to": "actor2@1",
+          "out": "m",
+          "reject": "BORROWED"
+        },
+        {
+          "op": "drop",
+          "handle": "h",
+          "as": "actor1@1",
+          "reject": "BORROWED"
+        },
+        {
+          "op": "loan_read",
+          "loan": "l",
+          "as": "actor2@1",
+          "index": 0,
+          "expect": 0
+        },
+        {
+          "op": "release",
+          "loan": "l"
+        },
+        {
+          "op": "take",
+          "handle": "h",
+          "as": "actor1@1",
+          "to": "actor2@1",
+          "out": "m"
+        },
+        {
+          "op": "read",
+          "handle": "m",
+          "as": "actor2@1",
+          "index": 0,
+          "expect": 0
+        }
+      ]
+    },
+    {
+      "id": "loan-binding-and-one-shot-release",
+      "expectedPayloadCopies": 0,
+      "steps": [
+        {
+          "op": "alloc",
+          "handle": "h",
+          "tenant": "alpha",
+          "owner": "actor1@1",
+          "size": 1
+        },
+        {
+          "op": "borrow",
+          "handle": "h",
+          "as": "actor1@1",
+          "reader": "actor2@1",
+          "loan": "l"
+        },
+        {
+          "op": "loan_read",
+          "loan": "l",
+          "as": "actor3@1",
+          "index": 0,
+          "reject": "READER"
+        },
+        {
+          "op": "release",
+          "loan": "l"
+        },
+        {
+          "op": "loan_read",
+          "loan": "l",
+          "as": "actor2@1",
+          "index": 0,
+          "reject": "REVOKED"
+        },
+        {
+          "op": "release",
+          "loan": "l",
+          "reject": "REVOKED"
+        }
+      ]
+    },
+    {
+      "id": "cross-tenant-handle-rejection",
+      "expectedPayloadCopies": 0,
+      "steps": [
+        {
+          "op": "alloc",
+          "handle": "h",
+          "tenant": "alpha",
+          "owner": "actor1@1",
+          "size": 4
+        },
+        {
+          "op": "read",
+          "tenant": "beta",
+          "handle": "h",
+          "as": "actor1@1",
+          "index": 0,
+          "reject": "FOREIGN"
+        },
+        {
+          "op": "take",
+          "tenant": "beta",
+          "handle": "h",
+          "as": "actor1@1",
+          "to": "actor2@1",
+          "out": "bad",
+          "reject": "FOREIGN"
+        }
+      ]
+    },
+    {
+      "id": "tenant-heap-and-slot-budget",
+      "expectedPayloadCopies": 0,
+      "steps": [
+        {
+          "op": "alloc",
+          "handle": "h",
+          "tenant": "alpha",
+          "owner": "actor1@1",
+          "size": 12
+        },
+        {
+          "op": "alloc",
+          "handle": "overflow",
+          "tenant": "alpha",
+          "owner": "actor1@1",
+          "size": 5,
+          "reject": "QUOTA"
+        },
+        {
+          "op": "alloc",
+          "handle": "h2",
+          "tenant": "alpha",
+          "owner": "actor1@1",
+          "size": 4
+        },
+        {
+          "op": "alloc",
+          "handle": "h3",
+          "tenant": "alpha",
+          "owner": "actor1@1",
+          "size": 1,
+          "reject": "QUOTA"
+        },
+        {
+          "op": "drop",
+          "handle": "h2",
+          "as": "actor1@1"
+        },
+        {
+          "op": "alloc",
+          "handle": "h3",
+          "tenant": "alpha",
+          "owner": "actor1@1",
+          "size": 1
+        }
+      ]
+    },
+    {
+      "id": "retirement-revokes-loans-before-storage-release",
+      "expectedPayloadCopies": 0,
+      "steps": [
+        {
+          "op": "alloc",
+          "handle": "h",
+          "tenant": "alpha",
+          "owner": "actor1@1",
+          "size": 1
+        },
+        {
+          "op": "borrow",
+          "handle": "h",
+          "as": "actor1@1",
+          "reader": "actor2@1",
+          "loan": "l"
+        },
+        {
+          "op": "retire",
+          "tenant": "alpha"
+        },
+        {
+          "op": "read",
+          "handle": "h",
+          "as": "actor1@1",
+          "index": 0,
+          "reject": "RETIRED"
+        },
+        {
+          "op": "loan_read",
+          "loan": "l",
+          "as": "actor2@1",
+          "index": 0,
+          "reject": "RETIRED"
+        },
+        {
+          "op": "release",
+          "loan": "l"
+        },
+        {
+          "op": "alloc",
+          "handle": "h2",
+          "tenant": "alpha",
+          "owner": "actor1@1",
+          "size": 1,
+          "reject": "RETIRED"
+        }
+      ]
+    },
+    {
+      "id": "explicit-cross-tenant-copy-fallback",
+      "expectedPayloadCopies": 1,
+      "steps": [
+        {
+          "op": "alloc",
+          "handle": "h",
+          "tenant": "alpha",
+          "owner": "actor1@1",
+          "size": 2
+        },
+        {
+          "op": "write",
+          "handle": "h",
+          "as": "actor1@1",
+          "index": 0,
+          "value": 24
+        },
+        {
+          "op": "copy",
+          "handle": "h",
+          "as": "actor1@1",
+          "toTenant": "beta",
+          "toActor": "actor2@1",
+          "out": "h2"
+        },
+        {
+          "op": "write",
+          "handle": "h",
+          "as": "actor1@1",
+          "index": 0,
+          "value": 99
+        },
+        {
+          "op": "read",
+          "handle": "h2",
+          "as": "actor2@1",
+          "index": 0,
+          "expect": 24
+        },
+        {
+          "op": "read",
+          "handle": "h",
+          "as": "actor1@1",
+          "index": 0,
+          "expect": 99
+        }
+      ]
+    },
+    {
+      "id": "bounded-mailbox-rejection-preserves-sender",
+      "expectedPayloadCopies": 0,
+      "steps": [
+        {
+          "op": "alloc",
+          "handle": "h",
+          "tenant": "alpha",
+          "owner": "actor1@1",
+          "size": 3
+        },
+        {
+          "op": "alloc",
+          "handle": "h2",
+          "tenant": "alpha",
+          "owner": "actor1@1",
+          "size": 2
+        },
+        {
+          "op": "queue_send",
+          "queue": "inbox",
+          "capacity": 1,
+          "handle": "h",
+          "as": "actor1@1",
+          "to": "actor2@1"
+        },
+        {
+          "op": "queue_send",
+          "queue": "inbox",
+          "capacity": 1,
+          "handle": "h2",
+          "as": "actor1@1",
+          "to": "actor2@1",
+          "reject": "BACKPRESSURE"
+        },
+        {
+          "op": "read",
+          "handle": "h2",
+          "as": "actor1@1",
+          "index": 0,
+          "expect": 0
+        },
+        {
+          "op": "queue_receive",
+          "queue": "inbox",
+          "as": "actor2@1",
+          "out": "received"
+        },
+        {
+          "op": "read",
+          "handle": "received",
+          "as": "actor2@1",
+          "index": 0,
+          "expect": 0
+        },
+        {
+          "op": "read",
+          "handle": "h",
+          "as": "actor1@1",
+          "index": 0,
+          "reject": "STALE"
+        }
+      ]
+    },
+    {
+      "id": "mailbox-close-drains-accepted-data-and-preserves-rejected-owner",
+      "expectedPayloadCopies": 0,
+      "steps": [
+        {
+          "op": "alloc",
+          "handle": "h",
+          "tenant": "alpha",
+          "owner": "actor1@1",
+          "size": 4
+        },
+        {
+          "op": "alloc",
+          "handle": "h2",
+          "tenant": "alpha",
+          "owner": "actor1@1",
+          "size": 4
+        },
+        {
+          "op": "queue_send",
+          "queue": "inbox",
+          "capacity": 1,
+          "handle": "h",
+          "as": "actor1@1",
+          "to": "actor2@1"
+        },
+        {
+          "op": "queue_close",
+          "queue": "inbox"
+        },
+        {
+          "op": "queue_send",
+          "queue": "inbox",
+          "capacity": 1,
+          "handle": "h2",
+          "as": "actor1@1",
+          "to": "actor2@1",
+          "reject": "CLOSED"
+        },
+        {
+          "op": "read",
+          "handle": "h2",
+          "as": "actor1@1",
+          "index": 0,
+          "expect": 0
+        },
+        {
+          "op": "read",
+          "handle": "h",
+          "as": "actor2@1",
+          "index": 0,
+          "reject": "STALE"
+        },
+        {
+          "op": "queue_receive",
+          "queue": "inbox",
+          "as": "actor2@1",
+          "out": "none",
+          "reject": "CLOSED"
+        },
+        {
+          "op": "alloc",
+          "handle": "max",
+          "tenant": "alpha",
+          "owner": "actor1@1",
+          "size": 12
+        }
+      ]
+    },
+    {
+      "id": "reader-incarnation-retirement-pinned-by-foreign-loan",
+      "expectedPayloadCopies": 0,
+      "steps": [
+        {
+          "op": "alloc",
+          "handle": "h",
+          "tenant": "alpha",
+          "owner": "actor1@1",
+          "size": 2
+        },
+        {
+          "op": "borrow",
+          "handle": "h",
+          "as": "actor1@1",
+          "reader": "actor2@1",
+          "loan": "l"
+        },
+        {
+          "op": "retire_actor",
+          "tenant": "alpha",
+          "actor": "actor2@1",
+          "reject": "BORROWED"
+        },
+        {
+          "op": "loan_read",
+          "loan": "l",
+          "as": "actor2@1",
+          "index": 0,
+          "expect": 0
+        },
+        {
+          "op": "release",
+          "loan": "l"
+        },
+        {
+          "op": "retire_actor",
+          "tenant": "alpha",
+          "actor": "actor2@1"
+        },
+        {
+          "op": "borrow",
+          "handle": "h",
+          "as": "actor1@1",
+          "reader": "actor2@1",
+          "loan": "l2",
+          "reject": "RETIRED_ACTOR"
+        },
+        {
+          "op": "read",
+          "handle": "h",
+          "as": "actor1@1",
+          "index": 0,
+          "expect": 0
+        }
+      ]
+    }
+  ]
+}

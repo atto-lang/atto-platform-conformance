@@ -1,0 +1,4 @@
+// Invalid target: AttoLang does not add a separate 'event actor' keyword.
+// Event sourcing is a storage policy (Symbol #event_sourced) on a durable actor.
+define event actor BankAccount as
+end

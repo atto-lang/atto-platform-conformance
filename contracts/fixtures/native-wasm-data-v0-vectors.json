@@ -1,0 +1,60 @@
+{
+  "contract": "attolang.native-wasm-data-v0/1",
+  "schemaVersion": 1,
+  "implementationScope": "host-only-messagepack-data",
+  "executionEvidence": "NOT_EXECUTED",
+  "compiledGuestParity": false,
+  "shapeDescriptor": "T[I,I]",
+  "shapeHashPrefix": "oreslang.actor.shape.v2/",
+  "maxFrameBytes": 4096,
+  "permittedSchemas": [
+    "oreslang.native_wasm.data.request.v0",
+    "oreslang.native_wasm.data.response.v0",
+    "oreslang.native_wasm.data.ack.v0"
+  ],
+  "positives": [
+    {
+      "id": "request_positive_i64",
+      "schema": "oreslang.native_wasm.data.request.v0",
+      "ticket": "1",
+      "value": "42",
+      "hex": "9402d9246f7265736c616e672e6e61746976655f7761736d2e646174612e726571756573742e7630c4201ef812fd0d886c973c520cd707ded5ca4593a81414b5c3aa77b1b0c147c4871892012a"
+    },
+    {
+      "id": "response_negative_i64",
+      "schema": "oreslang.native_wasm.data.response.v0",
+      "ticket": "19",
+      "value": "-42",
+      "hex": "9402d9256f7265736c616e672e6e61746976655f7761736d2e646174612e726573706f6e73652e7630c4201ef812fd0d886c973c520cd707ded5ca4593a81414b5c3aa77b1b0c147c487189213d0d6"
+    },
+    {
+      "id": "ack_i64_endpoints",
+      "schema": "oreslang.native_wasm.data.ack.v0",
+      "ticket": "9223372036854775807",
+      "value": "-9223372036854775808",
+      "hex": "9402d9206f7265736c616e672e6e61746976655f7761736d2e646174612e61636b2e7630c4201ef812fd0d886c973c520cd707ded5ca4593a81414b5c3aa77b1b0c147c4871892cf7fffffffffffffffd38000000000000000"
+    }
+  ],
+  "negatives": [
+    {
+      "id": "control_schema",
+      "kind": "unregistered-schema"
+    },
+    {
+      "id": "zero_ticket",
+      "kind": "ticket-not-positive"
+    },
+    {
+      "id": "uint64_overflow",
+      "kind": "signed-i64-range"
+    },
+    {
+      "id": "shared_backing",
+      "kind": "shared-memory-denial"
+    },
+    {
+      "id": "proxy_typedarray",
+      "kind": "forged-view-denial"
+    }
+  ]
+}

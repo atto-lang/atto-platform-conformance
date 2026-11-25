@@ -1,0 +1,4 @@
+// expect-exit: 0
+// return-first syntax variant void_fnc_return_first_brace; compiled guest proof still pending
+fnc void <- reset() {  }
+pub fnc main() -> int { reset(); return 0; }

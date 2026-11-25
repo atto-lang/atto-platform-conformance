@@ -1,0 +1,95 @@
+{
+  "schema": "atto.actor.scalar-wire.v1",
+  "status": "TARGET_WIRE_FORMAT_ONLY_NO_COMPILED_BACKEND_GUEST",
+  "owner": "atto-lang/atto-platform-conformance",
+  "companionCompiler": "atto-lang/atto-source.rs#263",
+  "companionNativeCheckpoint": "atto-lang/atto-source.rs#266",
+  "version": 1,
+  "endian": "little",
+  "hash": "FNV-1a-64 unsigned wrap (non-cryptographic)",
+  "schema_bytes": "ascii('atto.actor.state.schema.v1\\\\0') || le32(actor UTF-8 byte length) || actor UTF-8 || repeat(le32(field UTF-8 byte length) || field UTF-8 || tag)",
+  "snapshot_bytes": "ascii('ATTOST01') || version=1 || le64(schema fingerprint) || le16(field count) || repeat(tag || value) || le64(FNV64(all preceding bytes))",
+  "scalar_tags": {
+    "int": 1,
+    "bool": 2
+  },
+  "constraints": {
+    "max_bytes": 4096,
+    "max_fields": 256,
+    "bool_canonical": [
+      0,
+      1
+    ],
+    "checksum_is_mac": false
+  },
+  "backend_status": {
+    "rs": "NOT_EXECUTED",
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED"
+  },
+  "vectors": [
+    {
+      "actor": "Counter",
+      "fields": [
+        {
+          "name": "count",
+          "type": "int",
+          "value": "100"
+        },
+        {
+          "name": "enabled",
+          "type": "bool",
+          "value": true
+        }
+      ],
+      "schema_hex": "c9a1af17fc8684bd",
+      "schema_id_hex": "0xbd8486fc17afa1c9",
+      "snapshot_hex": "4154544f5354303101c9a1af17fc8684bd020001640000000000000002018fd7fcf2f2744e29",
+      "byte_length": 38
+    },
+    {
+      "actor": "Counter",
+      "fields": [
+        {
+          "name": "count",
+          "type": "int",
+          "value": "-9223372036854775808"
+        },
+        {
+          "name": "enabled",
+          "type": "bool",
+          "value": false
+        }
+      ],
+      "schema_hex": "c9a1af17fc8684bd",
+      "schema_id_hex": "0xbd8486fc17afa1c9",
+      "snapshot_hex": "4154544f5354303101c9a1af17fc8684bd0200010000000000000080020058ebbfc357901b30",
+      "byte_length": 38
+    },
+    {
+      "actor": "EmptyActor",
+      "fields": [],
+      "schema_hex": "c3fbc65066197bff",
+      "schema_id_hex": "0xff7b196650c6fbc3",
+      "snapshot_hex": "4154544f5354303101c3fbc65066197bff0000b3c015f0f5029da5",
+      "byte_length": 27
+    },
+    {
+      "actor": "OtherCounter",
+      "fields": [
+        {
+          "name": "count",
+          "type": "int",
+          "value": "100"
+        }
+      ],
+      "schema_hex": "0201d7f4b9c36b6c",
+      "schema_id_hex": "0x6c6bc3b9f4d70102",
+      "snapshot_hex": "4154544f53543031010201d7f4b9c36b6c0100016400000000000000eb0202552d636527",
+      "byte_length": 36
+    }
+  ]
+}

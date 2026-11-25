@@ -1,0 +1,12 @@
+// expect-error: E_LIFETIME
+// TARGET_ONLY: no guest artifact on rejection
+// Conditional returns from two owners require a declared source relationship.
+define class Child as pub let int value = 21; end
+fnc choose(bool flag, Child left, Child right): Borrow<Child> {
+  if flag then return left; else return right; fi
+}
+pub fnc main(): int {
+  val a = new Child();
+  val b = new Child();
+  return choose(true, a, b).value;
+}

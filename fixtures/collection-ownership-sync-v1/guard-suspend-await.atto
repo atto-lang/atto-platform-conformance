@@ -1,0 +1,7 @@
+pub async fnc main(): void {
+  val mutex = SharedMutex.new([10]);
+  val guard = mutex.lock();
+  await mutex.lock_async();
+  guard.release();
+  return;
+}

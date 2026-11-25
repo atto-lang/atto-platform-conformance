@@ -1,0 +1,19 @@
+// PROPOSED SOURCE FIXTURE — actor harness initiates STOP after "entered".
+// Harness supplies trace, pending_i64 and pending_cleanup. The source task
+// must be hosted inside an actor; this file is a task-body test case only.
+pub fnc main(): void {
+    let Task<int> worker = nb task {
+        try {
+            trace("entered");
+            let int value = await pending_i64();
+            trace("normal-after-await");
+            return value;
+        } finally {
+            trace("finally-enter");
+            await pending_cleanup();
+            trace("finally-exit");
+        }
+    };
+    await worker.get_done();
+    return;
+}

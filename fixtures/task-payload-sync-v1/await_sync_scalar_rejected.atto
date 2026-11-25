@@ -1,0 +1,4 @@
+pub susp fnc main(): int {
+  val int value = await sync task<int> { return 42; };
+  return value;
+}

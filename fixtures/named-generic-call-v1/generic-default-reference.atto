@@ -1,0 +1,6 @@
+fnc identity<A=int, B=A, C=B>(A value) -> A ::
+  return value
+end
+fnc main() -> int ::
+  return identity<C=bool>(value: 7)
+end

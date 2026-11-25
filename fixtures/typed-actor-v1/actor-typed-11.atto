@@ -1,0 +1,5 @@
+// ACTOR-TYPED-11; EXPECTED=ACCEPT; NOT_EXECUTED
+// Runtime probe: priority CONTROL remains serviceable with a full DATA queue.
+define actor Child receives int sends never as
+  receive(ActorMail<int> m): void { return; }
+end

@@ -1,0 +1,18 @@
+define struct Particle as
+    int x;
+    int y;
+    int velocity;
+end
+
+fnc read_y() -> int {
+    stdio.println("y");
+    return 20;
+}
+fnc read_x() -> int {
+    stdio.println("x");
+    return 10;
+}
+fnc main() -> int {
+    val p = Particle(y=read_y(), x=read_x(), velocity=1);
+    return p.x + p.y;
+}

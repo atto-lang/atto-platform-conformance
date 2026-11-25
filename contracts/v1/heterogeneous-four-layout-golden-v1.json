@@ -1,0 +1,519 @@
+{
+  "schemaVersion": 1,
+  "status": "SOURCE_FREE_REFERENCE_ONLY",
+  "description": "Golden mixed-width AoS/SoA/AoSoA/SoAoS byte offsets; not compiler guest execution",
+  "alignmentUnit": "byte",
+  "endian": "little",
+  "ref32": "unsigned encoded word without authority",
+  "fields": [
+    {
+      "name": "id",
+      "type": "u32"
+    },
+    {
+      "name": "x",
+      "type": "f64"
+    },
+    {
+      "name": "flag",
+      "type": "bool"
+    },
+    {
+      "name": "next",
+      "type": "ref32"
+    }
+  ],
+  "plans": [
+    {
+      "layout": "aos",
+      "capacity": 3,
+      "expectedPhysicalBytes": "72",
+      "expectedPayloadBytes": "72",
+      "segments": [
+        {
+          "alignment": "8",
+          "byteLength": "72",
+          "base": "0",
+          "stride": "24"
+        }
+      ],
+      "cells": [
+        {
+          "row": 0,
+          "field": "id",
+          "segment": 0,
+          "relativeByteOffset": "0",
+          "absoluteByteOffset": "0"
+        },
+        {
+          "row": 0,
+          "field": "x",
+          "segment": 0,
+          "relativeByteOffset": "8",
+          "absoluteByteOffset": "8"
+        },
+        {
+          "row": 0,
+          "field": "flag",
+          "segment": 0,
+          "relativeByteOffset": "16",
+          "absoluteByteOffset": "16"
+        },
+        {
+          "row": 0,
+          "field": "next",
+          "segment": 0,
+          "relativeByteOffset": "20",
+          "absoluteByteOffset": "20"
+        },
+        {
+          "row": 1,
+          "field": "id",
+          "segment": 0,
+          "relativeByteOffset": "24",
+          "absoluteByteOffset": "24"
+        },
+        {
+          "row": 1,
+          "field": "x",
+          "segment": 0,
+          "relativeByteOffset": "32",
+          "absoluteByteOffset": "32"
+        },
+        {
+          "row": 1,
+          "field": "flag",
+          "segment": 0,
+          "relativeByteOffset": "40",
+          "absoluteByteOffset": "40"
+        },
+        {
+          "row": 1,
+          "field": "next",
+          "segment": 0,
+          "relativeByteOffset": "44",
+          "absoluteByteOffset": "44"
+        },
+        {
+          "row": 2,
+          "field": "id",
+          "segment": 0,
+          "relativeByteOffset": "48",
+          "absoluteByteOffset": "48"
+        },
+        {
+          "row": 2,
+          "field": "x",
+          "segment": 0,
+          "relativeByteOffset": "56",
+          "absoluteByteOffset": "56"
+        },
+        {
+          "row": 2,
+          "field": "flag",
+          "segment": 0,
+          "relativeByteOffset": "64",
+          "absoluteByteOffset": "64"
+        },
+        {
+          "row": 2,
+          "field": "next",
+          "segment": 0,
+          "relativeByteOffset": "68",
+          "absoluteByteOffset": "68"
+        }
+      ]
+    },
+    {
+      "layout": "soa",
+      "capacity": 3,
+      "expectedPhysicalBytes": "56",
+      "expectedPayloadBytes": "51",
+      "segments": [
+        {
+          "alignment": "4",
+          "byteLength": "12",
+          "base": "0",
+          "stride": "4"
+        },
+        {
+          "alignment": "8",
+          "byteLength": "24",
+          "base": "16",
+          "stride": "8"
+        },
+        {
+          "alignment": "1",
+          "byteLength": "3",
+          "base": "40",
+          "stride": "1"
+        },
+        {
+          "alignment": "4",
+          "byteLength": "12",
+          "base": "44",
+          "stride": "4"
+        }
+      ],
+      "cells": [
+        {
+          "row": 0,
+          "field": "id",
+          "segment": 0,
+          "relativeByteOffset": "0",
+          "absoluteByteOffset": "0"
+        },
+        {
+          "row": 0,
+          "field": "x",
+          "segment": 1,
+          "relativeByteOffset": "0",
+          "absoluteByteOffset": "16"
+        },
+        {
+          "row": 0,
+          "field": "flag",
+          "segment": 2,
+          "relativeByteOffset": "0",
+          "absoluteByteOffset": "40"
+        },
+        {
+          "row": 0,
+          "field": "next",
+          "segment": 3,
+          "relativeByteOffset": "0",
+          "absoluteByteOffset": "44"
+        },
+        {
+          "row": 1,
+          "field": "id",
+          "segment": 0,
+          "relativeByteOffset": "4",
+          "absoluteByteOffset": "4"
+        },
+        {
+          "row": 1,
+          "field": "x",
+          "segment": 1,
+          "relativeByteOffset": "8",
+          "absoluteByteOffset": "24"
+        },
+        {
+          "row": 1,
+          "field": "flag",
+          "segment": 2,
+          "relativeByteOffset": "1",
+          "absoluteByteOffset": "41"
+        },
+        {
+          "row": 1,
+          "field": "next",
+          "segment": 3,
+          "relativeByteOffset": "4",
+          "absoluteByteOffset": "48"
+        },
+        {
+          "row": 2,
+          "field": "id",
+          "segment": 0,
+          "relativeByteOffset": "8",
+          "absoluteByteOffset": "8"
+        },
+        {
+          "row": 2,
+          "field": "x",
+          "segment": 1,
+          "relativeByteOffset": "16",
+          "absoluteByteOffset": "32"
+        },
+        {
+          "row": 2,
+          "field": "flag",
+          "segment": 2,
+          "relativeByteOffset": "2",
+          "absoluteByteOffset": "42"
+        },
+        {
+          "row": 2,
+          "field": "next",
+          "segment": 3,
+          "relativeByteOffset": "8",
+          "absoluteByteOffset": "52"
+        }
+      ]
+    },
+    {
+      "layout": "aosoa",
+      "capacity": 5,
+      "tileWidth": 4,
+      "expectedPhysicalBytes": "144",
+      "expectedPayloadBytes": "144",
+      "segments": [
+        {
+          "alignment": "8",
+          "byteLength": "144",
+          "base": "0",
+          "stride": "72"
+        }
+      ],
+      "cells": [
+        {
+          "row": 0,
+          "field": "id",
+          "segment": 0,
+          "relativeByteOffset": "0",
+          "absoluteByteOffset": "0"
+        },
+        {
+          "row": 0,
+          "field": "x",
+          "segment": 0,
+          "relativeByteOffset": "16",
+          "absoluteByteOffset": "16"
+        },
+        {
+          "row": 0,
+          "field": "flag",
+          "segment": 0,
+          "relativeByteOffset": "48",
+          "absoluteByteOffset": "48"
+        },
+        {
+          "row": 0,
+          "field": "next",
+          "segment": 0,
+          "relativeByteOffset": "52",
+          "absoluteByteOffset": "52"
+        },
+        {
+          "row": 1,
+          "field": "id",
+          "segment": 0,
+          "relativeByteOffset": "4",
+          "absoluteByteOffset": "4"
+        },
+        {
+          "row": 1,
+          "field": "x",
+          "segment": 0,
+          "relativeByteOffset": "24",
+          "absoluteByteOffset": "24"
+        },
+        {
+          "row": 1,
+          "field": "flag",
+          "segment": 0,
+          "relativeByteOffset": "49",
+          "absoluteByteOffset": "49"
+        },
+        {
+          "row": 1,
+          "field": "next",
+          "segment": 0,
+          "relativeByteOffset": "56",
+          "absoluteByteOffset": "56"
+        },
+        {
+          "row": 2,
+          "field": "id",
+          "segment": 0,
+          "relativeByteOffset": "8",
+          "absoluteByteOffset": "8"
+        },
+        {
+          "row": 2,
+          "field": "x",
+          "segment": 0,
+          "relativeByteOffset": "32",
+          "absoluteByteOffset": "32"
+        },
+        {
+          "row": 2,
+          "field": "flag",
+          "segment": 0,
+          "relativeByteOffset": "50",
+          "absoluteByteOffset": "50"
+        },
+        {
+          "row": 2,
+          "field": "next",
+          "segment": 0,
+          "relativeByteOffset": "60",
+          "absoluteByteOffset": "60"
+        },
+        {
+          "row": 3,
+          "field": "id",
+          "segment": 0,
+          "relativeByteOffset": "12",
+          "absoluteByteOffset": "12"
+        },
+        {
+          "row": 3,
+          "field": "x",
+          "segment": 0,
+          "relativeByteOffset": "40",
+          "absoluteByteOffset": "40"
+        },
+        {
+          "row": 3,
+          "field": "flag",
+          "segment": 0,
+          "relativeByteOffset": "51",
+          "absoluteByteOffset": "51"
+        },
+        {
+          "row": 3,
+          "field": "next",
+          "segment": 0,
+          "relativeByteOffset": "64",
+          "absoluteByteOffset": "64"
+        },
+        {
+          "row": 4,
+          "field": "id",
+          "segment": 0,
+          "relativeByteOffset": "72",
+          "absoluteByteOffset": "72"
+        },
+        {
+          "row": 4,
+          "field": "x",
+          "segment": 0,
+          "relativeByteOffset": "88",
+          "absoluteByteOffset": "88"
+        },
+        {
+          "row": 4,
+          "field": "flag",
+          "segment": 0,
+          "relativeByteOffset": "120",
+          "absoluteByteOffset": "120"
+        },
+        {
+          "row": 4,
+          "field": "next",
+          "segment": 0,
+          "relativeByteOffset": "124",
+          "absoluteByteOffset": "124"
+        }
+      ]
+    },
+    {
+      "layout": "soaos",
+      "capacity": 3,
+      "groups": [
+        [
+          "id",
+          "flag"
+        ],
+        [
+          "x",
+          "next"
+        ]
+      ],
+      "expectedPhysicalBytes": "72",
+      "expectedPayloadBytes": "72",
+      "segments": [
+        {
+          "alignment": "4",
+          "byteLength": "24",
+          "base": "0",
+          "stride": "8"
+        },
+        {
+          "alignment": "8",
+          "byteLength": "48",
+          "base": "24",
+          "stride": "16"
+        }
+      ],
+      "cells": [
+        {
+          "row": 0,
+          "field": "id",
+          "segment": 0,
+          "relativeByteOffset": "0",
+          "absoluteByteOffset": "0"
+        },
+        {
+          "row": 0,
+          "field": "x",
+          "segment": 1,
+          "relativeByteOffset": "0",
+          "absoluteByteOffset": "24"
+        },
+        {
+          "row": 0,
+          "field": "flag",
+          "segment": 0,
+          "relativeByteOffset": "4",
+          "absoluteByteOffset": "4"
+        },
+        {
+          "row": 0,
+          "field": "next",
+          "segment": 1,
+          "relativeByteOffset": "8",
+          "absoluteByteOffset": "32"
+        },
+        {
+          "row": 1,
+          "field": "id",
+          "segment": 0,
+          "relativeByteOffset": "8",
+          "absoluteByteOffset": "8"
+        },
+        {
+          "row": 1,
+          "field": "x",
+          "segment": 1,
+          "relativeByteOffset": "16",
+          "absoluteByteOffset": "40"
+        },
+        {
+          "row": 1,
+          "field": "flag",
+          "segment": 0,
+          "relativeByteOffset": "12",
+          "absoluteByteOffset": "12"
+        },
+        {
+          "row": 1,
+          "field": "next",
+          "segment": 1,
+          "relativeByteOffset": "24",
+          "absoluteByteOffset": "48"
+        },
+        {
+          "row": 2,
+          "field": "id",
+          "segment": 0,
+          "relativeByteOffset": "16",
+          "absoluteByteOffset": "16"
+        },
+        {
+          "row": 2,
+          "field": "x",
+          "segment": 1,
+          "relativeByteOffset": "32",
+          "absoluteByteOffset": "56"
+        },
+        {
+          "row": 2,
+          "field": "flag",
+          "segment": 0,
+          "relativeByteOffset": "20",
+          "absoluteByteOffset": "20"
+        },
+        {
+          "row": 2,
+          "field": "next",
+          "segment": 1,
+          "relativeByteOffset": "40",
+          "absoluteByteOffset": "64"
+        }
+      ]
+    }
+  ]
+}

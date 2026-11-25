@@ -1,0 +1,261 @@
+{
+  "schemaVersion": 1,
+  "scope": "implicit-val-explicit-void-initialize-v1",
+  "sourceOfTruth": {
+    "javaPr": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2273",
+    "formatterPr": "https://github.com/ores-truffle-oreslang/oreslang-format/pull/105",
+    "issue": "https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/228"
+  },
+  "cases": [
+    {
+      "id": "initialize-arrow-double-colon",
+      "file": "initialize-arrow-double-colon.ores",
+      "sourceGitBlobSha1": "d9f98f1755b8441cfed16f48f991cb70f184bed9",
+      "expect": "accept",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java",
+        "llvm",
+        "wasm",
+        "cranelift",
+        "net",
+        "forge"
+      ],
+      "expectedI64": "42"
+    },
+    {
+      "id": "initialize-arrow-newline",
+      "file": "initialize-arrow-newline.ores",
+      "sourceGitBlobSha1": "c1590bef84363b05a166fb6411673b616660e1ce",
+      "expect": "accept",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java",
+        "llvm",
+        "wasm",
+        "cranelift",
+        "net",
+        "forge"
+      ],
+      "expectedI64": "42"
+    },
+    {
+      "id": "initialize-colon-newline",
+      "file": "initialize-colon-newline.ores",
+      "sourceGitBlobSha1": "23d046270e7a35cf57f67fc3892994dbb27a044b",
+      "expect": "accept",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java",
+        "llvm",
+        "wasm",
+        "cranelift",
+        "net",
+        "forge"
+      ],
+      "expectedI64": "42"
+    },
+    {
+      "id": "initialize-colon-braces",
+      "file": "initialize-colon-braces.ores",
+      "sourceGitBlobSha1": "e094be80793a22c8114195bbcd485e6d705c0fcf",
+      "expect": "accept",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java",
+        "llvm",
+        "wasm",
+        "cranelift",
+        "net",
+        "forge"
+      ],
+      "expectedI64": "42"
+    },
+    {
+      "id": "implicit-val-member",
+      "file": "implicit-val-member.ores",
+      "sourceGitBlobSha1": "110c9c637edda8ea36336756e14b55e65586de9f",
+      "expect": "accept",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java",
+        "llvm",
+        "wasm",
+        "cranelift",
+        "net",
+        "forge"
+      ],
+      "expectedI64": "42"
+    },
+    {
+      "id": "explicit-val-member",
+      "file": "explicit-val-member.ores",
+      "sourceGitBlobSha1": "038de9c8ae2ce6929b4440231ad26ece90c87ae5",
+      "expect": "accept",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java",
+        "llvm",
+        "wasm",
+        "cranelift",
+        "net",
+        "forge"
+      ],
+      "expectedI64": "42"
+    },
+    {
+      "id": "reject-initialize-as",
+      "file": "reject-initialize-as.ores",
+      "sourceGitBlobSha1": "b5049f2e5f47f8781e30691ad45329de87152655",
+      "expect": "reject",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java",
+        "llvm",
+        "wasm",
+        "cranelift",
+        "net",
+        "forge"
+      ]
+    },
+    {
+      "id": "reject-initialize-nonvoid",
+      "file": "reject-initialize-nonvoid.ores",
+      "sourceGitBlobSha1": "8bf7a06457f2bbd7a0739358f67cb0a60837d0a6",
+      "expect": "reject",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java",
+        "llvm",
+        "wasm",
+        "cranelift",
+        "net",
+        "forge"
+      ]
+    },
+    {
+      "id": "reject-fixed-field-double-write",
+      "file": "reject-fixed-field-double-write.ores",
+      "sourceGitBlobSha1": "e59ab5432311669bb9586dacbcc31c63f1203da9",
+      "expect": "reject",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java",
+        "llvm",
+        "wasm",
+        "cranelift",
+        "net",
+        "forge"
+      ]
+    },
+    {
+      "id": "reject-inherited-uninitialized-fixed",
+      "file": "reject-inherited-uninitialized-fixed.ores",
+      "sourceGitBlobSha1": "0107601b166b83505cce5cb4dee565bb736a0462",
+      "expect": "reject",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java",
+        "llvm",
+        "wasm",
+        "cranelift",
+        "net",
+        "forge"
+      ]
+    },
+    {
+      "id": "reject-implicit-val-reassign",
+      "file": "reject-implicit-val-reassign.ores",
+      "sourceGitBlobSha1": "b310a537c31b8b5f610f14a7f163a60e5ee6d13e",
+      "expect": "reject",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java",
+        "llvm",
+        "wasm",
+        "cranelift",
+        "net",
+        "forge"
+      ]
+    },
+    {
+      "id": "explicit-let-reassign",
+      "file": "explicit-let-reassign.ores",
+      "sourceGitBlobSha1": "36b6849c122833aa202e7771fe8dcc27ee6d94fb",
+      "expect": "accept",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java",
+        "llvm",
+        "wasm",
+        "cranelift",
+        "net",
+        "forge"
+      ],
+      "expectedI64": "5"
+    },
+    {
+      "id": "initialize-mutable-let-twice",
+      "file": "initialize-mutable-let-twice.ores",
+      "sourceGitBlobSha1": "ef1018ced5d0048a68b78b9786995c0559a3c0c9",
+      "expect": "accept",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java",
+        "llvm",
+        "wasm",
+        "cranelift",
+        "net",
+        "forge"
+      ],
+      "expectedI64": "42"
+    },
+    {
+      "id": "reject-initialize-missing-let",
+      "file": "reject-initialize-missing-let.ores",
+      "sourceGitBlobSha1": "a661fc028ef576b5ffd8728f69b43550765fb438",
+      "expect": "reject",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java",
+        "llvm",
+        "wasm",
+        "cranelift",
+        "net",
+        "forge"
+      ],
+      "diagnosticClass": "uninitialized-mutable-field"
+    },
+    {
+      "id": "reject-early-self-escape-let",
+      "file": "reject-early-self-escape-let.ores",
+      "sourceGitBlobSha1": "dd6859fc33e22778d6251d1f0a186a11fe403010",
+      "expect": "reject",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java",
+        "llvm",
+        "wasm",
+        "cranelift",
+        "net",
+        "forge"
+      ],
+      "diagnosticClass": "partial-object-escape"
+    }
+  ],
+  "readiness": "PROPOSED_NOT_EXECUTED",
+  "evidence": {
+    "compilerBackedTests": [],
+    "formatterIdempotenceTests": [],
+    "status": "No backend acceptance or runtime proof is claimed. Only file content and Git blob SHA binding are present."
+  },
+  "reviewGates": [
+    "Compare every sourceGitBlobSha1 against the fixture blob before running",
+    "Use a real source compiler and verifier for each backend on exact pinned heads",
+    "Execute accepted fixtures and match expectedI64 where specified",
+    "Reject negative fixtures during compile or type checking before runtime",
+    "Verify formatter round trips and semantic AST equivalence for all four initializer body spellings",
+    "Keep private source transfer behind independently reviewed V3 authorization",
+    "Cranelift is a separate experimental scalar-only backend, not Forge; require explicit fail-closed admission evidence and do not claim class-construction support."
+  ]
+}

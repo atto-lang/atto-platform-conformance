@@ -1,0 +1,42 @@
+{
+  "schema": "atto.gpu-actors-progress-evidence/0",
+  "date": "2026-11-10",
+  "sourceHir": {
+    "pr": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2760",
+    "carrierRun": "https://github.com/scintilla-run/scintilla-run-e2e/actions/runs/42907378833",
+    "javaCompilerSourceCompiled": true,
+    "parserChecks": 18,
+    "signatureChecks": 13,
+    "status": "TYPED_SIGNATURE_ONLY",
+    "executableMir": false
+  },
+  "canonicalContract": {
+    "pr": "https://github.com/ores-truffle-oreslang/oreslang-common-source/pull/260",
+    "carrierRun": "https://github.com/scintilla-run/scintilla-run-e2e/actions/runs/42908078977",
+    "validationTests": 7,
+    "passed": 7,
+    "sourceBlobsVerified": true,
+    "realDeviceProof": false
+  },
+  "firstPhysicalKernelPrerequisite": {
+    "pr": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1648",
+    "carrierRun": "https://github.com/scintilla-run/scintilla-run-e2e/actions/runs/42908695106",
+    "nativeCppProbeCompiled": true,
+    "openCl12KernelSyntaxCompiled": true,
+    "hardwareProbeExecuted": true,
+    "physicalGpuAvailable": false,
+    "result": "GPU_PHYSICAL_PROBE_FAILED: OpenCL ICD runtime missing; no CPU fallback",
+    "releaseStatus": "NOT_EXECUTED_REAL_GPU"
+  },
+  "backendGuestEvidence": {
+    "java": "NOT_EXECUTED_GPU_ACTOR",
+    "llvm": "NOT_EXECUTED_GPU_ACTOR",
+    "net": "NOT_EXECUTED_GPU_ACTOR",
+    "wasm": "NOT_EXECUTED_GPU_ACTOR",
+    "forge": "NOT_EXECUTED_GPU_ACTOR"
+  },
+  "physicalGpuActorExecuted": false,
+  "fullActorKernelMailIntegration": false,
+  "releaseReady": false,
+  "requiresIndependentReview": true
+}

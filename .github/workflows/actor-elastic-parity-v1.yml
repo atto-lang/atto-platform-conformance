@@ -1,0 +1,30 @@
+name: Actor elastic parity v1 - Rust source-free registry
+on:
+  pull_request:
+    paths:
+      - 'contracts/actor-elastic-parity-v1.tsv'
+      - 'contracts/actor-elastic-cases-v1.tsv'
+      - 'tests/actor_elastic_parity_v1.rs'
+      - 'fixtures/actor-scheduling-policy-v1/**'
+      - '.github/workflows/actor-elastic-parity-v1.yml'
+  push:
+    paths:
+      - 'contracts/actor-elastic-parity-v1.tsv'
+      - 'contracts/actor-elastic-cases-v1.tsv'
+      - 'tests/actor_elastic_parity_v1.rs'
+      - 'fixtures/actor-scheduling-policy-v1/**'
+      - '.github/workflows/actor-elastic-parity-v1.yml'
+permissions:
+  contents: read
+jobs:
+  source-free-rust-matrix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile Rust-only registry verifier
+        run: rustc --edition=2021 --test tests/actor_elastic_parity_v1.rs -o "${{ runner.temp }}/actor-elastic-parity-v1"
+      - name: Execute Rust registry and fixture checks
+        run: '"${{ runner.temp }}/actor-elastic-parity-v1" --nocapture'
+      - name: Evidence boundary
+        run: echo 'SOURCE_FREE_REGISTRY_ONLY; NO BACKEND COMPILER/GUEST EXECUTED'
