@@ -1,0 +1,24 @@
+name: Durable typed protocols conformance registry (host only)
+on:
+  pull_request:
+    paths:
+      - 'contracts/durable-typed-protocols-v1.json'
+      - 'tests/durable-typed-protocols-contract.test.mjs'
+      - '.github/workflows/durable-typed-protocols-contract.yml'
+  push:
+    paths:
+      - 'contracts/durable-typed-protocols-v1.json'
+      - 'tests/durable-typed-protocols-contract.test.mjs'
+      - '.github/workflows/durable-typed-protocols-contract.yml'
+permissions:
+  contents: read
+jobs:
+  registry-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - run: node --test tests/durable-typed-protocols-contract.test.mjs
+      - run: echo 'HOST_ONLY: no compiled Atto guest, schema migration, transactional store or kill/reopen tested'
