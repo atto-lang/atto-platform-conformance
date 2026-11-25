@@ -860,3 +860,54 @@ test("owned actor producer runs once after carrier release", () => {
 test("owned producer oracle detects repeated execution", () => {
   assert.throws(() => verifyOwnedProducer(true));
 });
+
+
+// Source-free model: two suspension edges, no state mutation before both
+// outcomes are available, and exclusive producer admission/cancellation.
+function verifyTwoAwaitFrame(reuseLease = false, cancelMintsClaim = false) {
+  const logical = {};
+  let pc = 0;
+  let lease = {};
+  const initial = lease;
+  let first;
+  let state = 0;
+  let claim = 0;
+  const admit = () => { if (claim !== 0) return false; claim = 1; return true; };
+  const cancel = () => { if (claim === 0) claim = cancelMintsClaim ? 1 : 3; };
+  const run = () => { if (claim !== 1) return false; claim = 2; return true; };
+  const suspend = () => { lease = null; ++pc; return {logical, pc}; };
+  const resume = ticket => {
+    if (lease !== null || ticket.logical !== logical || ticket.pc !== pc) return false;
+    lease = reuseLease ? initial : {};
+    return true;
+  };
+  const a = suspend();
+  cancel();
+  assert.equal(run(), false);
+  claim = 0;
+  assert.equal(admit(), true);
+  cancel();
+  assert.equal(run(), true);
+  assert.equal(run(), false);
+  assert.equal(resume(a), true);
+  assert.notEqual(lease, initial);
+  const secondLease = lease;
+  first = 12;
+  const b = suspend();
+  assert.equal(resume(a), false);
+  assert.equal(state, 0);
+  assert.equal(resume(b), true);
+  assert.notEqual(lease, secondLease);
+  assert.equal(state, 0);
+  state += 23 + first + 7;
+  assert.equal(state, 42);
+}
+test("two await edges preserve owned scalar and fresh leases", () => {
+  verifyTwoAwaitFrame();
+});
+test("two await oracle detects reused physical lease", () => {
+  assert.throws(() => verifyTwoAwaitFrame(true));
+});
+test("producer oracle detects cancellation minting admission", () => {
+  assert.throws(() => verifyTwoAwaitFrame(false, true));
+});
