@@ -303,6 +303,12 @@ function validatePending(matrix) {
     assert.equal(bootstrap[dimension], 'NOT_EXECUTED',
       'host frame primitive does not prove ' + dimension);
   }
+  for (const id of ['scalar-non-tail-iterative-60','scalar-non-tail-budget-exhausted','scalar-proper-and-mutual-tail-100k','scalar-unsupported-graph-fallback','scalar-owned-two-integer-parameters','m4-source-task-64-plus-32-charged','m4-stable-source-task-id-new-dispatch','m4-leaked-sync-lease-rejected-before-await','m4-leaked-sync-lease-rejected-before-cooperate','m4-source-cooperate-between-scalar-calls','m4-cancel-suspended-task-after-scalar','m4-await-inside-recursive-scalar-call']) {
+    const scenario=matrix.scenarios.find(s=>s.id===id);
+    assert.ok(scenario, 'mandatory stackless scenario: '+id);
+    assert.equal(scenario.source,null);
+    assert.ok(scenario.requiredEvidence.includes('compilerGuest'));
+  }
   const ids = matrix.scenarios.map(c => c.id);
   assert.equal(new Set(ids).size, ids.length);
   for (const scenario of matrix.scenarios) {
