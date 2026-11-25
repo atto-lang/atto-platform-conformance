@@ -429,7 +429,7 @@
       "id": "struct_missing_field",
       "expect": "reject",
       "expected_error": "E_SHAPE",
-      "fixture": "fixtures/map-entries-struct/fail/struct_missing_field.atto",
+      "fixture": "fixtures/map-entries-struct/fail/struct_missing_field_inferred.atto",
       "status": "not_executed",
       "evidence": {
         "java": "not_executed",
@@ -449,7 +449,7 @@
       "id": "struct_extra_field",
       "expect": "reject",
       "expected_error": "E_SHAPE",
-      "fixture": "fixtures/map-entries-struct/fail/struct_extra_field.atto",
+      "fixture": "fixtures/map-entries-struct/fail/struct_extra_field_inferred.atto",
       "status": "not_executed",
       "evidence": {
         "java": "not_executed",
