@@ -29,7 +29,19 @@ test('collection layout v1 is a non-promoting fixture registry', () => {
         const path = resolve(root, entry.fixture);
         assert.equal(lstatSync(path).isSymbolicLink(), false);
         const source = readFileSync(path, 'utf8');
-        assert.ok(source.includes('layout') || entry.id === 'aos-default');
+        // Scalar constructor and ordinary-call cases deliberately have no layout parameter.
+        const scalarCases = new Set(['struct-equals-scalar', 'struct-equals-effect-order',
+            'reject-equals-ordinary-call', 'reject-equals-custom-constructor',
+            'reject-equals-shadowed-struct', 'reject-equals-mixed-positionals',
+            'reject-equals-mixed-colons', 'reject-equals-unknown-field', 'reject-equals-method-call']);
+        if (scalarCases.has(entry.id)) {
+            assert.match(source, /fnc main\s*\(/);
+            assert.match(source, /\b(?:Particle|increment|Box|add)\([^\n]*=/);
+        } else if (entry.id === 'aos-default') {
+            assert.match(source, /Array<Particle/);
+        } else {
+            assert.match(source, /\blayout\s*=/);
+        }
         assert.ok(source.length >= 20 && source.length <= 65536);
         if (entry.kind === 'guest') {
             assert.equal(Number.isInteger(entry.expected.return_int), true);
