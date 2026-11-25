@@ -11,14 +11,15 @@ const manifest = JSON.parse(await readFile(
   new URL('../contracts/std-channel-v1.json', import.meta.url), 'utf8'
 ));
 const backendNames = ['java', 'llvm', 'net', 'rs', 'wasm', 'forge',
-  'cranelift', 'js', 'hdl'].sort();
+  'cranelift', 'js', 'hdl', 'atto', 'realtime'].sort();
 const candidates = {
   bounded_fifo_drain: /channel\.send<int>\(ch, 20\)[\s\S]*channel\.send<int>\(ch, 22\)[\s\S]*channel\.close<int>\(ch\)[\s\S]*channel\.receive<int>\(ch\)/,
   rendezvous_pending: /channel\.rendezvous<int>\(\)[\s\S]*channel\.send_pending<int>\(ch, 42\)[\s\S]*channel\.receive_pending<int>\(ch\)/,
   rendezvous_direct_read: /channel\.rendezvous<int>\(\)[\s\S]*channel\.send_pending<int>\(ch, 42\)[\s\S]*channel\.receive<int>\(ch\)/,
   try_read_empty_ready: /channel\.try_receive<int>\(ch\)[\s\S]*on None[\s\S]*on Some\(value\)/,
   closed_move_recovery: /channel\.try_send<Array<int>>\(ch, rt take owned\)[\s\S]*on Closed\(value\)/,
-  negative_capacity: /channel\.bounded<int>\(-1\)/
+  negative_capacity: /channel\.bounded<int>\(-1\)/,
+  try_receive_closed: /channel\.bounded<int>\(1\)[\s\S]*writech ch, 42[\s\S]*channel\.close<int>\(ch\)[\s\S]*readch ch[\s\S]*channel\.try_receive<int>\(ch\)/
 };
 
 function inside(directory, path) {
