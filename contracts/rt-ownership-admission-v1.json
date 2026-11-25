@@ -75,6 +75,12 @@
       "source": "pub fnc main(): int { val int left = 41; val int right = 42; val int selected = rt take (true ? left : right); return selected + right - 41; }"
     },
     {
+      "id": "computed-take-untracked",
+      "expect": "reject",
+      "reason": "UNTRACKED_PLACE",
+      "source": "pub fnc main(): int {\n  // The computed arithmetic result has no tracked named owner slot.\n  // An explicit rt take must not claim one of these still-live owners was moved.\n  val int first = 41;\n  val int second = 1;\n  val int moved = rt take (first + second);\n  return moved;\n}"
+    },
+    {
       "id": "move-during-shared-loan",
       "expect": "reject",
       "reason": "LOAN_CONFLICT",
@@ -97,6 +103,18 @@
       "expect": "reject",
       "reason": "BORROW_CANNOT_UPGRADE",
       "source": "define class Box as pub let int value = 42; end pub fnc main(): int { let Box owner = new Box(); val loan = rt borrow owner; val promoted = rt share loan; return promoted.value; }"
+    },
+    {
+      "id": "share-borrowed-parameter",
+      "expect": "reject",
+      "reason": "BORROW_CANNOT_UPGRADE",
+      "source": "pub fnc wrongly_shared(borrow int incoming): int {\n  // A copied primitive value may be Share, but a named borrowed parameter\n  // itself is only a loan and cannot be upgraded by rt share.\n  return rt share incoming;\n}\npub fnc main(): int {\n  let int owned = 42;\n  return wrongly_shared(rt borrow owned);\n}"
+    },
+    {
+      "id": "share-borrowed-class-field",
+      "expect": "reject",
+      "reason": "BORROW_CANNOT_UPGRADE",
+      "source": "define class Box as\n  pub let int count = 42;\nend\npub fnc read(borrow Box borrowed): int {\n  // Copy-capable int is not proof that the borrowed root was shared.\n  // Direct rt share borrowed.count must fail until typed MIR proves detach.\n  return rt share borrowed.count;\n}\npub fnc main(): int {\n  let Box owner = new Box();\n  return read(rt borrow owner);\n}"
     },
     {
       "id": "mut-share-unguarded",
