@@ -1,0 +1,6 @@
+fnc bad(): void {
+  val Channel<Fnc<int, int>> ch = Channel.new<Fnc<int, int>>(1);
+  val Fnc<int, int> callback = |x| -> { return x * 2; };
+  nb select { case writech ch, callback: { } }
+  return;
+}

@@ -1,0 +1,5 @@
+// Candidate guest fixture: suspend/cancel API requires backend validation.
+suspends pub fnc main() -> int {
+  while true { rt cooperate; }
+  return 0;
+}

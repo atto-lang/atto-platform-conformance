@@ -1,0 +1,3 @@
+// Type checker must reject both modifiers; do not guess a storage policy.
+define persistent durable actor Wrong as
+end

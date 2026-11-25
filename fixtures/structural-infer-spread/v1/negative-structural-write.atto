@@ -1,0 +1,8 @@
+fnc mutate(structural {x: int} obj) -> int {
+  obj.x = 7;
+  return obj.x;
+}
+pub fnc main(): int {
+  const b = infer struct{x: 42};
+  return mutate(b);
+}

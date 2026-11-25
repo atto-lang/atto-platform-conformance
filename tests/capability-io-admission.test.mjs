@@ -295,3 +295,123 @@ test('authorization callback cannot commit admission after global shutdown', () 
   assert.equal(broker.admit(actor,bound).status,'DENIED_SHUTDOWN');
   assert.equal(broker.snapshot().inFlight,0);
 });
+
+test('subtree budgets prevent one actor family from exhausting an unrelated sibling', () => {
+  const broker = fixture({maxInFlight:4});
+  const parent = broker.registerActor(null,null,{maxSubtreeInFlight:2});
+  const narrow = broker.registerActor(parent,null,{maxSubtreeInFlight:1});
+  const grandchild = broker.registerActor(narrow);
+  const sibling = broker.registerActor(parent);
+  const unrelated = broker.registerActor();
+  const bound = target(broker);
+  const n = admission(broker,narrow,bound);
+  assert.equal(broker.admit(grandchild,bound).status,'BACKPRESSURE_SUBTREE');
+  const s = admission(broker,sibling,bound);
+  assert.equal(broker.admit(sibling,bound).status,'BACKPRESSURE_SUBTREE');
+  const u = admission(broker,unrelated,bound);
+  assert.equal(broker.snapshot().inFlight,3);
+  assert.equal(broker.complete(sibling,n),false); // cross-actor settlement forbidden
+  assert.equal(broker.complete(narrow,n),true);
+  assert.equal(broker.retire(narrow,n,true),true);
+  const g = admission(broker,grandchild,bound);
+  for (const [actor,ticket] of [[sibling,s],[unrelated,u],[grandchild,g]]) {
+    assert.equal(broker.complete(actor,ticket),true);
+    assert.equal(broker.retire(actor,ticket,true),true);
+  }
+  assert.equal(broker.snapshot().inFlight,0);
+});
+
+test('cancellation and revocation retain every ancestor budget until physical retirement', () => {
+  const broker = fixture({maxInFlight:3});
+  const parent = broker.registerActor(null,null,{maxSubtreeInFlight:1});
+  const first = broker.registerActor(parent);
+  const sibling = broker.registerActor(parent);
+  const unrelated = broker.registerActor();
+  const bound = target(broker);
+  const ticket = admission(broker,first,bound);
+  assert.equal(broker.cancel(first,ticket),true);
+  assert.equal(broker.admit(sibling,bound).status,'BACKPRESSURE_SUBTREE');
+  assert.equal(broker.retire(first,ticket,false),false);
+  assert.equal(broker.admit(sibling,bound).status,'BACKPRESSURE_SUBTREE');
+  assert.equal(broker.revoke(first),true);
+  assert.equal(broker.admit(sibling,bound).status,'BACKPRESSURE_SUBTREE');
+  assert.equal(broker.snapshot().inFlight,1);
+  const other = admission(broker,unrelated,bound);
+  assert.equal(broker.retire(first,ticket,true),true);
+  assert.equal(broker.retire(first,ticket,true),false);
+  const next = admission(broker,sibling,bound);
+  assert.equal(broker.complete(unrelated,other),true);
+  assert.equal(broker.retire(unrelated,other,true),true);
+  assert.equal(broker.complete(sibling,next),true);
+  assert.equal(broker.retire(sibling,next,true),true);
+  assert.equal(broker.snapshot().inFlight,0);
+});
+
+test('actor subtree budgets reject widening, malformed limits, and stale handles', () => {
+  const broker = fixture({maxInFlight:4});
+  const parent = broker.registerActor(null,null,{maxSubtreeInFlight:2});
+  assert.throws(() => broker.registerActor(parent,null,{maxSubtreeInFlight:3}),/widen/);
+  assert.throws(() => broker.registerActor(null,null,{maxSubtreeInFlight:5}),/widen/);
+  for (const invalid of [0,-1,1.5,Infinity,'2',null]) {
+    if (invalid === null) continue; // null is the inherited default
+    assert.throws(() => broker.registerActor(parent,null,{maxSubtreeInFlight:invalid}),
+      /positive bounded integer/);
+  }
+  assert.throws(() => broker.registerActor(parent,null,{maxInFlight:1}),/exact/);
+  assert.throws(() => broker.registerActor(parent,null,{}),/exact/);
+  const child = broker.registerActor(parent);
+  const bound = target(broker);
+  const a = admission(broker,child,bound);
+  const b = admission(broker,child,bound);
+  assert.equal(broker.admit(child,bound).status,'BACKPRESSURE_SUBTREE');
+  assert.equal(broker.admit(Object.freeze({}),bound).status,'DENIED_ACTOR');
+  assert.equal(broker.complete(child,a),true);
+  assert.equal(broker.retire(child,a,true),true);
+  assert.equal(broker.complete(child,b),true);
+  assert.equal(broker.retire(child,b,true),true);
+});
+
+test('all subtree receipts settle exactly once under cancellation/revoke orderings', () => {
+  for (const order of [['revoke','cancel'],['cancel','revoke'],
+                       ['complete','revoke'],['revoke','complete']]) {
+    const broker = fixture({maxInFlight:2});
+    const parent = broker.registerActor(null,null,{maxSubtreeInFlight:1});
+    const child = broker.registerActor(parent);
+    const bound = target(broker);
+    const ticket = admission(broker,child,bound);
+    for (const action of order) {
+      if (action === 'cancel') broker.cancel(child,ticket);
+      if (action === 'complete') broker.complete(child,ticket);
+      if (action === 'revoke') broker.revoke(child);
+      assert.equal(broker.snapshot().inFlight,1);
+    }
+    assert.equal(broker.retire(child,ticket,false),false);
+    assert.equal(broker.retire(child,ticket,true),true);
+    assert.equal(broker.retire(child,ticket,true),false);
+    assert.equal(broker.snapshot().inFlight,0);
+  }
+});
+
+test('reentrant authorization cannot overbook an actor subtree quota', () => {
+  const open = allow();
+  let broker, actor, bound, attempted = false, inner;
+  broker = new ReferenceCapabilityIoBroker({
+    layers:{host:open,artifact:open,runtime:open,actor:open,delegated:open},
+    maxInFlight:3,
+    scopeMatches(_permission,resource,scope) {
+      if (!attempted) {
+        attempted = true;
+        inner = broker.admit(actor,bound);
+      }
+      return resource===scope;
+    }
+  });
+  actor = broker.registerActor(null,null,{maxSubtreeInFlight:1});
+  bound = target(broker);
+  assert.equal(broker.admit(actor,bound).status,'BACKPRESSURE_SUBTREE');
+  assert.equal(inner.status,'ADMITTED');
+  assert.equal(broker.snapshot().inFlight,1);
+  assert.equal(broker.complete(actor,inner.ticket),true);
+  assert.equal(broker.retire(actor,inner.ticket,true),true);
+  assert.equal(broker.snapshot().inFlight,0);
+});

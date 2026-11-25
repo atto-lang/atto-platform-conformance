@@ -1,0 +1,9 @@
+// PRELUDE V1 CANDIDATE: borrowed_sum_extraction; profile=core; expected=compile_reject
+// Not an executed guest or compiler receipt.
+define class Envelope as
+  pub val int value = 42;
+end
+fnc invalid(borrow Option<Envelope> input): Envelope {
+  return input.unwrap();
+}
+pub fnc main(): int { return 42; }

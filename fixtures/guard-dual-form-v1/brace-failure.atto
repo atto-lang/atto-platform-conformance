@@ -1,0 +1,5 @@
+// False guard executes terminal failure block.
+pub fnc main(): int {
+  guard false { return 0; }
+  return 42;
+}

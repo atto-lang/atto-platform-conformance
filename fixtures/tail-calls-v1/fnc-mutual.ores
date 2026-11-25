@@ -1,0 +1,10 @@
+fnc even(int n): bool {
+  return n == 0 ? true : odd(n - 1);
+}
+fnc odd(int n): bool {
+  return n == 0 ? false : even(n - 1);
+}
+pub routine main(): void {
+  stdio.stdout.write(even(100000));
+  return;
+}

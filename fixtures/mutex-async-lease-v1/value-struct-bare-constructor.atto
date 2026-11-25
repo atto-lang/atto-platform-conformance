@@ -1,0 +1,9 @@
+// TARGET ONLY: a value struct may be constructed without 'new'.
+define struct Point {
+  x: int;
+  y: int;
+}
+pub fnc main(): int {
+  val point = Point(x=1, y=2);
+  return point.x + point.y;
+}

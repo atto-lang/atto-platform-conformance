@@ -1,0 +1,8 @@
+pub fnc main(): void {
+  val mutex = SharedMutex.new([10]);
+  val guard = mutex.lock();
+  val before = guard.get(0);
+  guard.set(0, before + 1);
+  guard.release();
+  return;
+}

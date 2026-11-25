@@ -1,0 +1,9 @@
+// CANDIDATE API: positive NLL READ followed by exclusive WRITE on same root.
+// The READ loan's last use is is_some(); this source requires compiler NLL proof.
+pub fnc main() -> int {
+  let values = [42];
+  val read = values.get(0);
+  val was_present = read.is_some();
+  val write = values.get_mut(0);
+  return was_present ? (write.is_some() ? 42 : 0) : 0;
+}

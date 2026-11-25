@@ -1,0 +1,365 @@
+{
+  "schema": "atto.ownership-vocabulary.v1",
+  "status": "SPEC_AND_REFERENCE_ONLY_NO_PRODUCTION_PARITY",
+  "required_source_pr_heads": [
+    "ores-truffle-oreslang/atto-borrow-checker.rs#43",
+    "atto-lang/atto-source.rs#344",
+    "atto-lang/atto-spec#(pending PR)"
+  ],
+  "keywords": [
+    {
+      "spelling": "borrow!",
+      "semantics": "scoped_borrow",
+      "admission": "browser_subset_scalar_and_lexical_class"
+    },
+    {
+      "spelling": "take!",
+      "semantics": "unique_transfer",
+      "admission": "browser_subset"
+    },
+    {
+      "spelling": "share!",
+      "semantics": "shared_ownership",
+      "admission": "browser_scalar_only"
+    },
+    {
+      "spelling": "copy!",
+      "semantics": "shallow_or_value_copy",
+      "admission": "browser_scalar_only"
+    },
+    {
+      "spelling": "copy!!",
+      "semantics": "independent_deep_graph_clone",
+      "admission": "browser_immutable_primitives_only"
+    },
+    {
+      "spelling": "mut",
+      "semantics": "mutable_access_qualifier",
+      "admission": "browser_lexical_subset"
+    },
+    {
+      "spelling": "lt!",
+      "semantics": "named_type_lifetime_binder",
+      "admission": "canonical_model_only"
+    },
+    {
+      "spelling": "freeze!",
+      "semantics": "consuming_deep_immutability",
+      "admission": "browser_immutable_primitives_only"
+    },
+    {
+      "spelling": "weak!",
+      "semantics": "nonowning_generation_fenced_upgrade",
+      "admission": "canonical_host_model_only"
+    },
+    {
+      "spelling": "pin!",
+      "semantics": "stable_pointee_storage",
+      "admission": "canonical_host_model_only"
+    },
+    {
+      "spelling": "drop!",
+      "semantics": "deterministic_release_or_logical_end",
+      "admission": "browser_primitive_only"
+    }
+  ],
+  "guest_backends": {
+    "java": "NOT_VERIFIED",
+    "llvm": "NOT_VERIFIED",
+    "net": "NOT_VERIFIED",
+    "forge": "NOT_VERIFIED",
+    "wasm": "NOT_VERIFIED"
+  },
+  "browser_compiler": "PR_OPEN_PARTIAL_SCALAR_LOWERING_UNEXECUTED",
+  "canonical_rust": "PR_OPEN_OWNERSHIP_EVENT_HOST_MODEL_UNEXECUTED",
+  "cases": [
+    {
+      "id": "parse_deep_copy",
+      "feature": "copy!!",
+      "layer": "browser_parser",
+      "expected": "accept"
+    },
+    {
+      "id": "scalar_deep_copy",
+      "feature": "copy!!",
+      "layer": "browser_compiler",
+      "expected": "accept"
+    },
+    {
+      "id": "object_deep_copy_without_graph_lowering",
+      "feature": "copy!!",
+      "layer": "browser_compiler",
+      "expected": "reject",
+      "diagnostic": "E_DEEP_COPY_PROOF"
+    },
+    {
+      "id": "copy_bang_bang_avoids_boolean_negation",
+      "feature": "copy!!",
+      "layer": "browser_parser",
+      "expected": "accept"
+    },
+    {
+      "id": "deep_copy_graph_independence",
+      "feature": "copy!!",
+      "layer": "host_runtime_model",
+      "expected": "accept"
+    },
+    {
+      "id": "deep_copy_preserves_internal_cycle",
+      "feature": "copy!!",
+      "layer": "host_runtime_model",
+      "expected": "accept"
+    },
+    {
+      "id": "deep_copy_external_alias_forbidden",
+      "feature": "copy!!",
+      "layer": "host_runtime_model",
+      "expected": "reject",
+      "diagnostic": "UnfreezableEdge"
+    },
+    {
+      "id": "deep_copy_graph_budget",
+      "feature": "copy!!",
+      "layer": "host_runtime_model",
+      "expected": "reject",
+      "diagnostic": "BudgetExceeded"
+    },
+    {
+      "id": "deep_copy_without_witness",
+      "feature": "copy!!",
+      "layer": "canonical_verifier",
+      "expected": "reject",
+      "diagnostic": "E_DEEP_COPY_PROOF_REQUIRED"
+    },
+    {
+      "id": "deep_copy_preserves_old_owner",
+      "feature": "copy!!",
+      "layer": "canonical_verifier",
+      "expected": "accept"
+    },
+    {
+      "id": "shallow_copy_noncopy_type",
+      "feature": "copy!",
+      "layer": "canonical_verifier",
+      "expected": "reject",
+      "diagnostic": "E_COPY_PROOF_REQUIRED"
+    },
+    {
+      "id": "implicit_shared_borrow",
+      "feature": "borrow!",
+      "layer": "lifetime_model",
+      "expected": "accept"
+    },
+    {
+      "id": "implicit_mut_conflict",
+      "feature": "mut",
+      "layer": "lifetime_model",
+      "expected": "reject",
+      "diagnostic": "Conflict"
+    },
+    {
+      "id": "explicit_shared_borrow",
+      "feature": "borrow!",
+      "layer": "canonical_verifier",
+      "expected": "accept"
+    },
+    {
+      "id": "take_invalidates_original",
+      "feature": "take!",
+      "layer": "canonical_verifier",
+      "expected": "reject",
+      "diagnostic": "E_USE_AFTER_MOVE_OR_DROP"
+    },
+    {
+      "id": "share_rejects_live_loan",
+      "feature": "share!",
+      "layer": "canonical_verifier",
+      "expected": "reject",
+      "diagnostic": "E_BORROW_CONFLICT"
+    },
+    {
+      "id": "mut_exclusive_loan_conflict",
+      "feature": "mut",
+      "layer": "canonical_verifier",
+      "expected": "reject",
+      "diagnostic": "E_BORROW_CONFLICT"
+    },
+    {
+      "id": "named_lt_binder",
+      "feature": "lt!",
+      "layer": "lifetime_model",
+      "expected": "accept"
+    },
+    {
+      "id": "apostrophe_lifetime_forbidden",
+      "feature": "lt!",
+      "layer": "lifetime_model",
+      "expected": "reject",
+      "diagnostic": "InvalidName"
+    },
+    {
+      "id": "lt_outlives_owner",
+      "feature": "lt!",
+      "layer": "lifetime_model",
+      "expected": "reject",
+      "diagnostic": "OutlivesOwner"
+    },
+    {
+      "id": "lt_dangling_escape",
+      "feature": "lt!",
+      "layer": "lifetime_model",
+      "expected": "reject",
+      "diagnostic": "LoanEscape"
+    },
+    {
+      "id": "lt_await_live_loan",
+      "feature": "lt!",
+      "layer": "lifetime_model",
+      "expected": "reject",
+      "diagnostic": "SuspendWithLiveLoan"
+    },
+    {
+      "id": "lt_value_expression_forbidden",
+      "feature": "lt!",
+      "layer": "browser_compiler",
+      "expected": "reject",
+      "diagnostic": "E_LIFETIME_CONTEXT"
+    },
+    {
+      "id": "freeze_scalar",
+      "feature": "freeze!",
+      "layer": "browser_compiler",
+      "expected": "accept"
+    },
+    {
+      "id": "freeze_unsafe_graph",
+      "feature": "freeze!",
+      "layer": "canonical_verifier",
+      "expected": "reject",
+      "diagnostic": "E_DEEP_FREEZE_PROOF_REQUIRED"
+    },
+    {
+      "id": "weak_unlowered_guest",
+      "feature": "weak!",
+      "layer": "browser_compiler",
+      "expected": "reject",
+      "diagnostic": "E_WEAK_UNSUPPORTED"
+    },
+    {
+      "id": "weak_race_retirement",
+      "feature": "weak!",
+      "layer": "host_runtime_model",
+      "expected": "accept"
+    },
+    {
+      "id": "weak_stale_generation",
+      "feature": "weak!",
+      "layer": "host_runtime_model",
+      "expected": "reject",
+      "diagnostic": "None"
+    },
+    {
+      "id": "pin_unlowered_guest",
+      "feature": "pin!",
+      "layer": "browser_compiler",
+      "expected": "reject",
+      "diagnostic": "E_PIN_UNSUPPORTED"
+    },
+    {
+      "id": "pin_handle_move_address_stable",
+      "feature": "pin!",
+      "layer": "host_runtime_model",
+      "expected": "accept"
+    },
+    {
+      "id": "pin_across_await_not_auto_allowed",
+      "feature": "pin!",
+      "layer": "canonical_verifier",
+      "expected": "reject",
+      "diagnostic": "E_SUSPEND_WITH_LIVE_LOAN"
+    },
+    {
+      "id": "scalar_drop",
+      "feature": "drop!",
+      "layer": "browser_compiler",
+      "expected": "accept"
+    },
+    {
+      "id": "drop_use_after_drop",
+      "feature": "drop!",
+      "layer": "browser_compiler",
+      "expected": "reject",
+      "diagnostic": "E_MOVED"
+    },
+    {
+      "id": "drop_twice",
+      "feature": "drop!",
+      "layer": "canonical_verifier",
+      "expected": "reject",
+      "diagnostic": "E_USE_AFTER_MOVE_OR_DROP"
+    },
+    {
+      "id": "drop_borrowed_owner",
+      "feature": "drop!",
+      "layer": "canonical_verifier",
+      "expected": "reject",
+      "diagnostic": "E_BORROW_CONFLICT"
+    },
+    {
+      "id": "drop_resource_guest_unlowered",
+      "feature": "drop!",
+      "layer": "browser_compiler",
+      "expected": "reject",
+      "diagnostic": "E_DROP_UNSUPPORTED"
+    },
+    {
+      "id": "drop_as_value_forbidden",
+      "feature": "drop!",
+      "layer": "browser_compiler",
+      "expected": "reject",
+      "diagnostic": "E_DROP_CONTEXT"
+    },
+    {
+      "id": "drop_outer_loop_owner",
+      "feature": "drop!",
+      "layer": "browser_compiler",
+      "expected": "reject",
+      "diagnostic": "E_MOVED"
+    },
+    {
+      "id": "pinned_mailbox_prepare",
+      "feature": "pin!",
+      "layer": "canonical_verifier",
+      "expected": "reject",
+      "diagnostic": "E_PIN_BOUNDARY_TRANSFER"
+    },
+    {
+      "id": "pinned_direct_actor_move",
+      "feature": "pin!",
+      "layer": "canonical_verifier",
+      "expected": "reject",
+      "diagnostic": "E_PIN_BOUNDARY_TRANSFER"
+    },
+    {
+      "id": "pinned_task_capture_move",
+      "feature": "pin!",
+      "layer": "canonical_verifier",
+      "expected": "reject",
+      "diagnostic": "E_PIN_BOUNDARY_TRANSFER"
+    },
+    {
+      "id": "pinned_frozen_publication",
+      "feature": "pin!",
+      "layer": "canonical_verifier",
+      "expected": "reject",
+      "diagnostic": "E_PIN_BOUNDARY_TRANSFER"
+    },
+    {
+      "id": "pinned_guarded_promotion",
+      "feature": "pin!",
+      "layer": "canonical_verifier",
+      "expected": "reject",
+      "diagnostic": "E_PIN_BOUNDARY_TRANSFER"
+    }
+  ]
+}

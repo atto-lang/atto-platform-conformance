@@ -1,0 +1,7 @@
+# Bounded RELIABLE pub-sub admission, cancellation and subscription generations
+
+Run `node formal/reliable-pubsub-bounded.mjs`. This independent source-free explicit-state model exhaustively enumerates a finite **two-publisher, two-sequence, two-subscription-generation, capacity-one** machine. Publish to a full queue becomes a pending (backpressured) operation; queue admission, not scheduling, is the acknowledgement boundary. Subscription leave/cancel fences pending operations; a later join uses a new generation. FIFO is checked per publisher-to-subscription generation, not globally across concurrent publishers.
+
+Invariants: no acknowledgement before successful queue admission; no duplicate acknowledgements; cancellation of a pending item cannot receive an acknowledgement; no old-generation delivery after rejoin; FIFO per publishing edge; bounded queue length. Two deliberate bad transitions (acknowledge before capacity, keep old-generation queued items on leave) must yield counterexample traces, not pass.
+
+**Claim boundary:** the model proves these properties only over its **finite transition system**. It does not establish actual actor scheduling, carrier-thread nonblocking, durable delivery, backends' `.atto` compilations, multi-subscriber group-close semantics, or unlimited message sequences. Turn recorded traces into pinned-source compiler-backed Java/LLVM/.NET/Wasm/Forge tests and include actual non-zero executed Actions steps before any certification. This is deliberately separate from current actor state/CONTROL-priority PRs.

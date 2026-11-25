@@ -1,0 +1,5 @@
+// Parser-target signatures only; unresolved storage is not executable.
+define persistent actor Cart as
+    susp fnc load_state(ctx: PersistenceContext): Result<Option<ActorStateSnapshot<Cart>>, PersistenceError>;
+    susp fnc save_state(ctx: PersistenceContext, snapshot: ActorStateSnapshot<Cart>): Result<CheckpointReceipt, PersistenceError>;
+end

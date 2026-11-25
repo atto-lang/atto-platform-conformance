@@ -1,0 +1,6 @@
+pub fnc main(): void {
+  val owner = [10];
+  val view = rt borrow owner;
+  val lock = SharedMutex.new(view);
+  return;
+}

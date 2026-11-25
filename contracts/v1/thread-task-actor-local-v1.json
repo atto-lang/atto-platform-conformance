@@ -1,0 +1,265 @@
+{
+  "schema": "oreslang.thread-task-actor-local.contract/1",
+  "status": "TARGET_NOT_IMPLEMENTED",
+  "language": "AttoLang (Oreslang compatibility naming)",
+  "canonicalSourceExtension": ".atto",
+  "legacySourceExtension": ".ores",
+  "ownershipTransferKeyword": "rt take",
+  "backends": [
+    "java",
+    "llvm",
+    "net",
+    "forge",
+    "wasm"
+  ],
+  "requiresActualOsThread": true,
+  "forbidTaskOrVirtualThreadFallback": true,
+  "functionValuesInChannelsPubsub": "REJECT",
+  "threadEntry": "AOT_RESOLVED_NAMED_OR_COMPILER_SYNTHESIZED_NON_SUSPENDING_ENTRY",
+  "threadArg": "Send+Owned+static",
+  "threadResult": "Send+Owned+static",
+  "threadJoin": "SUSPENDS_NONPARKING_SINGLE_CONSUMER",
+  "threadCancellation": "COOPERATIVE_AND_PHYSICALLY_DRAINED",
+  "localLifetimes": {
+    "ThreadLocal": "physical-os-thread/attach-generation",
+    "TaskLocal": "logical-task/continuation-generation",
+    "ActorLocal": "actor-incarnation/arena",
+    "RequestLocal": "request-exchange/physical-lease (separate: PR #248)"
+  },
+  "ownership": {
+    "Box<T>": "move-only if T:Send",
+    "Arc<T>": "cross-thread only if T:Send+Sync (or verified sync wrapper)",
+    "dyn Trait": "cross-thread only with certified dyn Trait+Send witness; Arc also Sync",
+    "StateContainer": "scope-typed, generation-fenced; owner memory never escapes"
+  },
+  "targetCapabilities": {
+    "java": "jvm-native platform thread / Graal Native Image adapter",
+    "llvm": "posix pthreads or Windows supported OS thread adapter",
+    "forge": "posix pthreads or Windows supported OS thread adapter",
+    "net": ".NET NativeAOT real OS thread with runtime attach",
+    "wasm": "optional embedder-defined shared-memory/thread capability; fail closed otherwise"
+  },
+  "evidenceStages": [
+    "contract-static",
+    "host-native",
+    "compiler-admission",
+    "guest-execution"
+  ],
+  "receipt": {
+    "requireExactHeadCommitSha40": true,
+    "requireExactHeadTreeSha40": true,
+    "requireCompilerBinaryDigest": true,
+    "requireNonzeroExecutedSteps": true,
+    "requireGuestRunForParity": true,
+    "zeroStepMeans": "NOT_EXECUTED",
+    "referenceModelIsGuestEvidence": false
+  },
+  "cases": [
+    {
+      "id": "boxed-move-entry",
+      "phase": "compile-pass",
+      "description": "Named AOT function and uniquely moved Box<Send>"
+    },
+    {
+      "id": "arc-synchronized-entry",
+      "phase": "compile-pass",
+      "description": "Arc<Mutex<Send>> crosses OS-thread boundary"
+    },
+    {
+      "id": "dyn-send-entry",
+      "phase": "compile-pass",
+      "description": "dyn Trait + Send with authenticated concrete implementation"
+    },
+    {
+      "id": "owned-join-result",
+      "phase": "compile-pass",
+      "description": "Suspending join returns owned Send result"
+    },
+    {
+      "id": "thread-state-initialization",
+      "phase": "compile-pass",
+      "description": "Thread-owned StateInit is transferred into newly owned ThreadState"
+    },
+    {
+      "id": "task-local-suspends",
+      "phase": "compile-pass",
+      "description": "TaskLocal persisted through await and carrier migration"
+    },
+    {
+      "id": "actor-local-serial-turn",
+      "phase": "compile-pass",
+      "description": "ActorLocal accessed in admitted actor turn after carrier migration"
+    },
+    {
+      "id": "thread-local-pinned",
+      "phase": "compile-pass",
+      "description": "ThreadLocal accessed in synchronous OS-thread-owned function"
+    },
+    {
+      "id": "owned-closure-aot-lowering",
+      "phase": "compile-pass",
+      "description": "Statically known rt take closure with fully moved Send + static captures lowers to generated non-suspending named ABI entry; compiler retains code and cleanup"
+    },
+    {
+      "id": "unlowerable-captured-closure-entry",
+      "phase": "compile-reject",
+      "expected_diagnostic": "E_THREAD_ENTRY_NOT_STATIC",
+      "description": "Dynamic/unresolvable function value or captured closure without compiler-emitted AOT entry is rejected"
+    },
+    {
+      "id": "borrowed-thread-argument",
+      "phase": "compile-reject",
+      "expected_diagnostic": "E_THREAD_BORROW_ESCAPE",
+      "description": "Borrowed stack/actor reference cannot outlive spawning function"
+    },
+    {
+      "id": "box-unsendable",
+      "phase": "compile-reject",
+      "expected_diagnostic": "E_THREAD_ARGUMENT_NOT_SEND",
+      "description": "Box of non-Send object"
+    },
+    {
+      "id": "arc-unsync",
+      "phase": "compile-reject",
+      "expected_diagnostic": "E_THREAD_SHARED_NOT_SYNC",
+      "description": "Arc<Cell> or Arc<non-Sync>"
+    },
+    {
+      "id": "dyn-unproven-witness",
+      "phase": "compile-reject",
+      "expected_diagnostic": "E_THREAD_DYN_NOT_SEND",
+      "description": "dyn trait has no verified Send witness"
+    },
+    {
+      "id": "ffi-object-untrusted",
+      "phase": "compile-reject",
+      "expected_diagnostic": "E_THREAD_FFI_PROVENANCE",
+      "description": "Raw pointer/foreign ABI object"
+    },
+    {
+      "id": "threadlocal-after-await",
+      "phase": "compile-reject",
+      "expected_diagnostic": "E_THREAD_LOCAL_ACROSS_AWAIT",
+      "description": "TLS reference held in migratable Task continuation"
+    },
+    {
+      "id": "state-scope-forgery",
+      "phase": "compile-reject",
+      "expected_diagnostic": "E_LOCAL_SCOPE_MISMATCH",
+      "description": "Actor- or thread-owned state presented as Task-owned"
+    },
+    {
+      "id": "actor-heap-to-thread",
+      "phase": "compile-reject",
+      "expected_diagnostic": "E_ACTOR_HEAP_ESCAPE",
+      "description": "Actor arena pointer moved into OS thread"
+    },
+    {
+      "id": "join-under-critical",
+      "phase": "compile-reject",
+      "expected_diagnostic": "E_SUSPENDS_IN_CRITICAL",
+      "description": "Suspending join inside critical body"
+    },
+    {
+      "id": "suspended-thread-entry",
+      "phase": "compile-reject",
+      "expected_diagnostic": "E_THREAD_ENTRY_MAY_SUSPEND",
+      "description": "OS thread entry must be ordinary fnc"
+    },
+    {
+      "id": "channel-closure",
+      "phase": "compile-reject",
+      "expected_diagnostic": "E_MESSAGE_NOT_DATA",
+      "description": "Closure/function transported over actor channel or pubsub"
+    },
+    {
+      "id": "thread-handle-message",
+      "phase": "compile-reject",
+      "expected_diagnostic": "E_MESSAGE_NOT_DATA",
+      "description": "OS JoinHandle transported over actor channel or pubsub"
+    },
+    {
+      "id": "spawn-without-permit",
+      "phase": "compile-reject",
+      "expected_diagnostic": "E_THREAD_ADMISSION_DENIED",
+      "description": "Actor/thread budget missing or exceeded"
+    },
+    {
+      "id": "nonstatic-thread-entry",
+      "phase": "compile-reject",
+      "expected_diagnostic": "E_THREAD_ENTRY_NOT_STATIC",
+      "description": "First-class dynamic function pointer instead of compiler-symbol"
+    },
+    {
+      "id": "physical-thread-spawn",
+      "phase": "runtime",
+      "description": "Prove a real OS thread, not a Task/virtual-thread fallback"
+    },
+    {
+      "id": "quota-two-eight-thirtytwo",
+      "phase": "runtime",
+      "description": "Bounded 2/8/32 thread admission and active-thread count"
+    },
+    {
+      "id": "single-join",
+      "phase": "runtime",
+      "description": "Exactly one terminal join wins; duplicate join rejected"
+    },
+    {
+      "id": "cancel-vs-join",
+      "phase": "runtime",
+      "description": "Cooperative stop request does not report physical exit before retirement"
+    },
+    {
+      "id": "panic-physical-cleanup",
+      "phase": "runtime",
+      "description": "Thread panic unwinds owned drops and finalizes join"
+    },
+    {
+      "id": "tls-isolation",
+      "phase": "runtime",
+      "description": "Two OS threads cannot read each other's TLS"
+    },
+    {
+      "id": "thread-id-reuse",
+      "phase": "runtime",
+      "description": "Generation fencing defeats reused native thread id"
+    },
+    {
+      "id": "task-carrier-migration",
+      "phase": "runtime",
+      "description": "TaskLocal survives physical carrier change; ThreadLocal does not"
+    },
+    {
+      "id": "actor-carrier-migration",
+      "phase": "runtime",
+      "description": "ActorLocal survives physical carrier change under authenticated turn"
+    },
+    {
+      "id": "actor-restart-fence",
+      "phase": "runtime",
+      "description": "Stale actor generation cannot read or mutate local cells"
+    },
+    {
+      "id": "isolate-retirement",
+      "phase": "runtime",
+      "description": "All joined/dropped memory and native thread attachments drained"
+    },
+    {
+      "id": "arc-final-release",
+      "phase": "runtime",
+      "description": "Atomic reference finalizer executes once under competing releases"
+    },
+    {
+      "id": "unsupported-wasm",
+      "phase": "runtime",
+      "description": "Wasm without shared-memory threads fails closed before native spawn"
+    },
+    {
+      "id": "negative-guest-diag",
+      "phase": "runtime",
+      "description": "Compiler rejects negative fixtures with expected diagnostic code"
+    }
+  ],
+  "ownedClosureSugar": "STATIC_COMPILER_LOWERING_ONLY_WITH_OWNED_SEND_STATIC_CAPTURES_AND_NO_CHANNEL_TRANSFER"
+}

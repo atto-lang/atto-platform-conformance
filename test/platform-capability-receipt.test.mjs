@@ -49,7 +49,7 @@ test("rejects host stub promoted as compiler guest",()=>{
   receipt.evidence.compilerProduced=false;
   const result=verifyPlatformCapabilityReceipt(receipt,contract);
   assert.equal(result.ok,false);
-  assert.match(result.errors.join("\n"),/host-reference-only/);
+  assert.match(result.errors.join("\n"),/hostReferenceOnly=false/);
   assert.match(result.errors.join("\n"),/compilerProduced/);
 });
 

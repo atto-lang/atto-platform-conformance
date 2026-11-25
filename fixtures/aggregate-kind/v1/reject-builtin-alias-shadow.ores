@@ -1,0 +1,4 @@
+fnc invalid(): int {
+    type i64 = struct { foo: int };
+    return 1;
+}

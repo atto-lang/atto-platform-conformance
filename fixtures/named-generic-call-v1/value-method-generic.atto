@@ -1,0 +1,8 @@
+define class Calculator as
+  apply<T>(T value, int scale) -> T ::
+    return value
+  end
+end
+fnc main() -> int ::
+  return Calculator().apply<T=int>(scale: 2, value: 42)
+end

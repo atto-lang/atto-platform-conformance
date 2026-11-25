@@ -1,0 +1,5 @@
+// ACTOR-TYPED-07; EXPECTED=ACCEPT; NOT_EXECUTED
+define actor Replies receives String as receive(ActorMail<String> m): void { return; } end
+define actor Handler receives ActorRef<Replies> sends String as
+  receive(ActorMail<ActorRef<Replies>> m): void { m.value.send("reply"); return; }
+end

@@ -1,0 +1,5 @@
+// Expect E_DUPLICATE, no guest artifact.
+pub fnc main(): int {
+    let Map<string, int> x = {"foo" => 1, "foo" => 2};
+    return 0;
+}

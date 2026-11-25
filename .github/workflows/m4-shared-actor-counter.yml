@@ -1,0 +1,37 @@
+name: M4 identical Atto source and actor semantic contract
+on:
+  pull_request:
+    paths:
+      - 'fixtures/m4/shared_actor_counter.atto'
+      - 'contracts/m4-shared-actor-counter-v1.json'
+      - 'tests/test_m4_shared_actor_counter.py'
+      - '.github/workflows/m4-shared-actor-counter.yml'
+  push:
+    paths:
+      - 'fixtures/m4/shared_actor_counter.atto'
+      - 'contracts/m4-shared-actor-counter-v1.json'
+      - 'tests/test_m4_shared_actor_counter.py'
+      - '.github/workflows/m4-shared-actor-counter.yml'
+permissions:
+  contents: read
+jobs:
+  source-semantic-contract-only:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Confirm exact SHA and unchanged tracked sources
+        env:
+          EXPECTED: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED"
+          git diff --quiet HEAD --
+      - name: Validate exact source blob and 11 mutation/semantic checks
+        run: |
+          python3 -m unittest discover -s tests -p test_m4_shared_actor_counter.py -v
+      - name: No executable guest certification in this contract job
+        run: echo 'M4_CONTRACT_CHECK_ONLY; LLVM/GRAAL_GUEST_EXECUTION_MUST_BE_SEPARATELY_PROVEN'

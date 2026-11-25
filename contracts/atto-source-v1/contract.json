@@ -1,0 +1,51 @@
+{
+  "schema": "attolang.source-parity.v1",
+  "source": {
+    "path": "contracts/atto-source-v1/add.atto",
+    "git_blob_sha1": "015f8b0f79aafa796a148d2adeff1574e8d6c491",
+    "expected_exit_status": 42
+  },
+  "backends": [
+    {
+      "id": "java",
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "pr": 2460,
+      "fixture_path": "contracts/atto-parity-v1/add.atto"
+    },
+    {
+      "id": "llvm",
+      "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+      "pr": 1312,
+      "fixture_path": "contracts/atto-parity-v1/add.atto"
+    },
+    {
+      "id": "wasm",
+      "repository": "ores-truffle-oreslang/oreslang-source.wasm",
+      "pr": 275,
+      "fixture_path": "contracts/atto-parity-v1/add.atto"
+    },
+    {
+      "id": "net",
+      "repository": "ores-truffle-oreslang/oreslang-source.net",
+      "pr": 345,
+      "fixture_path": "contracts/atto-parity-v1/add.atto"
+    },
+    {
+      "id": "forge",
+      "repository": "ores-truffle-oreslang/oreslang-source.forge",
+      "pr": 177,
+      "fixture_path": "contracts/atto-parity-v1/add.atto"
+    }
+  ],
+  "promotion": {
+    "requires": [
+      "same source Git blob in every backend",
+      "exact compiler source head and tree",
+      "executed compiler or AOT guest with observed value 42",
+      "nonzero workflow step receipts",
+      "runtime or generated binary digest",
+      "independent review"
+    ],
+    "source_only_not_execution": true
+  }
+}

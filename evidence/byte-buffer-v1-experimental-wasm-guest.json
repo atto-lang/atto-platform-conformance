@@ -1,0 +1,66 @@
+{
+  "schema": "atto.byte-buffer.experimental-wasm-guest.v1",
+  "status": "BOUNDED_POSITIVE_GUEST_EXECUTED_NOT_FULL_CONFORMANCE",
+  "source_repository": "atto-lang/atto-source.wasm",
+  "source_pr": 47,
+  "compiler_source_path": "src/byte-buffer-guest-v1.mjs",
+  "compiler_source_blob_sha": "e6388fcbeb2cc346dbd6a84f59b7e4ab6b4a8dc4",
+  "test_source_path": "tests/byte-buffer-guest-v1-real.test.mjs",
+  "test_source_blob_sha": "b3b61375ec1190f44ab42cbd0a686642adb1a00d",
+  "host_toolchain": "Node.js 22.16.0",
+  "local_test_command": "node --test tests/byte-buffer-guest-v1-real.test.mjs",
+  "local_test_groups": {
+    "passed": 5,
+    "failed": 0
+  },
+  "compiled_wasm": {
+    "validated": true,
+    "host_imports": 0,
+    "main_export": "() -> i64",
+    "memory": "one fixed zero-initialized 64-KiB page",
+    "guest_exit_for_BB_001": "1",
+    "guest_bytes_for_BB_001": "78 56 34 12 00 00 00 00",
+    "independent_compiled_guest_variations": 256,
+    "positive_fixture_count": 11,
+    "positive_fixture_ids": [
+      "BB-001",
+      "BB-002",
+      "BB-003",
+      "BB-004",
+      "BB-005",
+      "BB-013",
+      "BB-014",
+      "BB-015",
+      "BB-016",
+      "BB-017",
+      "BB-021"
+    ]
+  },
+  "evidence_limitations": {
+    "canonical_stdlib_class_parsed_typechecked_linked": false,
+    "sealed_ownedbytes_abi_integrated": false,
+    "typed_runtime_buffer_errors": false,
+    "dynamic_offset_or_value_support": false,
+    "actor_or_tenant_capability_isolation": false,
+    "aggregate_tenant_quota_certified": false,
+    "exception_and_borrow_safety_certified": false,
+    "native_aot_tested": false,
+    "exact_head_ci_step_receipt_available": false,
+    "source_org_actions_zero_step_not_pass": true
+  },
+  "source_fixture_provenance": {
+    "BB-001": "7d83aa7d8a6000875fb4c73a36493053170b9932",
+    "BB-002": "65f1ede56cf40f5c52ddec6e9e3a6b2772d91e88",
+    "BB-003": "eabe3baf65153baae72bdc65de99f05a9a114cab",
+    "BB-004": "805560434c628274d2cd2d73eb92bd64947c9dd5",
+    "BB-005": "a6459f9129e8c9a6d4799342fafbd73b72ccf026",
+    "BB-013": "fcf06b5739fa54ad6301f46fe8c3aeab7399fb4b",
+    "BB-014": "2070a1fdb94104965e503df95491c1dfc73730cf",
+    "BB-015": "4da5e9a0915743d30b55922a3e50e4045a65af43",
+    "BB-016": "ddf68a7d285309ea6aca4ccd241c439f02ba7fc3",
+    "BB-017": "512f5feddcbb199ded8c097b33f99b6850e07fee",
+    "BB-021": "cc3656aa50b949c73d0ceece4f32fbb58eee8def"
+  },
+  "full_atto_byte_buffer_v1_guest_conformance": "NOT_EXECUTED",
+  "release_authorized": false
+}

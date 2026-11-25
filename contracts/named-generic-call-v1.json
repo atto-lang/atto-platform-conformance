@@ -1,0 +1,709 @@
+{
+  "schemaVersion": 1,
+  "id": "named-generic-call-v1",
+  "evidence": "source-target-only",
+  "backends": [
+    "java",
+    "llvm",
+    "net",
+    "wasm",
+    "forge"
+  ],
+  "notes": "No compiler or guest parity is certified by this corpus. Array, Vector, ArrayList cases require an actual declaration exporting generic T. Host-side binder is a reference-only oracle.",
+  "cases": [
+    {
+      "id": "generic-reorder",
+      "category": "generic",
+      "compile": "accept",
+      "path": "fixtures/named-generic-call-v1/generic-reorder.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "generic-default-reference",
+      "category": "generic",
+      "compile": "accept",
+      "path": "fixtures/named-generic-call-v1/generic-default-reference.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "generic-mixed",
+      "category": "generic",
+      "compile": "accept",
+      "path": "fixtures/named-generic-call-v1/generic-mixed.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "vector-named-type",
+      "category": "generic",
+      "compile": "accept",
+      "path": "fixtures/named-generic-call-v1/vector-named-type.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "array-named-type",
+      "category": "generic",
+      "compile": "accept",
+      "path": "fixtures/named-generic-call-v1/array-named-type.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "arraylist-named-type",
+      "category": "generic",
+      "compile": "accept",
+      "path": "fixtures/named-generic-call-v1/arraylist-named-type.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "vector-shape-distinct",
+      "category": "shape",
+      "compile": "accept",
+      "path": "fixtures/named-generic-call-v1/vector-shape-distinct.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "value-reorder",
+      "category": "value",
+      "compile": "accept",
+      "path": "fixtures/named-generic-call-v1/value-reorder.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "value-mixed",
+      "category": "value",
+      "compile": "accept",
+      "path": "fixtures/named-generic-call-v1/value-mixed.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "value-method",
+      "category": "value",
+      "compile": "accept",
+      "path": "fixtures/named-generic-call-v1/value-method.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "combined-value-and-type",
+      "category": "combined",
+      "compile": "accept",
+      "path": "fixtures/named-generic-call-v1/combined-value-and-type.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "generic-unknown",
+      "category": "generic",
+      "compile": "reject",
+      "diagnostic": "unknown-generic-label",
+      "path": "fixtures/named-generic-call-v1/generic-unknown.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "generic-duplicate",
+      "category": "generic",
+      "compile": "reject",
+      "diagnostic": "duplicate-generic-slot",
+      "path": "fixtures/named-generic-call-v1/generic-duplicate.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "generic-positional-after-named",
+      "category": "generic",
+      "compile": "reject",
+      "diagnostic": "generic-positional-after-named",
+      "path": "fixtures/named-generic-call-v1/generic-positional-after-named.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "generic-missing",
+      "category": "generic",
+      "compile": "reject",
+      "diagnostic": "missing-generic-argument",
+      "path": "fixtures/named-generic-call-v1/generic-missing.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "generic-forward-default",
+      "category": "generic",
+      "compile": "reject",
+      "diagnostic": "invalid-generic-default",
+      "path": "fixtures/named-generic-call-v1/generic-forward-default.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "value-unknown",
+      "category": "value",
+      "compile": "reject",
+      "diagnostic": "unknown-value-label",
+      "path": "fixtures/named-generic-call-v1/value-unknown.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "value-duplicate",
+      "category": "value",
+      "compile": "reject",
+      "diagnostic": "duplicate-value-slot",
+      "path": "fixtures/named-generic-call-v1/value-duplicate.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "value-positional-after-named",
+      "category": "value",
+      "compile": "reject",
+      "diagnostic": "value-positional-after-named",
+      "path": "fixtures/named-generic-call-v1/value-positional-after-named.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "value-positional-collision",
+      "category": "value",
+      "compile": "reject",
+      "diagnostic": "duplicate-value-slot",
+      "path": "fixtures/named-generic-call-v1/value-positional-collision.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "value-missing",
+      "category": "value",
+      "compile": "reject",
+      "diagnostic": "missing-required-value",
+      "path": "fixtures/named-generic-call-v1/value-missing.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "value-spread-unproven",
+      "category": "value",
+      "compile": "reject",
+      "diagnostic": "unsupported-call-item",
+      "path": "fixtures/named-generic-call-v1/value-spread-unproven.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "generic-inference-hole",
+      "category": "generic",
+      "compile": "accept",
+      "path": "fixtures/named-generic-call-v1/generic-inference-hole.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "generic-hole-missing",
+      "category": "generic",
+      "compile": "reject",
+      "diagnostic": "missing-generic-argument",
+      "path": "fixtures/named-generic-call-v1/generic-hole-missing.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "generic-nested-hole",
+      "category": "generic",
+      "compile": "reject",
+      "diagnostic": "nested-inference-hole",
+      "path": "fixtures/named-generic-call-v1/generic-nested-hole.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "generic-type-case-mismatch",
+      "category": "generic",
+      "compile": "reject",
+      "diagnostic": "unknown-generic-label",
+      "path": "fixtures/named-generic-call-v1/generic-type-case-mismatch.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "generic-nongeneric-explicit-type",
+      "category": "generic",
+      "compile": "reject",
+      "diagnostic": "nongeneric-explicit-type",
+      "path": "fixtures/named-generic-call-v1/generic-nongeneric-explicit-type.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "generic-positional-collision",
+      "category": "generic",
+      "compile": "reject",
+      "diagnostic": "duplicate-generic-slot",
+      "path": "fixtures/named-generic-call-v1/generic-positional-collision.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "generic-duplicate-declaration",
+      "category": "generic",
+      "compile": "reject",
+      "diagnostic": "invalid-generic-declaration",
+      "path": "fixtures/named-generic-call-v1/generic-duplicate-declaration.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "generic-self-default",
+      "category": "generic",
+      "compile": "reject",
+      "diagnostic": "invalid-generic-default",
+      "path": "fixtures/named-generic-call-v1/generic-self-default.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "generic-routine-named",
+      "category": "generic",
+      "compile": "accept",
+      "path": "fixtures/named-generic-call-v1/generic-routine-named.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "generic-method-named",
+      "category": "generic",
+      "compile": "accept",
+      "path": "fixtures/named-generic-call-v1/generic-method-named.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "generic-caller-scoped-type",
+      "category": "generic",
+      "compile": "accept",
+      "path": "fixtures/named-generic-call-v1/generic-caller-scoped-type.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "value-routine-reorder",
+      "category": "value",
+      "compile": "accept",
+      "path": "fixtures/named-generic-call-v1/value-routine-reorder.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "value-optional-omission",
+      "category": "value",
+      "compile": "accept",
+      "path": "fixtures/named-generic-call-v1/value-optional-omission.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "value-option-required",
+      "category": "value",
+      "compile": "reject",
+      "diagnostic": "missing-required-value",
+      "path": "fixtures/named-generic-call-v1/value-option-required.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "value-method-unknown",
+      "category": "value",
+      "compile": "reject",
+      "diagnostic": "unknown-value-label",
+      "path": "fixtures/named-generic-call-v1/value-method-unknown.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "value-static-named",
+      "category": "value",
+      "compile": "accept",
+      "path": "fixtures/named-generic-call-v1/value-static-named.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "value-overload-label-only",
+      "category": "value",
+      "compile": "reject",
+      "diagnostic": "invalid-callable-overload",
+      "path": "fixtures/named-generic-call-v1/value-overload-label-only.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "value-opaque-named",
+      "category": "value",
+      "compile": "reject",
+      "diagnostic": "unsupported-callable-label",
+      "path": "fixtures/named-generic-call-v1/value-opaque-named.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "generic-nested-reorder",
+      "category": "generic",
+      "compile": "accept",
+      "path": "fixtures/named-generic-call-v1/generic-nested-reorder.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "generic-case-mismatch",
+      "category": "generic",
+      "compile": "reject",
+      "diagnostic": "unknown-generic-label",
+      "path": "fixtures/named-generic-call-v1/generic-case-mismatch.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "generic-non-type-value",
+      "category": "generic",
+      "compile": "reject",
+      "diagnostic": "non-type-generic-argument",
+      "path": "fixtures/named-generic-call-v1/generic-non-type-value.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "generic-positional-slot-collision",
+      "category": "generic",
+      "compile": "reject",
+      "diagnostic": "duplicate-generic-slot",
+      "path": "fixtures/named-generic-call-v1/generic-positional-slot-collision.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "generic-excess-argument",
+      "category": "generic",
+      "compile": "reject",
+      "diagnostic": "excess-generic-arguments",
+      "path": "fixtures/named-generic-call-v1/generic-excess-argument.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "generic-nested-late-positional",
+      "category": "generic",
+      "compile": "reject",
+      "diagnostic": "generic-positional-after-named",
+      "path": "fixtures/named-generic-call-v1/generic-nested-late-positional.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "value-method-generic",
+      "category": "combined",
+      "compile": "accept",
+      "path": "fixtures/named-generic-call-v1/value-method-generic.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "value-required-option-missing",
+      "category": "value",
+      "compile": "reject",
+      "diagnostic": "missing-required-value",
+      "path": "fixtures/named-generic-call-v1/value-required-option-missing.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "value-case-mismatch",
+      "category": "value",
+      "compile": "reject",
+      "diagnostic": "unknown-value-label",
+      "path": "fixtures/named-generic-call-v1/value-case-mismatch.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "value-extra-argument",
+      "category": "value",
+      "compile": "reject",
+      "diagnostic": "excess-value-arguments",
+      "path": "fixtures/named-generic-call-v1/value-extra-argument.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "value-method-duplicate",
+      "category": "value",
+      "compile": "reject",
+      "diagnostic": "duplicate-value-slot",
+      "path": "fixtures/named-generic-call-v1/value-method-duplicate.atto",
+      "status": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    }
+  ]
+}

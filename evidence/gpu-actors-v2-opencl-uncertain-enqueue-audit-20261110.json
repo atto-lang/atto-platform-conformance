@@ -1,0 +1,72 @@
+{
+  "schema": "attolang.gpu-actors-opencl-uncertain-enqueue-conformance-evidence/1",
+  "recordedAt": "2026-11-10",
+  "status": "HOST_ONLY_SECURITY_HARDENING_NO_GPU_EXECUTION",
+  "upstream": {
+    "repo": "ores-truffle-oreslang/oreslang-source.llvm",
+    "pr": 1669,
+    "branch": "audit/gpu-opencl-uncertain-enqueue-20261110",
+    "head": "5406c42b84783fdc3335ef733cc4eaba8504755d",
+    "stackedOnPr": 1667,
+    "files": {
+      "provider": "src/main/cpp/oreslang/runtime/OpenClProvider.hpp",
+      "providerBlob": "0dc83a240f5841c42e12e5e79c93a4cd4a44ad7f",
+      "actorPort": "src/main/cpp/oreslang/runtime/GpuActorOpenClProviderV2.hpp",
+      "actorPortBlob": "7759ca51047d29db04128a695388f0bd592a3ad9",
+      "v2TestBlob": "44e8319b9d0b2095b34c42e7b6f27f28306a287d",
+      "g3TestBlob": "28b51e72f9a3bc82f67a754eb44d21c792c7c58b",
+      "v1TestBlob": "ab847cd09d64b714ada72a15409eeda7b64c8566"
+    }
+  },
+  "carrier": {
+    "repo": "scintilla-run/scintilla-run-e2e",
+    "branch": "carrier/gpu-opencl-uncertain-enqueue-20261110",
+    "head": "02cb75884dc5aae276e9c03ea66b5ee29021e8b4",
+    "runId": 42952096758,
+    "jobId": 130298528395,
+    "url": "https://github.com/scintilla-run/scintilla-run-e2e/actions/runs/42952096758",
+    "exactSourceSHA": true,
+    "tokenFreeCrossOrgMirror": true,
+    "gccAsanUbsan": "PASS",
+    "clangStrict": "PASS",
+    "checksV2EachCompiler": 128,
+    "checksV1EachCompiler": 6329,
+    "logicalActorsV1": 1024,
+    "mockTurnsV1": 4096,
+    "preexistingOpenClG3": "PASS_GCC_SANITIZERS"
+  },
+  "securityEvidence": {
+    "simulatedPostAcceptUploadFailure": "PASS",
+    "simulatedPostAcceptKernelFailure": "PASS",
+    "simulatedPostAcceptDownloadFailure": "PASS",
+    "bufferRetainedUntilNativeQueueQuiescenceProof": "PASS_FAKE_API",
+    "noStagedActorCommitOnFailure": "PASS_FAKE_API",
+    "retiredEventNonReplay": "PASS",
+    "rawV0BooleanAuthorityClosed": false
+  },
+  "physicalEvidence": {
+    "probeCompiled": true,
+    "probeAttempted": true,
+    "exitCode": 77,
+    "marker": "GPU_ACTOR_V2_NO_GPU_RUNTIME no-compatible-GPU; no CPU fallback",
+    "actualGpuKernelExecution": false,
+    "nativeGpuEventVerified": false,
+    "cpuFallback": false
+  },
+  "backendExecution": {
+    "llvm": "NOT_EXECUTED_GUEST_GPU",
+    "java": "NOT_EXECUTED_GUEST_GPU",
+    "wasm": "NOT_EXECUTED_GUEST_GPU",
+    "forge": "NOT_EXECUTED_GUEST_GPU",
+    "net": "NOT_EXECUTED_GUEST_GPU"
+  },
+  "unmetGates": [
+    "legacy V0 native Boolean completion access control",
+    "supervised nonblocking/recoverable worker and crash durability",
+    "GPU-equipped physical hardware/device event proof",
+    "compiled GPU actor MIR/guest execution",
+    "full five-backend parity"
+  ],
+  "releaseReady": false,
+  "draftOnly": true
+}

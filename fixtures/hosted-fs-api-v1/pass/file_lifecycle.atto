@@ -1,0 +1,22 @@
+// Full native Atto std.fs file lifecycle conformance target. NOT_EXECUTED.
+// Harness pre-seeds seed_path and grants scoped read/write/create/remove.
+// The returned byte count must be checked against the seed fixture.
+import * as fs from "std.fs";
+
+pub susp fnc file_lifecycle(string seed_path, string workspace): int {
+  val source = await fs.read_file(seed_path);
+  await fs.create_dir_all(workspace);
+  val original = fs.join(workspace, "original.bin");
+  val copy = fs.join(workspace, "copy.bin");
+  val renamed = fs.join(workspace, "renamed.bin");
+  await fs.write_file(original, source);
+  await fs.append_file(original, source);
+  await fs.copy_file(original, copy);
+  await fs.rename(copy, renamed);
+  val info = await fs.metadata(original);
+  if info.is_file == false then return 1; fi
+  if await fs.is_file(renamed) == false then return 2; fi
+  if await fs.exists(copy) then return 3; fi
+  await fs.remove_file(renamed);
+  return await fs.file_size(original);
+}

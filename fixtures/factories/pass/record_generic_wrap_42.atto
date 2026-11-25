@@ -1,0 +1,8 @@
+// TARGET, NOT EXECUTED. Requires type-level closed structural rows.
+fnc wrap<T>(T x): Record<{value: T}> {
+  return Record.of(value=x);
+}
+pub fnc main(): int {
+  val r = wrap(42);
+  return r.value;
+}

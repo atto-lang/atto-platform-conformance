@@ -1,0 +1,6 @@
+define class Connection as
+  int connection_id: 3;
+  mutate(mut self)(): void {
+    self.connection_id = 5;
+  }
+end

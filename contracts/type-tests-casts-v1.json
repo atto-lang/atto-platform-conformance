@@ -1,0 +1,124 @@
+{
+  "schema": "atto.type-tests-casts.v1",
+  "version": 1,
+  "language_spec": "atto-lang/atto-spec#58",
+  "status": "RS_STATIC_ANY_GUEST_VERIFIED_ONLY",
+  "scope": "Reifiable type tests, negation, immutable branch-local captures; no implicit or unchecked casts. General Any, using resource cleanup and typed switch are not proven.",
+  "cases": [
+    {
+      "id": "is-int",
+      "kind": "pass",
+      "path": "fixtures/type-tests/pass/is-int.atto",
+      "expected_exit": 42
+    },
+    {
+      "id": "match-as-val-when",
+      "kind": "pass",
+      "path": "fixtures/type-tests/pass/match-as-val-when.atto",
+      "expected_exit": 42
+    },
+    {
+      "id": "if-is-as-val",
+      "kind": "pass",
+      "path": "fixtures/type-tests/pass/if-is-as-val.atto",
+      "expected_exit": 42
+    },
+    {
+      "id": "if-is-negated-as-val",
+      "kind": "pass",
+      "path": "fixtures/type-tests/pass/if-is-negated-as-val.atto",
+      "expected_exit": 42
+    },
+    {
+      "id": "if-implicit-binding",
+      "kind": "fail",
+      "path": "fixtures/type-tests/fail/if-implicit-binding.atto",
+      "expected_error": "E_SYNTAX",
+      "no_guest_artifact": true
+    },
+    {
+      "id": "if-binding-escapes",
+      "kind": "fail",
+      "path": "fixtures/type-tests/fail/if-binding-escapes.atto",
+      "expected_error": "E_UNBOUND",
+      "no_guest_artifact": true
+    },
+    {
+      "id": "unapproved-as-cast",
+      "kind": "fail",
+      "path": "fixtures/type-tests/fail/unapproved-as-cast.atto",
+      "expected_error": "E_UNSUPPORTED",
+      "no_guest_artifact": true
+    },
+    {
+      "id": "guarded-wildcard-fallthrough",
+      "kind": "pass",
+      "path": "fixtures/type-tests/pass/guarded-wildcard-fallthrough.atto",
+      "expected_exit": 42
+    },
+    {
+      "id": "duplicate-positive-tag",
+      "kind": "fail",
+      "path": "fixtures/type-tests/fail/duplicate-positive-tag.atto",
+      "expected_error": "E_MATCH",
+      "no_guest_artifact": true
+    },
+    {
+      "id": "duplicate-negated-tag",
+      "kind": "fail",
+      "path": "fixtures/type-tests/fail/duplicate-negated-tag.atto",
+      "expected_error": "E_MATCH",
+      "no_guest_artifact": true
+    },
+    {
+      "id": "unreachable-post-wildcard",
+      "kind": "fail",
+      "path": "fixtures/type-tests/fail/unreachable-post-wildcard.atto",
+      "expected_error": "E_MATCH",
+      "no_guest_artifact": true
+    },
+    {
+      "id": "duplicate-type-alias",
+      "kind": "fail",
+      "path": "fixtures/type-tests/fail/duplicate-type-alias.atto",
+      "expected_error": "E_MATCH",
+      "no_guest_artifact": true
+    }
+  ],
+  "backend_status": {
+    "rs-browser-scalar": {
+      "state": "passed",
+      "source_commit": "7ae5064c1a87ec0006d759b145c41cff3537f7ae",
+      "source_tree": "8c30e3bc632e69ad0e37f15616a10043a79d3b7b",
+      "carrier_commit": "b81d68113fa3c69fab1681c64ff3788abb32f4ea",
+      "actions_run": 43980682449,
+      "method": "Exact-src-subtree cargo test --lib plus compiled attoc and actual Node WebAssembly guest tests",
+      "test_counts": {
+        "rust_unit": 12,
+        "actual_guest_wasm": 11,
+        "negative_no_artifact": 18
+      },
+      "source_compiler_src_tree": "81b470f3a6c2169944e76f5c5625057897bc05ce",
+      "carrier_focused_tree": "b8a09a7c8fd834acfd92e675545a1f4b8cf1a718",
+      "proof_scope": "Source compiler src Git subtree and Cargo.toml/Cargo.lock/guest-test blobs reproduced exactly in private carrier; actual native Rust compiler build and guest Wasm execution. Carrier root tree is a focused slice, not the entire 716-blob source tree."
+    },
+    "java": {
+      "state": "not_executed"
+    },
+    "llvm": {
+      "state": "not_executed"
+    },
+    "net": {
+      "state": "not_executed"
+    },
+    "forge": {
+      "state": "not_executed"
+    },
+    "wasm-independent": {
+      "state": "not_executed"
+    },
+    "rs-native": {
+      "state": "not_executed"
+    }
+  }
+}

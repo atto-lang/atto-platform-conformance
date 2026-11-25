@@ -1,0 +1,1 @@
+fnc foo(): int { return 1; } fnc foo(int x): int { return x; } pub fnc run(): typeof(foo) { return 1; }

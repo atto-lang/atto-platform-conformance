@@ -1,0 +1,17 @@
+// Candidate portable fixture, not verified on any backend.
+import class Json from "alloc/json";
+import class JsonValue from "alloc/json";
+pub fnc main(): void {
+  val JsonValue doc = Json.parse("{\"Xx\":{\"name\":\"Hélium 😀\",\"number\":999},\"n\":null,\"shells\":[7,11]}");
+  stdio.println(doc.get("missing").is_none());
+  val JsonValue n = doc.get("n").unwrap();
+  stdio.println(n.is_null());
+  val JsonValue element = doc.get("Xx").unwrap();
+  val JsonValue name = element.get("name").unwrap();
+  stdio.println(name.as_string().unwrap());
+  val JsonValue shells = doc.get("shells").unwrap();
+  val JsonValue first = shells.at(0).unwrap();
+  stdio.println(first.as_int().unwrap());
+  stdio.println(Json.stringify(rt borrow element));
+  return;
+}

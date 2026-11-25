@@ -1,0 +1,9 @@
+define struct Point as
+    int x;
+    int y;
+end
+pub fnc take_point(Point p): int { return p.x; }
+pub fnc main(): int {
+    const p = infer struct { x: 3, y: 4 };
+    return take_point(p);
+}

@@ -1,0 +1,1 @@
+fnc checked(): Result<int,string> { return Err("E3"); } pub fnc main(): int { return match<int> checked() over on Err(error) when error != "E3" : int -> 0, on Ok(value) when value > 5 : int -> 42, default : int -> 10, end; }

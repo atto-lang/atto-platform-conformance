@@ -187,3 +187,63 @@ test('Java experimental checked header is exact and identical for both backend i
   assert.throws(()=>renderCheckedI64GuestSource(expr,'legacy-wrap'),/unsupported checked-i64 source profile/);
   assert.throws(()=>renderCheckedI64GuestSource(expr,null),/unsupported checked-i64 source profile/);
 });
+
+test('checked-i64 operand arrays use own length descriptors, not Proxy get traps',()=>{
+  let reads=0;
+  const args=new Proxy([L(20),L(22)],{
+    get(target,key,receiver){
+      if(key==='length'){reads++;throw Error('untrusted operand count getter');}
+      return Reflect.get(target,key,receiver);
+    }
+  });
+  assert.equal(evaluateCheckedI64({op:'add',args}),42n);
+  assert.equal(reads,0);
+  const spoofed=new Proxy([L(20),L(22)],{
+    get(target,key,receiver){return key==='length'?0:Reflect.get(target,key,receiver);}
+  });
+  assert.equal(evaluateCheckedI64({op:'add',args:spoofed}),42n);
+});
+
+test('checked-i64 operand slots fail closed without invoking accessors',()=>{
+  let reads=0;
+  const active=[L(20),L(22)];
+  Object.defineProperty(active,'0',{get(){reads++;throw Error('active operand getter');},enumerable:true});
+  assert.throws(()=>evaluateCheckedI64({op:'add',args:active}),/non-inert expression argument/);
+  assert.equal(reads,0);
+  const nonenumerable=[L(20),L(22)];
+  Object.defineProperty(nonenumerable,'1',{value:L(22),enumerable:false});
+  assert.throws(()=>evaluateCheckedI64({op:'add',args:nonenumerable}),/non-inert expression argument/);
+  const extra=[L(20),L(22)];
+  extra[Symbol('hidden')]=L(99);
+  assert.throws(()=>evaluateCheckedI64({op:'add',args:extra}),/invalid expression argument array/);
+});
+
+test('checked-i64 nested intermediate failure cannot be canceled later',()=>{
+  const intermediateAdd=B('sub',B('add',L('9223372036854775807'),L(1)),L(1));
+  const intermediateNeg=B('add',{op:'neg',args:[L('-9223372036854775808')]},L(1));
+  for(const expr of [intermediateAdd,intermediateNeg])
+    assert.throws(()=>evaluateCheckedI64(expr),/integer_overflow/);
+  assert.throws(()=>evaluateCheckedI64(B('div_trunc',L(1),L(0))),/division_by_zero/);
+  assert.throws(()=>evaluateCheckedI64(L('-0')),/noncanonical signed decimal literal/);
+  assert.equal(evaluateCheckedI64(B('rem',L('-9223372036854775808'),L(-1))),0n);
+});
+
+test('checked-i64 foreign JSON byte caps reject UTF8 excess before parsing',()=>{
+  const oversized=[
+    '{"op":"literal","value":"'+ 'é'.repeat(9000) +'"}',
+    '{"op":"literal","value":"'+ '😀'.repeat(4200) +'"}'
+  ];
+  const original=JSON.parse;
+  let parsed=0;
+  try {
+    JSON.parse=function(text,...args){parsed++;return original(text,...args);};
+    for(const source of oversized){
+      assert.ok(Buffer.byteLength(source,'utf8')>16384);
+      assert.throws(()=>evaluateCheckedI64Json(source),
+        /missing or oversized canonical JSON expression/);
+    }
+    assert.equal(parsed,0,'foreign oversize bytes must not enter JSON.parse');
+    assert.equal(evaluateCheckedI64Json('{"op":"literal","value":"42"}'),42n);
+    assert.equal(parsed,1);
+  } finally {JSON.parse=original;}
+});

@@ -1,0 +1,9 @@
+// expect-error: E_DUPLICATE
+define class Counter as end
+
+constructor (Counter)(): self {}
+constructor(Counter) (): self {}
+
+pub fnc main(): int {
+    return 0;
+}

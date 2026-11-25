@@ -1,0 +1,15 @@
+// PROPOSED SOURCE; receiver authority is compiler controlled, not a raw Foo pointer.
+namespace foo;
+
+mtd (Foo f) init(): void {
+    f.handle_state(critical-write |s| -> {
+        s.x = 5;
+    });
+}
+
+pub mtd (Foo f) bar(): void {
+    f.handle_state(critical-write |s| -> {
+        s.x = s.x + 1;
+        s.revision = s.revision + 1;
+    });
+}

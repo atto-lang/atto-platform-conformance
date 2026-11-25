@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "contract": "atto.source-platform-governance/1",
+  "status": "inventory-only-not-attested",
+  "authorityRepository": "ores-truffle-oreslang/oreslang-platform-conformance",
+  "sourceRepositories": {
+    "java": "ores-truffle-oreslang/oreslang-source.java",
+    "llvm": "ores-truffle-oreslang/oreslang-source.llvm",
+    "net": "ores-truffle-oreslang/oreslang-source.net",
+    "wasm": "ores-truffle-oreslang/oreslang-source.wasm",
+    "forge": "ores-truffle-oreslang/oreslang-source.forge",
+    "cranelift": "ores-truffle-oreslang/oreslang-source.cranelift",
+    "js": "ores-truffle-oreslang/oreslang-source.js",
+    "rs": "ores-truffle-oreslang/oreslang-source.rs",
+    "hdl": "ores-truffle-oreslang/oreslang-source.hdl"
+  },
+  "platformRepositories": {
+    "desktop": {
+      "repository": "ores-truffle-oreslang/oreslang-platform.desktop",
+      "upstreamSources": [
+        "llvm"
+      ]
+    },
+    "mobile": {
+      "repository": "ores-truffle-oreslang/oreslang-platform.mobile",
+      "upstreamSources": [
+        "llvm"
+      ]
+    },
+    "embedded": {
+      "repository": "ores-truffle-oreslang/oreslang-platform.embedded",
+      "upstreamSources": [
+        "llvm"
+      ]
+    },
+    "iot": {
+      "repository": "ores-truffle-oreslang/oreslang-platform.iot",
+      "upstreamSources": [
+        "llvm"
+      ]
+    },
+    "fpga": {
+      "repository": "ores-truffle-oreslang/oreslang-platform.fpga",
+      "upstreamSources": [
+        "hdl"
+      ]
+    },
+    "asic": {
+      "repository": "ores-truffle-oreslang/oreslang-platform.asic",
+      "upstreamSources": [
+        "hdl"
+      ]
+    }
+  },
+  "evidenceAxes": [
+    "runner-admission",
+    "exact-head-and-tree",
+    "source-preflight",
+    "compiler-source-check",
+    "native-link",
+    "guest-execution",
+    "receipt-authentication",
+    "merge-governance"
+  ],
+  "evidencePolicy": {
+    "zeroSteps": "not-executed",
+    "hostOnlyIsGuest": false,
+    "claimedShaIsAttested": false,
+    "offlineValidatorIsAttestation": false,
+    "unsupportedIsPassing": false,
+    "sourceExportRequiresIndependentAuthorization": true
+  }
+}

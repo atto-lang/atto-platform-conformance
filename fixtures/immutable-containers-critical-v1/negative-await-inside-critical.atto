@@ -1,0 +1,6 @@
+pub suspends fnc bad(): int {
+  critical {
+    await sleep(1);
+    return 1;
+  }
+}

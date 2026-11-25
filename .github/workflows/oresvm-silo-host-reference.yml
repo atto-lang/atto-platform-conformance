@@ -1,0 +1,21 @@
+name: OresVM silo host reference (NOT compiled Oreslang actor proof)
+on:
+  pull_request:
+    paths:
+      - 'reference/silo/**'
+      - 'docs/ORESVM_SILO_CLUSTER_V1.md'
+      - '.github/workflows/oresvm-silo-host-reference.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  in-memory-host-model:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run host-only directory contract tests (NOT backend guest proof)
+        run: node --test reference/silo/directory.test.mjs

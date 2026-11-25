@@ -1,0 +1,6 @@
+// CANDIDATE API: copying Copy<int> produces Option<int>, not a retained loan.
+pub fnc main() -> int {
+  val numbers = [42];
+  val copy = numbers.get_copy(0);
+  return copy.unwrap_or(0);
+}

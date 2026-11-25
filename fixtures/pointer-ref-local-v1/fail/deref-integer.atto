@@ -1,0 +1,4 @@
+pub fnc main(): int {
+  val answer = rt deref 42;
+  return answer;
+}

@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ores-truffle-oreslang.github.io/contracts/state_regions/state-region-loan-provenance.schema.json",
+  "title": "Oreslang state-region loan provenance v1",
+  "description": "Compiler/runtime conformance evidence for a scoped state-region loan. This record is not a guest capability and cannot mint runtime authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion",
+    "regionId",
+    "regionGeneration",
+    "runtimeDomain",
+    "executionId",
+    "executionSlot",
+    "executionGeneration",
+    "loanId",
+    "place",
+    "kind",
+    "action"
+  ],
+  "properties": {
+    "contractVersion": { "const": "1.0" },
+    "regionId": { "type": "integer", "minimum": 1 },
+    "regionGeneration": { "type": "integer", "minimum": 1 },
+    "runtimeDomain": { "type": "integer", "minimum": 1 },
+    "executionId": { "type": "integer", "minimum": 1 },
+    "executionSlot": { "type": "integer", "minimum": 1 },
+    "executionGeneration": { "type": "integer", "minimum": 1 },
+    "loanId": { "type": "integer", "minimum": 1 },
+    "place": { "type": "string", "minLength": 1 },
+    "kind": { "enum": ["read", "write"] },
+    "action": { "enum": ["borrow", "release"] }
+  }
+}

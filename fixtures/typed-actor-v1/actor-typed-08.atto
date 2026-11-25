@@ -1,0 +1,5 @@
+// ACTOR-TYPED-08; EXPECTED=REJECT; NOT_EXECUTED
+define actor Warnings receives String as receive(ActorMail<String> m): void { return; } end
+define actor Router sends int | String as
+  on_start(): void { spawn Warnings().send(42); return; }
+end

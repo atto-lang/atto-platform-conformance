@@ -16,8 +16,35 @@ function fail(message) {
   throw new Error("INVALID_BOUNDED_QUEUE_V1: " + message);
 }
 function object(value,name) {
-  if(value===null || typeof value!=="object" || Array.isArray(value)) fail(name+" must be object");
+  if(value===null || typeof value!=="object" || Array.isArray(value))
+    fail(name+" must be object");
+  const proto=Object.getPrototypeOf(value);
+  if(proto!==Object.prototype && proto!==null)
+    fail(name+" must be plain data object");
+  // JSON evidence cannot contain symbols, accessors or inherited authority.
+  // Inspect own property descriptors rather than invoking caller getters.
+  for(const key of Reflect.ownKeys(value)) {
+    const descriptor=Object.getOwnPropertyDescriptor(value,key);
+    if(typeof key!=="string" || !descriptor?.enumerable ||
+       !Object.hasOwn(descriptor,"value"))
+      fail(name+" must contain only enumerable own data fields");
+  }
   return value;
+}
+function exactRecordArray(value, length, name) {
+  if(!Array.isArray(value)) fail(name+" must be an array");
+  const size=Object.getOwnPropertyDescriptor(value,"length")?.value;
+  if(size!==length) fail(name+" must have exact length");
+  const keys=Reflect.ownKeys(value);
+  if(keys.length!==length+1) fail(name+" unexpected array metadata");
+  const result=[];
+  for(let i=0;i<length;i++) {
+    const slot=Object.getOwnPropertyDescriptor(value,String(i));
+    if(!slot?.enumerable || !Object.hasOwn(slot,"value"))
+      fail(name+" requires own enumerable data slots");
+    result.push(slot.value);
+  }
+  return result;
 }
 function exactKeys(value,keys,name) {
   for(const key of Object.keys(value)) if(!keys.includes(key)) fail(name+" unexpected key: "+key);
@@ -41,11 +68,10 @@ export function validateBoundedQueueContract(contract) {
   ],"contract");
   if(contract.schema!=="oreslang.bounded_queue_contract.v1") fail("wrong contract schema");
   if(contract.contract_id!=="bounded-queue-v1") fail("wrong contract id");
-  if(!Array.isArray(contract.required_invariants) || contract.required_invariants.length!==INVARIANTS.length)
-    fail("exactly 15 invariants required");
-  const ids=contract.required_invariants.map(x=>object(x,"invariant").id);
+  const invariants=exactRecordArray(contract.required_invariants,INVARIANTS.length,"invariants");
+  const ids=invariants.map(x=>object(x,"invariant").id);
   if(JSON.stringify(ids)!==JSON.stringify(INVARIANTS)) fail("invariant ids must be BQ01..BQ15 in order");
-  for(const invariant of contract.required_invariants){
+  for(const invariant of invariants){
     exactKeys(invariant,["id","name","rule"],"invariant");
     nonempty(invariant.name,"invariant name");
     nonempty(invariant.rule,"invariant rule");
@@ -108,10 +134,9 @@ export function validateBoundedQueueBackendStatus(status) {
   commit(status.source_contract.head_commit,"source contract head");
   if(status.source_contract.execution_status!=="NOT_EXECUTED")
     fail("pending manifest cannot claim source execution");
-  if(!Array.isArray(status.records)||status.records.length!==BACKENDS.length)
-    fail("exactly five backend records required");
+  const records=exactRecordArray(status.records,BACKENDS.length,"backend records");
   const seen=new Set();
-  for(const record of status.records){
+  for(const record of records){
     object(record,"backend record");
     exactKeys(record,[
       "backend","source_lowering","runtime_substrate","guest_execution","reference","reason"
@@ -140,6 +165,6 @@ export function validateBoundedQueueBackendStatus(status) {
     executedBackendCount:0,
     parityCertified:false,
     releaseReady:false,
-    blocked:status.records.map(x=>x.backend)
+    blocked:records.map(x=>x.backend)
   };
 }

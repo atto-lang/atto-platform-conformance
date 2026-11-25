@@ -9,6 +9,10 @@ on:
   pull_request:
     paths:
       - .github/workflows/source-local-runner-allocation-canary.yml
+      - verification/verify-singleton-shared-state-v1.mjs
+      - verification/SINGLETON_V1_EVIDENCE_RUNBOOK.md
+      - contracts/singleton-shared-state-v1.json
+      - evidence/singleton-shared-state-v1.json
   workflow_dispatch:
 permissions: {}
 jobs:
@@ -20,7 +24,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "${GITHUB_REPOSITORY}" = 'ores-truffle-oreslang/oreslang-platform-conformance'
+          test "${GITHUB_REPOSITORY}" = 'atto-lang/atto-platform-conformance'
+          test -n "${RUNNER_NAME:-}"
+          test -n "${RUNNER_OS:-}"
+          test -n "${GITHUB_RUN_ID:-}"
+          test -n "${GITHUB_RUN_ATTEMPT:-}"
+          test -n "${GITHUB_SHA:-}"
           printf 'RUNNER_ALLOCATED source_local=true runner_os=%s run_id=%s\n' "${RUNNER_OS}" "${GITHUB_RUN_ID}"
           printf '{"kind":"source-local-metadata-only","run_id":"%s","head_sha":"%s","runner_os":"%s","source_checkout":false,"source_export":false,"compiler_tested":false}\n' \
             "${GITHUB_RUN_ID}" "${GITHUB_SHA}" "${RUNNER_OS}" > runner-canary.json

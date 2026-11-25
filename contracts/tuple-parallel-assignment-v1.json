@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "contract": "atto-tuple-parallel-assignment-v1",
+  "description": "Proposed parallel assignment to existing tuple targets; RHS evaluated before LHS writes. Distinct from tuple declaration/destructuring.",
+  "execution_note": "These are prospective compiler conformance cases, not evidence of implementation or execution.",
+  "cases": [
+    {
+      "id": "swap-two",
+      "expect": "accept",
+      "source": "pub fnc main(): int {\n  let x = 5; let y = 6; (x, y) = (y, x); return x * 10 + y; \n}",
+      "expected_exit_code": 65,
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "rotate-three",
+      "expect": "accept",
+      "source": "pub fnc main(): int {\n  let a = 1; let b = 2; let c = 3; (a, b, c) = (b, c, a); return a * 100 + b * 10 + c;\n}",
+      "expected_exit_code": 231,
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "rhs-before-write",
+      "expect": "accept",
+      "source": "pub fnc main(): int {\n  let x = 5; let y = 6; (x, y) = (y + 1, x + 1); return x * 10 + y;\n}",
+      "expected_exit_code": 76,
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "self-swap",
+      "expect": "accept",
+      "source": "pub fnc main(): int {\n  let x = 5; (x,) = (x,); return x;\n}",
+      "expected_exit_code": 5,
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "duplicate-target",
+      "expect": "reject",
+      "source": "pub fnc main(): int {\n  let x = 5; (x, x) = (1, 2); return x;\n}",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "immutable-target",
+      "expect": "reject",
+      "source": "pub fnc main(): int {\n  val x = 5; let y = 6; (x, y) = (y, x); return 0;\n}",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "arity-mismatch",
+      "expect": "reject",
+      "source": "pub fnc main(): int {\n  let x = 5; let y = 6; (x, y) = (1, 2, 3); return 0;\n}",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "type-mismatch",
+      "expect": "reject",
+      "source": "pub fnc main(): int {\n  let x = 5; let y = 6; (x, y) = (\"hello\", 2); return 0;\n}",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "unbound-target",
+      "expect": "reject",
+      "source": "pub fnc main(): int {\n  let x = 5; (x, z) = (1, 2); return 0;\n}",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "not_executed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    }
+  ]
+}

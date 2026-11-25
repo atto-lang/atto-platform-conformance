@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "contract": "attolang-cooperation-128-v1",
+  "evidenceStatus": "SOURCE_FREE_NON_CERTIFYING",
+  "backendGuestEvidence": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED"
+  },
+  "slowPollInterval": 128,
+  "softReductionTarget": 512,
+  "softTimeBudgetNs": 2000000,
+  "boundaries": [127, 128, 129, 255, 256, 384, 511, 512, 513, 639, 640, 768, 896, 1024],
+  "expectedColdPollBoundaries": [128, 256, 384, 512, 640, 768, 896, 1024],
+  "shortDispatchWidths": [127, 127, 127, 127, 127, 127, 127, 127],
+  "expectedShortDispatchPolls": [128, 256, 384, 512, 640, 768, 896],
+  "deferredHandoff": {
+    "guardHeldBackedges": 512,
+    "nextDispatchBackedges": 128,
+    "pendingAtGuardExit": true,
+    "pendingAfterCarrierRestart": true,
+    "pendingAfterCooperate": false
+  },
+  "signedClockCases": [
+    {"id": "clock-overflow-positive-looking", "start": "9223372036854775802", "now": "-9223372036854775803", "expectedOverdue": true},
+    {"id": "clock-regression", "start": "10000", "now": "9999", "expectedOverdue": true},
+    {"id": "very-large-forward-delta", "start": "-9223372036854775801", "now": "9223372036854775800", "expectedOverdue": true},
+    {"id": "small-forward-delta", "start": "1000", "now": "1001", "expectedOverdue": false},
+    {"id": "exact-soft-deadline", "start": "1000", "now": "2001000", "expectedOverdue": true}
+  ],
+  "hardFuelPolicy": {
+    "untrustedChargeEachCommittedBackedge": true,
+    "untrustedChargeEachRecursiveHop": true,
+    "fuelMayRefillOnPhysicalDispatch": false,
+    "softPollMayReplaceHardFuel": false,
+    "automaticUntrustedSuspendCertified": false,
+    "noYieldExitRequiresHeapContinuationAndReleasedGuards": true
+  }
+}
