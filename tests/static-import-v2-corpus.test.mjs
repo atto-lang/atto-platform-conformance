@@ -63,7 +63,11 @@ test('recursive tree and contextual root expansion adds 23 resolution targets', 
 test('malformed context metadata cannot be erased by parent traversal', () => {
   const cases=doc.cases.filter(c=>c.id.startsWith('context-hardening-'));
   assert.equal(cases.length,10);
+  assert.equal(new Set(cases.map(c => JSON.stringify([c.source,c.currentNamespace]))).size,10);
   for(const c of cases) {
+    assert.equal(c.stage,'resolution');
+    assert.equal(c.fixture,'contextual-root');
+    assert.equal(c.expect.outcome,'reject');
     assert.equal(c.adapterInput,'contextual-resolver');
     assert.equal(c.expect.code,'E_IMPORT_PATH');
     assert.equal(c.expect.atomic,true);
