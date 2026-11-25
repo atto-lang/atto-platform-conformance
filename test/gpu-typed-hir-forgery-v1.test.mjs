@@ -35,7 +35,6 @@ test('each expected mutation has a distinct ID and exact source Git identity', (
   assert.equal(files.length, 4);
   assert.equal(evidence.javaJUnit.integratedSourceCapacityCasesAuthored, 22);
   assert.equal(evidence.javaJUnit.integratedSourceCapacityForgeryCasesAdded, 4);
-  assert.equal(evidence.javaJUnit.latestHeadBuildStatus, 'NOT_EXECUTED');
   assert.equal(evidence.javaJUnit.latestHeadExecutedSteps, null);
   assert.equal(evidence.javaJUnit.latestHeadBuildStatus, 'FAILED_RUNNER_ADMISSION');
   assert.equal(evidence.javaJUnit.latestHeadWorkflowConclusion, 'failure');
