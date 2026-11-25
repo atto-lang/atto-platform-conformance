@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import fs from "node:fs";
+import { parseStrictJson } from "./strict-receipt-json.mjs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -173,7 +174,30 @@ export function verifyPlatformCapabilityReceipt(receipt, contract) {
 }
 
 function readJson(filename) {
-  return JSON.parse(fs.readFileSync(filename,"utf8"));
+  // Bound IO itself, not just the buffer after an unbounded readFileSync.
+  // O_NONBLOCK prevents a supplied FIFO/device from hanging before fstat.
+  const maxBytes=1048576;
+  const fd=fs.openSync(filename,fs.constants.O_RDONLY | (fs.constants.O_NONBLOCK || 0));
+  try {
+    const stat=fs.fstatSync(fd);
+    if(!stat.isFile()) throw Error(filename+" must be a regular JSON file");
+    if(stat.size>maxBytes) throw Error(filename+" JSON exceeds size limit");
+    // Read at most one byte beyond the limit. A growing file or stale size
+    // metadata therefore cannot escape the bound between fstat and read.
+    const buffer=Buffer.allocUnsafe(maxBytes+1);
+    let length=0;
+    for (;;) {
+      const n=fs.readSync(fd,buffer,length,buffer.length-length,null);
+      if(n===0) break;
+      length+=n;
+      if(length>maxBytes) throw Error(filename+" JSON exceeds size limit");
+    }
+    const decoded=new TextDecoder("utf-8",{fatal:true,ignoreBOM:true})
+      .decode(buffer.subarray(0,length));
+    return parseStrictJson(decoded,filename);
+  } finally {
+    fs.closeSync(fd);
+  }
 }
 
 export function verifyFile(filename, contractFilename=defaultContract) {
