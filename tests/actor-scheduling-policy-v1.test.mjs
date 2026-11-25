@@ -700,3 +700,63 @@ test("bounded reentrant receives retain a distinct running state owner", () => {
 test("reentrant oracle detects sibling retirement clearing running authority", () => {
   assert.throws(() => verifyReentrantStateGate(true));
 });
+
+
+// Source-free wakeup/selection model; not a runtime or carrier execution.
+async function verifyPumpWakeups(dropPublishSignal = false) {
+  const queued = [];
+  const pending = new Map();
+  let wake = null;
+  let closed = false;
+  const signal = () => {
+    const previous = wake;
+    wake = null;
+    previous?.resolve();
+  };
+  const wait = () => {
+    if (closed || queued.length) return Promise.resolve();
+    if (!wake) {
+      let resolve;
+      const task = new Promise(r => { resolve = r; });
+      wake = {task, resolve};
+    }
+    return wake.task;
+  };
+  const publish = item => {
+    queued.push(item);
+    if (!dropPublishSignal) signal();
+  };
+  const idle = wait();
+  assert.equal(wait(), idle);
+  let notified = false;
+  idle.then(() => { notified = true; });
+  publish('A');
+  await Promise.resolve();
+  assert.equal(notified, true);
+  assert.equal(queued.shift(), 'A');
+  const rearmed = wait();
+  assert.notEqual(rearmed, idle);
+  publish('B');
+  await rearmed;
+  assert.equal(queued.shift(), 'B');
+  pending.set('A', false);
+  pending.set('B', true);
+  assert.equal(pending.size, 2);
+  // Full logical quota still permits an existing ready receive.
+  const ready = [...pending].find(([, isReady]) => isReady);
+  assert.equal(ready[0], 'B');
+  pending.delete(ready[0]);
+  assert.equal(pending.size, 1);
+  const shutdown = wait();
+  closed = true;
+  pending.clear();
+  signal();
+  await shutdown;
+  assert.equal(pending.size, 0);
+}
+test("automatic pump coalesces wakeups and resumes ready receives at quota", async () => {
+  await verifyPumpWakeups();
+});
+test("automatic pump oracle detects dropped publication wakeup", async () => {
+  await assert.rejects(() => verifyPumpWakeups(true));
+});
