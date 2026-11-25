@@ -1,0 +1,4 @@
+// REJECT: canonical lambdas require -> after the closing bar.
+pub fnc main() -> int ::
+  return (|int x| x + 1)(42)
+end
