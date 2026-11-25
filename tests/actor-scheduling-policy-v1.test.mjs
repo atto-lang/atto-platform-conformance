@@ -394,3 +394,54 @@ test("serial receive cannot admit another DATA receive after a suspend and pool 
   assert.equal(o.finish(a), false);
   assert.equal(o.finish(b), true);
 });
+
+
+// Source-free cancellation lifecycle oracle. The retirement witness models
+// scheduler authority, not a claim that any backend provides that witness.
+function verifyCancellationRetirement(unsafeEarlyRelease = false) {
+  const actor = new SchedulingOracle({serial: true, max: 1, workers: 1});
+  const turn = actor.start();
+  const pending = new Set();
+  const retired = new Set();
+  let loans = 2;
+  const request = t => {
+    if (actor.running.get(t.id) !== t && actor.suspended.get(t.id) !== t) return false;
+    pending.add(t);
+    if (unsafeEarlyRelease) actor.finish(t);
+    return true;
+  };
+  const acknowledge = t => {
+    if (!pending.has(t) || !retired.has(t) || loans !== 0) return false;
+    if (!actor.finish(t)) return false;
+    pending.delete(t);
+    retired.delete(t);
+    return true;
+  };
+  assert.equal(request(turn), true);
+  assert.equal(request(turn), true);
+  assert.equal(actor.liveReceives, 1);
+  assert.equal(actor.start(), null);
+  assert.equal(acknowledge(turn), false);
+  assert.equal(actor.running.get(turn.id), turn);
+  loans--;
+  assert.equal(acknowledge(turn), false);
+  loans--;
+  assert.equal(acknowledge(turn), false); // zero loans is not carrier retirement
+  retired.add(turn);
+  assert.equal(acknowledge({...turn}), false);
+  assert.equal(acknowledge(turn), true);
+  assert.equal(acknowledge(turn), false);
+  assert.equal(request(turn), false);
+  const next = actor.start();
+  assert.ok(next);
+  assert.notEqual(next.id, turn.id);
+  assert.equal(actor.finish(next), true);
+}
+
+test("cancel request retains actor admission until unwind and retirement", () => {
+  verifyCancellationRetirement();
+});
+
+test("cancellation oracle detects premature logical retirement mutation", () => {
+  assert.throws(() => verifyCancellationRetirement(true));
+});
