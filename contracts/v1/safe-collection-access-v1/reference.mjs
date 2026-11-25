@@ -53,14 +53,16 @@ export class CollectionLoanModel {
 
   #newLoan(actor, index, kind) {
     this.#check(actor);
-    const slot = this.#slot(index);
-    if (slot === null) return None; // Failed get never mints a loan.
+    // Authority and exclusive-root admission precede bounds resolution.
+    // Even a provable miss must not bypass a live WRITE/READ exclusion.
     if (kind === "WRITE") {
       if (this.immutable) fail("E_IMMUTABLE");
       if (this.#loans.size) fail("E_LOAN_CONFLICT");
     } else if ([...this.#loans.values()].some(loan => loan.kind === "WRITE")) {
       fail("E_LOAN_CONFLICT");
     }
+    const slot = this.#slot(index);
+    if (slot === null) return None; // A legal miss never mints a loan.
     const loan = Object.freeze({ id: this.#nextId++, actor,
       index: slot, kind, generation: this.#generation, epoch: this.#epoch });
     this.#loans.set(loan.id, loan);

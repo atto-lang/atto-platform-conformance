@@ -159,3 +159,49 @@ test("exclusive WRITE loan blocks ordinary checked indexing and owned copies", (
   assert.equal(m.checkedIndex(A,1),1);
   assert.deepEqual(takeSome(m.getCopy(A,1)),{ownedCopyOfIndex:1});
 });
+
+test("misses cannot bypass live exclusive WRITE or shared READ admission", () => {
+  const misses = [-1, 2, -1n, -(1n << 63n), 0x8000_0000n,
+    0xffff_ffffn, (1n << 63n) - 1n];
+  const m = c({ copyable: true });
+  const r = takeSome(m.get(A, 0));
+  const beforeRead = [m.length, m.capacity, m.epoch, m.generation, m.loanCount];
+  for (const i of misses) denied(() => m.getMut(A, i), "E_LOAN_CONFLICT");
+  assert.deepEqual([m.length, m.capacity, m.epoch, m.generation, m.loanCount], beforeRead);
+  m.release(A, r);
+
+  const w = takeSome(m.getMut(A, 1));
+  const beforeWrite = [m.length, m.capacity, m.epoch, m.generation, m.loanCount];
+  for (const i of misses) {
+    denied(() => m.get(A, i), "E_LOAN_CONFLICT");
+    denied(() => m.getMut(A, i), "E_LOAN_CONFLICT");
+    denied(() => m.getCopy(A, i), "E_LOAN_CONFLICT");
+    denied(() => m.checkedIndex(A, i), "E_LOAN_CONFLICT");
+  }
+  assert.deepEqual([m.length, m.capacity, m.epoch, m.generation, m.loanCount], beforeWrite);
+  m.release(A, w);
+  for (const i of misses) {
+    assert.equal(m.get(A, i).variant, "None");
+    assert.equal(m.getMut(A, i).variant, "None");
+  }
+  assert.equal(m.loanCount, 0);
+});
+
+test("immutable get_mut checks permission before returning None", () => {
+  const m = c({ immutable: true });
+  const original = [m.length, m.capacity, m.epoch, m.generation, m.loanCount];
+  for (const i of [-1, 2, 0xffff_ffffn, -(1n << 63n)]) {
+    assert.equal(m.get(A, i).variant, "None");
+    denied(() => m.getMut(A, i), "E_IMMUTABLE");
+  }
+  assert.deepEqual([m.length, m.capacity, m.epoch, m.generation, m.loanCount], original);
+});
+
+test("ownership is checked before any out-of-range None", () => {
+  const m = c();
+  denied(() => m.get(B, -1), "E_ACTOR_ISOLATION");
+  denied(() => m.getMut(B, 0xffff_ffffn), "E_ACTOR_ISOLATION");
+  m.retire(A);
+  denied(() => m.get(A, -1), "E_OWNER_RETIRED");
+  denied(() => m.getMut(A, 0xffff_ffffn), "E_OWNER_RETIRED");
+});
