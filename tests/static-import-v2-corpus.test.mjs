@@ -6,12 +6,12 @@ const doc = JSON.parse(readFileSync(new URL('../fixtures/import-v2/cases.json', 
 test('v2 corpus is explicit about evidence level and stage counts', () => {
   assert.equal(doc.schema, 'atto.static-import-v2.corpus.v1');
   assert.equal(doc.status, 'CORPUS_ONLY_NOT_BACKEND_EXECUTION');
-  assert.equal(doc.cases.length, 166);
-  assert.equal(new Set(doc.cases.map(c => c.id)).size, 166);
-  assert.equal(new Set(doc.cases.map(c => [c.stage,c.source,c.reference ?? ''].join('\\0'))).size, 166);
+  assert.equal(doc.cases.length, 189);
+  assert.equal(new Set(doc.cases.map(c => c.id)).size, 189);
+  assert.equal(new Set(doc.cases.map(c => [c.stage,c.source,c.reference ?? ''].join('\\0'))).size, 189);
   assert.equal(doc.cases.filter(c => c.stage === 'guest').length, 45);
   assert.equal(doc.cases.filter(c => c.stage === 'typed-bindings').length, 62);
-  assert.equal(doc.cases.filter(c => c.stage === 'resolution').length, 59);
+  assert.equal(doc.cases.filter(c => c.stage === 'resolution').length, 82);
 });
 test('mixed delimiter permutations share one ordered binding expectation', () => {
   const cases = doc.cases.filter(c => c.id.startsWith('mixed-permutation-'));
@@ -53,4 +53,9 @@ test('both alias spellings have real guest and cycle diagnostic expectations', (
   assert.equal(doc.cases.filter(c => c.id.startsWith('alias-guest-negative-')).length,8);
   assert.equal(doc.cases.filter(c => c.id.startsWith('alias-resolution-')).length,4);
   assert.equal(doc.cases.filter(c => c.stage==='guest' && c.expect.code==='E_IMPORT_CYCLE').length,5);
+});
+
+test('recursive tree and contextual root expansion adds 23 resolution targets', () => {
+  assert.equal(doc.cases.filter(c => c.id.startsWith('tree-v2-')).length,14);
+  assert.equal(doc.cases.filter(c => c.id.startsWith('context-')).length,9);
 });
