@@ -164,7 +164,7 @@ export class PubSubReference {
     if (this.#groups.has(id)) return failure("AlreadyExists");
     // Closed group identities are tombstones: never recycle their authority.
     if (this.#groups.size>=this.maxGroups) return failure("ResourceExhausted");
-    const state={closed:false,members:new Set()};
+    const state={closed:false,members:new Set(),revision:0n};
     // A copied membership view never exposes the authoritative set.
     const group=Object.freeze({
       id,get closed(){return state.closed;},
@@ -492,7 +492,8 @@ export class PubSubReference {
     NON_DATA_CAPABILITIES.add(monitor);
     this.#monitorStates.set(monitor,state);
     this.#groupMonitors.set(monitor.id,monitor);
-    return success({monitor,members:Object.freeze([...group.members].sort())});
+    return success({monitor,members:Object.freeze([...group.members].sort()),
+      revision:this.#groupStates.get(group).revision.toString()});
   }
 
   // Access to a leaked monitor token alone conveys no observation authority:
@@ -505,12 +506,23 @@ export class PubSubReference {
     return success({state});
   }
 
-  pollGroupMonitor(monitor,grant) {
+  pollGroupMonitor(monitor,grant,afterRevision=null) {
     const access=this.#monitorAccess(monitor,grant);
     if (!access.ok) return access;
     const state=access.state;
     if (state.overflow) return failure("MonitorOverflow");
     if (!state.queue.length) return failure("Empty");
+    if (afterRevision!==null) {
+      // Strict cursor mode rejects malformed/unbounded external input without
+      // consuming a delta; the caller can recover by resnapshotting. BigInt
+      // compares decimal strings losslessly, including beyond JS safe ints.
+      if (typeof afterRevision!=="string" ||
+          !/^(0|[1-9][0-9]{0,255})$/.test(afterRevision))
+        return failure("InvalidRevision");
+      const expected=BigInt(afterRevision)+1n;
+      if (BigInt(state.queue[0].revision)!==expected)
+        return failure("RevisionMismatch");
+    }
     return success({event:state.queue.shift()});
   }
 
@@ -521,7 +533,8 @@ export class PubSubReference {
     if (!this.isGroup(state.group)) return failure("StaleGroup");
     state.queue.length=0;
     state.overflow=false;
-    return success({members:Object.freeze([...state.group.members].sort())});
+    return success({members:Object.freeze([...state.group.members].sort()),
+      revision:this.#groupStates.get(state.group).revision.toString()});
   }
 
   unmonitorGroup(monitor,grant) {
@@ -554,7 +567,15 @@ export class PubSubReference {
   }
 
   #recordMembershipChange(group,kind,actor) {
-    const event=Object.freeze({kind,group_id:group.id,actor_key:actor.key});
+    // A membership transition is the revision linearization point. Repeated
+    // idempotent joins, failed operations and DATA publications never advance
+    // it; even a zero-monitor group retains its monotone revision.
+    const groupState=this.#groupStates.get(group);
+    groupState.revision++;
+    const event=Object.freeze({
+      kind,group_id:group.id,actor_key:actor.key,
+      revision:groupState.revision.toString()
+    });
     for (const monitor of this.#groupMonitors.values()) {
       const state=this.#monitorStates.get(monitor);
       if (!state.active || state.group!==group || state.overflow) continue;
