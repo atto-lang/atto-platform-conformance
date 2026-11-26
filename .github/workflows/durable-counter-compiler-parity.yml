@@ -58,6 +58,8 @@ jobs:
             sha: 6919399e836f845a613f8a149f83d36a234b8e9f
           - backend: llvm
             sha: 6e99ebca842992014542ac91c09556f4d7f2e427
+          - backend: net
+            sha: 312e738a55bf9178e12c96e084510d8ada76044a
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
@@ -110,3 +112,18 @@ jobs:
           cmake --build "$dir/build" --target oreslang-llvmc --parallel 2
           (cd "$dir" && ATTO_LLVM_COMPILER="$dir/build/oreslang-llvmc" node tests/durable_counter_llvm_native.mjs)
           node tests/durable-counter-native-replay.mjs llvm "$dir/build/oreslang-llvmc"
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        if: matrix.backend == 'net'
+        with:
+          dotnet-version: '10.0.x'
+      - name: Build .NET NativeAOT compiler and execute native replay
+        if: matrix.backend == 'net'
+        run: |
+          set -euo pipefail
+          dir="$RUNNER_TEMP/atto-native"
+          sudo apt-get update -qq
+          sudo apt-get install -y clang zlib1g-dev binutils
+          (cd "$dir" && dotnet publish compiler/Ores.Net.Compiler/Ores.Net.Compiler.csproj -c Release -r linux-x64 -o "$RUNNER_TEMP/atto-net-compiler" -warnaserror)
+          (cd "$dir" && bash verification/assert-linux-native-release.sh "$RUNNER_TEMP/atto-net-compiler/oresnet")
+          (cd "$dir" && ATTO_NET_COMPILER="$RUNNER_TEMP/atto-net-compiler/oresnet" node verification/durable_counter_nativeaot.mjs)
+          node tests/durable-counter-native-replay.mjs net "$RUNNER_TEMP/atto-net-compiler/oresnet"
