@@ -425,6 +425,96 @@
         "kind": "diagnostic",
         "category": "E_VERIFY_UNPROVEN"
       }
+    },
+    {
+      "id": "full-width-256",
+      "tier": "full-width",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { return 256; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "256"
+      }
+    },
+    {
+      "id": "full-width-negative",
+      "tier": "full-width",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { return -1; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "-1"
+      }
+    },
+    {
+      "id": "full-width-min",
+      "tier": "full-width",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { return -9223372036854775808; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "-9223372036854775808"
+      }
+    },
+    {
+      "id": "full-width-max",
+      "tier": "full-width",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { return 9223372036854775807; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "9223372036854775807"
+      }
+    },
+    {
+      "id": "full-width-max-add",
+      "tier": "full-width",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { return 9223372036854775806 + 1; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "9223372036854775807"
+      }
+    },
+    {
+      "id": "full-width-min-div",
+      "tier": "full-width",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { return -9223372036854775808 / 2; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "-4611686018427387904"
+      }
+    },
+    {
+      "id": "full-width-overflow",
+      "tier": "full-width",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { return 9223372036854775807 + 1; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "full-width-underflow",
+      "tier": "full-width",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { return -9223372036854775808 - 1; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "full-width-negation",
+      "tier": "full-width",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { return -(-9223372036854775808); }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "full-width-div-overflow",
+      "tier": "full-width",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { return -9223372036854775808 / -1; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
     }
   ]
 }
