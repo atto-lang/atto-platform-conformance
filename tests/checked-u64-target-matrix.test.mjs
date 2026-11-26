@@ -6,7 +6,7 @@ import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
 import {spawnSync} from 'node:child_process';
 
-// Explicit candidate-only gate; no downloads or implicit skips.
+// Explicit candidate-only gate; no downloads or silent passes.
 const PIN='1d3e23affb2853f545912585fcb4f046592d4e25';
 const blob=b=>createHash('sha1').update('blob '+b.length+'\0').update(b).digest('hex');
 const MAX=(1n<<64n)-1n,M=0xffffffffn;
@@ -18,8 +18,11 @@ const pairs=[[0n,MAX],[MAX,0n],[MAX,1n],[1n,MAX],[MAX,2n],[M,M],
 const source=(a,b)=>`pub fnc main():u64{return product(${a},${b});} fnc product(u64 a,u64 b):u64{return a*b;}`;
 const clang=process.env.CLANG??'clang',cxx=process.env.CLANGXX??'clang++';
 const targets=['i386-linux-gnu','armv7-none-eabi','thumbv7m-none-eabi','aarch64-linux-gnu','riscv32-unknown-elf','riscv64-unknown-elf'];
-test('exact candidate target matrix',{timeout:240000},async t=>{
-  const path=process.env.ATTO_U64_LLVM_SOURCE;assert.ok(path,'ATTO_U64_LLVM_SOURCE required');
+const mode=process.env.ATTO_U64_TARGET_REQUIRED;
+assert.ok(mode===undefined||mode==='0'||mode==='1','ATTO_U64_TARGET_REQUIRED must be 0 or 1');
+const path=process.env.ATTO_U64_LLVM_SOURCE;
+test('exact candidate target matrix',{timeout:240000,skip:!path&&mode!=='1'?'NOT_EXECUTED: exact compiler source unavailable':false},async t=>{
+  assert.ok(path,'ATTO_U64_LLVM_SOURCE required');
   const bytes=readFileSync(resolve(path));assert.equal(blob(bytes),PIN);
   const root=mkdtempSync(join(tmpdir(),'atto-u64-targets-'));t.after(()=>rmSync(root,{recursive:true,force:true}));
   const run=(cmd,args,input)=>spawnSync(cmd,args,{cwd:root,input,encoding:'utf8',timeout:30000,maxBuffer:1024*1024});
