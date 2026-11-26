@@ -1,0 +1,95 @@
+{
+  "schema": "atto.callable.intrinsics.v1",
+  "version": 1,
+  "status": "TARGET_NOT_EXECUTED",
+  "contract": "https://github.com/atto-lang/atto-spec/pull/282",
+  "required_cases": [
+    {
+      "id": "direct",
+      "kind": "pass",
+      "path": "fixtures/callable-intrinsics/pass/direct.atto",
+      "expected_result": 42
+    },
+    {
+      "id": "call",
+      "kind": "pass",
+      "path": "fixtures/callable-intrinsics/pass/call.atto",
+      "expected_result": 42
+    },
+    {
+      "id": "apply_literal",
+      "kind": "pass",
+      "path": "fixtures/callable-intrinsics/pass/apply_literal.atto",
+      "expected_result": 42
+    },
+    {
+      "id": "apply_existing",
+      "kind": "pass",
+      "path": "fixtures/callable-intrinsics/pass/apply_existing.atto",
+      "expected_result": 42
+    },
+    {
+      "id": "apply_pipeline",
+      "kind": "pass",
+      "path": "fixtures/callable-intrinsics/pass/apply_pipeline.atto",
+      "expected_result": 42
+    },
+    {
+      "id": "wrong_arity",
+      "kind": "fail",
+      "path": "fixtures/callable-intrinsics/fail/wrong_arity.atto",
+      "expected_diagnostic_category": "arity",
+      "expected_artifact": "NONE"
+    },
+    {
+      "id": "wrong_tuple_arity",
+      "kind": "fail",
+      "path": "fixtures/callable-intrinsics/fail/wrong_tuple_arity.atto",
+      "expected_diagnostic_category": "arity",
+      "expected_artifact": "NONE"
+    },
+    {
+      "id": "wrong_tuple_type",
+      "kind": "fail",
+      "path": "fixtures/callable-intrinsics/fail/wrong_tuple_type.atto",
+      "expected_diagnostic_category": "type",
+      "expected_artifact": "NONE"
+    },
+    {
+      "id": "bind_absent",
+      "kind": "fail",
+      "path": "fixtures/callable-intrinsics/fail/bind_absent.atto",
+      "expected_diagnostic_category": "unavailable_callable_member",
+      "expected_artifact": "NONE"
+    },
+    {
+      "id": "extra_receiver",
+      "kind": "fail",
+      "path": "fixtures/callable-intrinsics/fail/extra_receiver.atto",
+      "expected_diagnostic_category": "arity",
+      "expected_artifact": "NONE"
+    }
+  ],
+  "backend_status": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "rs": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm-independent": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
+    "atto": "NOT_EXECUTED",
+    "realtime": "NOT_EXECUTED",
+    "hdl": "NOT_EXECUTED"
+  },
+  "footprint_gates": [
+    "canonical_call_ir",
+    "unchanged_callable_layout",
+    "no_intrinsic_heap_allocation",
+    "no_extra_dispatch",
+    "no_runtime_method_table",
+    "existing_tuple_projection_baseline"
+  ],
+  "evidence_rule": "No backend PASS without exact-head compiled guest execution; negative cases require matching semantic diagnostic and no guest artifact. Footprint requires separate IR/artifact and allocation evidence."
+}
