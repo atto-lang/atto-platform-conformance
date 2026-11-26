@@ -686,6 +686,76 @@
           "outcome": "guest-exit-42"
         }
       ]
+    },
+    {
+      "backend": "rs",
+      "head": "852cd53bf35e51d5a5145e929f278ced96873131",
+      "tree": "8c91d56eae529ce61f1a5971b44a2852a48c7e97",
+      "pr": 646,
+      "job": 140077104741,
+      "command": "cargo test --locked --test select_default_admission (4/4)",
+      "profile": "unsupported-browser-rust-compiler",
+      "limits": [
+        "unsupported admission only",
+        "not counted guest"
+      ],
+      "carrier": "ores-wasm-loaders-test/atto-ci",
+      "run": 45868392980,
+      "steps": 2,
+      "fixtures": [
+        {
+          "id": "counted-distinct-alias-projection",
+          "blob": "5baca9bb9eb4b98500cab770888a45fb60bbf10d",
+          "outcome": "unsupported-reject-no-artifact"
+        }
+      ]
+    },
+    {
+      "backend": "hdl",
+      "head": "75e55ab591dd46d944f0615dad35064af8510b57",
+      "tree": "3c352c4bcff75d34d4c7c86b97e04c0ec20e0182",
+      "pr": 95,
+      "job": 140077104485,
+      "command": "node --test tests/counted-select-admission.test.mjs (4/4)",
+      "profile": "unsupported-hardware-compiler",
+      "limits": [
+        "unsupported admission only",
+        "not counted guest"
+      ],
+      "carrier": "ores-wasm-loaders-test/atto-ci",
+      "run": 45868392980,
+      "steps": 2,
+      "fixtures": [
+        {
+          "id": "counted-distinct-alias-projection",
+          "blob": "5baca9bb9eb4b98500cab770888a45fb60bbf10d",
+          "outcome": "unsupported-reject-no-artifact"
+        }
+      ]
+    },
+    {
+      "backend": "realtime",
+      "head": "0282044b78ba08b9315a0ebe134082f68018e886",
+      "tree": "7b583c45525d9b4d392a48fa281caaf2841abb62",
+      "pr": 29,
+      "job": 140077104879,
+      "command": "node --test tests/counted-mixed-strict-profile.test.mjs (3/3; compiled scalar C control)",
+      "profile": "rt-closed-scalar-v0",
+      "limits": [
+        "unsupported admission only",
+        "not counted guest",
+        "not WCET certified"
+      ],
+      "carrier": "ores-wasm-loaders-test/atto-ci",
+      "run": 45868392980,
+      "steps": 2,
+      "fixtures": [
+        {
+          "id": "counted-distinct-alias-projection",
+          "blob": "5baca9bb9eb4b98500cab770888a45fb60bbf10d",
+          "outcome": "unsupported-reject-no-artifact"
+        }
+      ]
     }
   ],
   "notExecuted": [
