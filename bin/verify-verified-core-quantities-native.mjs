@@ -67,7 +67,7 @@ function checkJava() {
     if (expected.kind === "diagnostic") {
       assert.equal(check.signal, null, source);
       assert.notEqual(check.status, 0, source);
-      assert.ok(check.stderr.includes(expected.category + ":"), source + ": " + check.stderr);
+      if(expected.category===null)assert.ok(check.stderr.trim().length>0,source);else assert.ok(check.stderr.includes(expected.category + ":"), source + ": " + check.stderr);
     } else {
       requireSuccess(check, source + " check");
       if (privateHelpers.length !== 0) {
@@ -107,7 +107,7 @@ function checkLlvm() {
     if (expected.kind === "diagnostic") {
       assert.equal(result.signal, null, source);
       assert.notEqual(result.status, 0, source);
-      assert.ok(result.stderr.includes(expected.category + ":"), source + ": " + result.stderr);
+      if(expected.category===null)assert.ok(result.stderr.trim().length>0,source);else assert.ok(result.stderr.includes(expected.category + ":"), source + ": " + result.stderr);
       assert.equal(result.stdout, "", source + " emitted IR for rejected source");
     } else {
       requireSuccess(result, source + " compilation");

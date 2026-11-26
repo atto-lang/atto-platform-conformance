@@ -12,7 +12,8 @@ const [backend,compilerPath,includePath]=process.argv.slice(2);
 assert.ok(["forge","cranelift"].includes(backend));
 assert.ok(compilerPath);
 assert.ok(backend!=="forge"||includePath);
-assert.equal(process.env.ATTO_VERIFIED_CAST_ASCRIPTION,"1");
+const bindings=process.env.ATTO_VERIFIED_TYPED_BINDINGS==="1";
+if(!bindings)assert.equal(process.env.ATTO_VERIFIED_CAST_ASCRIPTION,"1");
 const compiler=resolve(compilerPath);
 const include=includePath?resolve(includePath):"";
 const original=fileURLToPath(new URL("../fixtures/verified-core-quantities-v1/",import.meta.url));
@@ -29,15 +30,16 @@ const success=(r,id)=>assert.equal(r.status,0,id+": "+r.stderr.toString());
 const expectedNames=["unit-add","unit-sub","unit-product-order","unit-velocity","unit-area","unit-mixed-add","unit-residual-dimension","unit-residual-area"].map(n=>"generated-boundary-"+n+".atto");
 try{
  const {fixtures,cases}=expandQuantityCases(original,work,manifest);
- const selected=cases.filter(c=>expectedNames.includes(c.source));
- assert.equal(selected.length,expectedNames.length);
+ const selected=bindings?cases:cases.filter(c=>expectedNames.includes(c.source));
+ const count=bindings?24:expectedNames.length;
+ assert.equal(selected.length,count);
  const harness=join(work,"host.c");
  writeFileSync(harness,`#include <stdint.h>
 #include <inttypes.h>
 #include <stdio.h>
 extern int32_t oreslang_scalar_entry(int64_t,int64_t,int64_t,int64_t,int64_t*);
 int main(void){int64_t out=0;int32_t rc=oreslang_scalar_entry(0,0,0,0,&out);
-if(rc)return rc;
+if(rc){if(out!=0)return 99;return rc;}
 printf("%" PRId64 "\\n",out);return 0;}`);
  for(const {source,expected} of selected){
    const input=join(fixtures,source);
@@ -48,11 +50,12 @@ printf("%" PRId64 "\\n",out);return 0;}`);
      assert.equal(compiled.status,backend==="forge"?2:1,source);
      assert.equal(compiled.stdout.length,0,source);
      assert.equal(existsSync(output),false,source);
-     if(backend==="cranelift")assert.ok(compiled.stderr.toString().includes(expected.category+":"),source);
+     if(!bindings&&backend==="cranelift")assert.ok(compiled.stderr.toString().includes(expected.category+":"),source);
+     if(bindings)assert.ok(compiled.stderr.length>0,source);
      // Forge currently has generic parser diagnostics. Rejection is proven,
      // but diagnostic-category parity must remain explicitly unverified.
    }else{
-     assert.equal(expected.kind,"value");
+     assert.ok(["value","arithmeticFailure","refinementFailure"].includes(expected.kind));
      success(compiled,source);
      if(backend==="cranelift"){
        assert.ok(compiled.stdout.length>0,source);
@@ -63,11 +66,18 @@ printf("%" PRId64 "\\n",out);return 0;}`);
        success(run(process.env.CXX||"c++",["-std=c++20","-Wall","-Wextra","-Werror","-fsanitize=undefined","-fno-sanitize-recover=all","-I"+include,output,"-o",binary]),source+" link");
      }
      const guest=run(binary,[]);
-     success(guest,source+" guest");
-     assert.equal(guest.stdout.toString().trim(),expected.decimal,source);
-     assert.equal(guest.stderr.length,0,source);
+     if(expected.kind==="value"){
+       success(guest,source+" guest");
+       assert.equal(guest.stdout.toString().trim(),expected.decimal,source);
+       assert.equal(guest.stderr.length,0,source);
+     }else{
+       const codes=backend==="forge"?{integerOverflow:70,divisionByZero:71,refinementViolation:73}:{integerOverflow:1,divisionByZero:2,refinementViolation:7};
+       assert.equal(guest.status,codes[expected.category],source);
+       assert.equal(guest.stdout.length,0,source);
+       if(backend==="forge")assert.equal(guest.stderr.toString().trim(),{integerOverflow:"E_OVERFLOW",divisionByZero:"E_DIVZERO",refinementViolation:"E_REFINEMENT_VIOLATION"}[expected.category],source);
+     }
    }
    console.log("PASS "+backend+" "+source+" "+expected.kind+" "+sha(readFileSync(input)));
  }
- console.log("VERIFIED_RESTRICTED_SUBSET "+backend+" "+selected.length+"/"+expectedNames.length+" diagnostic_categories="+(backend==="forge"?"partial":"verified"));
+ console.log("VERIFIED_RESTRICTED_SUBSET "+backend+" "+selected.length+"/"+count+" diagnostic_categories="+(bindings||backend==="forge"?"partial":"verified"));
 }finally{rmSync(work,{recursive:true,force:true});}
