@@ -100,3 +100,14 @@ test('unsafe native import traversal cases remain fail closed target-only vector
     assert.ok(Object.values(c.verification).every(v => v === 'not_executed'), id);
   }
 });
+
+test('intermediate canonical unsafe import identity cannot be erased', () => {
+  const byId = new Map(registry.cases.map(c => [c.id, c]));
+  for (const id of ["unsafe-import-intermediate-traversal","unsafe-import-intermediate-relative","unsafe-import-intermediate-package","unsafe-import-double-slash-root","unsafe-import-dot-slash-root","unsafe-import-relative-colon-root","unsafe-import-normalized-legacy-root","unsafe-import-vendor-intermediate","unsafe-import-separator-only-root","unsafe-import-intermediate-colon-suffix"]) {
+    const c = byId.get(id);
+    assert.equal(c?.profile, 'tenantvm_guest', id);
+    assert.equal(c?.expect, 'reject', id);
+    assert.equal(c?.diagnostic, 'E_UNSAFE_DOMAIN', id);
+    assert.ok(Object.values(c.verification).every(v => v === 'not_executed'), id);
+  }
+});

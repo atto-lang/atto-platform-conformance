@@ -900,6 +900,196 @@
         "js": "not_executed",
         "atto_selfhost": "not_executed"
       }
+    },
+    {
+      "id": "unsafe-import-intermediate-traversal",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"std/other/../unsafe/../safe\"; pub fnc main(): int { return 42; }",
+      "reason": "Intermediate reserved unsafe identity or standard-library root escape must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-intermediate-relative",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"./std/other/../unsafe/../safe\"; pub fnc main(): int { return 42; }",
+      "reason": "Intermediate reserved unsafe identity or standard-library root escape must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-intermediate-package",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"pkg/../std/other/../unsafe/../safe\"; pub fnc main(): int { return 42; }",
+      "reason": "Intermediate reserved unsafe identity or standard-library root escape must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-double-slash-root",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"atto//std/../safe\"; pub fnc main(): int { return 42; }",
+      "reason": "Intermediate reserved unsafe identity or standard-library root escape must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-dot-slash-root",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"atto/./std/../safe\"; pub fnc main(): int { return 42; }",
+      "reason": "Intermediate reserved unsafe identity or standard-library root escape must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-relative-colon-root",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"./atto::std/../safe\"; pub fnc main(): int { return 42; }",
+      "reason": "Intermediate reserved unsafe identity or standard-library root escape must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-normalized-legacy-root",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"pkg/../ores.std/../safe\"; pub fnc main(): int { return 42; }",
+      "reason": "Intermediate reserved unsafe identity or standard-library root escape must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-vendor-intermediate",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"atto/std/other/../unsafe/../safe\"; pub fnc main(): int { return 42; }",
+      "reason": "Intermediate reserved unsafe identity or standard-library root escape must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-separator-only-root",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"atto/:/std/../safe\"; pub fnc main(): int { return 42; }",
+      "reason": "Intermediate reserved unsafe identity or standard-library root escape must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-intermediate-colon-suffix",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"std/other/../unsafe::ffi/../safe\"; pub fnc main(): int { return 42; }",
+      "reason": "Intermediate reserved unsafe identity or standard-library root escape must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
     }
   ]
 }
