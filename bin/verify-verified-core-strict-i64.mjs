@@ -3,12 +3,12 @@
 import assert from "node:assert/strict";
 import {readFileSync,writeFileSync,mkdtempSync,rmSync,existsSync} from "node:fs";
 import {tmpdir} from "node:os";
-import {join,resolve} from "node:path";
+import {delimiter,join,resolve} from "node:path";
 import {pathToFileURL} from "node:url";
 import {spawnSync} from "node:child_process";
 import {createHash} from "node:crypto";
 const [target,path,tier="all",bridgePath,pin]=process.argv.slice(2);
-if(!["rs","js","wasm","forge","cranelift"].includes(target)||!path||!["arithmetic","control-flow","loops","boundaries","all"].includes(tier))throw Error("usage: node bin/verify-verified-core-strict-i64.mjs rs|js|wasm|forge|cranelift <compiler binary or checkout> [arithmetic|control-flow|loops|boundaries|all] [Wasm bridge checkout or Forge include path] [compiler sha256]");
+if(!["rs","js","wasm","forge","cranelift","java","llvm"].includes(target)||!path||!["arithmetic","control-flow","loops","boundaries","all"].includes(tier))throw Error("usage: node bin/verify-verified-core-strict-i64.mjs rs|js|wasm|forge|cranelift|java|llvm <compiler binary or checkout> [arithmetic|control-flow|loops|boundaries|all] [Wasm bridge checkout or Forge include path] [compiler sha256]");
 if(target==="wasm"&&(!bridgePath||!/^[a-f0-9]{64}$/.test(pin??"")))throw Error("Wasm requires exact compiler digest and bridge checkout");
 const manifest=JSON.parse(readFileSync(new URL("../fixtures/verified-core-strict-i64-v1/cases.json",import.meta.url),"utf8"));
 assert.equal(manifest.schemaVersion,1);assert.equal(manifest.profile,"verified-core-strict-i64-v1");
@@ -19,6 +19,14 @@ const dir=mkdtempSync(join(tmpdir(),"atto-strict-parity-"));
 try {
  const compile=target==="js"?(await import(pathToFileURL(join(resolve(path),"src/program-v2.mjs")).href)).compileVerifiedStrict:null;
  if(target==="js")assert.equal(typeof compile,"function","strict API missing");
+ let javaArgs=null;
+ if(target==="java"){
+  const checkout=resolve(path),dep=join(dir,"classpath");
+  const build=spawnSync("mvn",["-q","-DskipTests","compile","dependency:build-classpath","-Dmdep.outputFile="+dep],{cwd:checkout,encoding:"utf8",timeout:240000,maxBuffer:8*1024*1024});
+  if(build.error)throw build.error;
+  assert.equal(build.status,0,build.stdout+build.stderr);
+  javaArgs=["--enable-native-access=ALL-UNNAMED","-Dpolyglot.engine.WarnInterpreterOnly=false","-cp",join(checkout,"target/classes")+delimiter+readFileSync(dep,"utf8").trim(),"dev.oreslang.launcher.OresMain","--verify=strict"];
+ }
  let browser=null;
  if(target==="wasm"){
   const bytes=readFileSync(resolve(path));
@@ -33,7 +41,30 @@ try {
  for(const {id,source,expected} of cases){
   assert.match(id,/^[a-z0-9-]+$/);
   let diagnostic=null,artifact=null;
-  if(target==="forge"||target==="cranelift"){
+  if(target==="java"){
+   const input=join(dir,id+".atto");writeFileSync(input,source,{flag:"wx"});
+   const run=args=>{const v=spawnSync("java",[...javaArgs,...args],{cwd:resolve(path),encoding:"utf8",timeout:30000,maxBuffer:8*1024*1024});if(v.error)throw v.error;assert.equal(v.signal,null,id);return v;};
+   const check=run(["--check",input]);
+   const guest=run([input]);
+   if(expected.kind==="diagnostic"){
+    assert.equal(check.status,1,id);assert.equal(guest.status,1,id);
+    for(const v of [check,guest]){assert.ok(v.stderr.includes(expected.category+":"),id+": "+v.stderr);assert.equal(v.stdout,"",id);}
+   }else{
+    assert.equal(check.status,0,id+": "+check.stderr);
+    assert.equal(guest.status,Number(expected.decimal),id+": "+guest.stderr);
+    assert.equal(guest.stdout,"",id);
+   }
+   console.log("PASS",target,id,"source",hash(source),"Truffle checked-guest",expected.kind);
+   continue;
+  }else if(target==="llvm"){
+   const input=join(dir,id+".atto"),output=join(dir,id+".ll");
+   writeFileSync(input,source,{flag:"wx"});
+   const r=spawnSync(resolve(path),["--verify=strict",input],{cwd:dir,encoding:"utf8",timeout:30000,maxBuffer:8*1024*1024});
+   if(r.error)throw r.error;
+   assert.equal(r.signal,null,id);
+   if(r.status===0){assert.match(r.stdout,/define .*@main\(/,id);artifact=Buffer.from(r.stdout);writeFileSync(output,artifact,{flag:"wx"});}
+   else {assert.equal(r.status,1,id);assert.equal(r.stdout,"",id);diagnostic=r.stderr;}
+  }else if(target==="forge"||target==="cranelift"){
    const input=join(dir,id+".atto"),output=join(dir,id+(target==="forge"?".cpp":".o"));
    writeFileSync(input,source,{flag:"wx"});
    const forge=target==="forge";
@@ -77,7 +108,13 @@ try {
   }else{
    assert.equal(diagnostic,null,id+": "+diagnostic);
    assert.equal(expected.kind,"value");
-   if(target==="forge"||target==="cranelift"){
+   if(target==="llvm"){
+    const guest=join(dir,id+".native");
+    const link=spawnSync(bridgePath||"clang",[join(dir,id+".ll"),"-o",guest],{cwd:dir,encoding:"utf8",timeout:60000});
+    if(link.error)throw link.error;assert.equal(link.status,0,id+": "+link.stderr);
+    const g=spawnSync(guest,[],{cwd:dir,encoding:"utf8",timeout:10000});
+    if(g.error)throw g.error;assert.equal(g.signal,null,id);assert.equal(g.status,Number(expected.decimal),id+": "+g.stderr);
+   }else if(target==="forge"||target==="cranelift"){
     const forge=target==="forge",output=join(dir,id+(forge?".cpp":".o")),guest=join(dir,id+".native");
     let args;
     if(forge){
