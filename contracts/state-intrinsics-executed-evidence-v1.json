@@ -119,6 +119,49 @@
       ],
       "executed": "25/25 selected regression tests; three shared state sources rejected across five compiler APIs; actual scalar ESM controls",
       "scope": "REJECT_ONLY; no state feature parity"
+    },
+    {
+      "repo": "atto-lang/atto-source.rs",
+      "pr": 612,
+      "head": "41be8f12c142e6fedb6945e32aaf222d7d116897",
+      "tree": "0035e3969291ea52476e69a57d7a71e815927c91",
+      "runs": [
+        45736035107
+      ],
+      "executed": "7/7 typed IR/checker tests, 5/5 fixture groups, 4/4 host runtime tests and both real guests; full 626/627 conformance",
+      "scope": "historical head; newer combined runtime head requires retest",
+      "blocker": "removed-operator/^"
+    },
+    {
+      "repo": "atto-lang/atto-source.hdl",
+      "pr": 82,
+      "head": "5511b4805bf4b6eb95b46e6ca97508a2ee9677b0",
+      "tree": "10550676688cc9e9b3ab8c3063ba44aa569b0a41",
+      "runs": [
+        45737643203
+      ],
+      "executed": "20/20 selected RTL compiler tests; exact state fixtures rejected, combinational control compiled",
+      "scope": "REJECT_ONLY; no synthesized state feature"
+    }
+  ],
+  "qualification": [
+    {
+      "repo": "atto-lang/atto-source.atto",
+      "head": "2a839a0bff856b2f6c64116d354fca4a4c72fbcf",
+      "tree": "e291ea41becf367162347a16c6556e2677a3e6d2",
+      "scope": "STAGE0_SCALAR_GUEST_ONLY",
+      "status": "UNSUPPORTED",
+      "stateGuest": "NOT_EXECUTED",
+      "basis": "README.md; contracts/hybrid-actor-memory-bootstrap-v1.json; no general compiler CLI"
+    },
+    {
+      "repo": "atto-lang/atto-source.realtime",
+      "head": "8161daa8654a55abbf6260470272814012ef5911",
+      "tree": "bd06ea4c2be68295ce6439550950ef846d37295d",
+      "scope": "BOOTSTRAP_ONLY",
+      "status": "UNSUPPORTED",
+      "stateGuest": "NOT_EXECUTED",
+      "basis": "README.md; atto-capabilities.json; compiler NOT_IMPLEMENTED"
     }
   ]
 }
