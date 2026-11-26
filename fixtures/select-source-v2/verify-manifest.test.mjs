@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { copyFileSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdtempSync, readFileSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -42,5 +42,31 @@ test("backend omission and fabricated evidence fail closed", () => {
     falsePass.cases[0].evidenceStatus = "passed";
     writeFileSync(join(tmp, "manifest.json"), JSON.stringify(falsePass));
     assert.throws(() => verify(tmp), /cannot claim execution evidence/);
+  } finally { rmSync(tmp, { recursive: true, force: true }); }
+});
+
+test("undeclared receipts, identity substitution and symlink fixtures fail closed", () => {
+  const tmp = mkdtempSync(join(tmpdir(), "atto-select-strict-"));
+  try {
+    const original = JSON.parse(readFileSync(join(root, "manifest.json"), "utf8"));
+    for (const c of original.cases) copyFileSync(join(root, c.path), join(tmp, c.path));
+    const write = m => writeFileSync(join(tmp, "manifest.json"), JSON.stringify(m));
+    const mutations = [
+      m => { m.receipt = {passed: true}; },
+      m => { m.cases[0].receipt = {passed: true}; },
+      m => { m.cases[0].expected.llvm.receipt = {passed: true}; },
+      m => { m.cases.find(c => c.target).target.receipt = {passed: true}; },
+      m => { m.cases[0].id = "substituted-identity"; },
+    ];
+    for (const mutate of mutations) {
+      const m = structuredClone(original);
+      mutate(m); write(m);
+      assert.throws(() => verify(tmp), /undeclared field|ID\/path mismatch/);
+    }
+    write(original);
+    const path = original.cases[0].path;
+    unlinkSync(join(tmp, path));
+    symlinkSync(join(root, path), join(tmp, path));
+    assert.throws(() => verify(tmp), /regular file/);
   } finally { rmSync(tmp, { recursive: true, force: true }); }
 });
