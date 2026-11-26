@@ -1,0 +1,204 @@
+{
+  "schema": "atto.state-intrinsics-parity.v1",
+  "status": "CANDIDATE_NOT_FULL_PARITY",
+  "spec": "https://github.com/atto-lang/atto-spec/pull/252",
+  "sourceFixtureOrigin": {
+    "repo": "atto-lang/atto-source.rs",
+    "head": "4b389ecca77e8b87be605a01d7336eacf0d7a33e",
+    "tree": "c05e4b8368453023a67a6bf673900506b21c3ca1"
+  },
+  "cases": [
+    {
+      "path": "fixtures/state-intrinsics-v1/pass/state-short-intrinsics.atto",
+      "gitBlob": "f3944d6c58052130d8a2828dcad59c3a7cfe33f3",
+      "sourcePath": "tests/fixtures/pass/state-short-intrinsics.atto",
+      "expected": {
+        "compile": "accept",
+        "exit": 0,
+        "stdout": [
+          "42",
+          "2",
+          "42",
+          "0"
+        ]
+      }
+    },
+    {
+      "path": "fixtures/state-intrinsics-v1/pass/state-owned-tuple-snapshot.atto",
+      "gitBlob": "6cef00dd66eab299b113d41b75c17eb43866fe81",
+      "sourcePath": "tests/fixtures/pass/state-owned-tuple-snapshot.atto",
+      "expected": {
+        "compile": "accept",
+        "exit": 0,
+        "stdout": [
+          "42",
+          "1",
+          "50",
+          "2",
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "path": "fixtures/state-intrinsics-v1/pass/state-write-expressions.atto",
+      "gitBlob": "f58bb7c9a6ffc6f7caaeff173373058a77ca8849",
+      "sourcePath": "tests/fixtures/pass/state-write-expressions.atto",
+      "expected": {
+        "compile": "accept",
+        "exit": 0,
+        "stdout": [
+          "42",
+          "43",
+          "false",
+          "43"
+        ]
+      }
+    },
+    {
+      "path": "fixtures/state-intrinsics-v1/fail/state-short-read-mutation.atto",
+      "gitBlob": "e456f5aaffa5c14c12576b73f1ac76129c2a1bb5",
+      "sourcePath": "tests/fixtures/fail/state-short-read-mutation.atto",
+      "expected": {
+        "compile": "reject",
+        "diagnostic": "E_STATE_BORROW",
+        "noArtifact": true
+      }
+    },
+    {
+      "path": "fixtures/state-intrinsics-v1/fail/state-short-nested-mixed-alias.atto",
+      "gitBlob": "7e5d1a486bf9d7f1fffb01e84655f6a21e9766ed",
+      "sourcePath": "tests/fixtures/fail/state-short-nested-mixed-alias.atto",
+      "expected": {
+        "compile": "reject",
+        "diagnostic": "E_STATE_BORROW",
+        "noArtifact": true
+      }
+    },
+    {
+      "path": "fixtures/state-intrinsics-v1/fail/state-short-binder-escape.atto",
+      "gitBlob": "bde614197ad405fcdf274db28d0a4c7570ae9632",
+      "sourcePath": "tests/fixtures/fail/state-short-binder-escape.atto",
+      "expected": {
+        "compile": "reject",
+        "diagnostic": "E_ESCAPE",
+        "noArtifact": true
+      }
+    },
+    {
+      "path": "fixtures/state-intrinsics-v1/fail/state-short-override.atto",
+      "gitBlob": "09a61f570a9474952d56284944238482da902c49",
+      "sourcePath": "tests/fixtures/fail/state-short-override.atto",
+      "expected": {
+        "compile": "reject",
+        "diagnostic": "E_STATE",
+        "noArtifact": true
+      }
+    },
+    {
+      "path": "fixtures/state-intrinsics-v1/fail/state-tuple-snapshot-wrong-binder.atto",
+      "gitBlob": "c734fe483080aa4d16015c18cd038c3723aac1fc",
+      "sourcePath": "tests/fixtures/fail/state-tuple-snapshot-wrong-binder.atto",
+      "expected": {
+        "compile": "reject",
+        "diagnostic": "E_STATE_BORROW",
+        "noArtifact": true
+      }
+    },
+    {
+      "path": "fixtures/state-intrinsics-v1/fail/state-tuple-snapshot-type-mismatch.atto",
+      "gitBlob": "2124d5092a7cba37a6f040e402c6cc1dffce03ef",
+      "sourcePath": "tests/fixtures/fail/state-tuple-snapshot-type-mismatch.atto",
+      "expected": {
+        "compile": "reject",
+        "diagnostic": "E_TYPE",
+        "noArtifact": true
+      }
+    },
+    {
+      "path": "fixtures/state-intrinsics-v1/fail/state-write-expression-missing.atto",
+      "gitBlob": "22de2c992ee4bf5b855ef5099c515b91eeeda5ff",
+      "sourcePath": "tests/fixtures/fail/state-write-expression-missing.atto",
+      "expected": {
+        "compile": "reject",
+        "diagnostic": "E_STATE_BORROW",
+        "noArtifact": true
+      }
+    }
+  ],
+  "backends": [
+    {
+      "repo": "atto-lang/atto-source.atto",
+      "baselineStage": "BOOTSTRAP_DOCUMENTATION_ONLY",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.net",
+      "baselineStage": "NONEMPTY_SOURCE_TREE_NOT_GUEST_VERIFIED",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.hdl",
+      "baselineStage": "NONEMPTY_SOURCE_TREE_NOT_GUEST_VERIFIED",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.java",
+      "baselineStage": "NONEMPTY_SOURCE_TREE_NOT_GUEST_VERIFIED",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.realtime",
+      "baselineStage": "BOOTSTRAP_DOCUMENTATION_ONLY",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.rs",
+      "baselineStage": "NONEMPTY_SOURCE_TREE_NOT_GUEST_VERIFIED",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.llvm",
+      "baselineStage": "NONEMPTY_SOURCE_TREE_NOT_GUEST_VERIFIED",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.js",
+      "baselineStage": "NONEMPTY_SOURCE_TREE_NOT_GUEST_VERIFIED",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.forge",
+      "baselineStage": "NONEMPTY_SOURCE_TREE_NOT_GUEST_VERIFIED",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.wasm",
+      "baselineStage": "NONEMPTY_SOURCE_TREE_NOT_GUEST_VERIFIED",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.cranelift",
+      "baselineStage": "NONEMPTY_SOURCE_TREE_NOT_GUEST_VERIFIED",
+      "evidence": "NOT_EXECUTED"
+    }
+  ],
+  "additionalRequiredProfiles": [
+    "actor integration with real receive entrypoint and runtime",
+    "exceptional cleanup after checked guest error",
+    "cancellation and generation fencing",
+    "nested mutable graph escape prevention",
+    "fair reader/writer admission",
+    "AOT execution for native targets"
+  ],
+  "promotion": [
+    "exact source head and root Git tree",
+    "identical fixture blob IDs",
+    "actual compiler and guest execution, no zero-step receipts",
+    "phase-correct negatives and no output artifact",
+    "one read ticket for whole snapshot",
+    "release before result publication",
+    "independent review"
+  ],
+  "evidenceNotes": "Prior Rust snapshot receipt is for older exact head ae6e6ab66d0a5fc1b7b26b089b8d754a60ab44fe, not current candidate; PR #599 first run found constructor regression. No current head parity claim."
+}
