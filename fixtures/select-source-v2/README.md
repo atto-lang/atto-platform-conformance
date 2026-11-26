@@ -48,3 +48,5 @@ The distinct lexical projection fixture also passed on the .NET NativeAOT and LL
 Rust, HDL and real-time exact-head compiler admission checks reject the distinct alias guest before artifact publication. These are unsupported outcomes, not positive guest execution.
 
 Forge, Cranelift and Wasm also reject the distinct alias fixture in the actual compiler admission gates. Across ten observed backend profiles, four execute the guest and six reject as unsupported; the self-hosted Atto compiler remains unexecuted. No ESM capability is inferred for the browser compiler.
+
+Rust and browser Wasm now also have positive ready-only direct Wasm execution receipts on exact PR heads, distinct from their ordinary-profile unsupported receipts. Both execute the ten exact positive cases (including distinct lexical projection) and reject the seven invalid cases before artifact publication. The browser lane builds the pinned Rust compiler and uses a real Chrome Worker. The 126-cell evidence ledger does not imply merged-main parity, external producer or general actor scheduling support. Forge and Cranelift positive lowering and the self-hosted compiler remain outstanding.
