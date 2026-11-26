@@ -1,0 +1,9 @@
+fnc fallback(): int { stdio.println("seed"); return 42; }
+pub fnc main(): int {
+    recover fallback() |> (|int x| -> |err, ctx| -> {
+        stdio.println(err.message);
+        return x;
+    });
+    defer 5 |> (|int x| -> || -> { stdio.println(x); });
+    raise! new Error("original");
+}
