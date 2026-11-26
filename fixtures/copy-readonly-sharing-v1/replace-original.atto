@@ -11,6 +11,5 @@ pub fnc main(): int {
     let mut Person b = copy! a;
     a.scores = new Scores();
     a.scores.n = 22;
-    b.scores.n = 20;
     return a.scores.n + b.scores.n;
 }
