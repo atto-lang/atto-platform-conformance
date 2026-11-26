@@ -108,7 +108,62 @@ try{
     assert.equal(existsSync(output),false,id);
     assert.throws(()=>compile_durable_counter_actor_v1(invalid),/E_DURABLE_COUNTER_ACTOR_ABI/,id);
   }
-  console.log(JSON.stringify({status:'RESTRICTED_COMPILED_GUEST_PARITY',cases:244,extendedSignedI64Cases:extremes.length,compilerDenials:mutations.length,sourceSha256:hash(source),
+  // The common native subset supports count/balance and mail/event.
+  // Bind schema identity to the state field, never the handler parameter.
+  function expectedDescriptor(field) {
+    const actor=Buffer.from('Counter'),name=Buffer.from(field);
+    const sized=b=>{
+      const length=Buffer.alloc(4);length.writeUInt32LE(b.length);
+      return Buffer.concat([length,b]);
+    };
+    const fnv=bytes=>{
+      let acc=0xcbf29ce484222325n;
+      for(const b of bytes)acc=BigInt.asUintN(64,(acc^BigInt(b))*0x100000001b3n);
+      return acc;
+    };
+    const initial=Buffer.alloc(36);
+    initial.write('ATTOST01',0,'ascii');initial[8]=1;
+    initial.writeBigUInt64LE(fnv(Buffer.concat([
+      Buffer.from('atto.actor.state.schema.v1'),Buffer.from([0]),
+      sized(actor),sized(name),Buffer.from([1])
+    ])),9);
+    initial.writeUInt16LE(1,17);initial[19]=1;
+    initial.writeBigUInt64LE(fnv(initial.subarray(0,28)),28);
+    return Buffer.concat([Buffer.from([1,actor.length]),actor,
+      Buffer.from([name.length]),name,Buffer.from([1,initial.length]),initial]);
+  }
+  assert.deepEqual(descriptor,expectedDescriptor('count'));
+  const renameCases=[['balance','mail'],['count','event'],['balance','event']];
+  for(const [field,mail] of renameCases){
+    const id=field+'-'+mail;
+    const variant=text.replaceAll('count',field).replaceAll('mail',mail);
+    const input=join(dir,id+'.atto'),output=join(dir,id+'.wasm');
+    writeFileSync(input,variant);
+    const built=spawnSync(resolve(cli),['--durable-counter-actor-v1',input,'-o',output],
+      {encoding:'utf8',timeout:30000,maxBuffer:1<<20});
+    assert.equal(built.error,undefined,id);
+    assert.equal(built.status,0,id+': '+built.stderr);
+    const vm=new WebAssembly.Module(readFileSync(output));
+    assert.deepEqual(WebAssembly.Module.imports(vm),[],id);
+    const vg=new WebAssembly.Instance(vm,{}).exports;
+    const cg=compile_durable_counter_actor_v1(variant);
+    assert.equal(cg.guest_abi,'atto.js.durable.counter.v1',id);
+    const jg=await import('data:text/javascript;base64,'+Buffer.from(cg.module_source).toString('base64'));
+    const metadata=WebAssembly.Module.customSections(vm,'atto.durable.state.v1');
+    assert.equal(metadata.length,1,id);
+    const expected=expectedDescriptor(field);
+    assert.deepEqual(Buffer.from(metadata[0]),expected,id);
+    assert.deepEqual(Buffer.from(jg.atto_durable_state_v1()),expected,id);
+    if(field==='count')assert.deepEqual(expected,descriptor,id);
+    else assert.notDeepEqual(expected,descriptor,id);
+    for(const [state,op,delta] of [[0n,1n,42n],[42n,2n,0n],[1000000000n,1n,1n],[0n,1n,min]]){
+      const result=oracle(state,op,delta);
+      assert.equal(vg.atto_durable_transition_v1(state,op,delta),result,id);
+      assert.equal(jg.atto_durable_transition_v1(state,op,delta),result,id);
+    }
+    assert.equal(vg.panic_code.value,0,id);
+  }
+  console.log(JSON.stringify({status:'RESTRICTED_COMPILED_GUEST_PARITY',cases:244,extendedSignedI64Cases:extremes.length,compilerDenials:mutations.length,renamedSchemaVariants:renameCases.length,renamedTransitionCases:renameCases.length*4,sourceSha256:hash(source),
     wasmSha256:hash(binary),jsSha256:hash(generated.module_source),descriptorSha256:hash(descriptor),
     fullDurableActorParity:false,diskRecoveryExecuted:false}));
 }finally{rmSync(dir,{recursive:true,force:true});}
