@@ -141,3 +141,58 @@ test('exhaustive five-event order: exactly three valid permutations', () => {
   assert.equal(accepted, 3);
   assert.equal(rejected, 117);
 });
+
+// Strict qualification envelope: expected outcomes come from the independent
+// fixture driver, not from the trace producer. This validates completeness
+// relative to the supplied expectations, not authenticity of collector data.
+export function verifyScenarioTrace({ events, dropped, eventCount }, expected) {
+  assert.equal(dropped, 0, 'collector dropped events');
+  assert.ok(Array.isArray(events), 'missing event stream');
+  assert.equal(eventCount, events.length, 'event count mismatch');
+  assert.ok(Array.isArray(expected) && expected.length > 0, 'missing independent expectations');
+  const key = e => tuple(e.tenant, e.actor, e.generation, e.task, e.suspension);
+  const outcomes = new Map();
+  for (const e of expected) {
+    requireIds(e, ['tenant', 'generation', 'task', 'suspension', 'scheduler', 'future']);
+    assert.ok(e.actor === null || id(e.actor), 'invalid expected actor');
+    assert.ok(['ok', 'error', 'cancelled', 'revoked'].includes(e.outcome), 'invalid expected outcome');
+    assert.ok(!outcomes.has(key(e)), 'duplicate expected suspension');
+    outcomes.set(key(e), e);
+  }
+  const seen = new Set();
+  for (const [i, e] of events.entries()) {
+    assert.ok(e && typeof e === 'object', 'invalid event');
+    assert.equal(e.seq, i + 1, 'trace gap, duplicate or reordering');
+    if (e.kind !== 'suspend' && e.kind !== 'resume' && e.kind !== 'revoke') continue;
+    const k = key(e), want = outcomes.get(k);
+    assert.ok(want, 'unexpected suspension or terminal event');
+    assert.equal(e.scheduler, want.scheduler, 'unexpected scheduler');
+    assert.equal(e.future, want.future, 'unexpected Future');
+    if (e.kind !== 'suspend') {
+      assert.ok(!seen.has(k), 'duplicate terminal outcome');
+      assert.equal(e.kind === 'revoke' ? 'revoked' : e.outcome, want.outcome, 'unexpected terminal outcome');
+      seen.add(k);
+    }
+  }
+  assert.equal(seen.size, outcomes.size, 'missing expected suspension outcome');
+  verifyTraceV2(events);
+}
+
+const envelope = events => ({ events: events.map((e, i) => ({ ...e, seq: i + 1 })), dropped: 0, eventCount: events.length });
+const expectation = { ...a, outcome: 'ok' };
+test('strict complete scenario', () => verifyScenarioTrace(envelope(good), [expectation]));
+test('strict authorised revoke scenario', () => verifyScenarioTrace(envelope([s, c, l, v]), [{ ...expectation, outcome: 'revoked' }]));
+for (const [name, packet, expected] of [
+  ['missing expected task', envelope(good), [expectation, { ...expectation, task: 9 }]],
+  ['no independent expectations', envelope(good), []],
+  ['duplicate expected task', envelope(good), [expectation, expectation]],
+  ['dropped events', { ...envelope(good), dropped: 1 }, [expectation]],
+  ['missing drop counter', { ...envelope(good), dropped: undefined }, [expectation]],
+  ['wrong count', { ...envelope(good), eventCount: 6 }, [expectation]],
+  ['missing sequence', { ...envelope(good), events: good }, [expectation]],
+  ['sequence gap', { ...envelope(good), events: envelope(good).events.map((e, i) => i === 2 ? { ...e, seq: 4 } : e) }, [expectation]],
+  ['unexpected scheduler even if self-consistent', envelope(good.map(e => e.kind === 'settle' ? e : { ...e, scheduler: 'root' })), [expectation]],
+  ['wrong expected outcome', envelope(good), [{ ...expectation, outcome: 'error' }]],
+  ['revocation cannot replace required success', envelope([s, c, l, v]), [expectation]],
+  ['extra unexpected task', envelope([...good, ...[s, l, q, r].map(e => ({ ...e, task: 9 }))]), [expectation]],
+]) test(`strict rejects ${name}`, () => assert.throws(() => verifyScenarioTrace(packet, expected)));
