@@ -1,0 +1,3 @@
+const struct<infer S> exemplar={a:true,c:5};
+const struct<S> actual={a:false,c:42};
+pub fnc main(): int { return actual.c; }

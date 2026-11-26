@@ -1,0 +1,3 @@
+const Tuple<infer T> exemplar=(true,5);
+const Tuple<T> actual=(false,42);
+pub fnc main(): int { return actual[1]; }
