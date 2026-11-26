@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
 
 const registry = JSON.parse(readFileSync(new URL('../contracts/execution-context-unwind-v1.json', import.meta.url), 'utf8'));
 const expected_backends = [
@@ -20,7 +21,8 @@ test('execution-context unwind registry enumerates all eleven active backends',(
 
 test('complete source-free positive/negative semantics without invented guest passes',()=>{
   const cases=registry.cases;
-  assert.ok(cases.length >= 15);
+  assert.ok(cases.length >= 33);
+  assert.equal(registry.extended_spec_candidate,'https://github.com/atto-lang/atto-spec/pull/245');
   assert.equal(new Set(cases.map(x=>x.id)).size,cases.length);
   for(const x of cases){
     assert.match(x.id,/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
@@ -35,7 +37,12 @@ test('complete source-free positive/negative semantics without invented guest pa
   }
   for(const id of ['return-lifo','throw-outer-catch','raise-catch-bypass',
     'panic-fatal','cancel-terminal','recovery-one-shot','task-await-context',
-    'sibling-task-separation','tenant-generation','async-cleanup-proof'])
+    'sibling-task-separation','tenant-generation','async-cleanup-proof',
+    'braceless-delayed','bound-closure-factory','named-cleanup','factory-registration-failure',
+    'bare-await-cleanup','assignment-await-cleanup','susp-recover-cursor','callback-local-error-handled',
+    'callback-error-panic','multiple-cleanup-panics','cancel-cleanup-panic','recover-error-panic',
+    'nested-defer-scope','unsafe-borrow-suspension','nonsuspending-block-await','wrong-callback-arity',
+    'susp-cleanup-stale-wakeup','discarded-fallible-result'])
     assert.ok(cases.some(c=>c.id===id),`missing ${id}`);
   assert.ok(cases.some(c=>c.group==='compile-reject'));
 });
@@ -50,4 +57,18 @@ test('local JS host model is explicitly segregated from transpiled guest evidenc
   assert.equal(h.local_host_tests_failed,0);
   assert.equal(h.guest_level_verification,'not_executed');
   assert.equal(registry.cases[0].backend_statuses['atto-source.js'],'not_executed');
+});
+
+test('candidate guest source blobs are exact and not execution receipts',()=>{
+  const fixtures=registry.candidate_guest_fixtures;
+  assert.equal(fixtures.length,4);
+  assert.equal(new Set(fixtures.map(f=>f.path)).size,4);
+  for(const f of fixtures){
+    assert.match(f.path,/^fixtures\/execution-context-unwind-v1\/[a-z-]+\.atto$/);
+    const b=readFileSync(new URL('../'+f.path,import.meta.url));
+    const blob=createHash('sha1').update('blob '+b.length+'\0').update(b).digest('hex');
+    assert.equal(blob,f.git_blob_sha);
+    assert.ok(registry.cases.some(c=>c.id===f.case_id));
+    assert.ok(['return','panic'].includes(f.expected.kind));
+  }
 });
