@@ -8,7 +8,7 @@ import { verify } from "./verify-manifest.mjs";
 
 const root = dirname(fileURLToPath(import.meta.url));
 test("all select sources match pinned Git blob SHAs without claiming execution", () => {
-  assert.equal(verify(root).count, 39);
+  assert.equal(verify(root).count, 40);
 });
 test("source mutation and path traversal both fail closed", () => {
   const tmp = mkdtempSync(join(tmpdir(), "atto-select-v2-"));
@@ -16,7 +16,7 @@ test("source mutation and path traversal both fail closed", () => {
     const manifest = JSON.parse(readFileSync(join(root, "manifest.json"), "utf8"));
     for (const c of manifest.cases) copyFileSync(join(root, c.path), join(tmp, c.path));
     writeFileSync(join(tmp, "manifest.json"), JSON.stringify(manifest));
-    assert.equal(verify(tmp).count, 39);
+    assert.equal(verify(tmp).count, 40);
     const target = join(tmp, manifest.cases[0].path);
     writeFileSync(target, readFileSync(target, "utf8") + " // unauthorized edit");
     assert.throws(() => verify(tmp), /blob drift/);
@@ -38,6 +38,10 @@ test("backend omission and fabricated evidence fail closed", () => {
     delete m.cases[0].expected.hdl;
     writeFileSync(join(tmp, "manifest.json"), JSON.stringify(m));
     assert.throws(() => verify(tmp));
+    const promoted = structuredClone(original);
+    promoted.cases.find(c => c.target).expected.js = { mode: "run", exitCode: 42 };
+    writeFileSync(join(tmp, "manifest.json"), JSON.stringify(promoted));
+    assert.throws(() => verify(tmp), /prospective target cannot assert backend execution/);
     const falsePass = structuredClone(original);
     falsePass.cases[0].evidenceStatus = "passed";
     writeFileSync(join(tmp, "manifest.json"), JSON.stringify(falsePass));

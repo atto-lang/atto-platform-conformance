@@ -1,6 +1,6 @@
 # Static select source matrix v2 — all compiler targets
 
-39 pinned guest sources x 11 target repositories = 429 explicitly tracked cells.
+40 pinned guest sources x 11 target repositories = 440 explicitly tracked cells.
 The v1 directory remains unchanged. Existing expectations are carried forward
 only as historical prospective expectations; new cells are unverified.
 The `target` field records intended semantics of newly added sources separately
@@ -34,5 +34,7 @@ Dynamic counted fixtures cover caller snapshot, zero count, non-int count and un
 Mixed Future alias and multi-channel FAIR fixtures are prospective targets. The mixed case requires one Future contribution across aliases; the FAIR case requires lexical arm projections, persistent rotation and no over-consumption. They must be compiled and executed before any positive backend receipt is recorded. The two new cases have unverified expectations for all eleven targets.
 
 Mixed literal zero requires lexical type checking without source evaluation, capture, waiter registration or producer consumption. The target fixture remains unverified for all eleven compilers until exact guest evidence is recorded.
+
+The distinct-alias projection fixture checks FAIR lexical ordering and different projections across repeated channel and Future arms. The retired Future alias must not contribute a second value. Prospective target cases must keep every backend expectation unverified until a separate execution receipt exists.
 
 The separate `counted-profile-evidence.json` ledger records observed exact fixture outcomes on proposed PR heads, with restricted compiler profile, source identity, real CI job and explicit limits. It is not a promotion of the prospective matrix or a merged-main/general scheduler claim. Run `node --test fixtures/select-source-v2/verify-counted-profile-evidence.test.mjs` to verify ledger integrity only. The self-hosted Stage-0 scalar seed has no general source CLI; its counted target remains not executed.

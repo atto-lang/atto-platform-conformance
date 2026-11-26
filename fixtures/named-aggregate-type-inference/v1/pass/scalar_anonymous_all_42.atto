@@ -1,0 +1,6 @@
+pub fnc main(): int {
+  const Record r = (a=10);
+  const Tuple t = (true,12);
+  const struct s = {a:20};
+  return r.a+t[1]+s.a;
+}

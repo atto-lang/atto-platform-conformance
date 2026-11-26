@@ -1,0 +1,1 @@
+pub fnc main(): int { const Record<infer T> r=(a=1); const Tuple<infer T> t=(1,2); return 0; }
