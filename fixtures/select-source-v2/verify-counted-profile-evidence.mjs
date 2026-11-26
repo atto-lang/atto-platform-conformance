@@ -31,6 +31,11 @@ export function verifyEvidence(data=ledger,m=manifest){
     if(r.profile==='counted-static-ready-v1-native-object'){
       assert.deepEqual([...unsupported].sort(),['counted-dynamic','counted-dynamic-zero']);
       assert.deepEqual(r.fixtures.filter(e=>e.outcome==='unsupported-reject-no-artifact').map(e=>e.id).sort(),[...unsupported].sort());
+    }else if(r.profile.startsWith('counted-static-single-v1-')){
+      assert.match(r.sharedFrontendBlob,/^[a-f0-9]{40}$/);
+      assert.ok(data.records.some(o=>o.backend!==r.backend&&o.profile.startsWith('counted-static-single-v1-')&&o.sharedFrontendBlob===r.sharedFrontendBlob),'missing shared frontend peer');
+      assert.deepEqual([...unsupported].sort(),["counted-distinct-alias-projection","counted-dynamic","counted-dynamic-zero","counted-mixed-future-alias","counted-mixed-zero","counted-multi-channel-fair"]);
+      assert.deepEqual(r.fixtures.filter(e=>e.outcome==='unsupported-reject-no-artifact').map(e=>e.id).sort(),[...unsupported].sort());
     }else assert.equal(unsupported.size,0);
     for(const e of r.fixtures){
       const f=cases.get(e.id);assert.ok(f&&e.blob===f.gitBlobSha1);
