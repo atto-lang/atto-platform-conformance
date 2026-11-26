@@ -19,9 +19,19 @@ const rows=[
   return {expected:p>MAX||v>MAX||v<0n?'overflow':v.toString(),source:`pub fnc main(): uint {return consume(product(${a},${b}),${c});} fnc consume(uint x,u64 y):u64 {return x${op}y;} fnc product(u64 x,uint y):uint {return x*y;}`};
 });
 const g=e=>`pub fnc main():u64{return ${e};}`;
+// Distinguish precedence, associativity, and faults in otherwise unused values.
+rows.push(...[
+  ['2+3*4','14'],['(2+3)*4','20'],['9-3-2','4'],['9-(3-2)','8'],
+  ['18446744073709551615*1',MAX.toString()],['0*18446744073709551615','0'],
+  ['9223372036854775808+1','9223372036854775809'],['9007199254740993-1','9007199254740992'],
+  ['18446744073709551615+1-1','overflow'],['0*(18446744073709551615+1)','overflow'],
+  ['0-1+1','overflow'],['18446744073709551615*2*0','overflow']
+].map(([expression,expected])=>({source:g(expression),expected})));
+rows.push({source:g('first(42,18446744073709551615+1)')+'fnc first(u64 a,u64 b):u64{return a;}',expected:'overflow'});
+rows.push({source:g('first(42,18446744073709551615)')+'fnc first(u64 a,u64 b):u64{return a;}',expected:'42'});
 const negatives=[g('18446744073709551616'),g('01'),g('-1'),g('1/2'),g('x'),g('main()'),g('f(1)')+'fnc f():u64{return 1;}',g('1')+'fnc f(int x):u64{return 1;}',g('1')+g('2'),g('1')+'\u202e',g('1')+'\0',g('('.repeat(40)+'1'+')'.repeat(40))];
 test('new independent boundary inventory',()=>{
-  assert.equal(rows.length,6);assert.equal(rows.filter(r=>r.expected==='overflow').length,3);assert.equal(negatives.length,12);
+  assert.equal(rows.length,20);assert.equal(rows.filter(r=>r.expected==='overflow').length,8);assert.equal(negatives.length,12);
 });
 const mode=process.env.ATTO_U64_CROSS_REQUIRED;
 assert.ok(mode===undefined||mode==='0'||mode==='1','ATTO_U64_CROSS_REQUIRED must be 0 or 1');
