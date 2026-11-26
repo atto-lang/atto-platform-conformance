@@ -40,7 +40,7 @@ function run(c) {
   assert.ok(!existsSync(output),"rejected source emitted an artifact");
   // Do not treat a profile-level unsupported diagnostic as proof of the intended denial.
   assert.ok(!/E_UNSUPPORTED|not supported|unsupported/i.test(diagnostic), diagnostic);
-  const pattern=c.expected.category==="syntax" ? /E_SYNTAX|E_EOF|E_PARSE|E_LEX/ : /E_(?:PRECONDITION|CONTRACT_PRECONDITION)/;
+  const pattern=c.expected.category==="syntax" ? /E_SYNTAX|E_EOF|E_PARSE|E_LEX/ : /E_(?:PRECONDITION|CONTRACT_PRECONDITION|REFINEMENT_PRECONDITION)/;
   assert.match(diagnostic,pattern);
   return "artifact-free";
 }
