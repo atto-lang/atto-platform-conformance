@@ -46,3 +46,15 @@ For non-Copy resources, a root is a unique ownership anchor. Each resource is li
 ## How to use the bounded model
 
 Run `node formal/callable-aggregate-patterns-v1/check.mjs`. The checker compares an independent recursive reference evaluator against a typed projection-plan evaluator over a finite domain, exercises invalid patterns, checks argument order including faults, and requires concrete counterexamples for intentionally broken lowerings. A successful model result is labeled MODEL_ONLY. The finite bound is deliberately explicit; recursion, visibility, aliasing and ownership outside the modeled subset remain unverified. No source compiler is invoked by this checker.
+
+## Executed model receipts (2026-11-26)
+
+The exact authored JavaScript functions were executed in an isolated JS runtime and their committed source text was fetched back and byte-compared. These are **MODEL_ONLY** results, not a Node/Actions run or compiler certification.
+
+- `check.mjs`, Git blob `d97c6fa76181fdf913660cd963369835bf59474a`: 261 shapes, 9,083 one-root plans, 6,084 two-root plans, 91,412 binding-equivalence comparisons, 54,996 local rebind checks, 18 dual-rejected invalid patterns, 15 argument-effect cases, 6 detected lowering mutants.
+- `ownership.mjs`, Git blob `dc3180a9e78048e12087ca3152cc38915ee807e3`: exhaustive reachable-state exploration for three distinct resources, five projection paths and two loan slots. 282 reachable states, 1,769 accepted and 9,793 rejected transitions, 502 read checks, 159 move checks, 27 close checks. Each enabled step preserves resource conservation, single destruction and loan compatibility, and agrees with an independently written leaf-set admission predicate. Five known incorrect transition variants produce counterexamples: incompatible loan overlap, moving a borrowed path, duplicated ownership, double drop, and closing with a loan.
+- Run `node formal/callable-aggregate-patterns-v1/ownership.mjs` to reproduce the ownership model and inspect concrete counterexamples. Model close is an abstract, idempotent destruction operation, not a verified language-level destructor sequence. No exceptional unwinding, cancellation, concurrency, escape, NLL, actor authority, nominal generic layout, real memory representation, or actual compiler implementation is certified.
+
+The scalar checker is exhaustive only over its enumerated grammar: all generated depth-one shapes, selected depth-two shapes with at most one aggregate child, two scalar values per scalar type, and representative two-root pattern/value pairs. It is not exhaustive over arbitrary depth, integers, nominal class layouts, alias patterns or compiler syntax. The structural induction argument above extends the abstract Copy-scalar rule under its assumptions, not the implementation.
+
+Next: attach independent translation validation to each backend's actual checked IR and compare independently collected compiled guest traces, then prove the ownership IR transitions refine the resource/loan specification. A model PASS or matching stdout alone is insufficient.
