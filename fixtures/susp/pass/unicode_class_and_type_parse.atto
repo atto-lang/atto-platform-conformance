@@ -1,0 +1,7 @@
+define class Service as
+  ⧖ mtd read(): int { return await 42; }
+  static ∂ fnc connect(): int { return await 42; }
+end
+pub fnc a(⧖ fnc(int)->int callback): int { return 1; }
+pub fnc b(∂ fnc(int)->int callback): int { return 2; }
+pub fnc main(): int { return 42; }

@@ -1,0 +1,3 @@
+// ⧖ ∂ susp suspends are trivia here
+pub fnc suspicious(): int { return 42; }
+pub fnc main(): int { val text = "⧖ ∂ susp suspends"; return suspicious(); }

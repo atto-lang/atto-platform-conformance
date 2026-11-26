@@ -1,0 +1,1 @@
+pub pure ∂ fnc main(): int { return await 42; }
