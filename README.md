@@ -22,6 +22,10 @@ Required later: compile the same source blob with every declared backend, execut
 
 The [51-case exact numeric registry](contracts/numeric-semantics-v1.json) and [source-free BigInt-based oracle test](tests/numeric-semantics-v1.test.mjs) check proposed integer, decimal, fixed-point, vector and dimensional results. The separate [11-fixture guest-source manifest](fixtures/numeric-guest-v1/manifest.json) pins candidate `.atto` quotient/remainder, `trap`, NaN, signed-zero and exact integer-vs-float comparison cases; [source-integrity tests](tests/numeric-guest-source-v1.test.mjs) reject duplicate IDs and mismatched Git blob identities. Run `node --test tests/numeric-semantics-v1.test.mjs tests/numeric-guest-source-v1.test.mjs`. **These tests do not execute an AttoLang compiler or prove full guest AOT; every backend remains not_executed until authenticated guest evidence is added.**
 
+## Markers and brands guest candidates (NOT EXECUTED)
+
+[Ten candidate `.atto` fixtures](fixtures/markers-brands-v1/manifest.json) pin source blobs for nominal and cross-nominal same-brand admission, wrong-brand and missing-marker negatives, anonymous shapes, `structural`/`~` aliases, integer complement and distinct class instances. [Source integrity tests](tests/markers-brands-v1-source.test.mjs) check paired controls, exact bytes and fail-closed evidence labels; run `node --test tests/markers-brands-v1-source.test.mjs`. The syntax remains provisional under [spec #273](https://github.com/atto-lang/atto-spec/pull/273). A compiler that merely rejects the new syntax has not passed a semantic negative. All eleven profiles remain NOT_EXECUTED; no compiler or guest parity is implied.
+
 ## Purpose
 
 Execute portable language fixtures and record target-specific results.
