@@ -54,7 +54,7 @@ test('unsigned full-width debit guest source and exact results', () => {
   assert.deepEqual(outcomes, { value: 6, overflow: 6 });
 });
 
-test('100000 deterministic host arithmetic cases agree with overflow preflight', () => {
+test('1000000 deterministic host arithmetic cases agree with overflow preflight', () => {
   let state = 0x9e3779b97f4a7c15n;
   const next = () => {
     state ^= (state << 13n) & MAX;
@@ -64,7 +64,7 @@ test('100000 deterministic host arithmetic cases agree with overflow preflight',
   };
   let positives = 0, overflows = 0;
   const edges = [0n, 1n, 2n, 255n, 1n << 53n, 1n << 63n, MAX - 1n, MAX];
-  for (let i = 0; i < 100000; i++) {
+  for (let i = 0; i < 1000000; i++) {
     const operand = () => {
       const n = next();
       switch (Number(n & 3n)) {
