@@ -7,10 +7,13 @@ export function verifyEvidence(data=ledger,m=manifest){
   assert.equal(data.schema,'atto-counted-profile-evidence-v1');
   assert.match(data.corpusCommit,/^[a-f0-9]{40}$/);assert.match(data.corpusTree,/^[a-f0-9]{40}$/);
   const cases=new Map(m.cases.map(c=>[c.id,c]));
-  const profiles=new Set(),cells=new Set();
+  const receipts=new Set(),cells=new Set();
   for(const r of data.records){
     assert.ok(m.backends.includes(r.backend));assert.ok(r.profile&&r.command&&r.limits.length);
-    const profile=r.backend+'/'+r.profile;assert.ok(!profiles.has(profile));profiles.add(profile);
+    const profile=r.backend+'/'+r.profile;
+    const receipt=JSON.stringify([profile,r.head,r.run,r.job]);
+    assert.ok(!receipts.has(receipt),'duplicate execution receipt');receipts.add(receipt);
+    if(r.carrier!==undefined)assert.match(r.carrier,/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/);
     for(const field of ['head','tree'])assert.match(r[field],/^[a-f0-9]{40}$/);
     for(const field of ['pr','run','job','steps'])assert.ok(Number.isSafeInteger(r[field])&&r[field]>0);
     for(const e of r.fixtures){
