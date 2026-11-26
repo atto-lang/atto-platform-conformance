@@ -27,3 +27,21 @@ test('exact fixture registry and matched rejection controls',()=>{
     assert.match(f.expect.compile_reject,/^E_COPY_READONLY(?:_SLOT)?$/);
   }
 });
+
+test('separate replacement from loan recovery and cover additions symmetrically',()=>{
+  for(const [id,owner,other] of [['replace-copy','b','a'],['replace-original','a','b']]){
+    const s=source(files.get(id));
+    assert.ok(s.includes(owner+'.scores = new Scores();'));
+    assert.ok(s.includes(owner+'.scores.n = 22;'));
+    assert.ok(!s.includes(other+'.scores.n ='));
+    assert.equal(files.get(id).expect.main_result,42);
+  }
+  const fresh=source(files.get('fresh-map-entries'));
+  for(const [root,key,foreign] of [['a','left','right'],['b','right','left']]){
+    assert.equal(fresh.split(root+'["'+key+'"] =').length-1,2);
+    assert.ok(fresh.includes(root+'.get("'+foreign+'").is_some()'));
+    const reject=files.get('reject-shared-map-insert-'+root);
+    assert.equal(reject.paired_positive,'shared-map-control');
+    assert.equal(reject.forbidden_statement,root+'.scores["new"] = 99;');
+  }
+});
