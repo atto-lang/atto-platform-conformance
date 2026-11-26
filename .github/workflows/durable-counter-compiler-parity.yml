@@ -1,0 +1,45 @@
+name: Restricted durable Counter compiled guest parity
+on:
+  pull_request:
+    paths:
+      - 'fixtures/actors/persistence/durable_counter_broker_v1.atto'
+      - 'tests/durable-counter-compiler-parity.mjs'
+      - '.github/workflows/durable-counter-compiler-parity.yml'
+permissions:
+  contents: read
+jobs:
+  rust-wasm-js:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Verify source fixture tree and fetch exact public compilers
+        env:
+          EXPECTED: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED"
+          test -z "$(git status --porcelain)"
+          echo "CONFORMANCE_TREE=$(git rev-parse HEAD^{tree})"
+          fetch_compiler() {
+            local backend="$1" sha="$2" tree="$3" dir="$RUNNER_TEMP/atto-$1"
+            mkdir "$dir"
+            git -C "$dir" init
+            GIT_TERMINAL_PROMPT=0 git -C "$dir" -c credential.helper= fetch --depth=1 "https://github.com/atto-lang/atto-source.$backend.git" "$sha"
+            git -C "$dir" checkout --detach FETCH_HEAD
+            git -C "$dir" fsck --full
+            test "$(git -C "$dir" rev-parse HEAD)" = "$sha"
+            test "$(git -C "$dir" rev-parse HEAD^{tree})" = "$tree"
+            test -z "$(git -C "$dir" status --porcelain)"
+          }
+          fetch_compiler rs 96664d383d8779e2f732648cee9e42aac71c08b1 425c3a1d3f5af829772d4309e447eda0953b3c9e
+          fetch_compiler js 6dabe21e9c506212edb8ddb0248083430b500957 f40977b90687fbbdf199e70bd49c1f3bdfcfc3b7
+      - name: Build compiler and execute both generated guests
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.85.1 --profile minimal
+          (cd "$RUNNER_TEMP/atto-rs" && cargo +1.85.1 build --locked --release --bin attoc)
+          node tests/durable-counter-compiler-parity.mjs "$RUNNER_TEMP/atto-rs/target/release/attoc" "$RUNNER_TEMP/atto-js/src/transpile-worker.mjs"
