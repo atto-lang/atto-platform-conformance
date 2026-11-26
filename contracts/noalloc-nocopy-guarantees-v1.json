@@ -1,0 +1,198 @@
+{
+  "schema": "atto-noalloc-nocopy-guarantees-v1",
+  "status": "TARGET_NOT_EXECUTED",
+  "spec": "https://github.com/atto-lang/atto-spec/pull/270",
+  "backendProfiles": [
+    {
+      "repo": "atto-lang/atto-source.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.cranelift",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.forge",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.hdl",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.java",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.js",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.llvm",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.net",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.realtime",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.rs",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.wasm",
+      "status": "NOT_EXECUTED"
+    }
+  ],
+  "cases": [
+    {
+      "id": "annotated-buffer-1",
+      "kind": "syntax-and-proof-target",
+      "source": "@noalloc\n@nocopy\ndefine fnc Buffer • process(Buffer data) { return data; }\n",
+      "expect": "equivalent typed header; ownership proof independently required"
+    },
+    {
+      "id": "annotated-buffer-2",
+      "kind": "syntax-and-proof-target",
+      "source": "@noalloc\n@nocopy\ndefine fnc Buffer <- process(Buffer data) { return data; }\n",
+      "expect": "equivalent typed header; ownership proof independently required"
+    },
+    {
+      "id": "annotated-buffer-3",
+      "kind": "syntax-and-proof-target",
+      "source": "@noalloc\n@nocopy\ndefine fnc process(Buffer data) -> Buffer { return data; }\n",
+      "expect": "equivalent typed header; ownership proof independently required"
+    },
+    {
+      "id": "annotated-buffer-4",
+      "kind": "syntax-and-proof-target",
+      "source": "@noalloc\n@nocopy\ndefine fnc process(Buffer data): Buffer { return data; }\n",
+      "expect": "equivalent typed header; ownership proof independently required"
+    },
+    {
+      "id": "annotated-buffer-5",
+      "kind": "syntax-and-proof-target",
+      "source": "@noalloc\n@nocopy\ndefine fnc process(Buffer data) : Buffer -> { return data; }\n",
+      "expect": "equivalent typed header; ownership proof independently required"
+    },
+    {
+      "id": "scalar-1",
+      "kind": "guest-positive",
+      "source": "@noalloc\n@nocopy\ndefine fnc int • forward(int x) { return x; }\npub fnc main(): int { return forward(42); }\n",
+      "exit": 42,
+      "metrics": {
+        "dynamicAllocations": 0,
+        "allocatedBytes": 0,
+        "payloadCopies": 0,
+        "copiedBytes": 0
+      }
+    },
+    {
+      "id": "scalar-2",
+      "kind": "guest-positive",
+      "source": "@noalloc\n@nocopy\ndefine fnc int <- forward(int x) { return x; }\npub fnc main(): int { return forward(42); }\n",
+      "exit": 42,
+      "metrics": {
+        "dynamicAllocations": 0,
+        "allocatedBytes": 0,
+        "payloadCopies": 0,
+        "copiedBytes": 0
+      }
+    },
+    {
+      "id": "scalar-3",
+      "kind": "guest-positive",
+      "source": "@noalloc\n@nocopy\ndefine fnc forward(int x) -> int { return x; }\npub fnc main(): int { return forward(42); }\n",
+      "exit": 42,
+      "metrics": {
+        "dynamicAllocations": 0,
+        "allocatedBytes": 0,
+        "payloadCopies": 0,
+        "copiedBytes": 0
+      }
+    },
+    {
+      "id": "scalar-4",
+      "kind": "guest-positive",
+      "source": "@noalloc\n@nocopy\ndefine fnc forward(int x): int { return x; }\npub fnc main(): int { return forward(42); }\n",
+      "exit": 42,
+      "metrics": {
+        "dynamicAllocations": 0,
+        "allocatedBytes": 0,
+        "payloadCopies": 0,
+        "copiedBytes": 0
+      }
+    },
+    {
+      "id": "scalar-5",
+      "kind": "guest-positive",
+      "source": "@noalloc\n@nocopy\ndefine fnc forward(int x) : int -> { return x; }\npub fnc main(): int { return forward(42); }\n",
+      "exit": 42,
+      "metrics": {
+        "dynamicAllocations": 0,
+        "allocatedBytes": 0,
+        "payloadCopies": 0,
+        "copiedBytes": 0
+      }
+    },
+    {
+      "id": "transitive-scalar",
+      "kind": "guest-positive",
+      "source": "define fnc int • leaf(int x) { return x; }\n@noalloc\n@nocopy\ndefine fnc int • forward(int x) { return leaf(x); }\npub fnc main(): int { return forward(42); }\n",
+      "exit": 42,
+      "metrics": {
+        "dynamicAllocations": 0,
+        "allocatedBytes": 0,
+        "payloadCopies": 0,
+        "copiedBytes": 0
+      }
+    },
+    {
+      "id": "escaping-allocation",
+      "kind": "semantic-negative",
+      "source": "define class Buffer as pub let int value = 42; end\n@noalloc\ndefine fnc Buffer • make() { return new Buffer(); }\npub fnc main(): int { let Buffer x = make(); return x.value; }\n",
+      "diagnostic": "E_NOALLOC",
+      "precondition": "returned object requires a dynamic storage admission; if proven allocation-free on all callable paths, replace with an opaque escaping allocation witness rather than rejecting valid optimization"
+    },
+    {
+      "id": "unknown-ffi",
+      "kind": "proof-obligation",
+      "expect": "reject annotated caller with unknown transitive allocation or copy effects; backend-specific FFI fixture required",
+      "diagnostics": [
+        "E_NOALLOC",
+        "E_NOCOPY"
+      ]
+    },
+    {
+      "id": "necessary-mutable-copy",
+      "kind": "proof-obligation",
+      "expect": "reject nocopy when physical mutable payload duplication cannot be eliminated without violating independent value semantics",
+      "diagnostics": [
+        "E_NOCOPY"
+      ]
+    },
+    {
+      "id": "suspend-cleanup",
+      "kind": "proof-obligation",
+      "expect": "cover reachable suspension, cancellation, cleanup, panic and recursive call paths; unproven effect rejects",
+      "diagnostics": [
+        "E_NOALLOC",
+        "E_NOCOPY"
+      ]
+    }
+  ],
+  "evidence": {
+    "defaultAOT": true,
+    "scope": "annotated callable invocation, all reachable paths",
+    "mustNotIgnoreAnnotations": true,
+    "ownershipFirst": true,
+    "unknownEffects": "reject",
+    "zeroCounterProofAlone": false,
+    "missingMetrics": "NOT_MEASURED",
+    "hdl": "separate synthesis-specific storage proof"
+  }
+}
