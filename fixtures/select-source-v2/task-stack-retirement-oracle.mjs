@@ -1,0 +1,12 @@
+// Reference scheduler and stack pool model, not compiled guest evidence.
+function verifyStackRetirement(){
+ let checks=0;const check=(ok,msg)=>{checks++;if(!ok)throw Error(msg)};
+ let head=null,tail=null,free=[],blocks=[],futures=[],current=null,peak=0,live=0;
+ function spawn(run){let stack=free.pop();if(!stack){stack={words:new Uint32Array(512),owner:null};blocks.push(stack)}check(stack.owner===null&&stack.words.every(x=>x===0),"clean exclusive stack");let t={stack,next:null,done:false,result:null,run};stack.owner=t;if(tail)tail.next=t;else head=t;tail=t;futures.push(t);live++;peak=Math.max(peak,live);return t}
+ function step(){let p=null,t=head;while(t){current=t;check(t.stack.owner===t,"resume exclusive stack");let r=t.run(t);if(r!==undefined){check(t.stack.owner===t,"release owner");t.stack.words.fill(0);t.stack.owner=null;free.push(t.stack);t.stack=null;t.done=true;t.result=r;live--}current=null;let next=t.next;if(t.done){if(p)p.next=next;else head=next;if(tail===t)tail=p;t.next=null}else p=t;t=next}validate()}
+ function validate(){let seen=new Set(),t=head,last=null;while(t){check(!seen.has(t)&&!t.done&&t.stack.owner===t,"active list invariant");seen.add(t);last=t;t=t.next}check(last===tail&&seen.size===live,"head tail live count");check(new Set(free).size===free.length,"no duplicate stack");check(blocks.length===live+free.length,"pool balance");check(blocks.length<=peak,"stack allocation bounded by high water")}
+ let child;let parent=spawn(t=>{t.stack.words[511]=0xdead;child=spawn(c=>{c.stack.words[17]=123;return 42});return 7});step();check(parent.done&&parent.result===7&&child.done&&child.result===42,"tail append survives unlink");check(head===null&&tail===null,"empty active list");
+ let hold=spawn(t=>{if(t.stack.words[33]===0){t.stack.words[33]=123;return undefined}check(t.stack.words[33]===123,"suspended frame retained");return 19});step();for(let i=0;i<10000;i++){let f=spawn(t=>{t.stack.words[33]=i+1;return i});step();check(f.done&&f.result===i,"future identity retained");if(i===0)check(hold.done&&hold.result===19,"suspended task resumed")};check(parent.result===7&&child.result===42&&hold.result===19,"old results unchanged");check(blocks.length===2,"only peak physical stacks allocated");check(live===0,"no active tasks");
+ return {checks,allocatedStacks:blocks.length,peakLiveTasks:peak,completedFutures:futures.length,active:live}
+}
+console.log(JSON.stringify(verifyStackRetirement()));
