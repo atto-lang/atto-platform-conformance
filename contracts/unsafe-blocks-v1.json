@@ -615,6 +615,139 @@
         "js": "not_executed",
         "atto_selfhost": "not_executed"
       }
+    },
+    {
+      "id": "unsafe-defer-no-inherited-context",
+      "profile": "trusted_native",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_CALL",
+      "source": "pub unsafe fnc host_only(): int { return 42; } pub fnc main(): int { unsafe { defer { host_only(); }; } return 42; }",
+      "reason": "Registered cleanup cannot inherit authority from the registration site",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-defer-explicit-inner-context",
+      "profile": "trusted_native",
+      "expect": "accept",
+      "diagnostic": null,
+      "source": "pub unsafe fnc host_only(): int { return 42; } pub fnc main(): int { unsafe { defer { unsafe { host_only(); } }; } return 42; }",
+      "reason": "Deferred cleanup establishes its own lexical region; host grant checks remain separate",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-lambda-explicit-inner-context",
+      "profile": "trusted_native",
+      "expect": "accept",
+      "diagnostic": null,
+      "source": "pub unsafe fnc host_only(): int { return 42; } pub fnc main(): int { unsafe { val callback = || -> { unsafe { return host_only(); } }; } return 42; }",
+      "reason": "Explicit inner unsafe region discharges lexical obligation but not native capability",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-callable-value-unresolved",
+      "profile": "trusted_native",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_CALL",
+      "source": "pub unsafe fnc host_only(): int { return 42; } pub fnc main(): int { unsafe { val callback = host_only; } return 42; }",
+      "reason": "Unresolved callable value must not erase an unsafe effect in the restricted profile",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-native-import-dotted-alias",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"ores.std.unsafe.ffi\"; pub fnc main(): int { return 42; }",
+      "reason": "Dotted native stdlib path is denied even when the imported module name is harmless",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-native-import-colon-alias",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"std::unsafe::ffi\"; pub fnc main(): int { return 42; }",
+      "reason": "Colon alias must not expose native unsafe packages to guest code",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-string-near-miss",
+      "profile": "any",
+      "expect": "accept",
+      "diagnostic": null,
+      "source": "pub fnc main(): int { val string text = \"std/unsafe/ffi\"; return 42; }",
+      "reason": "Ordinary string data is not a package import",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
     }
   ]
 }
