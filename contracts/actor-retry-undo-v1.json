@@ -1,0 +1,267 @@
+{
+  "schema": "atto.actor-retry-undo.v1",
+  "status": "TARGET_NOT_EXECUTED",
+  "spec": "https://github.com/atto-lang/atto-spec/blob/design/actor-retry-undo-v1-20261126/language/actor-retry-undo-v1.md",
+  "profiles": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "rs": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
+    "hdl": "NOT_EXECUTED",
+    "realtime": "NOT_EXECUTED",
+    "atto": "NOT_EXECUTED",
+    "embedded": "NOT_EXECUTED"
+  },
+  "cases": [
+    {
+      "id": "retry-initial-success",
+      "group": "retry",
+      "expectation": "One attempt, no timer",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "retry-transient-success",
+      "group": "retry",
+      "expectation": "Eligible ordinary failure, rollback, one timer, success",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "retry-exhaustion",
+      "group": "retry",
+      "expectation": "Exactly max_attempts including first; retain last error",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "retry-noneligible-throw",
+      "group": "retry",
+      "expectation": "One attempt; original throw escapes",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "retry-result-explicit",
+      "group": "retry",
+      "expectation": "Only explicitly classified Result error retries",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "retry-panic-control",
+      "group": "retry",
+      "expectation": "Panic bypasses retry and goes to supervisor CONTROL",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "retry-raise",
+      "group": "retry",
+      "expectation": "Raise bypasses retry and ordinary catches",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "retry-cancel-wait",
+      "group": "retry",
+      "expectation": "Cancellation settles once; stale wake ignored",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "retry-deadline",
+      "group": "retry",
+      "expectation": "No attempt starts on or beyond deadline",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "retry-backoff-cap",
+      "group": "retry",
+      "expectation": "Checked capped delay; no overflow",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "retry-serial-permit",
+      "group": "retry",
+      "expectation": "No additional DATA receive while suspended serial receive",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "retry-reentrant-version",
+      "group": "retry",
+      "expectation": "Reentrant attempt validates current state version",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "tx-rollback",
+      "group": "transaction",
+      "expectation": "All writes and buffered intents discarded on failure",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "tx-reader-isolation",
+      "group": "transaction",
+      "expectation": "No reader observes tentative state",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "tx-commit",
+      "group": "transaction",
+      "expectation": "Atomic state/version/intent publication",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "tx-loan-await",
+      "group": "compile_reject",
+      "expectation": "Reject loan or suspension in local transaction",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "tx-opaque-effect",
+      "group": "compile_reject",
+      "expectation": "Reject unproved external effect in reversible region",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "tx-own-transfer",
+      "group": "compile_reject",
+      "expectation": "Reject irrevocable external ownership transfer",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "undo-old-value",
+      "group": "undo",
+      "expectation": "Retain overwritten value; non-invertible arithmetic restored",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "undo-redo-tail",
+      "group": "undo",
+      "expectation": "Undo and redo each increment version",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "undo-stale-version",
+      "group": "undo",
+      "expectation": "No mutation on stale version",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "undo-nontail",
+      "group": "undo",
+      "expectation": "Reject conflicting non-tail history target",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "undo-duplicate-command",
+      "group": "undo",
+      "expectation": "Duplicate returns prior result without version advance",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "undo-new-branch",
+      "group": "undo",
+      "expectation": "New commit invalidates redo",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "undo-quota",
+      "group": "undo",
+      "expectation": "Capacity rejection before publication",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "undo-ownership-retention",
+      "group": "undo",
+      "expectation": "No premature free; one destruction when history released",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "undo-published-effect",
+      "group": "undo",
+      "expectation": "Reject undo of published external effect without compensation",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "durable-before-commit",
+      "group": "durable",
+      "expectation": "Crash before commit leaves state and delivery unchanged",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "durable-after-commit",
+      "group": "durable",
+      "expectation": "Crash after commit advances exactly once",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "durable-unknown-commit",
+      "group": "durable",
+      "expectation": "Reconcile operation ID before repeat or success",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "durable-stale-epoch",
+      "group": "durable",
+      "expectation": "Stale activation cannot commit or settle",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "durable-replay",
+      "group": "durable",
+      "expectation": "No acknowledged effect is reissued on replay",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "durable-retry-clock",
+      "group": "durable",
+      "expectation": "Recover bounded deadline or fail closed",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "effect-stable-key",
+      "group": "saga",
+      "expectation": "Same operation/effect ID across retries and restarts",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "effect-unknown-receipt",
+      "group": "saga",
+      "expectation": "Reconcile before repeating or compensating",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "saga-lifo",
+      "group": "saga",
+      "expectation": "Compensate confirmed steps in reverse dependency order",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "saga-compensation-failure",
+      "group": "saga",
+      "expectation": "Incomplete compensation visible; no successful rollback claim",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "symbol-qualified-path",
+      "group": "symbol",
+      "expectation": "Full path resolves to manifest UUID; leaf alone not sufficient",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "symbol-cross-authority",
+      "group": "symbol",
+      "expectation": "Same dotted spelling in distinct authorities is unequal",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "symbol-malformed",
+      "group": "compile_reject",
+      "expectation": "Reject empty qualified segments",
+      "status": "TARGET_NOT_EXECUTED"
+    },
+    {
+      "id": "symbol-restore",
+      "group": "symbol",
+      "expectation": "Same manifest UUID after restart and transport",
+      "status": "TARGET_NOT_EXECUTED"
+    }
+  ]
+}
