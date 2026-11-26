@@ -300,7 +300,7 @@
       {
         "id": "net",
         "pr": "https://github.com/atto-lang/atto-source.net/pull/285",
-        "head": "e5ea4fd6c05ca3712ebd83bd2fa1ebceab4d47f4",
+        "head": "c904c0aae10dbce2d4dad0f350b659b0cf78f57f",
         "scope": "HOST_MODEL",
         "local_evidence": null,
         "guest_status": "NOT_EXECUTED",
@@ -331,11 +331,11 @@
       {
         "id": "forge",
         "pr": "https://github.com/atto-lang/atto-source.forge/pull/268",
-        "head": "b56786bc160a24d244c8bd213a130bc28d8da30d",
+        "head": "c440442d2bfb15d946ea436236110ee6cb8d862d",
         "scope": "HOST_MODEL",
         "local_evidence": {
           "verified_blob_count": 3,
-          "passing_tests_or_runs": 100,
+          "passing_tests_or_runs": 40,
           "negative_control_reproduced": true
         },
         "guest_status": "NOT_EXECUTED",
