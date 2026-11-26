@@ -8,7 +8,7 @@ import {pathToFileURL} from 'node:url';
 import {spawnSync} from 'node:child_process';
 
 // Local focused evidence. Never download source or count a skipped lane as a pass.
-const pins={JS:'f4a354096cf2ae1ca96c1381d2be72bca2425ca8',LLVM:'3f63b517b5fb0c7c679e0ed581b6d92c03a75a98',FORGE:'8b5f23abd3624d72ad935ad64dbc8f6e3e9d35e9',JAVA:'02037fb8fd3b4056fc9eab4d75b51e95d03dd65b'};
+const pins={JS:'f4a354096cf2ae1ca96c1381d2be72bca2425ca8',LLVM:'f7bf08fc2ccd46116fe69359ef047f08068f04bd',FORGE:'f7bf08fc2ccd46116fe69359ef047f08068f04bd',JAVA:'02037fb8fd3b4056fc9eab4d75b51e95d03dd65b'};
 const blob=b=>createHash('sha1').update('blob '+b.length+'\0').update(b).digest('hex');
 const MAX=(1n<<64n)-1n;
 const rows=[
@@ -23,7 +23,9 @@ const negatives=[g('18446744073709551616'),g('01'),g('-1'),g('1/2'),g('x'),g('ma
 test('new independent boundary inventory',()=>{
   assert.equal(rows.length,6);assert.equal(rows.filter(r=>r.expected==='overflow').length,3);assert.equal(negatives.length,12);
 });
-const required=process.env.ATTO_U64_CROSS_REQUIRED==='1';
+const mode=process.env.ATTO_U64_CROSS_REQUIRED;
+assert.ok(mode===undefined||mode==='0'||mode==='1','ATTO_U64_CROSS_REQUIRED must be 0 or 1');
+const required=mode==='1';
 const paths=Object.fromEntries(Object.keys(pins).map(k=>[k,process.env[`ATTO_U64_${k}_SOURCE`]]));
 test('exact candidate cross-compiler execution and refusal',{
   skip:!required&&!Object.values(paths).some(Boolean)?'NOT_EXECUTED: source paths unavailable':false,timeout:180000
@@ -41,7 +43,7 @@ test('exact candidate cross-compiler execution and refusal',{
   ok(run('javac',['-Xlint:all','-Werror','CheckedU64.java']));
   writeFileSync(join(root,'observe.c'),'#include <stdint.h>\n#include <inttypes.h>\n#include <stdio.h>\nextern uint64_t atto_guest_main(void);\nint main(void){printf("%" PRIu64 "\\n",atto_guest_main());return 0;}\n');
   const {compileCheckedU64ScalarV1:js}=await import(pathToFileURL(join(root,'compiler.mjs')).href);
-  const lower={LLVM:s=>run(join(root,'llvm'),[],s),FORGE:s=>run(join(root,'forge'),[],s),JAVA:s=>run('java',['-cp',root,'CheckedU64'],s)};
+  const lower={LLVM:s=>run(join(root,'llvm'),['--emit=llvm'],s),FORGE:s=>run(join(root,'forge'),['--emit=cpp'],s),JAVA:s=>run('java',['-cp',root,'CheckedU64'],s)};
   function observe(r,want,role){
     assert.ifError(r.error);
     if(want!=='overflow'){assert.equal(ok(r),want+'\n');assert.equal(r.stderr,'');return;}
