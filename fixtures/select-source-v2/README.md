@@ -1,6 +1,6 @@
 # Static select source matrix v2 — all compiler targets
 
-23 pinned guest sources x 11 target repositories = 253 explicitly tracked cells.
+32 pinned guest sources x 11 target repositories = 352 explicitly tracked cells.
 The v1 directory remains unchanged. Existing expectations are carried forward
 only as historical prospective expectations; new cells are unverified.
 The `target` field records intended semantics of newly added sources separately
@@ -24,3 +24,5 @@ fixture. Canonical select returns Future<T>, await is explicit, nb select is a
 deprecated tracked alias, and select<T> specifies the arm result. New target
 fixtures cover those forms, result mismatches, generic arity, implicit await,
 missing result and illegal await effect. These are unexecuted target fixtures.
+
+Counted select target adds exact cardinality, ordered batch, zero, one, alias, and invalid count/type/default/write cases. All are unexecuted targets.

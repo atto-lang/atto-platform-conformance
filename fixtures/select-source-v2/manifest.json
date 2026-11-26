@@ -1025,6 +1025,406 @@
           "mode": "unverified"
         }
       }
+    },
+    {
+      "id": "counted-three",
+      "path": "counted-three.atto",
+      "gitBlobSha1": "6531efa0689f2a5728b40a6412651e8143e45865",
+      "evidenceStatus": "not-executed",
+      "target": {
+        "mode": "run",
+        "exitCode": 42
+      },
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "unverified"
+        },
+        "net": {
+          "mode": "unverified"
+        },
+        "rs": {
+          "mode": "unverified"
+        },
+        "wasm": {
+          "mode": "unverified"
+        },
+        "js": {
+          "mode": "unverified"
+        },
+        "forge": {
+          "mode": "unverified"
+        },
+        "cranelift": {
+          "mode": "unverified"
+        },
+        "atto": {
+          "mode": "unverified"
+        },
+        "hdl": {
+          "mode": "unverified"
+        },
+        "realtime": {
+          "mode": "unverified"
+        }
+      }
+    },
+    {
+      "id": "counted-zero",
+      "path": "counted-zero.atto",
+      "gitBlobSha1": "42e49fc1eea64b31e86ec722e1457c1ab706a7e1",
+      "evidenceStatus": "not-executed",
+      "target": {
+        "mode": "run",
+        "exitCode": 42
+      },
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "unverified"
+        },
+        "net": {
+          "mode": "unverified"
+        },
+        "rs": {
+          "mode": "unverified"
+        },
+        "wasm": {
+          "mode": "unverified"
+        },
+        "js": {
+          "mode": "unverified"
+        },
+        "forge": {
+          "mode": "unverified"
+        },
+        "cranelift": {
+          "mode": "unverified"
+        },
+        "atto": {
+          "mode": "unverified"
+        },
+        "hdl": {
+          "mode": "unverified"
+        },
+        "realtime": {
+          "mode": "unverified"
+        }
+      }
+    },
+    {
+      "id": "counted-one",
+      "path": "counted-one.atto",
+      "gitBlobSha1": "910062ebf96613d15a16ddb080abd89375d7709c",
+      "evidenceStatus": "not-executed",
+      "target": {
+        "mode": "run",
+        "exitCode": 42
+      },
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "unverified"
+        },
+        "net": {
+          "mode": "unverified"
+        },
+        "rs": {
+          "mode": "unverified"
+        },
+        "wasm": {
+          "mode": "unverified"
+        },
+        "js": {
+          "mode": "unverified"
+        },
+        "forge": {
+          "mode": "unverified"
+        },
+        "cranelift": {
+          "mode": "unverified"
+        },
+        "atto": {
+          "mode": "unverified"
+        },
+        "hdl": {
+          "mode": "unverified"
+        },
+        "realtime": {
+          "mode": "unverified"
+        }
+      }
+    },
+    {
+      "id": "counted-alias",
+      "path": "counted-alias.atto",
+      "gitBlobSha1": "324837078af3e7eeb9b619d0fb07142f0a0d6291",
+      "evidenceStatus": "not-executed",
+      "target": {
+        "mode": "run",
+        "exitCode": 42
+      },
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "unverified"
+        },
+        "net": {
+          "mode": "unverified"
+        },
+        "rs": {
+          "mode": "unverified"
+        },
+        "wasm": {
+          "mode": "unverified"
+        },
+        "js": {
+          "mode": "unverified"
+        },
+        "forge": {
+          "mode": "unverified"
+        },
+        "cranelift": {
+          "mode": "unverified"
+        },
+        "atto": {
+          "mode": "unverified"
+        },
+        "hdl": {
+          "mode": "unverified"
+        },
+        "realtime": {
+          "mode": "unverified"
+        }
+      }
+    },
+    {
+      "id": "reject-counted-negative",
+      "path": "reject-counted-negative.atto",
+      "gitBlobSha1": "e2ff6fdb406b8807b74fa15beaee10a7f9438e22",
+      "evidenceStatus": "not-executed",
+      "target": {
+        "mode": "reject"
+      },
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "unverified"
+        },
+        "net": {
+          "mode": "unverified"
+        },
+        "rs": {
+          "mode": "unverified"
+        },
+        "wasm": {
+          "mode": "unverified"
+        },
+        "js": {
+          "mode": "unverified"
+        },
+        "forge": {
+          "mode": "unverified"
+        },
+        "cranelift": {
+          "mode": "unverified"
+        },
+        "atto": {
+          "mode": "unverified"
+        },
+        "hdl": {
+          "mode": "unverified"
+        },
+        "realtime": {
+          "mode": "unverified"
+        }
+      }
+    },
+    {
+      "id": "reject-counted-bool",
+      "path": "reject-counted-bool.atto",
+      "gitBlobSha1": "4a52c22442bc8a9fe55eb95b23722595db32c97e",
+      "evidenceStatus": "not-executed",
+      "target": {
+        "mode": "reject"
+      },
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "unverified"
+        },
+        "net": {
+          "mode": "unverified"
+        },
+        "rs": {
+          "mode": "unverified"
+        },
+        "wasm": {
+          "mode": "unverified"
+        },
+        "js": {
+          "mode": "unverified"
+        },
+        "forge": {
+          "mode": "unverified"
+        },
+        "cranelift": {
+          "mode": "unverified"
+        },
+        "atto": {
+          "mode": "unverified"
+        },
+        "hdl": {
+          "mode": "unverified"
+        },
+        "realtime": {
+          "mode": "unverified"
+        }
+      }
+    },
+    {
+      "id": "reject-counted-scalar",
+      "path": "reject-counted-scalar.atto",
+      "gitBlobSha1": "a2a2dd184237f17b5e8d455f498719ef1ed01d97",
+      "evidenceStatus": "not-executed",
+      "target": {
+        "mode": "reject"
+      },
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "unverified"
+        },
+        "net": {
+          "mode": "unverified"
+        },
+        "rs": {
+          "mode": "unverified"
+        },
+        "wasm": {
+          "mode": "unverified"
+        },
+        "js": {
+          "mode": "unverified"
+        },
+        "forge": {
+          "mode": "unverified"
+        },
+        "cranelift": {
+          "mode": "unverified"
+        },
+        "atto": {
+          "mode": "unverified"
+        },
+        "hdl": {
+          "mode": "unverified"
+        },
+        "realtime": {
+          "mode": "unverified"
+        }
+      }
+    },
+    {
+      "id": "reject-counted-default",
+      "path": "reject-counted-default.atto",
+      "gitBlobSha1": "0c67c1fc8eaf55df6abb2b0fe7d2ce80f169bc69",
+      "evidenceStatus": "not-executed",
+      "target": {
+        "mode": "reject"
+      },
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "unverified"
+        },
+        "net": {
+          "mode": "unverified"
+        },
+        "rs": {
+          "mode": "unverified"
+        },
+        "wasm": {
+          "mode": "unverified"
+        },
+        "js": {
+          "mode": "unverified"
+        },
+        "forge": {
+          "mode": "unverified"
+        },
+        "cranelift": {
+          "mode": "unverified"
+        },
+        "atto": {
+          "mode": "unverified"
+        },
+        "hdl": {
+          "mode": "unverified"
+        },
+        "realtime": {
+          "mode": "unverified"
+        }
+      }
+    },
+    {
+      "id": "reject-counted-write",
+      "path": "reject-counted-write.atto",
+      "gitBlobSha1": "63fa3c9add56f3793e6d755f006cd3568acf1f04",
+      "evidenceStatus": "not-executed",
+      "target": {
+        "mode": "reject"
+      },
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "unverified"
+        },
+        "net": {
+          "mode": "unverified"
+        },
+        "rs": {
+          "mode": "unverified"
+        },
+        "wasm": {
+          "mode": "unverified"
+        },
+        "js": {
+          "mode": "unverified"
+        },
+        "forge": {
+          "mode": "unverified"
+        },
+        "cranelift": {
+          "mode": "unverified"
+        },
+        "atto": {
+          "mode": "unverified"
+        },
+        "hdl": {
+          "mode": "unverified"
+        },
+        "realtime": {
+          "mode": "unverified"
+        }
+      }
     }
   ]
 }
