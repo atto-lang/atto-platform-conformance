@@ -176,7 +176,7 @@
       "expect": "reject",
       "source": "fnc bad(): int { return 1 |> |(a,b)| -> a+b; }\n",
       "reason": "Scalar is not a tuple",
-      "diagnostic_family": "tuple|pattern|shape|arity|unsupported"
+      "diagnostic_family": "tuple|pattern|shape|arity"
     },
     {
       "id": "tuple-array",
@@ -184,7 +184,7 @@
       "expect": "reject",
       "source": "fnc bad(): int { return [1,2] |> |(a,b)| -> a+b; }\n",
       "reason": "Dynamic sequence must not masquerade as tuple",
-      "diagnostic_family": "tuple|pattern|shape|arity|unsupported"
+      "diagnostic_family": "tuple|pattern|shape|arity"
     },
     {
       "id": "tuple-wrong-arity",
@@ -192,7 +192,7 @@
       "expect": "reject",
       "source": "fnc bad(): int { return (1,2,3) |> |(a,b)| -> a+b; }\n",
       "reason": "Exact arity required",
-      "diagnostic_family": "tuple|pattern|arity|size|unsupported"
+      "diagnostic_family": "tuple|pattern|arity|size"
     },
     {
       "id": "tuple-empty-mismatch",
@@ -200,7 +200,7 @@
       "expect": "reject",
       "source": "fnc bad(): int { return (1,) |> |()| -> 0; }\n",
       "reason": "Empty pattern requires empty tuple",
-      "diagnostic_family": "tuple|pattern|arity|size|unsupported"
+      "diagnostic_family": "tuple|pattern|arity|size"
     },
     {
       "id": "tuple-singleton-no-comma",
@@ -208,7 +208,7 @@
       "expect": "reject",
       "source": "fnc bad(): int { return (1,) |> |(a)| -> a; }\n",
       "reason": "Grouping not singleton tuple pattern",
-      "diagnostic_family": "singleton|comma|pattern|unsupported"
+      "diagnostic_family": "singleton|comma|pattern"
     },
     {
       "id": "duplicate-leaf",
@@ -216,7 +216,7 @@
       "expect": "reject",
       "source": "fnc bad(): int { return (1,2) |> |(a,a)| -> a; }\n",
       "reason": "Names are unique across leaves",
-      "diagnostic_family": "duplicate|binding|pattern|unsupported"
+      "diagnostic_family": "duplicate|binding|pattern"
     },
     {
       "id": "duplicate-selector",
@@ -224,7 +224,7 @@
       "expect": "reject",
       "source": "fnc bad(): int { return record{x:1} |> |{x as a,x as b}| -> a+b; }\n",
       "reason": "Selectors unique even when renamed",
-      "diagnostic_family": "duplicate|selector|pattern|unsupported"
+      "diagnostic_family": "duplicate|selector|pattern"
     },
     {
       "id": "discard-missing-field",
@@ -232,7 +232,7 @@
       "expect": "reject",
       "source": "fnc bad(): int { return record{x:1} |> |{missing as _}| -> 0; }\n",
       "reason": "Discard still validates selector",
-      "diagnostic_family": "field|member|pattern|unsupported"
+      "diagnostic_family": "field|member|pattern"
     },
     {
       "id": "missing-field",
@@ -240,7 +240,7 @@
       "expect": "reject",
       "source": "fnc bad(): int { return record{x:1} |> |{y}| -> y; }\n",
       "reason": "No dynamic field membership",
-      "diagnostic_family": "field|member|pattern|unsupported"
+      "diagnostic_family": "field|member|pattern"
     },
     {
       "id": "root-alias-collision",
@@ -248,7 +248,7 @@
       "expect": "reject",
       "source": "fnc bad(): int { return (1,2) |> |(a,b) as a| -> a; }\n",
       "reason": "Alias cannot collide with leaf",
-      "diagnostic_family": "duplicate|alias|pattern|unsupported"
+      "diagnostic_family": "duplicate|alias|pattern"
     },
     {
       "id": "duplicate-cross-slot",
@@ -256,7 +256,7 @@
       "expect": "reject",
       "source": "fnc bad((a: int,b: int),int a): int { return a; }\n",
       "reason": "Leaf may not shadow another formal",
-      "diagnostic_family": "duplicate|binding|parameter|unsupported"
+      "diagnostic_family": "duplicate|binding|parameter"
     },
     {
       "id": "immutable-rebind",
@@ -264,7 +264,7 @@
       "expect": "reject",
       "source": "fnc bad((a: int,b: int)): int { a=0; return b; }\n",
       "reason": "Default binding is val",
-      "diagnostic_family": "immutable|rebind|mutab|unsupported"
+      "diagnostic_family": "immutable|rebind|mutab"
     },
     {
       "id": "runtime-const-pattern",
@@ -272,7 +272,7 @@
       "expect": "reject",
       "source": "fnc bad((const a: int,b: int)): int { return a; }\n",
       "reason": "Runtime parameter cannot introduce constexpr",
-      "diagnostic_family": "const|pattern|binding|unsupported"
+      "diagnostic_family": "const|pattern|binding"
     },
     {
       "id": "named-leaf-not-label",
@@ -280,7 +280,7 @@
       "expect": "reject",
       "source": "fnc sum((a: int,b: int)): int { return a+b; }\nfnc bad(): int { return sum(a:1,b:2); }\n",
       "reason": "Only root alias can be named-call label",
-      "diagnostic_family": "argument|parameter|label|arity|unsupported"
+      "diagnostic_family": "argument|parameter|label|arity"
     },
     {
       "id": "named-no-implicit-expansion",
@@ -288,7 +288,7 @@
       "expect": "reject",
       "source": "fnc sum(int a,int b): int { return a+b; }\nfnc bad(): int { return (1,2) |> sum; }\n",
       "reason": "Existing named functions do not implicitly expand",
-      "diagnostic_family": "argument|parameter|arity|tuple|unsupported"
+      "diagnostic_family": "argument|parameter|arity|tuple"
     },
     {
       "id": "class-private-field",
@@ -296,7 +296,7 @@
       "expect": "reject",
       "source": "define class Vault as private val int secret=7; end\nfnc bad(Vault {secret}): int { return secret; }\n",
       "reason": "No private field bypass",
-      "diagnostic_family": "private|visible|visibility|access|unsupported"
+      "diagnostic_family": "private|visible|visibility|access"
     },
     {
       "id": "class-method-not-field",
@@ -304,7 +304,8 @@
       "expect": "reject",
       "source": "define class Vault as pub read(): int { return 7; } end\nfnc bad(Vault {read}): int { return 0; }\n",
       "reason": "No implicit getter or method invocation",
-      "diagnostic_family": "field|member|method|unsupported"
+      "diagnostic_family": "field|member|method"
     }
-  ]
+  ],
+  "unsupported_rule": "Explicit unsupported diagnostics are coverage gaps, never passing negative semantics; successful compiler admission of a negative is a failure. Run each positive with exact stdout, no precomputed output or source-only substitution."
 }
