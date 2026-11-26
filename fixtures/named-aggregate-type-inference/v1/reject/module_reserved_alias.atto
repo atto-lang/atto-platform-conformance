@@ -1,0 +1,2 @@
+const Record<infer Map> exemplar=(a=1);
+pub fnc main(): int { return 0; }

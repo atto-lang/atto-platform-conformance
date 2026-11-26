@@ -1,0 +1,3 @@
+const Record<infer R> exemplar=(a=true,c=5);
+const Record<R> actual=(c=42,a=false);
+pub fnc main(): int { return actual.c; }

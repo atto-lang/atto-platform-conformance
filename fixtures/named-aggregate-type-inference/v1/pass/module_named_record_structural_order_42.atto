@@ -1,0 +1,4 @@
+const Record<infer R> r=(a=1,b=true);
+const Record<infer Q> q=(b=false,a=42);
+fnc process(Record<R> input): int { return input.a; }
+pub fnc main(): int { return process(q); }

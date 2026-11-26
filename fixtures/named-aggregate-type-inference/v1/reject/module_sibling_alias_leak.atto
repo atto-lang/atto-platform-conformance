@@ -1,0 +1,8 @@
+define module first as
+    const Record<infer R> exemplar=(a=1);
+    fnc f(Record<R> input): int { return input.a; }
+end
+define module second as
+    fnc f(Record<R> input): int { return input.a; }
+end
+pub fnc main(): int { return 0; }

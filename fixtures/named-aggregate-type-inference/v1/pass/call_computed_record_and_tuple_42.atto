@@ -1,0 +1,8 @@
+const Record<infer R> exemplar=(a=true,b="xyz",c=5);
+const Tuple<infer T> exemplar_tuple=(true,"xyz",5);
+fnc process(int value): int {
+    const Record<R> arg=(a=false,b="abc",c=value);
+    const Tuple<T> result=(arg.a,arg.b,arg.c);
+    return result[2];
+}
+pub fnc main(): int { return process(42); }

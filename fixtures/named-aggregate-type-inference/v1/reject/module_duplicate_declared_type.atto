@@ -1,0 +1,3 @@
+type R = int;
+const Record<infer R> exemplar=(a=1);
+pub fnc main(): int { return 0; }
