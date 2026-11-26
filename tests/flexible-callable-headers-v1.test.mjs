@@ -7,8 +7,8 @@ const root = new URL('../', import.meta.url);
 const folder = 'fixtures/flexible-callable-headers-v1/';
 const manifest = JSON.parse(readFileSync(new URL(folder + 'manifest.json', root)));
 const backends = ['atto', 'cranelift', 'forge', 'hdl', 'java', 'js', 'llvm', 'net', 'realtime', 'rs', 'wasm'];
-const positive = ['after-begin', 'after-brace', 'after-implicit', 'before-begin', 'before-brace'];
-const negative = ['before-implicit', 'duplicate-budget', 'duplicate-effects', 'duplicate-key', 'duplicate-return', 'fallthrough', 'late-clause', 'missing-end', 'missing-return', 'same-line-implicit', 'unclosed-map'];
+const positive = ['adjacent-braces', 'after-begin', 'after-brace', 'after-implicit', 'before-begin', 'before-brace', 'comments-after-result', 'comments-before-brace', 'nested-statement'];
+const negative = ['before-implicit', 'body-clause', 'duplicate-budget', 'duplicate-budget-key', 'duplicate-effects', 'duplicate-key', 'duplicate-return', 'fallthrough', 'late-clause', 'missing-end', 'missing-outer-end', 'missing-return', 'same-line-implicit', 'trailing-clause-throws', 'trailing-colon', 'unclosed-map'];
 function validate(m) {
   assert.equal(m.schema, 'atto.flexible-callable-headers.v1');
   assert.deepEqual(Object.keys(m.backend_status).sort(), backends);
@@ -16,8 +16,8 @@ function validate(m) {
   assert.equal(m.status, 'NOT_EXECUTED');
   assert.deepEqual(m.cases.filter(c => c.kind === 'pass').map(c => c.id).sort(), positive);
   assert.deepEqual(m.cases.filter(c => c.kind === 'fail').map(c => c.id).sort(), negative);
-  assert.equal(m.cases.length, 16);
-  assert.equal(new Set(m.cases.map(c => c.git_blob_sha)).size, 16);
+  assert.equal(m.cases.length, 25);
+  assert.equal(new Set(m.cases.map(c => c.git_blob_sha)).size, 25);
   const disk = readdirSync(new URL(folder, root)).filter(f => f.endsWith('.atto')).sort();
   assert.deepEqual(disk, m.cases.map(c => c.id + '.atto').sort());
   for (const c of m.cases) {
