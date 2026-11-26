@@ -1,0 +1,310 @@
+{
+  "schema": "atto.callable-aggregate-patterns/v1",
+  "normative_spec": "https://github.com/atto-lang/atto-spec/pull/260",
+  "java_candidate": "https://github.com/atto-lang/atto-source.java/pull/1919",
+  "scope": "Target fixtures only; no guest tests executed. Unsupported syntax is not a passing negative test when the diagnostic is unrelated to the required semantic rule.",
+  "backends": [
+    "java",
+    "llvm",
+    "net",
+    "forge",
+    "wasm",
+    "rs",
+    "cranelift",
+    "js",
+    "hdl"
+  ],
+  "status": {
+    "java": "not_executed",
+    "llvm": "not_executed",
+    "net": "not_executed",
+    "forge": "not_executed",
+    "wasm": "not_executed",
+    "rs": "not_executed",
+    "cranelift": "not_executed",
+    "js": "not_executed",
+    "hdl": "not_executed"
+  },
+  "cases": [
+    {
+      "id": "tuple-unary-pipe",
+      "group": "tuple",
+      "expect": "accept",
+      "source": "pub routine main(): void {\n  stdio.stdout.write((5, 3, 5) |> |(a,b,c)| -> a+b+c);\n  return;\n}\n",
+      "stdout": "13",
+      "reason": "One root slot, exact positional projections"
+    },
+    {
+      "id": "tuple-multiformal-pipe",
+      "group": "tuple",
+      "expect": "accept",
+      "source": "pub routine main(): void {\n  stdio.stdout.write((5, 3, 5) |> |a,b,c| -> a+b+c);\n  return;\n}\n",
+      "stdout": "13",
+      "reason": "Existing three-slot expansion remains distinct"
+    },
+    {
+      "id": "tuple-singleton",
+      "group": "tuple",
+      "expect": "accept",
+      "source": "pub routine main(): void {\n  stdio.stdout.write((9,) |> |(a,)| -> a);\n  return;\n}\n",
+      "stdout": "9",
+      "reason": "Trailing comma distinguishes grouping"
+    },
+    {
+      "id": "tuple-empty",
+      "group": "tuple",
+      "expect": "accept",
+      "source": "pub routine main(): void {\n  stdio.stdout.write(() |> |()| -> 8);\n  return;\n}\n",
+      "stdout": "8",
+      "reason": "One empty tuple formal, zero leaves"
+    },
+    {
+      "id": "tuple-discard",
+      "group": "tuple",
+      "expect": "accept",
+      "source": "pub routine main(): void {\n  stdio.stdout.write((5, 99, 8) |> |(a,_,c)| -> a+c);\n  return;\n}\n",
+      "stdout": "13",
+      "reason": "Discard consumes one slot"
+    },
+    {
+      "id": "tuple-named-call",
+      "group": "tuple",
+      "expect": "accept",
+      "source": "fnc total((a: int,b: int,c: int)): int { return a+b+c; }\npub routine main(): void { stdio.stdout.write(total((5,3,5))); return; }\n",
+      "stdout": "13",
+      "reason": "One ordinary argument"
+    },
+    {
+      "id": "tuple-mixed-arity",
+      "group": "tuple",
+      "expect": "accept",
+      "source": "fnc total((a: int,b: int), int scale): int { return (a+b)*scale; }\npub routine main(): void { stdio.stdout.write(total((5,8),2)); return; }\n",
+      "stdout": "26",
+      "reason": "Root slots count two, not three"
+    },
+    {
+      "id": "tuple-evaluation-once",
+      "group": "tuple",
+      "expect": "accept",
+      "source": "fnc source(): (int,int) { stdio.stdout.write(\"once:\"); return (5,8); }\npub routine main(): void { stdio.stdout.write(source() |> |(a,b)| -> a+b); return; }\n",
+      "stdout": "once:13",
+      "reason": "Upstream evaluated exactly once"
+    },
+    {
+      "id": "tuple-let-local",
+      "group": "binding",
+      "expect": "accept",
+      "source": "fnc total((let a: int,val b: int)): int { a=a+1; return a+b; }\npub routine main(): void { stdio.stdout.write(total((5,8))); return; }\n",
+      "stdout": "14",
+      "reason": "Rebinding a Copy leaf changes its local binding"
+    },
+    {
+      "id": "record-partial-selection",
+      "group": "record",
+      "expect": "accept",
+      "source": "pub routine main(): void {\n  stdio.stdout.write(record{x:5,y:8,extra:true} |> |{y,x}| -> x+y);\n  return;\n}\n",
+      "stdout": "13",
+      "reason": "Unselected extra field allowed, source order not type identity"
+    },
+    {
+      "id": "record-field-alias",
+      "group": "record",
+      "expect": "accept",
+      "source": "pub routine main(): void {\n  stdio.stdout.write(record{x:5,y:8} |> |{x as a,y as b}| -> a+b);\n  return;\n}\n",
+      "stdout": "13",
+      "reason": "Selectors independent from leaf names"
+    },
+    {
+      "id": "record-field-discard",
+      "group": "record",
+      "expect": "accept",
+      "source": "pub routine main(): void {\n  stdio.stdout.write(record{x:5,y:99,z:8} |> |{x,y as _,z}| -> x+z);\n  return;\n}\n",
+      "stdout": "13",
+      "reason": "Discard resolves the field but introduces no binder"
+    },
+    {
+      "id": "struct-field-selection",
+      "group": "struct",
+      "expect": "accept",
+      "source": "pub routine main(): void { val point = infer struct{x:5,y:8}; stdio.stdout.write(point |> |{x,y}| -> x+y); return; }\n",
+      "stdout": "13",
+      "reason": "Closed nominal/structural data projection"
+    },
+    {
+      "id": "class-public-fields",
+      "group": "class",
+      "expect": "accept",
+      "source": "define class Point as pub val int x = 5; pub val int y = 8; end\nfnc total(Point {x,y}): int { return x+y; }\npub routine main(): void { stdio.stdout.write(total(new Point())); return; }\n",
+      "stdout": "13",
+      "reason": "Nominal public data fields"
+    },
+    {
+      "id": "class-method",
+      "group": "class",
+      "expect": "accept",
+      "source": "define class Point as pub val int x = 5; pub val int y = 8; end\ndefine class Calc as pub total(Point {x,y}): int { return x+y; } end\npub routine main(): void { stdio.stdout.write(new Calc().total(new Point())); return; }\n",
+      "stdout": "13",
+      "reason": "Receiver is not a formal slot"
+    },
+    {
+      "id": "nested-tuples",
+      "group": "recursive",
+      "expect": "accept",
+      "source": "pub routine main(): void {\n  stdio.stdout.write(((5,3),5) |> |((a,b),c)| -> a+b+c);\n  return;\n}\n",
+      "stdout": "13",
+      "reason": "Typed nested paths; not supported yet"
+    },
+    {
+      "id": "nested-record-tuple",
+      "group": "recursive",
+      "expect": "accept",
+      "source": "pub routine main(): void {\n  stdio.stdout.write(record{pair:(5,8),extra:0} |> |{pair as (a,b)}| -> a+b);\n  return;\n}\n",
+      "stdout": "13",
+      "reason": "Mixed recursive paths; not supported yet"
+    },
+    {
+      "id": "root-alias",
+      "group": "alias",
+      "expect": "accept",
+      "source": "pub routine main(): void {\n  stdio.stdout.write((5,3,5) |> |(a,b,c) as t| -> a+b+c+t[0]);\n  return;\n}\n",
+      "stdout": "18",
+      "reason": "Whole root is one anchor, Copy projections; not supported yet"
+    },
+    {
+      "id": "tuple-scalar",
+      "group": "shape",
+      "expect": "reject",
+      "source": "fnc bad(): int { return 1 |> |(a,b)| -> a+b; }\n",
+      "reason": "Scalar is not a tuple",
+      "diagnostic_family": "tuple|pattern|shape|arity|unsupported"
+    },
+    {
+      "id": "tuple-array",
+      "group": "shape",
+      "expect": "reject",
+      "source": "fnc bad(): int { return [1,2] |> |(a,b)| -> a+b; }\n",
+      "reason": "Dynamic sequence must not masquerade as tuple",
+      "diagnostic_family": "tuple|pattern|shape|arity|unsupported"
+    },
+    {
+      "id": "tuple-wrong-arity",
+      "group": "shape",
+      "expect": "reject",
+      "source": "fnc bad(): int { return (1,2,3) |> |(a,b)| -> a+b; }\n",
+      "reason": "Exact arity required",
+      "diagnostic_family": "tuple|pattern|arity|size|unsupported"
+    },
+    {
+      "id": "tuple-empty-mismatch",
+      "group": "shape",
+      "expect": "reject",
+      "source": "fnc bad(): int { return (1,) |> |()| -> 0; }\n",
+      "reason": "Empty pattern requires empty tuple",
+      "diagnostic_family": "tuple|pattern|arity|size|unsupported"
+    },
+    {
+      "id": "tuple-singleton-no-comma",
+      "group": "shape",
+      "expect": "reject",
+      "source": "fnc bad(): int { return (1,) |> |(a)| -> a; }\n",
+      "reason": "Grouping not singleton tuple pattern",
+      "diagnostic_family": "singleton|comma|pattern|unsupported"
+    },
+    {
+      "id": "duplicate-leaf",
+      "group": "binding",
+      "expect": "reject",
+      "source": "fnc bad(): int { return (1,2) |> |(a,a)| -> a; }\n",
+      "reason": "Names are unique across leaves",
+      "diagnostic_family": "duplicate|binding|pattern|unsupported"
+    },
+    {
+      "id": "duplicate-selector",
+      "group": "binding",
+      "expect": "reject",
+      "source": "fnc bad(): int { return record{x:1} |> |{x as a,x as b}| -> a+b; }\n",
+      "reason": "Selectors unique even when renamed",
+      "diagnostic_family": "duplicate|selector|pattern|unsupported"
+    },
+    {
+      "id": "discard-missing-field",
+      "group": "record",
+      "expect": "reject",
+      "source": "fnc bad(): int { return record{x:1} |> |{missing as _}| -> 0; }\n",
+      "reason": "Discard still validates selector",
+      "diagnostic_family": "field|member|pattern|unsupported"
+    },
+    {
+      "id": "missing-field",
+      "group": "record",
+      "expect": "reject",
+      "source": "fnc bad(): int { return record{x:1} |> |{y}| -> y; }\n",
+      "reason": "No dynamic field membership",
+      "diagnostic_family": "field|member|pattern|unsupported"
+    },
+    {
+      "id": "root-alias-collision",
+      "group": "alias",
+      "expect": "reject",
+      "source": "fnc bad(): int { return (1,2) |> |(a,b) as a| -> a; }\n",
+      "reason": "Alias cannot collide with leaf",
+      "diagnostic_family": "duplicate|alias|pattern|unsupported"
+    },
+    {
+      "id": "duplicate-cross-slot",
+      "group": "binding",
+      "expect": "reject",
+      "source": "fnc bad((a: int,b: int),int a): int { return a; }\n",
+      "reason": "Leaf may not shadow another formal",
+      "diagnostic_family": "duplicate|binding|parameter|unsupported"
+    },
+    {
+      "id": "immutable-rebind",
+      "group": "binding",
+      "expect": "reject",
+      "source": "fnc bad((a: int,b: int)): int { a=0; return b; }\n",
+      "reason": "Default binding is val",
+      "diagnostic_family": "immutable|rebind|mutab|unsupported"
+    },
+    {
+      "id": "runtime-const-pattern",
+      "group": "binding",
+      "expect": "reject",
+      "source": "fnc bad((const a: int,b: int)): int { return a; }\n",
+      "reason": "Runtime parameter cannot introduce constexpr",
+      "diagnostic_family": "const|pattern|binding|unsupported"
+    },
+    {
+      "id": "named-leaf-not-label",
+      "group": "arity",
+      "expect": "reject",
+      "source": "fnc sum((a: int,b: int)): int { return a+b; }\nfnc bad(): int { return sum(a:1,b:2); }\n",
+      "reason": "Only root alias can be named-call label",
+      "diagnostic_family": "argument|parameter|label|arity|unsupported"
+    },
+    {
+      "id": "named-no-implicit-expansion",
+      "group": "arity",
+      "expect": "reject",
+      "source": "fnc sum(int a,int b): int { return a+b; }\nfnc bad(): int { return (1,2) |> sum; }\n",
+      "reason": "Existing named functions do not implicitly expand",
+      "diagnostic_family": "argument|parameter|arity|tuple|unsupported"
+    },
+    {
+      "id": "class-private-field",
+      "group": "visibility",
+      "expect": "reject",
+      "source": "define class Vault as private val int secret=7; end\nfnc bad(Vault {secret}): int { return secret; }\n",
+      "reason": "No private field bypass",
+      "diagnostic_family": "private|visible|visibility|access|unsupported"
+    },
+    {
+      "id": "class-method-not-field",
+      "group": "visibility",
+      "expect": "reject",
+      "source": "define class Vault as pub read(): int { return 7; } end\nfnc bad(Vault {read}): int { return 0; }\n",
+      "reason": "No implicit getter or method invocation",
+      "diagnostic_family": "field|member|method|unsupported"
+    }
+  ]
+}
