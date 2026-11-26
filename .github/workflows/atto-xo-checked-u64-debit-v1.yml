@@ -31,6 +31,11 @@ jobs:
             exit 1
           fi
           grep -F 'JS: exact source required' missing.log
+          if ATTO_U64_CROSS_REQUIRED=typo node --test tests/checked-u64-cross-candidates.test.mjs > invalid-mode.log 2>&1; then
+            echo 'Invalid strict mode unexpectedly passed'
+            exit 1
+          fi
+          grep -F 'ATTO_U64_CROSS_REQUIRED must be 0 or 1' invalid-mode.log
           if ATTO_U64_CROSS_REQUIRED=1 ATTO_U64_JS_SOURCE=tests/fixed-width-integer-oracle.test.mjs node --test tests/checked-u64-cross-candidates.test.mjs > altered.log 2>&1; then
             echo 'Altered source unexpectedly passed'
             exit 1
