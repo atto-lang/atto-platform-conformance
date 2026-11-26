@@ -260,14 +260,6 @@
     "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45913135177/job/140225971752",
     "scope": "3 isolated wire arithmetic, decimal and expanded hash index guests passed; full suite fails Map admission in Value; does not qualify JSON or later head"
   },
-  "wasm_admission_candidate": {
-    "head": "0021bade83e7acb9aba2f44f63856e791c33c5ec",
-    "tree": "f6a59140fe941ff89d0e775a2e51aaed1a7feb66",
-    "llvm_head": "ee48e0263f0bd805ef3e376ca40dc0d03d1d7df1",
-    "llvm_tree": "e92d3b011e880948a79a5f2ad7e313853460d657",
-    "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45913269966",
-    "scope": "required real compiler bridge; pending"
-  },
   "llvm_compiler_admission_receipt": {
     "head": "ee48e0263f0bd805ef3e376ca40dc0d03d1d7df1",
     "tree": "e92d3b011e880948a79a5f2ad7e313853460d657",
@@ -275,5 +267,24 @@
     "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45913208011/job/140226206226",
     "passed": 6,
     "scope": "actual LLVM compiler build, native scalar executable and five absent identifier/member source denials with no IR publication; not serialization generation or wire execution"
+  },
+  "wasm_compiler_admission_receipt": {
+    "head": "0021bade83e7acb9aba2f44f63856e791c33c5ec",
+    "tree": "f6a59140fe941ff89d0e775a2e51aaed1a7feb66",
+    "blobs": 701,
+    "llvm_head": "ee48e0263f0bd805ef3e376ca40dc0d03d1d7df1",
+    "llvm_tree": "e92d3b011e880948a79a5f2ad7e313853460d657",
+    "llvm_blobs": 3666,
+    "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45913269966/job/140226397031",
+    "passed": 9,
+    "scope": "real compiler and linker, executed wasm32 scalar module, four missing identifiers each tested twice including preservation of previously published module and provenance; not generated codec execution"
+  },
+  "java_latest_candidate_receipt": {
+    "source_head": "84965e5932992a3d574fc3129ad94111c2689d71",
+    "source_tree": "6701687a414f2096311b1915e51e8d49b47a1aad",
+    "compiler_head": "b229250b7dd4a349e6d3f72a5e00729ad4af2b79",
+    "compiler_tree": "1884a81e71dd4ecc9cd132f7e9c0916ce8e5bf24",
+    "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45913335785/job/140226603380",
+    "scope": "3 isolated guest suites passed; core/full failed on Value Map admission before JSON tests"
   }
 }
