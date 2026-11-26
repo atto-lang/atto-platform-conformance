@@ -8,66 +8,76 @@
       "id": "direct",
       "kind": "pass",
       "path": "fixtures/callable-intrinsics/pass/direct.atto",
-      "expected_result": 42
+      "expected_result": 42,
+      "git_blob_sha": "22c215a2d5e072c8f4010e5124cc2bac44515539"
     },
     {
       "id": "call",
       "kind": "pass",
       "path": "fixtures/callable-intrinsics/pass/call.atto",
-      "expected_result": 42
+      "expected_result": 42,
+      "git_blob_sha": "52a48f5c8fd7224a03509aeb9995b768bb168c31"
     },
     {
       "id": "apply_literal",
       "kind": "pass",
       "path": "fixtures/callable-intrinsics/pass/apply_literal.atto",
-      "expected_result": 42
+      "expected_result": 42,
+      "git_blob_sha": "f8f58ce8840b2c381c66f50b313763c1ca4b0752"
     },
     {
       "id": "apply_existing",
       "kind": "pass",
       "path": "fixtures/callable-intrinsics/pass/apply_existing.atto",
-      "expected_result": 42
+      "expected_result": 42,
+      "git_blob_sha": "9cf4fc0612ef747c4b31580a8a9b6b969eb0e0ad"
     },
     {
       "id": "apply_pipeline",
       "kind": "pass",
       "path": "fixtures/callable-intrinsics/pass/apply_pipeline.atto",
-      "expected_result": 42
+      "expected_result": 42,
+      "git_blob_sha": "01c831605e89d09a1b632bc1c727882021406142"
     },
     {
       "id": "wrong_arity",
       "kind": "fail",
       "path": "fixtures/callable-intrinsics/fail/wrong_arity.atto",
       "expected_diagnostic_category": "arity",
-      "expected_artifact": "NONE"
+      "expected_artifact": "NONE",
+      "git_blob_sha": "2e94d05bffe31daf67a0fdf8e74d77a28c0e5e05"
     },
     {
       "id": "wrong_tuple_arity",
       "kind": "fail",
       "path": "fixtures/callable-intrinsics/fail/wrong_tuple_arity.atto",
       "expected_diagnostic_category": "arity",
-      "expected_artifact": "NONE"
+      "expected_artifact": "NONE",
+      "git_blob_sha": "28f7bc950830dc3b56e1590a9c6bd09a6c02fe1b"
     },
     {
       "id": "wrong_tuple_type",
       "kind": "fail",
       "path": "fixtures/callable-intrinsics/fail/wrong_tuple_type.atto",
       "expected_diagnostic_category": "type",
-      "expected_artifact": "NONE"
+      "expected_artifact": "NONE",
+      "git_blob_sha": "7a11172f777a7ae83bc1691bec8421b1742eedb2"
     },
     {
       "id": "bind_absent",
       "kind": "fail",
       "path": "fixtures/callable-intrinsics/fail/bind_absent.atto",
       "expected_diagnostic_category": "unavailable_callable_member",
-      "expected_artifact": "NONE"
+      "expected_artifact": "NONE",
+      "git_blob_sha": "2d43ff7a94453b75fa9f4097d2698ad1e0fec7a0"
     },
     {
       "id": "extra_receiver",
       "kind": "fail",
       "path": "fixtures/callable-intrinsics/fail/extra_receiver.atto",
       "expected_diagnostic_category": "arity",
-      "expected_artifact": "NONE"
+      "expected_artifact": "NONE",
+      "git_blob_sha": "2c600a6484cfedae2ff1cec3c1c847807e9232b2"
     }
   ],
   "backend_status": {
