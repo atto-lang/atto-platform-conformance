@@ -42,7 +42,9 @@
         "intrinsic-new-distinction"
       ],
       "expectedGuestOutput": "42",
-      "backendStatus": "UNVERIFIED"
+      "backendStatus": "UNVERIFIED",
+      "executionMode": "linked-harness-required",
+      "expectedMainResult": "42"
     },
     {
       "path": "newable-bare-factory.atto",
@@ -53,7 +55,9 @@
         "keyword-free-class-factory"
       ],
       "expectedGuestOutput": "42",
-      "backendStatus": "UNVERIFIED"
+      "backendStatus": "UNVERIFIED",
+      "executionMode": "linked-harness-required",
+      "expectedMainResult": "42"
     },
     {
       "path": "generic-bare-members.atto",
@@ -64,7 +68,9 @@
         "compiler-owned-Newable[T]"
       ],
       "expectedGuestOutput": "42",
-      "backendStatus": "UNVERIFIED"
+      "backendStatus": "UNVERIFIED",
+      "executionMode": "standalone-main",
+      "expectedMainResult": "42"
     },
     {
       "path": "generic-legacy-members.atto",
@@ -75,7 +81,9 @@
         "generic-class-specialization"
       ],
       "expectedGuestOutput": "42",
-      "backendStatus": "UNVERIFIED"
+      "backendStatus": "UNVERIFIED",
+      "executionMode": "standalone-main",
+      "expectedMainResult": "42"
     }
   ],
   "negative": [
