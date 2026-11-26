@@ -7,7 +7,7 @@ namespace Atto.OwnershipLedger
 
 structure Ledger where
   root : Nat
-  local : Nat
+  localCount : Nat
   dropped : Nat
   shared : Nat
   exclusive : Bool
@@ -16,7 +16,7 @@ structure Ledger where
 def initial : Ledger := ⟨1, 0, 0, 0, false⟩
 
 def conserved (s : Ledger) : Prop :=
-  s.root + s.local + s.dropped = 1
+  s.root + s.localCount + s.dropped = 1
 
 def loansSafe (s : Ledger) : Prop :=
   (s.shared > 0 → s.root = 1) ∧
@@ -29,11 +29,11 @@ inductive Op where
 
 inductive Step : Ledger → Op → Ledger → Prop where
   | move (s : Ledger) : s.root = 1 → s.shared = 0 → s.exclusive = false →
-      Step s .move ⟨0, s.local + 1, s.dropped, 0, false⟩
+      Step s .move ⟨0, s.localCount + 1, s.dropped, 0, false⟩
   | dropRoot (s : Ledger) : s.root = 1 → s.shared = 0 → s.exclusive = false →
-      Step s .dropRoot ⟨0, s.local, s.dropped + 1, 0, false⟩
-  | dropLocal (s : Ledger) : s.local = 1 →
-      Step s .dropLocal {s with local := 0, dropped := s.dropped + 1}
+      Step s .dropRoot ⟨0, s.localCount, s.dropped + 1, 0, false⟩
+  | dropLocal (s : Ledger) : s.localCount = 1 →
+      Step s .dropLocal {s with localCount := 0, dropped := s.dropped + 1}
   | acquireShared (s : Ledger) : s.root = 1 → s.exclusive = false →
       Step s .acquireShared {s with shared := s.shared + 1}
   | acquireExclusive (s : Ledger) : s.root = 1 → s.shared = 0 → s.exclusive = false →
@@ -64,13 +64,11 @@ theorem no_root_resurrection {s t : Ledger} {op : Op}
 
 theorem read_requires_live_root {s t : Ledger} (h : Step s .readRoot t) :
     s.root = 1 := by
-  cases h with
-  | readRoot _ live _ => exact live
+  cases h <;> assumption
 
 theorem no_move_with_loan {s t : Ledger} (h : Step s .move t) :
     s.shared = 0 ∧ s.exclusive = false := by
-  cases h with
-  | move _ _ shared exclusive => exact ⟨shared, exclusive⟩
+  cases h <;> constructor <;> assumption
 
 inductive Trace : Ledger → Ledger → Prop where
   | refl (s : Ledger) : Trace s s
@@ -79,19 +77,19 @@ inductive Trace : Ledger → Ledger → Prop where
 theorem trace_conservation {s t : Ledger} (h : Trace s t)
     (hs : conserved s) : conserved t := by
   induction h with
-  | refl _ => exact hs
+  | refl => exact hs
   | next _ step ih => exact conservation_step step ih
 
 theorem trace_loans_safe {s t : Ledger} (h : Trace s t)
     (hs : loansSafe s) : loansSafe t := by
   induction h with
-  | refl _ => exact hs
+  | refl => exact hs
   | next _ step ih => exact loan_safety_step step ih
 
 theorem trace_no_resurrection {s t : Ledger} (h : Trace s t)
     (hs : s.root = 0) : t.root = 0 := by
   induction h with
-  | refl _ => exact hs
+  | refl => exact hs
   | next _ step ih => exact no_root_resurrection step ih
 
 theorem use_after_move_rejected {s t u v : Ledger}
@@ -101,8 +99,8 @@ theorem use_after_move_rejected {s t u v : Ledger}
   omega
 
 theorem complete_cleanup_exactly_once {s : Ledger} (h : Trace initial s)
-    (hr : s.root = 0) (hl : s.local = 0) : s.dropped = 1 := by
-  have hc := trace_conservation h (by decide : conserved initial)
+    (hr : s.root = 0) (hl : s.localCount = 0) : s.dropped = 1 := by
+  have hc := trace_conservation h (by simp [conserved, initial] : conserved initial)
   unfold conserved at hc
   omega
 
