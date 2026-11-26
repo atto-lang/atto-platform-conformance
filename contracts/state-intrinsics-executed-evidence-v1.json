@@ -72,5 +72,30 @@
     "atto-source.hdl",
     "atto-source.realtime"
   ],
-  "promotion": "Recheck current heads, full exact applicable corpus, independent review, integration tree. Do not promote based on this historical record alone."
+  "promotion": "Recheck current heads, full exact applicable corpus, independent review, integration tree. Do not promote based on this historical record alone.",
+  "additionalEvidence": [
+    {
+      "repo": "atto-lang/atto-source.wasm",
+      "pr": 308,
+      "head": "cba1352e5a922a6bb14540a7af0cf6fe3aded4b0",
+      "tree": "24014dad24924b471193641183dc93f2d6fe283e",
+      "runs": [
+        45734578625
+      ],
+      "executed": "6/6 groups including actual browser compiler guests and 10000-operation differential lease model",
+      "scope": "expected constant-time per-container admission/release/quiescence; no queued multi-worker fairness"
+    },
+    {
+      "repo": "atto-lang/atto-source.forge",
+      "pr": 266,
+      "head": "17e6cabd99e0d87368ae7440f9391a90ed8d39f6",
+      "tree": "725fd6e4c1151bc001db9190d45dbeeb8f1f7f6e",
+      "runs": [
+        45734706766
+      ],
+      "job": 139625011206,
+      "executed": "nine actual CLI denial modes plus scalar controls",
+      "scope": "REJECT_ONLY; no feature parity"
+    }
+  ]
 }
