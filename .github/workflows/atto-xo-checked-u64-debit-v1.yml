@@ -5,6 +5,7 @@ on:
       - 'contracts/atto-xo-checked-u64-debit-v1/**'
       - 'tests/atto-xo-checked-u64-debit-v1.test.mjs'
       - 'tests/fixed-width-integer-oracle.test.mjs'
+      - 'tests/fixed-width-division-oracle.test.mjs'
       - 'tests/checked-u64-cross-candidates.test.mjs'
       - 'tests/checked-u64-target-matrix.test.mjs'
       - 'tests/checked-u64-forge-target-matrix.test.mjs'
@@ -22,6 +23,8 @@ jobs:
       - run: node --test tests/atto-xo-checked-u64-debit-v1.test.mjs
       - name: Fixed-width host reference (not compiler parity)
         run: node --test tests/fixed-width-integer-oracle.test.mjs
+      - name: Fixed-width division reference (not compiler parity)
+        run: node --test tests/fixed-width-division-oracle.test.mjs
       - name: Cross-candidate harness fail-closed controls (no guest execution)
         shell: bash
         run: |
