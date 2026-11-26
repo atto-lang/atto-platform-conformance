@@ -84,7 +84,9 @@ try{
     if(['js','rs','wasm'].includes(target))checkResult(run(process.execPath,['--input-type=module','-e',guestDriver,target==='js'?'js':'wasm',artifact,String(c.expected_exit)],{timeout:10000}),'GUEST_OK '+c.expected_exit+'\n');
     else if(isNet){
      const host=join(resolve(extra),'host/Ores.Net.NativeHost/Ores.Net.NativeHost.csproj'),native=join(dir,'native');
-     const p=run('dotnet',['publish',host,'-c','Release','-r','linux-x64','-p:GeneratedAssembly='+artifact,'-o',native],{timeout:240000});
+     // Each generated assembly gets isolated intermediate and final build
+     // paths. MSBuild's incremental state must never reuse another fixture.
+     const p=run('dotnet',['publish',host,'-c','Release','-r','linux-x64','--artifacts-path',join(dir,'build-artifacts'),'-p:GeneratedAssembly='+artifact,'-o',native],{timeout:240000});
      assert.equal(p.status,0,p.stdout+p.stderr);assert.ok(fs.readFileSync(join(native,'oreslang-app')).subarray(0,4).equals(Buffer.from([127,69,76,70])));
      assert.ok(!fs.readdirSync(native).some(f=>f.endsWith('.dll')));
      checkResult(run(join(native,'oreslang-app'),[],{timeout:10000}),String(c.expected_exit)+'\n');
