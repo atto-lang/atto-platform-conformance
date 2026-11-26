@@ -1107,5 +1107,87 @@
     "isolate_test_callbacks_passed": 54,
     "guest_level_verification": "not_executed",
     "limitation": "Host reference tests only. Actor retirement coordinator, compiler lowering and generated ESM guest execution remain unverified. In particular forced early retirement leaves unwind busy; this is not a PASS for retirement quiescence."
-  }
+  },
+  "exact_pipeline_candidate_receipts": [
+    {
+      "backend": "atto-source.rs",
+      "compiler_head": "e0f7fef1cac390004c5e518c539a0cdef9d11b9b",
+      "compiler_tree": "728bd100998ac7d778381356ca1000bb302ba4cb",
+      "fixture_registry_head": "e4fb01518458cc139f00f297ae480ed361be5309",
+      "fixture_registry_tree": "855029235f61ac038c83bb37f682bebd047ae381",
+      "job": "https://github.com/file-tunnel/atto-ci/actions/runs/45908428448/job/140210679160",
+      "profiles": [
+        "native-compiler",
+        "wasm32-compiler-in-node"
+      ],
+      "compiler_wasm_sha256": "2465276622437a69e43b79f5967647168f52800c0ec49261c0a2342bf67c2575",
+      "results": [
+        {
+          "case_id": "pipeline-defer-registration",
+          "source_blob": "58b4ca263a178732e79e7e5509092dc9dfabea3d",
+          "observed": {
+            "kind": "return",
+            "value": 42,
+            "stdout": "seed\ntwice\nbody\ntuple\n7\n10\n"
+          },
+          "guest_sha256": "bef8e5fc46a5e74a2c7630b491e5cc6c40124c13a5122e954b0558f190fff40e",
+          "byte_identical": true
+        },
+        {
+          "case_id": "pipeline-recover-registration",
+          "source_blob": "1bb8cf98f5f52d219951ef102acf9bb0f5c1b936",
+          "observed": {
+            "kind": "return",
+            "value": 42,
+            "stdout": "seed\n5\noriginal\n"
+          },
+          "guest_sha256": "3178a57b8b26e89bc2331c1593a7851345b8fb130c5529201006555e0a4e7721",
+          "byte_identical": true
+        },
+        {
+          "case_id": "pipeline-arity-rejection",
+          "source_blob": "e2faa1a2d281f4acd93b405b282b189b0625c946",
+          "observed": {
+            "kind": "compile-reject"
+          },
+          "diagnostic": "E_ARITY",
+          "artifact_emitted": false
+        }
+      ],
+      "limitation": "Historical exact candidate head, superseded by integration head; not a standalone atto-source.wasm, browser UI, native executable or current-main claim."
+    },
+    {
+      "backend": "atto-source.java",
+      "compiler_head": "310ea6a9c972302646c86e0c37d8250840c1dee1",
+      "compiler_tree": "b483b4f0b742ad8eee3368626fc4ed04932bd56f",
+      "fixture_registry_head": "e4fb01518458cc139f00f297ae480ed361be5309",
+      "fixture_registry_tree": "855029235f61ac038c83bb37f682bebd047ae381",
+      "job": "https://github.com/file-tunnel/atto-ci/actions/runs/45907527740/job/140207744110",
+      "profiles": [
+        "graalvm-jvm"
+      ],
+      "results": [
+        {
+          "case_id": "pipeline-defer-registration",
+          "source_blob": "58b4ca263a178732e79e7e5509092dc9dfabea3d",
+          "observed": {
+            "kind": "return",
+            "value": 42,
+            "stdout": "seed\ntwice\nbody\ntuple\n7\n10\n"
+          },
+          "test": "sharedPipelineFactoryBindsScalarChainAndTupleBeforeBody"
+        },
+        {
+          "case_id": "pipeline-arity-rejection",
+          "source_blob": "e2faa1a2d281f4acd93b405b282b189b0625c946",
+          "observed": {
+            "kind": "compile-reject"
+          },
+          "test": "sharedPipelineArityFixtureRejectsBeforeGuestExecution",
+          "artifact_emitted": false
+        }
+      ],
+      "limitation": "Focused 14/14 passed; five preexisting ParserTest failures on both candidate and pre-pipeline branch. No whole-suite, recover, native-image or current-main claim."
+    }
+  ]
 }
