@@ -1,0 +1,9 @@
+define class Customer as
+    pub int id = 42;
+end
+pub fnc main(): int {
+    val a = new Customer();
+    val b = new Customer();
+    if a is b then return 0; fi
+    return 42;
+}
