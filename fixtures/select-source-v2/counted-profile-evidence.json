@@ -756,6 +756,77 @@
           "outcome": "unsupported-reject-no-artifact"
         }
       ]
+    },
+    {
+      "backend": "forge",
+      "head": "e8cfe9c68b4f4f041d4120be84c669e5d2f33882",
+      "tree": "4eb57bf8b543de341fbdd8b222692c0ee60abff4",
+      "pr": 300,
+      "job": 140078393902,
+      "command": "cmake build oresforge; python3 verification/mixed_counted_select_admission.py build/oresforge (4 exact sources, 16 isolated forms, 9 CLI modes)",
+      "profile": "unsupported-stage0-cli",
+      "limits": [
+        "unsupported admission only",
+        "not counted guest"
+      ],
+      "carrier": "fasttwebb/atto-ci",
+      "run": 45868766294,
+      "steps": 2,
+      "fixtures": [
+        {
+          "id": "counted-distinct-alias-projection",
+          "blob": "5baca9bb9eb4b98500cab770888a45fb60bbf10d",
+          "outcome": "unsupported-reject-no-artifact"
+        }
+      ]
+    },
+    {
+      "backend": "cranelift",
+      "head": "d67616f9bd4f9f1efcaabfb17ec7c517f61afb94",
+      "tree": "d43d3d1eda3835507d2a85adec62778a061a3ffd",
+      "pr": 157,
+      "job": 140078393539,
+      "command": "cargo test --locked --test continuation_admission (3/3)",
+      "profile": "unsupported-stage0-cli",
+      "limits": [
+        "unsupported admission only",
+        "not counted guest"
+      ],
+      "carrier": "fasttwebb/atto-ci",
+      "run": 45868766294,
+      "steps": 2,
+      "fixtures": [
+        {
+          "id": "counted-distinct-alias-projection",
+          "blob": "5baca9bb9eb4b98500cab770888a45fb60bbf10d",
+          "outcome": "unsupported-reject-no-artifact"
+        }
+      ]
+    },
+    {
+      "backend": "wasm",
+      "head": "fa57424921d84736e65aa79d855c4effda2d1cf3",
+      "tree": "2180dcf21ce06e0cd6124bbaa1027dd5206260aa",
+      "pr": 332,
+      "job": 140078393997,
+      "command": "Rust wasm32 compiler at 852cd53bf35e51d5a5145e929f278ced96873131; node --test tests/counted-select-real-browser-gate.mjs (4/4; 17 exact blobs, 56 isolated forms; ESM unavailable)",
+      "profile": "unsupported-wasm32-compiler",
+      "limits": [
+        "unsupported admission only",
+        "not counted guest",
+        "ESM unavailable",
+        "no browser worker execution"
+      ],
+      "carrier": "fasttwebb/atto-ci",
+      "run": 45868766294,
+      "steps": 2,
+      "fixtures": [
+        {
+          "id": "counted-distinct-alias-projection",
+          "blob": "5baca9bb9eb4b98500cab770888a45fb60bbf10d",
+          "outcome": "unsupported-reject-no-artifact"
+        }
+      ]
     }
   ],
   "notExecuted": [
