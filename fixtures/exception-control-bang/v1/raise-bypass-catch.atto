@@ -1,0 +1,3 @@
+pub fnc main(): int {
+    try { raise! new Error("raised"); } catch (err) { return 42; }
+}

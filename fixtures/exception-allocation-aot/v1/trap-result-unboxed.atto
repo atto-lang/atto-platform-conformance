@@ -1,0 +1,5 @@
+fnc calc(int n): Result<int, Error> { return Ok(n); }
+pub fnc main(): int {
+    val r = trap! calc(42);
+    return r.unwrap();
+}

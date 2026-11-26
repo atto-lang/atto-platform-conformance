@@ -1,0 +1,7 @@
+async fnc ready(): int { return 42; }
+async trap fnc work(): int { return await ready(); }
+pub async fnc main(): int {
+    val Future<Option<int>> f = work();
+    val Option<int> r = await f;
+    return r.unwrap();
+}

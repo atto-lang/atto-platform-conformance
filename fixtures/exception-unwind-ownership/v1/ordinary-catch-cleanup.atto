@@ -1,0 +1,4 @@
+pub fnc main(): int {
+    defer { stdio.println("cleanup"); };
+    try { throw! new Error("ordinary"); } catch (err) { stdio.println("catch"); return 42; } finally { stdio.println("finally"); }
+}

@@ -1,0 +1,4 @@
+fnc fail_now(): int { throw! new Error("callee"); }
+pub fnc main(): int {
+    try { return fail_now(); } catch (err) { return 42; }
+}

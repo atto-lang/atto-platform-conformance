@@ -1,0 +1,5 @@
+fnc maybe(int n): Option<int> { return Some(n); }
+pub fnc main(): int {
+    val r = trap! maybe(42);
+    return r.unwrap().unwrap();
+}
