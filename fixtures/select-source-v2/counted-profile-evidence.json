@@ -40,13 +40,13 @@
     {
       "backend": "js",
       "profile": "counted-ready-v1",
-      "head": "b16b6392f82bf97bf69d48c73ec842c59bfc2af0",
-      "tree": "4898a038e0e3e01d081b8738c45a04a136769d2a",
-      "pr": 198,
-      "run": 45861649944,
-      "job": 140053993677,
-      "steps": 4,
-      "command": "npm test; CLI emits ESM and executes nine exact guests",
+      "head": "4ea4d1dc68434493b6964571fc26bd95e8cf9902",
+      "tree": "d8bfac01cde5ae92820a64d894d006f349803e4a",
+      "pr": 200,
+      "run": 45864623159,
+      "job": 140064195324,
+      "steps": 3,
+      "command": "npm test (1979/1979); CLI emits ESM and executes nine exact guests; conditional effects rejected",
       "limits": [
         "closed-world ready-only",
         "no external pending producer",
@@ -138,13 +138,13 @@
     {
       "backend": "net",
       "profile": "counted-ready-v1-static-csharp-nativeaot-linux-x64",
-      "head": "284e9f1354811a1d092a25274e09690977cbdf99",
-      "tree": "790e22b40278989c184c5c8f838f64f04b6b5f05",
-      "pr": 317,
-      "run": 45863264248,
-      "job": 140059531039,
+      "head": "026d6f320a4f6cd880ac06fb3c946adc88a25f43",
+      "tree": "f9cd003a6a954f96db0ae94ec394e2fd9c9f877d",
+      "pr": 319,
+      "run": 45864623159,
+      "job": 140064195326,
       "steps": 6,
-      "command": "bash scripts/test-counted-ready-nativeaot-guest.sh",
+      "command": "bash scripts/test-counted-ready-nativeaot-guest.sh; conditional effects rejected",
       "limits": [
         "closed-world ready-only",
         "static C# emission, not direct CIL",
@@ -279,6 +279,299 @@
         "unsupported admission only",
         "not counted guest",
         "not WCET certified"
+      ],
+      "fixtures": [
+        {
+          "id": "counted-mixed-future-alias",
+          "blob": "8f57de03c9fb44eb5594c99a7095f34b702a266a",
+          "outcome": "unsupported-reject-no-artifact"
+        },
+        {
+          "id": "counted-multi-channel-fair",
+          "blob": "4b9b79b9b8670f5b282d33e63b7a4b5691c2979a",
+          "outcome": "unsupported-reject-no-artifact"
+        },
+        {
+          "id": "counted-mixed-zero",
+          "blob": "458323db6019da434b97e5b966ee646411310acf",
+          "outcome": "unsupported-reject-no-artifact"
+        }
+      ]
+    },
+    {
+      "backend": "llvm",
+      "profile": "counted-ready-v1-static-cpp-clang-llvm-ir-linux-x64",
+      "head": "dbeddf9dbc3d7f27cb7fef6a101f727e6208301e",
+      "tree": "82955a4a22284256d4df700fef25acc76a6d00d1",
+      "pr": 974,
+      "run": 45864388075,
+      "job": 140063383923,
+      "steps": 5,
+      "command": "bash scripts/test-counted-ready-native-guest.sh build/oreslang-llvmc ../corpus/fixtures/select-source-v2; 5 sanitized runtime errors",
+      "limits": [
+        "closed-world ready-only",
+        "static C++ emission, not direct LLVM IR",
+        "no external pending producer or actor scheduling"
+      ],
+      "fixtures": [
+        {
+          "id": "counted-three",
+          "blob": "6531efa0689f2a5728b40a6412651e8143e45865",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-zero",
+          "blob": "42e49fc1eea64b31e86ec722e1457c1ab706a7e1",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-one",
+          "blob": "910062ebf96613d15a16ddb080abd89375d7709c",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-alias",
+          "blob": "324837078af3e7eeb9b619d0fb07142f0a0d6291",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-dynamic",
+          "blob": "7c9ea9270d766612de0d502147e0df31b0dc3454",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-dynamic-zero",
+          "blob": "4707b13d3daebe05ced967418ba120cf801e2d8c",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-mixed-future-alias",
+          "blob": "8f57de03c9fb44eb5594c99a7095f34b702a266a",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-multi-channel-fair",
+          "blob": "4b9b79b9b8670f5b282d33e63b7a4b5691c2979a",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-mixed-zero",
+          "blob": "458323db6019da434b97e5b966ee646411310acf",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "reject-counted-negative",
+          "blob": "e2ff6fdb406b8807b74fa15beaee10a7f9438e22",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-bool",
+          "blob": "4a52c22442bc8a9fe55eb95b23722595db32c97e",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-scalar",
+          "blob": "a2a2dd184237f17b5e8d455f498719ef1ed01d97",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-default",
+          "blob": "0c67c1fc8eaf55df6abb2b0fe7d2ce80f169bc69",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-write",
+          "blob": "63fa3c9add56f3793e6d755f006cd3568acf1f04",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-dynamic-bool",
+          "blob": "36cd372a5385e34f2e3bd8dd936e4e0491052633",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-dynamic-unknown",
+          "blob": "0e61da7a98987ed5a182148538b35b8a890abf26",
+          "outcome": "compiler-reject-no-artifact"
+        }
+      ]
+    },
+    {
+      "backend": "rs",
+      "profile": "unsupported-browser-rust-compiler",
+      "head": "575e9c4336d2c55a2f272bf333001177d6a2afcd",
+      "tree": "d7d918e26f02e7f76ca1db45fd1a7b2867679275",
+      "pr": 646,
+      "run": 45857985099,
+      "job": 140041327484,
+      "steps": 4,
+      "command": "cargo test --locked --test select_default_admission",
+      "limits": [
+        "unsupported admission only",
+        "not counted guest"
+      ],
+      "fixtures": [
+        {
+          "id": "counted-mixed-future-alias",
+          "blob": "8f57de03c9fb44eb5594c99a7095f34b702a266a",
+          "outcome": "unsupported-reject-no-artifact"
+        },
+        {
+          "id": "counted-multi-channel-fair",
+          "blob": "4b9b79b9b8670f5b282d33e63b7a4b5691c2979a",
+          "outcome": "unsupported-reject-no-artifact"
+        },
+        {
+          "id": "counted-mixed-zero",
+          "blob": "458323db6019da434b97e5b966ee646411310acf",
+          "outcome": "unsupported-reject-no-artifact"
+        }
+      ]
+    },
+    {
+      "backend": "wasm",
+      "profile": "unsupported-wasm32-compiler",
+      "head": "efbd229db2a3301a2e0c1389e2ff81daefa103fa",
+      "tree": "1ed23ea55d31a0f864cd938c53e514a7f388dfb6",
+      "pr": 326,
+      "run": 45861929573,
+      "job": 140054919657,
+      "steps": 4,
+      "command": "fresh wasm32 Rust compiler; node --test tests/counted-select-real-browser-gate.mjs",
+      "limits": [
+        "unsupported admission only",
+        "not counted guest",
+        "ESM unavailable",
+        "no browser worker execution"
+      ],
+      "fixtures": [
+        {
+          "id": "counted-three",
+          "blob": "6531efa0689f2a5728b40a6412651e8143e45865",
+          "outcome": "unsupported-reject-no-artifact"
+        },
+        {
+          "id": "counted-zero",
+          "blob": "42e49fc1eea64b31e86ec722e1457c1ab706a7e1",
+          "outcome": "unsupported-reject-no-artifact"
+        },
+        {
+          "id": "counted-one",
+          "blob": "910062ebf96613d15a16ddb080abd89375d7709c",
+          "outcome": "unsupported-reject-no-artifact"
+        },
+        {
+          "id": "counted-alias",
+          "blob": "324837078af3e7eeb9b619d0fb07142f0a0d6291",
+          "outcome": "unsupported-reject-no-artifact"
+        },
+        {
+          "id": "counted-dynamic",
+          "blob": "7c9ea9270d766612de0d502147e0df31b0dc3454",
+          "outcome": "unsupported-reject-no-artifact"
+        },
+        {
+          "id": "counted-dynamic-zero",
+          "blob": "4707b13d3daebe05ced967418ba120cf801e2d8c",
+          "outcome": "unsupported-reject-no-artifact"
+        },
+        {
+          "id": "counted-mixed-future-alias",
+          "blob": "8f57de03c9fb44eb5594c99a7095f34b702a266a",
+          "outcome": "unsupported-reject-no-artifact"
+        },
+        {
+          "id": "counted-multi-channel-fair",
+          "blob": "4b9b79b9b8670f5b282d33e63b7a4b5691c2979a",
+          "outcome": "unsupported-reject-no-artifact"
+        },
+        {
+          "id": "counted-mixed-zero",
+          "blob": "458323db6019da434b97e5b966ee646411310acf",
+          "outcome": "unsupported-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-negative",
+          "blob": "e2ff6fdb406b8807b74fa15beaee10a7f9438e22",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-bool",
+          "blob": "4a52c22442bc8a9fe55eb95b23722595db32c97e",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-scalar",
+          "blob": "a2a2dd184237f17b5e8d455f498719ef1ed01d97",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-default",
+          "blob": "0c67c1fc8eaf55df6abb2b0fe7d2ce80f169bc69",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-write",
+          "blob": "63fa3c9add56f3793e6d755f006cd3568acf1f04",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-dynamic-bool",
+          "blob": "36cd372a5385e34f2e3bd8dd936e4e0491052633",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-dynamic-unknown",
+          "blob": "0e61da7a98987ed5a182148538b35b8a890abf26",
+          "outcome": "compiler-reject-no-artifact"
+        }
+      ]
+    },
+    {
+      "backend": "hdl",
+      "profile": "unsupported-hardware-compiler",
+      "head": "3c403ddc6bf44d7581e17e62d68d4e941a9e84cd",
+      "tree": "294371e61b7aab413426251a21f42d66157cd010",
+      "pr": 95,
+      "run": 45857985099,
+      "job": 140041327502,
+      "steps": 4,
+      "command": "node --test tests/counted-select-admission.test.mjs",
+      "limits": [
+        "unsupported admission only",
+        "not counted guest"
+      ],
+      "fixtures": [
+        {
+          "id": "counted-mixed-future-alias",
+          "blob": "8f57de03c9fb44eb5594c99a7095f34b702a266a",
+          "outcome": "unsupported-reject-no-artifact"
+        },
+        {
+          "id": "counted-multi-channel-fair",
+          "blob": "4b9b79b9b8670f5b282d33e63b7a4b5691c2979a",
+          "outcome": "unsupported-reject-no-artifact"
+        },
+        {
+          "id": "counted-mixed-zero",
+          "blob": "458323db6019da434b97e5b966ee646411310acf",
+          "outcome": "unsupported-reject-no-artifact"
+        }
+      ]
+    },
+    {
+      "backend": "cranelift",
+      "profile": "unsupported-stage0-cli",
+      "head": "0f5d2156d8b808c76a15095fc3caafb8187d79d7",
+      "tree": "14f0bbf6eafc20d8cf469a9a33d67846a4959778",
+      "pr": 152,
+      "run": 45862046030,
+      "job": 140055320563,
+      "steps": 4,
+      "command": "cargo test --locked --test continuation_admission",
+      "limits": [
+        "unsupported admission only",
+        "not counted guest"
       ],
       "fixtures": [
         {
