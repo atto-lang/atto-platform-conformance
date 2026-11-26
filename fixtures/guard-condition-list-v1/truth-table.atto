@@ -1,0 +1,11 @@
+fnc check(bool a, bool b): int {
+    guard a, b { return 1; }
+    return 2;
+}
+pub fnc main(): int {
+    guard check(true, true) eq 2, check(true, false) eq 1,
+          check(false, true) eq 1, check(false, false) eq 1 {
+        return 1;
+    }
+    return 42;
+}
