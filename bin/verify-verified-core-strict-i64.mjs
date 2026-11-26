@@ -29,7 +29,16 @@ try {
   const build=spawnSync("mvn",["-q","-DskipTests","compile","dependency:build-classpath","-Dmdep.outputFile="+dep],{cwd:checkout,encoding:"utf8",timeout:240000,maxBuffer:8*1024*1024});
   if(build.error)throw build.error;
   assert.equal(build.status,0,build.stdout+build.stderr);
-  javaArgs=["--enable-native-access=ALL-UNNAMED","-Dpolyglot.engine.WarnInterpreterOnly=false","-cp",join(checkout,"target/classes")+delimiter+readFileSync(dep,"utf8").trim(),"dev.oreslang.launcher.OresMain","--verify=strict"];
+  // JDK 24+ warns when Truffle uses the transitional Unsafe memory API.
+  // Configure the launcher explicitly; never strip guest stderr or relax result checks.
+  const version=spawnSync("java",["-version"],{encoding:"utf8",timeout:10000});
+  if(version.error)throw version.error;
+  assert.equal(version.status,0,"java version probe failed");
+  assert.equal(version.signal,null);
+  const feature=version.stderr.match(/(?:openjdk|java) version "([0-9]+)(?:[.\-+][^"]*)?"/)?.[1];
+  assert.ok(feature,"unrecognized Java version");
+  const jvmFlags=Number(feature)>=24?["--sun-misc-unsafe-memory-access=allow"]:[];
+  javaArgs=[...jvmFlags,"--enable-native-access=ALL-UNNAMED","-Dpolyglot.engine.WarnInterpreterOnly=false","-cp",join(checkout,"target/classes")+delimiter+readFileSync(dep,"utf8").trim(),"dev.oreslang.launcher.OresMain","--verify=strict"];
  }
  let browser=null;
  if(target==="wasm"){
