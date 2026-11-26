@@ -8,7 +8,7 @@ import {pathToFileURL} from "node:url";
 import {spawnSync} from "node:child_process";
 import {createHash} from "node:crypto";
 const [target,path,tier="all",bridgePath,pin]=process.argv.slice(2);
-if(!["rs","js","wasm"].includes(target)||!path||!["arithmetic","control-flow","loops","all"].includes(tier))throw Error("usage: node bin/verify-verified-core-strict-i64.mjs rs|js|wasm <attoc binary|JS checkout|compiler.wasm> [arithmetic|control-flow|loops|all] [Wasm bridge checkout] [compiler sha256]");
+if(!["rs","js","wasm","forge","cranelift"].includes(target)||!path||!["arithmetic","control-flow","loops","boundaries","all"].includes(tier))throw Error("usage: node bin/verify-verified-core-strict-i64.mjs rs|js|wasm|forge|cranelift <compiler binary or checkout> [arithmetic|control-flow|loops|boundaries|all] [Wasm bridge checkout or Forge include path] [compiler sha256]");
 if(target==="wasm"&&(!bridgePath||!/^[a-f0-9]{64}$/.test(pin??"")))throw Error("Wasm requires exact compiler digest and bridge checkout");
 const manifest=JSON.parse(readFileSync(new URL("../fixtures/verified-core-strict-i64-v1/cases.json",import.meta.url),"utf8"));
 assert.equal(manifest.schemaVersion,1);assert.equal(manifest.profile,"verified-core-strict-i64-v1");
@@ -33,7 +33,25 @@ try {
  for(const {id,source,expected} of cases){
   assert.match(id,/^[a-z0-9-]+$/);
   let diagnostic=null,artifact=null;
-  if(target==="rs"){
+  if(target==="forge"||target==="cranelift"){
+   const input=join(dir,id+".atto"),output=join(dir,id+(target==="forge"?".cpp":".o"));
+   writeFileSync(input,source,{flag:"wx"});
+   const forge=target==="forge";
+   const r=spawnSync(resolve(path),forge?["--verify=strict",input,"-o",output]:["emit-object-strict",input],{cwd:dir,encoding:forge?"utf8":null,timeout:30000,maxBuffer:8*1024*1024});
+   if(r.error)throw r.error;
+   assert.equal(r.signal,null,id);
+   if(r.status===0){
+    if(forge)assert.ok(existsSync(output),id);
+    else {assert.ok(r.stdout.length>0,id);writeFileSync(output,r.stdout,{flag:"wx"});}
+    artifact=readFileSync(output);
+   }else{
+    assert.equal(r.status,forge?2:1,id);
+    assert.equal(existsSync(output),false,id);
+    assert.equal(r.stdout.length,0,id+" rejected source emitted bytes");
+    assert.equal(existsSync(output+".part"),false,id);
+    diagnostic=String(r.stderr);
+   }
+  }else if(target==="rs"){
    const input=join(dir,id+".atto"),output=join(dir,id+".wasm");
    writeFileSync(input,source,{flag:"wx"});
    const r=spawnSync(resolve(path),["--verify=strict",input,"-o",output],{cwd:dir,encoding:"utf8",timeout:30000});
@@ -55,11 +73,31 @@ try {
   }
   if(expected.kind==="diagnostic"){
    assert.equal(artifact,null,id);
-   assert.ok(diagnostic?.includes(expected.category+":"),id+": "+diagnostic);
+   assert.ok(diagnostic?.includes(expected.category+":")||(target==="forge"&&diagnostic?.includes(expected.category+" byte=")),id+": "+diagnostic);
   }else{
    assert.equal(diagnostic,null,id+": "+diagnostic);
    assert.equal(expected.kind,"value");
-   if(target==="rs"||target==="wasm"){
+   if(target==="forge"||target==="cranelift"){
+    const forge=target==="forge",output=join(dir,id+(forge?".cpp":".o")),guest=join(dir,id+".native");
+    let args;
+    if(forge){
+     assert.ok(bridgePath,"Forge include path required");
+     args=["-std=c++20","-Wall","-Wextra","-Werror","-I"+resolve(bridgePath),output,"-o",guest];
+    }else{
+     const harness=join(dir,id+".c");
+     writeFileSync(harness,"#include <stdint.h>\n#include <stdio.h>\nextern int32_t oreslang_scalar_entry(int64_t,int64_t,int64_t,int64_t,int64_t*);\nint main(void){int64_t out=123;int rc=oreslang_scalar_entry(0,0,0,0,&out);if(rc!=0)return 1;printf(\"%lld\\n\",(long long)out);return 0;}\n");
+     args=["-std=c11","-Wall","-Werror",harness,output,"-o",guest];
+    }
+    const link=spawnSync(forge?(process.env.CXX||"c++"):"cc",args,{cwd:dir,encoding:"utf8",timeout:60000});
+    if(link.error)throw link.error;
+    assert.equal(link.status,0,id+": "+link.stderr);
+    const g=spawnSync(guest,[],{cwd:dir,encoding:"utf8",timeout:10000});
+    if(g.error)throw g.error;
+    assert.equal(g.signal,null,id);
+    assert.equal(g.status,0,id+": "+g.stderr);
+    assert.equal(g.stderr,"",id);
+    assert.equal(g.stdout,expected.decimal+"\n",id);
+   }else if(target==="rs"||target==="wasm"){
     const m=new WebAssembly.Module(artifact);
     assert.deepEqual(WebAssembly.Module.imports(m),[],id);
     const g=new WebAssembly.Instance(m,{});
