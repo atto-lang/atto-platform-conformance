@@ -1039,6 +1039,229 @@
           "outcome": "guest-exit-42"
         }
       ]
+    },
+    {
+      "backend": "forge",
+      "profile": "counted-ready-v1-shared-cpp-native",
+      "head": "8cd52db910eb116f894463e90b870927a7842364",
+      "tree": "4b636a200c6f6fb9bde4b43dec44404922af3445",
+      "pr": 301,
+      "run": 45871124185,
+      "job": 140086545808,
+      "steps": 4,
+      "carrier": "attopl-co/atto-ci",
+      "command": "bash verification/test-counted-ready-shared-native.sh build/oresforge <exact corpus>",
+      "sharedImplementation": {
+        "repository": "atto-lang/atto-source.llvm",
+        "head": "1324a3087ca1b3d90942883fcac040e22d40cdf5",
+        "tree": "d7c1ab4208afee438ca15d7e07b589116da7f24f",
+        "blobs": [
+          "f7d5a7b864ec2dbe443ac97d6ca4943445604b20",
+          "3a1b3ff4cf235b721edf9dc64c1af411a94a74ee",
+          "2d85351e66e55aae19eb5e6a08a434643c2dc4e0",
+          "bcb3a3eb9e0504f4bfa4808531a17126cacd0325",
+          "0c972dc190fc25533792a928461298492ba3b5ea"
+        ]
+      },
+      "limits": [
+        "shared LLVM C++ frontend and runtime, not independent Forge native emitter",
+        "closed-world ready-only; no external producer or general actor scheduling"
+      ],
+      "fixtures": [
+        {
+          "id": "counted-three",
+          "blob": "6531efa0689f2a5728b40a6412651e8143e45865",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-zero",
+          "blob": "42e49fc1eea64b31e86ec722e1457c1ab706a7e1",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-one",
+          "blob": "910062ebf96613d15a16ddb080abd89375d7709c",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-alias",
+          "blob": "324837078af3e7eeb9b619d0fb07142f0a0d6291",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "reject-counted-negative",
+          "blob": "e2ff6fdb406b8807b74fa15beaee10a7f9438e22",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-bool",
+          "blob": "4a52c22442bc8a9fe55eb95b23722595db32c97e",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-scalar",
+          "blob": "a2a2dd184237f17b5e8d455f498719ef1ed01d97",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-default",
+          "blob": "0c67c1fc8eaf55df6abb2b0fe7d2ce80f169bc69",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-write",
+          "blob": "63fa3c9add56f3793e6d755f006cd3568acf1f04",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "counted-dynamic",
+          "blob": "7c9ea9270d766612de0d502147e0df31b0dc3454",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-dynamic-zero",
+          "blob": "4707b13d3daebe05ced967418ba120cf801e2d8c",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "reject-counted-dynamic-bool",
+          "blob": "36cd372a5385e34f2e3bd8dd936e4e0491052633",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-dynamic-unknown",
+          "blob": "0e61da7a98987ed5a182148538b35b8a890abf26",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "counted-mixed-future-alias",
+          "blob": "8f57de03c9fb44eb5594c99a7095f34b702a266a",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-multi-channel-fair",
+          "blob": "4b9b79b9b8670f5b282d33e63b7a4b5691c2979a",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-mixed-zero",
+          "blob": "458323db6019da434b97e5b966ee646411310acf",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-distinct-alias-projection",
+          "blob": "5baca9bb9eb4b98500cab770888a45fb60bbf10d",
+          "outcome": "guest-exit-42"
+        }
+      ]
+    },
+    {
+      "backend": "cranelift",
+      "profile": "counted-static-ready-v1-native-object",
+      "head": "8b5cde94eb947712b287a88e0747944abdb8a8d0",
+      "tree": "eff8b8578e220a67410f9957d0d5d1fb8f15a7fe",
+      "pr": 160,
+      "run": 45871490236,
+      "job": 140087797973,
+      "steps": 4,
+      "carrier": "attopl-co/atto-ci",
+      "command": "bash scripts/test-counted-static-ready-native.sh target/release/orescranelift <exact corpus>",
+      "limits": [
+        "literal count and statically known closed-world topology only",
+        "no dynamic count, external producer, actor scheduler or general channel ABI",
+        "actual Cranelift native object; not JIT"
+      ],
+      "unsupportedFixtureIds": [
+        "counted-dynamic",
+        "counted-dynamic-zero"
+      ],
+      "fixtures": [
+        {
+          "id": "counted-three",
+          "blob": "6531efa0689f2a5728b40a6412651e8143e45865",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-zero",
+          "blob": "42e49fc1eea64b31e86ec722e1457c1ab706a7e1",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-one",
+          "blob": "910062ebf96613d15a16ddb080abd89375d7709c",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-alias",
+          "blob": "324837078af3e7eeb9b619d0fb07142f0a0d6291",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "reject-counted-negative",
+          "blob": "e2ff6fdb406b8807b74fa15beaee10a7f9438e22",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-bool",
+          "blob": "4a52c22442bc8a9fe55eb95b23722595db32c97e",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-scalar",
+          "blob": "a2a2dd184237f17b5e8d455f498719ef1ed01d97",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-default",
+          "blob": "0c67c1fc8eaf55df6abb2b0fe7d2ce80f169bc69",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-write",
+          "blob": "63fa3c9add56f3793e6d755f006cd3568acf1f04",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "counted-dynamic",
+          "blob": "7c9ea9270d766612de0d502147e0df31b0dc3454",
+          "outcome": "unsupported-reject-no-artifact"
+        },
+        {
+          "id": "counted-dynamic-zero",
+          "blob": "4707b13d3daebe05ced967418ba120cf801e2d8c",
+          "outcome": "unsupported-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-dynamic-bool",
+          "blob": "36cd372a5385e34f2e3bd8dd936e4e0491052633",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-dynamic-unknown",
+          "blob": "0e61da7a98987ed5a182148538b35b8a890abf26",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "counted-mixed-future-alias",
+          "blob": "8f57de03c9fb44eb5594c99a7095f34b702a266a",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-multi-channel-fair",
+          "blob": "4b9b79b9b8670f5b282d33e63b7a4b5691c2979a",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-mixed-zero",
+          "blob": "458323db6019da434b97e5b966ee646411310acf",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-distinct-alias-projection",
+          "blob": "5baca9bb9eb4b98500cab770888a45fb60bbf10d",
+          "outcome": "guest-exit-42"
+        }
+      ]
     }
   ],
   "notExecuted": [
