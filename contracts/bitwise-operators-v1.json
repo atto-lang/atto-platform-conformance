@@ -1,7 +1,8 @@
 {
   "schema": "atto.bitwise-operators.v1",
   "version": 1,
-  "status": "PROPOSED_NOT_EXECUTED",
+  "status": "SUPERSEDED_HISTORICAL_NOT_EXECUTED",
+  "superseded_by": "contracts/bitwise-operators-v2.json",
   "owner": "atto-lang/atto-spec",
   "spec_pr": "https://github.com/atto-lang/atto-spec/pull/87",
   "semantics": {

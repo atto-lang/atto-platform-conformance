@@ -1,0 +1,66 @@
+{
+  "schema": "atto.bitwise-operators.v2",
+  "version": 2,
+  "supersedes": "contracts/bitwise-operators-v1.json",
+  "spec_blob": "1cd08cbae07da5788735b50d3f1f790ad04a9c48",
+  "semantics": {
+    "width_bits": 64,
+    "binary_xor": "^^",
+    "xor_assignment": "^^=",
+    "caret": "return-alias",
+    "shift_count_min": 0,
+    "shift_count_max": 63,
+    "invalid_count": "checked-reject-not-mask",
+    "shift_ops": [
+      "<<<",
+      ">>>",
+      "ashr"
+    ]
+  },
+  "cases": [
+    {
+      "id": "signed-right",
+      "path": "fixtures/bitwise-v2/signed-right.atto",
+      "git_blob_sha": "8d38b648cfd8ceecd1d7c4fce08f25f3edd2f0a6",
+      "outcome": "guest-42"
+    },
+    {
+      "id": "bit-patterns",
+      "path": "fixtures/bitwise-v2/bit-patterns.atto",
+      "git_blob_sha": "04dacce8fe4fb44ab1c4d304b32c8917b1b36cd6",
+      "outcome": "guest-42"
+    },
+    {
+      "id": "invalid-literal",
+      "path": "fixtures/bitwise-v2/invalid-literal.atto",
+      "git_blob_sha": "cbb7dc1af11fb0169c479e81765cc0d682f3a3fd",
+      "outcome": "invalid-shift-count"
+    },
+    {
+      "id": "invalid-computed",
+      "path": "fixtures/bitwise-v2/invalid-computed.atto",
+      "git_blob_sha": "1693fa7bf1ccfb9159e14b7782757477af47f999",
+      "outcome": "runtime-shift-count"
+    },
+    {
+      "id": "invalid-boolean",
+      "path": "fixtures/bitwise-v2/invalid-boolean.atto",
+      "git_blob_sha": "3b12fa460e5a7aaf53acc1224b3598facedfe421",
+      "outcome": "compile-type-reject"
+    }
+  ],
+  "backend_status": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "rs": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
+    "hdl": "NOT_EXECUTED",
+    "realtime": "NOT_EXECUTED",
+    "atto": "NOT_EXECUTED"
+  },
+  "evidence_rule": "Only exact source compiler/guest execution qualifies each profile. A literal invalid count may reject before emission; a computed invalid count must not yield a guest value. No evidence for independent Wasm from a shared Rust compiler."
+}
