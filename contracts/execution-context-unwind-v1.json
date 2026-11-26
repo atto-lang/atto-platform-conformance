@@ -848,5 +848,48 @@
       }
     }
   ],
-  "extended_spec_candidate": "https://github.com/atto-lang/atto-spec/pull/245"
+  "extended_spec_candidate": "https://github.com/atto-lang/atto-spec/pull/245",
+  "candidate_guest_fixtures": [
+    {
+      "case_id": "bound-closure-factory",
+      "path": "fixtures/execution-context-unwind-v1/bound-closure.atto",
+      "git_blob_sha": "786074542e8123bfee70c35c95137ce091c6ed55",
+      "expected": {
+        "kind": "return",
+        "value": 42
+      }
+    },
+    {
+      "case_id": "braceless-delayed",
+      "path": "fixtures/execution-context-unwind-v1/braceless-lifo.atto",
+      "git_blob_sha": "edbef0290456e846597321a16e6433ff8b45334c",
+      "expected": {
+        "kind": "return",
+        "value": 42
+      }
+    },
+    {
+      "case_id": "recover-error-panic",
+      "path": "fixtures/execution-context-unwind-v1/recover-failure.atto",
+      "git_blob_sha": "2788299cdabfb9224bc8d0371c8036143f21a9ff",
+      "expected": {
+        "kind": "panic",
+        "original": "original",
+        "cause": "recovery failed",
+        "recovered": false
+      }
+    },
+    {
+      "case_id": "callback-error-panic",
+      "path": "fixtures/execution-context-unwind-v1/cleanup-failure.atto",
+      "git_blob_sha": "4bf4ed5e4f5624d48c1d1123691d702eb30fb0cb",
+      "expected": {
+        "kind": "panic",
+        "original": "original",
+        "cause": "cleanup failed",
+        "recovered": false
+      }
+    }
+  ],
+  "candidate_guest_note": "Source candidates only; mutable sync-task capture and exception syntax must be admitted by the actual compiler. Expected outcomes are not observed results. Remaining cases require source fixtures and real compiler adapters."
 }
