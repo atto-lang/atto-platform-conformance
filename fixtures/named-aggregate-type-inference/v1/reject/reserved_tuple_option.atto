@@ -1,0 +1,1 @@
+pub fnc main(): int { const Tuple<infer Option> t=(1,true); return 0; }
