@@ -1,0 +1,2 @@
+fnc other(): int { const Record<infer Local> r=(a=1); return r.a; }
+pub fnc main(): int { const Record<Local> s=(a=42); return s.a; }

@@ -63,10 +63,10 @@ test("implicit by-value extraction targets are paired, exact and unverified on a
 test("heap borrowing targets are paired, indexed-rooted and fail closed on all five backends", async () => {
  const manifest=await loadSemanticManifest();
  const pairs=[
-   ["heap-array-scoped-read-loans","heap-array-resize-live-loan","E_BORROW_CONFLICT",/values\\.add\\(8\\)/],
+   ["heap-array-scoped-read-loans","heap-array-resize-live-loan","E_BORROW_CONFLICT",/values\.add\(8\)/],
    ["heap-array-scoped-exclusive","heap-array-exclusive-vs-read","E_BORROW_CONFLICT",/rt mut borrow values/],
-   ["heap-array-owned-element-copy","heap-array-borrowed-element-return","E_BORROW_ESCAPE",/return rt borrow values\\[0\\]/],
-   ["heap-array-whole-owner-take","heap-array-indexed-take","E_PARTIAL_MOVE",/rt take values\\[0\\]/]
+   ["heap-array-owned-element-copy","heap-array-borrowed-element-return","E_BORROW_ESCAPE",/return rt borrow values\[0\]/],
+   ["heap-array-whole-owner-take","heap-array-indexed-take","E_PARTIAL_MOVE",/rt take values\[0\]/]
  ];
  for(const [allowed,denied,diagnostic,pattern] of pairs) {
    const ok=manifest.compilerCases.find(c=>c.id===allowed);
@@ -81,7 +81,7 @@ test("heap borrowing targets are paired, indexed-rooted and fail closed on all f
    assert.match(bad.source,/Array<int>/);
    assert.match(bad.source,pattern);
    for (const c of [ok,bad]) {
-     assert.match(c.source,/pub fnc main\\(\\): int/);
+     assert.match(c.source,/pub fnc main\(\): int/);
      assert.deepEqual(Object.keys(c.backends),["java","llvm","net","wasm","forge"]);
      assert.ok(Object.values(c.backends).every(x=>x==="PENDING_GUEST_PROOF"));
    }
