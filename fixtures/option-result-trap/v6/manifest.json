@@ -47,6 +47,20 @@
       "expected": {
         "runtime_failure": "uncaught_guest_panic"
       }
+    },
+    {
+      "path": "piped-match-none.atto",
+      "git_blob_sha1": "fb1653c04f6556e130ec0dc51f8a0fd933e34580",
+      "expected": {
+        "result": 42
+      }
+    },
+    {
+      "path": "piped-match-some.atto",
+      "git_blob_sha1": "77b3f981f031aaaef072f1c68b66960825cf232c",
+      "expected": {
+        "result": 42
+      }
     }
   ]
 }
