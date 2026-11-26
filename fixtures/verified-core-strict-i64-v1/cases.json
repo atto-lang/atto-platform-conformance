@@ -965,6 +965,195 @@
         "kind": "diagnostic",
         "category": "E_VERIFY_UNPROVEN"
       }
+    },
+    {
+      "id": "array-audit-snapshot-branch",
+      "tier": "array-adversarial",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Index = int where self >= 0 and self <= 1;\npub fnc main() -> int { let int x = 42; val a = Array.of(x, 7); if x == 42 { x = 0; } return a[0]; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "array-audit-read-after-loop",
+      "tier": "array-adversarial",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Index = int where self >= 0 and self <= 1;\npub fnc main() -> int { val a = Array.of(7, 42); let Index i = 0; while i < 1 { i = i + 1; } return a[i]; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "array-audit-helper-init",
+      "tier": "array-adversarial",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Index = int where self >= 0 and self <= 1;\nfnc f(int x) -> int { if x == 0 { return 7; } return 42; } pub fnc main() -> int { val a = Array.of(f(0), f(1)); return a[1]; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "array-audit-independent-read",
+      "tier": "array-adversarial",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Index = int where self >= 0 and self <= 1;\npub fnc main() -> int { val a = Array.of(1, 42); val b = Array.of(42, 1); return a[1] + b[0] - 42; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "array-audit-fresh-guard",
+      "tier": "array-adversarial",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Index = int where self >= 0 and self <= 1;\nfnc f(int i) -> int { val a = Array.of(42, 42); if i < 0 { return 42; } if i >= 2 { return 42; } return a[i]; } pub fnc main() -> int { return f(1); }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "array-audit-eager-unselected-overflow",
+      "tier": "array-adversarial",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Index = int where self >= 0 and self <= 1;\npub fnc main() -> int { val a = Array.of(42, 9223372036854775807 + 1); return a[0]; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "array-audit-eager-unselected-divzero",
+      "tier": "array-adversarial",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Index = int where self >= 0 and self <= 1;\npub fnc main() -> int { val a = Array.of(42, 1/0); return a[0]; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "array-audit-guard-invalidated",
+      "tier": "array-adversarial",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Index = int where self >= 0 and self <= 1;\nfnc f(int p) -> int { val a = Array.of(42, 7); let int i = p; if i >= 0 && i < 2 { i = 2; return a[i]; } return 42; } pub fnc main() -> int { return f(0); }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "array-audit-return-escape",
+      "tier": "array-adversarial",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Index = int where self >= 0 and self <= 1;\npub fnc main() -> int { val a = Array.of(42, 7); return a; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNSUPPORTED"
+      }
+    },
+    {
+      "id": "array-audit-alias-escape",
+      "tier": "array-adversarial",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Index = int where self >= 0 and self <= 1;\npub fnc main() -> int { val a = Array.of(42, 7); val b = a; return b[0]; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNSUPPORTED"
+      }
+    },
+    {
+      "id": "exit-guard-break",
+      "tier": "loop-exits",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { let Bounded x = 1; while x < 43 { if x == 42 { break; } x = x+1; } return x; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "exit-guard-continue",
+      "tier": "loop-exits",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { let Count x = 0; let Count y = 0; while x < 42 { x = x+1; if x < 42 { continue; } y = x; } return y; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "exit-nested-nearest",
+      "tier": "loop-exits",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { let Bounded x = 1; let Count y = 0; while x < 42 { let Bounded z = 1; while z < 43 { if z == 42 { break; } z = z+1; } y = z; x = x+1; } return y; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "exit-direct-break",
+      "tier": "loop-exits",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { let int x = 42; while x > 0 { break; } return x; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "exit-direct-continue",
+      "tier": "loop-exits",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { let Count x = 0; while x < 42 { x = x+1; continue; } return x; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "exit-zero-trip",
+      "tier": "loop-exits",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { let Count x = 42; while x < 42 { if x == 0 { break; } x = x+1; } return x; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "exit-stale-false-header",
+      "tier": "loop-exits",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { let int x = 0; while x < 42 { if x == 0 { break; } x = x+1; } return 42/x; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "exit-unsafe-guard",
+      "tier": "loop-exits",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { let int x = 0; while x < 42 { if 42/x > 0 { break; } x = x+1; } return x; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "exit-continue-overflow",
+      "tier": "loop-exits",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { let int x = 0; while x >= 0 { if x == -1 { continue; } x = x+1; } return x; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "exit-outside-break",
+      "tier": "loop-exits",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { break; return 42; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNSUPPORTED"
+      }
+    },
+    {
+      "id": "exit-outside-continue",
+      "tier": "loop-exits",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { continue; return 42; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNSUPPORTED"
+      }
     }
   ]
 }
