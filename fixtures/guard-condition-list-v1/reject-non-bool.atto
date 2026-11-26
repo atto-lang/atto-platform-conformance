@@ -1,0 +1,4 @@
+pub fnc main(): int {
+    guard true, 42 { return 1; }
+    return 42;
+}
