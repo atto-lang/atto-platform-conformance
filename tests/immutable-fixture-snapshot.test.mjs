@@ -22,10 +22,14 @@ test("fixture execution uses immutable hashed snapshot, not checkout path",async
   return {status:0,signal:null,stdout:"accepted",stderr:""};
  };
  const result=await runSuite({backend:"java",argv:cmd,sourceSha:sha,spawn:runner});
- assert.equal(result.ok,true);
- assert.equal(seen.length,2);
+ assert.equal(result.ok,false);
+ assert.equal(result.verified,3);
+ assert.equal(result.unsupported,3);
+ assert.equal(seen.length,3);
+ const executed=result.results.filter(x=>x.status!=='UNSUPPORTED');
+ assert.deepEqual(executed.map(x=>x.id),['int-arithmetic','unresolved-identifier','liveview-revision-order']);
  for(let i=0;i<seen.length;i++){
-  assert.equal(seen[i].hash,result.results[i].fixtureSha256);
+  assert.equal(seen[i].hash,executed[i].fixtureSha256);
   assert.equal(existsSync(seen[i].file),false,"temporary snapshot not removed");
  }
 });
