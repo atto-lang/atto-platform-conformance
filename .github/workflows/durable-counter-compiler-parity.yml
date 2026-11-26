@@ -4,6 +4,7 @@ on:
     paths:
       - 'fixtures/actors/persistence/durable_counter_broker_v1.atto'
       - 'tests/durable-counter-compiler-parity.mjs'
+      - 'tests/durable-counter-native-replay.mjs'
       - '.github/workflows/durable-counter-compiler-parity.yml'
 permissions:
   contents: read
@@ -43,3 +44,56 @@ jobs:
           rustup toolchain install 1.85.1 --profile minimal
           (cd "$RUNNER_TEMP/atto-rs" && cargo +1.85.1 build --locked --release --bin attoc)
           node tests/durable-counter-compiler-parity.mjs "$RUNNER_TEMP/atto-rs/target/release/attoc" "$RUNNER_TEMP/atto-js/src/transpile-worker.mjs"
+
+  native-replay:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - backend: forge
+            sha: 99f90be6f272d6be60085b7e177eda8f95f96afa
+          - backend: cranelift
+            sha: 6919399e836f845a613f8a149f83d36a234b8e9f
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Verify conformance head and immutable public compiler input
+        env:
+          EXPECTED: ${{ github.event.pull_request.head.sha }}
+          BACKEND: ${{ matrix.backend }}
+          SOURCE_SHA: ${{ matrix.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED"
+          test -z "$(git status --porcelain)"
+          echo "CONFORMANCE_TREE=$(git rev-parse HEAD^{tree})"
+          dir="$RUNNER_TEMP/atto-native"
+          mkdir "$dir"
+          git -C "$dir" init
+          GIT_TERMINAL_PROMPT=0 git -C "$dir" -c credential.helper= fetch --depth=1 "https://github.com/atto-lang/atto-source.$BACKEND.git" "$SOURCE_SHA"
+          git -C "$dir" checkout --detach FETCH_HEAD
+          git -C "$dir" fsck --full
+          test "$(git -C "$dir" rev-parse HEAD)" = "$SOURCE_SHA"
+          test -z "$(git -C "$dir" status --porcelain)"
+          echo "BACKEND=$BACKEND COMMIT=$SOURCE_SHA TREE=$(git -C "$dir" rev-parse HEAD^{tree})"
+      - name: Build Forge and execute native replay
+        if: matrix.backend == 'forge'
+        run: |
+          set -euo pipefail
+          dir="$RUNNER_TEMP/atto-native"
+          cmake -S "$dir" -B "$dir/build" -DCMAKE_BUILD_TYPE=Release
+          cmake --build "$dir/build" --target forge_scalar --parallel 2
+          (cd "$dir" && FORGE_SCALAR="$dir/build/forge_scalar" node tests/durable_counter_native.mjs)
+          node tests/durable-counter-native-replay.mjs forge "$dir/build/forge_scalar"
+      - name: Build Cranelift and execute native replay
+        if: matrix.backend == 'cranelift'
+        run: |
+          set -euo pipefail
+          dir="$RUNNER_TEMP/atto-native"
+          (cd "$dir" && cargo build --locked)
+          (cd "$dir" && ATTO_CRANELIFT_COMPILER="$dir/target/debug/orescranelift" node tests/durable_counter_object.mjs)
+          node tests/durable-counter-native-replay.mjs cranelift "$dir/target/debug/orescranelift"
