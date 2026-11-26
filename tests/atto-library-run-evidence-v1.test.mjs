@@ -74,3 +74,16 @@ test("terminal failure steps cannot be hidden by contradictory green job metadat
     assert.equal(classify(run(), [j]).classification, "EXECUTION_FAILED");
   }
 });
+
+
+test("queued empty jobs are pending, and skipped steps are not execution", () => {
+  const pending = classify({...run(), status: "queued", conclusion: null},
+    [{...job(), status: "queued", conclusion: null, runner_id: 0, steps: []}]);
+  assert.deepEqual(pending, {classification: "IN_PROGRESS", reason: "RUN_OR_JOB_INCOMPLETE", executedSteps: 0});
+  const j = job();
+  j.steps.push({number: 3, name: "Skipped optional job step", status: "completed", conclusion: "skipped"});
+  assert.equal(classify(run(), [j]).executedSteps, 2);
+  j.steps[1].conclusion = "skipped";
+  assert.equal(classify(run(), [j]).classification, "NO_REQUIRED_EXECUTION");
+  assert.equal(classify(run(), [j]).executedSteps, 1);
+});
