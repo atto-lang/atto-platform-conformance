@@ -1,0 +1,73 @@
+{
+  "schema": "atto.optional-on-type-match.v1",
+  "status": "target-not-executed",
+  "semantics": "Only is may omit on; on is has identical meaning. Literal before nominal type is ordered specialization. Unreachable arms remain diagnosed. Unsupported types must fail closed, not count as positive parity.",
+  "cases": [
+    {
+      "id": "union-literal",
+      "source": "fnc choose(int | string value): int { return match value over { on 42 -> 100; is int -> -20; on _ -> 0; }; }",
+      "expected": [
+        {
+          "input": 42,
+          "result": 100
+        },
+        {
+          "input": 7,
+          "result": -20
+        },
+        {
+          "input": "other",
+          "result": 0
+        }
+      ]
+    },
+    {
+      "id": "union-pipe",
+      "source": "fnc choose(int | string value): int { return value |> match over { on 42 -> 100; is int -> -20; on _ -> 0; }; }",
+      "expected": [
+        {
+          "input": 42,
+          "result": 100
+        },
+        {
+          "input": 7,
+          "result": -20
+        },
+        {
+          "input": "other",
+          "result": 0
+        }
+      ]
+    },
+    {
+      "id": "scalar-await",
+      "source": "pub fnc main(): int { return 7 |> await |> match over { on 42 -> 100; is int -> -20; }; }",
+      "exit_or_return": -20
+    },
+    {
+      "id": "scalar-on-is",
+      "source": "pub fnc main(): int { return match 7 over { on 42 -> 100; on is int -> -20; }; }",
+      "exit_or_return": -20
+    },
+    {
+      "id": "bare-literal",
+      "source": "pub fnc main(): int { return match 7 over { 7 -> 42; on _ -> 0; }; }",
+      "reject": "syntax"
+    },
+    {
+      "id": "bare-wildcard",
+      "source": "pub fnc main(): int { return match 7 over { _ -> 0; }; }",
+      "reject": "syntax"
+    },
+    {
+      "id": "empty-type",
+      "source": "pub fnc main(): int { return match 7 over { is -> 42; }; }",
+      "reject": "syntax"
+    },
+    {
+      "id": "unreachable-fallback",
+      "source": "pub fnc main(): int { return match 7 over { is int -> 42; on _ -> 0; }; }",
+      "reject": "unreachable"
+    }
+  ]
+}
