@@ -1,0 +1,9 @@
+pub fnc main(): int {
+    let mut int count = 0;
+    val int result = sync task<int> {
+        defer count = count * 10 + 2;
+        defer count = count * 10 + 1;
+        return 30;
+    };
+    return result + count;
+}
