@@ -9,8 +9,8 @@ import {join,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 const [backend,compilerPath]=process.argv.slice(2);
-assert.ok(['forge','cranelift','llvm'].includes(backend)&&compilerPath&&process.argv.length===4,
-  'usage: node tests/durable-counter-native-replay.mjs forge|cranelift|llvm /path/to/compiler');
+assert.ok(['forge','cranelift','llvm','net'].includes(backend)&&compilerPath&&process.argv.length===4,
+  'usage: node tests/durable-counter-native-replay.mjs forge|cranelift|llvm|net /path/to/compiler');
 const compiler=resolve(compilerPath);
 const fixture=fileURLToPath(new URL('../fixtures/actors/persistence/durable_counter_broker_v1.atto',import.meta.url));
 const source=readFileSync(fixture);
@@ -105,12 +105,16 @@ int main(){
 }
 `;
 try{
-  const input=join(dir,'counter.atto'),driverFile=join(dir,'driver.cpp'),guest=join(dir,'guest');
+  const input=join(dir,'counter.atto'),driverFile=join(dir,'driver.cpp');
+  let guest=join(dir,'guest');
   writeFileSync(input,source);writeFileSync(driverFile,driver);
   let artifact;
   if(backend==='forge'){
     artifact=join(dir,'counter.cpp');
     run(compiler,['--durable-counter-actor-v1',input,'-o',artifact]);
+  }else if(backend==='net'){
+    artifact=join(dir,'Counter.g.cs');
+    run(compiler,['emit-durable-counter-v1',input,'--out',artifact]);
   }else if(backend==='llvm'){
     artifact=join(dir,'counter.ll');
     writeFileSync(artifact,run(compiler,['--durable-counter-actor-v1',input]));
@@ -121,7 +125,32 @@ try{
     writeFileSync(artifact,bytes);
   }
   const bytes=readFileSync(artifact);assert.ok(bytes.length>0);
-  run(backend==='llvm'?(process.env.CLANGXX||'clang++'):(process.env.CXX||'c++'),['-std=c++20','-O2','-Wall','-Wextra','-Werror','-pedantic',
+  if(backend==='net'){
+    writeFileSync(join(dir,'Guest.csproj'),`<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup>
+      <TargetFramework>net10.0</TargetFramework><OutputType>Exe</OutputType><AssemblyName>guest</AssemblyName>
+      <PublishAot>true</PublishAot><SelfContained>true</SelfContained><InvariantGlobalization>true</InvariantGlobalization>
+      <TreatWarningsAsErrors>true</TreatWarningsAsErrors><ImplicitUsings>enable</ImplicitUsings>
+      <Nullable>enable</Nullable>
+    </PropertyGroup></Project>`);
+    writeFileSync(join(dir,'Program.cs'),`using System.Globalization;
+Console.WriteLine(Convert.ToHexString(AttoDurableCounterV1.Descriptor()).ToLowerInvariant());
+string? line;
+while ((line=Console.ReadLine()) is not null) {
+    var p=line.Split(' ');
+    if(p.Length!=3)return 3;
+    Console.WriteLine(AttoDurableCounterV1.Transition(long.Parse(p[0],CultureInfo.InvariantCulture),long.Parse(p[1],CultureInfo.InvariantCulture),long.Parse(p[2],CultureInfo.InvariantCulture)).ToString(CultureInfo.InvariantCulture));
+}
+return 0;
+`);
+    const published=spawnSync('dotnet',['publish','Guest.csproj','-c','Release','-r','linux-x64','-o','native','-warnaserror'],
+      {cwd:dir,encoding:'utf8',timeout:240000,maxBuffer:8<<20});
+    assert.equal(published.error,undefined,String(published.error));
+    assert.equal(published.status,0,published.stdout+'\n'+published.stderr);
+    guest=join(dir,'native','guest');
+    assert.deepEqual(readFileSync(guest).subarray(0,4),Buffer.from([127,69,76,70]));
+    assert.match(run('file',[guest]).toString(),/ELF/);
+    assert.doesNotMatch(run('ldd',[guest]).toString(),/libcoreclr|libhostfxr/i);
+  }else run(backend==='llvm'?(process.env.CLANGXX||'clang++'):(process.env.CXX||'c++'),['-std=c++20','-O2','-Wall','-Wextra','-Werror','-pedantic',
     '-fsanitize=undefined','-fno-sanitize-recover=all',
     ...(backend==='forge'?['-DFORGE']:backend==='llvm'?['-DLLVM','-Wno-override-module']:[]),driverFile,artifact,'-o',guest]);
   const result=run(guest,[],vectors.map(v=>v.join(' ')).join('\n')+'\n').toString();
