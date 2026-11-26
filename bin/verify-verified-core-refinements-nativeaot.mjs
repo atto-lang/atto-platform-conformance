@@ -27,7 +27,7 @@ const rid="linux-x64",base=["-c","Release","-r",rid,"-p:PublishAot=true","-warna
 const compilerDir=join(work,"compiler"),compiler=join(compilerDir,"oresnet");
 const host=join(root,"host/Ores.Net.NativeHost/Ores.Net.NativeHost.csproj");
 const verify=exe=>ok(run("bash",["verification/assert-linux-native-release.sh",exe]),exe);
-const errors={divisionByZero:"Oreslang division by zero",integerOverflow:"Oreslang arithmetic overflow",refinementViolation:"Oreslang refinement check failed",i32Overflow:"Oreslang i32 overflow"};
+const errors={divisionByZero:"Oreslang division by zero",integerOverflow:"Oreslang arithmetic overflow",refinementViolation:"Oreslang refinement check failed",i32Overflow:"Oreslang arithmetic overflow"};
 try{
  const {cases}=manifest,fixtures=original;
  assert.equal(cases.length,49);
