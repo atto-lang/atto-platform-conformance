@@ -1,6 +1,7 @@
 // Explicit target adapters only; a missing adapter or unsupported source is
 // not a passed test. Run from a trusted checkout, not a privileged workflow.
 import assert from "node:assert/strict";
+import {runStrictGuest} from "./strict-guest-process.mjs";
 import {validateStrictManifest} from "./verified-strict-manifest.mjs";
 import {readFileSync,writeFileSync,mkdtempSync,rmSync,existsSync} from "node:fs";
 import {tmpdir} from "node:os";
@@ -144,15 +145,8 @@ try {
     assert.equal(g.status,0,id+": "+g.stderr);
     assert.equal(g.stderr,"",id);
     assert.equal(g.stdout,expected.decimal+"\n",id);
-   }else if(target==="rs"||target==="wasm"){
-    const m=new WebAssembly.Module(artifact);
-    assert.deepEqual(WebAssembly.Module.imports(m),[],id);
-    const g=new WebAssembly.Instance(m,{});
-    assert.equal(g.exports.main(),BigInt(expected.decimal),id);
-    assert.equal(g.exports.panic_code.value,0,id);
    }else{
-    const g=await import("data:text/javascript;base64,"+Buffer.from(artifact).toString("base64"));
-    assert.equal(g.main(),BigInt(expected.decimal),id);
+    runStrictGuest(artifact,target==="js"?"js":"wasm",expected.decimal,id);
    }
   }
   console.log("PASS",target,id,"source",hash(source),"artifact",artifact===null?"none":hash(artifact));
