@@ -58,3 +58,5 @@ until real compiler/guest test receipts prove portability.
 ## Canonical class methods and factories
 
 Class instance methods use `pub name(...)` or private `name(...)`; `pub new()` retains the exact sealed Newable factory witness. Legacy `fnc` member prefixes are accepted for migration. Standalone functions retain `fnc`. The new generic pair requires identical checked behavior, return 42, and formatter idempotence. Source-local execution is a separate gate from the Rust authenticated-package proof in atto-source.rs #587. Do not mark any backend PASS from source inventory tests.
+
+The two non-generic factory files are library fixtures without `main`; their value 42 is a **linked harness target**, not standalone stdout. A driver must supply and pin an actual harness before reporting execution. The two generic files define `main` and must produce result 42. The historical `expectedGuestOutput` field is retained for compatibility; use `executionMode` and `expectedMainResult` to distinguish these modes. Neither package-specific evidence nor a host inventory check promotes these source-local targets.
