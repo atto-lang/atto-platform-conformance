@@ -1,0 +1,308 @@
+{
+  "schema": "atto-counted-profile-evidence-v1",
+  "corpusCommit": "b5bc9cc998478b9525aa64dfee04e26f5d7089fd",
+  "corpusTree": "c2a9b831110611294cc981f2c4b70d5e6303e483",
+  "scope": "Observed execution receipts on proposed PR heads, not merged-main or unrestricted feature parity.",
+  "records": [
+    {
+      "backend": "java-graalvm",
+      "profile": "jvm-tracked-counted-scalar",
+      "head": "ca62d36a7e427521a4e2ab36420ae7924dd83e50",
+      "tree": "bdb30041550df9514c48b69bb1e0787baea2b18f",
+      "pr": 1932,
+      "run": 45861241033,
+      "job": 140052563774,
+      "steps": 6,
+      "command": "Maven scoped compiler/runtime/guest regression",
+      "limits": [
+        "not Graal Native Image",
+        "not general typed exhaustion",
+        "not aggregate tenant quotas"
+      ],
+      "fixtures": [
+        {
+          "id": "counted-mixed-future-alias",
+          "blob": "8f57de03c9fb44eb5594c99a7095f34b702a266a",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-multi-channel-fair",
+          "blob": "4b9b79b9b8670f5b282d33e63b7a4b5691c2979a",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-mixed-zero",
+          "blob": "458323db6019da434b97e5b966ee646411310acf",
+          "outcome": "guest-exit-42"
+        }
+      ]
+    },
+    {
+      "backend": "js",
+      "profile": "counted-ready-v1",
+      "head": "b16b6392f82bf97bf69d48c73ec842c59bfc2af0",
+      "tree": "4898a038e0e3e01d081b8738c45a04a136769d2a",
+      "pr": 198,
+      "run": 45861649944,
+      "job": 140053993677,
+      "steps": 4,
+      "command": "npm test; CLI emits ESM and executes nine exact guests",
+      "limits": [
+        "closed-world ready-only",
+        "no external pending producer",
+        "no actor/worker scheduling"
+      ],
+      "fixtures": [
+        {
+          "id": "counted-three",
+          "blob": "6531efa0689f2a5728b40a6412651e8143e45865",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-zero",
+          "blob": "42e49fc1eea64b31e86ec722e1457c1ab706a7e1",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-one",
+          "blob": "910062ebf96613d15a16ddb080abd89375d7709c",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-alias",
+          "blob": "324837078af3e7eeb9b619d0fb07142f0a0d6291",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-dynamic",
+          "blob": "7c9ea9270d766612de0d502147e0df31b0dc3454",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-dynamic-zero",
+          "blob": "4707b13d3daebe05ced967418ba120cf801e2d8c",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-mixed-future-alias",
+          "blob": "8f57de03c9fb44eb5594c99a7095f34b702a266a",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-multi-channel-fair",
+          "blob": "4b9b79b9b8670f5b282d33e63b7a4b5691c2979a",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-mixed-zero",
+          "blob": "458323db6019da434b97e5b966ee646411310acf",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "reject-counted-negative",
+          "blob": "e2ff6fdb406b8807b74fa15beaee10a7f9438e22",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-bool",
+          "blob": "4a52c22442bc8a9fe55eb95b23722595db32c97e",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-scalar",
+          "blob": "a2a2dd184237f17b5e8d455f498719ef1ed01d97",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-default",
+          "blob": "0c67c1fc8eaf55df6abb2b0fe7d2ce80f169bc69",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-write",
+          "blob": "63fa3c9add56f3793e6d755f006cd3568acf1f04",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-dynamic-bool",
+          "blob": "36cd372a5385e34f2e3bd8dd936e4e0491052633",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-dynamic-unknown",
+          "blob": "0e61da7a98987ed5a182148538b35b8a890abf26",
+          "outcome": "compiler-reject-no-artifact"
+        }
+      ]
+    },
+    {
+      "backend": "net",
+      "profile": "counted-ready-v1-static-csharp-nativeaot-linux-x64",
+      "head": "284e9f1354811a1d092a25274e09690977cbdf99",
+      "tree": "790e22b40278989c184c5c8f838f64f04b6b5f05",
+      "pr": 317,
+      "run": 45863264248,
+      "job": 140059531039,
+      "steps": 6,
+      "command": "bash scripts/test-counted-ready-nativeaot-guest.sh",
+      "limits": [
+        "closed-world ready-only",
+        "static C# emission, not direct CIL",
+        "no actor scheduling or external pending producer"
+      ],
+      "fixtures": [
+        {
+          "id": "counted-three",
+          "blob": "6531efa0689f2a5728b40a6412651e8143e45865",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-zero",
+          "blob": "42e49fc1eea64b31e86ec722e1457c1ab706a7e1",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-one",
+          "blob": "910062ebf96613d15a16ddb080abd89375d7709c",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-alias",
+          "blob": "324837078af3e7eeb9b619d0fb07142f0a0d6291",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-dynamic",
+          "blob": "7c9ea9270d766612de0d502147e0df31b0dc3454",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-dynamic-zero",
+          "blob": "4707b13d3daebe05ced967418ba120cf801e2d8c",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-mixed-future-alias",
+          "blob": "8f57de03c9fb44eb5594c99a7095f34b702a266a",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-multi-channel-fair",
+          "blob": "4b9b79b9b8670f5b282d33e63b7a4b5691c2979a",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-mixed-zero",
+          "blob": "458323db6019da434b97e5b966ee646411310acf",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "reject-counted-negative",
+          "blob": "e2ff6fdb406b8807b74fa15beaee10a7f9438e22",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-bool",
+          "blob": "4a52c22442bc8a9fe55eb95b23722595db32c97e",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-scalar",
+          "blob": "a2a2dd184237f17b5e8d455f498719ef1ed01d97",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-default",
+          "blob": "0c67c1fc8eaf55df6abb2b0fe7d2ce80f169bc69",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-write",
+          "blob": "63fa3c9add56f3793e6d755f006cd3568acf1f04",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-dynamic-bool",
+          "blob": "36cd372a5385e34f2e3bd8dd936e4e0491052633",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-dynamic-unknown",
+          "blob": "0e61da7a98987ed5a182148538b35b8a890abf26",
+          "outcome": "compiler-reject-no-artifact"
+        }
+      ]
+    },
+    {
+      "backend": "forge",
+      "profile": "unsupported-stage0-cli",
+      "head": "d9beb6df70bcd06898365149cc7b266b12e75643",
+      "tree": "6cf471ace645d003b2f234d00897e45d2f003de2",
+      "pr": 298,
+      "run": 45862904638,
+      "job": 140058301986,
+      "steps": 4,
+      "command": "python3 verification/mixed_counted_select_admission.py build/oresforge",
+      "limits": [
+        "unsupported admission only",
+        "not counted guest"
+      ],
+      "fixtures": [
+        {
+          "id": "counted-mixed-future-alias",
+          "blob": "8f57de03c9fb44eb5594c99a7095f34b702a266a",
+          "outcome": "unsupported-reject-no-artifact"
+        },
+        {
+          "id": "counted-multi-channel-fair",
+          "blob": "4b9b79b9b8670f5b282d33e63b7a4b5691c2979a",
+          "outcome": "unsupported-reject-no-artifact"
+        },
+        {
+          "id": "counted-mixed-zero",
+          "blob": "458323db6019da434b97e5b966ee646411310acf",
+          "outcome": "unsupported-reject-no-artifact"
+        }
+      ]
+    },
+    {
+      "backend": "realtime",
+      "profile": "rt-closed-scalar-v0",
+      "head": "752ecb8f5002895928a52e36a84069a9099c2e52",
+      "tree": "16c783b6e962b597fb67480aeb9edd5968e33581",
+      "pr": 29,
+      "run": 45863355901,
+      "job": 140059868901,
+      "steps": 4,
+      "command": "node --test tests/counted-mixed-strict-profile.test.mjs tests/strict_closed_scalar.test.mjs",
+      "limits": [
+        "unsupported admission only",
+        "not counted guest",
+        "not WCET certified"
+      ],
+      "fixtures": [
+        {
+          "id": "counted-mixed-future-alias",
+          "blob": "8f57de03c9fb44eb5594c99a7095f34b702a266a",
+          "outcome": "unsupported-reject-no-artifact"
+        },
+        {
+          "id": "counted-multi-channel-fair",
+          "blob": "4b9b79b9b8670f5b282d33e63b7a4b5691c2979a",
+          "outcome": "unsupported-reject-no-artifact"
+        },
+        {
+          "id": "counted-mixed-zero",
+          "blob": "458323db6019da434b97e5b966ee646411310acf",
+          "outcome": "unsupported-reject-no-artifact"
+        }
+      ]
+    }
+  ],
+  "notExecuted": [
+    {
+      "backend": "atto",
+      "reason": "Stage-0 three-character scalar kernel; no general Atto-authored compiler CLI. No counted source admission claim."
+    }
+  ]
+}
