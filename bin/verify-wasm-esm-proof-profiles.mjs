@@ -14,6 +14,7 @@ const js=backend==="js"?await import(pathToFileURL(join(compiler,"src/program-v2
 const dir=fileURLToPath(new URL("../fixtures/verified-core-refinements-v1/",import.meta.url));
 const cases=JSON.parse(readFileSync(join(dir,"cases.json"),"utf8")).cases.map(c=>({...c,text:readFileSync(join(dir,c.source),"utf8")}));
 assert.equal(cases.length,49);
+const strict=JSON.parse(readFileSync(join(dir,'../verified-core-strict-i64-v1/cases.json'),'utf8')).cases.map(c=>({source:c.id+'.atto',text:c.source,expected:c.expected}));
 const work=mkdtempSync(join(tmpdir(),"atto-proof-wasm-esm-"));
 const sha=x=>createHash("sha256").update(x).digest("hex");
 // Match existing compiler ABI, never treat an arbitrary trap as a pass.
@@ -22,16 +23,17 @@ const codes={integerOverflow:1,divisionByZero:2,refinementViolation:7,i32Overflo
 const jsCodes={integerOverflow:"integer_overflow",divisionByZero:"division_by_zero",refinementViolation:"refinement_violation",i32Overflow:"i32_overflow"};
 let totalFailures=0;
 try{
- for(const [profile,list] of [["refinements",cases],["helpers",typedBindingCases]]){
+ for(const [profile,list] of [["refinements",cases],["helpers",typedBindingCases],["strict",strict]]){
   let passed=0;const failures=[];
   for(const {source,text,expected} of list){
    try{
     assert.match(source,/^[a-z0-9-]+\.atto$/);
     if(js){
+     const compile=profile==="strict"?js.compileVerifiedStrict:js.compileProgramV2;
      if(expected.kind==="diagnostic"){
-      assert.throws(()=>js.compileProgramV2(text),e=>expected.category===null?String(e.message).length>0:String(e.message).includes(expected.category+":"),source);
+      assert.throws(()=>compile(text),e=>expected.category===null?String(e.message).length>0:String(e.message).includes(expected.category+":"),source);
      }else{
-      const emitted=js.compileProgramV2(text);
+      const emitted=compile(text);
       const m=await import("data:text/javascript;base64,"+Buffer.from(emitted).toString("base64"));
       assert.deepEqual(Object.keys(m),["main"]);
       if(expected.kind==="value")assert.equal(m.main(),BigInt(expected.decimal));
@@ -40,7 +42,7 @@ try{
     }else{
      const input=join(work,profile+"-"+source),output=input+".wasm";
      writeFileSync(input,text,{flag:"wx"});
-     const c=spawnSync(compiler,[input,"-o",output],{cwd:work,encoding:"utf8",timeout:30000,maxBuffer:1024*1024});
+     const c=spawnSync(compiler,[...(profile==="strict"?["--verify=strict"]:[]),input,"-o",output],{cwd:work,encoding:"utf8",timeout:30000,maxBuffer:1024*1024});
      if(c.error)throw c.error;assert.equal(c.signal,null);
      if(expected.kind==="diagnostic"){
       assert.equal(c.status,1,c.stderr);assert.ok(!existsSync(output));assert.equal(c.stdout,"");
