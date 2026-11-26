@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
 
 const registry = JSON.parse(readFileSync(new URL('../contracts/execution-context-unwind-v1.json', import.meta.url), 'utf8'));
 const expected_backends = [
@@ -56,4 +57,18 @@ test('local JS host model is explicitly segregated from transpiled guest evidenc
   assert.equal(h.local_host_tests_failed,0);
   assert.equal(h.guest_level_verification,'not_executed');
   assert.equal(registry.cases[0].backend_statuses['atto-source.js'],'not_executed');
+});
+
+test('candidate guest source blobs are exact and not execution receipts',()=>{
+  const fixtures=registry.candidate_guest_fixtures;
+  assert.equal(fixtures.length,4);
+  assert.equal(new Set(fixtures.map(f=>f.path)).size,4);
+  for(const f of fixtures){
+    assert.match(f.path,/^fixtures\/execution-context-unwind-v1\/[a-z-]+\.atto$/);
+    const b=readFileSync(new URL('../'+f.path,import.meta.url));
+    const blob=createHash('sha1').update('blob '+b.length+'\0').update(b).digest('hex');
+    assert.equal(blob,f.git_blob_sha);
+    assert.ok(registry.cases.some(c=>c.id===f.case_id));
+    assert.ok(['return','panic'].includes(f.expected.kind));
+  }
 });
