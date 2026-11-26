@@ -1,0 +1,5 @@
+pub fnc main(): int {
+  const Record<R> a=(x=1);
+  const Record<infer R> b=(x=2);
+  return a.x;
+}

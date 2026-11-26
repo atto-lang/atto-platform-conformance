@@ -1,0 +1,5 @@
+const Record<infer T1> r = (a=true, b="xyz", c=5);
+fnc process(Record<T1> input) -> typeof input.c {
+    return seq input.c, input.a, input.b;
+}
+pub fnc main(): int { return 0; }

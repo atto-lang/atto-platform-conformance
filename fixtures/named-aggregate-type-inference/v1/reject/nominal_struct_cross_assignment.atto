@@ -1,0 +1,6 @@
+pub fnc main(): int {
+  const struct<infer A> a={x:1,y:2};
+  const struct<infer B> b={x:3,y:4};
+  const struct<A> c=b;
+  return c.x;
+}
