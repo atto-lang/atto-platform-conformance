@@ -188,3 +188,32 @@ test('new backends remain separate and require executed evidence; restricted pro
  }
  assert.throws(()=>classifyReceipt(positive,'rust',null),/unknown backend/);
 });
+
+test('negative fixture polarity cannot be rewritten as positive',()=>{
+ const c=manifest.cases.find(x=>x.expect==='negative');
+ const altered={...c,expect:'positive',expectedGuestExit:42};
+ delete altered.expectedDiagnosticCode;
+ assert.throws(()=>validateManifest({...manifest,cases:manifest.cases.map(x=>x.id===c.id?altered:x)}),/invalid portable Task case/);
+});
+test('compile-only rejection cannot claim a guest command, exit or output',()=>{
+ const c=cases.find(x=>x.expect==='negative');
+ const denied={...receipt(c),compilerExit:1,compilerOutput:'error: '+c.expectedDiagnosticCode+' invalid capture',
+ guestExecuted:false,artifactSha256:null,guestArgv:[],guestExit:null,guestOutput:'',completedSteps:1,stepNames:['compile']};
+ for(const backend of manifest.backends){
+  const negative={...denied,backend};
+  const unsupported={...negative,status:'unsupported',compilerOutput:'error: unsupported Task lowering'};
+  for(const r of [negative,unsupported]){
+   assert.notEqual(classifyReceipt(c,backend,r).status,'failed');
+   for(const mutation of [{guestArgv:['/fake/guest']},{guestExit:42},{guestOutput:'forged guest'},{compilerExit:-1}]){
+    assert.equal(classifyReceipt(c,backend,{...r,...mutation}).status,'failed');
+   }
+  }
+  for(const compilerOutput of ['warning: unsupported operation','unsupported','note: not supported']){
+   assert.equal(classifyReceipt(c,backend,{...unsupported,compilerOutput}).status,'failed');
+  }
+ }
+});
+test('falsey non-null receipt data is malformed, not absent',()=>{
+ for(const r of [false,0,''])assert.equal(classifyReceipt(positive,'java',r).status,'failed');
+ assert.equal(classifyReceipt(positive,'java',null).status,'not_executed');
+});
