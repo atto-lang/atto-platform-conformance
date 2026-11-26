@@ -62,10 +62,10 @@
     "byte_length": 59
   },
   "evidence": {
-    "native_host": "LOCAL_EXACT_COMPONENT_EXECUTED",
-    "js_manifest_emitter": "LOCAL_EXACT_COMPONENT_EXECUTED",
+    "native_host": "EXACT_COMPONENT_AND_ALTERNATE_CI_EXECUTED",
+    "js_manifest_emitter": "EXACT_COMPONENT_AND_ALTERNATE_CI_EXECUTED",
     "rs": "NOT_IMPLEMENTED_V2",
-    "java": "NOT_IMPLEMENTED_V2",
+    "java": "LOCAL_EXACT_COMPONENT_JVM_MANIFEST_EMITTER_EXECUTED_NATIVE_IMAGE_PENDING",
     "llvm": "NOT_IMPLEMENTED_V2",
     "wasm": "NOT_IMPLEMENTED_V2",
     "forge": "NOT_IMPLEMENTED_V2",
