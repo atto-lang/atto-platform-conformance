@@ -143,6 +143,78 @@
       "reason": "nonvoid fallthrough",
       "gate": "NO_ARTIFACT_DIAGNOSTIC",
       "git_blob_sha": "2b74d5e403e53552b9ac0ff66e0364758dd0e5dc"
+    },
+    {
+      "id": "comments-before-brace",
+      "kind": "pass",
+      "path": "fixtures/flexible-callable-headers-v1/comments-before-brace.atto",
+      "expected_exit": 42,
+      "gate": "EXECUTE_COMPILED_GUEST",
+      "git_blob_sha": "002e4a6fc61b331ed6c5091506dea0c128629040"
+    },
+    {
+      "id": "adjacent-braces",
+      "kind": "pass",
+      "path": "fixtures/flexible-callable-headers-v1/adjacent-braces.atto",
+      "expected_exit": 42,
+      "gate": "EXECUTE_COMPILED_GUEST",
+      "git_blob_sha": "e71ad060275ade846c870ab963f6c371586a104f"
+    },
+    {
+      "id": "comments-after-result",
+      "kind": "pass",
+      "path": "fixtures/flexible-callable-headers-v1/comments-after-result.atto",
+      "expected_exit": 42,
+      "gate": "EXECUTE_COMPILED_GUEST",
+      "git_blob_sha": "9c33fc6d4213cf1d498306110aea450dbb546541"
+    },
+    {
+      "id": "nested-statement",
+      "kind": "pass",
+      "path": "fixtures/flexible-callable-headers-v1/nested-statement.atto",
+      "expected_exit": 42,
+      "gate": "EXECUTE_COMPILED_GUEST",
+      "git_blob_sha": "44d7a897e1351da985500c034fcb1b97ec21915b"
+    },
+    {
+      "id": "trailing-colon",
+      "kind": "fail",
+      "path": "fixtures/flexible-callable-headers-v1/trailing-colon.atto",
+      "reason": "trailing result requires arrow",
+      "gate": "NO_ARTIFACT_DIAGNOSTIC",
+      "git_blob_sha": "493cf6d65928685e5a653e2c5e3345c10f0659fd"
+    },
+    {
+      "id": "body-clause",
+      "kind": "fail",
+      "path": "fixtures/flexible-callable-headers-v1/body-clause.atto",
+      "reason": "contract after body opening",
+      "gate": "NO_ARTIFACT_DIAGNOSTIC",
+      "git_blob_sha": "b6ee257b4e5598a7e68681f3c40e7a449a19d63c"
+    },
+    {
+      "id": "duplicate-budget-key",
+      "kind": "fail",
+      "path": "fixtures/flexible-callable-headers-v1/duplicate-budget-key.atto",
+      "reason": "duplicate budget entry",
+      "gate": "NO_ARTIFACT_DIAGNOSTIC",
+      "git_blob_sha": "b63a94b57c954b266a6a621f919274e3aa8aa766"
+    },
+    {
+      "id": "trailing-clause-throws",
+      "kind": "fail",
+      "path": "fixtures/flexible-callable-headers-v1/trailing-clause-throws.atto",
+      "reason": "failure clause after final result",
+      "gate": "NO_ARTIFACT_DIAGNOSTIC",
+      "git_blob_sha": "3c1b85b31123efdae85df3faa89ad349d762a399"
+    },
+    {
+      "id": "missing-outer-end",
+      "kind": "fail",
+      "path": "fixtures/flexible-callable-headers-v1/missing-outer-end.atto",
+      "reason": "missing outer callable end",
+      "gate": "NO_ARTIFACT_DIAGNOSTIC",
+      "git_blob_sha": "142d1415eb73c71c33fe2e3d10226959042ab3d4"
     }
   ],
   "evidence_rule": "Require actual compiled guest exit 42 for each positive case and a targeted compiler diagnostic with no artifact for each negative; unsupported bound enforcement is not a pass. Host inventory tests alone are not guest evidence."
