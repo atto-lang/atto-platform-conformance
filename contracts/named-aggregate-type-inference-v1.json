@@ -9,7 +9,9 @@
     "https://github.com/atto-lang/atto-source.java/pull/1899",
     "https://github.com/atto-lang/atto-source.rs/pull/613",
     "https://github.com/atto-lang/atto-source.net/pull/286",
-    "https://github.com/atto-lang/atto-source.forge/pull/272"
+    "https://github.com/atto-lang/atto-source.forge/pull/272",
+    "https://github.com/atto-lang/atto-source.llvm/pull/929",
+    "https://github.com/atto-lang/atto-source.cranelift/pull/126"
   ],
   "evidence_policy": "PASS requires exact compiler/fixture SHAs, real guest execution with expected result or a relevant compiler diagnostic and no artifact; source-only/reference results do not count.",
   "backend_status": {
