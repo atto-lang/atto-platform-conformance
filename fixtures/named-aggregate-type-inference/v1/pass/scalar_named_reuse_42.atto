@@ -1,0 +1,9 @@
+pub fnc main(): int {
+  const Record<infer R> r = (a=1,b=true);
+  const Tuple<infer T> t = (true,2);
+  const struct<infer S> s = {a:3};
+  const Record<R> r2 = (b=false,a=10);
+  const Tuple<T> t2 = (false,12);
+  const struct<S> s2 = {a:20};
+  return r2.a+t2[1]+s2.a;
+}

@@ -1,0 +1,1 @@
+pub fnc main(): int { const Record r=(a=42); return r.a; }
