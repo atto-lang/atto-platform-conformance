@@ -1,7 +1,7 @@
 {
   "schema": "atto-counted-profile-evidence-v1",
-  "corpusCommit": "b5bc9cc998478b9525aa64dfee04e26f5d7089fd",
-  "corpusTree": "c2a9b831110611294cc981f2c4b70d5e6303e483",
+  "corpusCommit": "4f2069fe11d238f8151d366ac62c72d5b1914031",
+  "corpusTree": "c47d2a889ea66edd391baefdbca4f42cdb64ec8d",
   "scope": "Observed execution receipts on proposed PR heads, not merged-main or unrestricted feature parity.",
   "records": [
     {
@@ -588,6 +588,54 @@
           "id": "counted-mixed-zero",
           "blob": "458323db6019da434b97e5b966ee646411310acf",
           "outcome": "unsupported-reject-no-artifact"
+        }
+      ]
+    },
+    {
+      "backend": "js",
+      "profile": "counted-ready-v1",
+      "head": "aeb16f59c268864b042c85abe9a86df15c704df1",
+      "tree": "2405086ce929ffcdfcd9e89e4bbc72c1d95261c0",
+      "pr": 198,
+      "carrier": "fasttwebb/atto-ci",
+      "run": 45865332375,
+      "job": 140066586328,
+      "steps": 4,
+      "command": "node --test tests/counted-select-ready-guest.test.mjs tests/counted-select-i64-batch.test.mjs tests/counted-select-i64-cursor.test.mjs tests/counted-select-portable-admission.test.mjs (29/29; actual CLI ESM)",
+      "limits": [
+        "closed-world ready-only",
+        "no external pending producer",
+        "no actor/worker scheduling"
+      ],
+      "fixtures": [
+        {
+          "id": "counted-distinct-alias-projection",
+          "blob": "5baca9bb9eb4b98500cab770888a45fb60bbf10d",
+          "outcome": "guest-exit-42"
+        }
+      ]
+    },
+    {
+      "backend": "java-graalvm",
+      "profile": "jvm-tracked-counted-scalar",
+      "head": "3622e7adb0ee48189a65b94e334ab8858aaa343f",
+      "tree": "71cdfa48ef351b4617f195d10902e6e054fd4384",
+      "pr": 1930,
+      "carrier": "fasttwebb/atto-ci",
+      "run": 45865332375,
+      "job": 140066586230,
+      "steps": 6,
+      "command": "mvn -B -ntp -Dtest=TypedDefaultSelectGuestTest,CountedSelectActorCursorTest,CountedSelectReadCursorTest,CountedSelectTaskCursorTest test (53/53; actual JVM guest)",
+      "limits": [
+        "not Graal Native Image",
+        "not general typed exhaustion",
+        "not aggregate tenant quotas"
+      ],
+      "fixtures": [
+        {
+          "id": "counted-distinct-alias-projection",
+          "blob": "5baca9bb9eb4b98500cab770888a45fb60bbf10d",
+          "outcome": "guest-exit-42"
         }
       ]
     }
