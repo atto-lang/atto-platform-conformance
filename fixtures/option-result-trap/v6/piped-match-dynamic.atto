@@ -1,0 +1,19 @@
+declare type Bounded = int where self >= 1 and self <= 42;
+
+fnc get_value(bool present): Option<int> {
+    return present ? Some(7) : None;
+}
+
+fnc choose(bool present): int {
+    val Option<int> x = get_value(present);
+    return trap! x.unwrap() |> match<int> over
+        on Ok(n): int -> n,
+        on Err(): int -> 42,
+    end;
+}
+
+pub fnc main(): int {
+    guard choose(true) eq 7 { return 1; }
+    guard choose(false) eq 42 { return 2; }
+    return 42;
+}

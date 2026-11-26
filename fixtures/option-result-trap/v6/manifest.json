@@ -1,0 +1,87 @@
+{
+  "format": "atto.checked-unwrap.v6-candidate",
+  "spec": "atto-lang/atto-spec#249",
+  "status": "AUTHORED_NOT_EXECUTED",
+  "required_backends": [
+    "java-jvm",
+    "java-native-image",
+    "dotnet-coreclr",
+    "dotnet-native-aot",
+    "llvm-native-aot",
+    "rust",
+    "wasm",
+    "javascript",
+    "forge",
+    "cranelift",
+    "hdl",
+    "self-hosted-atto",
+    "realtime"
+  ],
+  "cases": [
+    {
+      "path": "checked-unwrap.atto",
+      "git_blob_sha1": "90c6166041963d1f466bc51f105c66a0a7be15ac",
+      "expected": {
+        "result": 42
+      }
+    },
+    {
+      "path": "inline-task-failure.atto",
+      "git_blob_sha1": "446624a894788834550ac7a13a7a76ea5d06444c",
+      "expected": {
+        "result": 42,
+        "stdout": "D"
+      }
+    },
+    {
+      "path": "short-circuit.atto",
+      "git_blob_sha1": "d24442cf7daf1dd86876b418f0cb9e793cbb23c2",
+      "expected": {
+        "result": 42,
+        "stdout": "RR"
+      }
+    },
+    {
+      "path": "terminal-expect.atto",
+      "git_blob_sha1": "864e6b34fe46de9c260a7e537f3f008caa7c8b79",
+      "expected": {
+        "runtime_failure": "uncaught_guest_panic"
+      }
+    },
+    {
+      "path": "piped-match-none.atto",
+      "git_blob_sha1": "fb1653c04f6556e130ec0dc51f8a0fd933e34580",
+      "expected": {
+        "result": 42
+      }
+    },
+    {
+      "path": "piped-match-some.atto",
+      "git_blob_sha1": "77b3f981f031aaaef072f1c68b66960825cf232c",
+      "expected": {
+        "result": 42
+      }
+    },
+    {
+      "path": "piped-match-dynamic.atto",
+      "git_blob_sha1": "99cf8ea1bf165b622c65400244a684ae0153fcb9",
+      "expected": {
+        "result": 42
+      }
+    },
+    {
+      "path": "piped-match-arm-throw.atto",
+      "git_blob_sha1": "411801dc7eb4f6e3065911012ba21f3ffc8227c4",
+      "expected": {
+        "result": 42
+      }
+    },
+    {
+      "path": "piped-match-error-binding.atto",
+      "git_blob_sha1": "13ee1d7cd4b83e062c4f8b454d2b5b213cc24a8f",
+      "expected": {
+        "result": 42
+      }
+    }
+  ]
+}

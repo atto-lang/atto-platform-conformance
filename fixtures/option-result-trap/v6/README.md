@@ -1,0 +1,5 @@
+# Checked unwrap v6 candidate
+
+Proposed spec amendment: atto-lang/atto-spec#249. This suite supplements v5; do not change historical fixture bytes or claim prior panic receipts verify checked unwrap. `unwrap()` on None/Err must issue an ordinary guest throw; `expect()` remains a terminal panic. An existing Result and a plain None retain the one-layer trap contract. The inline task case observes partial writeback and exact-once defer. The short-circuit case counts RHS executions independently of returned values.
+
+All cases are AUTHORED_NOT_EXECUTED. Backend owners must compile exact fixture bytes and run actual guest artifacts; record source commit/tree, compiler build digest, fixture blob, exit/result and stdout. A rejection on an unsupported target is a gap, not a positive pass. HDL/realtime must document supported execution profile and deterministic failure admission separately; do not fake a software runtime. Further tests required for nominal payload identity, typed effect checking, borrow/move isolation, await, panic/raise/cancellation, and cleanup aggregation. No blanket relaxation of terminal fault rules.
