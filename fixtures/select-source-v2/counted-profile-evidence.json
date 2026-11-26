@@ -830,20 +830,19 @@
     },
     {
       "backend": "rs",
-      "profile": "counted-ready-v1-direct-wasm-native-and-wasm32-compiler",
-      "head": "10d7b1d278a25b26f05b08a2ddce7d04fa43a6a8",
-      "tree": "a6ea17210da2eada57a3ce5ddfa1bc0e846a7043",
+      "profile": "counted-ready-v1-direct-wasm",
+      "head": "693a710190dc949d262af5292e42851f428b8470",
+      "tree": "5926f1bc85545cacf8a3cbbaf5b97eb5d64db8a1",
       "pr": 656,
-      "run": 45869938405,
-      "job": 140082429486,
-      "steps": 4,
-      "carrier": "fasttwebb/atto-ci",
-      "command": "Rust 1.85.1 native attoc and wasm32 compiler; node tests/counted-ready-wasm-parity.mjs; 10 positive, 7 reject, 5 runtime traps, 17 ordinary denials, 4 legacy regression tests",
+      "carrier": "attopl-co/atto-ci",
+      "run": 45870243382,
+      "job": 140083530731,
+      "steps": 5,
+      "command": "Build native and wasm32 Rust compiler; execute 10 positive exact guests twice and 7 no-artifact negatives; 5 runtime traps and 17 ordinary profile denials",
       "limits": [
         "closed-world ready-only",
-        "no external producers or general actor scheduling",
-        "direct Wasm not native machine-code guest",
-        "exact historical PR head"
+        "no external pending producer",
+        "no general actor scheduling"
       ],
       "fixtures": [
         {
@@ -935,20 +934,19 @@
     },
     {
       "backend": "wasm",
-      "profile": "counted-ready-v1-direct-wasm-real-chrome-worker",
+      "profile": "counted-ready-v1-chrome-worker-direct-wasm",
       "head": "0bad002bae7e84b6419b4ba40b115b707515bb3b",
       "tree": "9160fa5eecb81e6a41b4eac26b2370ce7fe92c02",
       "pr": 333,
-      "run": 45870115340,
-      "job": 140083034064,
-      "steps": 3,
-      "carrier": "ores-wasm-loaders-test/atto-ci",
-      "command": "Chrome 158 real dedicated Worker; Rust compiler 10d7b1d278a25b26f05b08a2ddce7d04fa43a6a8 tree a6ea17210da2eada57a3ce5ddfa1bc0e846a7043 artifact SHA256 ae26014c62fc586e4b52e86cf895c2abb3d490bd2864ae229930d9ead30ec598; node scripts/verify-browser-worker-counted.mjs",
+      "carrier": "attopl-co/atto-ci",
+      "run": 45870244794,
+      "job": 140083517823,
+      "steps": 4,
+      "command": "Fresh Rust wasm32 compiler 693a710190dc949d262af5292e42851f428b8470; actual Chrome Worker compiles and runs 10 positive and rejects 7 negative exact source cases, repeat and independent instance, 6 runtime controls",
       "limits": [
         "closed-world ready-only",
-        "same Rust compiler family, separate browser host execution",
-        "no JavaScript emitter or general actor scheduler claim",
-        "exact historical PR heads"
+        "no external pending producer",
+        "no general actor scheduling"
       ],
       "fixtures": [
         {
@@ -1145,14 +1143,14 @@
     {
       "backend": "cranelift",
       "profile": "counted-static-ready-v1-native-object",
-      "head": "8b5cde94eb947712b287a88e0747944abdb8a8d0",
-      "tree": "eff8b8578e220a67410f9957d0d5d1fb8f15a7fe",
+      "head": "f5218d77593d16242148bfd4545358502f1d413c",
+      "tree": "200a51c56e198e9b29f88f58e204d8f0d939ea66",
       "pr": 160,
-      "run": 45872752378,
-      "job": 140092080826,
-      "steps": 2,
-      "carrier": "fasttwebb/atto-ci",
-      "command": "cargo build --locked --bin orescranelift; bash scripts/test-counted-static-ready-native.sh; 8 guest, 7 invalid and 2 profile-limited rejections, 2 overflow and 2 nonselected projection controls, 4 additional affine/branch denials",
+      "run": 45873368320,
+      "job": 140094172645,
+      "steps": 3,
+      "carrier": "ores-wasm-loaders-test/atto-ci",
+      "command": "cargo build --locked --bin orescranelift; bash scripts/test-counted-static-ready-native.sh; 8 guest, 7 invalid and 2 profile-limited rejections, 2 overflow and 2 nonselected projection controls, 4 additional affine/branch denials; full cargo test --locked --all-targets: 593 passed, 0 ignored",
       "limits": [
         "dynamic count is outside literal-count static native profile",
         "static closed-world queue topology, runtime checked scalar payload/projection",
