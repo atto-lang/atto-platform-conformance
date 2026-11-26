@@ -234,3 +234,21 @@ test('required and forbidden observations cannot drift from the portable contrac
  }
  assert.equal(validateManifest(manifest),manifest);
 });
+
+
+test('direct fixture selection rejects missing array entries',()=>{
+ const sparse=(length,entries)=>Object.assign(new Array(length),entries);
+ const first=cases[0],second=cases[1];
+ for(const selected of [new Array(1),sparse(2,{0:first.id}),sparse(2,{1:second.id})])
+  assert.throws(()=>selectCases([first,second],selected),/fixture selection/);
+ assert.deepEqual(selectCases([first,second],[second.id,first.id]),[first,second]);
+});
+test('all backend roles reject malformed argument arrays without throwing',()=>{
+ const sparse=(length,entries)=>Object.assign(new Array(length),entries);
+ for(const backend of manifest.backends){
+  const valid={...receipt(),backend};
+  assert.equal(classifyReceipt(positive,backend,valid).status,'passed');
+  for(const patch of [{compileArgv:sparse(2,{0:'/compiler'})},{compileArgv:sparse(2,{1:'a.atto'})},{guestArgv:sparse(2,{0:'/guest'})},{guestArgv:new Array(1)}])
+   assert.equal(classifyReceipt(positive,backend,{...valid,...patch}).status,'failed',backend);
+ }
+});
