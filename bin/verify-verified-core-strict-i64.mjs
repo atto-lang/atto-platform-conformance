@@ -41,7 +41,7 @@ try {
   const {createCompiler}=await import(pathToFileURL(join(resolve(bridgePath),"src/canonical-browser-compiler.mjs")).href);
   browser=await createCompiler(bytes);
  }
- let passed=0,failed=0;
+ let passed=0,failed=0;const failures=[];
  for(const {id,source,expected,tier:caseTier} of cases){
   try {
   assert.match(id,/^[a-z0-9-]+$/);
@@ -158,12 +158,14 @@ try {
   console.log("PASS",target,id,"source",hash(source),"artifact",artifact===null?"none":hash(artifact));
   passed++;
   } catch (error) {
-   failed++;
+   failed++;failures.push(id);
    console.error("CASE_FAIL",target,id,"source",hash(source),String(error?.stack??error));
   }
  }
  console.log("STRICT_CENSUS",target,tier,"total",cases.length,"passed",passed,"failed",failed);
+ console.log("STRICT_CENSUS_JSON",JSON.stringify({target,tier,passed,total:cases.length,failures}));
  assert.equal(passed+failed,cases.length,"census lost a case");
+ assert.equal(failures.length,failed,"census lost a failure identity");
  if(failed){process.exitCode=1;}
  else {console.log("VERIFIED_STRICT_I64",target,tier,cases.length);}
 }finally{rmSync(dir,{recursive:true,force:true});}
