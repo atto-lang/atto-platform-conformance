@@ -1,0 +1,196 @@
+{
+  "schema": "atto.copy-readonly-sharing.v1",
+  "status": "SOURCE_CANDIDATE_ONLY",
+  "spec": "https://github.com/atto-lang/atto-spec/pull/251",
+  "backend_count": 11,
+  "backends": [
+    {
+      "repo": "atto-lang/atto-source.atto",
+      "guest_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.cranelift",
+      "guest_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.forge",
+      "guest_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.hdl",
+      "guest_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.java",
+      "guest_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.js",
+      "guest_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.llvm",
+      "guest_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.net",
+      "guest_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.realtime",
+      "guest_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.rs",
+      "guest_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.wasm",
+      "guest_status": "NOT_EXECUTED",
+      "receipt": null
+    }
+  ],
+  "fixtures": [
+    {
+      "id": "replace-copy",
+      "path": "fixtures/copy-readonly-sharing-v1/replace-copy.atto",
+      "expect": {
+        "stdout": "42",
+        "exit_code": 0
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "replace-original",
+      "path": "fixtures/copy-readonly-sharing-v1/replace-original.atto",
+      "expect": {
+        "stdout": "42",
+        "exit_code": 0
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "independent-root",
+      "path": "fixtures/copy-readonly-sharing-v1/independent-root.atto",
+      "expect": {
+        "stdout": "42",
+        "exit_code": 0
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "block-release",
+      "path": "fixtures/copy-readonly-sharing-v1/block-release.atto",
+      "expect": {
+        "stdout": "20|22",
+        "exit_code": 0
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "shared-read-control",
+      "path": "fixtures/copy-readonly-sharing-v1/shared-read-control.atto",
+      "expect": {
+        "stdout": "40",
+        "exit_code": 0
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-original-write",
+      "path": "fixtures/copy-readonly-sharing-v1/reject-original-write.atto",
+      "expect": {
+        "compile_reject": "E_COPY_READONLY"
+      },
+      "paired_positive": "shared-read-control",
+      "forbidden_statement": "a.scores.n = 99;",
+      "diagnostic_line": 12,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-copy-write",
+      "path": "fixtures/copy-readonly-sharing-v1/reject-copy-write.atto",
+      "expect": {
+        "compile_reject": "E_COPY_READONLY"
+      },
+      "paired_positive": "shared-read-control",
+      "forbidden_statement": "b.scores.n = 99;",
+      "diagnostic_line": 12,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "third-copy-control",
+      "path": "fixtures/copy-readonly-sharing-v1/third-copy-control.atto",
+      "expect": {
+        "stdout": "20",
+        "exit_code": 0
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-third-copy-write",
+      "path": "fixtures/copy-readonly-sharing-v1/reject-third-copy-write.atto",
+      "expect": {
+        "compile_reject": "E_COPY_READONLY"
+      },
+      "paired_positive": "third-copy-control",
+      "forbidden_statement": "a.scores.n = 99;",
+      "diagnostic_line": 14,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "fixed-slot-control",
+      "path": "fixtures/copy-readonly-sharing-v1/fixed-slot-control.atto",
+      "expect": {
+        "stdout": "40",
+        "exit_code": 0
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-fixed-slot",
+      "path": "fixtures/copy-readonly-sharing-v1/reject-fixed-slot.atto",
+      "expect": {
+        "compile_reject": "E_COPY_READONLY_SLOT"
+      },
+      "paired_positive": "fixed-slot-control",
+      "forbidden_statement": "b.scores = new Scores();",
+      "diagnostic_line": 12,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-shared-containing-object",
+      "path": "fixtures/copy-readonly-sharing-v1/reject-shared-containing-object.atto",
+      "expect": {
+        "compile_reject": "E_COPY_READONLY"
+      },
+      "paired_positive": "shared-read-control",
+      "forbidden_statement": "b.scores.n = 5;",
+      "diagnostic_line": 12,
+      "status": "NOT_EXECUTED"
+    }
+  ],
+  "negative_policy": "First execute paired positive on same exact compiler tree. Require diagnostic at forbidden statement, no artifact, no E_COPY_SHALLOW_ALIAS or parser rejection as parity. Diagnostic mapping must be reviewed. No source rewriting or skipped negative tests.",
+  "required_receipt": [
+    "exact_source_commit",
+    "exact_root_tree",
+    "fixture_blob_sha",
+    "compiler_command",
+    "compile_exit",
+    "executed_steps",
+    "guest_stdout_or_diagnostic_and_location",
+    "artifact_absent_on_reject",
+    "independent_review"
+  ],
+  "full_parity": false
+}

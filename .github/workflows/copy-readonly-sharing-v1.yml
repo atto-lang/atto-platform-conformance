@@ -1,0 +1,31 @@
+name: Shallow copy 11-backend fixture integrity (host only)
+on:
+  pull_request:
+    paths:
+      - 'contracts/copy-readonly-sharing-v1.json'
+      - 'fixtures/copy-readonly-sharing-v1/**'
+      - 'tests/copy-readonly-sharing-v1.test.mjs'
+      - '.github/workflows/copy-readonly-sharing-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  host-fixture-integrity:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact checkout and execute host-only fixture checks
+        env:
+          EXPECTED: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED"
+          test -z "$(git status --porcelain)"
+          echo "SOURCE_HEAD=$EXPECTED"
+          echo "SOURCE_TREE=$(git rev-parse 'HEAD^{tree}')"
+          node --test tests/copy-readonly-sharing-v1.test.mjs
+          echo "EVIDENCE_SCOPE=HOST_FIXTURE_INTEGRITY_ONLY"
