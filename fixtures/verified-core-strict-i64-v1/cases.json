@@ -1154,6 +1154,114 @@
         "kind": "diagnostic",
         "category": "E_VERIFY_UNSUPPORTED"
       }
+    },
+    {
+      "id": "exit-audit-break-snapshot",
+      "tier": "exit-adversarial",
+      "source": "define dimension Time; define unit Second: Time; type Count = int where self >= 0 and self <= 42; type Index = int where self >= 0 and self <= 2;\npub fnc main() -> int { let Count x = 0; let Count y = 0; while x < 42 { x = x+1; y = x; if x == 42 { break; } } return y; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "exit-audit-direct-written-break",
+      "tier": "exit-adversarial",
+      "source": "define dimension Time; define unit Second: Time; type Count = int where self >= 0 and self <= 42; type Index = int where self >= 0 and self <= 2;\npub fnc main() -> int { let Count x = 0; while x < 42 { x = 42; break; } return x; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "exit-audit-continue-snapshot",
+      "tier": "exit-adversarial",
+      "source": "define dimension Time; define unit Second: Time; type Count = int where self >= 0 and self <= 42; type Index = int where self >= 0 and self <= 2;\npub fnc main() -> int { let Count x = 0; let Count y = 0; while x < 42 { x = x+1; y = x; if x < 42 { continue; } } return y; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "exit-audit-nested-continue-nearest",
+      "tier": "exit-adversarial",
+      "source": "define dimension Time; define unit Second: Time; type Count = int where self >= 0 and self <= 42; type Index = int where self >= 0 and self <= 2;\npub fnc main() -> int { let Count x = 0; let Count y = 0; while x < 1 { let Count z = 0; while z < 42 { z = z+1; if z < 42 { continue; } y = z; } x = x+1; } return y; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "exit-audit-outer-break-after-inner",
+      "tier": "exit-adversarial",
+      "source": "define dimension Time; define unit Second: Time; type Count = int where self >= 0 and self <= 42; type Index = int where self >= 0 and self <= 2;\npub fnc main() -> int { let Count x = 0; let Count y = 0; while x < 42 { let Count z = 0; while z < 1 { z = z+1; continue; } y = 42; x = x+1; break; } return y; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "exit-audit-adjacent-guards",
+      "tier": "exit-adversarial",
+      "source": "define dimension Time; define unit Second: Time; type Count = int where self >= 0 and self <= 42; type Index = int where self >= 0 and self <= 2;\npub fnc main() -> int { let Count x = 0; while x < 42 { x = x+1; if x == 42 { break; } if x < 42 { continue; } } return x; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "exit-audit-lazy-guard",
+      "tier": "exit-adversarial",
+      "source": "define dimension Time; define unit Second: Time; type Count = int where self >= 0 and self <= 42; type Index = int where self >= 0 and self <= 2;\npub fnc main() -> int { let Count x = 0; while x < 42 { if x != 0 && 42/x == 1 { break; } x = x+1; } return 42; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "exit-audit-array-after-break",
+      "tier": "exit-adversarial",
+      "source": "define dimension Time; define unit Second: Time; type Count = int where self >= 0 and self <= 42; type Index = int where self >= 0 and self <= 2;\npub fnc main() -> int { val a = Array.of(7, 42); let Count i = 0; while i < 1 { i = 1; break; } return a[1]; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "exit-audit-stale-index",
+      "tier": "exit-adversarial",
+      "source": "define dimension Time; define unit Second: Time; type Count = int where self >= 0 and self <= 42; type Index = int where self >= 0 and self <= 2;\npub fnc main() -> int { val a = Array.of(42, 7); let Index i = 0; while i < 2 { if i == 0 { break; } i = i+1; } return a[i]; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "exit-audit-stale-divisor",
+      "tier": "exit-adversarial",
+      "source": "define dimension Time; define unit Second: Time; type Count = int where self >= 0 and self <= 42; type Index = int where self >= 0 and self <= 2;\npub fnc main() -> int { let Count x = 0; while x < 42 { if x == 0 { break; } x = x+1; } return 42/x; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "exit-audit-unreachable-tail",
+      "tier": "exit-adversarial",
+      "source": "define dimension Time; define unit Second: Time; type Count = int where self >= 0 and self <= 42; type Index = int where self >= 0 and self <= 2;\npub fnc main() -> int { let Count x = 0; while x < 42 { break; x = x+1; } return x; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNSUPPORTED"
+      }
+    },
+    {
+      "id": "exit-audit-continue-unreachable-tail",
+      "tier": "exit-adversarial",
+      "source": "define dimension Time; define unit Second: Time; type Count = int where self >= 0 and self <= 42; type Index = int where self >= 0 and self <= 2;\npub fnc main() -> int { let Count x = 0; while x < 42 { x = x+1; continue; x = 0; } return x; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNSUPPORTED"
+      }
     }
   ]
 }
