@@ -48,6 +48,9 @@ class DeclarativeExportV1Corpus(unittest.TestCase):
             ("negative-internal-public", "conflicting_export_visibility"),
             ("negative-internal-package", "conflicting_export_visibility"),
             ("negative-external-prototype", "unbound_export"),
+            ("negative-explicit-private-public", "conflicting_export_visibility"),
+            ("negative-explicit-private-package", "conflicting_export_visibility"),
+            ("negative-dotted-target", "invalid_export_target"),
         ):
             self.assertEqual(cases[key]["expect"], "reject")
             self.assertEqual(cases[key]["diagnostic"], diagnostic)
@@ -84,7 +87,7 @@ class DeclarativeExportV1Corpus(unittest.TestCase):
                     self.assertIn(
                         case["diagnostic"],
                         {"unbound_export", "export_kind_mismatch",
-                         "invalid_scope", "export_not_file_root",
+                         "invalid_scope", "export_not_file_root", "invalid_export_target",
                          "conflicting_export_visibility"},
                     )
 
