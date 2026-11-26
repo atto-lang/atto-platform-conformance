@@ -34,7 +34,7 @@ const javaRuntimeErrors = {
 
 const llvmFailureGuards = {
   divisionByZero: "quantity.div.zero:",
-  integerOverflow: "quantity.div.overflow:",
+  integerOverflow: /^(?:quantity\.div\.overflow|(?:add|sub|mul|neg|abs\.neg)\.trap)\d*:/m,
   i32Overflow: "i32.range.invalid:",
   refinementViolation: "refinement.bounds.invalid:",
 };
@@ -126,8 +126,36 @@ function checkLlvm() {
         // The native scalar ABI reports checked value failures as traps.
         const guard = llvmFailureGuards[expected.category];
         assert.ok(guard, source + " has an unknown runtime failure category");
-        assert.ok(result.stdout.includes(guard), source + " lacks its runtime guard");
+        assert.ok(guard instanceof RegExp ? guard.test(result.stdout) : result.stdout.includes(guard), source + " lacks its runtime guard");
         assert.ok(["SIGILL", "SIGTRAP"].includes(guest.signal), source + ": unexpected guest result " + guest.status);
+        // Native ABI deliberately uses one trap signal. On a separate diagnostic-only
+        // IR copy, mark each known trap block with a distinct exit code and execute
+        // the same control flow to verify which failure actually occurs first.
+        if (process.env.ATTO_VERIFIED_TYPED_BINDINGS === "1") {
+          let block = "", marked = 0;
+          const expectedCode = {divisionByZero: 71, integerOverflow: 72, i32Overflow: 73, refinementViolation: 74}[expected.category];
+          const annotated = result.stdout.split("\n").map(line => {
+            const label = /^([\w.$-]+):/.exec(line);
+            if (label) block = label[1];
+            if (!/\bcall void @llvm\.trap\(\)/.test(line)) return line;
+            const code = /^quantity\.div\.zero\d*$/.test(block) ? 71 :
+              /^(?:quantity\.div\.overflow|(?:add|sub|mul|neg|abs\.neg)\.trap)\d*$/.test(block) ? 72 :
+              /^i32\.range\.invalid\d*$/.test(block) ? 73 :
+              /^refinement\.bounds\.invalid\d*$/.test(block) ? 74 : 75;
+            marked++;
+            return line.replace(/call void @llvm\.trap\(\)/, "call void @__atto_test_trap(i32 " + code + ")");
+          }).join("\n") + "\ndeclare void @__atto_test_trap(i32) noreturn\n";
+          assert.ok(marked > 0, source + " has no instrumentable native traps");
+          const diagnosticIr = join(work, source + ".diagnostic.ll");
+          const diagnosticC = join(work, "diagnostic-trap.c");
+          const diagnosticGuest = join(work, source + ".diagnostic");
+          writeFileSync(diagnosticIr, annotated);
+          writeFileSync(diagnosticC, "#include <stdlib.h>\nvoid __atto_test_trap(int code) { _Exit(code); }\n");
+          requireSuccess(run(clang, [diagnosticIr, diagnosticC, "-o", diagnosticGuest]), source + " diagnostic native link");
+          const observed = run(diagnosticGuest, []);
+          assert.equal(observed.signal, null, source);
+          assert.equal(observed.status, expectedCode, source + " first runtime failure category");
+        }
       } else {
         assert.equal(expected.kind, "value", source);
         assert.equal(guest.signal, null, source);
