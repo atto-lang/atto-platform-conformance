@@ -108,6 +108,52 @@
       "file": "conditional-non-bool.atto",
       "sourceGitBlobSha1": "7da9c3ffb7b8df5da1ea6b6bf7bf75a4212abc94",
       "confirmedBackends": []
+    },
+    {
+      "id": "directional-right",
+      "expect": "exit",
+      "exit": 42,
+      "file": "directional-right.atto",
+      "sourceGitBlobSha1": "6a95b9821e4d99455b439bc13dd44de44392689a",
+      "confirmedBackends": []
+    },
+    {
+      "id": "directional-left",
+      "expect": "exit",
+      "exit": 42,
+      "file": "directional-left.atto",
+      "sourceGitBlobSha1": "5770fd7e2e4cf36b4d84b6cd2d09734035a7366c",
+      "confirmedBackends": []
+    },
+    {
+      "id": "directional-const",
+      "expect": "exit",
+      "exit": 30,
+      "file": "directional-const.atto",
+      "sourceGitBlobSha1": "f68a106cc1af20f3ad4bf9aa0e64d83bbe30395f",
+      "confirmedBackends": []
+    },
+    {
+      "id": "trapped-call",
+      "expect": "exit",
+      "exit": 42,
+      "file": "trapped-call.atto",
+      "sourceGitBlobSha1": "dace6ae93766cedb465e23dd7f5b46e807db8b0f",
+      "confirmedBackends": []
+    },
+    {
+      "id": "bare-trap-reject",
+      "expect": "reject",
+      "file": "bare-trap-reject.atto",
+      "sourceGitBlobSha1": "b0701a3a675cb0f847860720a4cfed3554262ae0",
+      "confirmedBackends": []
+    },
+    {
+      "id": "directional-duplicate",
+      "expect": "reject",
+      "file": "directional-duplicate.atto",
+      "sourceGitBlobSha1": "aa8db575e5db9f8bdaabc5d38d0b82922ba923f3",
+      "confirmedBackends": []
     }
   ]
 }
