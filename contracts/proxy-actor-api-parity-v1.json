@@ -264,5 +264,123 @@
   "host_ticket_status_semantics": {
     "SOURCE_EXACT_HOST_TESTED": "Current PR head's imported implementation/test blobs were verified byte-for-byte and executed on a runner; not necessarily full-tree or guest proof.",
     "CURRENT_HEAD_NOT_EXECUTED": "Implementation/test files committed, but no executable CI steps on current head. Prior-head runs do not count."
+  },
+  "destination_scope_hardening": {
+    "snapshot": "2026-11-25",
+    "required_guest_gates": [
+      "tenant_bound_to_trusted_destination_before_mailbox_admission",
+      "wrong_tenant_empty_mailbox_no_ticket_or_credit",
+      "numeric_target_and_incarnation_match",
+      "valid_retry_after_rejection"
+    ],
+    "evidence_scope": "Candidate snapshots, not main integration or authenticated compiled guest parity. Local exact-blob host results are not full-tree CI.",
+    "backends": [
+      {
+        "id": "java",
+        "pr": "https://github.com/atto-lang/atto-source.java/pull/1900",
+        "head": "6dfcfc27b2da6b4a51312a95680b099ab0709f62",
+        "scope": "REAL_MAILBOX",
+        "local_evidence": null,
+        "guest_status": "NOT_EXECUTED",
+        "full_tree_ci_status": "NOT_EXECUTED"
+      },
+      {
+        "id": "llvm",
+        "pr": "https://github.com/atto-lang/atto-source.llvm/pull/925",
+        "head": "39d5f2d74a782316d56695b359414ec96d68577c",
+        "scope": "REAL_MAILBOX",
+        "local_evidence": {
+          "verified_blob_count": 4,
+          "passing_tests_or_runs": 100,
+          "negative_control_reproduced": true
+        },
+        "guest_status": "NOT_EXECUTED",
+        "full_tree_ci_status": "NOT_EXECUTED"
+      },
+      {
+        "id": "net",
+        "pr": "https://github.com/atto-lang/atto-source.net/pull/285",
+        "head": "e5ea4fd6c05ca3712ebd83bd2fa1ebceab4d47f4",
+        "scope": "HOST_MODEL",
+        "local_evidence": null,
+        "guest_status": "NOT_EXECUTED",
+        "full_tree_ci_status": "NOT_EXECUTED"
+      },
+      {
+        "id": "wasm",
+        "pr": "https://github.com/atto-lang/atto-source.wasm/pull/310",
+        "head": "5c652fe3e9e4514f29d82327d63ee339cbc3c091",
+        "scope": "HOST_MODEL",
+        "local_evidence": {
+          "verified_blob_count": 3,
+          "passing_tests_or_runs": 5,
+          "negative_control_reproduced": true
+        },
+        "guest_status": "NOT_EXECUTED",
+        "full_tree_ci_status": "NOT_EXECUTED"
+      },
+      {
+        "id": "rs",
+        "pr": "https://github.com/atto-lang/atto-source.rs/pull/611",
+        "head": "aa1783525a4849fc19d9a69478f659d191d6969e",
+        "scope": "HOST_MODEL",
+        "local_evidence": null,
+        "guest_status": "NOT_EXECUTED",
+        "full_tree_ci_status": "NOT_EXECUTED"
+      },
+      {
+        "id": "forge",
+        "pr": "https://github.com/atto-lang/atto-source.forge/pull/268",
+        "head": "b56786bc160a24d244c8bd213a130bc28d8da30d",
+        "scope": "HOST_MODEL",
+        "local_evidence": {
+          "verified_blob_count": 3,
+          "passing_tests_or_runs": 100,
+          "negative_control_reproduced": true
+        },
+        "guest_status": "NOT_EXECUTED",
+        "full_tree_ci_status": "NOT_EXECUTED"
+      },
+      {
+        "id": "cranelift",
+        "pr": "https://github.com/atto-lang/atto-source.cranelift/pull/120",
+        "head": "57386829d791e3595fdb8b199b5ef09c2eba7498",
+        "scope": "HOST_MODEL",
+        "local_evidence": null,
+        "guest_status": "NOT_EXECUTED",
+        "full_tree_ci_status": "NOT_EXECUTED"
+      },
+      {
+        "id": "js",
+        "pr": "https://github.com/atto-lang/atto-source.js/pull/164",
+        "head": "e9b9f987b992e412b6fb3f52af4ff3f262a8df24",
+        "scope": "HOST_MODEL",
+        "local_evidence": {
+          "verified_blob_count": 3,
+          "passing_tests_or_runs": 5,
+          "negative_control_reproduced": true
+        },
+        "guest_status": "NOT_EXECUTED",
+        "full_tree_ci_status": "NOT_EXECUTED"
+      }
+    ],
+    "other_profiles": [
+      {
+        "id": "atto",
+        "profile": "SELF_HOST_BOOTSTRAP",
+        "guest_status": "NOT_EXECUTED"
+      },
+      {
+        "id": "realtime",
+        "profile": "BOOTSTRAP",
+        "guest_status": "NOT_EXECUTED"
+      },
+      {
+        "id": "hdl",
+        "profile": "NO_DYNAMIC_ACTOR_RUNTIME",
+        "guest_status": "UNSUPPORTED",
+        "rejection_test_status": "NOT_EXECUTED"
+      }
+    ]
   }
 }
