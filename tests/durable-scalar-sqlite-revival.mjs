@@ -10,6 +10,12 @@ import {fileURLToPath,pathToFileURL} from 'node:url';
 const source='define durable actor Ledger as state balance: int = -9223372036854775808; state open: bool = true; state last: int = 9223372036854775807; end';
 const golden='4154544f5354303101f9b8eff04a5474590300010000000000000080020101ffffffffffffff7f4191e1156e4df645';
 const hash=b=>createHash('sha256').update(b).digest('hex');
+const minI64=-(1n<<63n),maxI64=(1n<<63n)-1n;
+function checkedI64(value){
+  if(typeof value!=='bigint'||value<minI64||value>maxI64)
+    throw new RangeError('E_REFERENCE_I64_OVERFLOW');
+  return value;
+}
 assert.ok(process.env.ATTO_JS_COMPILER&&process.env.ATTO_WASM_CODEC,'actual generated compiler artifacts required');
 const jsPath=resolve(process.env.ATTO_JS_COMPILER),wasmPath=resolve(process.env.ATTO_WASM_CODEC);
 const {compile_durable_scalar_codec_v1:compile}=await import(pathToFileURL(jsPath));
@@ -20,19 +26,19 @@ const wasmBytes=readFileSync(wasmPath),mod=new WebAssembly.Module(wasmBytes);ass
 const e=new WebAssembly.Instance(mod,{}).exports;assert.equal(e.atto_scalar_size_v1(),47n);assert.equal(e.atto_scalar_fields_v1(),3n);
 const p=Number(e.__heap_base.value),b=p+64,out=p+128;assert.ok(out+24<=e.memory.buffer.byteLength);
 const m=new Uint8Array(e.memory.buffer),d=new DataView(e.memory.buffer);
-const w={initial(){assert.equal(e.atto_scalar_initial_v1(b,47n),47n);return m.slice(b,b+47);},encode(v){assert.equal(typeof v[1],'boolean');[v[0],v[1]?1n:0n,v[2]].forEach((x,i)=>d.setBigInt64(p+8*i,x,true));assert.equal(e.atto_scalar_encode_v1(p,3n,b,47n),47n);return m.slice(b,b+47);},decode(bytes){assert.equal(bytes.length,47);m.set(bytes,b);assert.equal(e.atto_scalar_decode_v1(b,47n,out,3n),3n);return [d.getBigInt64(out,true),d.getBigInt64(out+8,true)===1n,d.getBigInt64(out+16,true)];}};
+const w={initial(){assert.equal(e.atto_scalar_initial_v1(b,47n),47n);return m.slice(b,b+47);},encode(v){assert.equal(typeof v[1],'boolean');[checkedI64(v[0]),v[1]?1n:0n,checkedI64(v[2])].forEach((x,i)=>d.setBigInt64(p+8*i,x,true));assert.equal(e.atto_scalar_encode_v1(p,3n,b,47n),47n);return m.slice(b,b+47);},decode(bytes){assert.equal(bytes.length,47);m.set(bytes,b);assert.equal(e.atto_scalar_decode_v1(b,47n,out,3n),3n);return [d.getBigInt64(out,true),d.getBigInt64(out+8,true)===1n,d.getBigInt64(out+16,true)];}};
 assert.equal(Buffer.from(js.initial()).toString('hex'),golden);assert.deepEqual(w.initial(),js.initial());
 function open(path){const db=new DatabaseSync(path);db.exec('PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; PRAGMA foreign_keys=ON;');return db;}
 if(process.argv[2]==='--child'){
  const [, , ,path,mode,backend,id,deltaText]=process.argv;assert.ok(['precommit','postcommit','commit'].includes(mode));assert.ok(['js','wasm'].includes(backend));
- const codec=backend==='js'?js:w,delta=BigInt(deltaText),db=open(path);
+ const codec=backend==='js'?js:w,delta=checkedI64(BigInt(deltaText)),db=open(path);
  db.exec('BEGIN IMMEDIATE');
  try{
   const prior=db.prepare('SELECT delta,revision FROM receipt WHERE id=?').get(id);
-  if(prior){assert.equal(prior.delta,deltaText);db.exec('COMMIT');console.log('REPLAY '+prior.revision);}
+  if(prior){if(prior.delta!==deltaText)throw new Error('E_REFERENCE_RECEIPT_MISMATCH');db.exec('COMMIT');console.log('REPLAY '+prior.revision);}
   else{
    const row=db.prepare('SELECT revision,checkpoint FROM actor WHERE id=1').get();
-   const [balance,enabled]=codec.decode(row.checkpoint),next=balance+delta,revision=row.revision+1;
+   const [balance,enabled]=codec.decode(row.checkpoint),next=checkedI64(balance+delta),revision=row.revision+1;
    const checkpoint=codec.encode([next,!enabled,next]);
    assert.equal(db.prepare('UPDATE actor SET revision=?,checkpoint=? WHERE id=1 AND revision=?').run(revision,checkpoint,row.revision).changes,1);
    db.prepare('INSERT INTO receipt VALUES(?,?,?)').run(id,deltaText,revision);
@@ -57,6 +63,32 @@ if(process.argv[2]==='--child'){
   turn('commit','js','second',2n,'COMMITTED 2');check(2,[min+3n,true,min+3n]);
   turn('commit','wasm','third',4n,'COMMITTED 3');check(3,[min+7n,false,min+7n]);
   turn('commit','js','third',4n,'REPLAY 3');check(3,[min+7n,false,min+7n]);
-  console.log(JSON.stringify({kind:'JS_LLVM_WASM_SQLITE_PROCESS_REVIVAL_PASS',process_turns:6,physical_kills:2,commits:3,replays:2,rollback:1,wasm_sha256:hash(wasmBytes),js_compiler_sha256:hash(readFileSync(jsPath)),js_guest_sha256:hash(generated.module_source),source_sha256:hash(source),production_broker:false}));
+  // Verify rejection is atomic, including exact bytes of prior receipts and outbox rows.
+  function snapshot(){
+    const db=open(path);
+    try{return {
+      actor:db.prepare('SELECT * FROM actor ORDER BY id').all(),
+      receipts:db.prepare('SELECT * FROM receipt ORDER BY revision').all(),
+      outbox:db.prepare('SELECT * FROM outbox ORDER BY revision').all()
+    };}finally{db.close();}
+  }
+  function rejected(backend,id,delta,code){
+    const before=snapshot();
+    const child=spawnSync(process.execPath,[fileURLToPath(import.meta.url),'--child',path,'commit',backend,id,String(delta)],{encoding:'utf8',timeout:30000,maxBuffer:1<<20});
+    assert.equal(child.error,undefined);assert.equal(child.signal,null);
+    assert.equal(child.status,1,child.stderr);assert.equal(child.stdout,'');
+    assert.ok(child.stderr.includes(code),child.stderr);
+    assert.deepEqual(snapshot(),before);
+  }
+  for(const backend of ['js','wasm']){
+    rejected(backend,'first',2n,'E_REFERENCE_RECEIPT_MISMATCH');
+    rejected(backend,'overflow-'+backend,-8n,'E_REFERENCE_I64_OVERFLOW');
+    rejected(backend,'outside-'+backend,max+1n,'E_REFERENCE_I64_OVERFLOW');
+    check(3,[min+7n,false,min+7n]);
+  }
+  // Rejected identifiers were not consumed; a valid retry commits once.
+  turn('commit','wasm','overflow-wasm',1n,'COMMITTED 4');check(4,[min+8n,true,min+8n]);
+  turn('commit','js','overflow-wasm',1n,'REPLAY 4');check(4,[min+8n,true,min+8n]);
+  console.log(JSON.stringify({kind:'JS_LLVM_WASM_SQLITE_PROCESS_REVIVAL_PASS',process_turns:14,physical_kills:2,commits:4,replays:3,rollback:1,atomic_rejections:6,wasm_sha256:hash(wasmBytes),js_compiler_sha256:hash(readFileSync(jsPath)),js_guest_sha256:hash(generated.module_source),source_sha256:hash(source),production_broker:false}));
  }finally{rmSync(dir,{recursive:true,force:true});}
 }
