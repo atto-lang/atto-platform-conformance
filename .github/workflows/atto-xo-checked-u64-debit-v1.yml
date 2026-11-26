@@ -7,6 +7,7 @@ on:
       - 'tests/fixed-width-integer-oracle.test.mjs'
       - 'tests/checked-u64-cross-candidates.test.mjs'
       - 'tests/checked-u64-target-matrix.test.mjs'
+      - 'tests/checked-u64-forge-target-matrix.test.mjs'
       - '.github/workflows/atto-xo-checked-u64-debit-v1.yml'
 permissions:
   contents: read
@@ -66,3 +67,23 @@ jobs:
           fi
           grep -F '752d1ad3fb3564eed9067a0a530eb2150d1c14b4' target-altered.log
           echo 'Target matrix guest execution: NOT_EXECUTED (no source staging)'
+      - name: Forge target matrix fail-closed admission (no source staging)
+        shell: bash
+        run: |
+          set -euo pipefail
+          unset ATTO_U64_FORGE_SOURCE ATTO_U64_FORGE_TARGET_REQUIRED
+          node --test tests/checked-u64-forge-target-matrix.test.mjs > forge-skip.log 2>&1
+          grep -F 'NOT_EXECUTED: exact Forge compiler source unavailable' forge-skip.log
+          if ATTO_U64_FORGE_TARGET_REQUIRED=1 node --test tests/checked-u64-forge-target-matrix.test.mjs > forge-missing.log 2>&1; then
+            exit 1
+          fi
+          grep -F 'ATTO_U64_FORGE_SOURCE required' forge-missing.log
+          if ATTO_U64_FORGE_TARGET_REQUIRED=typo node --test tests/checked-u64-forge-target-matrix.test.mjs > forge-mode.log 2>&1; then
+            exit 1
+          fi
+          grep -F 'ATTO_U64_FORGE_TARGET_REQUIRED must be 0 or 1' forge-mode.log
+          if ATTO_U64_FORGE_TARGET_REQUIRED=1 ATTO_U64_FORGE_SOURCE=tests/fixed-width-integer-oracle.test.mjs node --test tests/checked-u64-forge-target-matrix.test.mjs > forge-altered.log 2>&1; then
+            exit 1
+          fi
+          grep -F '752d1ad3fb3564eed9067a0a530eb2150d1c14b4' forge-altered.log
+          echo 'Forge target matrix execution: NOT_EXECUTED (no source staging)'
