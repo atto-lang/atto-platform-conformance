@@ -7,6 +7,7 @@ import {join,resolve} from "node:path";
 import {pathToFileURL,fileURLToPath} from "node:url";
 import {createHash} from "node:crypto";
 import {typedBindingCases} from "../lib/verified-typed-helper-corpus.mjs";
+import {strictLoopCases} from "../lib/verified-strict-loop-corpus.mjs";
 const [backend,path]=process.argv.slice(2);
 assert.ok(["rust","js"].includes(backend)&&path);
 const compiler=resolve(path);
@@ -22,14 +23,16 @@ const sha=x=>createHash("sha256").update(x).digest("hex");
 const codes={integerOverflow:1,divisionByZero:2,refinementViolation:7,i32Overflow:8};
 const jsCodes={integerOverflow:"integer_overflow",divisionByZero:"division_by_zero",refinementViolation:"refinement_violation",i32Overflow:"i32_overflow"};
 let totalFailures=0;
+const profiles=[["refinements",cases],["helpers",typedBindingCases],["strict",strict]];
+if(process.env.ATTO_STRICT_LOOP_GATE==="1")profiles.push(["strict-loops",strictLoopCases]);
 try{
- for(const [profile,list] of [["refinements",cases],["helpers",typedBindingCases],["strict",strict]]){
+ for(const [profile,list] of profiles){
   let passed=0;const failures=[];
   for(const {source,text,expected} of list){
    try{
     assert.match(source,/^[a-z0-9-]+\.atto$/);
     if(js){
-     const compile=profile==="strict"?js.compileVerifiedStrict:js.compileProgramV2;
+     const compile=profile.startsWith("strict")?js.compileVerifiedStrict:js.compileProgramV2;
      if(expected.kind==="diagnostic"){
       assert.throws(()=>compile(text),e=>expected.category===null?String(e.message).length>0:String(e.message).includes(expected.category+":"),source);
      }else{
@@ -42,7 +45,7 @@ try{
     }else{
      const input=join(work,profile+"-"+source),output=input+".wasm";
      writeFileSync(input,text,{flag:"wx"});
-     const c=spawnSync(compiler,[...(profile==="strict"?["--verify=strict"]:[]),input,"-o",output],{cwd:work,encoding:"utf8",timeout:30000,maxBuffer:1024*1024});
+     const c=spawnSync(compiler,[...(profile.startsWith("strict")?["--verify=strict"]:[]),input,"-o",output],{cwd:work,encoding:"utf8",timeout:30000,maxBuffer:1024*1024});
      if(c.error)throw c.error;assert.equal(c.signal,null);
      if(expected.kind==="diagnostic"){
       assert.equal(c.status,1,c.stderr);assert.ok(!existsSync(output));assert.equal(c.stdout,"");

@@ -8,6 +8,7 @@ import {join,resolve} from "node:path";
 import {fileURLToPath} from "node:url";
 import {createHash} from "node:crypto";
 import {typedBindingCases} from "../lib/verified-typed-helper-corpus.mjs";
+import {strictLoopCases} from "../lib/verified-strict-loop-corpus.mjs";
 const [backend,compilerPath,includePath]=process.argv.slice(2);
 assert.ok(["forge","cranelift"].includes(backend));assert.ok(compilerPath);
 assert.ok(backend!=="forge"||includePath);
@@ -49,6 +50,7 @@ const adversarial=[
  ["negative-literal-range","val Smallest min=-2147483648; return min + -2147483649;",{kind:"diagnostic",category:"E_I32_RANGE"}]
 ].map(([id,body,expected])=>({source:id+".atto",text:pre+"pub fnc main() -> int { "+body+" }",expected}));
 const profiles=narrowGate?[["i32-carriers",narrow,false],["i32-adversarial",adversarial,false],["helpers",typedBindingCases,false]]:[["helpers",typedBindingCases,false],["refinements",refinement,false],["strict",strict,true]];
+if(process.env.ATTO_STRICT_LOOP_GATE==="1")profiles.push(["strict-loops",strictLoopCases,true]);
 const results=[];
 try{
  for(const [profile,cases,isStrict] of profiles){
