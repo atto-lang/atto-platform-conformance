@@ -88,3 +88,15 @@ test('detached cleanup and native unsafe import aliases have explicit expectatio
     assert.equal(cases.get(id)?.diagnostic, null, id);
   }
 });
+
+
+test('unsafe native import traversal cases remain fail closed target-only vectors', () => {
+  const byId = new Map(registry.cases.map(c => [c.id, c]));
+  for (const id of ["unsafe-import-raw-traversal","unsafe-import-canonical-traversal","unsafe-import-colon-traversal","unsafe-import-legacy-colon-traversal","unsafe-import-colon-root-escape","unsafe-import-slash-root-escape","unsafe-import-legacy-root-escape","unsafe-import-normalized-reserved"]) {
+    const c = byId.get(id);
+    assert.equal(c?.profile, 'tenantvm_guest', id);
+    assert.equal(c?.expect, 'reject', id);
+    assert.equal(c?.diagnostic, 'E_UNSAFE_DOMAIN', id);
+    assert.ok(Object.values(c.verification).every(v => v === 'not_executed'), id);
+  }
+});

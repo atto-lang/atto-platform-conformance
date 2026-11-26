@@ -748,6 +748,158 @@
         "js": "not_executed",
         "atto_selfhost": "not_executed"
       }
+    },
+    {
+      "id": "unsafe-import-raw-traversal",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"std/unsafe/../safe\"; pub fnc main(): int { return 42; }",
+      "reason": "Unsafe package identity and reserved root traversal must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-canonical-traversal",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"atto.std/unsafe/../safe\"; pub fnc main(): int { return 42; }",
+      "reason": "Unsafe package identity and reserved root traversal must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-colon-traversal",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"atto::std/unsafe/../safe\"; pub fnc main(): int { return 42; }",
+      "reason": "Unsafe package identity and reserved root traversal must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-legacy-colon-traversal",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"ores:std/unsafe/../safe\"; pub fnc main(): int { return 42; }",
+      "reason": "Unsafe package identity and reserved root traversal must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-colon-root-escape",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"atto::std/../safe\"; pub fnc main(): int { return 42; }",
+      "reason": "Unsafe package identity and reserved root traversal must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-slash-root-escape",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"atto/std/../safe\"; pub fnc main(): int { return 42; }",
+      "reason": "Unsafe package identity and reserved root traversal must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-legacy-root-escape",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"ores/std/../safe\"; pub fnc main(): int { return 42; }",
+      "reason": "Unsafe package identity and reserved root traversal must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-normalized-reserved",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"atto.std/other/../unsafe/ffi\"; pub fnc main(): int { return 42; }",
+      "reason": "Unsafe package identity and reserved root traversal must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
     }
   ]
 }
