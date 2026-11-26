@@ -165,7 +165,20 @@ test('destination scope hardening tracks all eleven profiles without promoting h
       assert.equal(b.local_evidence.negative_control_reproduced, true);
     }
     assert.equal(b.guest_status, 'NOT_EXECUTED');
-    assert.equal(b.full_tree_ci_status, 'NOT_EXECUTED');
+    assert.equal(b.full_tree_ci_status, b.id === 'java' ? 'RESTRICTED_M10_SUITE_PASSED' : 'NOT_EXECUTED');
+    if (['rs','net','cranelift'].includes(b.id)) {
+      const e = b.scoped_ci_evidence;
+      assert.equal(e.status, 'PASSED');
+      assert.equal(e.source_head, b.head);
+      assert.match(e.source_root_tree, /^[0-9a-f]{40}$/);
+      assert.match(e.carrier_scoped_tree, /^[0-9a-f]{40}$/);
+      assert.notEqual(e.source_root_tree, e.carrier_scoped_tree);
+      assert.match(e.carrier_head, /^[0-9a-f]{40}$/);
+      assert.equal(e.verified_original_blobs, 4);
+      assert.equal(e.executed_job_steps, 5);
+      assert.equal(e.passing_tests_or_projects, b.id === 'net' ? 1 : 9);
+      assert.equal(e.scope, 'HOST_MODEL_SCOPED_EXACT_BLOBS_NOT_FULL_TREE');
+    }
     assert.notEqual(c.backends.find(x => x.id === b.id).compiled_guest_ipc_status, 'PASSED',
       'host candidate status cannot unlock compiled guest parity');
   }
@@ -176,18 +189,20 @@ test('destination scope hardening tracks all eleven profiles without promoting h
   assert.equal(hdl.rejection_evidence.scope, 'V8_HARNESS_NOT_NODE_CLI_OR_SYNTHESIS');
   assert.ok(hdl.rejection_evidence.assertions > 0);
   const java = scope.backends.find(x => x.id === 'java');
-  const receipt = java.scoped_ci_evidence;
-  assert.equal(receipt.status, 'PASSED');
+  const receipt = java.full_tree_ci_evidence;
   assert.equal(receipt.source_head, java.head);
   assert.match(receipt.source_root_tree, /^[0-9a-f]{40}$/);
-  assert.match(receipt.carrier_scoped_tree, /^[0-9a-f]{40}$/);
-  assert.notEqual(receipt.carrier_scoped_tree, receipt.source_root_tree);
+  assert.equal(receipt.carrier_source_subtree, receipt.source_root_tree);
+  assert.match(receipt.carrier_composite_tree, /^[0-9a-f]{40}$/);
+  assert.notEqual(receipt.carrier_composite_tree, receipt.source_root_tree);
   assert.match(receipt.carrier_head, /^[0-9a-f]{40}$/);
-  assert.equal(receipt.verified_original_blobs, 3);
-  assert.ok(receipt.executed_job_steps >= 3);
-  assert.equal(receipt.passing_probes, 2);
-  assert.equal(receipt.scope, 'HOST_RUNTIME_SCOPED_EXACT_BLOBS_NOT_FULL_TREE');
-  assert.equal(java.full_tree_ci_status, 'NOT_EXECUTED');
+  assert.equal(receipt.verified_original_blobs, 126);
+  assert.equal(receipt.verified_recursive_entries, 182);
+  assert.equal(receipt.executed_job_steps, 6);
+  assert.equal(receipt.scope, 'RESTRICTED_M6_M10_NOT_CANONICAL_GUEST');
+  assert.equal(receipt.transport_auth_scope, 'PARTIAL');
+  assert.equal(java.full_tree_ci_status, 'RESTRICTED_M10_SUITE_PASSED');
+  assert.notEqual(java.historical_scoped_ci_evidence.source_head, java.head);
   assert.equal(java.guest_status, 'NOT_EXECUTED');
   for (const b of scope.other_profiles.filter(x => x.id !== 'hdl'))
     assert.equal(b.guest_status, 'NOT_EXECUTED');
