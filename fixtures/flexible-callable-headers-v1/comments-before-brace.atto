@@ -1,0 +1,9 @@
+fnc checked_identity(int x) -> int
+    effects { allocate: 0, suspend: false }
+    budget { stack: 4096, operations: 10000 } // closing map is not the body
+
+{
+    return x;
+}
+
+pub fnc main() -> int { return checked_identity(42); }
