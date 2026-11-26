@@ -40,5 +40,5 @@ jobs:
             echo 'Altered source unexpectedly passed'
             exit 1
           fi
-          grep -F 'f4a354096cf2ae1ca96c1381d2be72bca2425ca8' altered.log
+          grep -F '7726e7093bb66b10b88757004473c6fa38d8deed' altered.log
           echo 'Candidate guest execution: NOT_EXECUTED (no source staging)'
