@@ -308,6 +308,103 @@
         "atto": "not_executed",
         "realtime": "not_executed"
       }
+    },
+    {
+      "id": "call_tuple_42",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/pass/call_tuple_42.atto",
+      "expect": "accept",
+      "expected_exit": 42,
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "call_seq_typeof_42",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/pass/call_seq_typeof_42.atto",
+      "expect": "accept",
+      "expected_exit": 42,
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "call_tuple_wrong_order",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/reject/call_tuple_wrong_order.atto",
+      "expect": "reject",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "call_typeof_missing_field",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/reject/call_typeof_missing_field.atto",
+      "expect": "reject",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "call_seq_wrong_tail",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/reject/call_seq_wrong_tail.atto",
+      "expect": "reject",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
     }
   ]
 }
