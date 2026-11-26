@@ -1,0 +1,52 @@
+{
+  "format": "atto.checked-unwrap.v6-candidate",
+  "spec": "atto-lang/atto-spec#249",
+  "status": "AUTHORED_NOT_EXECUTED",
+  "required_backends": [
+    "java-jvm",
+    "java-native-image",
+    "dotnet-coreclr",
+    "dotnet-native-aot",
+    "llvm-native-aot",
+    "rust",
+    "wasm",
+    "javascript",
+    "forge",
+    "cranelift",
+    "hdl",
+    "self-hosted-atto",
+    "realtime"
+  ],
+  "cases": [
+    {
+      "path": "checked-unwrap.atto",
+      "git_blob_sha1": "90c6166041963d1f466bc51f105c66a0a7be15ac",
+      "expected": {
+        "result": 42
+      }
+    },
+    {
+      "path": "inline-task-failure.atto",
+      "git_blob_sha1": "446624a894788834550ac7a13a7a76ea5d06444c",
+      "expected": {
+        "result": 42,
+        "stdout": "D"
+      }
+    },
+    {
+      "path": "short-circuit.atto",
+      "git_blob_sha1": "d24442cf7daf1dd86876b418f0cb9e793cbb23c2",
+      "expected": {
+        "result": 42,
+        "stdout": "RR"
+      }
+    },
+    {
+      "path": "terminal-expect.atto",
+      "git_blob_sha1": "864e6b34fe46de9c260a7e537f3f008caa7c8b79",
+      "expected": {
+        "runtime_failure": "uncaught_guest_panic"
+      }
+    }
+  ]
+}
