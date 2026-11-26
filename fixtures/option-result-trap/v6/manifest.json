@@ -61,6 +61,20 @@
       "expected": {
         "result": 42
       }
+    },
+    {
+      "path": "piped-match-dynamic.atto",
+      "git_blob_sha1": "99cf8ea1bf165b622c65400244a684ae0153fcb9",
+      "expected": {
+        "result": 42
+      }
+    },
+    {
+      "path": "piped-match-arm-throw.atto",
+      "git_blob_sha1": "411801dc7eb4f6e3065911012ba21f3ffc8227c4",
+      "expected": {
+        "result": 42
+      }
     }
   ]
 }
