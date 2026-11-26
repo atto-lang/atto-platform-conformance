@@ -1,0 +1,21 @@
+const Record<infer T1> exemplar = (a=true,b="xyz",c=5);
+const Tuple<infer T2> example_tuple = (true,"xyz",5);
+fnc process(Record<T1> input) -> Tuple<T2> {
+    return (input.a,input.b,input.c);
+}
+pub fnc main(): int {
+    const Record<T1> first = (a=false,b="abc",c=17);
+    const Record<T1> second = (c=25,a=true,b="def");
+    const Tuple<T2> x = process(first);
+    const Tuple<T2> y = process(second);
+    if x[0] eq false then
+        if x[1] eq "abc" then
+            if y[0] eq true then
+                if y[1] eq "def" then
+                    return x[2]+y[2];
+                fi
+            fi
+        fi
+    fi
+    return 1;
+}

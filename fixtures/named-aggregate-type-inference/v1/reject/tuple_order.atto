@@ -1,0 +1,1 @@
+pub fnc main(): int { const Tuple<infer T> t=(1,true); const Tuple<T> s=(true,1); return 0; }
