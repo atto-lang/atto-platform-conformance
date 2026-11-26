@@ -10,8 +10,12 @@ const [target,location,extra,pin]=process.argv.slice(2);
 assert.ok(['rs','wasm','js','java','llvm','net','net-structured','forge','cranelift'].includes(target));
 const isNet=target==='net'||target==='net-structured';
 const compiler=resolve(location),root=new URL('../',import.meta.url);
-const contract=JSON.parse(fs.readFileSync(new URL('contracts/explicit-local-initialization-v1.json',root)));
-assert.equal(contract.cases.length,5);
+const suite=process.env.ATTO_INIT_SUITE??'original';
+assert.ok(['original','string-view-candidate'].includes(suite),'unknown initialization suite');
+const candidate=suite==='string-view-candidate';
+const contract=JSON.parse(fs.readFileSync(new URL(candidate?'contracts/ordinary-string-view-candidate-v1.json':'contracts/explicit-local-initialization-v1.json',root)));
+assert.equal(contract.cases.length,candidate?8:5);
+const label=candidate?'STRING_VIEW_CANDIDATE':'ORDINARY_INIT';
 const hash=(bytes,kind='sha256')=>createHash(kind).update(bytes).digest('hex');
 const run=(cmd,args,opts={})=>{
  const r=spawnSync(cmd,args,{encoding:'utf8',timeout:30000,killSignal:'SIGKILL',maxBuffer:8*1024*1024,...opts});
@@ -44,7 +48,7 @@ try{
  }
  for(const c of contract.cases){
   const id=c.id;try{
-   assert.match(id,/^[a-z0-9-]+$/);assert.match(c.path,/^fixtures\/explicit-initialization-v1\/(pass|fail)\/[a-z0-9-]+\.atto$/);
+   assert.match(id,/^[a-z0-9-]+$/);assert.match(c.path,candidate?/^fixtures\/ordinary-string-view-candidate-v1\/(pass|fail)\/[a-z0-9-]+\.atto$/:/^fixtures\/explicit-initialization-v1\/(pass|fail)\/[a-z0-9-]+\.atto$/);
    const bytes=fs.readFileSync(new URL(c.path,root));
    assert.equal(hash(Buffer.concat([Buffer.from('blob '+bytes.length+'\0'),bytes]),'sha1'),c.source_blob_sha);
    const dir=join(temp,id);fs.mkdirSync(dir);
@@ -93,9 +97,9 @@ try{
      checkResult(run(native,[],{timeout:10000}),target==='llvm'?'':String(c.expected_exit)+'\n',target==='llvm'?c.expected_exit:0);
     }
    }
-   console.log('ORDINARY_INIT_PASS',target,id,c.source_blob_sha,c.expect);passed++;
-  }catch(e){failed++;console.error('ORDINARY_INIT_FAIL',target,id,String(e.stack??e));}
+   console.log(label+'_PASS',target,id,c.source_blob_sha,c.expect);passed++;
+  }catch(e){failed++;console.error(label+'_FAIL',target,id,String(e.stack??e));}
  }
- console.log('ORDINARY_INIT_CENSUS',target,'total',contract.cases.length,'passed',passed,'failed',failed);
+ console.log(label+'_CENSUS',target,'total',contract.cases.length,'passed',passed,'failed',failed);
  assert.equal(passed+failed,contract.cases.length);if(failed)process.exitCode=1;
 }finally{fs.rmSync(temp,{recursive:true,force:true});}

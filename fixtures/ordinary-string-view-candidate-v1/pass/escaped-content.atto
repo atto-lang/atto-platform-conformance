@@ -1,0 +1,1 @@
+pub fnc main(): int { val string s = "a\nb"; if s neq "anb" { if s eq "a\nb" { return 42; } else { return 2; } } else { return 1; } }

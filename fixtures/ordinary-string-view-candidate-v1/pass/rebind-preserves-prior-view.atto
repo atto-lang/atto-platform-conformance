@@ -1,0 +1,1 @@
+pub fnc main(): int { let string s = "first"; val string prior = s; s = "second"; if prior eq "first" { if s eq "second" { return 42; } else { return 2; } } else { return 1; } }
