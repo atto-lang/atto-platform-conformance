@@ -1,0 +1,3 @@
+const Record<infer T1> exemplar = (a=true,b="xyz",c=5);
+fnc process(Record<T1> input) -> typeof other.c { return input.c; }
+pub fnc main(): int { return 0; }
