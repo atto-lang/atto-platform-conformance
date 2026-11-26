@@ -10,6 +10,7 @@ on:
       - 'tests/checked-u64-target-matrix.test.mjs'
       - 'tests/checked-u64-forge-target-matrix.test.mjs'
       - 'tests/checked-u64-generated-wasm.test.mjs'
+      - 'tests/checked-u64-generated-native.test.mjs'
       - '.github/workflows/atto-xo-checked-u64-debit-v1.yml'
 permissions:
   contents: read
@@ -115,3 +116,23 @@ jobs:
           fi
           grep -F '752d1ad3fb3564eed9067a0a530eb2150d1c14b4' wasm-altered.log
           echo 'Generated Wasm execution: NOT_EXECUTED (no source staging)'
+      - name: Generated native gate admission (no compiler source staged)
+        shell: bash
+        run: |
+          set -euo pipefail
+          unset ATTO_U64_LLVM_SOURCE ATTO_U64_FORGE_SOURCE ATTO_U64_GENERATED_NATIVE_REQUIRED ATTO_U64_NATIVE_BACKEND ATTO_U64_NATIVE_FAMILY
+          node --test tests/checked-u64-generated-native.test.mjs > native-skip.log 2>&1
+          grep -F 'NOT_EXECUTED: exact native compiler source unavailable' native-skip.log
+          if ATTO_U64_GENERATED_NATIVE_REQUIRED=1 node --test tests/checked-u64-generated-native.test.mjs > native-missing.log 2>&1; then
+            exit 1
+          fi
+          grep -F 'exact native compiler source required' native-missing.log
+          if ATTO_U64_NATIVE_BACKEND=typo node --test tests/checked-u64-generated-native.test.mjs > native-backend.log 2>&1; then
+            exit 1
+          fi
+          grep -F 'invalid native backend' native-backend.log
+          if ATTO_U64_GENERATED_NATIVE_REQUIRED=1 ATTO_U64_LLVM_SOURCE=tests/fixed-width-integer-oracle.test.mjs node --test tests/checked-u64-generated-native.test.mjs > native-altered.log 2>&1; then
+            exit 1
+          fi
+          grep -F '752d1ad3fb3564eed9067a0a530eb2150d1c14b4' native-altered.log
+          echo 'Generated native execution: NOT_EXECUTED (no source staging)'
