@@ -142,6 +142,18 @@
       ],
       "executed": "20/20 selected RTL compiler tests; exact state fixtures rejected, combinational control compiled",
       "scope": "REJECT_ONLY; no synthesized state feature"
+    },
+    {
+      "repo": "atto-lang/atto-source.rs",
+      "pr": 612,
+      "head": "c92d4b094a182a43d939ff4458359d7870cb1a7b",
+      "tree": "6e94edd5709e18c39ae9f292fd232e206ed54357",
+      "runs": [
+        45738469837
+      ],
+      "executed": "7/7 typed IR/checker tests, 5/5 fixture groups, 11/11 host lease tests, three actual guest traces including STATE_RETURN_COMPOSITION_OK; 627/628 conformance and 568 native-vs-Wasm comparisons",
+      "scope": "Historical exact head; restricted scalar state only; newer candidate requires independent retest",
+      "blocker": "infix caret discrepancy; Java differential skipped"
     }
   ],
   "qualification": [
