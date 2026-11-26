@@ -1,12 +1,14 @@
 //! SOURCE_ONLY reference model. Not Atto compiler/guest execution.
 #![forbid(unsafe_code)]
 use std::collections::VecDeque;
+use std::sync::atomic::{AtomicU64, Ordering};
+static NEXT_LEDGER: AtomicU64 = AtomicU64::new(1);
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Mode { OneWay, Unary, Stream }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Fault { Full, Stale, Unsupported, Duplicate, NotReady, Terminated, ModeMismatch }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-struct Ticket { index: usize, generation: u64, incarnation: u64 }
+struct Ticket { ledger: u64, index: usize, generation: u64, incarnation: u64 }
 struct Slot {
     generation: u64,
     active: bool,
@@ -22,11 +24,13 @@ impl Slot {
             queued: VecDeque::new(), terminal: false, failed: false }
     }
 }
-struct Ledger { slots: Vec<Slot>, incarnation: u64, stream_capacity: usize }
+struct Ledger { identity: u64, slots: Vec<Slot>, incarnation: u64, stream_capacity: usize }
 impl Ledger {
     fn new(slots: usize, stream_capacity: usize, incarnation: u64) -> Self {
         assert!(slots > 0 && stream_capacity > 0);
-        Self { slots: (0..slots).map(|_| Slot::new()).collect(), incarnation, stream_capacity }
+        let identity = NEXT_LEDGER.fetch_update(Ordering::Relaxed, Ordering::Relaxed,
+            |n| n.checked_add(1)).expect("reference ledger identity exhausted");
+        Self { identity, slots: (0..slots).map(|_| Slot::new()).collect(), incarnation, stream_capacity }
     }
     fn admit(&mut self, mode: Mode) -> Result<Ticket, Fault> {
         if mode == Mode::OneWay { return Err(Fault::Unsupported); }
@@ -37,10 +41,10 @@ impl Ledger {
         s.queued.clear();
         s.terminal = false;
         s.failed = false;
-        Ok(Ticket { index, generation: s.generation, incarnation: self.incarnation })
+        Ok(Ticket { ledger: self.identity, index, generation: s.generation, incarnation: self.incarnation })
     }
     fn slot(&mut self, t: Ticket) -> Result<&mut Slot, Fault> {
-        if t.incarnation != self.incarnation { return Err(Fault::Stale); }
+        if t.ledger != self.identity || t.incarnation != self.incarnation { return Err(Fault::Stale); }
         let s = self.slots.get_mut(t.index).ok_or(Fault::Stale)?;
         if !s.active || t.generation != s.generation { return Err(Fault::Stale); }
         Ok(s)
@@ -187,6 +191,36 @@ mod tests {
         l.cancel(t).unwrap();
         assert_eq!(l.admit(Mode::Unary), Err(Fault::Full));
         assert_eq!(l.receive(t), Err(Fault::Stale));
+    }
+    #[test] fn foreign_ledger_ticket_cannot_emit_receive_or_cancel() {
+        let mut a = Ledger::new(1, 1, 5);
+        let mut b = Ledger::new(1, 1, 5);
+        let foreign = a.admit(Mode::Unary).unwrap();
+        let local = b.admit(Mode::Unary).unwrap();
+        assert_eq!(foreign.index, local.index);
+        assert_eq!(foreign.generation, local.generation);
+        assert_eq!(foreign.incarnation, local.incarnation);
+        assert_eq!(b.emit(foreign, 99), Err(Fault::Stale));
+        assert_eq!(b.receive(foreign), Err(Fault::Stale));
+        assert_eq!(b.cancel(foreign), Err(Fault::Stale));
+        b.emit(local, 42).unwrap();
+        assert_eq!(b.receive(local), Ok(Some(42)));
+        assert_eq!(a.receive(foreign), Err(Fault::NotReady));
+    }
+    #[test] fn abandoned_buffered_stream_reclaims_capacity_and_fences_old_producer() {
+        let mut l = Ledger::new(1, 2, 5);
+        let old = l.admit(Mode::Stream).unwrap();
+        l.emit(old, 1).unwrap();
+        l.emit(old, 2).unwrap();
+        l.cancel(old).unwrap();
+        let current = l.admit(Mode::Stream).unwrap();
+        assert_eq!(l.emit(old, 99), Err(Fault::Stale));
+        assert_eq!(l.receive(old), Err(Fault::Stale));
+        assert_eq!(l.receive(current), Err(Fault::NotReady));
+        l.emit(current, 42).unwrap();
+        l.close_stream(current).unwrap();
+        assert_eq!(l.receive(current), Ok(Some(42)));
+        assert_eq!(l.receive(current), Ok(None));
     }
     #[test] fn admission_does_not_mean_reply_ready() {
         let mut l = Ledger::new(1, 1, 5);
