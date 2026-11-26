@@ -1,0 +1,172 @@
+{
+  "contract": "distributed-symbol-identity-v1",
+  "spec": "https://github.com/atto-lang/atto-spec/pull/275",
+  "evidence": "TARGET_NOT_EXECUTED",
+  "backends": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "rs": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
+    "hdl": "NOT_EXECUTED"
+  },
+  "bindings": [
+    {
+      "namespace": "fixture/core",
+      "declaration": "ready",
+      "uuid": "00112233-4455-4677-8899-aabbccddeeff",
+      "wire_hex": "00112233445546778899aabbccddeeff"
+    },
+    {
+      "namespace": "fixture/app",
+      "declaration": "ready",
+      "uuid": "ffeeddcc-bbaa-4988-b766-554433221100",
+      "wire_hex": "ffeeddccbbaa4988b766554433221100"
+    }
+  ],
+  "cases": [
+    {
+      "id": "same-declaration",
+      "expected": "same UUID in independent builds and process catalogs",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "namespace-distinct",
+      "expected": "same spelling with distinct UUIDs is unequal",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "string-distinct",
+      "expected": "Symbol is not String",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "match-switch",
+      "expected": "patterns dispatch by resolved UUID",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "wire-canonical",
+      "expected": "16 canonical octets across endian and GUID layouts",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "wire-short",
+      "expected": "reject 15 octets",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "wire-long",
+      "expected": "reject 17 octets",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "wire-version",
+      "expected": "reject non-v4 UUID",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "wire-variant",
+      "expected": "reject non-RFC variant",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "wire-unknown",
+      "expected": "reject unregistered valid UUID without mutation",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "wire-denied",
+      "expected": "reject registered but unauthorized UUID without mutation",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "duplicate-uuid",
+      "expected": "reject two declarations sharing UUID",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "duplicate-declaration",
+      "expected": "reject conflicting UUID for one declaration",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "missing-manifest",
+      "expected": "reproducible build rejects unassigned declaration",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "restart",
+      "expected": "persistent declaration identity survives restart",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reload",
+      "expected": "preserve UUID after catalog hot reload",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "rename",
+      "expected": "authorized alias/rename preserves UUID",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "tombstone",
+      "expected": "never reuse retired ID",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "shared-map",
+      "expected": "two separate OS processes map same immutable catalog",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "cross-machine",
+      "expected": "independent machines exchange canonical wire and compare equal",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "concurrent-publish",
+      "expected": "one canonical entry or atomic failure under competing writers",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "crash-recovery",
+      "expected": "old or fully committed new snapshot after interruption",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "stale-handle",
+      "expected": "reject retired generation",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "cross-registry-index",
+      "expected": "same local index not sufficient for equality",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "quota",
+      "expected": "reject capacity exhaustion without mutation",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "lease-reclamation",
+      "expected": "reader lease delays physical reclamation",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "no-shared-memory",
+      "expected": "local intern fallback preserves UUID equality",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "legacy-wire",
+      "expected": "explicit profile negotiation; no spelling-based identity guess",
+      "status": "NOT_EXECUTED"
+    }
+  ]
+}
