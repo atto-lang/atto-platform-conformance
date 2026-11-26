@@ -50,3 +50,24 @@ test('unsafe token cannot accidentally be interpreted in string/comment/Symbol e
   assert.ok(source['symbol-not-keyword'].includes('#unsafe'));
   assert.ok(source['identifier-near-miss'].includes('unsafe_tools'));
 });
+
+test('closure, cleanup and nested block boundaries remain distinct target cases', () => {
+  const cases = new Map(registry.cases.map(c => [c.id, c]));
+  const expected = {
+    'unsafe-lambda-no-inherited-context': 'E_UNSAFE_CALL',
+    'unsafe-long-typed-lambda-no-inherited-context': 'E_UNSAFE_CALL',
+    'unsafe-nested-sibling-no-context': 'E_UNSAFE_CONTEXT',
+    'unsafe-lambda-guest-denial': 'E_UNSAFE_DOMAIN',
+    'unsafe-defer-guest-denial': 'E_UNSAFE_DOMAIN',
+  };
+  for (const [id, diagnostic] of Object.entries(expected)) {
+    assert.equal(cases.get(id)?.expect, 'reject', id);
+    assert.equal(cases.get(id)?.diagnostic, diagnostic, id);
+  }
+  for (const id of ['unsafe-outer-context-restored', 'unsafe-nested-comment-near-miss']) {
+    assert.equal(cases.get(id)?.expect, 'accept', id);
+    assert.equal(cases.get(id)?.diagnostic, null, id);
+  }
+  assert.ok(cases.get('unsafe-long-typed-lambda-no-inherited-context').source
+    .split('Tuple<')[1].split('>')[0].split(',').length >= 12);
+});
