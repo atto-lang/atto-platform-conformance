@@ -22,7 +22,8 @@
     "conflicting_export_scope_or_target": "reject",
     "internal_export": "reject",
     "external_prototype_export": "reject",
-    "explicit_private_export": "reject"
+    "explicit_private_export": "reject",
+    "dotted_target": "reject"
   },
   "cases": [
     {
@@ -146,6 +147,24 @@
       "source": "negative-external-prototype.atto",
       "expect": "reject",
       "diagnostic": "unbound_export"
+    },
+    {
+      "id": "negative-explicit-private-public",
+      "source": "negative-explicit-private-public.atto",
+      "expect": "reject",
+      "diagnostic": "conflicting_export_visibility"
+    },
+    {
+      "id": "negative-explicit-private-package",
+      "source": "negative-explicit-private-package.atto",
+      "expect": "reject",
+      "diagnostic": "conflicting_export_visibility"
+    },
+    {
+      "id": "negative-dotted-target",
+      "source": "negative-dotted-target.atto",
+      "expect": "reject",
+      "diagnostic": "invalid_export_target"
     }
   ],
   "backends": {
