@@ -3,9 +3,9 @@
   "status": "NOT_EXECUTED",
   "upstream": {
     "repository": "atto-lang/atto-spec",
-    "head": "c86d03484774e8735da58389652197f7a97d086f",
+    "head": "67fcbd850da47c2e3a9229ed0163490da1eeba49",
     "path": "conformance/generic-callables-v1.json",
-    "blob": "fe7b89c1e4b91ace00158d19bcefa239d6ae2e4c"
+    "blob": "651f87511e3296451c20320840ab7f7ec4dd2119"
   },
   "backends": [
     {
@@ -226,7 +226,7 @@
     },
     {
       "id": "collection_map_alias",
-      "source": "fnc pass(Map[string, int] value): Map<string, int> { return value; } pub fnc main(): int { return 42; }",
+      "source": "fnc pass(Map[string, int] value): Map<string, int> { return rt take value; } pub fnc main(): int { return 42; }",
       "expectation": "accept",
       "proof": "signature_typecheck_only",
       "statusByBackend": {
@@ -245,7 +245,7 @@
     },
     {
       "id": "collection_nested_delimiters",
-      "source": "fnc pass(Map<string, Array[int]> value): Map<string, Array<int>> { return value; } pub fnc main(): int { return 42; }",
+      "source": "fnc pass(Map<string, Array[int]> value): Map<string, Array<int>> { return rt take value; } pub fnc main(): int { return 42; }",
       "expectation": "accept",
       "proof": "signature_typecheck_only",
       "statusByBackend": {
