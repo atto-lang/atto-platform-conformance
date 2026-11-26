@@ -1,0 +1,14 @@
+// Nested default-only selects preserve lexical scope and return.
+pub fnc main(): int {
+  do select {
+    default: {
+      const int hidden = 44;
+      do select over
+        default: {
+          return hidden;
+        }
+      end
+    }
+  }
+  return 0;
+}

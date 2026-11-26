@@ -1,0 +1,24 @@
+name: Select all-target fixture integrity (not compiler execution)
+on:
+  pull_request:
+    paths:
+      - 'fixtures/select-source-v2/**'
+      - '.github/workflows/select-source-v2-integrity.yml'
+permissions:
+  contents: read
+jobs:
+  integrity:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Verify exact head and fixture matrix
+        env:
+          EXPECTED: ${{ github.event.pull_request.head.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED"
+          git rev-parse HEAD^{tree}
+          node fixtures/select-source-v2/verify-manifest.mjs
+          node --test fixtures/select-source-v2/verify-manifest.test.mjs

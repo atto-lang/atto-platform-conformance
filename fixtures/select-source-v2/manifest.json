@@ -1,0 +1,675 @@
+{
+  "schemaVersion": 2,
+  "schema": "atto.select.source-v2",
+  "description": "All eleven atto-source targets; pinned sources and prospective expectations, not execution receipts.",
+  "sourceExtension": ".atto",
+  "compilerEvidence": "not-executed",
+  "backends": [
+    "java-graalvm",
+    "llvm",
+    "net",
+    "rs",
+    "wasm",
+    "js",
+    "forge",
+    "cranelift",
+    "atto",
+    "hdl",
+    "realtime"
+  ],
+  "cases": [
+    {
+      "id": "default-over",
+      "path": "default-over.atto",
+      "gitBlobSha1": "a28281f357de02d2aa7b50719acd9af92060a902",
+      "evidenceStatus": "not-executed",
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "run",
+          "exitCode": 42
+        },
+        "net": {
+          "mode": "reject",
+          "diagnosticContains": "Static select requires checked Channel/Future arbitration"
+        },
+        "rs": {
+          "mode": "unverified"
+        },
+        "wasm": {
+          "mode": "unverified"
+        },
+        "js": {
+          "mode": "unverified"
+        },
+        "forge": {
+          "mode": "unverified"
+        },
+        "cranelift": {
+          "mode": "unverified"
+        },
+        "atto": {
+          "mode": "unverified"
+        },
+        "hdl": {
+          "mode": "unverified"
+        },
+        "realtime": {
+          "mode": "unverified"
+        }
+      }
+    },
+    {
+      "id": "default-brace",
+      "path": "default-brace.atto",
+      "gitBlobSha1": "f14c7b91cb0dcf091e4cdafb0fb2cb5b6114c747",
+      "evidenceStatus": "not-executed",
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "run",
+          "exitCode": 43
+        },
+        "net": {
+          "mode": "reject",
+          "diagnosticContains": "Static select requires checked Channel/Future arbitration"
+        },
+        "rs": {
+          "mode": "unverified"
+        },
+        "wasm": {
+          "mode": "unverified"
+        },
+        "js": {
+          "mode": "unverified"
+        },
+        "forge": {
+          "mode": "unverified"
+        },
+        "cranelift": {
+          "mode": "unverified"
+        },
+        "atto": {
+          "mode": "unverified"
+        },
+        "hdl": {
+          "mode": "unverified"
+        },
+        "realtime": {
+          "mode": "unverified"
+        }
+      }
+    },
+    {
+      "id": "default-continuation",
+      "path": "default-continuation.atto",
+      "gitBlobSha1": "c85b9fa8cd8c5f28954aa0afc4f4de870ca893c2",
+      "evidenceStatus": "not-executed",
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "run",
+          "exitCode": 42
+        },
+        "net": {
+          "mode": "reject",
+          "diagnosticContains": "Static select requires checked Channel/Future arbitration"
+        },
+        "rs": {
+          "mode": "unverified"
+        },
+        "wasm": {
+          "mode": "unverified"
+        },
+        "js": {
+          "mode": "unverified"
+        },
+        "forge": {
+          "mode": "unverified"
+        },
+        "cranelift": {
+          "mode": "unverified"
+        },
+        "atto": {
+          "mode": "unverified"
+        },
+        "hdl": {
+          "mode": "unverified"
+        },
+        "realtime": {
+          "mode": "unverified"
+        }
+      }
+    },
+    {
+      "id": "default-nested",
+      "path": "default-nested.atto",
+      "gitBlobSha1": "fd81aba7b23c5737ab6d7a2553f666f94496d854",
+      "evidenceStatus": "not-executed",
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "run",
+          "exitCode": 44
+        },
+        "net": {
+          "mode": "reject",
+          "diagnosticContains": "Static select requires checked Channel/Future arbitration"
+        },
+        "rs": {
+          "mode": "unverified"
+        },
+        "wasm": {
+          "mode": "unverified"
+        },
+        "js": {
+          "mode": "unverified"
+        },
+        "forge": {
+          "mode": "unverified"
+        },
+        "cranelift": {
+          "mode": "unverified"
+        },
+        "atto": {
+          "mode": "unverified"
+        },
+        "hdl": {
+          "mode": "unverified"
+        },
+        "realtime": {
+          "mode": "unverified"
+        }
+      }
+    },
+    {
+      "id": "reject-scope-escape",
+      "path": "reject-scope-escape.atto",
+      "gitBlobSha1": "1bbfcafc0591037facefeb4243238102a5ee0c58",
+      "evidenceStatus": "not-executed",
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "reject",
+          "diagnosticContains": "unknown parameter 'hidden'"
+        },
+        "net": {
+          "mode": "reject",
+          "diagnosticContains": "Static select requires checked Channel/Future arbitration"
+        },
+        "rs": {
+          "mode": "unverified"
+        },
+        "wasm": {
+          "mode": "unverified"
+        },
+        "js": {
+          "mode": "unverified"
+        },
+        "forge": {
+          "mode": "unverified"
+        },
+        "cranelift": {
+          "mode": "unverified"
+        },
+        "atto": {
+          "mode": "unverified"
+        },
+        "hdl": {
+          "mode": "unverified"
+        },
+        "realtime": {
+          "mode": "unverified"
+        }
+      }
+    },
+    {
+      "id": "channel-read-arm",
+      "path": "channel-read-arm.atto",
+      "gitBlobSha1": "bb5ffe5d0f89a0edc5ada98cdfdac3b86f86f027",
+      "evidenceStatus": "not-executed",
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "reject",
+          "diagnosticContains": "native do select currently supports only a single default arm"
+        },
+        "net": {
+          "mode": "reject",
+          "diagnosticContains": "Static select requires checked Channel/Future arbitration"
+        },
+        "rs": {
+          "mode": "unverified"
+        },
+        "wasm": {
+          "mode": "unverified"
+        },
+        "js": {
+          "mode": "unverified"
+        },
+        "forge": {
+          "mode": "unverified"
+        },
+        "cranelift": {
+          "mode": "unverified"
+        },
+        "atto": {
+          "mode": "unverified"
+        },
+        "hdl": {
+          "mode": "unverified"
+        },
+        "realtime": {
+          "mode": "unverified"
+        }
+      }
+    },
+    {
+      "id": "nonblocking-default",
+      "path": "nonblocking-default.atto",
+      "gitBlobSha1": "074141c1108d76c3daa8a8c70294baa6f16490d6",
+      "evidenceStatus": "not-executed",
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "reject",
+          "diagnosticContains": "native async/channel/select boundary unsupported"
+        },
+        "net": {
+          "mode": "reject",
+          "diagnosticContains": "Static select requires checked Channel/Future arbitration"
+        },
+        "rs": {
+          "mode": "unverified"
+        },
+        "wasm": {
+          "mode": "unverified"
+        },
+        "js": {
+          "mode": "unverified"
+        },
+        "forge": {
+          "mode": "unverified"
+        },
+        "cranelift": {
+          "mode": "unverified"
+        },
+        "atto": {
+          "mode": "unverified"
+        },
+        "hdl": {
+          "mode": "unverified"
+        },
+        "realtime": {
+          "mode": "unverified"
+        }
+      }
+    },
+    {
+      "id": "typed-default",
+      "path": "typed-default.atto",
+      "gitBlobSha1": "9b251afd4c336c0c7aa8deefe1fcaf08516be69a",
+      "evidenceStatus": "not-executed",
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "reject"
+        },
+        "net": {
+          "mode": "reject",
+          "diagnosticContains": "Static select requires checked Channel/Future arbitration"
+        },
+        "rs": {
+          "mode": "unverified"
+        },
+        "wasm": {
+          "mode": "unverified"
+        },
+        "js": {
+          "mode": "unverified"
+        },
+        "forge": {
+          "mode": "unverified"
+        },
+        "cranelift": {
+          "mode": "unverified"
+        },
+        "atto": {
+          "mode": "unverified"
+        },
+        "hdl": {
+          "mode": "unverified"
+        },
+        "realtime": {
+          "mode": "unverified"
+        }
+      }
+    },
+    {
+      "id": "reject-double-arrow",
+      "path": "reject-double-arrow.atto",
+      "gitBlobSha1": "10682021771cea4231bdc678171615c1dae5a8e6",
+      "evidenceStatus": "not-executed",
+      "target": {
+        "mode": "reject"
+      },
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "unverified"
+        },
+        "net": {
+          "mode": "unverified"
+        },
+        "rs": {
+          "mode": "unverified"
+        },
+        "wasm": {
+          "mode": "unverified"
+        },
+        "js": {
+          "mode": "unverified"
+        },
+        "forge": {
+          "mode": "unverified"
+        },
+        "cranelift": {
+          "mode": "unverified"
+        },
+        "atto": {
+          "mode": "unverified"
+        },
+        "hdl": {
+          "mode": "unverified"
+        },
+        "realtime": {
+          "mode": "unverified"
+        }
+      }
+    },
+    {
+      "id": "reject-duplicate-default",
+      "path": "reject-duplicate-default.atto",
+      "gitBlobSha1": "d370d4db39451f3419bc3ab893c87d05ebbdd68c",
+      "evidenceStatus": "not-executed",
+      "target": {
+        "mode": "reject"
+      },
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "unverified"
+        },
+        "net": {
+          "mode": "unverified"
+        },
+        "rs": {
+          "mode": "unverified"
+        },
+        "wasm": {
+          "mode": "unverified"
+        },
+        "js": {
+          "mode": "unverified"
+        },
+        "forge": {
+          "mode": "unverified"
+        },
+        "cranelift": {
+          "mode": "unverified"
+        },
+        "atto": {
+          "mode": "unverified"
+        },
+        "hdl": {
+          "mode": "unverified"
+        },
+        "realtime": {
+          "mode": "unverified"
+        }
+      }
+    },
+    {
+      "id": "reject-do-dynamic-discard",
+      "path": "reject-do-dynamic-discard.atto",
+      "gitBlobSha1": "a98a804616010514d3bd15efda51b3b984923360",
+      "evidenceStatus": "not-executed",
+      "target": {
+        "mode": "reject"
+      },
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "unverified"
+        },
+        "net": {
+          "mode": "unverified"
+        },
+        "rs": {
+          "mode": "unverified"
+        },
+        "wasm": {
+          "mode": "unverified"
+        },
+        "js": {
+          "mode": "unverified"
+        },
+        "forge": {
+          "mode": "unverified"
+        },
+        "cranelift": {
+          "mode": "unverified"
+        },
+        "atto": {
+          "mode": "unverified"
+        },
+        "hdl": {
+          "mode": "unverified"
+        },
+        "realtime": {
+          "mode": "unverified"
+        }
+      }
+    },
+    {
+      "id": "value-default",
+      "path": "value-default.atto",
+      "gitBlobSha1": "05bd7e40adde4a3d6278e05ffd2864a13493bb11",
+      "evidenceStatus": "not-executed",
+      "target": {
+        "mode": "run",
+        "exitCode": 42
+      },
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "unverified"
+        },
+        "net": {
+          "mode": "unverified"
+        },
+        "rs": {
+          "mode": "unverified"
+        },
+        "wasm": {
+          "mode": "unverified"
+        },
+        "js": {
+          "mode": "unverified"
+        },
+        "forge": {
+          "mode": "unverified"
+        },
+        "cranelift": {
+          "mode": "unverified"
+        },
+        "atto": {
+          "mode": "unverified"
+        },
+        "hdl": {
+          "mode": "unverified"
+        },
+        "realtime": {
+          "mode": "unverified"
+        }
+      }
+    },
+    {
+      "id": "ready-channel",
+      "path": "ready-channel.atto",
+      "gitBlobSha1": "71f945f6a8032ff3a963fb0bc9b7af1d7980e25f",
+      "evidenceStatus": "not-executed",
+      "target": {
+        "mode": "run",
+        "exitCode": 42
+      },
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "unverified"
+        },
+        "net": {
+          "mode": "unverified"
+        },
+        "rs": {
+          "mode": "unverified"
+        },
+        "wasm": {
+          "mode": "unverified"
+        },
+        "js": {
+          "mode": "unverified"
+        },
+        "forge": {
+          "mode": "unverified"
+        },
+        "cranelift": {
+          "mode": "unverified"
+        },
+        "atto": {
+          "mode": "unverified"
+        },
+        "hdl": {
+          "mode": "unverified"
+        },
+        "realtime": {
+          "mode": "unverified"
+        }
+      }
+    },
+    {
+      "id": "reject-per-arm-nb",
+      "path": "reject-per-arm-nb.atto",
+      "gitBlobSha1": "caa5a5f16473bbee9421333f18bf62e937163720",
+      "evidenceStatus": "not-executed",
+      "target": {
+        "mode": "reject"
+      },
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "unverified"
+        },
+        "net": {
+          "mode": "unverified"
+        },
+        "rs": {
+          "mode": "unverified"
+        },
+        "wasm": {
+          "mode": "unverified"
+        },
+        "js": {
+          "mode": "unverified"
+        },
+        "forge": {
+          "mode": "unverified"
+        },
+        "cranelift": {
+          "mode": "unverified"
+        },
+        "atto": {
+          "mode": "unverified"
+        },
+        "hdl": {
+          "mode": "unverified"
+        },
+        "realtime": {
+          "mode": "unverified"
+        }
+      }
+    },
+    {
+      "id": "reject-mixed-delimiter",
+      "path": "reject-mixed-delimiter.atto",
+      "gitBlobSha1": "5e6defae9c77fd5bfa8181f875c6268d5d2c31ae",
+      "evidenceStatus": "not-executed",
+      "target": {
+        "mode": "reject"
+      },
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "unverified"
+        },
+        "net": {
+          "mode": "unverified"
+        },
+        "rs": {
+          "mode": "unverified"
+        },
+        "wasm": {
+          "mode": "unverified"
+        },
+        "js": {
+          "mode": "unverified"
+        },
+        "forge": {
+          "mode": "unverified"
+        },
+        "cranelift": {
+          "mode": "unverified"
+        },
+        "atto": {
+          "mode": "unverified"
+        },
+        "hdl": {
+          "mode": "unverified"
+        },
+        "realtime": {
+          "mode": "unverified"
+        }
+      }
+    }
+  ]
+}
