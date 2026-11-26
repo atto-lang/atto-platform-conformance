@@ -6,7 +6,7 @@ import {spawnSync} from 'node:child_process';
 import {tmpdir} from 'node:os';
 import {isAbsolute,join,resolve,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {loadSuite,selectCases,classifyReceipt,summarize} from '../lib/portable-task-v1.mjs';
+import {loadSuite,selectCases,classifyReceipt,summarize,portableTaskBackends} from '../lib/portable-task-v1.mjs';
 
 const here=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const sha40=x=>typeof x==='string'&&/^[0-9a-f]{40}$/.test(x);
@@ -41,7 +41,7 @@ async function digest(path){
 }
 async function run(cfg){
  required(cfg&&typeof cfg==='object'&&!Array.isArray(cfg),'invalid run configuration');
- required(['java','llvm','wasm','rs','forge','net'].includes(cfg.backend),'invalid backend');
+ required(portableTaskBackends.includes(cfg.backend),'invalid backend');
  required(isPath(cfg.compilerRoot)&&sha40(cfg.compilerCommit),'pinned absolute compiler checkout and full SHA required');
  required(sha40(cfg.fixtureCommit),'pinned fixture checkout SHA required');
  required(isPath(cfg.compilerIdentity),'compiled compiler identity file required');

@@ -19,6 +19,11 @@ test('structural-only matrix CLI fails release gate without actual verified gues
  assert.equal(report.backends.llvm.not_executed,16);
  assert.equal(report.backends.rs.not_executed,16);
  assert.equal(report.backends.wasm.releaseQualified,false);
+ for(const b of ['cranelift','js','atto','hdl','realtime']){
+  assert.equal(report.backends[b].not_executed,16);
+  assert.equal(report.backends[b].releaseQualified,false);
+ }
+ assert.equal(Object.keys(report.backends).length,11);
 });
 
 test('guest runner rejects an unknown fixture-only execution request',()=>{

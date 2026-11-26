@@ -6,10 +6,10 @@ const {manifest,cases}=await loadSuite();
 const hex40='a'.repeat(40),hex64='b'.repeat(64);
 const positive=cases.find(c=>c.expect==='positive'&&c.mustObserve.length===0);
 function receipt(c=positive){return {status:'passed',caseId:c.id,backend:'java',compilerCommit:hex40,fixtureCommit:hex40,fixtureBlobSha:c.fixtureBlobSha,fixtureSha256:c.fixtureSha256,compilerSha256:hex64,compileArgv:['/absolute/compiler','--check',c.file],completedSteps:2,stepNames:['compile','guest'],runnerJobUrl:'https://github.com/ores-truffle-oreslang/oreslang-source.java/actions/runs/123',compilerExit:0,compilerOutput:'',rejectedEmittedArtifact:false,guestExecuted:true,artifactSha256:hex64,guestArgv:['/absolute/guest'],guestExit:42,guestOutput:''};}
-test('16 distinct immutable .atto source cases cover all six backends',()=>{
+test('16 distinct immutable .atto source cases cover all eleven backend roles',()=>{
  assert.equal(cases.length,16);assert.equal(new Set(cases.map(c=>c.fixtureBlobSha)).size,16);
  assert.equal(manifest.executionVerified,false);
- assert.deepEqual(Object.keys(summarize(cases,{})),['java','llvm','wasm','rs','forge','net']);
+ assert.deepEqual(Object.keys(summarize(cases,{})),["java","llvm","wasm","rs","forge","net","cranelift","js","atto","hdl","realtime"]);
  for(const v of Object.values(summarize(cases,{})))assert.deepEqual([v.passed,v.failed,v.unsupported,v.not_executed,v.releaseQualified],[0,0,0,16,false]);
  assert.equal(summarize(cases,{}).rs.not_executed,16);
 });
@@ -165,7 +165,26 @@ test('two-phase actor suspension race candidates are present but not guest-certi
    assert.equal(classifyReceipt(c,b,null).status,'not_executed');
   }
  }
- assert.equal(Object.keys(matrix).length,6);
- assert.equal(Object.values(matrix).reduce((sum,b)=>sum+b.not_executed,0),96);
+ assert.equal(Object.keys(matrix).length,11);
+ assert.equal(Object.values(matrix).reduce((sum,b)=>sum+b.not_executed,0),176);
  assert.ok(Object.values(matrix).every(b=>b.releaseQualified===false));
+});
+
+test('each unchanged source is pinned independently of candidate evidence',()=>{
+ for(const c of cases) assert.equal(c.fixtureBlobSha,manifest.cases.find(x=>x.id===c.id).fixtureBlobSha);
+ const mutate=(patch)=>({...manifest,cases:manifest.cases.map((x,i)=>i===0?{...x,...patch}:x)});
+ assert.throws(()=>validateManifest(mutate({fixtureBlobSha:null})),/invalid portable Task case/);
+ assert.throws(()=>validateManifest(mutate({baseline:{...manifest.cases[0].baseline,realtime:'passed'}})));
+ assert.throws(()=>validateManifest({...manifest,backends:manifest.backends.filter(b=>b!=='hdl')}));
+});
+test('new backends remain separate and require executed evidence; restricted profiles cannot self-promote',()=>{
+ for(const backend of ['cranelift','js','atto','hdl','realtime']){
+  assert.equal(classifyReceipt(positive,backend,null).status,'not_executed');
+  const candidate={...receipt(),backend,status:'unsupported',compilerExit:1,compilerOutput:'error: unsupported Task lowering',guestExecuted:false,artifactSha256:null,guestArgv:[],guestExit:null,completedSteps:1,stepNames:['compile']};
+  const result=classifyReceipt(positive,backend,candidate);
+  assert.equal(result.status,'unsupported');
+  assert.equal(result.releaseQualified,false);
+  assert.equal(classifyReceipt(positive,backend,{...candidate,completedSteps:0,stepNames:[]}).status,'failed');
+ }
+ assert.throws(()=>classifyReceipt(positive,'rust',null),/unknown backend/);
 });
