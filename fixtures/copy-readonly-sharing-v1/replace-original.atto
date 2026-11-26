@@ -6,12 +6,11 @@ define class Person as
     pub let int age = 1;
 end
 
-pub fnc main(): void {
+pub fnc main(): int {
     let mut Person a = new Person();
     let mut Person b = copy! a;
     a.scores = new Scores();
     a.scores.n = 22;
     b.scores.n = 20;
-    stdio.stdout.write(a.scores.n + b.scores.n);
-    return;
+    return a.scores.n + b.scores.n;
 }

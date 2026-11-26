@@ -65,8 +65,7 @@
       "id": "replace-copy",
       "path": "fixtures/copy-readonly-sharing-v1/replace-copy.atto",
       "expect": {
-        "stdout": "42",
-        "exit_code": 0
+        "main_result": 42
       },
       "status": "NOT_EXECUTED"
     },
@@ -74,8 +73,7 @@
       "id": "replace-original",
       "path": "fixtures/copy-readonly-sharing-v1/replace-original.atto",
       "expect": {
-        "stdout": "42",
-        "exit_code": 0
+        "main_result": 42
       },
       "status": "NOT_EXECUTED"
     },
@@ -83,8 +81,7 @@
       "id": "independent-root",
       "path": "fixtures/copy-readonly-sharing-v1/independent-root.atto",
       "expect": {
-        "stdout": "42",
-        "exit_code": 0
+        "main_result": 42
       },
       "status": "NOT_EXECUTED"
     },
@@ -92,8 +89,7 @@
       "id": "block-release",
       "path": "fixtures/copy-readonly-sharing-v1/block-release.atto",
       "expect": {
-        "stdout": "20|22",
-        "exit_code": 0
+        "main_result": 42
       },
       "status": "NOT_EXECUTED"
     },
@@ -101,8 +97,7 @@
       "id": "shared-read-control",
       "path": "fixtures/copy-readonly-sharing-v1/shared-read-control.atto",
       "expect": {
-        "stdout": "40",
-        "exit_code": 0
+        "main_result": 40
       },
       "status": "NOT_EXECUTED"
     },
@@ -132,8 +127,7 @@
       "id": "third-copy-control",
       "path": "fixtures/copy-readonly-sharing-v1/third-copy-control.atto",
       "expect": {
-        "stdout": "20",
-        "exit_code": 0
+        "main_result": 20
       },
       "status": "NOT_EXECUTED"
     },
@@ -152,8 +146,7 @@
       "id": "fixed-slot-control",
       "path": "fixtures/copy-readonly-sharing-v1/fixed-slot-control.atto",
       "expect": {
-        "stdout": "40",
-        "exit_code": 0
+        "main_result": 40
       },
       "status": "NOT_EXECUTED"
     },
@@ -188,7 +181,7 @@
     "compiler_command",
     "compile_exit",
     "executed_steps",
-    "guest_stdout_or_diagnostic_and_location",
+    "guest_main_result_or_diagnostic_and_location",
     "artifact_absent_on_reject",
     "independent_review"
   ],

@@ -17,9 +17,9 @@ test('exact fixture registry and matched rejection controls',()=>{
     assert.equal(f.status,'NOT_EXECUTED');
     const s=source(f);
     assert.match(s,/copy! a;/);
-    if(!f.expect.compile_reject){assert.equal(f.expect.exit_code,0);assert.equal(typeof f.expect.stdout,'string');continue;}
+    if(!f.expect.compile_reject){assert.ok(Number.isSafeInteger(f.expect.main_result));assert.match(s,/pub fnc main\(\): int/);assert.doesNotMatch(s,/stdio\./);continue;}
     const p=files.get(f.paired_positive);
-    assert.ok(p&&Object.hasOwn(p.expect,'stdout'));
+    assert.ok(p&&Object.hasOwn(p.expect,'main_result'));
     const a=s.split('\n'),b=source(p).split('\n');
     assert.equal(a.length,b.length);
     assert.deepEqual(a.flatMap((line,i)=>line!==b[i]?[i+1]:[]),[f.diagnostic_line]);
