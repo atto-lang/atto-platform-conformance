@@ -1,7 +1,7 @@
 // Reference process/disk interoperability, not the production broker or scheduler.
 import assert from 'node:assert/strict';
 import {DatabaseSync} from 'node:sqlite';
-import {spawnSync} from 'node:child_process';
+import {spawn,spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {mkdtempSync,readFileSync,rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
@@ -28,12 +28,13 @@ const p=Number(e.__heap_base.value),b=p+64,out=p+128;assert.ok(out+24<=e.memory.
 const m=new Uint8Array(e.memory.buffer),d=new DataView(e.memory.buffer);
 const w={initial(){assert.equal(e.atto_scalar_initial_v1(b,47n),47n);return m.slice(b,b+47);},encode(v){assert.equal(typeof v[1],'boolean');[checkedI64(v[0]),v[1]?1n:0n,checkedI64(v[2])].forEach((x,i)=>d.setBigInt64(p+8*i,x,true));assert.equal(e.atto_scalar_encode_v1(p,3n,b,47n),47n);return m.slice(b,b+47);},decode(bytes){assert.equal(bytes.length,47);m.set(bytes,b);assert.equal(e.atto_scalar_decode_v1(b,47n,out,3n),3n);return [d.getBigInt64(out,true),d.getBigInt64(out+8,true)===1n,d.getBigInt64(out+16,true)];}};
 assert.equal(Buffer.from(js.initial()).toString('hex'),golden);assert.deepEqual(w.initial(),js.initial());
-function open(path){const db=new DatabaseSync(path);db.exec('PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; PRAGMA foreign_keys=ON;');return db;}
+function open(path){const db=new DatabaseSync(path);db.exec('PRAGMA busy_timeout=15000; PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; PRAGMA foreign_keys=ON;');return db;}
 if(process.argv[2]==='--child'){
- const [, , ,path,mode,backend,id,deltaText]=process.argv;assert.ok(['precommit','postcommit','commit'].includes(mode));assert.ok(['js','wasm'].includes(backend));
+ const [, , ,path,mode,backend,id,deltaText]=process.argv;assert.ok(['precommit','postcommit','commit','concurrent'].includes(mode));assert.ok(['js','wasm'].includes(backend));
  const codec=backend==='js'?js:w,delta=checkedI64(BigInt(deltaText)),db=open(path);
- db.exec('BEGIN IMMEDIATE');
+ if(mode==='concurrent')console.log('READY');
  try{
+  db.exec('BEGIN IMMEDIATE');
   const prior=db.prepare('SELECT delta,revision FROM receipt WHERE id=?').get(id);
   if(prior){if(prior.delta!==deltaText)throw new Error('E_REFERENCE_RECEIPT_MISMATCH');db.exec('COMMIT');console.log('REPLAY '+prior.revision);}
   else{
@@ -89,6 +90,65 @@ if(process.argv[2]==='--child'){
   // Rejected identifiers were not consumed; a valid retry commits once.
   turn('commit','wasm','overflow-wasm',1n,'COMMITTED 4');check(4,[min+8n,true,min+8n]);
   turn('commit','js','overflow-wasm',1n,'REPLAY 4');check(4,[min+8n,true,min+8n]);
-  console.log(JSON.stringify({kind:'JS_LLVM_WASM_SQLITE_PROCESS_REVIVAL_PASS',process_turns:14,physical_kills:2,commits:4,replays:3,rollback:1,atomic_rejections:6,wasm_sha256:hash(wasmBytes),js_compiler_sha256:hash(readFileSync(jsPath)),js_guest_sha256:hash(generated.module_source),source_sha256:hash(source),production_broker:false}));
+  // Hold the write lock until all independent processes reach admission.
+  // Four unique messages, each delivered concurrently through both codecs.
+  const lock=open(path),children=[];
+  lock.exec('BEGIN IMMEDIATE');
+  try{
+    for(let i=1;i<=4;i++)for(const backend of ['js','wasm']){
+      const id='concurrent-'+i,delta=String(i);
+      const child=spawn(process.execPath,[fileURLToPath(import.meta.url),'--child',path,'concurrent',backend,id,delta],{stdio:['ignore','pipe','pipe']});
+      let stdout='',stderr='',readyResolve,doneResolve;
+      const ready=new Promise(resolve=>{readyResolve=resolve;});
+      const done=new Promise(resolve=>{doneResolve=resolve;});
+      const timer=setTimeout(()=>child.kill('SIGKILL'),25000);
+      child.stdout.setEncoding('utf8');child.stderr.setEncoding('utf8');
+      child.stdout.on('data',chunk=>{stdout+=chunk;if(stdout.startsWith('READY\n'))readyResolve(true);});
+      child.stderr.on('data',chunk=>{stderr+=chunk;});
+      child.on('error',error=>{readyResolve(false);doneResolve({id,delta,backend,error});});
+      child.on('close',(status,signal)=>{clearTimeout(timer);readyResolve(false);doneResolve({id,delta,backend,status,signal,stdout,stderr});});
+      children.push({child,ready,done});
+    }
+    assert.deepEqual(await Promise.all(children.map(c=>c.ready)),Array(8).fill(true),'all writers must reach admission while lock is held');
+    // No child may publish state while the parent transaction owns the write lock.
+    assert.equal(lock.prepare('SELECT revision FROM actor WHERE id=1').get().revision,4);
+    assert.equal(lock.prepare('SELECT COUNT(*) AS n FROM receipt').get().n,4);
+    lock.exec('COMMIT');
+    const results=await Promise.all(children.map(c=>c.done));
+    for(const result of results){
+      assert.equal(result.error,undefined);assert.equal(result.signal,null);
+      assert.equal(result.status,0,result.stderr);
+      assert.match(result.stdout,/^READY\n(?:COMMITTED|REPLAY) [5-8]\n$/);
+    }
+    const receipts=new Map();
+    for(const result of results){
+      const [,kind,revision]=result.stdout.match(/(COMMITTED|REPLAY) ([5-8])/);
+      const pair=receipts.get(result.id)||[];
+      pair.push({kind,revision:Number(revision),delta:result.delta});receipts.set(result.id,pair);
+    }
+    assert.equal(receipts.size,4);
+    for(const pair of receipts.values()){
+      assert.deepEqual(pair.map(x=>x.kind).sort(),['COMMITTED','REPLAY']);
+      assert.equal(pair[0].revision,pair[1].revision);
+    }
+    const rows=snapshot();
+    let balance=min+8n,enabled=true;
+    const tail=rows.receipts.filter(r=>r.revision>4);
+    assert.deepEqual(tail.map(r=>r.revision),[5,6,7,8]);
+    for(const receipt of tail){
+      const pair=receipts.get(receipt.id);assert.equal(pair[0].revision,receipt.revision);
+      assert.equal(pair[0].delta,receipt.delta);
+      balance+=BigInt(receipt.delta);enabled=!enabled;
+      const event=rows.outbox.find(r=>r.revision===receipt.revision);
+      assert.deepEqual(js.decode(event.checkpoint),[balance,enabled,balance]);
+      assert.deepEqual(w.decode(event.checkpoint),[balance,enabled,balance]);
+    }
+    check(8,[min+18n,true,min+18n]);
+  }finally{
+    try{lock.exec('ROLLBACK');}catch{}lock.close();
+    for(const c of children)if(c.child.exitCode===null&&c.child.signalCode===null)c.child.kill('SIGKILL');
+    await Promise.all(children.map(c=>c.done));
+  }
+  console.log(JSON.stringify({kind:'JS_LLVM_WASM_SQLITE_PROCESS_REVIVAL_PASS',process_turns:22,physical_kills:2,commits:8,replays:7,rollback:1,atomic_rejections:6,concurrent_writers:8,concurrent_unique_messages:4,wasm_sha256:hash(wasmBytes),js_compiler_sha256:hash(readFileSync(jsPath)),js_guest_sha256:hash(generated.module_source),source_sha256:hash(source),production_broker:false}));
  }finally{rmSync(dir,{recursive:true,force:true});}
 }
