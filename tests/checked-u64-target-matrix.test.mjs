@@ -7,7 +7,7 @@ import {join,resolve} from 'node:path';
 import {spawnSync} from 'node:child_process';
 
 // Explicit candidate-only gate; no downloads or silent passes.
-const PIN='1d3e23affb2853f545912585fcb4f046592d4e25';
+const PIN='752d1ad3fb3564eed9067a0a530eb2150d1c14b4';
 const blob=b=>createHash('sha1').update('blob '+b.length+'\0').update(b).digest('hex');
 const MAX=(1n<<64n)-1n,M=0xffffffffn;
 const pairs=[[0n,MAX],[MAX,0n],[MAX,1n],[1n,MAX],[MAX,2n],[M,M],
