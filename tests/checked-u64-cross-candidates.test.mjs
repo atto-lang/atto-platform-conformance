@@ -8,7 +8,7 @@ import {pathToFileURL} from 'node:url';
 import {spawnSync} from 'node:child_process';
 
 // Local focused evidence. Never download source or count a skipped lane as a pass.
-const pins={JS:'7726e7093bb66b10b88757004473c6fa38d8deed',LLVM:'f7bf08fc2ccd46116fe69359ef047f08068f04bd',FORGE:'f7bf08fc2ccd46116fe69359ef047f08068f04bd',JAVA:'02037fb8fd3b4056fc9eab4d75b51e95d03dd65b'};
+const pins={JS:'7726e7093bb66b10b88757004473c6fa38d8deed',LLVM:'1d3e23affb2853f545912585fcb4f046592d4e25',FORGE:'1d3e23affb2853f545912585fcb4f046592d4e25',JAVA:'02037fb8fd3b4056fc9eab4d75b51e95d03dd65b'};
 const blob=b=>createHash('sha1').update('blob '+b.length+'\0').update(b).digest('hex');
 const MAX=(1n<<64n)-1n;
 const rows=[
