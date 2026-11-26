@@ -5,6 +5,29 @@ import {runSuite} from "../src/harness.mjs";
 const sourceSha = "012345678901234567890123456789abcdefabcd";
 const command = [process.execPath, "{file}"];
 
+const unsupportedIds = ["generator-sync","generator-async","generator-suspend"];
+function assertCoverage(report,backend,expected) {
+  const byId=new Map(report.results.map(x=>[x.id,x]));
+  const admitted=["int-arithmetic","unresolved-identifier",...(backend==="js"?[]:["liveview-revision-order"])];
+  assert.equal(byId.size,report.results.length,"duplicate fixture result");
+  assert.deepEqual([...byId.keys()].sort(),[...admitted,...unsupportedIds].sort());
+  for(const id of unsupportedIds) {
+    const row=byId.get(id);
+    assert.equal(row.status,"UNSUPPORTED",id);
+    assert.equal(row.exitCode,null,id);
+    assert.equal(row.executableSha256Before,null,id);
+    assert.equal(row.executableSha256After,null,id);
+    assert.equal(row.executableResolvedPathBefore,null,id);
+    assert.equal(row.executableResolvedPathAfter,null,id);
+  }
+  for(const id of admitted) assert.equal(byId.get(id).status,expected(id),id);
+  assert.equal(report.unsupported,3);
+  assert.equal(report.verified,admitted.filter(id=>expected(id)==="VERIFIED").length);
+  assert.equal(report.failed,report.results.length-report.verified);
+  assert.equal(report.ok,false,"unsupported fixtures must keep overall gate red");
+}
+
+
 function fakeCompiler(exitCode, diagnostic = "error: unknown nonexistent_symbol") {
   return (_executable, args) => {
     const negative = args.at(-1).endsWith("/unresolved-identifier.ores");
@@ -31,8 +54,7 @@ test("compiler diagnostic is accepted only at semantic rejection exit 1", async 
     backend: "llvm", argv: command, sourceSha,
     spawn: fakeCompiler(1),
   });
-  assert.equal(genuine.verified, 2);
-  assert.equal(genuine.ok, true);
+  assertCoverage(genuine,"llvm",()=> "VERIFIED");
 });
 
 test("a crash quoting the expected symbol is not a negative compiler proof", async () => {
@@ -46,15 +68,15 @@ test("a crash quoting the expected symbol is not a negative compiler proof", asy
       backend: "java", argv: command, sourceSha,
       spawn: fakeCompiler(1, failure),
     });
-    assert.equal(result.results.at(-1).status, "MISMATCH", failure);
+    assert.equal(result.results.find(x=>x.id==="unresolved-identifier").status,"MISMATCH",failure);
+    assertCoverage(result,"java",id=>id==="unresolved-identifier"?"MISMATCH":"VERIFIED");
   }
 });
 
 test("all six source backends require real case outcomes; uncovered browser never creates proof", async () => {
   for (const backend of ["java","llvm","net","forge","wasm","js"]) {
     const report=await runSuite({backend,argv:command,sourceSha,spawn:fakeCompiler(1)});
-    assert.equal(report.verified,2,backend);
-    assert.equal(report.ok,true,backend);
+    assertCoverage(report,backend,()=> "VERIFIED");
     assert.equal(report.runtimeVerified,false,backend);
     const unconfigured=await runSuite({backend});
     assert.equal(unconfigured.ok,false,backend);
