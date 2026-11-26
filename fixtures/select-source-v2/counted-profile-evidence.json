@@ -1143,18 +1143,18 @@
     {
       "backend": "cranelift",
       "profile": "counted-static-ready-v1-native-object",
-      "head": "f5218d77593d16242148bfd4545358502f1d413c",
-      "tree": "200a51c56e198e9b29f88f58e204d8f0d939ea66",
+      "head": "0df2f20408611ea246046325a678c8721c1d5db9",
+      "tree": "e55faaac759dcbde4be8b8de41bd79b38b11797c",
       "pr": 160,
-      "run": 45873368320,
-      "job": 140094172645,
+      "run": 45874624832,
+      "job": 140098456378,
       "steps": 3,
       "carrier": "ores-wasm-loaders-test/atto-ci",
-      "command": "cargo build --locked --bin orescranelift; bash scripts/test-counted-static-ready-native.sh; 8 guest, 7 invalid and 2 profile-limited rejections, 2 overflow and 2 nonselected projection controls, 4 additional affine/branch denials; full cargo test --locked --all-targets: 593 passed, 0 ignored",
+      "command": "Native CLI and linked objects: 10 exact guest, 7 invalid, 2 overflow, 2 lazy projection, 4 affine/branch, 4 lexical count denials; cargo test --locked --all-targets: 593 passed",
       "limits": [
-        "dynamic count is outside literal-count static native profile",
-        "static closed-world queue topology, runtime checked scalar payload/projection",
-        "no JIT fallback or general scheduler"
+        "static closed-world queue topology; literal-known lexical count frozen at construction, not arbitrary dynamic count",
+        "runtime checked scalar payload/projection",
+        "no external producer, JIT fallback or general scheduler"
       ],
       "fixtures": [
         {
@@ -1205,14 +1205,12 @@
         {
           "id": "counted-dynamic",
           "blob": "7c9ea9270d766612de0d502147e0df31b0dc3454",
-          "outcome": "profile-limited-reject-no-artifact",
-          "limitation": "dynamic count is outside literal-count static native profile"
+          "outcome": "guest-exit-42"
         },
         {
           "id": "counted-dynamic-zero",
           "blob": "4707b13d3daebe05ced967418ba120cf801e2d8c",
-          "outcome": "profile-limited-reject-no-artifact",
-          "limitation": "dynamic count is outside literal-count static native profile"
+          "outcome": "guest-exit-42"
         },
         {
           "id": "reject-counted-dynamic-bool",
