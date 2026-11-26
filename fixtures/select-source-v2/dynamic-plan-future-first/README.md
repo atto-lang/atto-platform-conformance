@@ -14,3 +14,9 @@ The `pending-at-exit.atto` probe must not report successful guest exit with an u
 - `panic-admission-retirement.atto`: invalid admission after removal while an older generation is pending; bounded Rust guest profile expects terminal panic 10 and pending-plan root accounting zero.
 
 These files match Rust candidate 913512c1e3d47eaf30a2a643857ea4e76ad45284. Numeric panic codes are Rust-profile-specific; other applicable backends must prove an equivalent documented terminal outcome and all invocation resources retired, not assume identical ABI codes. Recoverable cancellation and other errors remain separately gated. All targets remain NOT_EXECUTED for these fixtures.
+
+## Physical continuation credit (host refinement, separate from source parity)
+
+Every backend must hold one physical execution credit from claim until callback exit; logical cancellation/STOP may revoke queued work, not retire running work. Actor generation identity must be rechecked at ownership transfer, queue publication and guest invocation. Stale targets cannot acquire or cancel successor-owned Futures. Pending plus executing credit is bounded independently of descriptor storage. Preserve source-task lexical cleanup admission separately from ordinary STOP-sealed callbacks.
+
+Host evidence only: Java atto-source.java#1974 exact source ledger blob 55ba4831f3f59c796e3d7e861cd32dd828a2e30a compiled on JDK 21.0.12.1 with -Xlint:all -Werror; 1,000,000 admissions and 10,000 claim/STOP races in isolated harness, 2,112,511 checks. ActorRuntime integration and full source guest tests NOT_EXECUTED. Compare JS #215, LLVM #997 and .NET #333; no cross-compiler guest pass inferred. All other targets must implement or explicitly reject unsupported continuation profiles.
