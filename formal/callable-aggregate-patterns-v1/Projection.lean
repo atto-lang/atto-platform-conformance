@@ -51,7 +51,6 @@ theorem execute_left (left right : Tree) (plan : List Instruction) :
   | cons head tail ih =>
     rcases head with ⟨name, path⟩
     simp [execute, project] at *
-    exact ih
 
 theorem execute_right (left right : Tree) (plan : List Instruction) :
     execute (.node left right)
@@ -62,7 +61,6 @@ theorem execute_right (left right : Tree) (plan : List Instruction) :
   | cons head tail ih =>
     rcases head with ⟨name, path⟩
     simp [execute, project] at *
-    exact ih
 
 /-- Every lowered binding resolves to its reference value, in source order.
     Unlike bounded enumeration, this quantifies over every finite tree. -/
