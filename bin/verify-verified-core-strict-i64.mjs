@@ -9,7 +9,7 @@ import {pathToFileURL} from "node:url";
 import {spawnSync} from "node:child_process";
 import {createHash} from "node:crypto";
 const [target,path,tier="all",bridgePath,pin]=process.argv.slice(2);
-if(!["rs","js","wasm","forge","cranelift","java","llvm"].includes(target)||!path||!["arithmetic","control-flow","loops","boundaries","guards","lazy-helpers","full-width","mutable-rebinding","all"].includes(tier))throw Error("usage: node bin/verify-verified-core-strict-i64.mjs rs|js|wasm|forge|cranelift|java|llvm <compiler binary or checkout> [arithmetic|control-flow|loops|boundaries|guards|lazy-helpers|full-width|mutable-rebinding|all] [Wasm bridge checkout or Forge include path] [compiler sha256]");
+if(!["rs","js","wasm","forge","cranelift","java","llvm"].includes(target)||!path||!["arithmetic","control-flow","loops","boundaries","guards","lazy-helpers","full-width","mutable-rebinding","mutable-joins","loop-backedges","loop-adversarial","all"].includes(tier))throw Error("usage: node bin/verify-verified-core-strict-i64.mjs rs|js|wasm|forge|cranelift|java|llvm <compiler binary or checkout> [arithmetic|control-flow|loops|boundaries|guards|lazy-helpers|full-width|mutable-rebinding|mutable-joins|loop-backedges|loop-adversarial|all] [Wasm bridge checkout or Forge include path] [compiler sha256]");
 if(target==="wasm"&&(!bridgePath||!/^[a-f0-9]{64}$/.test(pin??"")))throw Error("Wasm requires exact compiler digest and bridge checkout");
 const manifest=JSON.parse(readFileSync(new URL("../fixtures/verified-core-strict-i64-v1/cases.json",import.meta.url),"utf8"));
 validateStrictManifest(manifest);
@@ -41,7 +41,9 @@ try {
   const {createCompiler}=await import(pathToFileURL(join(resolve(bridgePath),"src/canonical-browser-compiler.mjs")).href);
   browser=await createCompiler(bytes);
  }
+ let passed=0,failed=0;const failures=[];
  for(const {id,source,expected,tier:caseTier} of cases){
+  try {
   assert.match(id,/^[a-z0-9-]+$/);
   let diagnostic=null,artifact=null;
   if(target==="java"){
@@ -60,6 +62,7 @@ try {
     assert.equal(guest.stderr,"",id);
    }
    console.log("PASS",target,id,"source",hash(source),"Truffle checked-guest",expected.kind);
+   passed++;
    continue;
   }else if(target==="llvm"){
    const input=join(dir,id+".atto"),output=join(dir,id+".ll");
@@ -94,7 +97,7 @@ try {
    if(r.error)throw r.error;
    assert.equal(r.signal,null,id);
    if(r.status===0){assert.ok(existsSync(output),id);artifact=readFileSync(output);}
-   else {assert.equal(r.status,1,id);assert.equal(existsSync(output),false,id);diagnostic=r.stderr;}
+   else {assert.equal(r.status,1,id);assert.equal(existsSync(output),false,id);assert.equal(existsSync(output+".part"),false,id);assert.equal(r.stdout,"",id+" rejected source emitted stdout");diagnostic=r.stderr;}
   }else if(target==="wasm"){
    const result=browser.compile(source,"wasm","strict");
    if(result.ok){assert.ok(result.wasm instanceof Uint8Array);artifact=result.wasm;}
@@ -119,7 +122,8 @@ try {
     if(link.error)throw link.error;assert.equal(link.status,0,id+": "+link.stderr);
     const g=spawnSync(guest,[],{cwd:dir,encoding:"utf8",timeout:10000});
     if(g.error)throw g.error;assert.equal(g.signal,null,id);assert.equal(g.status,caseTier==="full-width"?0:Number(expected.decimal),id+": "+g.stderr);
-    if(caseTier==="full-width"){assert.equal(g.stdout,expected.decimal+"\n",id);assert.equal(g.stderr,"",id);}
+    assert.equal(g.stderr,"",id);
+    assert.equal(g.stdout,caseTier==="full-width"?expected.decimal+"\n":"",id);
    }else if(target==="forge"||target==="cranelift"){
     const forge=target==="forge",output=join(dir,id+(forge?".cpp":".o")),guest=join(dir,id+".native");
     let args;
@@ -152,6 +156,16 @@ try {
    }
   }
   console.log("PASS",target,id,"source",hash(source),"artifact",artifact===null?"none":hash(artifact));
+  passed++;
+  } catch (error) {
+   failed++;failures.push(id);
+   console.error("CASE_FAIL",target,id,"source",hash(source),String(error?.stack??error));
+  }
  }
- console.log("VERIFIED_STRICT_I64",target,tier,cases.length);
+ console.log("STRICT_CENSUS",target,tier,"total",cases.length,"passed",passed,"failed",failed);
+ console.log("STRICT_CENSUS_JSON",JSON.stringify({target,tier,passed,total:cases.length,failures}));
+ assert.equal(passed+failed,cases.length,"census lost a case");
+ assert.equal(failures.length,failed,"census lost a failure identity");
+ if(failed){process.exitCode=1;}
+ else {console.log("VERIFIED_STRICT_I64",target,tier,cases.length);}
 }finally{rmSync(dir,{recursive:true,force:true});}
