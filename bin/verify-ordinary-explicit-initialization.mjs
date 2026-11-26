@@ -22,6 +22,11 @@ if(kind==='wasm'){const m=new WebAssembly.Module(fs.readFileSync(p));assert.deep
 else{const g=await import('data:text/javascript;base64,'+fs.readFileSync(p).toString('base64'));v=g.main();}
 assert.equal(v,BigInt(want));process.stdout.write('GUEST_OK '+v+'\\n');`;
 const checkResult=(r,stdout,status=0)=>{assert.equal(r.status,status,r.stderr);assert.equal(r.stderr,'');assert.equal(r.stdout,stdout);};
+// Reject generic syntax errors; confirm the code-only path independently.
+const diagnosticPattern=/\b(?:E_UNINITIALIZED|E_MISSING_INITIALIZER)\b|(?:requires?|needs?) (?:an? )?(?:explicit )?initializer/i;
+assert.match('error: E_MISSING_INITIALIZER: explicit initializer required',diagnosticPattern);
+assert.match('binding needs an initializer',diagnosticPattern);
+assert.doesNotMatch('E_SYNTAX: expected semicolon',diagnosticPattern);
 const temp=fs.mkdtempSync(join(os.tmpdir(),'atto-ordinary-init-'));
 let passed=0,failed=0;
 try{
@@ -49,7 +54,7 @@ try{
     const check=run('java',[...javaArgs,'--check',input],{cwd:dir});
     const guest=run('java',[...javaArgs,input],{cwd:dir});
     if(c.expect==='accept'){assert.equal(check.status,0,check.stderr);checkResult(guest,'',c.expected_exit);}
-    else{assert.equal(check.status,1);assert.equal(guest.status,1);assert.equal(check.stdout,'');assert.equal(guest.stdout,'');diagnostic=check.stderr;assert.match(guest.stderr,/\\b(?:E_UNINITIALIZED|E_MISSING_INITIALIZER)\\b|(?:requires?|needs?) (?:an? )?(?:explicit )?initializer/i);}
+    else{assert.equal(check.status,1);assert.equal(guest.status,1);assert.equal(check.stdout,'');assert.equal(guest.stdout,'');diagnostic=check.stderr;assert.match(guest.stderr,/\b(?:E_UNINITIALIZED|E_MISSING_INITIALIZER)\b|(?:requires?|needs?) (?:an? )?(?:explicit )?initializer/i);}
    }else if(target==='js'){
     let output;try{output=compile(bytes.toString('utf8'));}catch(e){diagnostic=String(e.message);compileStatus=1;}
     if(compileStatus===0)fs.writeFileSync(artifact,output,{flag:'wx'});
@@ -68,7 +73,7 @@ try{
    if(c.expect==='reject'){
     assert.ok(target==='java'||compileStatus===1||compileStatus===2,'unexpected rejection status '+compileStatus);
     assert.deepEqual(fs.readdirSync(dir),['guest.atto'],'rejected source left files');
-    assert.match(diagnostic??'',/\\b(?:E_UNINITIALIZED|E_MISSING_INITIALIZER)\\b|(?:requires?|needs?) (?:an? )?(?:explicit )?initializer/i,'missing targeted initializer diagnostic: '+(diagnostic??'<none>'));
+    assert.match(diagnostic??'',/\b(?:E_UNINITIALIZED|E_MISSING_INITIALIZER)\b|(?:requires?|needs?) (?:an? )?(?:explicit )?initializer/i,'missing targeted initializer diagnostic: '+(diagnostic??'<none>'));
    }else if(target!=='java'){
     assert.equal(compileStatus,0,diagnostic??'compile failed');assert.ok(fs.statSync(artifact).size>0);
     if(['js','rs','wasm'].includes(target))checkResult(run(process.execPath,['--input-type=module','-e',guestDriver,target==='js'?'js':'wasm',artifact,String(c.expected_exit)],{timeout:10000}),'GUEST_OK '+c.expected_exit+'\n');
