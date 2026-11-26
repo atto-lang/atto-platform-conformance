@@ -1262,6 +1262,334 @@
           "outcome": "guest-exit-42"
         }
       ]
+    },
+    {
+      "backend": "hdl",
+      "head": "19f562961bb6a69c5a2b079a16930c49cc9e2955",
+      "tree": "85a76c266ec4e3ae3de93144afa98d6637ba101e",
+      "pr": 98,
+      "job": 140092249580,
+      "profile": "counted-static-single-v1-synthesized-rtl",
+      "limits": [
+        "closed combinational circuit; no clocked FIFO or scheduler",
+        "shared single-channel frontend; no timing or area guarantee"
+      ],
+      "run": 45872787035,
+      "steps": 5,
+      "carrier": "attopl-co/atto-ci",
+      "command": "node scripts/verify-counted-static-single.mjs <exact corpus>",
+      "sharedFrontendBlob": "5721291bed13a51f27107f0fb2933d5845cc63a0",
+      "unsupportedFixtureIds": [
+        "counted-distinct-alias-projection",
+        "counted-dynamic",
+        "counted-dynamic-zero",
+        "counted-mixed-future-alias",
+        "counted-mixed-zero",
+        "counted-multi-channel-fair"
+      ],
+      "fixtures": [
+        {
+          "id": "counted-three",
+          "blob": "6531efa0689f2a5728b40a6412651e8143e45865",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-zero",
+          "blob": "42e49fc1eea64b31e86ec722e1457c1ab706a7e1",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-one",
+          "blob": "910062ebf96613d15a16ddb080abd89375d7709c",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-alias",
+          "blob": "324837078af3e7eeb9b619d0fb07142f0a0d6291",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "reject-counted-negative",
+          "blob": "e2ff6fdb406b8807b74fa15beaee10a7f9438e22",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-bool",
+          "blob": "4a52c22442bc8a9fe55eb95b23722595db32c97e",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-scalar",
+          "blob": "a2a2dd184237f17b5e8d455f498719ef1ed01d97",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-default",
+          "blob": "0c67c1fc8eaf55df6abb2b0fe7d2ce80f169bc69",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-write",
+          "blob": "63fa3c9add56f3793e6d755f006cd3568acf1f04",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "counted-dynamic",
+          "blob": "7c9ea9270d766612de0d502147e0df31b0dc3454",
+          "outcome": "unsupported-reject-no-artifact"
+        },
+        {
+          "id": "counted-dynamic-zero",
+          "blob": "4707b13d3daebe05ced967418ba120cf801e2d8c",
+          "outcome": "unsupported-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-dynamic-bool",
+          "blob": "36cd372a5385e34f2e3bd8dd936e4e0491052633",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-dynamic-unknown",
+          "blob": "0e61da7a98987ed5a182148538b35b8a890abf26",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "counted-mixed-future-alias",
+          "blob": "8f57de03c9fb44eb5594c99a7095f34b702a266a",
+          "outcome": "unsupported-reject-no-artifact"
+        },
+        {
+          "id": "counted-multi-channel-fair",
+          "blob": "4b9b79b9b8670f5b282d33e63b7a4b5691c2979a",
+          "outcome": "unsupported-reject-no-artifact"
+        },
+        {
+          "id": "counted-mixed-zero",
+          "blob": "458323db6019da434b97e5b966ee646411310acf",
+          "outcome": "unsupported-reject-no-artifact"
+        },
+        {
+          "id": "counted-distinct-alias-projection",
+          "blob": "5baca9bb9eb4b98500cab770888a45fb60bbf10d",
+          "outcome": "unsupported-reject-no-artifact"
+        }
+      ]
+    },
+    {
+      "backend": "realtime",
+      "head": "ca4cb3ba185742b6bd87c98e170fdefc60badb3b",
+      "tree": "a57013d3d1471fdaa3d63c43186014317f26d9d7",
+      "pr": 31,
+      "job": 140092249641,
+      "profile": "counted-static-single-v1-native-c",
+      "limits": [
+        "closed single-channel static topology; no external producer or scheduler",
+        "shared single-channel frontend; no WCET certification"
+      ],
+      "run": 45872787035,
+      "steps": 5,
+      "carrier": "attopl-co/atto-ci",
+      "command": "node scripts/verify-counted-static-single.mjs <exact corpus>",
+      "sharedFrontendBlob": "5721291bed13a51f27107f0fb2933d5845cc63a0",
+      "unsupportedFixtureIds": [
+        "counted-distinct-alias-projection",
+        "counted-dynamic",
+        "counted-dynamic-zero",
+        "counted-mixed-future-alias",
+        "counted-mixed-zero",
+        "counted-multi-channel-fair"
+      ],
+      "fixtures": [
+        {
+          "id": "counted-three",
+          "blob": "6531efa0689f2a5728b40a6412651e8143e45865",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-zero",
+          "blob": "42e49fc1eea64b31e86ec722e1457c1ab706a7e1",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-one",
+          "blob": "910062ebf96613d15a16ddb080abd89375d7709c",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-alias",
+          "blob": "324837078af3e7eeb9b619d0fb07142f0a0d6291",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "reject-counted-negative",
+          "blob": "e2ff6fdb406b8807b74fa15beaee10a7f9438e22",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-bool",
+          "blob": "4a52c22442bc8a9fe55eb95b23722595db32c97e",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-scalar",
+          "blob": "a2a2dd184237f17b5e8d455f498719ef1ed01d97",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-default",
+          "blob": "0c67c1fc8eaf55df6abb2b0fe7d2ce80f169bc69",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-write",
+          "blob": "63fa3c9add56f3793e6d755f006cd3568acf1f04",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "counted-dynamic",
+          "blob": "7c9ea9270d766612de0d502147e0df31b0dc3454",
+          "outcome": "unsupported-reject-no-artifact"
+        },
+        {
+          "id": "counted-dynamic-zero",
+          "blob": "4707b13d3daebe05ced967418ba120cf801e2d8c",
+          "outcome": "unsupported-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-dynamic-bool",
+          "blob": "36cd372a5385e34f2e3bd8dd936e4e0491052633",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-dynamic-unknown",
+          "blob": "0e61da7a98987ed5a182148538b35b8a890abf26",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "counted-mixed-future-alias",
+          "blob": "8f57de03c9fb44eb5594c99a7095f34b702a266a",
+          "outcome": "unsupported-reject-no-artifact"
+        },
+        {
+          "id": "counted-multi-channel-fair",
+          "blob": "4b9b79b9b8670f5b282d33e63b7a4b5691c2979a",
+          "outcome": "unsupported-reject-no-artifact"
+        },
+        {
+          "id": "counted-mixed-zero",
+          "blob": "458323db6019da434b97e5b966ee646411310acf",
+          "outcome": "unsupported-reject-no-artifact"
+        },
+        {
+          "id": "counted-distinct-alias-projection",
+          "blob": "5baca9bb9eb4b98500cab770888a45fb60bbf10d",
+          "outcome": "unsupported-reject-no-artifact"
+        }
+      ]
+    },
+    {
+      "backend": "cranelift",
+      "profile": "counted-singleton-proven-v1-native-object",
+      "head": "ecfccdc5a5a99f045aed6a32ae6e1085ce084778",
+      "tree": "b12a08c50ca6970fc32ecc6ca2fd4f2d1314c8c3",
+      "pr": 164,
+      "run": 45872586452,
+      "job": 140091546658,
+      "steps": 4,
+      "carrier": "attopl-co/atto-ci",
+      "command": "bash scripts/test-counted-static-ready-native.sh target/release/orescranelift <exact corpus>",
+      "limits": [
+        "checked singleton-proven count and static topology only",
+        "not arbitrary runtime-dependent count or actor scheduling",
+        "native objects; no JIT"
+      ],
+      "fixtures": [
+        {
+          "id": "counted-three",
+          "blob": "6531efa0689f2a5728b40a6412651e8143e45865",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-zero",
+          "blob": "42e49fc1eea64b31e86ec722e1457c1ab706a7e1",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-one",
+          "blob": "910062ebf96613d15a16ddb080abd89375d7709c",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-alias",
+          "blob": "324837078af3e7eeb9b619d0fb07142f0a0d6291",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "reject-counted-negative",
+          "blob": "e2ff6fdb406b8807b74fa15beaee10a7f9438e22",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-bool",
+          "blob": "4a52c22442bc8a9fe55eb95b23722595db32c97e",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-scalar",
+          "blob": "a2a2dd184237f17b5e8d455f498719ef1ed01d97",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-default",
+          "blob": "0c67c1fc8eaf55df6abb2b0fe7d2ce80f169bc69",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-write",
+          "blob": "63fa3c9add56f3793e6d755f006cd3568acf1f04",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "counted-dynamic",
+          "blob": "7c9ea9270d766612de0d502147e0df31b0dc3454",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-dynamic-zero",
+          "blob": "4707b13d3daebe05ced967418ba120cf801e2d8c",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "reject-counted-dynamic-bool",
+          "blob": "36cd372a5385e34f2e3bd8dd936e4e0491052633",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "reject-counted-dynamic-unknown",
+          "blob": "0e61da7a98987ed5a182148538b35b8a890abf26",
+          "outcome": "compiler-reject-no-artifact"
+        },
+        {
+          "id": "counted-mixed-future-alias",
+          "blob": "8f57de03c9fb44eb5594c99a7095f34b702a266a",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-multi-channel-fair",
+          "blob": "4b9b79b9b8670f5b282d33e63b7a4b5691c2979a",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-mixed-zero",
+          "blob": "458323db6019da434b97e5b966ee646411310acf",
+          "outcome": "guest-exit-42"
+        },
+        {
+          "id": "counted-distinct-alias-projection",
+          "blob": "5baca9bb9eb4b98500cab770888a45fb60bbf10d",
+          "outcome": "guest-exit-42"
+        }
+      ]
     }
   ],
   "notExecuted": [
