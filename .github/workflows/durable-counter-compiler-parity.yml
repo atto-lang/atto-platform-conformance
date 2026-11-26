@@ -35,8 +35,8 @@ jobs:
             test "$(git -C "$dir" rev-parse HEAD^{tree})" = "$tree"
             test -z "$(git -C "$dir" status --porcelain)"
           }
-          fetch_compiler rs 96664d383d8779e2f732648cee9e42aac71c08b1 425c3a1d3f5af829772d4309e447eda0953b3c9e
-          fetch_compiler js 6dabe21e9c506212edb8ddb0248083430b500957 f40977b90687fbbdf199e70bd49c1f3bdfcfc3b7
+          fetch_compiler rs 56a800ae26c26638c660c1777bf42e934e8ba55c 6852ecc22fd16c3050ee080cca0cd2851085d55d
+          fetch_compiler js a7be3f5afcc0ea404307b26b6fe33ae01e93eb5e 3b3d28fa264c5aec5ac4f4b97a748bb2531a9058
       - name: Build compiler and execute both generated guests
         run: |
           set -euo pipefail
