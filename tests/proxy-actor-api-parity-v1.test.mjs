@@ -171,7 +171,24 @@ test('destination scope hardening tracks all eleven profiles without promoting h
   }
   const hdl = scope.other_profiles.find(x => x.id === 'hdl');
   assert.equal(hdl.guest_status, 'UNSUPPORTED');
-  assert.equal(hdl.rejection_test_status, 'NOT_EXECUTED');
+  assert.equal(hdl.rejection_test_status, 'SCOPED_V8_PASSED');
+  assert.match(hdl.rejection_evidence.head, /^[0-9a-f]{40}$/);
+  assert.equal(hdl.rejection_evidence.scope, 'V8_HARNESS_NOT_NODE_CLI_OR_SYNTHESIS');
+  assert.ok(hdl.rejection_evidence.assertions > 0);
+  const java = scope.backends.find(x => x.id === 'java');
+  const receipt = java.scoped_ci_evidence;
+  assert.equal(receipt.status, 'PASSED');
+  assert.equal(receipt.source_head, java.head);
+  assert.match(receipt.source_root_tree, /^[0-9a-f]{40}$/);
+  assert.match(receipt.carrier_scoped_tree, /^[0-9a-f]{40}$/);
+  assert.notEqual(receipt.carrier_scoped_tree, receipt.source_root_tree);
+  assert.match(receipt.carrier_head, /^[0-9a-f]{40}$/);
+  assert.equal(receipt.verified_original_blobs, 3);
+  assert.ok(receipt.executed_job_steps >= 3);
+  assert.equal(receipt.passing_probes, 2);
+  assert.equal(receipt.scope, 'HOST_RUNTIME_SCOPED_EXACT_BLOBS_NOT_FULL_TREE');
+  assert.equal(java.full_tree_ci_status, 'NOT_EXECUTED');
+  assert.equal(java.guest_status, 'NOT_EXECUTED');
   for (const b of scope.other_profiles.filter(x => x.id !== 'hdl'))
     assert.equal(b.guest_status, 'NOT_EXECUTED');
 });
