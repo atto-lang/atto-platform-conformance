@@ -4,9 +4,9 @@
   "spec": "https://github.com/atto-lang/atto-spec/pull/281",
   "source_fixture": {
     "pr": "https://github.com/atto-lang/atto-serialization-and-validation/pull/100",
-    "head": "245f695731766561af03d1595ea30363f5d2e0a9",
+    "head": "9ec1f51e28591d1334725759e264a8640146a240",
     "path": "tests/generated_typed_codec_test.ores",
-    "scope": "Existing manually projected typed JSON fixture, not compiler-generated method support"
+    "scope": "Manually projected typed JSON and MessagePack fixture with shared metadata validation; not compiler-generated method support"
   },
   "profile": {
     "schema": "User example, fields displayName string and age signed integer in this fixed order",
@@ -88,7 +88,7 @@
   "messagepack_source_fixture": {
     "path": "tests/messagepack_test.ores",
     "scope": "dynamic MessagePack wire roundtrip and malformed frame tests; no typed constructor lowering",
-    "head": "245f695731766561af03d1595ea30363f5d2e0a9"
+    "head": "9ec1f51e28591d1334725759e264a8640146a240"
   },
   "messagepack_negative": [
     {
@@ -105,6 +105,26 @@
       "id": "truncated_value",
       "hex": "82ab646973706c61794e616d65a4416c6578a3616765",
       "expected": "reject"
+    },
+    {
+      "id": "missing_required",
+      "hex": "81a36167652a",
+      "expected": "typed reject"
+    },
+    {
+      "id": "wrong_age_type",
+      "hex": "82ab646973706c61794e616d65a4416c6578a3616765a23432",
+      "expected": "typed reject"
+    },
+    {
+      "id": "scalar_root",
+      "hex": "2a",
+      "expected": "typed reject"
     }
-  ]
+  ],
+  "typed_messagepack_source_fixture": {
+    "path": "tests/generated_typed_codec_test.ores",
+    "head": "9ec1f51e28591d1334725759e264a8640146a240",
+    "scope": "Shared metadata validation, concrete User constructor, typed errors; guest NOT_EXECUTED"
+  }
 }
