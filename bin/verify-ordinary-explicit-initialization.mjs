@@ -85,7 +85,7 @@ try{
      checkResult(run(join(native,'oreslang-app'),[],{timeout:10000}),String(c.expected_exit)+'\n');
     }else{
      const native=join(dir,'guest.native');let args,cmd;
-     if(target==='llvm'){cmd=extra||'clang';args=[artifact,'-o',native];}
+     if(target==='llvm'){cmd=extra||'clang';assert.ok(pin,'LLVM requires authenticated production string runtime path');const runtime=resolve(pin);args=[artifact,runtime,'-I'+resolve(runtime,'../../..'),'-pthread','-o',native];}
      else if(target==='forge'){cmd='c++';args=['-std=c++20','-I'+resolve(extra),artifact,'-o',native];}
      else{cmd='cc';const h=join(dir,'harness.c');fs.writeFileSync(h,'#include <stdint.h>\n#include <stdio.h>\nextern int32_t oreslang_scalar_entry(int64_t,int64_t,int64_t,int64_t,int64_t*);\nint main(void){int64_t out=0;int rc=oreslang_scalar_entry(0,0,0,0,&out);if(rc)return 1;printf("%lld\\n",(long long)out);return 0;}\n');args=[h,artifact,'-o',native];}
      const l=run(cmd,args,{timeout:60000});assert.equal(l.status,0,l.stderr);
