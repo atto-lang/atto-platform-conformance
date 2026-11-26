@@ -25,7 +25,11 @@ export function verifyEvidence(data=ledger,m=manifest){
         assert.equal(f.target.mode,'run');assert.equal(f.target.exitCode,42);
         assert.ok(!r.profile.startsWith('unsupported')&&!r.limits.includes('not counted guest'));
       }else if(e.outcome==='compiler-reject-no-artifact')assert.equal(f.target.mode,'reject');
-      else if(e.outcome==='unsupported-reject-no-artifact'){assert.equal(f.target.mode,'run');assert.ok(r.limits.includes('not counted guest'));}
+      else if(e.outcome==='profile-limited-reject-no-artifact'){
+        assert.equal(f.target.mode,'run');
+        assert.ok(!r.profile.startsWith('unsupported')&&!r.limits.includes('not counted guest'));
+        assert.ok(typeof e.limitation==='string'&&e.limitation.length>0&&r.limits.includes(e.limitation));
+      }else if(e.outcome==='unsupported-reject-no-artifact'){assert.equal(f.target.mode,'run');assert.ok(r.limits.includes('not counted guest'));}
       else assert.fail('unknown outcome');
     }
   }
