@@ -36,3 +36,5 @@ Mixed Future alias and multi-channel FAIR fixtures are prospective targets. The 
 Mixed literal zero requires lexical type checking without source evaluation, capture, waiter registration or producer consumption. The target fixture remains unverified for all eleven compilers until exact guest evidence is recorded.
 
 The distinct-alias projection fixture checks FAIR lexical ordering and different projections across repeated channel and Future arms. The retired Future alias must not contribute a second value. Prospective target cases must keep every backend expectation unverified until a separate execution receipt exists.
+
+The separate `counted-profile-evidence.json` ledger records observed exact fixture outcomes on proposed PR heads, with restricted compiler profile, source identity, real CI job and explicit limits. It is not a promotion of the prospective matrix or a merged-main/general scheduler claim. Run `node --test fixtures/select-source-v2/verify-counted-profile-evidence.test.mjs` to verify ledger integrity only. The self-hosted Stage-0 scalar seed has no general source CLI; its counted target remains not executed.
