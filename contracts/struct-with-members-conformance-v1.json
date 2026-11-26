@@ -1,0 +1,145 @@
+{
+  "schema": "atto.struct.with.members.conformance.v1",
+  "status": "TARGET_NOT_EXECUTED",
+  "normative_spec": "https://github.com/atto-lang/atto-spec/pull/280",
+  "required_gates": [
+    "parse",
+    "semantic",
+    "link",
+    "emit",
+    "guest_execute"
+  ],
+  "backend_status": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm-independent": "NOT_EXECUTED",
+    "rs-native": "NOT_EXECUTED",
+    "rs-browser-wasm": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED"
+  },
+  "cases": [
+    {
+      "id": "grouped-exact",
+      "expect": "accept",
+      "source": "type Point = struct {\n    int x;\n    int y;\n} with {\n\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mtd int • sum() {\n        return self.x + self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() : bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\npub fnc main(): int {\n    let p = Point(10, 20);\n    print(p.sum());\n    print(p.product());\n    print(p.is_origin());\n    return 0;\n}",
+      "expected_stdout": "30\n200\nfalse\n",
+      "expected_exit": 0,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "chained-equivalent",
+      "expect": "accept",
+      "source": "type Point = struct {\n    int x;\n    int y;\n} with constructor(int x, int y) {\n    self.x = x;\n    self.y = y;\n} with mtd int • sum() {\n    return self.x + self.y;\n} with mtd int <- product() {\n    return self.x * self.y;\n} with mtd is_origin() : bool {\n    return self.x == 0 && self.y == 0;\n}\npub fnc main(): int {\n    let p = Point(10, 20);\n    print(p.sum());\n    print(p.product());\n    print(p.is_origin());\n    return 0;\n}",
+      "expected_stdout": "30\n200\nfalse\n",
+      "expected_exit": 0,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "all-colon",
+      "expect": "accept",
+      "source": "type Point = struct {\n    int x;\n    int y;\n} with {\n\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mtd sum() : int {\n        return self.x + self.y;\n    }\n\n    mtd product() : int {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() : bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\npub fnc main(): int {\n    let p = Point(10, 20);\n    print(p.sum());\n    print(p.product());\n    print(p.is_origin());\n    return 0;\n}",
+      "expected_stdout": "30\n200\nfalse\n",
+      "expected_exit": 0,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "all-bullet",
+      "expect": "accept",
+      "source": "type Point = struct {\n    int x;\n    int y;\n} with {\n\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mtd int • sum() {\n        return self.x + self.y;\n    }\n\n    mtd int • product() {\n        return self.x * self.y;\n    }\n\n    mtd bool • is_origin() {\n        return self.x == 0 && self.y == 0;\n    }\n}\npub fnc main(): int {\n    let p = Point(10, 20);\n    print(p.sum());\n    print(p.product());\n    print(p.is_origin());\n    return 0;\n}",
+      "expected_stdout": "30\n200\nfalse\n",
+      "expected_exit": 0,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "all-left-arrow",
+      "expect": "accept",
+      "source": "type Point = struct {\n    int x;\n    int y;\n} with {\n\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mtd int <- sum() {\n        return self.x + self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd bool <- is_origin() {\n        return self.x == 0 && self.y == 0;\n    }\n}\npub fnc main(): int {\n    let p = Point(10, 20);\n    print(p.sum());\n    print(p.product());\n    print(p.is_origin());\n    return 0;\n}",
+      "expected_stdout": "30\n200\nfalse\n",
+      "expected_exit": 0,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "asterisk-rejected",
+      "expect": "reject",
+      "source": "type Point = struct {\n    int x;\n    int y;\n} with {\n\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mtd int • sum() {\n        return self.x + self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd bool * is_origin() {\n        return self.x == 0 && self.y == 0;\n    }\n}\npub fnc main(): int { return 0; }",
+      "diagnostic_category": "invalid callable header",
+      "no_artifact": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "duplicate-normalized-signature",
+      "expect": "reject",
+      "source": "type Point = struct {\n    int x;\n    int y;\n} with {\n\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mtd int • sum() {\n        return self.x + self.y;\n    }\n\n    mtd int <- sum() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() : bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\npub fnc main(): int { return 0; }",
+      "diagnostic_category": "duplicate nominal method",
+      "no_artifact": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "missing-initialization",
+      "expect": "reject",
+      "source": "type Point = struct {\n    int x;\n    int y;\n} with {\n\n    constructor(int x, int y) {\n        self.x = x;\n    }\n\n    mtd int • sum() {\n        return self.x + self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() : bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\npub fnc main(): int { return 0; }",
+      "diagnostic_category": "definite initialization",
+      "no_artifact": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "read-before-initialization",
+      "expect": "reject",
+      "source": "type Point = struct {\n    int x;\n    int y;\n} with {\n\n    constructor(int x, int y) {\n        self.x = self.y;\n        self.y = y;\n    }\n\n    mtd int • sum() {\n        return self.x + self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() : bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\npub fnc main(): int { return 0; }",
+      "diagnostic_category": "uninitialized field read",
+      "no_artifact": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "literal-constructor-bypass",
+      "expect": "reject",
+      "source": "type Point = struct {\n    int x;\n    int y;\n} with {\n\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mtd int • sum() {\n        return self.x + self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() : bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\npub fnc main(): int { let p = Point {x: 10, y: 20}; return 0; }",
+      "diagnostic_category": "constructor invariant bypass",
+      "no_artifact": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "equals-constructor-bypass",
+      "expect": "reject",
+      "source": "type Point = struct {\n    int x;\n    int y;\n} with {\n\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mtd int • sum() {\n        return self.x + self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() : bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\npub fnc main(): int { let p = Point(x=10, y=20); return 0; }",
+      "diagnostic_category": "constructor invariant bypass",
+      "no_artifact": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "wrong-constructor-arity",
+      "expect": "reject",
+      "source": "type Point = struct {\n    int x;\n    int y;\n} with {\n\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mtd int • sum() {\n        return self.x + self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() : bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\npub fnc main(): int { let p = Point(10); return 0; }",
+      "diagnostic_category": "no matching constructor",
+      "no_artifact": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "readonly-mutation",
+      "expect": "reject",
+      "source": "type Point = struct {\n    int x;\n    int y;\n} with {\n\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mtd int • sum() {\n        self.x = 0; return self.x + self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() : bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\npub fnc main(): int { return 0; }",
+      "diagnostic_category": "readonly receiver mutation",
+      "no_artifact": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "invalid-attachment-member",
+      "expect": "reject",
+      "source": "type Point = struct {\n    int x;\n    int y;\n} with {\n\n    print(42);\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mtd int • sum() {\n        return self.x + self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() : bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\npub fnc main(): int { return 0; }",
+      "diagnostic_category": "invalid declaration member",
+      "no_artifact": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "duplicate-out-of-line",
+      "expect": "reject",
+      "source": "type Point = struct {\n    int x;\n    int y;\n} with {\n\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mtd int • sum() {\n        return self.x + self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() : bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\nmtd (Point self) sum(): int { return 0; }\npub fnc main(): int { return 0; }",
+      "diagnostic_category": "duplicate nominal method",
+      "no_artifact": true,
+      "status": "NOT_EXECUTED"
+    }
+  ]
+}
