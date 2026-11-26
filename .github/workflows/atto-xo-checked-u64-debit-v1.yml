@@ -6,6 +6,7 @@ on:
       - 'tests/atto-xo-checked-u64-debit-v1.test.mjs'
       - 'tests/fixed-width-integer-oracle.test.mjs'
       - 'tests/checked-u64-cross-candidates.test.mjs'
+      - 'tests/checked-u64-target-matrix.test.mjs'
       - '.github/workflows/atto-xo-checked-u64-debit-v1.yml'
 permissions:
   contents: read
@@ -42,3 +43,26 @@ jobs:
           fi
           grep -F '7726e7093bb66b10b88757004473c6fa38d8deed' altered.log
           echo 'Candidate guest execution: NOT_EXECUTED (no source staging)'
+      - name: Target matrix fail-closed admission (no source staging)
+        shell: bash
+        run: |
+          set -euo pipefail
+          unset ATTO_U64_LLVM_SOURCE ATTO_U64_TARGET_REQUIRED
+          node --test tests/checked-u64-target-matrix.test.mjs > target-skip.log 2>&1
+          grep -F 'NOT_EXECUTED: exact compiler source unavailable' target-skip.log
+          if ATTO_U64_TARGET_REQUIRED=1 node --test tests/checked-u64-target-matrix.test.mjs > target-missing.log 2>&1; then
+            echo 'Missing target source unexpectedly passed'
+            exit 1
+          fi
+          grep -F 'ATTO_U64_LLVM_SOURCE required' target-missing.log
+          if ATTO_U64_TARGET_REQUIRED=typo node --test tests/checked-u64-target-matrix.test.mjs > target-mode.log 2>&1; then
+            echo 'Invalid target mode unexpectedly passed'
+            exit 1
+          fi
+          grep -F 'ATTO_U64_TARGET_REQUIRED must be 0 or 1' target-mode.log
+          if ATTO_U64_TARGET_REQUIRED=1 ATTO_U64_LLVM_SOURCE=tests/fixed-width-integer-oracle.test.mjs node --test tests/checked-u64-target-matrix.test.mjs > target-altered.log 2>&1; then
+            echo 'Altered target source unexpectedly passed'
+            exit 1
+          fi
+          grep -F '1d3e23affb2853f545912585fcb4f046592d4e25' target-altered.log
+          echo 'Target matrix guest execution: NOT_EXECUTED (no source staging)'
