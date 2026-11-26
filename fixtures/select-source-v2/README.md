@@ -26,3 +26,5 @@ fixtures cover those forms, result mismatches, generic arity, implicit await,
 missing result and illegal await effect. These are unexecuted target fixtures.
 
 Counted select target adds exact cardinality, ordered batch, zero, one, alias, and invalid count/type/default/write cases. All are unexecuted targets.
+
+`run-native-counted-admission.py --backend forge|cranelift --compiler /path/to/compiler` verifies the nine counted fixture hashes, executes each actual compiler and 48 isolated syntax probes, checks absence of IR and runs a scalar control. This proves denial only, never positive counted guest parity.
