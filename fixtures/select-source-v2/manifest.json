@@ -1603,6 +1603,96 @@
           "mode": "unverified"
         }
       }
+    },
+    {
+      "id": "counted-mixed-future-alias",
+      "path": "counted-mixed-future-alias.atto",
+      "gitBlobSha1": "8f57de03c9fb44eb5594c99a7095f34b702a266a",
+      "evidenceStatus": "not-executed",
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "unverified"
+        },
+        "net": {
+          "mode": "unverified"
+        },
+        "rs": {
+          "mode": "unverified"
+        },
+        "wasm": {
+          "mode": "unverified"
+        },
+        "js": {
+          "mode": "unverified"
+        },
+        "forge": {
+          "mode": "unverified"
+        },
+        "cranelift": {
+          "mode": "unverified"
+        },
+        "atto": {
+          "mode": "unverified"
+        },
+        "hdl": {
+          "mode": "unverified"
+        },
+        "realtime": {
+          "mode": "unverified"
+        }
+      },
+      "target": {
+        "mode": "run",
+        "exitCode": 42
+      }
+    },
+    {
+      "id": "counted-multi-channel-fair",
+      "path": "counted-multi-channel-fair.atto",
+      "gitBlobSha1": "4b9b79b9b8670f5b282d33e63b7a4b5691c2979a",
+      "evidenceStatus": "not-executed",
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "unverified"
+        },
+        "net": {
+          "mode": "unverified"
+        },
+        "rs": {
+          "mode": "unverified"
+        },
+        "wasm": {
+          "mode": "unverified"
+        },
+        "js": {
+          "mode": "unverified"
+        },
+        "forge": {
+          "mode": "unverified"
+        },
+        "cranelift": {
+          "mode": "unverified"
+        },
+        "atto": {
+          "mode": "unverified"
+        },
+        "hdl": {
+          "mode": "unverified"
+        },
+        "realtime": {
+          "mode": "unverified"
+        }
+      },
+      "target": {
+        "mode": "run",
+        "exitCode": 42
+      }
     }
   ]
 }
