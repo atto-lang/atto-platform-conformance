@@ -20,6 +20,15 @@ const pins = Object.freeze([
 ].map(row=>Object.freeze([row[0],row[1],Object.freeze(row[2])])));
 const blob = bytes => createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex');
 
+// Pin the serialized manifest as well as the parsed semantics. JSON.parse alone
+// silently accepts duplicate keys; other JSON consumers may interpret them differently.
+export function parsePinnedCheckedUnwrapManifest(bytes) {
+  assert.ok(bytes instanceof Uint8Array && bytes.length>0 && bytes.length<=131072,
+    'invalid manifest bytes');
+  assert.equal(blob(bytes),'e94694be7bd6f5ade1b5058262903616448fca86',
+    'manifest blob drift');
+  return JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
+}
 export function verifyCheckedUnwrapManifest(manifest, readFixture, fixtureNames) {
   assert.deepEqual(manifest, {
     format:'atto.checked-unwrap.v6-candidate', spec:'atto-lang/atto-spec#249',
@@ -49,7 +58,7 @@ function readRegular(name) {
   return bytes;
 }
 export function verifyCheckout() {
-  const manifest=JSON.parse(readRegular('manifest.json').toString('utf8'));
+  const manifest=parsePinnedCheckedUnwrapManifest(readRegular('manifest.json'));
   const names=readdirSync(root).filter(name=>name.endsWith('.atto'));
   return verifyCheckedUnwrapManifest(manifest,readRegular,names);
 }
