@@ -20,7 +20,7 @@ export function verify(root = dirname(fileURLToPath(import.meta.url))) {
   assert.equal(manifest.compilerEvidence, "not-executed");
   assert.equal(manifest.sourceExtension, ".atto");
   assert.deepEqual(manifest.backends, ["java-graalvm","llvm","net","rs","wasm","js","forge","cranelift","atto","hdl","realtime"]);
-  assert.equal(manifest.cases.length, 39);
+  assert.equal(manifest.cases.length, 40);
   const seenIds = new Set();
   const seenPaths = new Set();
   for (const c of manifest.cases) {
@@ -52,6 +52,10 @@ export function verify(root = dirname(fileURLToPath(import.meta.url))) {
       }
     }
     if (c.target !== undefined) {
+      for (const backend of manifest.backends) {
+        assert.equal(c.expected[backend].mode, "unverified",
+          "prospective target cannot assert backend execution: " + backend);
+      }
       onlyKeys(c.target, ["mode","exitCode"], "language target");
       assert(["run", "reject"].includes(c.target.mode));
       if (c.target.mode === "run") assert.equal(c.target.exitCode, 42);

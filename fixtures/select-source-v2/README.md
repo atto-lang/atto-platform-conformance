@@ -1,6 +1,6 @@
 # Static select source matrix v2 — all compiler targets
 
-39 pinned guest sources x 11 target repositories = 429 explicitly tracked cells.
+40 pinned guest sources x 11 target repositories = 440 explicitly tracked cells.
 The v1 directory remains unchanged. Existing expectations are carried forward
 only as historical prospective expectations; new cells are unverified.
 The `target` field records intended semantics of newly added sources separately
@@ -37,4 +37,6 @@ Mixed literal zero requires lexical type checking without source evaluation, cap
 
 The separate `counted-profile-evidence.json` ledger records observed exact fixture outcomes on proposed PR heads, with restricted compiler profile, source identity, real CI job and explicit limits. It is not a promotion of the prospective matrix or a merged-main/general scheduler claim. Run `node --test fixtures/select-source-v2/verify-counted-profile-evidence.test.mjs` to verify ledger integrity only. The self-hosted Stage-0 scalar seed has no general source CLI; its counted target remains not executed.
 
-The profile ledger now contains 82 observed fixture/profile cells across ten targets, including actual LLVM ready-only native guests, refreshed JS/.NET guest receipts and additional Rust, Wasm, HDL and Cranelift admission receipts. The prospective 429-cell matrix is unchanged. The self-hosted Atto compiler remains not executed for counted selection.
+The profile ledger now contains 82 observed fixture/profile cells across ten targets, including actual LLVM ready-only native guests, refreshed JS/.NET guest receipts and additional Rust, Wasm, HDL and Cranelift admission receipts. The prospective 440-cell matrix includes both mixed literal zero and distinct lexical projections. The self-hosted Atto compiler remains not executed for counted selection.
+
+The distinct-alias projection fixture tests FAIR lexical ordering with repeated channel and Future arms, preserving distinct arm projections after Future alias retirement. Prospective target cases remain unverified in the source-only matrix; execution receipts belong in the separate profile ledger.
