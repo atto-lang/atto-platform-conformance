@@ -30,6 +30,30 @@ class DeclarativeExportV1Corpus(unittest.TestCase):
         self.assertTrue(self.contract["rules"]["forward_reference"])
         self.assertEqual(self.contract["rules"]["package_scope_external_access"], "deny")
 
+    def test_export_visibility_semantic_oracles(self) -> None:
+        rules = self.contract["rules"]
+        self.assertNotIn("duplicate_export_same_name", rules)
+        self.assertEqual(rules["identical_resolved_export"], "accept_idempotent_one_binding")
+        for rule in ("conflicting_export_scope_or_target", "internal_export",
+                     "external_prototype_export", "explicit_private_export"):
+            self.assertEqual(rules[rule], "reject")
+        cases = {case["id"]: case for case in self.contract["cases"]}
+        positive = cases["public-identical-duplicate"]
+        self.assertEqual(positive["expect"], "accept")
+        self.assertEqual(positive["expected_binding_count"], 1)
+        source = (FIXTURES / positive["source"]).read_text(encoding="utf-8")
+        self.assertIn("export pub Foo;\nexport pub class Foo;", source)
+        for key, diagnostic in (
+            ("negative-duplicate", "conflicting_export_visibility"),
+            ("negative-internal-public", "conflicting_export_visibility"),
+            ("negative-internal-package", "conflicting_export_visibility"),
+            ("negative-external-prototype", "unbound_export"),
+        ):
+            self.assertEqual(cases[key]["expect"], "reject")
+            self.assertEqual(cases[key]["diagnostic"], diagnostic)
+        conflict = (FIXTURES / cases["negative-duplicate"]["source"]).read_text(encoding="utf-8")
+        self.assertIn("export pub Foo;\nexport pub[pkg] class Foo;", conflict)
+
     def test_unique_cases_and_exact_fixture_inventory(self) -> None:
         cases = self.contract["cases"]
         self.assertGreaterEqual(len(cases), 14)
@@ -59,7 +83,7 @@ class DeclarativeExportV1Corpus(unittest.TestCase):
                 else:
                     self.assertIn(
                         case["diagnostic"],
-                        {"unbound_export", "export_kind_mismatch", "duplicate_export",
+                        {"unbound_export", "export_kind_mismatch",
                          "invalid_scope", "export_not_file_root",
                          "conflicting_export_visibility"},
                     )
