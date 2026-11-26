@@ -183,6 +183,62 @@
         "E_NOALLOC",
         "E_NOCOPY"
       ]
+    },
+    {
+      "id": "annotated-buffer-6",
+      "kind": "syntax-and-proof-target",
+      "source": "@noalloc\n@nocopy\ndefine Buffer <- process(Buffer data) { return data; }\n",
+      "expect": "equivalent typed header; ownership proof independently required"
+    },
+    {
+      "id": "scalar-6",
+      "kind": "guest-positive",
+      "source": "@noalloc\n@nocopy\ndefine int <- process(int data) { return data; }\npub fnc main(): int { return process(42); }\n",
+      "exit": 42,
+      "metrics": {
+        "dynamicAllocations": 0,
+        "allocatedBytes": 0,
+        "payloadCopies": 0,
+        "copiedBytes": 0
+      }
+    },
+    {
+      "id": "nocopy-abbreviated-1",
+      "kind": "guest-positive-copy-only",
+      "source": "@nocopy\ndefine int <- process(int data) {\n    return data;\n}\npub fnc main(): int { return process(42); }\n",
+      "exit": 42,
+      "metrics": {
+        "payloadCopies": 0,
+        "copiedBytes": 0
+      }
+    },
+    {
+      "id": "annotated-buffer-7",
+      "kind": "syntax-and-proof-target",
+      "source": "@noalloc\n@nocopy\nBuffer <- process(Buffer data) { return data; }\n",
+      "expect": "equivalent typed header; ownership proof independently required"
+    },
+    {
+      "id": "scalar-7",
+      "kind": "guest-positive",
+      "source": "@noalloc\n@nocopy\nint <- process(int data) { return data; }\npub fnc main(): int { return process(42); }\n",
+      "exit": 42,
+      "metrics": {
+        "dynamicAllocations": 0,
+        "allocatedBytes": 0,
+        "payloadCopies": 0,
+        "copiedBytes": 0
+      }
+    },
+    {
+      "id": "nocopy-abbreviated-2",
+      "kind": "guest-positive-copy-only",
+      "source": "@nocopy\nint <- process(int data) {\n    return data;\n}\npub fnc main(): int { return process(42); }\n",
+      "exit": 42,
+      "metrics": {
+        "payloadCopies": 0,
+        "copiedBytes": 0
+      }
     }
   ],
   "evidence": {
