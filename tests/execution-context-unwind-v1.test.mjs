@@ -21,7 +21,7 @@ test('execution-context unwind registry enumerates all eleven active backends',(
 
 test('complete source-free positive/negative semantics without invented guest passes',()=>{
   const cases=registry.cases;
-  assert.ok(cases.length >= 33);
+  assert.ok(cases.length >= 37);
   assert.equal(registry.extended_spec_candidate,'https://github.com/atto-lang/atto-spec/pull/245');
   assert.equal(new Set(cases.map(x=>x.id)).size,cases.length);
   for(const x of cases){
@@ -42,7 +42,9 @@ test('complete source-free positive/negative semantics without invented guest pa
     'bare-await-cleanup','assignment-await-cleanup','susp-recover-cursor','callback-local-error-handled',
     'callback-error-panic','multiple-cleanup-panics','cancel-cleanup-panic','recover-error-panic',
     'nested-defer-scope','unsafe-borrow-suspension','nonsuspending-block-await','wrong-callback-arity',
-    'susp-cleanup-stale-wakeup','discarded-fallible-result'])
+    'susp-cleanup-stale-wakeup','discarded-fallible-result',
+    'scheduled-unwind-next-turn','scheduled-unwind-duplicate-completion',
+    'scheduled-recovery-cancel-race','scheduled-unwind-retirement-quiescence'])
     assert.ok(cases.some(c=>c.id===id),`missing ${id}`);
   assert.ok(cases.some(c=>c.group==='compile-reject'));
 });
@@ -70,5 +72,19 @@ test('candidate guest source blobs are exact and not execution receipts',()=>{
     assert.equal(blob,f.git_blob_sha);
     assert.ok(registry.cases.some(c=>c.id===f.case_id));
     assert.ok(['return','panic'].includes(f.expected.kind));
+  }
+});
+
+test('scheduled JS host receipts never certify scheduler unwind guest parity',()=>{
+  const h=registry.scheduled_js_host_candidate;
+  assert.equal(h.pr,'https://github.com/atto-lang/atto-source.js/pull/229');
+  for(const k of ['source_head','source_blob_sha','scheduler_blob_sha'])assert.match(h[k],/^[a-f0-9]{40}$/);
+  assert.equal(h.isolate_test_callbacks_passed,54);
+  assert.equal(h.guest_level_verification,'not_executed');
+  assert.match(h.limitation,/retirement/);
+  for(const id of ['scheduled-unwind-next-turn','scheduled-unwind-duplicate-completion','scheduled-recovery-cancel-race','scheduled-unwind-retirement-quiescence']) {
+    const x=registry.cases.find(c=>c.id===id);
+    assert.equal(x.overall_status,'not_executed');
+    assert.deepEqual(Object.values(x.backend_statuses),expected_backends.map(()=> 'not_executed'));
   }
 });

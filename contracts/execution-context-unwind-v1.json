@@ -846,6 +846,111 @@
         "atto-source.rs": "not_executed",
         "atto-source.wasm": "not_executed"
       }
+    },
+    {
+      "id": "scheduled-unwind-next-turn",
+      "group": "suspend",
+      "expected_trace": [
+        "cleanup_suspend",
+        "reactor_publish",
+        "no_inline_guest",
+        "scheduler_resume",
+        "cleanup_complete"
+      ],
+      "reason": "Reactor completion only admits a continuation; neither immediate settlement nor a host callback may execute a suspended cleanup outside the owning scheduler quantum.",
+      "overall_status": "not_executed",
+      "backend_statuses": {
+        "atto-source.atto": "not_executed",
+        "atto-source.cranelift": "not_executed",
+        "atto-source.forge": "not_executed",
+        "atto-source.hdl": "not_executed",
+        "atto-source.java": "not_executed",
+        "atto-source.js": "not_executed",
+        "atto-source.llvm": "not_executed",
+        "atto-source.net": "not_executed",
+        "atto-source.realtime": "not_executed",
+        "atto-source.rs": "not_executed",
+        "atto-source.wasm": "not_executed"
+      }
+    },
+    {
+      "id": "scheduled-unwind-duplicate-completion",
+      "group": "isolation",
+      "expected_trace": [
+        "cleanup_suspend",
+        "first_completion_admitted",
+        "duplicate_rejected",
+        "resume_once",
+        "cleanup_once"
+      ],
+      "reason": "A one-shot wakeup capability is consumed once; duplicate or foreign completion cannot execute cleanup or recovery twice or change the selected value.",
+      "overall_status": "not_executed",
+      "backend_statuses": {
+        "atto-source.atto": "not_executed",
+        "atto-source.cranelift": "not_executed",
+        "atto-source.forge": "not_executed",
+        "atto-source.hdl": "not_executed",
+        "atto-source.java": "not_executed",
+        "atto-source.js": "not_executed",
+        "atto-source.llvm": "not_executed",
+        "atto-source.net": "not_executed",
+        "atto-source.realtime": "not_executed",
+        "atto-source.rs": "not_executed",
+        "atto-source.wasm": "not_executed"
+      }
+    },
+    {
+      "id": "scheduled-recovery-cancel-race",
+      "group": "cancel",
+      "expected_trace": [
+        "recover_suspend",
+        "cancel_committed",
+        "completion_admitted",
+        "recovery_success_discarded",
+        "terminal_cancel"
+      ],
+      "reason": "Cancellation committed before recovery resumes dominates a successful recovery decision; the active callback must quiesce without reviving the cancelled task.",
+      "overall_status": "not_executed",
+      "backend_statuses": {
+        "atto-source.atto": "not_executed",
+        "atto-source.cranelift": "not_executed",
+        "atto-source.forge": "not_executed",
+        "atto-source.hdl": "not_executed",
+        "atto-source.java": "not_executed",
+        "atto-source.js": "not_executed",
+        "atto-source.llvm": "not_executed",
+        "atto-source.net": "not_executed",
+        "atto-source.realtime": "not_executed",
+        "atto-source.rs": "not_executed",
+        "atto-source.wasm": "not_executed"
+      }
+    },
+    {
+      "id": "scheduled-unwind-retirement-quiescence",
+      "group": "isolation",
+      "expected_trace": [
+        "cleanup_suspend",
+        "stop_requested",
+        "retirement_blocked",
+        "cleanup_quiesced",
+        "physical_retirement",
+        "old_completion_rejected"
+      ],
+      "reason": "STOP or generation advance must not reclaim the logical context or physical storage until all active unwind callbacks and execution leases quiesce; stale completions cannot touch restarted actors.",
+      "overall_status": "not_executed",
+      "backend_statuses": {
+        "atto-source.atto": "not_executed",
+        "atto-source.cranelift": "not_executed",
+        "atto-source.forge": "not_executed",
+        "atto-source.hdl": "not_executed",
+        "atto-source.java": "not_executed",
+        "atto-source.js": "not_executed",
+        "atto-source.llvm": "not_executed",
+        "atto-source.net": "not_executed",
+        "atto-source.realtime": "not_executed",
+        "atto-source.rs": "not_executed",
+        "atto-source.wasm": "not_executed"
+      }
     }
   ],
   "extended_spec_candidate": "https://github.com/atto-lang/atto-spec/pull/245",
@@ -891,5 +996,14 @@
       }
     }
   ],
-  "candidate_guest_note": "Source candidates only; mutable sync-task capture and exception syntax must be admitted by the actual compiler. Expected outcomes are not observed results. Remaining cases require source fixtures and real compiler adapters."
+  "candidate_guest_note": "Source candidates only; mutable sync-task capture and exception syntax must be admitted by the actual compiler. Expected outcomes are not observed results. Remaining cases require source fixtures and real compiler adapters.",
+  "scheduled_js_host_candidate": {
+    "pr": "https://github.com/atto-lang/atto-source.js/pull/229",
+    "source_head": "96bf0a442b9e3c796645bfeebe2475d1d040db24",
+    "source_blob_sha": "4a965a9f3c73953fc53a308b2b3449ee1dd9d153",
+    "scheduler_blob_sha": "cdd1e97f07c0ab44f39aa94488e82bc879643915",
+    "isolate_test_callbacks_passed": 54,
+    "guest_level_verification": "not_executed",
+    "limitation": "Host reference tests only. Actor retirement coordinator, compiler lowering and generated ESM guest execution remain unverified. In particular forced early retirement leaves unwind busy; this is not a PASS for retirement quiescence."
+  }
 }
