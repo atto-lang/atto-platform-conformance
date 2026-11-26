@@ -108,6 +108,17 @@
       "job": 139625010729,
       "executed": "three shared state fixtures rejected in run/IR modes, scalar execution control passed",
       "scope": "REJECT_ONLY; no feature parity"
+    },
+    {
+      "repo": "atto-lang/atto-source.js",
+      "pr": 166,
+      "head": "c86253de781e759cbfecc88fd896aab3aa66074a",
+      "tree": "a31bb68414b0046f35483e079d81c325e7a22fbb",
+      "runs": [
+        45736127049
+      ],
+      "executed": "25/25 selected regression tests; three shared state sources rejected across five compiler APIs; actual scalar ESM controls",
+      "scope": "REJECT_ONLY; no state feature parity"
     }
   ]
 }
