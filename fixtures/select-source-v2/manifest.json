@@ -1695,6 +1695,51 @@
       }
     },
     {
+      "id": "counted-mixed-zero",
+      "path": "counted-mixed-zero.atto",
+      "gitBlobSha1": "458323db6019da434b97e5b966ee646411310acf",
+      "evidenceStatus": "not-executed",
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "unverified"
+        },
+        "net": {
+          "mode": "unverified"
+        },
+        "rs": {
+          "mode": "unverified"
+        },
+        "wasm": {
+          "mode": "unverified"
+        },
+        "js": {
+          "mode": "unverified"
+        },
+        "forge": {
+          "mode": "unverified"
+        },
+        "cranelift": {
+          "mode": "unverified"
+        },
+        "atto": {
+          "mode": "unverified"
+        },
+        "hdl": {
+          "mode": "unverified"
+        },
+        "realtime": {
+          "mode": "unverified"
+        }
+      },
+      "target": {
+        "mode": "run",
+        "exitCode": 42
+      }
+    },
+    {
       "id": "counted-distinct-alias-projection",
       "path": "counted-distinct-alias-projection.atto",
       "gitBlobSha1": "5baca9bb9eb4b98500cab770888a45fb60bbf10d",

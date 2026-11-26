@@ -1,6 +1,6 @@
 # Static select source matrix v2 — all compiler targets
 
-39 pinned guest sources x 11 target repositories = 429 explicitly tracked cells.
+40 pinned guest sources x 11 target repositories = 440 explicitly tracked cells.
 The v1 directory remains unchanged. Existing expectations are carried forward
 only as historical prospective expectations; new cells are unverified.
 The `target` field records intended semantics of newly added sources separately
@@ -32,5 +32,7 @@ Counted select target adds exact cardinality, ordered batch, zero, one, alias, a
 Dynamic counted fixtures cover caller snapshot, zero count, non-int count and unresolved count. They are prospective targets, not execution receipts. Runtime invalid integer values require a separate trap-mode contract; they are not compile rejection targets.
 
 Mixed Future alias and multi-channel FAIR fixtures are prospective targets. The mixed case requires one Future contribution across aliases; the FAIR case requires lexical arm projections, persistent rotation and no over-consumption. They must be compiled and executed before any positive backend receipt is recorded. The two new cases have unverified expectations for all eleven targets.
+
+Mixed literal zero requires lexical type checking without source evaluation, capture, waiter registration or producer consumption. The target fixture remains unverified for all eleven compilers until exact guest evidence is recorded.
 
 The distinct-alias projection fixture checks FAIR lexical ordering and different projections across repeated channel and Future arms. The retired Future alias must not contribute a second value. Prospective target cases must keep every backend expectation unverified until a separate execution receipt exists.
