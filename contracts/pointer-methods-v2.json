@@ -1,0 +1,449 @@
+{
+  "schema": "atto.pointer-methods.v2.target",
+  "status": "TARGET_ONLY_NOT_EXECUTED",
+  "spec": "https://github.com/atto-lang/atto-spec/pull/259",
+  "operations": [
+    {
+      "name": "alloc",
+      "authority": "none",
+      "result": "own"
+    },
+    {
+      "name": "alloc_value",
+      "authority": "none",
+      "result": "own"
+    },
+    {
+      "name": "len",
+      "authority": "read",
+      "result": "value"
+    },
+    {
+      "name": "size_bytes",
+      "authority": "read",
+      "result": "value"
+    },
+    {
+      "name": "is_empty",
+      "authority": "read",
+      "result": "value"
+    },
+    {
+      "name": "read",
+      "authority": "read",
+      "result": "copy"
+    },
+    {
+      "name": "write",
+      "authority": "write",
+      "result": "void"
+    },
+    {
+      "name": "read_at",
+      "authority": "read",
+      "result": "copy"
+    },
+    {
+      "name": "write_at",
+      "authority": "write",
+      "result": "void"
+    },
+    {
+      "name": "replace_at",
+      "authority": "own",
+      "result": "move"
+    },
+    {
+      "name": "borrow_at",
+      "authority": "read",
+      "result": "loan_read"
+    },
+    {
+      "name": "borrow_mut_at",
+      "authority": "write",
+      "result": "loan_write"
+    },
+    {
+      "name": "take_at",
+      "authority": "own",
+      "result": "move"
+    },
+    {
+      "name": "slice",
+      "authority": "read",
+      "result": "view_read"
+    },
+    {
+      "name": "slice_mut",
+      "authority": "write",
+      "result": "view_write"
+    },
+    {
+      "name": "fill",
+      "authority": "write",
+      "result": "void"
+    },
+    {
+      "name": "copy_from",
+      "authority": "write",
+      "result": "void"
+    },
+    {
+      "name": "swap_at",
+      "authority": "write",
+      "result": "void"
+    },
+    {
+      "name": "same_location",
+      "authority": "read",
+      "result": "value"
+    },
+    {
+      "name": "close",
+      "authority": "own",
+      "result": "consume"
+    }
+  ],
+  "cases": [
+    {
+      "id": "PM-001",
+      "description": "singleton lifecycle",
+      "backend_status": {
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PM-002",
+      "description": "indexed initialized storage and metadata",
+      "backend_status": {
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PM-003",
+      "description": "copy swap replace",
+      "backend_status": {
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PM-004",
+      "description": "noncopy move and reinitialize",
+      "backend_status": {
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PM-005",
+      "description": "readonly nested views",
+      "backend_status": {
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PM-006",
+      "description": "exclusive view and disjoint ranges",
+      "backend_status": {
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PM-007",
+      "description": "scalar mutable loan",
+      "backend_status": {
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PM-008",
+      "description": "nested pointer loan",
+      "backend_status": {
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PM-009",
+      "description": "checked identity",
+      "backend_status": {
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PM-010",
+      "description": "all-path cleanup",
+      "backend_status": {
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PM-011",
+      "description": "unary reject and binary preserve",
+      "backend_status": {
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PM-012",
+      "description": "authority and alias rejection",
+      "backend_status": {
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PM-013",
+      "description": "lifetime and domain rejection",
+      "backend_status": {
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PM-014",
+      "description": "noncopy and initialization rejection",
+      "backend_status": {
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PM-015",
+      "description": "dynamic checked failures",
+      "backend_status": {
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PM-016",
+      "description": "copy overlap and failure preservation",
+      "backend_status": {
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PM-017",
+      "description": "partial-init cleanup",
+      "backend_status": {
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PM-018",
+      "description": "target-specific FFI atomic device admission",
+      "backend_status": {
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PM-019",
+      "description": "no implicit capability duplication",
+      "backend_status": {
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PM-020",
+      "description": "native and Wasm compiled evidence",
+      "backend_status": {
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED"
+      }
+    }
+  ]
+}
