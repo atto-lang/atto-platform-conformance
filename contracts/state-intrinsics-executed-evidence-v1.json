@@ -1,0 +1,76 @@
+{
+  "schema": "atto.state-intrinsics-executed-evidence.v1",
+  "scope": "restricted profiles only, no full cross-backend certification",
+  "records": [
+    {
+      "repo": "atto-lang/atto-source.rs",
+      "pr": 599,
+      "head": "4b389ecca77e8b87be605a01d7336eacf0d7a33e",
+      "tree": "c05e4b8368453023a67a6bf673900506b21c3ca1",
+      "runs": [
+        45732185328
+      ],
+      "executed": "Scalar snapshot and write expression guest traces; 626/627 conformance",
+      "blocker": "removed-operator/^"
+    },
+    {
+      "repo": "atto-lang/atto-source.java",
+      "pr": 1891,
+      "head": "665cd65f65557b3e1a0859d47d4f4fd08b34e759",
+      "tree": "d3c2136eae93eae1746ac33d3343f88d9befddc8",
+      "runs": [
+        45732717872,
+        45732890024
+      ],
+      "executed": "7/7 restricted protected scalar MIR; main control reproduced three baseline failures",
+      "blocker": "general guest syntax, Native Image, broader suite"
+    },
+    {
+      "repo": "atto-lang/atto-source.net",
+      "pr": 278,
+      "head": "96dc06d5f6b17c4b63161c9ecd2b56fb197c300b",
+      "tree": "6177484ef9707a1cb1e7180b02b6932c53e0c354",
+      "runs": [
+        45733028543,
+        45733649101
+      ],
+      "executed": "Four aliases compile to identical generated actor and root source; alias-generated NativeAOT guest stdout 1|3|6|10",
+      "blocker": "full suite checked integer division; general state containers"
+    },
+    {
+      "repo": "atto-lang/atto-source.llvm",
+      "pr": 920,
+      "head": "de5b83f727a4f9cb295e04f2aa553a6f9a45b72b",
+      "tree": "771f30dbf1951819616fb894fb9bd59c3c70a894",
+      "runs": [
+        45733564525
+      ],
+      "executed": "Five native scalar actor guest variants and six no-artifact negative variants",
+      "blocker": "general state containers, tuples, concurrent leases"
+    },
+    {
+      "repo": "atto-lang/atto-source.wasm",
+      "pr": 307,
+      "head": "b4c04897eea659c50e69e1680f11aff328e49086",
+      "tree": "3ee0c6788c4e61519e5204c6621898ac8390aea6",
+      "compilerHead": "4b389ecca77e8b87be605a01d7336eacf0d7a33e",
+      "compilerTree": "c05e4b8368453023a67a6bf673900506b21c3ca1",
+      "compilerSha256": "bedc2413529dc635eb0dc2ef761cea4820defaaa211f2479228ce4dacdf91656",
+      "runs": [
+        45734149992
+      ],
+      "executed": "3 exact positive guests, 7 exact negative fixtures, fatal overflow unwind; browser-compiled actual Wasm",
+      "blocker": "opt-in scalar runner only; general tenant actor profile and recoverable trap not certified"
+    }
+  ],
+  "carrier": "https://github.com/canonical-cloud-test/monorepo-submodules-e2e/actions/runs/",
+  "remaining": [
+    "atto-source.forge",
+    "atto-source.cranelift",
+    "atto-source.js",
+    "atto-source.atto",
+    "atto-source.hdl",
+    "atto-source.realtime"
+  ],
+  "promotion": "Recheck current heads, full exact applicable corpus, independent review, integration tree. Do not promote based on this historical record alone."
+}
