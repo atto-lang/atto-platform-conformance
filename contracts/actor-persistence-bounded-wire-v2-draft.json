@@ -1,0 +1,79 @@
+{
+  "schema": "atto.actor.bounded-wire.v2.draft",
+  "status": "DRAFT_PROFILE_NOT_ACCEPTED_LANGUAGE_ABI",
+  "version": 2,
+  "endian": "little",
+  "hash": "FNV-1a-64 unsigned wrap, non-cryptographic; not authentication",
+  "schema_bytes": "ASCII('atto.actor.state.schema.v2') || 00 || le32(actor byte length) || actor ASCII || repeat(le32(field byte length) || field ASCII || tag)",
+  "snapshot_bytes": "ASCII('ATTOST02') || version=2 || le64(schema fingerprint) || le16(field count) || repeat(tag || value) || le64(FNV64(all preceding bytes))",
+  "tags": {
+    "int": {
+      "tag": 1,
+      "value": "signed i64 little endian two's complement"
+    },
+    "bool": {
+      "tag": 2,
+      "value": "one byte 0 or 1"
+    },
+    "string": {
+      "tag": 3,
+      "value": "le32(length in bytes) || strict UTF-8 Unicode scalar sequence; preserve BOM, NUL and normalization distinctions"
+    },
+    "bytes": {
+      "tag": 4,
+      "value": "le32(length in bytes) || opaque bytes"
+    }
+  },
+  "limits": {
+    "max_fields": 256,
+    "max_field_bytes": 16384,
+    "max_snapshot_bytes": 65536,
+    "identifier": "ASCII [A-Za-z_][A-Za-z_0-9]{0,127}, unique field names",
+    "decode": "validate version, full schema, all tags and lengths, canonical boolean, strict UTF-8, exact trailing boundary and checksum before publishing values",
+    "ownership": "owned data copies; no shared mutable storage",
+    "migration": "no implicit v1/v2 reinterpretation; explicit authenticated migration required"
+  },
+  "vector": {
+    "actor": "Ledger",
+    "fields": [
+      {
+        "name": "count",
+        "type": "int",
+        "value": "-9223372036854775808"
+      },
+      {
+        "name": "open",
+        "type": "bool",
+        "value": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "utf8_hex": "4100c3a9f09f9880"
+      },
+      {
+        "name": "payload",
+        "type": "bytes",
+        "value_hex": "00ff80"
+      }
+    ],
+    "schema_id_hex": "db14dea8243c195b",
+    "snapshot_hex": "4154544f53543032025b193c24a8de14db0400010000000000000080020103080000004100c3a9f09f9880040300000000ff8074c4cc420e041ac0",
+    "byte_length": 59
+  },
+  "evidence": {
+    "native_host": "EXACT_COMPONENT_AND_ALTERNATE_CI_EXECUTED",
+    "js_manifest_emitter": "EXACT_COMPONENT_AND_ALTERNATE_CI_EXECUTED",
+    "rs": "NOT_IMPLEMENTED_V2",
+    "java": "LOCAL_EXACT_COMPONENT_JVM_MANIFEST_EMITTER_EXECUTED_NATIVE_IMAGE_PENDING",
+    "llvm": "NOT_IMPLEMENTED_V2",
+    "wasm": "NOT_IMPLEMENTED_V2",
+    "forge": "NOT_IMPLEMENTED_V2",
+    "net": "NOT_IMPLEMENTED_V2",
+    "cranelift": "NOT_IMPLEMENTED_V2",
+    "realtime": "NOT_AUDITED",
+    "hdl": "OS_DISK_PERSISTENCE_NOT_APPLICABLE",
+    "normal_actor_source_lowering": "NOT_EXECUTED",
+    "production_broker": "NOT_EXECUTED"
+  }
+}

@@ -1,0 +1,33 @@
+name: Checked unwrap v6 source integrity (NOT guest execution)
+on:
+  pull_request:
+    paths:
+      - 'fixtures/option-result-trap/v6/**'
+      - 'bin/verify-checked-unwrap-v6.mjs'
+      - 'tests/checked-unwrap-v6-integrity.test.mjs'
+      - '.github/workflows/checked-unwrap-v6-source.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  integrity:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Exact source head and tree
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          test -z "$(git status --porcelain --untracked-files=all)"
+          git rev-parse HEAD^{tree}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: |
+          node bin/verify-checked-unwrap-v6.mjs
+          node --test tests/checked-unwrap-v6-integrity.test.mjs

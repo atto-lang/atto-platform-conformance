@@ -1,0 +1,176 @@
+{
+  "schema": "atto-default-allocation-copy-parity-v1",
+  "status": "TARGET_NOT_EXECUTED",
+  "tracking": "https://github.com/atto-lang/atto-platform-conformance/issues/669",
+  "backendProfiles": [
+    {
+      "repo": "atto-lang/atto-source.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.cranelift",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.forge",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.hdl",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.java",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.js",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.llvm",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.net",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.realtime",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.rs",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "repo": "atto-lang/atto-source.wasm",
+      "status": "NOT_EXECUTED"
+    }
+  ],
+  "cases": [
+    {
+      "id": "signature-1",
+      "source": "define class Buffer as pub let int value = 42; end\ndefine fnc Buffer • process(Buffer data) { return data; }\npub fnc main(): int { let Buffer a = new Buffer(); let Buffer b = process(a); return b.value; }\n",
+      "expect": {
+        "kind": "execute",
+        "exit": 42
+      },
+      "target": {
+        "scope": "guest main after initialization",
+        "dynamicAllocations": 0,
+        "payloadCopies": 0
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "signature-2",
+      "source": "define class Buffer as pub let int value = 42; end\ndefine fnc Buffer <- process(Buffer data) { return data; }\npub fnc main(): int { let Buffer a = new Buffer(); let Buffer b = process(a); return b.value; }\n",
+      "expect": {
+        "kind": "execute",
+        "exit": 42
+      },
+      "target": {
+        "scope": "guest main after initialization",
+        "dynamicAllocations": 0,
+        "payloadCopies": 0
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "signature-3",
+      "source": "define class Buffer as pub let int value = 42; end\ndefine fnc process(Buffer data) -> Buffer { return data; }\npub fnc main(): int { let Buffer a = new Buffer(); let Buffer b = process(a); return b.value; }\n",
+      "expect": {
+        "kind": "execute",
+        "exit": 42
+      },
+      "target": {
+        "scope": "guest main after initialization",
+        "dynamicAllocations": 0,
+        "payloadCopies": 0
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "signature-4",
+      "source": "define class Buffer as pub let int value = 42; end\ndefine fnc process(Buffer data): Buffer { return data; }\npub fnc main(): int { let Buffer a = new Buffer(); let Buffer b = process(a); return b.value; }\n",
+      "expect": {
+        "kind": "execute",
+        "exit": 42
+      },
+      "target": {
+        "scope": "guest main after initialization",
+        "dynamicAllocations": 0,
+        "payloadCopies": 0
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "signature-5",
+      "source": "define class Buffer as pub let int value = 42; end\ndefine fnc process(Buffer data) : Buffer -> { return data; }\npub fnc main(): int { let Buffer a = new Buffer(); let Buffer b = process(a); return b.value; }\n",
+      "expect": {
+        "kind": "execute",
+        "exit": 42
+      },
+      "target": {
+        "scope": "guest main after initialization",
+        "dynamicAllocations": 0,
+        "payloadCopies": 0
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "independent-mutable-copy",
+      "source": "define class Buffer as pub let int value = 42; end\npub fnc main(): int { let mut Buffer a = new Buffer(); let mut Buffer b = copy! a; b.value = 99; return a.value; }\n",
+      "expect": {
+        "kind": "execute",
+        "exit": 42
+      },
+      "target": {
+        "preserveIndependentMutableState": true
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "non-escaping-object",
+      "source": "define class Buffer as pub let int value = 42; end\npub fnc main(): int { let Buffer a = new Buffer(); return a.value; }\n",
+      "expect": {
+        "kind": "execute",
+        "exit": 42
+      },
+      "target": {
+        "scope": "guest main after initialization",
+        "dynamicAllocations": 0
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "move-use-after-transfer",
+      "source": "define class Buffer as pub let int value = 42; end\npub fnc main(): int { let Buffer a = new Buffer(); let Buffer b = move! a; return a.value; }\n",
+      "expect": {
+        "kind": "semantic_reject",
+        "diagnostic": "E_MOVED"
+      },
+      "target": {
+        "rejectBeforeCodegen": true
+      },
+      "status": "NOT_EXECUTED"
+    }
+  ],
+  "evidencePolicy": {
+    "defaultMode": "no optimization opt-in or JIT required",
+    "referenceMode": "optimization disabled, equivalent observable behavior",
+    "measurement": "guest dynamic allocation events, allocated bytes, payload copy events and copied bytes; measure inside declared scope, report runtime and host separately; do not infer zero from missing counters",
+    "required": [
+      "exact source tree SHA",
+      "compiler binary digest",
+      "executed nonempty CI steps",
+      "compiler-emitted guest run or semantic rejection",
+      "default and reference behavior comparison where supported",
+      "allocation and copy counters or backend-appropriate static machine-code proof",
+      "independent review"
+    ],
+    "unsupported": "NOT_EXECUTED or UNSUPPORTED; never PASS",
+    "hdl": "Use documented synthesis-specific storage evidence; do not equate synthesis with dynamic runtime counters."
+  }
+}
