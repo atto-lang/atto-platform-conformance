@@ -21,7 +21,7 @@ test('execution-context unwind registry enumerates all eleven active backends',(
 
 test('complete source-free positive/negative semantics without invented guest passes',()=>{
   const cases=registry.cases;
-  assert.ok(cases.length >= 37);
+  assert.ok(cases.length >= 40);
   assert.equal(registry.extended_spec_candidate,'https://github.com/atto-lang/atto-spec/pull/245');
   assert.equal(new Set(cases.map(x=>x.id)).size,cases.length);
   for(const x of cases){
@@ -44,7 +44,8 @@ test('complete source-free positive/negative semantics without invented guest pa
     'nested-defer-scope','unsafe-borrow-suspension','nonsuspending-block-await','wrong-callback-arity',
     'susp-cleanup-stale-wakeup','discarded-fallible-result',
     'scheduled-unwind-next-turn','scheduled-unwind-duplicate-completion',
-    'scheduled-recovery-cancel-race','scheduled-unwind-retirement-quiescence'])
+    'scheduled-recovery-cancel-race','scheduled-unwind-retirement-quiescence',
+    'pipeline-defer-registration','pipeline-recover-registration','pipeline-arity-rejection'])
     assert.ok(cases.some(c=>c.id===id),`missing ${id}`);
   assert.ok(cases.some(c=>c.group==='compile-reject'));
 });
@@ -63,15 +64,17 @@ test('local JS host model is explicitly segregated from transpiled guest evidenc
 
 test('candidate guest source blobs are exact and not execution receipts',()=>{
   const fixtures=registry.candidate_guest_fixtures;
-  assert.equal(fixtures.length,4);
-  assert.equal(new Set(fixtures.map(f=>f.path)).size,4);
+  assert.equal(fixtures.length,7);
+  assert.equal(new Set(fixtures.map(f=>f.path)).size,fixtures.length);
   for(const f of fixtures){
     assert.match(f.path,/^fixtures\/execution-context-unwind-v1\/[a-z-]+\.atto$/);
     const b=readFileSync(new URL('../'+f.path,import.meta.url));
     const blob=createHash('sha1').update('blob '+b.length+'\0').update(b).digest('hex');
     assert.equal(blob,f.git_blob_sha);
     assert.ok(registry.cases.some(c=>c.id===f.case_id));
-    assert.ok(['return','panic'].includes(f.expected.kind));
+    assert.ok(['return','panic','compile-reject'].includes(f.expected.kind));
+    if (f.expected.kind==='compile-reject') assert.equal(registry.cases.find(c=>c.id===f.case_id).group,'compile-reject');
+    if (typeof f.expected.stdout==='string') assert.deepEqual(f.expected.stdout.trimEnd().split('\n'),registry.cases.find(c=>c.id===f.case_id).expected_trace);
   }
 });
 
