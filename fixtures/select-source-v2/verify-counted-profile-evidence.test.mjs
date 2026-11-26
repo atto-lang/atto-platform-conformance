@@ -10,7 +10,7 @@ test('a negative fixture cannot be promoted to a successful guest',()=>{const x=
 
 test('different exact receipts may cover disjoint cells of one profile; duplicate cells reject',()=>{const x=data();const duplicate=structuredClone(x.records.at(-1));duplicate.run+=1;duplicate.job+=1;x.records.push(duplicate);assert.throws(()=>verifyEvidence(x));});
 
-test('shared implementation pins required',()=>{const x=data();delete x.records.find(r=>r.profile==='counted-ready-v1-shared-cpp-native').sharedImplementation;assert.throws(()=>verifyEvidence(x));const y=data();y.records.find(r=>r.profile==='counted-ready-v1-chrome-dedicated-worker').compilerTree='0'.repeat(40);assert.throws(()=>verifyEvidence(y));});
+test('shared implementation pins required',()=>{const x=data();delete x.records.find(r=>r.profile==='counted-ready-v1-shared-cpp-native').sharedImplementation;assert.throws(()=>verifyEvidence(x));const y=data();y.records.find(r=>r.profile==='counted-ready-v1-chrome-worker-direct-wasm').compilerTree='0'.repeat(40);assert.throws(()=>verifyEvidence(y));});
 test('unsupported dynamic target cannot be promoted',()=>{const x=data();x.records.find(r=>r.profile==='counted-static-ready-v1-native-object').fixtures.find(f=>f.id==='counted-dynamic').outcome='guest-exit-42';assert.throws(()=>verifyEvidence(x));});
 
 test('bounded RTL and C profiles cannot promote unsupported fixtures or lose shared frontend pin',()=>{const x=data();x.records.find(r=>r.profile==='counted-static-single-v1-synthesized-rtl').fixtures.find(f=>f.id==='counted-dynamic').outcome='guest-exit-42';assert.throws(()=>verifyEvidence(x));const y=data();y.records.find(r=>r.profile==='counted-static-single-v1-native-c').sharedFrontendBlob='0'.repeat(40);assert.throws(()=>verifyEvidence(y));});

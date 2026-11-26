@@ -1,0 +1,17 @@
+fnc downstream_failure(): int throws(Error) {
+    throw! new Error("downstream");
+}
+
+fnc choose(Option<int> x): int throws(Error) {
+    return trap! x.unwrap() |> match<int> over
+        on Ok(n): int -> n,
+        on Err(): int -> downstream_failure(),
+    end;
+}
+
+pub fnc main(): int {
+    guard choose(Some(7)) eq 7 { return 1; }
+    val caught = trap! choose(None);
+    guard caught.is_err() { return 2; }
+    return 42;
+}

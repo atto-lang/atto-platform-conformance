@@ -1,0 +1,16 @@
+fnc handle_error(Error e): int throws() {
+    return 42;
+}
+
+fnc choose(Option<int> x): int throws() {
+    return trap! x.unwrap() |> match<int> over
+        on Ok(n): int -> n,
+        on Err(e): int -> handle_error(e),
+    end;
+}
+
+pub fnc main(): int throws() {
+    guard choose(Some(7)) eq 7 { return 1; }
+    guard choose(None) eq 42 { return 2; }
+    return 42;
+}
