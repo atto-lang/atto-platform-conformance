@@ -56,6 +56,8 @@ jobs:
             sha: 99f90be6f272d6be60085b7e177eda8f95f96afa
           - backend: cranelift
             sha: 6919399e836f845a613f8a149f83d36a234b8e9f
+          - backend: llvm
+            sha: 6e99ebca842992014542ac91c09556f4d7f2e427
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
@@ -97,3 +99,14 @@ jobs:
           (cd "$dir" && cargo build --locked)
           (cd "$dir" && ATTO_CRANELIFT_COMPILER="$dir/target/debug/orescranelift" node tests/durable_counter_object.mjs)
           node tests/durable-counter-native-replay.mjs cranelift "$dir/target/debug/orescranelift"
+      - name: Build LLVM and execute native replay
+        if: matrix.backend == 'llvm'
+        run: |
+          set -euo pipefail
+          dir="$RUNNER_TEMP/atto-native"
+          sudo apt-get update -qq
+          sudo apt-get install -y clang llvm-dev cmake ninja-build
+          cmake -G Ninja -S "$dir" -B "$dir/build" -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON -DLLVM_DIR="$(llvm-config --cmakedir)"
+          cmake --build "$dir/build" --target oreslang-llvmc --parallel 2
+          (cd "$dir" && ATTO_LLVM_COMPILER="$dir/build/oreslang-llvmc" node tests/durable_counter_llvm_native.mjs)
+          node tests/durable-counter-native-replay.mjs llvm "$dir/build/oreslang-llvmc"
