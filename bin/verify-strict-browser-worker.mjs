@@ -10,13 +10,14 @@ import {createHash} from "node:crypto";
 import {spawn} from "node:child_process";
 import {once} from "node:events";
 
-const [bridgePath,compilerPath,chrome,corpusPath,expectedPin]=process.argv.slice(2);
+const [bridgePath,compilerPath,chrome,corpusPath,expectedPin,sharedCount]=process.argv.slice(2);
+if(sharedCount!==undefined)assert.match(sharedCount,/^[1-9][0-9]{0,3}$/,"explicit shared case count required");
 assert.ok(bridgePath&&compilerPath&&chrome&&corpusPath&&/^[a-f0-9]{64}$/.test(expectedPin??""));
 
 const corpus=resolve(corpusPath);
 const manifest=JSON.parse(readFileSync(join(corpus,"fixtures/verified-core-strict-i64-v1/cases.json"),"utf8"));
 assert.equal(manifest.schemaVersion,1);assert.equal(manifest.profile,"verified-core-strict-i64-v1");
-const {strictLoopCases}=await import(pathToFileURL(join(corpus,"lib/verified-strict-loop-corpus.mjs")).href);
+
 const work=mkdtempSync(join(tmpdir(),"atto-shared-worker-"));
 const profile=join(work,"chrome");
 const sha=bytes=>createHash("sha256").update(bytes).digest("hex");
@@ -24,8 +25,16 @@ const compiler=readFileSync(resolve(compilerPath)),pin=sha(compiler);
 const bridge=readFileSync(join(resolve(bridgePath),"src/canonical-browser-compiler.mjs"));
 assert.ok(compiler.length>8&&compiler.length<=16*1024*1024);
 assert.equal(pin,expectedPin,"compiler digest mismatch");
-assert.equal(manifest.cases.length,14);assert.equal(strictLoopCases.length,10);
-const cases=[...manifest.cases.map(c=>({source:c.id+".atto",text:c.source,expected:c.expected})),...strictLoopCases];
+let cases=manifest.cases.map(c=>({source:c.id+".atto",text:c.source,expected:c.expected}));
+if(sharedCount!==undefined){
+ const {validateStrictManifest}=await import(pathToFileURL(join(corpus,"bin/verified-strict-manifest.mjs")).href);
+ validateStrictManifest(manifest);
+ assert.equal(cases.length,Number(sharedCount),"shared manifest count mismatch");
+}else{
+ const {strictLoopCases}=await import(pathToFileURL(join(corpus,"lib/verified-strict-loop-corpus.mjs")).href);
+ assert.equal(cases.length,14);assert.equal(strictLoopCases.length,10);
+ cases=[...cases,...strictLoopCases];
+}
 const seen=new Set();
 const inputs=cases.map(({source,text,expected})=>{
  assert.match(source,/^[a-z0-9-]+\.atto$/);assert.ok(!seen.has(source));seen.add(source);
