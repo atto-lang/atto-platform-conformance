@@ -1,6 +1,7 @@
 // Explicit target adapters only; a missing adapter or unsupported source is
 // not a passed test. Run from a trusted checkout, not a privileged workflow.
 import assert from "node:assert/strict";
+import {validateStrictManifest} from "./verified-strict-manifest.mjs";
 import {readFileSync,writeFileSync,mkdtempSync,rmSync,existsSync} from "node:fs";
 import {tmpdir} from "node:os";
 import {delimiter,join,resolve} from "node:path";
@@ -8,12 +9,14 @@ import {pathToFileURL} from "node:url";
 import {spawnSync} from "node:child_process";
 import {createHash} from "node:crypto";
 const [target,path,tier="all",bridgePath,pin]=process.argv.slice(2);
-if(!["rs","js","wasm","forge","cranelift","java","llvm"].includes(target)||!path||!["arithmetic","control-flow","loops","boundaries","guards","all"].includes(tier))throw Error("usage: node bin/verify-verified-core-strict-i64.mjs rs|js|wasm|forge|cranelift|java|llvm <compiler binary or checkout> [arithmetic|control-flow|loops|boundaries|guards|all] [Wasm bridge checkout or Forge include path] [compiler sha256]");
+if(!["rs","js","wasm","forge","cranelift","java","llvm"].includes(target)||!path||!["arithmetic","control-flow","loops","boundaries","guards","lazy-helpers","all"].includes(tier))throw Error("usage: node bin/verify-verified-core-strict-i64.mjs rs|js|wasm|forge|cranelift|java|llvm <compiler binary or checkout> [arithmetic|control-flow|loops|boundaries|guards|lazy-helpers|all] [Wasm bridge checkout or Forge include path] [compiler sha256]");
 if(target==="wasm"&&(!bridgePath||!/^[a-f0-9]{64}$/.test(pin??"")))throw Error("Wasm requires exact compiler digest and bridge checkout");
 const manifest=JSON.parse(readFileSync(new URL("../fixtures/verified-core-strict-i64-v1/cases.json",import.meta.url),"utf8"));
-assert.equal(manifest.schemaVersion,1);assert.equal(manifest.profile,"verified-core-strict-i64-v1");
+validateStrictManifest(manifest);
 const cases=manifest.cases.filter(c=>tier==="all"||c.tier===tier);
 assert.ok(cases.length);
+// Java/LLVM currently expose guest values as OS exit status, not a full-width scalar result.
+if(target==="java"||target==="llvm")for(const c of cases)if(c.expected.kind==="value")assert.ok(BigInt(c.expected.decimal)>=0n&&BigInt(c.expected.decimal)<=255n,"exit-status adapter cannot verify full-width value: "+c.id);
 const hash=x=>createHash("sha256").update(x).digest("hex");
 const dir=mkdtempSync(join(tmpdir(),"atto-strict-parity-"));
 try {

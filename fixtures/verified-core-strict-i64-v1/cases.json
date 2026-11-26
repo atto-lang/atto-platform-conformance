@@ -335,6 +335,96 @@
         "kind": "diagnostic",
         "category": "E_VERIFY_UNPROVEN"
       }
+    },
+    {
+      "id": "lazy-helper-and-skips",
+      "tier": "lazy-helpers",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc good(int x) -> int { return x; } fnc f(int x) -> int { if x != 0 && good(42/x) > 0 { return 1; } return 42; } pub fnc main() -> int { return f(0); }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "lazy-helper-or-skips",
+      "tier": "lazy-helpers",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc good(int x) -> int { return x; } fnc f(int x) -> int { if x == 0 || good(42/x) > 0 { return 42; } return 0; } pub fnc main() -> int { return f(0); }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "lazy-helper-taken-branch",
+      "tier": "lazy-helpers",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc good(int x) -> int { return x; } fnc f(int x) -> int { if x != 0 { return good(42/x); } return 0; } pub fnc main() -> int { return f(1); }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "lazy-helper-scoped-local",
+      "tier": "lazy-helpers",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc good(int x) -> int { val y=x; return y; } fnc f(int x) -> int { if x != 0 { return good(42/x); } return 0; } pub fnc main() -> int { return f(1); }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "lazy-helper-nested-call",
+      "tier": "lazy-helpers",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc good(int x) -> int { val y=x; return y; } fnc outer(int x) -> int { return good(x); } fnc f(int x) -> int { if x != 0 { return outer(42/x); } return 0; } pub fnc main() -> int { return f(1); }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "lazy-helper-right-evaluated",
+      "tier": "lazy-helpers",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc good(int x) -> int { return x; } fnc f(int x) -> int { if x != 0 && good(42/x) == 42 { return 42; } return 0; } pub fnc main() -> int { return f(1); }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "lazy-helper-wrong-branch",
+      "tier": "lazy-helpers",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc good(int x) -> int { return x; } fnc f(int x) -> int { if x == 0 { return good(42/x); } return 42; } pub fnc main() -> int { return f(1); }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "lazy-helper-unrelated-binding",
+      "tier": "lazy-helpers",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc good(int x) -> int { return x; } fnc f(int x,int y) -> int { if x != 0 { return good(42/y); } return 42; } pub fnc main() -> int { return f(1,1); }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "lazy-helper-unused-argument",
+      "tier": "lazy-helpers",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc pick(int a,int b) -> int { return a; } fnc f(int x) -> int { if x != 0 { return pick(42, -9223372036854775808/x); } return 42; } pub fnc main() -> int { return f(1); }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "lazy-helper-or-not-proof",
+      "tier": "lazy-helpers",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc good(int x) -> int { return x; } fnc f(int x) -> int { if x != 0 || x == 0 { return good(42/x); } return 42; } pub fnc main() -> int { return f(1); }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
     }
   ]
 }
