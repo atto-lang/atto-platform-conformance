@@ -1,0 +1,5 @@
+# Atto-XO checked unsigned debit v1 — candidate
+
+Extends the existing signed-i64 contract with the normative u64/uint target range from atto-spec numerical semantics. Twelve exact source candidates: six full-width values, six arithmetic faults (including intermediate overflow despite later cancellation). Arithmetic only; zero operands are intentional controls, not business admission. All guest lanes are NOT_EXECUTED. A process exit byte is insufficient: positive results require an exact decimal/full-width unsigned observer. Compilers may reject an unsupported target explicitly and artifact-free; never count that as arithmetic parity. Native, JVM, Wasm and JS fault ABIs must be identified separately.
+
+Required roles: java, llvm, forge, cranelift, rs, net, wasm, js, hdl, atto, realtime. The latter three are restricted targets, not general financial compilers. Test with the same source bytes and exact compiler commit/tree/toolchain. The Node test is a host-only BigInt oracle and independent range-preflight differential test (100000 deterministic cases), not compiler execution. No live trading or financial authorization is implied.

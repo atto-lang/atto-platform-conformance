@@ -1,0 +1,18 @@
+name: Atto-XO unsigned debit source oracle
+on:
+  pull_request:
+    paths:
+      - 'contracts/atto-xo-checked-u64-debit-v1/**'
+      - 'tests/atto-xo-checked-u64-debit-v1.test.mjs'
+      - '.github/workflows/atto-xo-checked-u64-debit-v1.yml'
+permissions:
+  contents: read
+jobs:
+  source-oracle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - run: node --test tests/atto-xo-checked-u64-debit-v1.test.mjs
