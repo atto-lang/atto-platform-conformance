@@ -1,0 +1,9 @@
+pub fnc main(): int {
+    recover |err, cursor| -> {
+        return 42;
+    };
+    recover |err, cursor| -> {
+        throw! new Error("recovery failed");
+    };
+    raise! new Error("original");
+}
