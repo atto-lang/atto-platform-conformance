@@ -31,8 +31,8 @@ extern int32_t oreslang_scalar_entry(int64_t,int64_t,int64_t,int64_t,int64_t*);
 int main(void){int64_t out=1234567;int32_t rc=oreslang_scalar_entry(0,0,0,0,&out);
 if(rc){if(out!=1234567)return 99;return rc;}
 printf("%" PRId64 "\\n",out);return 0;}`);
-const statuses=backend==="forge"?{divisionByZero:71,integerOverflow:70,refinementViolation:73}:{divisionByZero:2,integerOverflow:1,refinementViolation:7};
-const errors={divisionByZero:"E_DIVZERO\n",integerOverflow:"E_OVERFLOW\n",refinementViolation:"E_REFINEMENT_VIOLATION\n"};
+const statuses=backend==="forge"?{divisionByZero:71,integerOverflow:70,refinementViolation:73,i32Overflow:74}:{divisionByZero:2,integerOverflow:1,refinementViolation:7,i32Overflow:8};
+const errors={divisionByZero:"E_DIVZERO\n",integerOverflow:"E_OVERFLOW\n",refinementViolation:"E_REFINEMENT_VIOLATION\n",i32Overflow:"E_I32_OVERFLOW\n"};
 const results=[];
 try{
  for(const [profile,cases,isStrict] of [["helpers",typedBindingCases,false],["refinements",refinement,false],["strict",strict,true]]){
