@@ -83,6 +83,46 @@ try{
   for(const [state,op,delta] of extremes)compare(state,op,delta);
   assert.equal(cases,244+extremes.length);
   assert.equal(w.panic_code.value,0);
+  // Stateful differential replay: interleave valid turns, malformed requests,
+  // boundary saturation and retries. An invalid turn must not become the
+  // committed state; a subsequent read must still see the prior accepted
+  // value. This is an in-memory transition test, not a persistence claim.
+  const replayStats={accepted:0,rejected:0,reads:0};
+  for(const initial of [0n,1n,999999999n,1000000000n]){
+    let expectedState=initial,wasmState=initial,jsState=initial;
+    let seed=0x12345678n ^ initial;
+    for(let i=0;i<128;i++){
+      seed=(1664525n*seed+1013904223n)&0xffffffffn;
+      const room=1000000000n-expectedState;
+      const choices=[
+        [1n,room>0n?1n+seed%room:1n],
+        [1n,0n],[1n,-1n],[1n,room+1n],[2n,0n],
+        [2n,1n],[3n,0n],[1n,max]
+      ];
+      const [op,delta]=choices[i%choices.length];
+      const expected=oracle(expectedState,op,delta);
+      const wr=w.atto_durable_transition_v1(wasmState,op,delta);
+      assert.equal(w.panic_code.value,0,`replay wasm panic initial=${initial} step=${i}`);
+      const jr=js.atto_durable_transition_v1(jsState,op,delta);
+      assert.equal(wr,expected,`replay wasm initial=${initial} step=${i}`);
+      assert.equal(jr,expected,`replay js initial=${initial} step=${i}`);
+      if(expected!==-1n){
+        expectedState=expected;
+        replayStats.accepted++;
+      }else replayStats.rejected++;
+      if(wr!==-1n)wasmState=wr;
+      if(jr!==-1n)jsState=jr;
+      assert.equal(wasmState,expectedState);
+      assert.equal(jsState,expectedState);
+      assert.equal(w.atto_durable_transition_v1(wasmState,2n,0n),expectedState);
+      assert.equal(w.panic_code.value,0);
+      assert.equal(js.atto_durable_transition_v1(jsState,2n,0n),expectedState);
+      replayStats.reads++;
+    }
+  }
+  assert.equal(replayStats.accepted+replayStats.rejected,512);
+  assert.equal(replayStats.reads,512);
+  assert.ok(replayStats.accepted>0&&replayStats.rejected>0);
   // Exercise the actual compiler denial path with identical source bytes.
   // A crash, timeout, missing diagnostic, or published artifact is not denial.
   const text=source.toString('utf8');
@@ -163,7 +203,7 @@ try{
     }
     assert.equal(vg.panic_code.value,0,id);
   }
-  console.log(JSON.stringify({status:'RESTRICTED_COMPILED_GUEST_PARITY',cases:244,extendedSignedI64Cases:extremes.length,compilerDenials:mutations.length,renamedSchemaVariants:renameCases.length,renamedTransitionCases:renameCases.length*4,sourceSha256:hash(source),
+  console.log(JSON.stringify({status:'RESTRICTED_COMPILED_GUEST_PARITY',cases:244,extendedSignedI64Cases:extremes.length,compilerDenials:mutations.length,renamedSchemaVariants:renameCases.length,renamedTransitionCases:renameCases.length*4,replayStats,sourceSha256:hash(source),
     wasmSha256:hash(binary),jsSha256:hash(generated.module_source),descriptorSha256:hash(descriptor),
     fullDurableActorParity:false,diskRecoveryExecuted:false}));
 }finally{rmSync(dir,{recursive:true,force:true});}
