@@ -482,6 +482,139 @@
         "js": "not_executed",
         "atto_selfhost": "not_executed"
       }
+    },
+    {
+      "id": "unsafe-lambda-no-inherited-context",
+      "profile": "trusted_native",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_CALL",
+      "source": "pub unsafe fnc host_only(): int { return 42; } pub fnc main(): int { unsafe { val callback = || -> host_only(); } return 42; }",
+      "reason": "Deferred callable body cannot inherit enclosing lexical unsafe context",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-long-typed-lambda-no-inherited-context",
+      "profile": "trusted_native",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_CALL",
+      "source": "pub unsafe fnc host_only(): int { return 42; } pub fnc main(): int { unsafe { val callback = |n|: Tuple<int, int, int, int, int, int, int, int, int, int, int, int> -> host_only(); } return 42; }",
+      "reason": "Long typed lambda header must not evade closure boundary detection; signature type is a target fixture",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-nested-sibling-no-context",
+      "profile": "trusted_native",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_CONTEXT",
+      "source": "pub unsafe fnc host_only(): int { return 42; } pub fnc main(): int { unsafe { unsafe { } } { host_only(); } return 42; }",
+      "reason": "Closing both unsafe regions removes caller authorization from sibling blocks",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-outer-context-restored",
+      "profile": "trusted_native",
+      "expect": "accept",
+      "diagnostic": null,
+      "source": "pub unsafe fnc host_only(): int { return 42; } pub fnc main(): int { unsafe { unsafe { } return host_only(); } }",
+      "reason": "Closing inner unsafe block restores the surrounding explicit lexical region",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-lambda-guest-denial",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "pub fnc main(): int { val callback = || -> { unsafe { } return 42; }; return 42; }",
+      "reason": "Uninvoked lambda cannot hide unsafe guest syntax from AST admission",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-defer-guest-denial",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "pub fnc main(): int { defer { unsafe { } } return 42; }",
+      "reason": "Cleanup body cannot conceal unsafe guest syntax",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-nested-comment-near-miss",
+      "profile": "any",
+      "expect": "accept",
+      "diagnostic": null,
+      "source": "pub fnc main(): int { /* outer /* unsafe { } */ still comment */ return 42; }",
+      "reason": "Nested comments are lexical data, not unsafe blocks",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
     }
   ]
 }
