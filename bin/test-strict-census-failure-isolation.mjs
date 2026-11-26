@@ -23,6 +23,10 @@ try {
  assert.match(out.stderr,/CASE_FAIL js bounded-add /);
  assert.match(out.stdout,/PASS js unknown-cast /);
  assert.match(out.stdout,/STRICT_CENSUS js arithmetic total 8 passed 7 failed 1/);
+ const structured=out.stdout.split("\n").filter(line=>line.startsWith("STRICT_CENSUS_JSON "));
+ assert.equal(structured.length,1,"structured census must be unique");
+ assert.deepEqual(JSON.parse(structured[0].slice("STRICT_CENSUS_JSON ".length)),
+   {target:"js",tier:"arithmetic",passed:7,total:8,failures:["bounded-add"]});
  assert.doesNotMatch(out.stdout,/VERIFIED_STRICT_I64 js arithmetic/);
  console.log("PASS strict census failure isolation (oracle self-test; not guest evidence)");
 } finally {rmSync(dir,{recursive:true,force:true});}
