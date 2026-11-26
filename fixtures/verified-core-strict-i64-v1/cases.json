@@ -168,7 +168,7 @@
     {
       "id": "boundary-safe-neg",
       "tier": "boundaries",
-      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Small = int where self >= 1 and self <= 21; type Duration = int where self >= 1 and self <= 42 and units in Second;\nfnc f(Small n) -> int { return -n; } pub fnc main() -> int { return f(1)+43; }\n",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Small = int where self >= 1 and self <= 21; type Duration = int where self >= 1 and self <= 42 and units in Second;\ntype NegativeSmall = int where self >= -21 and self <= -1;\nfnc f(Small n) -> NegativeSmall { return -n; } pub fnc main() -> int { return f(1)+43; }\n",
       "expected": {
         "kind": "value",
         "decimal": "42"
@@ -232,6 +232,15 @@
       "id": "boundary-unproved-cast",
       "tier": "boundaries",
       "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Small = int where self >= 1 and self <= 21; type Duration = int where self >= 1 and self <= 42 and units in Second;\nfnc f(int n) -> Bounded { return n::<Bounded>; } pub fnc main() -> int { return f(42); }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "boundary-unbounded-return",
+      "tier": "boundaries",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Small = int where self >= 1 and self <= 21; type Duration = int where self >= 1 and self <= 42 and units in Second;\nfnc f(Small n) -> int { return -n; } pub fnc main() -> int { return f(1)+43; }\n",
       "expected": {
         "kind": "diagnostic",
         "category": "E_VERIFY_UNPROVEN"
