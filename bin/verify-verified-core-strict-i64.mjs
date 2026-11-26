@@ -8,7 +8,7 @@ import {pathToFileURL} from "node:url";
 import {spawnSync} from "node:child_process";
 import {createHash} from "node:crypto";
 const [target,path,tier="all",bridgePath,pin]=process.argv.slice(2);
-if(!["rs","js","wasm","forge","cranelift","java","llvm"].includes(target)||!path||!["arithmetic","control-flow","loops","boundaries","all"].includes(tier))throw Error("usage: node bin/verify-verified-core-strict-i64.mjs rs|js|wasm|forge|cranelift|java|llvm <compiler binary or checkout> [arithmetic|control-flow|loops|boundaries|all] [Wasm bridge checkout or Forge include path] [compiler sha256]");
+if(!["rs","js","wasm","forge","cranelift","java","llvm"].includes(target)||!path||!["arithmetic","control-flow","loops","boundaries","guards","all"].includes(tier))throw Error("usage: node bin/verify-verified-core-strict-i64.mjs rs|js|wasm|forge|cranelift|java|llvm <compiler binary or checkout> [arithmetic|control-flow|loops|boundaries|guards|all] [Wasm bridge checkout or Forge include path] [compiler sha256]");
 if(target==="wasm"&&(!bridgePath||!/^[a-f0-9]{64}$/.test(pin??"")))throw Error("Wasm requires exact compiler digest and bridge checkout");
 const manifest=JSON.parse(readFileSync(new URL("../fixtures/verified-core-strict-i64-v1/cases.json",import.meta.url),"utf8"));
 assert.equal(manifest.schemaVersion,1);assert.equal(manifest.profile,"verified-core-strict-i64-v1");
