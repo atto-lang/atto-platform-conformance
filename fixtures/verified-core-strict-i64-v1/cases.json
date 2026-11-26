@@ -128,6 +128,114 @@
         "kind": "diagnostic",
         "category": "E_REFINEMENT_BINDING"
       }
+    },
+    {
+      "id": "boundary-bounded-return",
+      "tier": "boundaries",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Small = int where self >= 1 and self <= 21; type Duration = int where self >= 1 and self <= 42 and units in Second;\nfnc twice(Small n) -> Bounded { return n+n; } pub fnc main() -> int { return twice(21); }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "boundary-nested",
+      "tier": "boundaries",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Small = int where self >= 1 and self <= 21; type Duration = int where self >= 1 and self <= 42 and units in Second;\nfnc twice(Small n) -> Bounded { return n+n; } fnc chain(Small n) -> Bounded { return twice(n); } pub fnc main() -> int { return chain(21); }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "boundary-unit",
+      "tier": "boundaries",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Small = int where self >= 1 and self <= 21; type Duration = int where self >= 1 and self <= 42 and units in Second;\nfnc pass(Duration n) -> Duration { return n; } pub fnc main() -> int { return pass(42<Second>)/1<Second>; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "boundary-safe-div",
+      "tier": "boundaries",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Small = int where self >= 1 and self <= 21; type Duration = int where self >= 1 and self <= 42 and units in Second;\nfnc half(Small n) -> int { return 42/n; } pub fnc main() -> int { return half(1); }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "boundary-safe-neg",
+      "tier": "boundaries",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Small = int where self >= 1 and self <= 21; type Duration = int where self >= 1 and self <= 42 and units in Second;\nfnc f(Small n) -> int { return -n; } pub fnc main() -> int { return f(1)+43; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "boundary-local",
+      "tier": "boundaries",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Small = int where self >= 1 and self <= 21; type Duration = int where self >= 1 and self <= 42 and units in Second;\nfnc f(Small n) -> Bounded { val a=n+n; return a; } pub fnc main() -> int { return f(21); }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "boundary-unsafe-mul",
+      "tier": "boundaries",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Small = int where self >= 1 and self <= 21; type Duration = int where self >= 1 and self <= 42 and units in Second;\nfnc f(int n) -> int { return n*2; } pub fnc main() -> int { return f(21); }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "boundary-unsafe-neg",
+      "tier": "boundaries",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Small = int where self >= 1 and self <= 21; type Duration = int where self >= 1 and self <= 42 and units in Second;\nfnc f(int n) -> int { return -n; } pub fnc main() -> int { return f(-42); }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "boundary-unsafe-div",
+      "tier": "boundaries",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Small = int where self >= 1 and self <= 21; type Duration = int where self >= 1 and self <= 42 and units in Second;\nfnc f(int n) -> int { return 42/n; } pub fnc main() -> int { return f(1); }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "boundary-unused-unsafe-helper",
+      "tier": "boundaries",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Small = int where self >= 1 and self <= 21; type Duration = int where self >= 1 and self <= 42 and units in Second;\nfnc f(int n) -> int { return n+1; } pub fnc main() -> int { return 42; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "boundary-unused-unsafe-arg",
+      "tier": "boundaries",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Small = int where self >= 1 and self <= 21; type Duration = int where self >= 1 and self <= 42 and units in Second;\nfnc choose(int a,int b) -> int { return a; } pub fnc main() -> int { return choose(42,9223372036854775807+1); }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "boundary-unproved-cast",
+      "tier": "boundaries",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Small = int where self >= 1 and self <= 21; type Duration = int where self >= 1 and self <= 42 and units in Second;\nfnc f(int n) -> Bounded { return n::<Bounded>; } pub fnc main() -> int { return f(42); }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
     }
   ]
 }
