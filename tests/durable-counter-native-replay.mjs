@@ -9,8 +9,8 @@ import {join,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 const [backend,compilerPath]=process.argv.slice(2);
-assert.ok(['forge','cranelift'].includes(backend)&&compilerPath&&process.argv.length===4,
-  'usage: node tests/durable-counter-native-replay.mjs forge|cranelift /path/to/compiler');
+assert.ok(['forge','cranelift','llvm'].includes(backend)&&compilerPath&&process.argv.length===4,
+  'usage: node tests/durable-counter-native-replay.mjs forge|cranelift|llvm /path/to/compiler');
 const compiler=resolve(compilerPath);
 const fixture=fileURLToPath(new URL('../fixtures/actors/persistence/durable_counter_broker_v1.atto',import.meta.url));
 const source=readFileSync(fixture);
@@ -73,16 +73,26 @@ const driver=`#include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <iostream>
-extern "C" std::int64_t atto_durable_transition_v1(std::int64_t,std::int64_t,std::int64_t);
 #ifdef FORGE
+extern "C" std::int64_t atto_durable_transition_v1(std::int64_t,std::int64_t,std::int64_t) noexcept;
 extern "C" const unsigned char* atto_durable_state_v1(std::size_t*) noexcept;
 #else
+extern "C" std::int64_t atto_durable_transition_v1(std::int64_t,std::int64_t,std::int64_t);
+#ifdef LLVM
+extern "C" std::uint64_t atto_durable_state_size_v1();
+extern "C" const unsigned char* atto_durable_state_v1();
+#else
 extern "C" const unsigned char atto_durable_descriptor_v1[53];
+#endif
 #endif
 int main(){
   std::size_t n=53;
 #ifdef FORGE
   const auto* p=atto_durable_state_v1(&n);
+  if(!p||n!=53)return 2;
+#elif defined(LLVM)
+  const auto* p=atto_durable_state_v1();
+  n=atto_durable_state_size_v1();
   if(!p||n!=53)return 2;
 #else
   const auto* p=atto_durable_descriptor_v1;
@@ -101,6 +111,9 @@ try{
   if(backend==='forge'){
     artifact=join(dir,'counter.cpp');
     run(compiler,['--durable-counter-actor-v1',input,'-o',artifact]);
+  }else if(backend==='llvm'){
+    artifact=join(dir,'counter.ll');
+    writeFileSync(artifact,run(compiler,['--durable-counter-actor-v1',input]));
   }else{
     artifact=join(dir,'counter.o');
     const bytes=run(compiler,['emit-durable-counter-object',input]);
@@ -108,9 +121,9 @@ try{
     writeFileSync(artifact,bytes);
   }
   const bytes=readFileSync(artifact);assert.ok(bytes.length>0);
-  run(process.env.CXX||'c++',['-std=c++20','-O2','-Wall','-Wextra','-Werror','-pedantic',
+  run(backend==='llvm'?(process.env.CLANGXX||'clang++'):(process.env.CXX||'c++'),['-std=c++20','-O2','-Wall','-Wextra','-Werror','-pedantic',
     '-fsanitize=undefined','-fno-sanitize-recover=all',
-    ...(backend==='forge'?['-DFORGE']:[]),driverFile,artifact,'-o',guest]);
+    ...(backend==='forge'?['-DFORGE']:backend==='llvm'?['-DLLVM','-Wno-override-module']:[]),driverFile,artifact,'-o',guest]);
   const result=run(guest,[],vectors.map(v=>v.join(' ')).join('\n')+'\n').toString();
   const lines=result.split('\n');assert.equal(lines.pop(),'');
   assert.equal(lines.shift(),descriptorHex);
