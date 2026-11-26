@@ -1,0 +1,12 @@
+const Record<infer T1> r = (a=true, b="xyz", c=5);
+const Tuple<infer T2> t = (true, "xyz", 5);
+fnc process(Record<T1> input) -> Tuple<T2> {
+    return (input.a, input.b, input.c);
+}
+pub fnc main(): int {
+    const Record<T1> first = (a=false,b="abc",c=11);
+    const Record<T1> second = (a=true,b="def",c=37);
+    const Tuple<T2> x = process(first);
+    const Tuple<T2> y = process(second);
+    return x[2] + y[2];
+}
