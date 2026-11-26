@@ -111,3 +111,12 @@ test('intermediate canonical unsafe import identity cannot be erased', () => {
     assert.ok(Object.values(c.verification).every(v => v === 'not_executed'), id);
   }
 });
+
+
+test('restricted HDL, realtime and Stage-0 Atto targets cannot imply general unsafe support', () => {
+  for (const target of ['hdl_closed_rtl', 'realtime_closed_profiles', 'atto_selfhost']) {
+    assert.ok(registry.targets.includes(target), target);
+    for (const c of registry.cases) assert.equal(c.verification[target], 'not_executed', c.id+' '+target);
+  }
+  assert.match(registry.execution_note, /Stage-0 only/);
+});

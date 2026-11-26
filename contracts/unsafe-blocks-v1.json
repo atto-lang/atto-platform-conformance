@@ -3,7 +3,7 @@
   "contract": "atto-unsafe-blocks-v1",
   "status": "TARGET_ONLY_NOT_EXECUTED",
   "normative_spec": "https://github.com/atto-lang/atto-spec/blob/feat/unsafe-block-contract-v1-20261119/language/unsafe-blocks-v1.md",
-  "execution_note": "Source-only proposed fixtures. No compiler or runtime has run these cases. Target-only intrinsics, native grants and host capabilities are placeholders until defined by the spec/profile. Do not treat a parser, lexical scan, or host-only integrity check as compiled guest conformance.",
+  "execution_note": "Source-only proposed fixtures. No compiler or runtime has run these cases. Target-only intrinsics, native grants and host capabilities are placeholders until defined by the spec/profile. Do not treat a parser, lexical scan, or host-only integrity check as compiled guest conformance. HDL and realtime profiles are restricted compiler targets; atto_selfhost is Stage-0 only. These labels are coverage targets, not general compiler support claims.",
   "profiles": {
     "trusted_native": "Host extension compiled with explicit verified grant and exact ABI",
     "tenantvm_guest": "All untrusted actors and every VM-isolate; native unsafe source and std/unsafe imports forbidden",
@@ -24,7 +24,9 @@
     "independent_wasm",
     "cranelift",
     "js",
-    "atto_selfhost"
+    "atto_selfhost",
+    "hdl_closed_rtl",
+    "realtime_closed_profiles"
   ],
   "cases": [
     {
@@ -43,7 +45,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -62,7 +66,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -81,7 +87,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -100,7 +108,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -119,7 +129,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -138,7 +150,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -157,7 +171,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -176,7 +192,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -195,7 +213,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -214,7 +234,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -233,7 +255,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -252,7 +276,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -271,7 +297,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -290,7 +318,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -309,7 +339,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -328,7 +360,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -347,7 +381,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -366,7 +402,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -385,7 +423,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -404,7 +444,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -423,7 +465,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -442,7 +486,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -461,7 +507,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -480,7 +528,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -499,7 +549,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -518,7 +570,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -537,7 +591,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -556,7 +612,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -575,7 +633,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -594,7 +654,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -613,7 +675,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -632,7 +696,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -651,7 +717,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -670,7 +738,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -689,7 +759,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -708,7 +780,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -727,7 +801,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -746,7 +822,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -765,7 +843,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -784,7 +864,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -803,7 +885,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -822,7 +906,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -841,7 +927,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -860,7 +948,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -879,7 +969,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -898,7 +990,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -917,7 +1011,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -936,7 +1032,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -955,7 +1053,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -974,7 +1074,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -993,7 +1095,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -1012,7 +1116,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -1031,7 +1137,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -1050,7 +1158,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -1069,7 +1179,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -1088,7 +1200,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     }
   ]
