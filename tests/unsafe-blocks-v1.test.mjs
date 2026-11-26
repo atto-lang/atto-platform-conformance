@@ -71,3 +71,20 @@ test('closure, cleanup and nested block boundaries remain distinct target cases'
   assert.ok(cases.get('unsafe-long-typed-lambda-no-inherited-context').source
     .split('Tuple<')[1].split('>')[0].split(',').length >= 12);
 });
+
+test('detached cleanup and native unsafe import aliases have explicit expectations', () => {
+  const cases = new Map(registry.cases.map(c => [c.id, c]));
+  for (const [id, diagnostic] of Object.entries({
+    'unsafe-defer-no-inherited-context': 'E_UNSAFE_CALL',
+    'unsafe-callable-value-unresolved': 'E_UNSAFE_CALL',
+    'unsafe-native-import-dotted-alias': 'E_UNSAFE_DOMAIN',
+    'unsafe-native-import-colon-alias': 'E_UNSAFE_DOMAIN'
+  })) {
+    assert.equal(cases.get(id)?.expect, 'reject', id);
+    assert.equal(cases.get(id)?.diagnostic, diagnostic, id);
+  }
+  for (const id of ['unsafe-defer-explicit-inner-context', 'unsafe-lambda-explicit-inner-context', 'unsafe-import-string-near-miss']) {
+    assert.equal(cases.get(id)?.expect, 'accept', id);
+    assert.equal(cases.get(id)?.diagnostic, null, id);
+  }
+});
