@@ -33,9 +33,25 @@ if(rc){if(out!=1234567)return 99;return rc;}
 printf("%" PRId64 "\\n",out);return 0;}`);
 const statuses=backend==="forge"?{divisionByZero:71,integerOverflow:70,refinementViolation:73,i32Overflow:74}:{divisionByZero:2,integerOverflow:1,refinementViolation:7,i32Overflow:8};
 const errors={divisionByZero:"E_DIVZERO\n",integerOverflow:"E_OVERFLOW\n",refinementViolation:"E_REFINEMENT_VIOLATION\n",i32Overflow:"E_I32_OVERFLOW\n"};
+// This subset is defined by carrier semantics, not by whether a candidate
+// previously passed. Contract-bearing cases stay in the full manifest.
+const narrowNames=["i32-widen-before-arithmetic","i32-add-before-cancellation","i32-multiply-overflow","i32-negate-overflow","i32-divide-overflow","i32-divide-zero","i32-binding-out-of-range","i32-operand-out-of-range","i32-empty-alias","i32-reserved-carrier","checked-refinement-call","checked-refinement-intersection","checked-refinement-quantity","checked-refinement-lower-failure","checked-refinement-upper-failure","checked-refinement-operand-failure","checked-refinement-implicit-rejected","checked-refinement-unit-dimension","checked-refinement-unit-scale","checked-refinement-disjoint"].map(n=>n+".atto");
+const narrow=refinement.filter(c=>narrowNames.includes(c.source));
+assert.equal(narrow.length,narrowNames.length);
+const narrowGate=process.env.ATTO_I32_CARRIER_GATE==="1";
+const pre="type Largest = i32 where self eq 2147483647; type Smallest = i32 where self eq -2147483648; type Positive = i32 where self > 0; ";
+const adversarial=[
+ ["unused-overflow","val Largest max=2147483647; val unused=max+1; return 42;",{kind:"arithmeticFailure",category:"i32Overflow"}],
+ ["widen-after-overflow","val Largest max=2147483647; val int wide=max+1; return wide-2147483606;",{kind:"arithmeticFailure",category:"i32Overflow"}],
+ ["widen-before-negation","val Smallest min=-2147483648; val int wide=min; return -wide-2147483606;",{kind:"value",decimal:"42"}],
+ ["wide-then-narrow-cast","val int wide=2147483648; return wide as Positive;",{kind:"refinementFailure",category:"refinementViolation"}],
+ ["first-trap","val Largest max=2147483647; val unused=max+1; return 1/0;",{kind:"arithmeticFailure",category:"i32Overflow"}],
+ ["negative-literal-range","val Smallest min=-2147483648; return min + -2147483649;",{kind:"diagnostic",category:"E_I32_RANGE"}]
+].map(([id,body,expected])=>({source:id+".atto",text:pre+"pub fnc main() -> int { "+body+" }",expected}));
+const profiles=narrowGate?[["i32-carriers",narrow,false],["i32-adversarial",adversarial,false],["helpers",typedBindingCases,false]]:[["helpers",typedBindingCases,false],["refinements",refinement,false],["strict",strict,true]];
 const results=[];
 try{
- for(const [profile,cases,isStrict] of [["helpers",typedBindingCases,false],["refinements",refinement,false],["strict",strict,true]]){
+ for(const [profile,cases,isStrict] of profiles){
   const failures=[];let passed=0,genericDenials=0;
   for(const {source,text,expected} of cases){
    try{
