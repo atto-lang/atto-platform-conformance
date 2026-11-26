@@ -260,12 +260,6 @@
     "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45913135177/job/140225971752",
     "scope": "3 isolated wire arithmetic, decimal and expanded hash index guests passed; full suite fails Map admission in Value; does not qualify JSON or later head"
   },
-  "llvm_admission_candidate": {
-    "head": "ee48e0263f0bd805ef3e376ca40dc0d03d1d7df1",
-    "tree": "e92d3b011e880948a79a5f2ad7e313853460d657",
-    "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45913208011",
-    "scope": "pending corrected missing member tests; prior scalar positive and missing name denial passed, prior run failed"
-  },
   "wasm_admission_candidate": {
     "head": "0021bade83e7acb9aba2f44f63856e791c33c5ec",
     "tree": "f6a59140fe941ff89d0e775a2e51aaed1a7feb66",
@@ -273,5 +267,13 @@
     "llvm_tree": "e92d3b011e880948a79a5f2ad7e313853460d657",
     "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45913269966",
     "scope": "required real compiler bridge; pending"
+  },
+  "llvm_compiler_admission_receipt": {
+    "head": "ee48e0263f0bd805ef3e376ca40dc0d03d1d7df1",
+    "tree": "e92d3b011e880948a79a5f2ad7e313853460d657",
+    "blobs": 3666,
+    "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45913208011/job/140226206226",
+    "passed": 6,
+    "scope": "actual LLVM compiler build, native scalar executable and five absent identifier/member source denials with no IR publication; not serialization generation or wire execution"
   }
 }
