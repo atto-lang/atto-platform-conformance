@@ -9,6 +9,7 @@ on:
       - 'tests/checked-u64-cross-candidates.test.mjs'
       - 'tests/checked-u64-target-matrix.test.mjs'
       - 'tests/checked-u64-forge-target-matrix.test.mjs'
+      - 'tests/checked-u64-generated-wasm.test.mjs'
       - '.github/workflows/atto-xo-checked-u64-debit-v1.yml'
 permissions:
   contents: read
@@ -90,3 +91,27 @@ jobs:
           fi
           grep -F '752d1ad3fb3564eed9067a0a530eb2150d1c14b4' forge-altered.log
           echo 'Forge target matrix execution: NOT_EXECUTED (no source staging)'
+      - name: Generated Wasm gate admission (no compiler source staged)
+        shell: bash
+        run: |
+          set -euo pipefail
+          unset ATTO_U64_LLVM_SOURCE ATTO_U64_GENERATED_WASM_REQUIRED ATTO_U64_WASM_FAMILY
+          node --test tests/checked-u64-generated-wasm.test.mjs > wasm-skip.log 2>&1
+          grep -F 'NOT_EXECUTED: exact LLVM compiler source unavailable' wasm-skip.log
+          if ATTO_U64_GENERATED_WASM_REQUIRED=1 node --test tests/checked-u64-generated-wasm.test.mjs > wasm-missing.log 2>&1; then
+            exit 1
+          fi
+          grep -F 'ATTO_U64_LLVM_SOURCE required' wasm-missing.log
+          if ATTO_U64_GENERATED_WASM_REQUIRED=typo node --test tests/checked-u64-generated-wasm.test.mjs > wasm-mode.log 2>&1; then
+            exit 1
+          fi
+          grep -F 'ATTO_U64_GENERATED_WASM_REQUIRED must be 0 or 1' wasm-mode.log
+          if ATTO_U64_WASM_FAMILY=typo node --test tests/checked-u64-generated-wasm.test.mjs > wasm-family.log 2>&1; then
+            exit 1
+          fi
+          grep -F 'invalid generated Wasm family' wasm-family.log
+          if ATTO_U64_GENERATED_WASM_REQUIRED=1 ATTO_U64_LLVM_SOURCE=tests/fixed-width-integer-oracle.test.mjs node --test tests/checked-u64-generated-wasm.test.mjs > wasm-altered.log 2>&1; then
+            exit 1
+          fi
+          grep -F '752d1ad3fb3564eed9067a0a530eb2150d1c14b4' wasm-altered.log
+          echo 'Generated Wasm execution: NOT_EXECUTED (no source staging)'
