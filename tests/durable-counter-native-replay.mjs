@@ -9,8 +9,8 @@ import {join,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 const [backend,compilerPath]=process.argv.slice(2);
-assert.ok(['forge','cranelift','llvm','net','java'].includes(backend)&&compilerPath&&process.argv.length===4,
-  'usage: node tests/durable-counter-native-replay.mjs forge|cranelift|llvm|net /path/to/compiler (Java: absolute classpath)');
+assert.ok(['forge','cranelift','llvm','net','java','llvm-wasm'].includes(backend)&&compilerPath&&process.argv.length===4,
+  'usage: node tests/durable-counter-native-replay.mjs forge|cranelift|llvm|net|java|llvm-wasm /path/to/compiler (Java: absolute classpath)');
 const compiler=backend==='java'?compilerPath:resolve(compilerPath);
 const fixture=fileURLToPath(new URL('../fixtures/actors/persistence/durable_counter_broker_v1.atto',import.meta.url));
 const source=readFileSync(fixture);
@@ -125,7 +125,7 @@ try{
   }else if(backend==='net'){
     artifact=join(dir,'Counter.g.cs');
     run(compiler,['emit-durable-counter-v1',input,'--out',artifact]);
-  }else if(backend==='llvm'){
+  }else if(backend==='llvm'||backend==='llvm-wasm'){
     artifact=join(dir,'counter.ll');
     writeFileSync(artifact,run(compiler,['--durable-counter-actor-v1',input]));
   }else{
@@ -135,7 +135,39 @@ try{
     writeFileSync(artifact,bytes);
   }
   const bytes=readFileSync(artifact);assert.ok(bytes.length>0);
-  if(backend==='java'){
+  if(backend==='llvm-wasm'){
+    const wasmPath=join(dir,'counter.wasm');
+    run(process.env.CLANG||'clang',['--target=wasm32-unknown-unknown',
+      '-Wno-override-module','-nostdlib','-O2','-Wl,--no-entry',
+      '-Wl,--export=atto_durable_transition_v1','-Wl,--export=atto_durable_state_size_v1',
+      '-Wl,--export=atto_durable_state_v1','-Wl,--export-memory',
+      '-Wl,--initial-memory=131072','-Wl,--max-memory=131072',artifact,'-o',wasmPath]);
+    const wasm=readFileSync(wasmPath);assert.ok(wasm.length<=1024*1024);
+    const module=new WebAssembly.Module(wasm);
+    assert.deepEqual(WebAssembly.Module.imports(module),[]);
+    assert.deepEqual(WebAssembly.Module.exports(module).map(x=>x.name).sort(),
+      ['atto_durable_state_size_v1','atto_durable_state_v1','atto_durable_transition_v1','memory']);
+    const e=new WebAssembly.Instance(module,{}).exports;
+    assert.equal(e.memory.buffer.byteLength,131072);
+    assert.throws(()=>e.memory.grow(1),RangeError);
+    function descriptor(){
+      const size=e.atto_durable_state_size_v1(),ptr=e.atto_durable_state_v1();
+      assert.equal(size,53n);
+      assert.ok(Number.isInteger(ptr)&&ptr>=0&&ptr+Number(size)<=e.memory.buffer.byteLength);
+      return Buffer.from(new Uint8Array(e.memory.buffer,ptr,Number(size)));
+    }
+    const before=descriptor();
+    assert.equal(before.toString('hex'),descriptorHex);
+    for(let i=0;i<vectors.length;i++){
+      assert.equal(e.atto_durable_transition_v1(...vectors[i]),expected[i],`llvm-wasm vector ${i}`);
+      assert.deepEqual(descriptor(),before,`descriptor mutated at vector ${i}`);
+    }
+    console.log(JSON.stringify({status:'LLVM_WASM_RESTRICTED_COUNTER_REPLAY_PASS',
+      backend,compilerFrontend:'llvm',totalCases:vectors.length,replayStats,terminal,
+      fixtureSha256:hash(source),artifactSha256:hash(wasm),irSha256:hash(bytes),
+      descriptorSha256:hash(before),imports:0,maxPages:2,strictNoJit:false,
+      diskRecoveryExecuted:false,fullDurableActorParity:false}));
+  }else if(backend==='java'){
     const javaDriver=join(dir,'Driver.java');
     writeFileSync(javaDriver,`public final class Driver {
       public static void main(String[] args) throws Exception {
@@ -184,9 +216,11 @@ return 0;
   }else run(backend==='llvm'?(process.env.CLANGXX||'clang++'):(process.env.CXX||'c++'),['-std=c++20','-O2','-Wall','-Wextra','-Werror','-pedantic',
     '-fsanitize=undefined','-fno-sanitize-recover=all',
     ...(backend==='forge'?['-DFORGE']:backend==='llvm'?['-DLLVM','-Wno-override-module']:[]),driverFile,artifact,'-o',guest]);
+  if(backend!=='llvm-wasm'){
   verifyOutput(run(guest,[],inputVectors),backend==='java'?'java-native-image':backend);
   console.log(JSON.stringify({status:'NATIVE_RESTRICTED_COUNTER_REPLAY_PASS',backend,
     originalCases:244,extendedSignedI64Cases:12,replayStats,terminal,
     totalCases:vectors.length,executedProfiles:backend==='java'?['java-jvm','java-native-image']:[backend],fixtureSha256:hash(source),artifactSha256:hash(bytes),
     descriptorSha256:hash(Buffer.from(descriptorHex,'hex')),diskRecoveryExecuted:false,fullDurableActorParity:false}));
+  }
 }finally{rmSync(dir,{recursive:true,force:true});}
