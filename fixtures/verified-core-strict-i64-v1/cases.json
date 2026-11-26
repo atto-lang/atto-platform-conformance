@@ -1262,6 +1262,96 @@
         "kind": "diagnostic",
         "category": "E_VERIFY_UNSUPPORTED"
       }
+    },
+    {
+      "id": "init-explicit-zero",
+      "tier": "explicit-init",
+      "source": "define dimension Time; define unit Second: Time; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { let int x = 0; val int y = 42; return x+y; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "init-explicit-runtime",
+      "tier": "explicit-init",
+      "source": "define dimension Time; define unit Second: Time; type Count = int where self >= 0 and self <= 42;\nfnc answer() -> int { return 42; }\npub fnc main() -> int { let int x = answer(); return x; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "init-branch-local",
+      "tier": "explicit-init",
+      "source": "define dimension Time; define unit Second: Time; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { if 1 == 1 { val int x = 42; return x; } else { val int y = 42; return y; } }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "init-loop-local",
+      "tier": "explicit-init",
+      "source": "define dimension Time; define unit Second: Time; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { let Count x = 0; let Count y = 0; while x < 1 { val int v = 42; y = v; x = x+1; } return y; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "init-missing-let",
+      "tier": "explicit-init",
+      "source": "define dimension Time; define unit Second: Time; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { let int x; x = 42; return x; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_MISSING_INITIALIZER"
+      }
+    },
+    {
+      "id": "init-missing-val",
+      "tier": "explicit-init",
+      "source": "define dimension Time; define unit Second: Time; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { val int x; return 42; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_MISSING_INITIALIZER"
+      }
+    },
+    {
+      "id": "init-missing-colon-val",
+      "tier": "explicit-init",
+      "source": "define dimension Time; define unit Second: Time; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { val x: int; return 42; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_MISSING_INITIALIZER"
+      }
+    },
+    {
+      "id": "init-missing-branch",
+      "tier": "explicit-init",
+      "source": "define dimension Time; define unit Second: Time; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { if 1 == 1 { val int x; return 42; } else { return 42; } }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_MISSING_INITIALIZER"
+      }
+    },
+    {
+      "id": "init-missing-loop",
+      "tier": "explicit-init",
+      "source": "define dimension Time; define unit Second: Time; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { let Count x = 0; while x < 1 { let int y; x = x+1; } return 42; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_MISSING_INITIALIZER"
+      }
+    },
+    {
+      "id": "init-missing-zero-trip",
+      "tier": "explicit-init",
+      "source": "define dimension Time; define unit Second: Time; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { let Count x = 42; while x < 1 { val int y; x = x+1; } return 42; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_MISSING_INITIALIZER"
+      }
     }
   ]
 }
