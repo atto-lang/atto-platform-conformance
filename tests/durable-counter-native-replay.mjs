@@ -136,36 +136,67 @@ try{
   }
   const bytes=readFileSync(artifact);assert.ok(bytes.length>0);
   if(backend==='llvm-wasm'){
-    const wasmPath=join(dir,'counter.wasm');
-    run(process.env.CLANG||'clang',['--target=wasm32-unknown-unknown',
-      '-Wno-override-module','-nostdlib','-O2','-Wl,--no-entry',
-      '-Wl,--export=atto_durable_transition_v1','-Wl,--export=atto_durable_state_size_v1',
-      '-Wl,--export=atto_durable_state_v1','-Wl,--export-memory',
-      '-Wl,--initial-memory=131072','-Wl,--max-memory=131072',artifact,'-o',wasmPath]);
-    const wasm=readFileSync(wasmPath);assert.ok(wasm.length<=1024*1024);
-    const module=new WebAssembly.Module(wasm);
-    assert.deepEqual(WebAssembly.Module.imports(module),[]);
-    assert.deepEqual(WebAssembly.Module.exports(module).map(x=>x.name).sort(),
-      ['atto_durable_state_size_v1','atto_durable_state_v1','atto_durable_transition_v1','memory']);
-    const e=new WebAssembly.Instance(module,{}).exports;
-    assert.equal(e.memory.buffer.byteLength,131072);
-    assert.throws(()=>e.memory.grow(1),RangeError);
-    function descriptor(){
-      const size=e.atto_durable_state_size_v1(),ptr=e.atto_durable_state_v1();
-      assert.equal(size,53n);
-      assert.ok(Number.isInteger(ptr)&&ptr>=0&&ptr+Number(size)<=e.memory.buffer.byteLength);
-      return Buffer.from(new Uint8Array(e.memory.buffer,ptr,Number(size)));
+    // Schema names are part of the checkpoint identity; handler names are not.
+    // Compute the descriptor independently, and retain the canonical golden.
+    function schemaDescriptor(field){
+      const actor=Buffer.from('Counter'),name=Buffer.from(field);
+      const sized=b=>{const n=Buffer.alloc(4);n.writeUInt32LE(b.length);return Buffer.concat([n,b]);};
+      const fnv=b=>{let h=0xcbf29ce484222325n;for(const x of b)h=BigInt.asUintN(64,(h^BigInt(x))*0x100000001b3n);return h;};
+      const snapshot=Buffer.alloc(36);
+      snapshot.write('ATTOST01',0,'ascii');snapshot[8]=1;
+      snapshot.writeBigUInt64LE(fnv(Buffer.concat([Buffer.from('atto.actor.state.schema.v1'),Buffer.from([0]),
+        sized(actor),sized(name),Buffer.from([1])])),9);
+      snapshot.writeUInt16LE(1,17);snapshot[19]=1;
+      snapshot.writeBigUInt64LE(fnv(snapshot.subarray(0,28)),28);
+      return Buffer.concat([Buffer.from([1,actor.length]),actor,Buffer.from([name.length]),name,
+        Buffer.from([1,snapshot.length]),snapshot]);
     }
-    const before=descriptor();
-    assert.equal(before.toString('hex'),descriptorHex);
-    for(let i=0;i<vectors.length;i++){
-      assert.equal(e.atto_durable_transition_v1(...vectors[i]),expected[i],`llvm-wasm vector ${i}`);
-      assert.deepEqual(descriptor(),before,`descriptor mutated at vector ${i}`);
+    assert.equal(schemaDescriptor('count').toString('hex'),descriptorHex);
+    const profiles=[],irByField=new Map();
+    for(const field of ['count','balance'])for(const mail of ['mail','event']){
+      const variant=source.toString('utf8').replaceAll('count',field).replaceAll('mail',mail);
+      writeFileSync(input,variant);
+      const ir=run(compiler,['--durable-counter-actor-v1',input]);
+      if(mail==='mail')irByField.set(field,ir);
+      else assert.deepEqual(ir,irByField.get(field),'handler rename changed IR');
+      if(field==='count')assert.deepEqual(ir,bytes,'canonical IR not reproducible');
+      else assert.notDeepEqual(ir,bytes,'field rename did not change schema');
+      writeFileSync(artifact,ir);
+      for(const opt of ['-O0','-O2']){
+        const wasmPath=join(dir,'counter.wasm');
+        run(process.env.CLANG||'clang',['--target=wasm32-unknown-unknown',
+          '-Wno-override-module','-nostdlib',opt,'-Wl,--no-entry',
+          '-Wl,--export=atto_durable_transition_v1','-Wl,--export=atto_durable_state_size_v1',
+          '-Wl,--export=atto_durable_state_v1','-Wl,--export-memory',
+          '-Wl,--initial-memory=131072','-Wl,--max-memory=131072',artifact,'-o',wasmPath]);
+        const wasm=readFileSync(wasmPath);assert.ok(wasm.length<=1024*1024);
+        const module=new WebAssembly.Module(wasm);
+        assert.deepEqual(WebAssembly.Module.imports(module),[]);
+        assert.deepEqual(WebAssembly.Module.exports(module).map(x=>x.name).sort(),
+          ['atto_durable_state_size_v1','atto_durable_state_v1','atto_durable_transition_v1','memory']);
+        const e=new WebAssembly.Instance(module,{}).exports;
+        assert.equal(e.memory.buffer.byteLength,131072);
+        assert.throws(()=>e.memory.grow(1),RangeError);
+        const want=schemaDescriptor(field);
+        function descriptor(){
+          const size=e.atto_durable_state_size_v1(),ptr=e.atto_durable_state_v1();
+          assert.equal(size,BigInt(want.length));
+          assert.ok(Number.isInteger(ptr)&&ptr>=0&&ptr+Number(size)<=e.memory.buffer.byteLength);
+          return Buffer.from(new Uint8Array(e.memory.buffer,ptr,Number(size)));
+        }
+        assert.deepEqual(descriptor(),want);
+        for(let i=0;i<vectors.length;i++){
+          assert.equal(e.atto_durable_transition_v1(...vectors[i]),expected[i],`llvm-wasm ${field}/${mail}/${opt} vector ${i}`);
+          assert.deepEqual(descriptor(),want,`descriptor mutated at vector ${i}`);
+        }
+        profiles.push({field,mail,opt,sourceSha256:hash(variant),irSha256:hash(ir),artifactSha256:hash(wasm),descriptorSha256:hash(want)});
+      }
     }
+    assert.equal(profiles.length,8);
     console.log(JSON.stringify({status:'LLVM_WASM_RESTRICTED_COUNTER_REPLAY_PASS',
-      backend,compilerFrontend:'llvm',totalCases:vectors.length,replayStats,terminal,
-      fixtureSha256:hash(source),artifactSha256:hash(wasm),irSha256:hash(bytes),
-      descriptorSha256:hash(before),imports:0,maxPages:2,strictNoJit:false,
+      backend,compilerFrontend:'llvm',casesPerProfile:vectors.length,totalCases:vectors.length*profiles.length,
+      descriptorReadbacks:vectors.length*profiles.length,replayStats,terminal,profiles,
+      fixtureSha256:hash(source),imports:0,maxPages:2,strictNoJit:false,
       diskRecoveryExecuted:false,fullDurableActorParity:false}));
   }else if(backend==='java'){
     const javaDriver=join(dir,'Driver.java');
