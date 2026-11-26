@@ -7,7 +7,8 @@ import {pathToFileURL} from 'node:url';
 import {createHash} from 'node:crypto';
 import {spawnSync} from 'node:child_process';
 const [target,location,extra,pin]=process.argv.slice(2);
-assert.ok(['rs','wasm','js','java','llvm','net','forge','cranelift'].includes(target));
+assert.ok(['rs','wasm','js','java','llvm','net','net-structured','forge','cranelift'].includes(target));
+const isNet=target==='net'||target==='net-structured';
 const compiler=resolve(location),root=new URL('../',import.meta.url);
 const contract=JSON.parse(fs.readFileSync(new URL('contracts/explicit-local-initialization-v1.json',root)));
 assert.equal(contract.cases.length,5);
@@ -47,7 +48,7 @@ try{
    const bytes=fs.readFileSync(new URL(c.path,root));
    assert.equal(hash(Buffer.concat([Buffer.from('blob '+bytes.length+'\0'),bytes]),'sha1'),c.source_blob_sha);
    const dir=join(temp,id);fs.mkdirSync(dir);
-   const input=join(dir,'guest.atto'),artifact=join(dir,'guest'+({rs:'.wasm',wasm:'.wasm',js:'.mjs',llvm:'.ll',net:'.dll',forge:'.cpp',cranelift:'.o'}[target]??'.none'));
+   const input=join(dir,'guest.atto'),artifact=join(dir,isNet?'OresGenerated.dll':'guest'+({rs:'.wasm',wasm:'.wasm',js:'.mjs',llvm:'.ll',net:'.dll',forge:'.cpp',cranelift:'.o'}[target]??'.none'));
    fs.writeFileSync(input,bytes,{flag:'wx'});
    let diagnostic=null,compileStatus=0;
    if(target==='java'){
@@ -63,8 +64,8 @@ try{
     if(out.ok)fs.writeFileSync(artifact,out.wasm,{flag:'wx'});
     else{compileStatus=1;assert.equal(Object.hasOwn(out,'wasm'),false);assert.equal(Object.hasOwn(out,'esm'),false);diagnostic=out.diagnostics.map(d=>d.message).join('\n');}
    }else{
-    const cmd=target==='net'?'dotnet':compiler;
-    const args=target==='rs'?[input,'-o',artifact]:target==='llvm'?[input]:target==='forge'?[input,'-o',artifact]:target==='cranelift'?['emit-object',input]:[compiler,'compile',input,'--out',artifact];
+    const cmd=isNet?'dotnet':compiler;
+    const args=target==='rs'?[input,'-o',artifact]:target==='llvm'?[input]:target==='forge'?[input,'-o',artifact]:target==='cranelift'?['emit-object',input]:[compiler,target==='net-structured'?'compile-structured':'compile',input,'--out',artifact];
     const r=run(cmd,args,{cwd:dir,...(target==='cranelift'?{encoding:null}:{})});
     compileStatus=r.status;
     if(compileStatus===0&&(target==='llvm'||target==='cranelift'))fs.writeFileSync(artifact,r.stdout,{flag:'wx'});
@@ -77,7 +78,7 @@ try{
    }else if(target!=='java'){
     assert.equal(compileStatus,0,diagnostic??'compile failed');assert.ok(fs.statSync(artifact).size>0);
     if(['js','rs','wasm'].includes(target))checkResult(run(process.execPath,['--input-type=module','-e',guestDriver,target==='js'?'js':'wasm',artifact,String(c.expected_exit)],{timeout:10000}),'GUEST_OK '+c.expected_exit+'\n');
-    else if(target==='net'){
+    else if(isNet){
      const host=join(resolve(extra),'host/Ores.Net.NativeHost/Ores.Net.NativeHost.csproj'),native=join(dir,'native');
      const p=run('dotnet',['publish',host,'-c','Release','-r','linux-x64','-p:GeneratedAssembly='+artifact,'-o',native],{timeout:240000});
      assert.equal(p.status,0,p.stdout+p.stderr);assert.ok(fs.readFileSync(join(native,'oreslang-app')).subarray(0,4).equals(Buffer.from([127,69,76,70])));
