@@ -335,6 +335,546 @@
         "kind": "diagnostic",
         "category": "E_VERIFY_UNPROVEN"
       }
+    },
+    {
+      "id": "lazy-helper-and-skips",
+      "tier": "lazy-helpers",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc good(int x) -> int { return x; } fnc f(int x) -> int { if x != 0 && good(42/x) > 0 { return 1; } return 42; } pub fnc main() -> int { return f(0); }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "lazy-helper-or-skips",
+      "tier": "lazy-helpers",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc good(int x) -> int { return x; } fnc f(int x) -> int { if x == 0 || good(42/x) > 0 { return 42; } return 0; } pub fnc main() -> int { return f(0); }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "lazy-helper-taken-branch",
+      "tier": "lazy-helpers",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc good(int x) -> int { return x; } fnc f(int x) -> int { if x != 0 { return good(42/x); } return 0; } pub fnc main() -> int { return f(1); }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "lazy-helper-scoped-local",
+      "tier": "lazy-helpers",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc good(int x) -> int { val y=x; return y; } fnc f(int x) -> int { if x != 0 { return good(42/x); } return 0; } pub fnc main() -> int { return f(1); }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "lazy-helper-nested-call",
+      "tier": "lazy-helpers",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc good(int x) -> int { val y=x; return y; } fnc outer(int x) -> int { return good(x); } fnc f(int x) -> int { if x != 0 { return outer(42/x); } return 0; } pub fnc main() -> int { return f(1); }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "lazy-helper-right-evaluated",
+      "tier": "lazy-helpers",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc good(int x) -> int { return x; } fnc f(int x) -> int { if x != 0 && good(42/x) == 42 { return 42; } return 0; } pub fnc main() -> int { return f(1); }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "lazy-helper-wrong-branch",
+      "tier": "lazy-helpers",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc good(int x) -> int { return x; } fnc f(int x) -> int { if x == 0 { return good(42/x); } return 42; } pub fnc main() -> int { return f(1); }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "lazy-helper-unrelated-binding",
+      "tier": "lazy-helpers",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc good(int x) -> int { return x; } fnc f(int x,int y) -> int { if x != 0 { return good(42/y); } return 42; } pub fnc main() -> int { return f(1,1); }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "lazy-helper-unused-argument",
+      "tier": "lazy-helpers",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc pick(int a,int b) -> int { return a; } fnc f(int x) -> int { if x != 0 { return pick(42, -9223372036854775808/x); } return 42; } pub fnc main() -> int { return f(1); }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "lazy-helper-or-not-proof",
+      "tier": "lazy-helpers",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc good(int x) -> int { return x; } fnc f(int x) -> int { if x != 0 || x == 0 { return good(42/x); } return 42; } pub fnc main() -> int { return f(1); }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "full-width-256",
+      "tier": "full-width",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { return 256; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "256"
+      }
+    },
+    {
+      "id": "full-width-negative",
+      "tier": "full-width",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { return -1; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "-1"
+      }
+    },
+    {
+      "id": "full-width-min",
+      "tier": "full-width",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { return -9223372036854775808; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "-9223372036854775808"
+      }
+    },
+    {
+      "id": "full-width-max",
+      "tier": "full-width",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { return 9223372036854775807; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "9223372036854775807"
+      }
+    },
+    {
+      "id": "full-width-max-add",
+      "tier": "full-width",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { return 9223372036854775806 + 1; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "9223372036854775807"
+      }
+    },
+    {
+      "id": "full-width-min-div",
+      "tier": "full-width",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { return -9223372036854775808 / 2; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "-4611686018427387904"
+      }
+    },
+    {
+      "id": "full-width-overflow",
+      "tier": "full-width",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { return 9223372036854775807 + 1; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "full-width-underflow",
+      "tier": "full-width",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { return -9223372036854775808 - 1; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "full-width-negation",
+      "tier": "full-width",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { return -(-9223372036854775808); }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "full-width-div-overflow",
+      "tier": "full-width",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { return -9223372036854775808 / -1; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "mutable-reassign",
+      "tier": "mutable-rebinding",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { let int x = 1; x = 42; return x; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "mutable-old-snapshot",
+      "tier": "mutable-rebinding",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { let int x = 42; val y = x; x = 0; return y; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "mutable-new-proof",
+      "tier": "mutable-rebinding",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { let int x = 0; x = 1; return 42/x; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "mutable-refinement",
+      "tier": "mutable-rebinding",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { let Bounded x = 1; x = x + 41; return x; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "mutable-helper",
+      "tier": "mutable-rebinding",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc f(int a) -> int { let int x = a; x = 42; return x; } pub fnc main() -> int { return f(0); }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "mutable-distinct-slots",
+      "tier": "mutable-rebinding",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { let int x = 1; let int y = x; x = 0; return 42/y; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "mutable-zero",
+      "tier": "mutable-rebinding",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { let int x = 1; x = 0; return 42/x; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "mutable-overflow",
+      "tier": "mutable-rebinding",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { let int x = 1; x = 9223372036854775807; return x+1; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "mutable-refinement-escape",
+      "tier": "mutable-rebinding",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { let Bounded x = 1; x = 43; return x; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_REFINEMENT_BINDING"
+      }
+    },
+    {
+      "id": "mutable-discarded-unsafe",
+      "tier": "mutable-rebinding",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc f(int a) -> int { let int x = 0; x = 42/a; x = 42; return x; } pub fnc main() -> int { return f(1); }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "join-both-assign",
+      "tier": "mutable-joins",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc f(int a) -> int { let int x = 0; if a == 0 { x = 1; } else { x = 2; } return 84/x; } pub fnc main() -> int { return f(1); }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "join-one-assign",
+      "tier": "mutable-joins",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc f(int a) -> int { let int x = 1; if a == 0 { x = 2; } return 42/x; } pub fnc main() -> int { return f(1); }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "join-return-edge",
+      "tier": "mutable-joins",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc f(int a) -> int { let int x = 0; if a == 0 { return 42; } else { x = 1; } return 42/x; } pub fnc main() -> int { return f(1); }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "join-old-snapshot",
+      "tier": "mutable-joins",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc f(int a) -> int { let int x = 42; val y = x; if a == 0 { x = 0; } else { x = 1; } return y; } pub fnc main() -> int { return f(0); }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "join-nested",
+      "tier": "mutable-joins",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc f(int a, int b) -> int { let int x = 0; if a == 0 { if b == 0 { x = 1; } else { x = 2; } } else { x = 1; } return 42/x; } pub fnc main() -> int { return f(0,0); }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "join-guard-after-join",
+      "tier": "mutable-joins",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc f(int a) -> int { let int x = 0; if a == 0 { x = 1; } if x != 0 { return 42/x; } return 42; } pub fnc main() -> int { return f(1); }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "join-zero-arm",
+      "tier": "mutable-joins",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc f(int a) -> int { let int x = 1; if a == 0 { x = 0; } return 42/x; } pub fnc main() -> int { return f(1); }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "join-overflow-arm",
+      "tier": "mutable-joins",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc f(int a) -> int { let int x = 1; if a == 0 { x = 9223372036854775807; } return x+1; } pub fnc main() -> int { return f(1); }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "join-stale-guard",
+      "tier": "mutable-joins",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc f(int a) -> int { let int x = a; if x != 0 { x = 0; return 42/x; } return 42; } pub fnc main() -> int { return f(1); }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "join-refinement-arm",
+      "tier": "mutable-joins",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc f(int a) -> int { let Bounded x = 1; if a == 0 { x = 43; } return x; } pub fnc main() -> int { return f(1); }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_REFINEMENT_BINDING"
+      }
+    },
+    {
+      "id": "backedge-two-counters",
+      "tier": "loop-backedges",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { let Bounded x = 1; let Count y = 0; while x < 42 && y < 42 { x = x + 1; y = y + 1; } return 42; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "backedge-ordered",
+      "tier": "loop-backedges",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { let Bounded x = 1; let Count y = 0; while x < 42 { x = x + 1; y = x; } return y; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "backedge-zero-trip",
+      "tier": "loop-backedges",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { let Bounded x = 42; let Count y = 0; while x < 42 { x = x + 1; y = x; } return x; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "backedge-snapshot",
+      "tier": "loop-backedges",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { let Bounded x = 1; val old = x; let Count y = 0; while x < 42 { x = x + 1; y = x; } return old + 41; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "backedge-helper",
+      "tier": "loop-backedges",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Count = int where self >= 0 and self <= 42;\nfnc f(int a) -> int { let Bounded x = 1; let Count y = 0; while x < 42 { x = x + 1; y = x; } return x; } pub fnc main() -> int { return f(0); }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "backedge-nested",
+      "tier": "loop-backedges",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { let Bounded x = 1; while x < 42 { let Bounded y = 1; while y < 42 { y = y + 1; } x = x + 1; } return x; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "backedge-stale-guard",
+      "tier": "loop-backedges",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { let Count x = 1; let Count y = 1; while x > 0 { x = 0; y = 42/x; } return y; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "backedge-stale-header",
+      "tier": "loop-backedges",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { let Bounded x = 1; let Count y = 1; while x < 42 { x = x + 1; y = 42/y; y = 0; } return x; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "backedge-refinement",
+      "tier": "loop-backedges",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { let Bounded x = 1; let Count y = 0; while x < 42 { x = x + 1; y = 43; } return x; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_REFINEMENT_BINDING"
+      }
+    },
+    {
+      "id": "backedge-overflow",
+      "tier": "loop-backedges",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { let Bounded x = 1; let int y = 0; while x < 42 { x = x + 1; y = y + 1; } return x; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "loop-audit-commented-write",
+      "tier": "loop-adversarial",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { let Bounded x = 1; let Count y = 0; while x < 42 { x /* update */ = x + 1; y = x; } return y; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "loop-audit-nested-reset",
+      "tier": "loop-adversarial",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { let Bounded x = 1; let Count y = 0; while x < 42 { let Bounded z = 1; while z < 42 { z = z + 1; } y = z; x = x + 1; } return y; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "loop-audit-sequential-rewrite",
+      "tier": "loop-adversarial",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { let Bounded x = 1; let Count y = 0; while x < 42 { x = x + 1; y = 0; y = x; } return y; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "loop-audit-separate-snapshot",
+      "tier": "loop-adversarial",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { let Bounded x = 1; let Count y = 0; while x < 42 { val old = x; x = x + 1; y = old; } return y + 1; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "loop-audit-repeated-helper",
+      "tier": "loop-adversarial",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Count = int where self >= 0 and self <= 42;\nfnc f(int a) -> int { let Bounded x = 1; let Count y = 0; while x < 42 { x = x + 1; y = x; } return y; } pub fnc main() -> int { val a = f(0); val b = f(1); return a; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "loop-audit-zero-trip-unchanged",
+      "tier": "loop-adversarial",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { let Bounded x = 42; let Count y = 42; while x < 42 { x = x + 1; y = x; } return y; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "loop-audit-comment-stale-header",
+      "tier": "loop-adversarial",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { let Bounded x = 1; let Count y = 1; while x < 42 { x = x + 1; y = 42/y; y /* hidden write */ = 0; } return x; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "loop-audit-nested-stale-header",
+      "tier": "loop-adversarial",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { let Bounded x = 1; let Count y = 1; while x < 42 { let Bounded z = 1; while z < 42 { y = 0; z = z + 1; } y = 42/y; x = x + 1; } return x; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "loop-audit-discarded-overflow",
+      "tier": "loop-adversarial",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { let Bounded x = 1; let int y = 0; while x < 42 { y = 9223372036854775807; y = y + 1; y = 0; x = x + 1; } return x; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "loop-audit-nested-refinement",
+      "tier": "loop-adversarial",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Count = int where self >= 0 and self <= 42;\npub fnc main() -> int { let Bounded x = 1; let Count y = 0; while x < 42 { let Bounded z = 1; while z < 42 { y = 43; z = z + 1; } x = x + 1; } return x; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_REFINEMENT_BINDING"
+      }
     }
   ]
 }
