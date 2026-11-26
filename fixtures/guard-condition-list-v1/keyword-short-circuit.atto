@@ -1,0 +1,11 @@
+fnc pair(bool a, bool b): bool {
+    return a && b;
+}
+pub fnc main(): int {
+    let int zero = 0;
+    guard false, 42 / zero eq 0 else
+        guard pair(true, true), true, true { return 1; }
+        return 42;
+    end
+    return 2;
+}
