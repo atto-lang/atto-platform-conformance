@@ -309,7 +309,7 @@
       {
         "id": "wasm",
         "pr": "https://github.com/atto-lang/atto-source.wasm/pull/310",
-        "head": "5c652fe3e9e4514f29d82327d63ee339cbc3c091",
+        "head": "2616024d329748a2ab74dd44f66981b35426502d",
         "scope": "HOST_MODEL",
         "local_evidence": {
           "verified_blob_count": 3,
@@ -353,7 +353,7 @@
       {
         "id": "js",
         "pr": "https://github.com/atto-lang/atto-source.js/pull/164",
-        "head": "e9b9f987b992e412b6fb3f52af4ff3f262a8df24",
+        "head": "7efb04544885d5b1087a9178b78d13f1f725222e",
         "scope": "HOST_MODEL",
         "local_evidence": {
           "verified_blob_count": 3,
