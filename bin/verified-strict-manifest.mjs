@@ -1,6 +1,6 @@
 export function validateStrictManifest(m) {
  const fail=msg=>{throw new Error("invalid strict manifest: "+msg);};
- const tiers=["arithmetic","control-flow","loops","boundaries","guards","lazy-helpers","full-width","mutable-rebinding","mutable-joins","loop-backedges","loop-adversarial","array-bounds"];
+ const tiers=["arithmetic","control-flow","loops","boundaries","guards","lazy-helpers","full-width","mutable-rebinding","mutable-joins","loop-backedges","loop-adversarial","array-bounds","array-adversarial"];
  if(!m||m.schemaVersion!==1||m.profile!=="verified-core-strict-i64-v1"||!Array.isArray(m.cases)||!m.cases.length)fail("schema/profile/cases");
  const ids=new Set();
  for(const c of m.cases){
