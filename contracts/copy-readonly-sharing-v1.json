@@ -171,6 +171,44 @@
       "forbidden_statement": "b.scores.n = 5;",
       "diagnostic_line": 12,
       "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "fresh-map-entries",
+      "expect": {
+        "main_result": 42
+      },
+      "path": "fixtures/copy-readonly-sharing-v1/fresh-map-entries.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "shared-map-control",
+      "expect": {
+        "main_result": 42
+      },
+      "path": "fixtures/copy-readonly-sharing-v1/shared-map-control.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-shared-map-insert-a",
+      "expect": {
+        "compile_reject": "E_COPY_READONLY"
+      },
+      "paired_positive": "shared-map-control",
+      "forbidden_statement": "a.scores[\"new\"] = 99;",
+      "diagnostic_line": 8,
+      "path": "fixtures/copy-readonly-sharing-v1/reject-shared-map-insert-a.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-shared-map-insert-b",
+      "expect": {
+        "compile_reject": "E_COPY_READONLY"
+      },
+      "paired_positive": "shared-map-control",
+      "forbidden_statement": "b.scores[\"new\"] = 99;",
+      "diagnostic_line": 8,
+      "path": "fixtures/copy-readonly-sharing-v1/reject-shared-map-insert-b.atto",
+      "status": "NOT_EXECUTED"
     }
   ],
   "negative_policy": "First execute paired positive on same exact compiler tree. Require diagnostic at forbidden statement, no artifact, no E_COPY_SHALLOW_ALIAS or parser rejection as parity. Diagnostic mapping must be reviewed. No source rewriting or skipped negative tests.",
