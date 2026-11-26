@@ -70,6 +70,44 @@
       "file": "strict-std-await.atto",
       "sourceGitBlobSha1": "3c3451226ca3110bfdcf48ae772050806404da25",
       "confirmedBackends": []
+    },
+    {
+      "id": "conditional-receiver",
+      "expect": "exit",
+      "exit": 30,
+      "file": "conditional-receiver.atto",
+      "sourceGitBlobSha1": "19182f78495e50c0a0186a4de69df5b5b195d4c1",
+      "confirmedBackends": []
+    },
+    {
+      "id": "ternary-receiver",
+      "expect": "exit",
+      "exit": 30,
+      "file": "ternary-receiver.atto",
+      "sourceGitBlobSha1": "fd9d35f9a107c7b194ac663fe64ee803130dc790",
+      "confirmedBackends": []
+    },
+    {
+      "id": "conditional-chain",
+      "expect": "exit",
+      "exit": 100,
+      "file": "conditional-chain.atto",
+      "sourceGitBlobSha1": "ba71100721cc223a3b7a7ed6643ff34e9cd75dec",
+      "confirmedBackends": []
+    },
+    {
+      "id": "conditional-missing-else",
+      "expect": "reject",
+      "file": "conditional-missing-else.atto",
+      "sourceGitBlobSha1": "bb2e082235e1d86acc258be0a679a6abb18cd41d",
+      "confirmedBackends": []
+    },
+    {
+      "id": "conditional-non-bool",
+      "expect": "reject",
+      "file": "conditional-non-bool.atto",
+      "sourceGitBlobSha1": "7da9c3ffb7b8df5da1ea6b6bf7bf75a4212abc94",
+      "confirmedBackends": []
     }
   ]
 }
