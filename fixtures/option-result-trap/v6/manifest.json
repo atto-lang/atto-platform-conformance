@@ -75,6 +75,13 @@
       "expected": {
         "result": 42
       }
+    },
+    {
+      "path": "piped-match-error-binding.atto",
+      "git_blob_sha1": "13ee1d7cd4b83e062c4f8b454d2b5b213cc24a8f",
+      "expected": {
+        "result": 42
+      }
     }
   ]
 }
