@@ -8,7 +8,7 @@ import { verify } from "./verify-manifest.mjs";
 
 const root = dirname(fileURLToPath(import.meta.url));
 test("all select sources match pinned Git blob SHAs without claiming execution", () => {
-  assert.equal(verify(root).count, 38);
+  assert.equal(verify(root).count, 39);
 });
 test("source mutation and path traversal both fail closed", () => {
   const tmp = mkdtempSync(join(tmpdir(), "atto-select-v2-"));
@@ -16,7 +16,7 @@ test("source mutation and path traversal both fail closed", () => {
     const manifest = JSON.parse(readFileSync(join(root, "manifest.json"), "utf8"));
     for (const c of manifest.cases) copyFileSync(join(root, c.path), join(tmp, c.path));
     writeFileSync(join(tmp, "manifest.json"), JSON.stringify(manifest));
-    assert.equal(verify(tmp).count, 38);
+    assert.equal(verify(tmp).count, 39);
     const target = join(tmp, manifest.cases[0].path);
     writeFileSync(target, readFileSync(target, "utf8") + " // unauthorized edit");
     assert.throws(() => verify(tmp), /blob drift/);
