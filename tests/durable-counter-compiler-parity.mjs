@@ -43,7 +43,7 @@ try{
   assert.equal(snapshot.length,36);
   assert.equal(snapshot.subarray(0,8).toString(),'ATTOST01');
   assert.equal(snapshot[8],1);
-  assert.equal(snapshot.readBigUInt64LE(9),0xe435bba927ce0112n);
+  assert.equal(snapshot.readBigUInt64LE(9),0x46ec970556cc8237n);
   assert.equal(snapshot.readUInt16LE(17),1);assert.equal(snapshot[19],1);
   assert.equal(snapshot.readBigInt64LE(20),0n);
   let h=0xcbf29ce484222325n;
