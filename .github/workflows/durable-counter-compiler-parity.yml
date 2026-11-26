@@ -47,7 +47,7 @@ jobs:
 
   native-replay:
     runs-on: ubuntu-24.04
-    timeout-minutes: 35
+    timeout-minutes: 50
     strategy:
       fail-fast: false
       matrix:
@@ -60,6 +60,8 @@ jobs:
             sha: 6e99ebca842992014542ac91c09556f4d7f2e427
           - backend: net
             sha: 312e738a55bf9178e12c96e084510d8ada76044a
+          - backend: java
+            sha: 011e5d8c688a4072d1160112f7c10c8e69131d35
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
@@ -127,3 +129,22 @@ jobs:
           (cd "$dir" && bash verification/assert-linux-native-release.sh "$RUNNER_TEMP/atto-net-compiler/oresnet")
           (cd "$dir" && ATTO_NET_COMPILER="$RUNNER_TEMP/atto-net-compiler/oresnet" node verification/durable_counter_nativeaot.mjs)
           node tests/durable-counter-native-replay.mjs net "$RUNNER_TEMP/atto-net-compiler/oresnet"
+      - uses: graalvm/setup-graalvm@27b360dbb857524eaf0b4c4cef364d38e5b4f173
+        if: matrix.backend == 'java'
+        with:
+          version: '25.3'
+          java-version: '25'
+          distribution: graalvm
+      - name: Build Java compiler candidate and execute JVM and Native Image replay
+        if: matrix.backend == 'java'
+        run: |
+          set -euo pipefail
+          dir="$RUNNER_TEMP/atto-native"
+          (
+            cd "$dir"
+            mvn -B -ntp -DskipTests package
+            mvn -B -ntp -q dependency:build-classpath -Dmdep.outputFile=target/conformance-classpath.txt
+          )
+          cp="$dir/target/classes:$(cat "$dir/target/conformance-classpath.txt")"
+          (cd "$dir" && ATTO_JAVA_CP="$cp" ATTO_TEST_NATIVE_IMAGE=1 node tests/durable_counter_jvm_native.mjs)
+          node tests/durable-counter-native-replay.mjs java "$cp"
