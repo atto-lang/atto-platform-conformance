@@ -20,7 +20,8 @@ test('execution-context unwind registry enumerates all eleven active backends',(
 
 test('complete source-free positive/negative semantics without invented guest passes',()=>{
   const cases=registry.cases;
-  assert.ok(cases.length >= 15);
+  assert.ok(cases.length >= 33);
+  assert.equal(registry.extended_spec_candidate,'https://github.com/atto-lang/atto-spec/pull/245');
   assert.equal(new Set(cases.map(x=>x.id)).size,cases.length);
   for(const x of cases){
     assert.match(x.id,/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
@@ -35,7 +36,12 @@ test('complete source-free positive/negative semantics without invented guest pa
   }
   for(const id of ['return-lifo','throw-outer-catch','raise-catch-bypass',
     'panic-fatal','cancel-terminal','recovery-one-shot','task-await-context',
-    'sibling-task-separation','tenant-generation','async-cleanup-proof'])
+    'sibling-task-separation','tenant-generation','async-cleanup-proof',
+    'braceless-delayed','bound-closure-factory','named-cleanup','factory-registration-failure',
+    'bare-await-cleanup','assignment-await-cleanup','susp-recover-cursor','callback-local-error-handled',
+    'callback-error-panic','multiple-cleanup-panics','cancel-cleanup-panic','recover-error-panic',
+    'nested-defer-scope','unsafe-borrow-suspension','nonsuspending-block-await','wrong-callback-arity',
+    'susp-cleanup-stale-wakeup','discarded-fallible-result'])
     assert.ok(cases.some(c=>c.id===id),`missing ${id}`);
   assert.ok(cases.some(c=>c.group==='compile-reject'));
 });
