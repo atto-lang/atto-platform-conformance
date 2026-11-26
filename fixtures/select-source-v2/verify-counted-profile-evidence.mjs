@@ -16,7 +16,7 @@ export function verifyEvidence(data=ledger,m=manifest){
     if(r.carrier!==undefined)assert.match(r.carrier,/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/);
     for(const field of ['head','tree'])assert.match(r[field],/^[a-f0-9]{40}$/);
     for(const field of ['pr','run','job','steps'])assert.ok(Number.isSafeInteger(r[field])&&r[field]>0);
-    if(r.profile==='counted-ready-v1-chrome-dedicated-worker'){
+    if(r.profile==='counted-ready-v1-chrome-worker-direct-wasm'){
       for(const field of ['compilerHead','compilerTree'])assert.match(r[field],/^[a-f0-9]{40}$/);
       assert.ok(data.records.some(o=>o.backend==='rs'&&o.profile==='counted-ready-v1-direct-wasm'&&o.head===r.compilerHead&&o.tree===r.compilerTree));
     }
