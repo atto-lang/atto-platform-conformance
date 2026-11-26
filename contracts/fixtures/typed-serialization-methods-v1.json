@@ -4,7 +4,7 @@
   "spec": "https://github.com/atto-lang/atto-spec/pull/281",
   "source_fixture": {
     "pr": "https://github.com/atto-lang/atto-serialization-and-validation/pull/100",
-    "head": "c4960fd4ada820dc80eae9ae415c99734a1750cd",
+    "head": "a8e78f09af33d57e575fc71839fd5c42116b6cb3",
     "path": "tests/generated_typed_codec_test.ores",
     "scope": "Existing manually projected typed JSON fixture, not compiler-generated method support"
   },
@@ -49,6 +49,16 @@
     {
       "id": "trailing_data",
       "json_utf8": "{\"displayName\":\"Alex\",\"age\":42}{}",
+      "expected": "reject"
+    },
+    {
+      "id": "signed_overflow",
+      "json_utf8": "{\"displayName\":\"Alex\",\"age\":9223372036854775808}",
+      "expected": "reject"
+    },
+    {
+      "id": "fractional_integer",
+      "json_utf8": "{\"displayName\":\"Alex\",\"age\":42.5}",
       "expected": "reject"
     }
   ],
