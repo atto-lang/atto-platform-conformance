@@ -9,9 +9,9 @@ import {join,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 const [backend,compilerPath]=process.argv.slice(2);
-assert.ok(['forge','cranelift','llvm','net'].includes(backend)&&compilerPath&&process.argv.length===4,
-  'usage: node tests/durable-counter-native-replay.mjs forge|cranelift|llvm|net /path/to/compiler');
-const compiler=resolve(compilerPath);
+assert.ok(['forge','cranelift','llvm','net','java'].includes(backend)&&compilerPath&&process.argv.length===4,
+  'usage: node tests/durable-counter-native-replay.mjs forge|cranelift|llvm|net /path/to/compiler (Java: absolute classpath)');
+const compiler=backend==='java'?compilerPath:resolve(compilerPath);
 const fixture=fileURLToPath(new URL('../fixtures/actors/persistence/durable_counter_broker_v1.atto',import.meta.url));
 const source=readFileSync(fixture);
 const dir=mkdtempSync(join(tmpdir(),'atto-native-replay-'));
@@ -69,6 +69,13 @@ const run=(bin,args,input)=>{
   assert.equal(r.stderr.length,0,r.stderr.toString());
   return r.stdout;
 };
+const inputVectors=vectors.map(v=>v.join(' ')).join('\n')+'\n';
+function verifyOutput(bytes,profile){
+  const lines=bytes.toString().split('\n');assert.equal(lines.pop(),'');
+  assert.equal(lines.shift(),descriptorHex,profile+' descriptor');
+  assert.equal(lines.length,expected.length,profile+' result count');
+  for(let i=0;i<expected.length;i++)assert.equal(lines[i],expected[i].toString(),`${profile} vector ${i}: ${vectors[i].join(' ')}`);
+}
 const driver=`#include <cstddef>
 #include <cstdint>
 #include <cstdio>
@@ -112,6 +119,9 @@ try{
   if(backend==='forge'){
     artifact=join(dir,'counter.cpp');
     run(compiler,['--durable-counter-actor-v1',input,'-o',artifact]);
+  }else if(backend==='java'){
+    artifact=join(dir,'AttoDurableCounterV1.java');
+    run('java',['-cp',compiler,'dev.oreslang.launcher.OresMain','--durable-counter-actor-v1',input,'-o',artifact]);
   }else if(backend==='net'){
     artifact=join(dir,'Counter.g.cs');
     run(compiler,['emit-durable-counter-v1',input,'--out',artifact]);
@@ -125,7 +135,28 @@ try{
     writeFileSync(artifact,bytes);
   }
   const bytes=readFileSync(artifact);assert.ok(bytes.length>0);
-  if(backend==='net'){
+  if(backend==='java'){
+    const javaDriver=join(dir,'Driver.java');
+    writeFileSync(javaDriver,`public final class Driver {
+      public static void main(String[] args) throws Exception {
+        System.out.println(java.util.HexFormat.of().formatHex(AttoDurableCounterV1.descriptor()));
+        var reader=new java.io.BufferedReader(new java.io.InputStreamReader(System.in));
+        for(String line;(line=reader.readLine())!=null;) {
+          String[] p=line.split(" ");
+          if(p.length!=3)throw new IllegalArgumentException("bad vector");
+          System.out.println(AttoDurableCounterV1.transition(Long.parseLong(p[0]),Long.parseLong(p[1]),Long.parseLong(p[2])));
+        }
+      }
+    }`);
+    run('javac',['-d',dir,'-Xlint:all','-Werror',artifact,javaDriver]);
+    verifyOutput(run('java',['-cp',dir,'Driver'],inputVectors),'java-jvm');
+    // Native Image must be present and succeed; JVM-only cannot satisfy this gate.
+    const ni=spawnSync('native-image',['--no-fallback','-cp',dir,'Driver',guest],
+      {cwd:dir,encoding:'utf8',timeout:240000,maxBuffer:8<<20});
+    assert.equal(ni.error,undefined,String(ni.error));
+    assert.equal(ni.status,0,ni.stdout+'\n'+ni.stderr);
+    assert.deepEqual(readFileSync(guest).subarray(0,4),Buffer.from([127,69,76,70]));
+  }else if(backend==='net'){
     writeFileSync(join(dir,'Guest.csproj'),`<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup>
       <TargetFramework>net10.0</TargetFramework><OutputType>Exe</OutputType><AssemblyName>guest</AssemblyName>
       <PublishAot>true</PublishAot><SelfContained>true</SelfContained><InvariantGlobalization>true</InvariantGlobalization>
@@ -153,13 +184,9 @@ return 0;
   }else run(backend==='llvm'?(process.env.CLANGXX||'clang++'):(process.env.CXX||'c++'),['-std=c++20','-O2','-Wall','-Wextra','-Werror','-pedantic',
     '-fsanitize=undefined','-fno-sanitize-recover=all',
     ...(backend==='forge'?['-DFORGE']:backend==='llvm'?['-DLLVM','-Wno-override-module']:[]),driverFile,artifact,'-o',guest]);
-  const result=run(guest,[],vectors.map(v=>v.join(' ')).join('\n')+'\n').toString();
-  const lines=result.split('\n');assert.equal(lines.pop(),'');
-  assert.equal(lines.shift(),descriptorHex);
-  assert.equal(lines.length,expected.length);
-  for(let i=0;i<expected.length;i++)assert.equal(lines[i],expected[i].toString(),`vector ${i}: ${vectors[i].join(' ')}`);
+  verifyOutput(run(guest,[],inputVectors),backend==='java'?'java-native-image':backend);
   console.log(JSON.stringify({status:'NATIVE_RESTRICTED_COUNTER_REPLAY_PASS',backend,
     originalCases:244,extendedSignedI64Cases:12,replayStats,terminal,
-    totalCases:vectors.length,fixtureSha256:hash(source),artifactSha256:hash(bytes),
+    totalCases:vectors.length,executedProfiles:backend==='java'?['java-jvm','java-native-image']:[backend],fixtureSha256:hash(source),artifactSha256:hash(bytes),
     descriptorSha256:hash(Buffer.from(descriptorHex,'hex')),diskRecoveryExecuted:false,fullDurableActorParity:false}));
 }finally{rmSync(dir,{recursive:true,force:true});}
