@@ -24,16 +24,23 @@
       "expected": {
         "value": 42
       },
-      "equivalenceGroup": "divide"
+      "equivalenceGroup": "divide",
+      "capabilities": [
+        "contract-annotations"
+      ]
     },
     {
       "id": "brace-inline-mixed",
       "stage": "execute",
-      "source": "fnc divide(int a, int b) -> int\n    requires b != 0\n    ensures result == a / b {\n    return a / b;\n}\npub fnc main() -> int { return divide(84, 2); }\n",
+      "source": "@ensures(result == a / b)\nfnc divide(int a, int b) -> int\n    requires b != 0 {\n    return a / b;\n}\npub fnc main() -> int { return divide(84, 2); }\n",
       "expected": {
         "value": 42
       },
-      "equivalenceGroup": "divide"
+      "equivalenceGroup": "divide",
+      "capabilities": [
+        "contract-annotations",
+        "expression-postconditions"
+      ]
     },
     {
       "id": "brace-next-keyword",
@@ -51,16 +58,23 @@
       "expected": {
         "value": 42
       },
-      "equivalenceGroup": "divide"
+      "equivalenceGroup": "divide",
+      "capabilities": [
+        "contract-annotations"
+      ]
     },
     {
       "id": "brace-next-mixed",
       "stage": "execute",
-      "source": "fnc divide(int a, int b) -> int\n    requires b != 0\n    ensures result == a / b\n{\n    return a / b;\n}\npub fnc main() -> int { return divide(84, 2); }\n",
+      "source": "@ensures(result == a / b)\nfnc divide(int a, int b) -> int\n    requires b != 0\n{\n    return a / b;\n}\npub fnc main() -> int { return divide(84, 2); }\n",
       "expected": {
         "value": 42
       },
-      "equivalenceGroup": "divide"
+      "equivalenceGroup": "divide",
+      "capabilities": [
+        "contract-annotations",
+        "expression-postconditions"
+      ]
     },
     {
       "id": "begin-keyword",
@@ -78,16 +92,23 @@
       "expected": {
         "value": 42
       },
-      "equivalenceGroup": "divide"
+      "equivalenceGroup": "divide",
+      "capabilities": [
+        "contract-annotations"
+      ]
     },
     {
       "id": "begin-mixed",
       "stage": "execute",
-      "source": "fnc divide(int a, int b) -> int\n    requires b != 0\n    ensures result == a / b\nbegin\n    return a / b;\nend\npub fnc main() -> int { return divide(84, 2); }\n",
+      "source": "@ensures(result == a / b)\nfnc divide(int a, int b) -> int\n    requires b != 0\nbegin\n    return a / b;\nend\npub fnc main() -> int { return divide(84, 2); }\n",
       "expected": {
         "value": 42
       },
-      "equivalenceGroup": "divide"
+      "equivalenceGroup": "divide",
+      "capabilities": [
+        "contract-annotations",
+        "expression-postconditions"
+      ]
     },
     {
       "id": "double-colon-inline-keyword",
@@ -105,16 +126,23 @@
       "expected": {
         "value": 42
       },
-      "equivalenceGroup": "divide"
+      "equivalenceGroup": "divide",
+      "capabilities": [
+        "contract-annotations"
+      ]
     },
     {
       "id": "double-colon-inline-mixed",
       "stage": "execute",
-      "source": "fnc divide(int a, int b) -> int\n    requires b != 0\n    ensures result == a / b ::\n    return a / b;\nend\npub fnc main() -> int { return divide(84, 2); }\n",
+      "source": "@ensures(result == a / b)\nfnc divide(int a, int b) -> int\n    requires b != 0 ::\n    return a / b;\nend\npub fnc main() -> int { return divide(84, 2); }\n",
       "expected": {
         "value": 42
       },
-      "equivalenceGroup": "divide"
+      "equivalenceGroup": "divide",
+      "capabilities": [
+        "contract-annotations",
+        "expression-postconditions"
+      ]
     },
     {
       "id": "double-colon-next-keyword",
@@ -132,16 +160,23 @@
       "expected": {
         "value": 42
       },
-      "equivalenceGroup": "divide"
+      "equivalenceGroup": "divide",
+      "capabilities": [
+        "contract-annotations"
+      ]
     },
     {
       "id": "double-colon-next-mixed",
       "stage": "execute",
-      "source": "fnc divide(int a, int b) -> int\n    requires b != 0\n    ensures result == a / b\n::\n    return a / b;\nend\npub fnc main() -> int { return divide(84, 2); }\n",
+      "source": "@ensures(result == a / b)\nfnc divide(int a, int b) -> int\n    requires b != 0\n::\n    return a / b;\nend\npub fnc main() -> int { return divide(84, 2); }\n",
       "expected": {
         "value": 42
       },
-      "equivalenceGroup": "divide"
+      "equivalenceGroup": "divide",
+      "capabilities": [
+        "contract-annotations",
+        "expression-postconditions"
+      ]
     },
     {
       "id": "cast-and-body-opener",
