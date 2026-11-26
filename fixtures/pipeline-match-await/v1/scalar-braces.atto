@@ -1,0 +1,4 @@
+fnc increment(int n): int { return n + 1; }
+pub fnc main(): int {
+    return 2 |> match<int> over { on 2 -> 41, default -> 0, } |> increment;
+}
