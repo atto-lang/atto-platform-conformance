@@ -1,6 +1,6 @@
 # Static select source matrix v2 — all compiler targets
 
-15 pinned guest sources x 11 target repositories = 165 explicitly tracked cells.
+23 pinned guest sources x 11 target repositories = 253 explicitly tracked cells.
 The v1 directory remains unchanged. Existing expectations are carried forward
 only as historical prospective expectations; new cells are unverified.
 The `target` field records intended semantics of newly added sources separately
@@ -18,3 +18,9 @@ A manifest check, runtime-only oracle or no-step CI is not compiler evidence.
 
 Run `node fixtures/select-source-v2/verify-manifest.mjs` and
 `node --test fixtures/select-source-v2/verify-manifest.test.mjs` for integrity only.
+
+The Nov 25 Future-by-default decision supersedes the original blocking value
+fixture. Canonical select returns Future<T>, await is explicit, nb select is a
+deprecated tracked alias, and select<T> specifies the arm result. New target
+fixtures cover those forms, result mismatches, generic arity, implicit await,
+missing result and illegal await effect. These are unexecuted target fixtures.

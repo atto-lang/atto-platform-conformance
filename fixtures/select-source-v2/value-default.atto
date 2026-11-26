@@ -1,1 +1,1 @@
-pub fnc main(): int { val int result = select over default: -> { return 21; } end; return result * 2; }
+suspends fnc main(): int { val int result = await select over default: -> { return 21; } end; return result * 2; }
