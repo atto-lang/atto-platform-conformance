@@ -64,5 +64,5 @@ jobs:
             echo 'Altered target source unexpectedly passed'
             exit 1
           fi
-          grep -F '1d3e23affb2853f545912585fcb4f046592d4e25' target-altered.log
+          grep -F '752d1ad3fb3564eed9067a0a530eb2150d1c14b4' target-altered.log
           echo 'Target matrix guest execution: NOT_EXECUTED (no source staging)'
