@@ -1,0 +1,5 @@
+pub fnc main(): int {
+    defer { stdio.println("remaining"); };
+    defer { panic! new Error("cleanup panic"); };
+    throw! new Error("original throw");
+}

@@ -1,0 +1,3 @@
+pub fnc main(): int {
+    try { panic! new Error("fatal"); } catch (err) { return 42; }
+}

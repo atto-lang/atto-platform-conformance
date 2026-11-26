@@ -1,0 +1,6 @@
+pub fnc main(): int {
+    defer { stdio.println("A"); };
+    defer { stdio.println("B"); };
+    stdio.println("body");
+    return 42;
+}

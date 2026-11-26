@@ -1,0 +1,12 @@
+// Harness supplies pending_i64(): Future<int>; release only after authenticated waiter registration.
+// Harness cancels this Task after pending_i64 waiter registration, never by timing alone.
+pub async fnc main(): int {
+    let Task<int> worker = nb task {
+        defer { stdio.println("cleanup"); };
+        val r = trap! (await pending_i64());
+        stdio.println("unexpected return");
+        return r.unwrap();
+    };
+    await worker.get_done();
+    return 42;
+}

@@ -1,0 +1,4 @@
+fnc handled(): int { try { throw! new Error("local"); } catch (err) { return 42; } }
+pub fnc main(): int {
+    val r = trap! handled(); return r.unwrap();
+}

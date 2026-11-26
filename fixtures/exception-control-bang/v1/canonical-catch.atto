@@ -1,0 +1,7 @@
+pub fnc main(): int {
+    try {
+        throw! new Error("ordinary failure");
+    } catch (err) {
+        return 42;
+    }
+}

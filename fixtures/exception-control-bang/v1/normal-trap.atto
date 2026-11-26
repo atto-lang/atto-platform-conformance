@@ -1,0 +1,3 @@
+pub fnc main(): int {
+    val r = trap! 42; return r.unwrap();
+}

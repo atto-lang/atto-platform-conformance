@@ -1,0 +1,6 @@
+// Harness supplies pending_i64(): Future<int>; release only after authenticated waiter registration.
+async trap fnc work(): Option<int> { val n = await pending_i64(); return None; }
+pub async fnc main(): int {
+    val Result<Option<int>, Error> r = await work();
+    return r.unwrap().is_none() ? 42 : 0;
+}

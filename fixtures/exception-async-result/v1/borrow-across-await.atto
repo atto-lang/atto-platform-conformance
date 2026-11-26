@@ -1,0 +1,8 @@
+// Harness supplies pending_i64(): Future<int>; release only after authenticated waiter registration.
+define class Box as pub let int value = 42; end
+pub async fnc main(): int {
+    val Box owner = new Box();
+    val borrow Box view = borrow! owner;
+    val n = await pending_i64();
+    return view.value;
+}

@@ -1,0 +1,4 @@
+define class Plain as end
+pub fnc main(): int {
+    throw! new Plain();
+}

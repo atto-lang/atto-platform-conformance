@@ -1,0 +1,4 @@
+pub fnc main(): int {
+    val failure = new Error("owned");
+    try { throw! take! failure; } catch (err) { return 42; }
+}

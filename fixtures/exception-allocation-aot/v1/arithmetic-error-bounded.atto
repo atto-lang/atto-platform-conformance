@@ -1,0 +1,5 @@
+fnc quotient(int n, int d): int { return n / d; }
+pub fnc main(): int {
+    val r = trap! quotient(7, 0);
+    return r.is_err() ? 42 : 0;
+}
