@@ -4,10 +4,10 @@
   "spec": "https://github.com/atto-lang/atto-spec/pull/281",
   "source_fixture": {
     "pr": "https://github.com/atto-lang/atto-serialization-and-validation/pull/100",
-    "head": "1a89ee7aff1f8b3decdb49fc13724d9bf2a7fd75",
+    "head": "84965e5932992a3d574fc3129ad94111c2689d71",
     "path": "tests/generated_typed_codec_test.ores",
     "scope": "Manually projected typed JSON and MessagePack fixture with shared metadata validation; not compiler-generated method support",
-    "tree": "934b3bd0e27cfe59db2fe41ddf58796b53652551"
+    "tree": "6701687a414f2096311b1915e51e8d49b47a1aad"
   },
   "profile": {
     "schema": "User example, fields displayName string and age signed integer in this fixed order",
@@ -89,7 +89,7 @@
   "messagepack_source_fixture": {
     "path": "tests/messagepack_test.ores",
     "scope": "dynamic MessagePack wire roundtrip and malformed frame tests; no typed constructor lowering",
-    "head": "1a89ee7aff1f8b3decdb49fc13724d9bf2a7fd75"
+    "head": "84965e5932992a3d574fc3129ad94111c2689d71"
   },
   "messagepack_negative": [
     {
@@ -125,13 +125,13 @@
   ],
   "typed_messagepack_source_fixture": {
     "path": "tests/generated_typed_codec_test.ores",
-    "head": "1a89ee7aff1f8b3decdb49fc13724d9bf2a7fd75",
+    "head": "84965e5932992a3d574fc3129ad94111c2689d71",
     "scope": "Shared metadata validation, concrete User constructor, typed errors; guest NOT_EXECUTED"
   },
   "messagepack_container_admission": {
     "scope": "candidate dynamic codec, exact error and no partial value assertions; not guest evidence",
     "source_path": "tests/messagepack_test.ores",
-    "head": "1a89ee7aff1f8b3decdb49fc13724d9bf2a7fd75",
+    "head": "84965e5932992a3d574fc3129ad94111c2689d71",
     "negative": [
       {
         "hex": "930102",
@@ -234,11 +234,44 @@
     "passed": 5,
     "scope": "3 serde admission and 2 declaration regression test functions using actual compiler CLI and scalar JIT/IR; not codec generation or AOT"
   },
-  "net_admission_candidate": {
+  "net_compiler_admission_receipt": {
     "source_pr": "https://github.com/atto-lang/atto-source.net/pull/352",
     "head": "d4006239dd1af6cfce427b12451bd769f6940d7f",
     "tree": "111398e5e9bdd04f852ddde1b668f2d3034f0489",
-    "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45912622666",
-    "scope": "pending NativeAOT scalar control and compiler rejection, not serializer execution"
+    "blobs": 1720,
+    "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45912622666/job/140224334544",
+    "passed": 6,
+    "scope": "NativeAOT compiler and standalone scalar guest published and executed, five source denials, not serializer execution"
+  },
+  "json_index_candidate": {
+    "head": "84965e5932992a3d574fc3129ad94111c2689d71",
+    "tree": "6701687a414f2096311b1915e51e8d49b47a1aad",
+    "paths": [
+      "src/core/wire_hash_index.ores",
+      "src/json/json.ores",
+      "tests/json_test.ores"
+    ],
+    "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45913335785",
+    "scope": "JSON candidate removes its nested Map, cumulative logical slot and key work budgets, byte equality, duplicate policies, incomplete and zero entry cases; full execution blocked, not physical allocation evidence"
+  },
+  "java_json_index_prior_head_receipt": {
+    "head": "3258162c5d62e551782de7d807d4676e5faedb29",
+    "tree": "80d4d4f3e7728a9087e8ddb663629bf36aebea34",
+    "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45913135177/job/140225971752",
+    "scope": "3 isolated wire arithmetic, decimal and expanded hash index guests passed; full suite fails Map admission in Value; does not qualify JSON or later head"
+  },
+  "llvm_admission_candidate": {
+    "head": "ee48e0263f0bd805ef3e376ca40dc0d03d1d7df1",
+    "tree": "e92d3b011e880948a79a5f2ad7e313853460d657",
+    "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45913208011",
+    "scope": "pending corrected missing member tests; prior scalar positive and missing name denial passed, prior run failed"
+  },
+  "wasm_admission_candidate": {
+    "head": "0021bade83e7acb9aba2f44f63856e791c33c5ec",
+    "tree": "f6a59140fe941ff89d0e775a2e51aaed1a7feb66",
+    "llvm_head": "ee48e0263f0bd805ef3e376ca40dc0d03d1d7df1",
+    "llvm_tree": "e92d3b011e880948a79a5f2ad7e313853460d657",
+    "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45913269966",
+    "scope": "required real compiler bridge; pending"
   }
 }
