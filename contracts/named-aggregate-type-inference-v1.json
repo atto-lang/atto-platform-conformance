@@ -740,6 +740,84 @@
         "atto": "not_executed",
         "realtime": "not_executed"
       }
+    },
+    {
+      "id": "call_tuple_all_slots_two_calls_42",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/pass/call_tuple_all_slots_two_calls_42.atto",
+      "expect": "accept",
+      "expected_exit": 42,
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "call_bare_seq_two_calls_42",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/pass/call_bare_seq_two_calls_42.atto",
+      "expect": "accept",
+      "expected_exit": 42,
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "call_record_extra_field",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/reject/call_record_extra_field.atto",
+      "expect": "reject",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "call_typeof_wrong_parameter",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/reject/call_typeof_wrong_parameter.atto",
+      "expect": "reject",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
     }
   ]
 }
