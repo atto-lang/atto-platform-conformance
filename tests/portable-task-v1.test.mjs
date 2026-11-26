@@ -217,3 +217,20 @@ test('falsey non-null receipt data is malformed, not absent',()=>{
  for(const r of [false,0,''])assert.equal(classifyReceipt(positive,'java',r).status,'failed');
  assert.equal(classifyReceipt(positive,'java',null).status,'not_executed');
 });
+
+
+test('required and forbidden observations cannot drift from the portable contract',()=>{
+ for(const c of manifest.cases){
+  const mutate=patch=>({...manifest,cases:manifest.cases.map(x=>x.id===c.id?{...x,...patch}:x)});
+  for(const field of ['mustObserve','mustNotObserve']){
+   const original=c[field];
+   assert.throws(()=>validateManifest(mutate({[field]:[...original,'unexpected_marker']})),/invalid portable Task case/,c.id+': '+field);
+   if(original.length){
+    assert.throws(()=>validateManifest(mutate({[field]:original.slice(1)})),/invalid portable Task case/,c.id+': missing '+field);
+    assert.throws(()=>validateManifest(mutate({[field]:['changed_marker',...original.slice(1)]})),/invalid portable Task case/,c.id+': changed '+field);
+   }
+   if(original.length>1) assert.throws(()=>validateManifest(mutate({[field]:[...original].reverse()})),/invalid portable Task case/,c.id+': order '+field);
+  }
+ }
+ assert.equal(validateManifest(manifest),manifest);
+});
