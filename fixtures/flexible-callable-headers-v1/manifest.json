@@ -21,112 +21,128 @@
       "kind": "pass",
       "path": "fixtures/flexible-callable-headers-v1/before-begin.atto",
       "expected_exit": 42,
-      "gate": "EXECUTE_COMPILED_GUEST"
+      "gate": "EXECUTE_COMPILED_GUEST",
+      "git_blob_sha": "6ce7abb5c7369029e9ced91d55f7d2e649a1a58a"
     },
     {
       "id": "after-begin",
       "kind": "pass",
       "path": "fixtures/flexible-callable-headers-v1/after-begin.atto",
       "expected_exit": 42,
-      "gate": "EXECUTE_COMPILED_GUEST"
+      "gate": "EXECUTE_COMPILED_GUEST",
+      "git_blob_sha": "cfb26585d3115f1f112feae93599f989a94d7f9f"
     },
     {
       "id": "after-implicit",
       "kind": "pass",
       "path": "fixtures/flexible-callable-headers-v1/after-implicit.atto",
       "expected_exit": 42,
-      "gate": "EXECUTE_COMPILED_GUEST"
+      "gate": "EXECUTE_COMPILED_GUEST",
+      "git_blob_sha": "779adbe38ec956b1e1c6e60c3f30db8b475827d4"
     },
     {
       "id": "after-brace",
       "kind": "pass",
       "path": "fixtures/flexible-callable-headers-v1/after-brace.atto",
       "expected_exit": 42,
-      "gate": "EXECUTE_COMPILED_GUEST"
+      "gate": "EXECUTE_COMPILED_GUEST",
+      "git_blob_sha": "7b4edb220a8bda8a2af2f1126dd601dd3d4e139f"
     },
     {
       "id": "before-brace",
       "kind": "pass",
       "path": "fixtures/flexible-callable-headers-v1/before-brace.atto",
       "expected_exit": 42,
-      "gate": "EXECUTE_COMPILED_GUEST"
+      "gate": "EXECUTE_COMPILED_GUEST",
+      "git_blob_sha": "85adda1a02a1b0732d70321aede48cb9bec596b3"
     },
     {
       "id": "duplicate-return",
       "kind": "fail",
       "path": "fixtures/flexible-callable-headers-v1/duplicate-return.atto",
       "reason": "duplicate result annotation",
-      "gate": "NO_ARTIFACT_DIAGNOSTIC"
+      "gate": "NO_ARTIFACT_DIAGNOSTIC",
+      "git_blob_sha": "43f33ab38741169ebc91c6e7feb18a7f64afe7b6"
     },
     {
       "id": "missing-return",
       "kind": "fail",
       "path": "fixtures/flexible-callable-headers-v1/missing-return.atto",
       "reason": "missing result annotation",
-      "gate": "NO_ARTIFACT_DIAGNOSTIC"
+      "gate": "NO_ARTIFACT_DIAGNOSTIC",
+      "git_blob_sha": "d4452e577a44044d2529558d7153264eda8e981d"
     },
     {
       "id": "duplicate-effects",
       "kind": "fail",
       "path": "fixtures/flexible-callable-headers-v1/duplicate-effects.atto",
       "reason": "duplicate contract clause",
-      "gate": "NO_ARTIFACT_DIAGNOSTIC"
+      "gate": "NO_ARTIFACT_DIAGNOSTIC",
+      "git_blob_sha": "a41b656050d365b97c4e7a70d08af387179c542a"
     },
     {
       "id": "duplicate-budget",
       "kind": "fail",
       "path": "fixtures/flexible-callable-headers-v1/duplicate-budget.atto",
       "reason": "duplicate contract clause",
-      "gate": "NO_ARTIFACT_DIAGNOSTIC"
+      "gate": "NO_ARTIFACT_DIAGNOSTIC",
+      "git_blob_sha": "2a5659bbbec1919535d409a467ef9d5a233c8e43"
     },
     {
       "id": "duplicate-key",
       "kind": "fail",
       "path": "fixtures/flexible-callable-headers-v1/duplicate-key.atto",
       "reason": "duplicate contract entry",
-      "gate": "NO_ARTIFACT_DIAGNOSTIC"
+      "gate": "NO_ARTIFACT_DIAGNOSTIC",
+      "git_blob_sha": "83c2f914b68da81ea9709f94ecc865360c777b43"
     },
     {
       "id": "late-clause",
       "kind": "fail",
       "path": "fixtures/flexible-callable-headers-v1/late-clause.atto",
       "reason": "clause after final result",
-      "gate": "NO_ARTIFACT_DIAGNOSTIC"
+      "gate": "NO_ARTIFACT_DIAGNOSTIC",
+      "git_blob_sha": "5c62ca8bbbb37535ac6d9113ff0d70ce63b5b1d3"
     },
     {
       "id": "before-implicit",
       "kind": "fail",
       "path": "fixtures/flexible-callable-headers-v1/before-implicit.atto",
       "reason": "missing explicit body opener",
-      "gate": "NO_ARTIFACT_DIAGNOSTIC"
+      "gate": "NO_ARTIFACT_DIAGNOSTIC",
+      "git_blob_sha": "aa1d949961639e1a07343cc4f6db2438cd571bef"
     },
     {
       "id": "same-line-implicit",
       "kind": "fail",
       "path": "fixtures/flexible-callable-headers-v1/same-line-implicit.atto",
       "reason": "missing physical newline",
-      "gate": "NO_ARTIFACT_DIAGNOSTIC"
+      "gate": "NO_ARTIFACT_DIAGNOSTIC",
+      "git_blob_sha": "e093743ae985ab3214f99c1c927c53cd282ccfd1"
     },
     {
       "id": "unclosed-map",
       "kind": "fail",
       "path": "fixtures/flexible-callable-headers-v1/unclosed-map.atto",
       "reason": "malformed contract map",
-      "gate": "NO_ARTIFACT_DIAGNOSTIC"
+      "gate": "NO_ARTIFACT_DIAGNOSTIC",
+      "git_blob_sha": "d63b7b5a86bce13fea6e20cb4141541d93fb0ed7"
     },
     {
       "id": "missing-end",
       "kind": "fail",
       "path": "fixtures/flexible-callable-headers-v1/missing-end.atto",
       "reason": "missing callable end",
-      "gate": "NO_ARTIFACT_DIAGNOSTIC"
+      "gate": "NO_ARTIFACT_DIAGNOSTIC",
+      "git_blob_sha": "fe12fabf1fc49def85ee883b4f5c8488b4b54fca"
     },
     {
       "id": "fallthrough",
       "kind": "fail",
       "path": "fixtures/flexible-callable-headers-v1/fallthrough.atto",
       "reason": "nonvoid fallthrough",
-      "gate": "NO_ARTIFACT_DIAGNOSTIC"
+      "gate": "NO_ARTIFACT_DIAGNOSTIC",
+      "git_blob_sha": "2b74d5e403e53552b9ac0ff66e0364758dd0e5dc"
     }
   ],
   "evidence_rule": "Require actual compiled guest exit 42 for each positive case and a targeted compiler diagnostic with no artifact for each negative; unsupported bound enforcement is not a pass. Host inventory tests alone are not guest evidence."
