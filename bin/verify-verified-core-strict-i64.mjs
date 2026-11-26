@@ -41,7 +41,9 @@ try {
   const {createCompiler}=await import(pathToFileURL(join(resolve(bridgePath),"src/canonical-browser-compiler.mjs")).href);
   browser=await createCompiler(bytes);
  }
+ let passed=0;const failures=[];
  for(const {id,source,expected,tier:caseTier} of cases){
+  try {
   assert.match(id,/^[a-z0-9-]+$/);
   let diagnostic=null,artifact=null;
   if(target==="java"){
@@ -60,7 +62,7 @@ try {
     assert.equal(guest.stderr,"",id);
    }
    console.log("PASS",target,id,"source",hash(source),"Truffle checked-guest",expected.kind);
-   continue;
+   passed++;continue;
   }else if(target==="llvm"){
    const input=join(dir,id+".atto"),output=join(dir,id+".ll");
    writeFileSync(input,source,{flag:"wx"});
@@ -152,6 +154,10 @@ try {
    }
   }
   console.log("PASS",target,id,"source",hash(source),"artifact",artifact===null?"none":hash(artifact));
+  passed++;
+  }catch(error){failures.push(id);console.error("STRICT_CASE_FAIL",target,id,String(error));}
  }
+ console.log("STRICT_CENSUS",JSON.stringify({target,tier,passed,total:cases.length,failures}));
+ assert.equal(failures.length,0,"strict proof corpus incomplete");
  console.log("VERIFIED_STRICT_I64",target,tier,cases.length);
 }finally{rmSync(dir,{recursive:true,force:true});}
