@@ -101,5 +101,40 @@
     "no_runtime_method_table",
     "existing_tuple_projection_baseline"
   ],
-  "evidence_rule": "No backend PASS without exact-head compiled guest execution; negative cases require matching semantic diagnostic and no guest artifact. Footprint requires separate IR/artifact and allocation evidence."
+  "evidence_rule": "No backend PASS without exact-head compiled guest execution; negative cases require matching semantic diagnostic and no guest artifact. Footprint requires separate IR/artifact and allocation evidence.",
+  "scoped_backend_evidence": {
+    "js": {
+      "status": "RESTRICTED_PROFILE_EXECUTED",
+      "source_repository": "atto-lang/atto-source.js",
+      "source_commit": "ed873f82c5a07892b4a485f3e90ee6bcfe8b7a4a",
+      "source_tree": "3dd7bca6a35394b16c699daa52c306ec24baffc3",
+      "source_entries": 742,
+      "carrier_repository": "wasm-xprs/atto-ci",
+      "carrier_commit": "0f43bf33cac98999ab74af9ae165ef933fce542f",
+      "run_id": 45912835968,
+      "job_id": 140225009940,
+      "runner_id": 1000002228,
+      "focused": {
+        "passed": 30,
+        "failed": 0,
+        "skipped": 0
+      },
+      "full": {
+        "passed": 2183,
+        "failed": 0,
+        "skipped": 0
+      },
+      "scope": "Production compile(source) entry point and generated ESM for bounded immutable scalar literal call/apply, tuple variable and immediate pipeline variants; differential byte equality; exact tree verified. The ten canonical fixture files have not independently run, no general closure, native allocation, or complete conformance pass."
+    },
+    "rs": {
+      "status": "COMPILER_REGRESSION_FAILED",
+      "source_repository": "atto-lang/atto-source.rs",
+      "source_commit": "476fc36e96a89d3f5ffa0f37b981002dc2060712",
+      "source_tree": "d269f3f103963a7648617930f24cbcdfa708c403",
+      "run_id": 45912835968,
+      "job_id": 140225010210,
+      "runner_id": 1000002229,
+      "scope": "Exact-tree native regression step failed; guest execution skipped; full suite pending at observation. Not a backend pass."
+    }
+  }
 }
