@@ -2,12 +2,19 @@
 // Source-blob integrity and matrix-schema gate only. No compiler is executed.
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { lstatSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+function onlyKeys(value, allowed, label) {
+  assert(value && typeof value === "object" && !Array.isArray(value), label + ": object required");
+  for (const key of Object.keys(value))
+    assert(allowed.includes(key), label + ": undeclared field " + key);
+}
+
 export function verify(root = dirname(fileURLToPath(import.meta.url))) {
   const manifest = JSON.parse(readFileSync(join(root, "manifest.json"), "utf8"));
+  onlyKeys(manifest, ["schemaVersion","schema","description","sourceExtension","compilerEvidence","backends","cases"], "manifest");
   assert.equal(manifest.schemaVersion, 2);
   assert.equal(manifest.schema, "atto.select.source-v2");
   assert.equal(manifest.compilerEvidence, "not-executed");
@@ -17,9 +24,11 @@ export function verify(root = dirname(fileURLToPath(import.meta.url))) {
   const seenIds = new Set();
   const seenPaths = new Set();
   for (const c of manifest.cases) {
+    onlyKeys(c, ["id","path","gitBlobSha1","evidenceStatus","expected","target"], "fixture");
     assert.match(c.id, /^[a-z0-9]+(?:-[a-z0-9]+)*$/);
     assert(!seenIds.has(c.id), "duplicate select fixture id");
     assert.match(c.path, /^[a-z0-9]+(?:-[a-z0-9]+)*\.atto$/);
+    assert.equal(c.path, c.id + ".atto", "fixture ID/path mismatch");
     assert(!seenPaths.has(c.path), "duplicate select fixture path");
     seenIds.add(c.id);
     seenPaths.add(c.path);
@@ -28,6 +37,7 @@ export function verify(root = dirname(fileURLToPath(import.meta.url))) {
     assert.deepEqual(Object.keys(c.expected).sort(), [...manifest.backends].sort());
     for (const backend of manifest.backends) {
       const expectation = c.expected[backend];
+      onlyKeys(expectation, ["mode","exitCode","diagnosticContains"], "backend expectation");
       assert(["run", "reject", "unverified"].includes(expectation.mode));
       if (expectation.mode === "run") {
         assert(Number.isSafeInteger(expectation.exitCode));
@@ -42,11 +52,14 @@ export function verify(root = dirname(fileURLToPath(import.meta.url))) {
       }
     }
     if (c.target !== undefined) {
+      onlyKeys(c.target, ["mode","exitCode"], "language target");
       assert(["run", "reject"].includes(c.target.mode));
       if (c.target.mode === "run") assert.equal(c.target.exitCode, 42);
       else assert(!Object.hasOwn(c.target, "exitCode"));
     }
-    const content = readFileSync(join(root, c.path));
+    const fixture = join(root, c.path);
+    assert(lstatSync(fixture).isFile(), "fixture must be a regular file: " + c.path);
+    const content = readFileSync(fixture);
     const sha = createHash("sha1").update(
       Buffer.from(`blob ${content.length}\0`, "utf8")).update(content).digest("hex");
     assert.match(c.gitBlobSha1, /^[0-9a-f]{40}$/);
