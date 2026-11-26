@@ -282,7 +282,19 @@
         "scope": "REAL_MAILBOX",
         "local_evidence": null,
         "guest_status": "NOT_EXECUTED",
-        "full_tree_ci_status": "NOT_EXECUTED"
+        "full_tree_ci_status": "NOT_EXECUTED",
+        "scoped_ci_evidence": {
+          "status": "PASSED",
+          "source_head": "6dfcfc27b2da6b4a51312a95680b099ab0709f62",
+          "source_root_tree": "e54a964255652adb9515102db12e068f3ee80faf",
+          "carrier_head": "ec1213fb888826496b94dc477d88c0de1eb066f6",
+          "carrier_scoped_tree": "736e55b3fdf0179dd3b1ed575b30ed7a196b1ad3",
+          "verified_original_blobs": 3,
+          "executed_job_steps": 5,
+          "passing_probes": 2,
+          "ci_url": "https://github.com/attomq/atto-ci/actions/runs/45748483819/job/139670230788",
+          "scope": "HOST_RUNTIME_SCOPED_EXACT_BLOBS_NOT_FULL_TREE"
+        }
       },
       {
         "id": "llvm",
@@ -379,7 +391,14 @@
         "id": "hdl",
         "profile": "NO_DYNAMIC_ACTOR_RUNTIME",
         "guest_status": "UNSUPPORTED",
-        "rejection_test_status": "NOT_EXECUTED"
+        "rejection_test_status": "SCOPED_V8_PASSED",
+        "rejection_evidence": {
+          "pr": "https://github.com/atto-lang/atto-source.hdl/pull/83",
+          "head": "a4c84e0f000f2b185a75c4c49b1e6b6f4ac59aa2",
+          "test_bodies": 4,
+          "assertions": 38,
+          "scope": "V8_HARNESS_NOT_NODE_CLI_OR_SYNTHESIS"
+        }
       }
     ]
   }
