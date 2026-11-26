@@ -4,6 +4,8 @@ on:
     paths:
       - 'contracts/atto-xo-checked-u64-debit-v1/**'
       - 'tests/atto-xo-checked-u64-debit-v1.test.mjs'
+      - 'tests/fixed-width-integer-oracle.test.mjs'
+      - 'tests/checked-u64-cross-candidates.test.mjs'
       - '.github/workflows/atto-xo-checked-u64-debit-v1.yml'
 permissions:
   contents: read
@@ -16,3 +18,22 @@ jobs:
         with:
           persist-credentials: false
       - run: node --test tests/atto-xo-checked-u64-debit-v1.test.mjs
+      - name: Fixed-width host reference (not compiler parity)
+        run: node --test tests/fixed-width-integer-oracle.test.mjs
+      - name: Cross-candidate harness fail-closed controls (no guest execution)
+        shell: bash
+        run: |
+          set -euo pipefail
+          unset ATTO_U64_JS_SOURCE ATTO_U64_LLVM_SOURCE ATTO_U64_FORGE_SOURCE ATTO_U64_JAVA_SOURCE
+          node --test --test-name-pattern='new independent boundary inventory' tests/checked-u64-cross-candidates.test.mjs
+          if ATTO_U64_CROSS_REQUIRED=1 node --test tests/checked-u64-cross-candidates.test.mjs > missing.log 2>&1; then
+            echo 'Missing source unexpectedly passed'
+            exit 1
+          fi
+          grep -F 'JS: exact source required' missing.log
+          if ATTO_U64_CROSS_REQUIRED=1 ATTO_U64_JS_SOURCE=tests/fixed-width-integer-oracle.test.mjs node --test tests/checked-u64-cross-candidates.test.mjs > altered.log 2>&1; then
+            echo 'Altered source unexpectedly passed'
+            exit 1
+          fi
+          grep -F 'f4a354096cf2ae1ca96c1381d2be72bca2425ca8' altered.log
+          echo 'Candidate guest execution: NOT_EXECUTED (no source staging)'
