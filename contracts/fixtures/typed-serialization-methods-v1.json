@@ -4,10 +4,10 @@
   "spec": "https://github.com/atto-lang/atto-spec/pull/281",
   "source_fixture": {
     "pr": "https://github.com/atto-lang/atto-serialization-and-validation/pull/100",
-    "head": "930e42b05509e7e4b693765172239f10195cfd5f",
+    "head": "bbeeb884d04231b1d443fe6e9d317ca8a0d9f966",
     "path": "tests/generated_typed_codec_test.ores",
     "scope": "Manually projected typed JSON and MessagePack fixture with shared metadata validation; not compiler-generated method support",
-    "tree": "7bd0dd091af9e1ebc3c4a5bbe19556823bccd02c"
+    "tree": "a43a663d0f01500392576bd0f8421c48c83f314e"
   },
   "profile": {
     "schema": "User example, fields displayName string and age signed integer in this fixed order",
@@ -89,7 +89,7 @@
   "messagepack_source_fixture": {
     "path": "tests/messagepack_test.ores",
     "scope": "dynamic MessagePack wire roundtrip and malformed frame tests; no typed constructor lowering",
-    "head": "930e42b05509e7e4b693765172239f10195cfd5f"
+    "head": "bbeeb884d04231b1d443fe6e9d317ca8a0d9f966"
   },
   "messagepack_negative": [
     {
@@ -125,13 +125,13 @@
   ],
   "typed_messagepack_source_fixture": {
     "path": "tests/generated_typed_codec_test.ores",
-    "head": "930e42b05509e7e4b693765172239f10195cfd5f",
+    "head": "bbeeb884d04231b1d443fe6e9d317ca8a0d9f966",
     "scope": "Shared metadata validation, concrete User constructor, typed errors; guest NOT_EXECUTED"
   },
   "messagepack_container_admission": {
     "scope": "candidate dynamic codec, exact error and no partial value assertions; not guest evidence",
     "source_path": "tests/messagepack_test.ores",
-    "head": "930e42b05509e7e4b693765172239f10195cfd5f",
+    "head": "bbeeb884d04231b1d443fe6e9d317ca8a0d9f966",
     "negative": [
       {
         "hex": "930102",
@@ -182,5 +182,28 @@
     "compiler_tree": "1884a81e71dd4ecc9cd132f7e9c0916ce8e5bf24",
     "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45908106827/job/140209665708",
     "scope": "standalone wire arithmetic guest passed via Java/Truffle launcher; core and full suite fail unknown int_to_decimal_bytes; not native AOT, not current head"
+  },
+  "forge_compiler_admission_receipt": {
+    "backend": "forge",
+    "source_pr": "https://github.com/atto-lang/atto-source.forge/pull/243",
+    "head": "a6ee83ca97743d14a6d5224a5610adad525ee03b",
+    "tree": "6a9efa93f5bf26b54676d9b1d1190bac45ffc003",
+    "blobs": 464,
+    "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45909039110/job/140212668347",
+    "scope": "6 actual compiler frontend/IR admission cases and 9 match/tilde regression cases, two CTest targets; not typed codec generation or execution"
+  },
+  "java_followup_receipt": {
+    "source_head": "1a66e849623937f0b3a3d776b2c91b2090945f4f",
+    "source_tree": "fccc1e5b430b376ea01784e1f5bd71f4bafcc1fd",
+    "compiler_head": "b229250b7dd4a349e6d3f72a5e00729ad4af2b79",
+    "compiler_tree": "1884a81e71dd4ecc9cd132f7e9c0916ce8e5bf24",
+    "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45908843324/job/140212023416",
+    "scope": "wire integer guest passed, full and core blocked by Map<int,List<int>> admission; prior head only; not AOT"
+  },
+  "decimal_kernel_candidate": {
+    "head": "bbeeb884d04231b1d443fe6e9d317ca8a0d9f966",
+    "path": "src/core/bytes.ores",
+    "guest": "tests/wire_decimal_bytes_test.ores",
+    "scope": "actual production decimal encoder moved to byte core, preserves existing value entrypoint; current head not qualified yet"
   }
 }
