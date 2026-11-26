@@ -638,6 +638,54 @@
           "outcome": "guest-exit-42"
         }
       ]
+    },
+    {
+      "backend": "net",
+      "head": "ee115674e57602d1de948568353ea8abe11b9d54",
+      "tree": "29b9aea73e617989f1e39df6ca5d59169e7de822",
+      "pr": 317,
+      "job": 140070030492,
+      "steps": 3,
+      "command": "bash scripts/test-counted-ready-nativeaot-guest.sh; 10 guest, 7 compile rejection, 3 runtime negative checks",
+      "profile": "counted-ready-v1-static-csharp-nativeaot-linux-x64",
+      "limits": [
+        "closed-world ready-only",
+        "static C# emission, not direct CIL",
+        "no actor scheduling or external pending producer"
+      ],
+      "carrier": "fasttwebb/atto-ci",
+      "run": 45866346904,
+      "fixtures": [
+        {
+          "id": "counted-distinct-alias-projection",
+          "blob": "5baca9bb9eb4b98500cab770888a45fb60bbf10d",
+          "outcome": "guest-exit-42"
+        }
+      ]
+    },
+    {
+      "backend": "llvm",
+      "head": "685f86c7318acdcafa856204e075ca18e2f06a04",
+      "tree": "3fd28392a0ac4f6e3299356b9226ca24536a1ed7",
+      "pr": 974,
+      "job": 140070030412,
+      "steps": 4,
+      "command": "bash scripts/test-counted-ready-native-guest.sh build/oreslang-llvmc ../corpus/fixtures/select-source-v2; 10 guest, 7 compile rejection, 5 runtime negative checks",
+      "profile": "counted-ready-v1-static-cpp-clang-llvm-ir-linux-x64",
+      "limits": [
+        "closed-world ready-only",
+        "static C++ emission, not direct LLVM IR",
+        "no external pending producer or actor scheduling"
+      ],
+      "carrier": "fasttwebb/atto-ci",
+      "run": 45866346904,
+      "fixtures": [
+        {
+          "id": "counted-distinct-alias-projection",
+          "blob": "5baca9bb9eb4b98500cab770888a45fb60bbf10d",
+          "outcome": "guest-exit-42"
+        }
+      ]
     }
   ],
   "notExecuted": [
