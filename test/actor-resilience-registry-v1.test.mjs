@@ -55,3 +55,23 @@ test('identity exhaustion does not wrap, and structurally equal handles have no 
   for(const opts of [{capacity:1},{capacity:4097},{maxIdentity:0},{admissions:0}])
     assert.throws(()=>registry(opts),RangeError);
 });
+
+test('pending CONTROL and each decision lease independently hold a physically retired slot',()=>{
+  const r=registry({capacity:2,admissions:1});const h=r.admit(r.guardian);
+  assert.ok(h);assert.equal(r.fault(h,'stack_quota'),true);
+  assert.equal(r.recoveryDrained(h),true);
+  assert.equal(r.observePhysicalRelease(h),true);
+  assert.equal(r.reclaim(h),false,'pending CONTROL without a decision lease');
+  assert.equal(r.admit(r.guardian),null);
+  const d=r.beginDecision(h);assert.ok(d);
+  assert.equal(r.reclaim(h),false,'decision in flight');
+  assert.equal(r.finishDecision(d,false),true);
+  assert.equal(r.reclaim(h),false,'aborted decision must leave CONTROL pending');
+  const retry=r.beginDecision(h);assert.ok(retry);assert.notEqual(retry,d);
+  assert.equal(r.finishDecision(d,true),false,'obsolete decision cannot clear pending CONTROL');
+  assert.equal(r.reclaim(h),false);
+  assert.equal(r.finishDecision(retry,true),true);
+  assert.equal(r.reclaim(h),true);
+  const next=r.admit(r.guardian);assert.ok(next);assert.equal(next.slot,h.slot);
+  assert.notEqual(next.identity,h.identity);
+});
