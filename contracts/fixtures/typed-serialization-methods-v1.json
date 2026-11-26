@@ -4,7 +4,7 @@
   "spec": "https://github.com/atto-lang/atto-spec/pull/281",
   "source_fixture": {
     "pr": "https://github.com/atto-lang/atto-serialization-and-validation/pull/100",
-    "head": "a8e78f09af33d57e575fc71839fd5c42116b6cb3",
+    "head": "245f695731766561af03d1595ea30363f5d2e0a9",
     "path": "tests/generated_typed_codec_test.ores",
     "scope": "Existing manually projected typed JSON fixture, not compiler-generated method support"
   },
@@ -84,5 +84,27 @@
     "No executable runner is wired to this candidate file yet",
     "Method syntax, general map order and default codec are not ratified by this file",
     "MessagePack candidate bytes are not an executed guest result"
+  ],
+  "messagepack_source_fixture": {
+    "path": "tests/messagepack_test.ores",
+    "scope": "dynamic MessagePack wire roundtrip and malformed frame tests; no typed constructor lowering",
+    "head": "245f695731766561af03d1595ea30363f5d2e0a9"
+  },
+  "messagepack_negative": [
+    {
+      "id": "duplicate_age",
+      "hex": "83ab646973706c61794e616d65a4416c6578a36167652aa36167652b",
+      "expected": "reject"
+    },
+    {
+      "id": "trailing_byte",
+      "hex": "82ab646973706c61794e616d65a4416c6578a36167652a00",
+      "expected": "reject"
+    },
+    {
+      "id": "truncated_value",
+      "hex": "82ab646973706c61794e616d65a4416c6578a3616765",
+      "expected": "reject"
+    }
   ]
 }
