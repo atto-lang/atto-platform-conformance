@@ -26,7 +26,7 @@ const wasmBytes=readFileSync(wasmPath),mod=new WebAssembly.Module(wasmBytes);ass
 const e=new WebAssembly.Instance(mod,{}).exports;assert.equal(e.atto_scalar_size_v1(),47n);assert.equal(e.atto_scalar_fields_v1(),3n);
 const p=Number(e.__heap_base.value),b=p+64,out=p+128;assert.ok(out+24<=e.memory.buffer.byteLength);
 const m=new Uint8Array(e.memory.buffer),d=new DataView(e.memory.buffer);
-const w={initial(){assert.equal(e.atto_scalar_initial_v1(b,47n),47n);return m.slice(b,b+47);},encode(v){assert.equal(typeof v[1],'boolean');[checkedI64(v[0]),v[1]?1n:0n,checkedI64(v[2])].forEach((x,i)=>d.setBigInt64(p+8*i,x,true));assert.equal(e.atto_scalar_encode_v1(p,3n,b,47n),47n);return m.slice(b,b+47);},decode(bytes){assert.equal(bytes.length,47);m.set(bytes,b);assert.equal(e.atto_scalar_decode_v1(b,47n,out,3n),3n);return [d.getBigInt64(out,true),d.getBigInt64(out+8,true)===1n,d.getBigInt64(out+16,true)];}};
+const w={initial(){assert.equal(e.atto_scalar_initial_v1(b,47n),47n);return m.slice(b,b+47);},encode(v){assert.equal(typeof v[1],'boolean');[checkedI64(v[0]),v[1]?1n:0n,checkedI64(v[2])].forEach((x,i)=>d.setBigInt64(p+8*i,x,true));assert.equal(e.atto_scalar_encode_v1(p,3n,b,47n),47n);return m.slice(b,b+47);},decode(bytes){if(bytes.length!==47)throw new Error('E_DURABLE_SCALAR_CHECKPOINT_V1');m.set(bytes,b);const before=m.slice(out,out+24);if(e.atto_scalar_decode_v1(b,47n,out,3n)!==3n){assert.deepEqual(m.slice(out,out+24),before,'decoder published partial values');throw new Error('E_DURABLE_SCALAR_CHECKPOINT_V1');}return [d.getBigInt64(out,true),d.getBigInt64(out+8,true)===1n,d.getBigInt64(out+16,true)];}};
 assert.equal(Buffer.from(js.initial()).toString('hex'),golden);assert.deepEqual(w.initial(),js.initial());
 function open(path){const db=new DatabaseSync(path);db.exec('PRAGMA busy_timeout=15000; PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; PRAGMA foreign_keys=ON;');return db;}
 if(process.argv[2]==='--child'){
@@ -149,6 +149,33 @@ if(process.argv[2]==='--child'){
     for(const c of children)if(c.child.exitCode===null&&c.child.signalCode===null)c.child.kill('SIGKILL');
     await Promise.all(children.map(c=>c.done));
   }
-  console.log(JSON.stringify({kind:'JS_LLVM_WASM_SQLITE_PROCESS_REVIVAL_PASS',process_turns:22,physical_kills:2,commits:8,replays:7,rollback:1,atomic_rejections:6,concurrent_writers:8,concurrent_unique_messages:4,wasm_sha256:hash(wasmBytes),js_compiler_sha256:hash(readFileSync(jsPath)),js_guest_sha256:hash(generated.module_source),source_sha256:hash(source),production_broker:false}));
+  // Reference-only corruption injection: repair bytes explicitly between cases.
+  // Recompute checksums for semantic corruption to exercise schema/tag validation.
+  const good=Uint8Array.from(snapshot().actor[0].checkpoint);
+  function resign(bytes){
+    let h=0xcbf29ce484222325n;
+    for(const x of bytes.subarray(0,bytes.length-8))h=BigInt.asUintN(64,(h^BigInt(x))*0x100000001b3n);
+    new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength).setBigUint64(bytes.length-8,h,true);
+    return bytes;
+  }
+  function altered(offset,value,validChecksum=false){
+    const bytes=good.slice();bytes[offset]=value;
+    return validChecksum?resign(bytes):bytes;
+  }
+  function replaceCheckpoint(bytes){
+    const db=open(path);try{assert.equal(db.prepare('UPDATE actor SET checkpoint=? WHERE id=1 AND revision=8').run(bytes).changes,1);}finally{db.close();}
+  }
+  const healthy=snapshot();
+  const corrupted=[good.slice(0,-1),altered(46,good[46]^1),altered(9,good[9]^1,true),altered(29,2,true)];
+  for(const bytes of corrupted){
+    replaceCheckpoint(bytes);
+    for(const backend of ['js','wasm'])rejected(backend,'corrupt-'+backend,1n,'E_DURABLE_SCALAR_CHECKPOINT_V1');
+    replaceCheckpoint(good);
+    assert.deepEqual(snapshot(),healthy,'repair changed unrelated state');
+    check(8,[min+18n,true,min+18n]);
+  }
+  turn('commit','wasm','corrupt-wasm',1n,'COMMITTED 9');check(9,[min+19n,false,min+19n]);
+  turn('commit','js','corrupt-wasm',1n,'REPLAY 9');check(9,[min+19n,false,min+19n]);
+  console.log(JSON.stringify({kind:'JS_LLVM_WASM_SQLITE_PROCESS_REVIVAL_PASS',process_turns:32,physical_kills:2,commits:9,replays:8,rollback:1,atomic_rejections:14,concurrent_writers:8,concurrent_unique_messages:4,corrupt_checkpoint_rejections:8,wasm_sha256:hash(wasmBytes),js_compiler_sha256:hash(readFileSync(jsPath)),js_guest_sha256:hash(generated.module_source),source_sha256:hash(source),production_broker:false}));
  }finally{rmSync(dir,{recursive:true,force:true});}
 }
