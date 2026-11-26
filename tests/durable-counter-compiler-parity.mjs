@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 import {spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
-import {mkdtempSync,readFileSync,rmSync} from 'node:fs';
+import {existsSync,mkdtempSync,readFileSync,rmSync,writeFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {resolve,join} from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
@@ -70,7 +70,45 @@ try{
       for(const delta of [-1n,0n,1n,42n,1000000000n,1000000001n])
         compare(state,op,delta);
   assert.equal(cases,244);
-  console.log(JSON.stringify({status:'RESTRICTED_COMPILED_GUEST_PARITY',cases,sourceSha256:hash(source),
+  // Preserve the original 244-vector contract. Exercise signed i64 endpoints
+  // separately so an overflow or truncation in an ABI adapter cannot pass
+  // simply because all of the original inputs are relatively small.
+  const min=-(1n<<63n),max=(1n<<63n)-1n;
+  const extremes=[
+    [min,1n,1n],[max,1n,1n],[0n,min,0n],[0n,max,0n],
+    [0n,1n,min],[0n,1n,max],[1000000000n,1n,max],
+    [0n,2n,min],[0n,2n,max],[999999999n,1n,1n],
+    [1000000000n,2n,0n],[1000000000n,1n,1n]
+  ];
+  for(const [state,op,delta] of extremes)compare(state,op,delta);
+  assert.equal(cases,244+extremes.length);
+  assert.equal(w.panic_code.value,0);
+  // Exercise the actual compiler denial path with identical source bytes.
+  // A crash, timeout, missing diagnostic, or published artifact is not denial.
+  const text=source.toString('utf8');
+  const mutations=[
+    ['volatile',text.replace('durable actor','actor')],
+    ['wrong-initial-state',text.replace('= 0;','= 1;')],
+    ['wrong-operation',text.replace('self.count + mail.value','self.count - mail.value')],
+    ['wrong-mail-type',text.replace('ActorMail<int>','ActorMail<bool>')],
+    ['wrong-field',text.replace('self.count =','self.unknown =')],
+    ['extra-statement',text.replace('self.count = self.count + mail.value;',
+        'self.count = self.count + mail.value; self.count = 0;')],
+    ['trailing-declaration',text+'\npub fnc main()->int {return 0;}']
+  ];
+  for(const [id,invalid] of mutations){
+    assert.notEqual(invalid,text,id);
+    const input=join(dir,id+'.atto'),output=join(dir,id+'.wasm');
+    writeFileSync(input,invalid);
+    const bad=spawnSync(resolve(cli),['--durable-counter-actor-v1',input,'-o',output],
+        {encoding:'utf8',timeout:30000,maxBuffer:1<<20});
+    assert.equal(bad.error,undefined,id);
+    assert.equal(bad.status,1,id+': '+bad.stderr);
+    assert.match(bad.stderr,/E_DURABLE_COUNTER_ACTOR_ABI/,id);
+    assert.equal(existsSync(output),false,id);
+    assert.throws(()=>compile_durable_counter_actor_v1(invalid),/E_DURABLE_COUNTER_ACTOR_ABI/,id);
+  }
+  console.log(JSON.stringify({status:'RESTRICTED_COMPILED_GUEST_PARITY',cases:244,extendedSignedI64Cases:extremes.length,compilerDenials:mutations.length,sourceSha256:hash(source),
     wasmSha256:hash(binary),jsSha256:hash(generated.module_source),descriptorSha256:hash(descriptor),
     fullDurableActorParity:false,diskRecoveryExecuted:false}));
 }finally{rmSync(dir,{recursive:true,force:true});}
