@@ -1,0 +1,13 @@
+define pub marker #entity;
+define pub marker #auditable;
+define class Customer with marker #entity, #auditable as
+    pub int id = 42;
+end
+define class Partial with marker #entity as
+    pub int id = 42;
+end
+fnc read_id(~{id: int} with marker #entity, #auditable obj): int { return obj.id; }
+pub fnc main(): int {
+    val id = new Customer();
+    return read_id(id);
+}
