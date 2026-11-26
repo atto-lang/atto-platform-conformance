@@ -1,6 +1,6 @@
 # Static select source matrix v2 — all compiler targets
 
-32 pinned guest sources x 11 target repositories = 352 explicitly tracked cells.
+36 pinned guest sources x 11 target repositories = 396 explicitly tracked cells.
 The v1 directory remains unchanged. Existing expectations are carried forward
 only as historical prospective expectations; new cells are unverified.
 The `target` field records intended semantics of newly added sources separately
@@ -27,4 +27,6 @@ missing result and illegal await effect. These are unexecuted target fixtures.
 
 Counted select target adds exact cardinality, ordered batch, zero, one, alias, and invalid count/type/default/write cases. All are unexecuted targets.
 
-`run-native-counted-admission.py --backend forge|cranelift --compiler /path/to/compiler` verifies the nine counted fixture hashes, executes each actual compiler and 48 isolated syntax probes, checks absence of IR and runs a scalar control. This proves denial only, never positive counted guest parity.
+`run-native-counted-admission.py --backend forge|cranelift --compiler /path/to/compiler` verifies the thirteen counted fixture hashes, executes each actual compiler and 48 isolated syntax probes, checks absence of IR and runs a scalar control. This proves denial only, never positive counted guest parity.
+
+Dynamic counted fixtures cover caller snapshot, zero count, non-int count and unresolved count. They are prospective targets, not execution receipts. Runtime invalid integer values require a separate trap-mode contract; they are not compile rejection targets.

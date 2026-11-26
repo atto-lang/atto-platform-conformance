@@ -11,7 +11,7 @@ def main():
     root = pathlib.Path(__file__).resolve().parent
     manifest = json.loads((root / "manifest.json").read_text())
     cases = [c for c in manifest["cases"] if c["id"].startswith(("counted-", "reject-counted-"))]
-    assert len(cases) == 9
+    assert len(cases) == 13
     def invoke(mode, path):
         return subprocess.run([compiler, mode, str(path)], capture_output=True, timeout=30, check=False)
     for c in cases:
@@ -33,7 +33,7 @@ def main():
         src.write_text("pub fnc main(): int { return 42; }\n")
         r = invoke("run", src)
         assert r.returncode == 0 and r.stdout.strip() == b"42", r
-    print(f"COUNTED_SELECT_ADMISSION_PASS backend={a.backend} exact_blobs=9 isolated={total} no_IR; scalar_control=42; COUNTED_GUEST_NOT_EXECUTED")
+    print(f"COUNTED_SELECT_ADMISSION_PASS backend={a.backend} exact_blobs=13 isolated={total} no_IR; scalar_control=42; COUNTED_GUEST_NOT_EXECUTED")
 
 if __name__ == "__main__":
     main()

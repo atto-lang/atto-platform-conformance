@@ -13,7 +13,7 @@ export function verify(root = dirname(fileURLToPath(import.meta.url))) {
   assert.equal(manifest.compilerEvidence, "not-executed");
   assert.equal(manifest.sourceExtension, ".atto");
   assert.deepEqual(manifest.backends, ["java-graalvm","llvm","net","rs","wasm","js","forge","cranelift","atto","hdl","realtime"]);
-  assert.equal(manifest.cases.length, 32);
+  assert.equal(manifest.cases.length, 36);
   const seenIds = new Set();
   const seenPaths = new Set();
   for (const c of manifest.cases) {

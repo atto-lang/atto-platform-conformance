@@ -1425,6 +1425,184 @@
           "mode": "unverified"
         }
       }
+    },
+    {
+      "id": "counted-dynamic",
+      "path": "counted-dynamic.atto",
+      "gitBlobSha1": "7c9ea9270d766612de0d502147e0df31b0dc3454",
+      "evidenceStatus": "not-executed",
+      "target": {
+        "mode": "run",
+        "exitCode": 42
+      },
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "unverified"
+        },
+        "net": {
+          "mode": "unverified"
+        },
+        "rs": {
+          "mode": "unverified"
+        },
+        "wasm": {
+          "mode": "unverified"
+        },
+        "js": {
+          "mode": "unverified"
+        },
+        "forge": {
+          "mode": "unverified"
+        },
+        "cranelift": {
+          "mode": "unverified"
+        },
+        "atto": {
+          "mode": "unverified"
+        },
+        "hdl": {
+          "mode": "unverified"
+        },
+        "realtime": {
+          "mode": "unverified"
+        }
+      }
+    },
+    {
+      "id": "counted-dynamic-zero",
+      "path": "counted-dynamic-zero.atto",
+      "gitBlobSha1": "4707b13d3daebe05ced967418ba120cf801e2d8c",
+      "evidenceStatus": "not-executed",
+      "target": {
+        "mode": "run",
+        "exitCode": 42
+      },
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "unverified"
+        },
+        "net": {
+          "mode": "unverified"
+        },
+        "rs": {
+          "mode": "unverified"
+        },
+        "wasm": {
+          "mode": "unverified"
+        },
+        "js": {
+          "mode": "unverified"
+        },
+        "forge": {
+          "mode": "unverified"
+        },
+        "cranelift": {
+          "mode": "unverified"
+        },
+        "atto": {
+          "mode": "unverified"
+        },
+        "hdl": {
+          "mode": "unverified"
+        },
+        "realtime": {
+          "mode": "unverified"
+        }
+      }
+    },
+    {
+      "id": "reject-counted-dynamic-bool",
+      "path": "reject-counted-dynamic-bool.atto",
+      "gitBlobSha1": "36cd372a5385e34f2e3bd8dd936e4e0491052633",
+      "evidenceStatus": "not-executed",
+      "target": {
+        "mode": "reject"
+      },
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "unverified"
+        },
+        "net": {
+          "mode": "unverified"
+        },
+        "rs": {
+          "mode": "unverified"
+        },
+        "wasm": {
+          "mode": "unverified"
+        },
+        "js": {
+          "mode": "unverified"
+        },
+        "forge": {
+          "mode": "unverified"
+        },
+        "cranelift": {
+          "mode": "unverified"
+        },
+        "atto": {
+          "mode": "unverified"
+        },
+        "hdl": {
+          "mode": "unverified"
+        },
+        "realtime": {
+          "mode": "unverified"
+        }
+      }
+    },
+    {
+      "id": "reject-counted-dynamic-unknown",
+      "path": "reject-counted-dynamic-unknown.atto",
+      "gitBlobSha1": "0e61da7a98987ed5a182148538b35b8a890abf26",
+      "evidenceStatus": "not-executed",
+      "target": {
+        "mode": "reject"
+      },
+      "expected": {
+        "java-graalvm": {
+          "mode": "unverified"
+        },
+        "llvm": {
+          "mode": "unverified"
+        },
+        "net": {
+          "mode": "unverified"
+        },
+        "rs": {
+          "mode": "unverified"
+        },
+        "wasm": {
+          "mode": "unverified"
+        },
+        "js": {
+          "mode": "unverified"
+        },
+        "forge": {
+          "mode": "unverified"
+        },
+        "cranelift": {
+          "mode": "unverified"
+        },
+        "atto": {
+          "mode": "unverified"
+        },
+        "hdl": {
+          "mode": "unverified"
+        },
+        "realtime": {
+          "mode": "unverified"
+        }
+      }
     }
   ]
 }
