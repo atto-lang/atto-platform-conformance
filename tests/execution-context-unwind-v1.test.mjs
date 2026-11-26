@@ -91,3 +91,39 @@ test('scheduled JS host receipts never certify scheduler unwind guest parity',()
     assert.deepEqual(Object.values(x.backend_statuses),expected_backends.map(()=> 'not_executed'));
   }
 });
+
+test('historical exact candidate receipts bind source, compiler revision and observed fixture outcome',()=>{
+  const receipts=registry.exact_pipeline_candidate_receipts;
+  assert.equal(receipts.length,2);
+  const ids=new Set();
+  for(const receipt of receipts){
+    assert.ok(expected_backends.includes(receipt.backend));
+    for(const k of ['compiler_head','compiler_tree','fixture_registry_head','fixture_registry_tree'])assert.match(receipt[k],/^[a-f0-9]{40}$/);
+    assert.match(receipt.job,/^https:\/\/github\.com\/file-tunnel\/atto-ci\/actions\/runs\/[0-9]+\/job\/[0-9]+$/);
+    assert.ok(receipt.limitation.includes('current-main'));
+    for(const r of receipt.results){
+      const key=receipt.backend+'/'+receipt.compiler_head+'/'+r.case_id;
+      assert.ok(!ids.has(key));ids.add(key);
+      const fixture=registry.candidate_guest_fixtures.find(f=>f.case_id===r.case_id);
+      assert.ok(fixture);
+      assert.equal(r.source_blob,fixture.git_blob_sha);
+      assert.deepEqual(r.observed,fixture.expected);
+      if(r.observed.kind==='compile-reject')assert.equal(r.artifact_emitted,false);
+      if(receipt.backend==='atto-source.rs' && r.observed.kind==='return'){
+        assert.equal(r.byte_identical,true);
+        assert.match(r.guest_sha256,/^[a-f0-9]{64}$/);
+      }
+      // Historical evidence does not silently promote the current matrix.
+      assert.equal(registry.cases.find(c=>c.id===r.case_id).backend_statuses[receipt.backend],'not_executed');
+    }
+    if(receipt.backend==='atto-source.rs'){
+      assert.deepEqual(receipt.profiles,['native-compiler','wasm32-compiler-in-node']);
+      assert.match(receipt.compiler_wasm_sha256,/^[a-f0-9]{64}$/);
+      assert.equal(receipt.results.length,3);
+    }else{
+      assert.deepEqual(receipt.profiles,['graalvm-jvm']);
+      assert.equal(receipt.results.length,2);
+    }
+  }
+  assert.equal(ids.size,5);
+});
