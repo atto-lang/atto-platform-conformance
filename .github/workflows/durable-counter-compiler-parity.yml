@@ -5,6 +5,7 @@ on:
       - 'fixtures/actors/persistence/durable_counter_broker_v1.atto'
       - 'tests/durable-counter-compiler-parity.mjs'
       - 'tests/durable-counter-native-replay.mjs'
+      - 'tests/durable-counter-hdl-admission.mjs'
       - '.github/workflows/durable-counter-compiler-parity.yml'
 permissions:
   contents: read
@@ -149,3 +150,29 @@ jobs:
           cp="$dir/target/classes:$(cat "$dir/target/conformance-classpath.txt")"
           (cd "$dir" && ATTO_JAVA_CP="$cp" ATTO_TEST_NATIVE_IMAGE=1 node tests/durable_counter_jvm_native.mjs)
           node tests/durable-counter-native-replay.mjs java "$cp"
+  hdl-target-denial:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Verify exact public HDL source and test target-specific denial
+        env:
+          EXPECTED: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED"
+          test -z "$(git status --porcelain)"
+          dir="$RUNNER_TEMP/atto-hdl"
+          git init "$dir"
+          GIT_TERMINAL_PROMPT=0 git -C "$dir" -c credential.helper= fetch --depth=1 https://github.com/atto-lang/atto-source.hdl.git d52bdc72aeb6c1972af856665b95165c1e7aaebb
+          git -C "$dir" checkout --detach FETCH_HEAD
+          git -C "$dir" fsck --full
+          test "$(git -C "$dir" rev-parse HEAD)" = d52bdc72aeb6c1972af856665b95165c1e7aaebb
+          test "$(git -C "$dir" hash-object src/compiler.mjs)" = 7c10d5219dd0dd01650d70e076caf0244958603e
+          test "$(git -C "$dir" hash-object src/closed_quantity.mjs)" = e2e60448dc9674b0459910565041132d6f904659
+          test -z "$(git -C "$dir" status --porcelain)"
+          (cd "$dir" && node --test tests/durable-actor-admission.test.mjs)
+          node tests/durable-counter-hdl-admission.mjs "$dir/src/compiler.mjs"
