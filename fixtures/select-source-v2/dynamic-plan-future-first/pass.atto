@@ -1,0 +1,14 @@
+// Target source contract: no backend pass is implied.
+// expect-exit: 42
+pub suspends fnc main(): int {
+  val first = Channel<int>.bounded(1);
+  val second = Channel<int>.bounded(1);
+  val DynamicSelectPlan<int> plan = DynamicSelectPlan<int>.from_list([
+    SelectCase.read(first), SelectCase.read(second)
+  ]);
+  val Future<SelectResult> pending = select fair from plan;
+  plan.put(0, SelectCase.read(second));
+  writech first, 42;
+  val SelectResult result = await pending;
+  return result.value;
+}
