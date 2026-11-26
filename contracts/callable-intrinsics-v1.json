@@ -106,35 +106,50 @@
     "js": {
       "status": "RESTRICTED_PROFILE_EXECUTED",
       "source_repository": "atto-lang/atto-source.js",
-      "source_commit": "ed873f82c5a07892b4a485f3e90ee6bcfe8b7a4a",
-      "source_tree": "3dd7bca6a35394b16c699daa52c306ec24baffc3",
-      "source_entries": 742,
+      "source_commit": "bc74a795bafba7fd88dbc32eab6771084552b8f6",
+      "source_tree": "752aa9eed1707ba0266a1cab15ea0b9c56abcfd9",
+      "source_entries": 744,
       "carrier_repository": "wasm-xprs/atto-ci",
-      "carrier_commit": "0f43bf33cac98999ab74af9ae165ef933fce542f",
-      "run_id": 45912835968,
-      "job_id": 140225009940,
-      "runner_id": 1000002228,
+      "carrier_commit": "71e0eac6f4c0cdf186da415b586d90e84991b95d",
+      "run_id": 45913226844,
+      "job_id": 140226267096,
       "focused": {
         "passed": 30,
         "failed": 0,
         "skipped": 0
       },
       "full": {
-        "passed": 2183,
+        "passed": 2191,
         "failed": 0,
         "skipped": 0
       },
-      "scope": "Production compile(source) entry point and generated ESM for bounded immutable scalar literal call/apply, tuple variable and immediate pipeline variants; differential byte equality; exact tree verified. The ten canonical fixture files have not independently run, no general closure, native allocation, or complete conformance pass."
+      "scope": "Production compiler and generated ESM for restricted scalar call/apply. Newer typed-local candidate 16c0388892f0c78ebfb85bc7b13405f22993eca7 not certified by this receipt."
     },
     "rs": {
-      "status": "COMPILER_REGRESSION_FAILED",
+      "status": "RESTRICTED_PROFILE_EXECUTED",
       "source_repository": "atto-lang/atto-source.rs",
-      "source_commit": "476fc36e96a89d3f5ffa0f37b981002dc2060712",
-      "source_tree": "d269f3f103963a7648617930f24cbcdfa708c403",
-      "run_id": 45912835968,
-      "job_id": 140225010210,
-      "runner_id": 1000002229,
-      "scope": "Exact-tree native regression step failed; guest execution skipped; full suite pending at observation. Not a backend pass."
+      "source_commit": "8058124d385e930a39255146ecc346c19d4d4077",
+      "source_tree": "27d477855d1f48003dd3ae8909e0aa5e5d349ad8",
+      "source_entries": 1422,
+      "carrier_repository": "wasm-xprs/atto-ci",
+      "carrier_commit": "71e0eac6f4c0cdf186da415b586d90e84991b95d",
+      "run_id": 45913226844,
+      "job_id": 140226267393,
+      "focused": {
+        "passed": 54,
+        "failed": 0,
+        "ignored": 0
+      },
+      "full": {
+        "passed": 1141,
+        "failed": 0,
+        "ignored": 3
+      },
+      "guest": {
+        "positive_executions": 33,
+        "intrinsic_executions": 28
+      },
+      "scope": "Native compiler built and generated Wasm independently instantiated. Literal scalar apply, closed typed local callables, bounded siblings and inferred scalar snapshot calls. CLI guest negative checks passed as part of harness. Canonical ten fixture bytes, general tuples, ownership/effect parity and physical allocations remain unverified."
     }
   }
 }
