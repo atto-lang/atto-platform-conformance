@@ -96,6 +96,18 @@
       "job": 139625011206,
       "executed": "nine actual CLI denial modes plus scalar controls",
       "scope": "REJECT_ONLY; no feature parity"
+    },
+    {
+      "repo": "atto-lang/atto-source.cranelift",
+      "pr": 119,
+      "head": "3277b374e5675e5e7edd4cf197a461ce12e9604d",
+      "tree": "392a861a0bfdd5488c76fb140802197fa478ebc5",
+      "runs": [
+        45734706766
+      ],
+      "job": 139625010729,
+      "executed": "three shared state fixtures rejected in run/IR modes, scalar execution control passed",
+      "scope": "REJECT_ONLY; no feature parity"
     }
   ]
 }
