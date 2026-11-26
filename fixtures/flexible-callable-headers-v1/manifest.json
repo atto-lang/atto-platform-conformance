@@ -1,0 +1,133 @@
+{
+  "schema": "atto.flexible-callable-headers.v1",
+  "spec": "https://github.com/atto-lang/atto-spec/pull/269",
+  "status": "NOT_EXECUTED",
+  "backend_status": {
+    "atto": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "hdl": "NOT_EXECUTED",
+    "java": "NOT_EXECUTED",
+    "realtime": "NOT_EXECUTED",
+    "rs": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED"
+  },
+  "cases": [
+    {
+      "id": "before-begin",
+      "kind": "pass",
+      "path": "fixtures/flexible-callable-headers-v1/before-begin.atto",
+      "expected_exit": 42,
+      "gate": "EXECUTE_COMPILED_GUEST"
+    },
+    {
+      "id": "after-begin",
+      "kind": "pass",
+      "path": "fixtures/flexible-callable-headers-v1/after-begin.atto",
+      "expected_exit": 42,
+      "gate": "EXECUTE_COMPILED_GUEST"
+    },
+    {
+      "id": "after-implicit",
+      "kind": "pass",
+      "path": "fixtures/flexible-callable-headers-v1/after-implicit.atto",
+      "expected_exit": 42,
+      "gate": "EXECUTE_COMPILED_GUEST"
+    },
+    {
+      "id": "after-brace",
+      "kind": "pass",
+      "path": "fixtures/flexible-callable-headers-v1/after-brace.atto",
+      "expected_exit": 42,
+      "gate": "EXECUTE_COMPILED_GUEST"
+    },
+    {
+      "id": "before-brace",
+      "kind": "pass",
+      "path": "fixtures/flexible-callable-headers-v1/before-brace.atto",
+      "expected_exit": 42,
+      "gate": "EXECUTE_COMPILED_GUEST"
+    },
+    {
+      "id": "duplicate-return",
+      "kind": "fail",
+      "path": "fixtures/flexible-callable-headers-v1/duplicate-return.atto",
+      "reason": "duplicate result annotation",
+      "gate": "NO_ARTIFACT_DIAGNOSTIC"
+    },
+    {
+      "id": "missing-return",
+      "kind": "fail",
+      "path": "fixtures/flexible-callable-headers-v1/missing-return.atto",
+      "reason": "missing result annotation",
+      "gate": "NO_ARTIFACT_DIAGNOSTIC"
+    },
+    {
+      "id": "duplicate-effects",
+      "kind": "fail",
+      "path": "fixtures/flexible-callable-headers-v1/duplicate-effects.atto",
+      "reason": "duplicate contract clause",
+      "gate": "NO_ARTIFACT_DIAGNOSTIC"
+    },
+    {
+      "id": "duplicate-budget",
+      "kind": "fail",
+      "path": "fixtures/flexible-callable-headers-v1/duplicate-budget.atto",
+      "reason": "duplicate contract clause",
+      "gate": "NO_ARTIFACT_DIAGNOSTIC"
+    },
+    {
+      "id": "duplicate-key",
+      "kind": "fail",
+      "path": "fixtures/flexible-callable-headers-v1/duplicate-key.atto",
+      "reason": "duplicate contract entry",
+      "gate": "NO_ARTIFACT_DIAGNOSTIC"
+    },
+    {
+      "id": "late-clause",
+      "kind": "fail",
+      "path": "fixtures/flexible-callable-headers-v1/late-clause.atto",
+      "reason": "clause after final result",
+      "gate": "NO_ARTIFACT_DIAGNOSTIC"
+    },
+    {
+      "id": "before-implicit",
+      "kind": "fail",
+      "path": "fixtures/flexible-callable-headers-v1/before-implicit.atto",
+      "reason": "missing explicit body opener",
+      "gate": "NO_ARTIFACT_DIAGNOSTIC"
+    },
+    {
+      "id": "same-line-implicit",
+      "kind": "fail",
+      "path": "fixtures/flexible-callable-headers-v1/same-line-implicit.atto",
+      "reason": "missing physical newline",
+      "gate": "NO_ARTIFACT_DIAGNOSTIC"
+    },
+    {
+      "id": "unclosed-map",
+      "kind": "fail",
+      "path": "fixtures/flexible-callable-headers-v1/unclosed-map.atto",
+      "reason": "malformed contract map",
+      "gate": "NO_ARTIFACT_DIAGNOSTIC"
+    },
+    {
+      "id": "missing-end",
+      "kind": "fail",
+      "path": "fixtures/flexible-callable-headers-v1/missing-end.atto",
+      "reason": "missing callable end",
+      "gate": "NO_ARTIFACT_DIAGNOSTIC"
+    },
+    {
+      "id": "fallthrough",
+      "kind": "fail",
+      "path": "fixtures/flexible-callable-headers-v1/fallthrough.atto",
+      "reason": "nonvoid fallthrough",
+      "gate": "NO_ARTIFACT_DIAGNOSTIC"
+    }
+  ],
+  "evidence_rule": "Require actual compiled guest exit 42 for each positive case and a targeted compiler diagnostic with no artifact for each negative; unsupported bound enforcement is not a pass. Host inventory tests alone are not guest evidence."
+}
