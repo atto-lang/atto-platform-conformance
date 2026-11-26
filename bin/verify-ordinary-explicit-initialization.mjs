@@ -66,9 +66,9 @@ try{
     if(compileStatus!==0){diagnostic=String(r.stderr);assert.equal(r.stdout.length,0,'rejected source emitted stdout');}
    }
    if(c.expect==='reject'){
-    assert.ok(target==='java'||compileStatus!==0,'unexpected compilation success');
+    assert.ok(target==='java'||compileStatus===1||compileStatus===2,'unexpected rejection status '+compileStatus);
     assert.deepEqual(fs.readdirSync(dir),['guest.atto'],'rejected source left files');
-    assert.match(diagnostic??'',/\\b(?:E_UNINITIALIZED|E_MISSING_INITIALIZER)\\b|(?:requires?|needs?) (?:an? )?(?:explicit )?initializer/i,'missing targeted initializer diagnostic');
+    assert.match(diagnostic??'',/\\b(?:E_UNINITIALIZED|E_MISSING_INITIALIZER)\\b|(?:requires?|needs?) (?:an? )?(?:explicit )?initializer/i,'missing targeted initializer diagnostic: '+(diagnostic??'<none>'));
    }else if(target!=='java'){
     assert.equal(compileStatus,0,diagnostic??'compile failed');assert.ok(fs.statSync(artifact).size>0);
     if(['js','rs','wasm'].includes(target))checkResult(run(process.execPath,['--input-type=module','-e',guestDriver,target==='js'?'js':'wasm',artifact,String(c.expected_exit)],{timeout:10000}),'GUEST_OK '+c.expected_exit+'\n');
