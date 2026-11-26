@@ -4,9 +4,10 @@
   "spec": "https://github.com/atto-lang/atto-spec/pull/281",
   "source_fixture": {
     "pr": "https://github.com/atto-lang/atto-serialization-and-validation/pull/100",
-    "head": "9ec1f51e28591d1334725759e264a8640146a240",
+    "head": "19575af2f49754781e54ca6d02ae40a4988aa40f",
     "path": "tests/generated_typed_codec_test.ores",
-    "scope": "Manually projected typed JSON and MessagePack fixture with shared metadata validation; not compiler-generated method support"
+    "scope": "Manually projected typed JSON and MessagePack fixture with shared metadata validation; not compiler-generated method support",
+    "tree": "d8147c9c67b238afb005ce262e5320d5a0f1db05"
   },
   "profile": {
     "schema": "User example, fields displayName string and age signed integer in this fixed order",
@@ -88,7 +89,7 @@
   "messagepack_source_fixture": {
     "path": "tests/messagepack_test.ores",
     "scope": "dynamic MessagePack wire roundtrip and malformed frame tests; no typed constructor lowering",
-    "head": "9ec1f51e28591d1334725759e264a8640146a240"
+    "head": "19575af2f49754781e54ca6d02ae40a4988aa40f"
   },
   "messagepack_negative": [
     {
@@ -124,7 +125,44 @@
   ],
   "typed_messagepack_source_fixture": {
     "path": "tests/generated_typed_codec_test.ores",
-    "head": "9ec1f51e28591d1334725759e264a8640146a240",
+    "head": "19575af2f49754781e54ca6d02ae40a4988aa40f",
     "scope": "Shared metadata validation, concrete User constructor, typed errors; guest NOT_EXECUTED"
+  },
+  "messagepack_container_admission": {
+    "scope": "candidate dynamic codec, exact error and no partial value assertions; not guest evidence",
+    "source_path": "tests/messagepack_test.ores",
+    "head": "19575af2f49754781e54ca6d02ae40a4988aa40f",
+    "negative": [
+      {
+        "hex": "930102",
+        "code": "unexpected_eof"
+      },
+      {
+        "hex": "82010203",
+        "code": "unexpected_eof"
+      },
+      {
+        "hex": "dc001001",
+        "code": "unexpected_eof"
+      },
+      {
+        "hex": "de00100102",
+        "code": "unexpected_eof"
+      }
+    ],
+    "positive": [
+      "920102",
+      "810102"
+    ]
+  },
+  "compiler_admission_receipt": {
+    "backend": "rust",
+    "source_pr": "https://github.com/atto-lang/atto-source.rs/pull/563",
+    "head": "15f4000ba6a5a81ee83673bac503a3d639b19d20",
+    "tree": "94e010e88dd09f107e4a9d742dbe0e04ce30d902",
+    "blobs": 1423,
+    "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45907125524/job/140206424446",
+    "passed": 19,
+    "scope": "actual compiler admission tests: 5 serde-specific, 14 nominal actor/struct; not executed serialization guest, not full CI or backend parity"
   }
 }
