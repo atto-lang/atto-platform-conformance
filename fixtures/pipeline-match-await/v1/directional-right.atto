@@ -1,0 +1,2 @@
+fnc identity(int n): int { return n; }
+pub fnc main(): int { 42 |> await |> identity >> val int x; return x; }

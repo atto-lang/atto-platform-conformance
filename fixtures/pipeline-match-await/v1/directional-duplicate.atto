@@ -1,0 +1,1 @@
+pub fnc main(): int { 42 >> val int x; 43 >> val int x; return x; }
