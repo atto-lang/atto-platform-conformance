@@ -294,5 +294,24 @@
       }
     ],
     "limits": "Exact source and regression blob identities verified; standalone host tests only. No new compiler, guest, AOT, or scheduler execution evidence; do not promote."
+  },
+  "netHostTerminalCandidate": {
+    "status": "NOT_EXECUTED",
+    "repo": "atto-lang/atto-source.net",
+    "pr": 368,
+    "head": "02c0b819a711d22abf3358bbf1d25143ce8dd2b6",
+    "tree": "4524e3eb408ffda2ab505912783c1fcd18a8c4b9",
+    "runtimeBlob": "c9520fef7983f5ea78fccc903c1ff742d85bce3c",
+    "testBlob": "7100e82f350cdab48fe9d5c3264653fad9efe966",
+    "scope": "Monotonic nested host loan permissions; terminal cancellation and stale release fences; existing verification suite entrypoint. No local .NET SDK, no executable test proof.",
+    "ci": {
+      "status": "INCOMPLETE_JOB_EVIDENCE",
+      "runs": [
+        45930697445,
+        45930697935,
+        45930697990
+      ],
+      "note": "Completed failures, job endpoint returned zero records. Not a compiler failure or success claim."
+    }
   }
 }
