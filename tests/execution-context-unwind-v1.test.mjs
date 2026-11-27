@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
 
 const registry = JSON.parse(readFileSync(new URL('../contracts/execution-context-unwind-v1.json', import.meta.url), 'utf8'));
 const expected_backends = [
@@ -20,7 +21,8 @@ test('execution-context unwind registry enumerates all eleven active backends',(
 
 test('complete source-free positive/negative semantics without invented guest passes',()=>{
   const cases=registry.cases;
-  assert.ok(cases.length >= 15);
+  assert.ok(cases.length >= 43);
+  assert.equal(registry.extended_spec_candidate,'https://github.com/atto-lang/atto-spec/pull/245');
   assert.equal(new Set(cases.map(x=>x.id)).size,cases.length);
   for(const x of cases){
     assert.match(x.id,/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
@@ -35,7 +37,15 @@ test('complete source-free positive/negative semantics without invented guest pa
   }
   for(const id of ['return-lifo','throw-outer-catch','raise-catch-bypass',
     'panic-fatal','cancel-terminal','recovery-one-shot','task-await-context',
-    'sibling-task-separation','tenant-generation','async-cleanup-proof'])
+    'sibling-task-separation','tenant-generation','async-cleanup-proof',
+    'braceless-delayed','bound-closure-factory','named-cleanup','factory-registration-failure',
+    'bare-await-cleanup','assignment-await-cleanup','susp-recover-cursor','callback-local-error-handled',
+    'callback-error-panic','multiple-cleanup-panics','cancel-cleanup-panic','recover-error-panic',
+    'nested-defer-scope','unsafe-borrow-suspension','nonsuspending-block-await','wrong-callback-arity',
+    'susp-cleanup-stale-wakeup','discarded-fallible-result',
+    'scheduled-unwind-next-turn','scheduled-unwind-duplicate-completion',
+    'scheduled-recovery-cancel-race','scheduled-unwind-retirement-quiescence',
+    'pipeline-defer-registration','pipeline-recover-registration','pipeline-arity-rejection','pending-future-defer-lifo','pending-body-cleanup-recovery','owned-future-handoff'])
     assert.ok(cases.some(c=>c.id===id),`missing ${id}`);
   assert.ok(cases.some(c=>c.group==='compile-reject'));
 });
@@ -50,4 +60,159 @@ test('local JS host model is explicitly segregated from transpiled guest evidenc
   assert.equal(h.local_host_tests_failed,0);
   assert.equal(h.guest_level_verification,'not_executed');
   assert.equal(registry.cases[0].backend_statuses['atto-source.js'],'not_executed');
+});
+
+test('candidate guest source blobs are exact and not execution receipts',()=>{
+  const fixtures=registry.candidate_guest_fixtures;
+  assert.equal(fixtures.length,7);
+  assert.equal(new Set(fixtures.map(f=>f.path)).size,fixtures.length);
+  for(const f of fixtures){
+    assert.match(f.path,/^fixtures\/execution-context-unwind-v1\/[a-z-]+\.atto$/);
+    const b=readFileSync(new URL('../'+f.path,import.meta.url));
+    const blob=createHash('sha1').update('blob '+b.length+'\0').update(b).digest('hex');
+    assert.equal(blob,f.git_blob_sha);
+    assert.ok(registry.cases.some(c=>c.id===f.case_id));
+    assert.ok(['return','panic','compile-reject'].includes(f.expected.kind));
+    if (f.expected.kind==='compile-reject') assert.equal(registry.cases.find(c=>c.id===f.case_id).group,'compile-reject');
+    if (typeof f.expected.stdout==='string') assert.deepEqual(f.expected.stdout.trimEnd().split('\n'),registry.cases.find(c=>c.id===f.case_id).expected_trace);
+  }
+});
+
+test('scheduled JS host receipts never certify scheduler unwind guest parity',()=>{
+  const h=registry.scheduled_js_host_candidate;
+  assert.equal(h.pr,'https://github.com/atto-lang/atto-source.js/pull/229');
+  for(const k of ['source_head','source_blob_sha','scheduler_blob_sha'])assert.match(h[k],/^[a-f0-9]{40}$/);
+  assert.equal(h.isolate_test_callbacks_passed,54);
+  assert.equal(h.guest_level_verification,'not_executed');
+  assert.match(h.limitation,/retirement/);
+  for(const id of ['scheduled-unwind-next-turn','scheduled-unwind-duplicate-completion','scheduled-recovery-cancel-race','scheduled-unwind-retirement-quiescence']) {
+    const x=registry.cases.find(c=>c.id===id);
+    assert.equal(x.overall_status,'not_executed');
+    assert.deepEqual(Object.values(x.backend_statuses),expected_backends.map(()=> 'not_executed'));
+  }
+});
+
+test('historical exact candidate receipts bind source, compiler revision and observed fixture outcome',()=>{
+  const receipts=registry.exact_pipeline_candidate_receipts;
+  assert.equal(receipts.length,3);
+  const ids=new Set();
+  for(const receipt of receipts){
+    assert.ok(expected_backends.includes(receipt.backend));
+    for(const k of ['compiler_head','compiler_tree','fixture_registry_head','fixture_registry_tree'])assert.match(receipt[k],/^[a-f0-9]{40}$/);
+    assert.match(receipt.job,/^https:\/\/github\.com\/file-tunnel\/atto-ci\/actions\/runs\/[0-9]+\/job\/[0-9]+$/);
+    assert.ok(receipt.limitation.includes('current-main'));
+    for(const r of receipt.results){
+      const key=receipt.backend+'/'+receipt.compiler_head+'/'+r.case_id;
+      assert.ok(!ids.has(key));ids.add(key);
+      const fixture=registry.candidate_guest_fixtures.find(f=>f.case_id===r.case_id);
+      assert.ok(fixture);
+      assert.equal(r.source_blob,fixture.git_blob_sha);
+      assert.deepEqual(r.observed,fixture.expected);
+      if(r.observed.kind==='compile-reject')assert.equal(r.artifact_emitted,false);
+      if(receipt.backend==='atto-source.rs' && r.observed.kind==='return'){
+        assert.equal(r.byte_identical,true);
+        assert.match(r.guest_sha256,/^[a-f0-9]{64}$/);
+      }
+      // Historical evidence does not silently promote the current matrix.
+      assert.equal(registry.cases.find(c=>c.id===r.case_id).backend_statuses[receipt.backend],'not_executed');
+    }
+    if(receipt.backend==='atto-source.rs'){
+      assert.deepEqual(receipt.profiles,['native-compiler','wasm32-compiler-in-node']);
+      assert.match(receipt.compiler_wasm_sha256,/^[a-f0-9]{64}$/);
+      assert.equal(receipt.results.length,3);
+    }else{
+      assert.deepEqual(receipt.profiles,['graalvm-jvm']);
+      assert.equal(receipt.results.length,2);
+    }
+  }
+  assert.equal(ids.size,8);
+  const rust=receipts.filter(r=>r.backend==='atto-source.rs');
+  assert.equal(rust.length,2);
+  assert.notEqual(rust[0].compiler_head,rust[1].compiler_head);
+  assert.notEqual(rust[0].compiler_wasm_sha256,rust[1].compiler_wasm_sha256);
+  assert.deepEqual(rust[0].results,rust[1].results);
+});
+
+test('pending Future source fixture and candidate Worker receipt are pinned separately from main parity',()=>{
+  const f=registry.pending_future_guest_candidate;
+  const b=readFileSync(new URL('../'+f.path,import.meta.url));
+  assert.equal(createHash('sha1').update('blob '+b.length+'\0').update(b).digest('hex'),f.git_blob_sha);
+  assert.equal(f.entry,'run');assert.deepEqual(f.parameters,[{type:'Future<int>',state:'pending'},{type:'Future<int>',state:'pending'}]);
+  assert.deepEqual(f.host_completion_order,[{parameter:1,value:2},{parameter:0,value:1}]);
+  assert.deepEqual(f.expected,{kind:'return',value:42});
+  assert.match(f.compiler_candidate.compiler_head,/^[a-f0-9]{40}$/);
+  assert.match(f.compiler_candidate.compiler_tree,/^[a-f0-9]{40}$/);
+  assert.match(f.compiler_candidate.job,/^https:\/\/github\.com\/ores-dummy-org-ruby-graal-1\/atto-ci\/actions\/runs\/\d+\/job\/\d+$/);
+  assert.deepEqual(f.compiler_candidate.profiles,['scheduled-unwind-v1-node-worker','scheduled-unwind-v1-chromium-worker']);
+  assert.equal(registry.cases.find(c=>c.id===f.case_id).backend_statuses['atto-source.js'],'not_executed');
+});
+
+test('pending body and recovery fixture pins actual worker candidate separately from main',()=>{
+  const f=registry.pending_recovery_guest_candidate;
+  const b=readFileSync(new URL('../'+f.path,import.meta.url));
+  assert.equal(createHash('sha1').update('blob '+b.length+'\0').update(b).digest('hex'),f.git_blob_sha);
+  assert.equal(f.entry,'run');assert.deepEqual(f.parameters,['Future<int>','Future<int>','Future<int>']);
+  assert.deepEqual(f.host_operations,[{parameter:0,operation:'fail',message:'original'},{parameter:1,operation:'resolve',value:0},{parameter:2,operation:'resolve',value:42}]);
+  assert.deepEqual(f.expected,{kind:'recovered',value:42,original_error_identity:true});
+  assert.match(f.compiler_candidate.compiler_head,/^[a-f0-9]{40}$/);
+  assert.match(f.compiler_candidate.compiler_tree,/^[a-f0-9]{40}$/);
+  assert.match(f.compiler_candidate.job,/^https:\/\/github\.com\/ores-dummy-org-ruby-graal-1\/atto-ci\/actions\/runs\/\d+\/job\/\d+$/);
+  assert.deepEqual(f.compiler_candidate.profiles,['scheduled-unwind-v1-node-worker','scheduled-unwind-v1-chromium-worker']);
+  assert.equal(registry.cases.find(c=>c.id===f.case_id).backend_statuses['atto-source.js'],'not_executed');
+});
+
+test('owned Future fixture pins preserve historical unowned receipts and record real compiler denials',()=>{
+  const f=registry.owned_future_candidate;
+  assert.equal(f.fixtures.length,2);
+  for(const item of f.fixtures){
+    const b=readFileSync(new URL('../'+item.path,import.meta.url));
+    assert.equal(createHash('sha1').update('blob '+b.length+'\0').update(b).digest('hex'),item.git_blob_sha);
+    assert.match(b.toString('utf8'),/take! Future<int>/);
+    assert.equal(item.expected.value,42);
+  }
+  assert.match(f.prior_unowned_fixture_disposition,/Historical/);
+  assert.equal(f.actual_other_compiler_audit.rust.diagnostic,'E_OWNERSHIP');
+  assert.equal(f.actual_other_compiler_audit.rust.artifact_emitted,false);
+  assert.equal(f.actual_other_compiler_audit.net.artifact_emitted,false);
+  assert.match(f.compiler_candidate.compiler_head,/^[a-f0-9]{40}$/);
+  assert.match(f.compiler_candidate.compiler_tree,/^[a-f0-9]{40}$/);
+  assert.deepEqual(f.compiler_candidate.profiles,['scheduled-unwind-v1-node-worker','scheduled-unwind-v1-chromium-worker']);
+  assert.equal(registry.cases.find(c=>c.id===f.case_id).backend_statuses['atto-source.js'],'not_executed');
+});
+
+test('Rust candidate compiles the same owned fixtures and shares JS claims without promoting main matrix',()=>{
+ const owned=registry.owned_future_candidate;
+ const rust=owned.rust_compiler_candidate;
+ assert.equal(rust.backend,'atto-source.rs');
+ assert.match(rust.compiler_head,/^[a-f0-9]{40}$/);
+ assert.match(rust.compiler_tree,/^[a-f0-9]{40}$/);
+ assert.equal(rust.shared_js_head,owned.compiler_candidate.compiler_head);
+ assert.equal(rust.shared_js_tree,owned.compiler_candidate.compiler_tree);
+ assert.match(rust.job,/^https:\/\/github\.com\/ores-dummy-org-ruby-graal-1\/atto-ci\/actions\/runs\/\d+\/job\/\d+$/);
+ assert.deepEqual(rust.profiles,['owned-unwind-v1-native-compiler-wasm','owned-unwind-v1-node-worker','owned-unwind-v1-chromium-worker']);
+ assert.equal(registry.cases.find(c=>c.id===owned.case_id).backend_statuses['atto-source.rs'],'not_executed');
+});
+
+test('native LLVM candidate and refreshed Rust integration pin actual owned guest evidence',()=>{
+ const f=registry.owned_future_candidate;
+ const llvm=f.llvm_compiler_candidate;
+ assert.equal(llvm.backend,'atto-source.llvm');
+ assert.equal(llvm.frame_bytes,208);
+ assert.deepEqual(llvm.fixture_blobs,f.fixtures.map(x=>x.git_blob_sha));
+ assert.deepEqual(llvm.profiles,['owned-unwind-v1-native-llvm','owned-unwind-v1-native-store-harness']);
+ for(const sha of [llvm.compiler_head,llvm.compiler_tree,f.rust_current_main_integration.head,f.rust_current_main_integration.tree,f.rust_current_main_integration.base])assert.match(sha,/^[a-f0-9]{40}$/);
+ for(const job of [llvm.job,f.rust_current_main_integration.job])assert.match(job,/^https:\/\/github\.com\/ores-dummy-org-ruby-graal-1\/atto-ci\/actions\/runs\/\d+\/job\/\d+$/);
+ assert.equal(registry.cases.find(c=>c.id===f.case_id).backend_statuses['atto-source.llvm'],'not_executed');
+});
+
+test('NativeAOT candidate pins the same owned fixtures and scoped managed allocation probe',()=>{
+ const f=registry.owned_future_candidate;
+ const net=f.net_compiler_candidate;
+ assert.equal(net.backend,'atto-source.net');assert.equal(net.frame_bytes,208);
+ assert.deepEqual(net.fixture_blobs,f.fixtures.map(x=>x.git_blob_sha));
+ assert.deepEqual(net.profiles,['owned-unwind-v1-generated-csharp-nativeaot']);
+ assert.deepEqual(net.allocation_probe,{iterations_per_fixture:10000,managed_bytes_current_thread:0,scope:'Warmed generated frame transition harness only'});
+ assert.match(net.compiler_head,/^[a-f0-9]{40}$/);assert.match(net.compiler_tree,/^[a-f0-9]{40}$/);
+ assert.match(net.job,/^https:\/\/github\.com\/ores-dummy-org-ruby-graal-1\/atto-ci\/actions\/runs\/\d+\/job\/\d+$/);
+ assert.equal(registry.cases.find(c=>c.id===f.case_id).backend_statuses['atto-source.net'],'not_executed');
 });

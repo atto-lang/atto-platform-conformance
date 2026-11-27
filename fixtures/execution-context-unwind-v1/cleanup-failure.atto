@@ -1,0 +1,9 @@
+pub fnc main(): int {
+    recover |err, cursor| -> {
+        return 42;
+    };
+    defer || -> {
+        throw! new Error("cleanup failed");
+    };
+    raise! new Error("original");
+}

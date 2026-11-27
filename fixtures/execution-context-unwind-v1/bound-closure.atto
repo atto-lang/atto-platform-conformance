@@ -1,0 +1,10 @@
+pub fnc main(): int {
+    let mut int value = 0;
+    val int result = sync task<int> {
+        defer (|int foo| -> || -> {
+            value = foo;
+        })(2);
+        return 40;
+    };
+    return result + value;
+}
