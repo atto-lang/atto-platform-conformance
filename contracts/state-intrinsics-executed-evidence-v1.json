@@ -733,5 +733,74 @@
     ],
     "differentialOperationsPerBackend": 8192,
     "scope": "Actual fetched exact runtime and test callback bodies executed with import/assert/test adapter; not native Node runner, full CI or compiler guest. Both main trees already contain capacity and deterministic matrix tests. Wasm #366 current head a8d16718d3f21d6431d5fdd512727af1a62a8d98 has identical root tree to sampled main; Rust #731 capacity test present on main. Do not duplicate or count as a merge."
+  },
+  "forgeConsolidatedNativeEvidence": {
+    "status": "LOCAL_EXACT_BLOB_COMPILED_STAGE0_NATIVE_GUEST_NOT_CI",
+    "repo": "atto-lang/atto-source.forge",
+    "pr": 343,
+    "head": "91d0098f08c8ac20e2b9905af985db7eed8d4ec6",
+    "tree": "7045b59a97a36a5d991a8f09ae3e6184697a17b0",
+    "base": "927efe04c294f687d6d66522a3ee72d5af6958b9",
+    "supersedesCandidates": [
+      335,
+      337,
+      339
+    ],
+    "verifiedBlobs": {
+      "compiler/actor_source.cpp": "ec3569b59c59d8f81ddf71673650b46161031b38",
+      "compiler/actor_source.hpp": "0ce9f77711e389a73ed3f1bf448d9b04ccef4f7e",
+      "runtime/arena/ActorOwnedI64Heap.c": "3d988d0b87a991b9d617a32c9a75cc67b6756c18",
+      "runtime/arena/ActorOwnedI64Heap.h": "0aa882c3ab96b26a1847369dea0a3d2c3ae30c7d",
+      "runtime/actor_frames.hpp": "8825165f99794400da4d8ca7524db21ee6587c86",
+      "runtime/scalar_actor.hpp": "9b623c5f6be43aac6e860625f4b006551b47d615",
+      "runtime/scalar_actor.cpp": "351f164001771b44aff348884adc5a728810d971",
+      "verification/scalar_actor_stage0_emit.cpp": "1746bf24f396eb2c39a918efbc25fddba7d1b87f",
+      "verification/scalar_actor_stage0_guest.cpp": "19f698078c101bdd1b05d0748d59c0bd75117002",
+      "verification/scalar_actor_stage0_read_guest.cpp": "b68cfed232d2c326f0a51fe1451f3fb628517ad9",
+      "verification/scalar_actor_stage0_native.py": "431ed0040e8997144d8060996dc1dce83dfa8fe5"
+    },
+    "toolchains": [
+      {
+        "command": "python verification/scalar_actor_stage0_native.py --cc gcc --cxx g++",
+        "exit": 0,
+        "nativeGuestsPassed": 5,
+        "aliasEmissionChecksPassed": 14,
+        "sourceDenialsPassed": 22,
+        "heapAuthorityControlsPassed": 9
+      },
+      {
+        "command": "python verification/scalar_actor_stage0_native.py --cc clang --cxx clang++ --sanitize",
+        "exit": 0,
+        "nativeGuestsPassed": 5,
+        "aliasEmissionChecksPassed": 14,
+        "sourceDenialsPassed": 22,
+        "heapAuthorityControlsPassed": 9
+      }
+    ],
+    "receiptComment": 7210995859,
+    "ci": {
+      "run": 45948118616,
+      "status": "FAILED_NO_JOBS"
+    },
+    "scope": "Fresh local execution of unmodified restricted harness; all eleven local git hash-object hashes match candidate tree. Main-based exact blob integration; no full repository CI, general compiler CLI, or independent review claim."
+  },
+  "craneliftConsolidatedScopeCandidate": {
+    "status": "NOT_EXECUTED",
+    "repo": "atto-lang/atto-source.cranelift",
+    "pr": 213,
+    "head": "74da31db307cd3d253d814c2b0a28bfb2cfa5956",
+    "tree": "ff82508abdbc2e95ae67a055ee2ed8ab039128a7",
+    "base": "1b73ae0fd69d1521cc7f13bf3029796e8ed3ad57",
+    "supersedesCandidates": [
+      201,
+      207
+    ],
+    "moduleBlob": "3c312230470dcf290bdbaf55ad1fcd94fb0c2c07",
+    "newUnitTestGroups": 10,
+    "ci": {
+      "run": 45948243923,
+      "status": "FAILED_NO_JOBS"
+    },
+    "scope": "Exact host module forward-port, no compiler lowering or test execution. Rust SDK absent. Independent review pending."
   }
 }
