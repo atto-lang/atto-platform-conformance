@@ -11,7 +11,8 @@ import {once} from "node:events";
 import {expandQuantityCases} from "../lib/verified-core-quantity-expansion.mjs";
 const [bridgePath,compilerPath,chrome]=process.argv.slice(2);
 assert.ok(bridgePath&&compilerPath&&chrome);
-assert.equal(process.env.ATTO_VERIFIED_CAST_ASCRIPTION,"1");
+const bindings=process.env.ATTO_VERIFIED_TYPED_BINDINGS==="1";
+if(!bindings)assert.equal(process.env.ATTO_VERIFIED_CAST_ASCRIPTION,"1");
 const original=fileURLToPath(new URL("../fixtures/verified-core-quantities-v1/",import.meta.url));
 const manifest=JSON.parse(readFileSync(join(original,"cases.json"),"utf8"));
 assert.equal(manifest.profile,"verified-core-quantities-v1");
@@ -22,7 +23,7 @@ const compiler=readFileSync(resolve(compilerPath)),pin=sha(compiler);
 const bridge=readFileSync(join(resolve(bridgePath),"src/canonical-browser-compiler.mjs"));
 assert.ok(compiler.length>8&&compiler.length<=16*1024*1024);
 const {fixtures,cases}=expandQuantityCases(original,work,manifest);
-assert.equal(cases.length,151);
+assert.equal(cases.length,bindings?36:151);
 const inputs=cases.map(({source,expected})=>{
  assert.match(source,/^[a-z0-9-]+\.atto$/);
  const bytes=readFileSync(join(fixtures,source));
@@ -40,14 +41,16 @@ self.onmessage=async({data})=>{
   const module=new WebAssembly.Module(bytes);check(WebAssembly.Module.imports(module).length===0,'compiler imports');
   const compiler=await createCompiler(bytes);
   const inputs=await (await get('/cases.json')).json();
-  const receipts=[]; const errors={divisionByZero:2,integerOverflow:1};
+  const receipts=[]; const errors={divisionByZero:2,integerOverflow:1,refinementViolation:7};
   for(const {source,expected,text,hash} of inputs){
    check(await sha(new TextEncoder().encode(text))===hash,source+' source hash');
    const r=compiler.compile(text);
    if(expected.kind==='diagnostic'){
     check(!r.ok&&!Object.hasOwn(r,'wasm')&&!Object.hasOwn(r,'esm'),source+' artifact on rejection');
-    check(r.diagnostics.length===1&&r.diagnostics[0].message.includes(expected.category+':'),source+' '+JSON.stringify(r.diagnostics));
-    receipts.push({source,hash,kind:expected.kind});
+    check(r.diagnostics.length===1,source+' diagnostic count');
+    const category=r.diagnostics[0].message.match(/\\b([A-Z][A-Z0-9_]+):/)?.[1];
+    check(category&&(expected.category===null||category===expected.category),source+' '+JSON.stringify(r.diagnostics));
+    receipts.push({source,hash,kind:expected.kind,category});
    }else{
     check(r.ok,source+' '+JSON.stringify(r.diagnostics));
     const guest=new WebAssembly.Module(r.wasm);check(WebAssembly.Module.imports(guest).length===0,source+' guest imports');
@@ -56,7 +59,7 @@ self.onmessage=async({data})=>{
      check(instance.exports.main()===BigInt(expected.decimal),source+' result');
      check(instance.exports.panic_code.value===0,source+' success panic');
     }else{
-     check(expected.kind==='arithmeticFailure'&&Object.hasOwn(errors,expected.category),source+' unsupported oracle');
+     check((expected.kind==='arithmeticFailure'||expected.kind==='refinementFailure')&&Object.hasOwn(errors,expected.category),source+' unsupported oracle');
      let trapped=false;try{instance.exports.main();}catch(e){trapped=e instanceof WebAssembly.RuntimeError;}
      check(trapped&&instance.exports.panic_code.value===errors[expected.category],source+' wrong trap');
     }
@@ -95,7 +98,8 @@ try{
  for(let i=0;i<inputs.length;i++){
   const r=result.receipts[i],v=inputs[i];assert.equal(r.source,v.source);assert.equal(r.hash,v.hash);assert.equal(r.kind,v.expected.kind);
   if(r.kind!=="diagnostic")assert.match(r.artifact,/^[a-f0-9]{64}$/);
-  console.log("PASS browser-worker "+r.source+" "+r.kind+" "+r.hash+" "+(r.artifact??""));
+  else {assert.match(r.category,/^[A-Z][A-Z0-9_]+$/);if(v.expected.category!==null)assert.equal(r.category,v.expected.category); }
+  console.log("PASS browser-worker "+r.source+" "+r.kind+" "+r.hash+" "+(r.artifact??r.category??""));
  }
  console.log("SHARED_BROWSER_WORKER_VERIFIED "+inputs.length+" "+pin+" "+result.agent);
 }finally{
