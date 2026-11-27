@@ -1,0 +1,3 @@
+fnc fixed(int n): int { return n; }
+fnc unused(rebind int n): int { return n; }
+pub fnc main(): int { return fixed(21) + unused(21); }

@@ -1,0 +1,14 @@
+define class Person as
+    pub let int value = 0;
+end
+fnc choose(rebind Person p, Person bob, bool change): int {
+    if change { set p = bob; }
+    return p.value;
+}
+pub fnc main(): int {
+    val mut Person alice = new Person();
+    alice.value = 10;
+    val mut Person bob = new Person();
+    bob.value = 22;
+    return choose(alice, bob, false) + choose(alice, bob, true) + alice.value;
+}

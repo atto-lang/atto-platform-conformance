@@ -1,0 +1,122 @@
+{
+  "schema": "atto.parameter-set-rebind.v2",
+  "version": 2,
+  "status": "TARGET_NOT_EXECUTED",
+  "supersedes": "contracts/parameter-rebind-v1.json (historical bare-assignment fixtures are not canonical under v2)",
+  "contract": "https://github.com/atto-lang/atto-spec/pull/318",
+  "required_cases": [
+    {
+      "id": "bare_rebindable_assignment",
+      "path": "fixtures/parameter-set-rebind-v2/fail/bare_rebindable_assignment.atto",
+      "kind": "fail",
+      "expected_error": "E_ASSIGNMENT_SYNTAX",
+      "source_blob_sha": "136e61004ad89f750b46649c00edb6ee0686f06e"
+    },
+    {
+      "id": "fixed_mutable_parameter",
+      "path": "fixtures/parameter-set-rebind-v2/fail/fixed_mutable_parameter.atto",
+      "kind": "fail",
+      "expected_error": "E_IMMUTABLE",
+      "source_blob_sha": "e339c27de9fb05edbf638b37ad6646f635bb63bd"
+    },
+    {
+      "id": "fixed_mutable_set",
+      "path": "fixtures/parameter-set-rebind-v2/fail/fixed_mutable_set.atto",
+      "kind": "fail",
+      "expected_error": "E_IMMUTABLE",
+      "source_blob_sha": "435b04981ee6ef6bf0718624c7d21e333e636083"
+    },
+    {
+      "id": "fixed_scalar_set",
+      "path": "fixtures/parameter-set-rebind-v2/fail/fixed_scalar_set.atto",
+      "kind": "fail",
+      "expected_error": "E_IMMUTABLE",
+      "source_blob_sha": "3694b0649f3c793da714c5c07a1b6139aa7df73f"
+    },
+    {
+      "id": "live_owned_reborrow",
+      "path": "fixtures/parameter-set-rebind-v2/fail/live_owned_reborrow.atto",
+      "kind": "fail",
+      "expected_error": "E_BORROW",
+      "source_blob_sha": "7fa40954a68cb83f950af43efa7907b15ff81a55"
+    },
+    {
+      "id": "readonly_replacement_write",
+      "path": "fixtures/parameter-set-rebind-v2/fail/readonly_replacement_write.atto",
+      "kind": "fail",
+      "expected_error": "E_BORROW",
+      "source_blob_sha": "9e52a0e7723b1f310d57225251cd2481a1fed8c8"
+    },
+    {
+      "id": "rebind_statement",
+      "path": "fixtures/parameter-set-rebind-v2/fail/rebind_statement.atto",
+      "kind": "fail",
+      "expected_error": "E_ASSIGNMENT_SYNTAX",
+      "source_blob_sha": "73c7d40818f6dc934f6648b193689e5a517f12ce"
+    },
+    {
+      "id": "borrowed_owned_join",
+      "path": "fixtures/parameter-set-rebind-v2/pass/borrowed_owned_join.atto",
+      "kind": "pass",
+      "expected_exit": 15,
+      "source_blob_sha": "8cfa241df2e31b3cb50b68a91fcc10341f5e89ff"
+    },
+    {
+      "id": "borrowed_replacement",
+      "path": "fixtures/parameter-set-rebind-v2/pass/borrowed_replacement.atto",
+      "kind": "pass",
+      "expected_exit": 42,
+      "source_blob_sha": "cd53c2ba69ea20322fd4a60455f6123509804894"
+    },
+    {
+      "id": "conditional_scalar_set",
+      "path": "fixtures/parameter-set-rebind-v2/pass/conditional_scalar_set.atto",
+      "kind": "pass",
+      "expected_exit": 42,
+      "source_blob_sha": "a36095a028a72c99753f781cb296b22414ff21d7"
+    },
+    {
+      "id": "function_replacement",
+      "path": "fixtures/parameter-set-rebind-v2/pass/function_replacement.atto",
+      "kind": "pass",
+      "expected_exit": 69,
+      "source_blob_sha": "707a50184f0d07d6310ef27833108c4370504739"
+    },
+    {
+      "id": "method_replacement",
+      "path": "fixtures/parameter-set-rebind-v2/pass/method_replacement.atto",
+      "kind": "pass",
+      "expected_exit": 69,
+      "source_blob_sha": "9750d9df15aabb73f8656da27abc584d0d475f04"
+    },
+    {
+      "id": "scalar_name_first",
+      "path": "fixtures/parameter-set-rebind-v2/pass/scalar_name_first.atto",
+      "kind": "pass",
+      "expected_exit": 23,
+      "source_blob_sha": "264bc6ac6b5e496d8b2b28a9bd97c5fd14736e31"
+    },
+    {
+      "id": "unused_rebind",
+      "path": "fixtures/parameter-set-rebind-v2/pass/unused_rebind.atto",
+      "kind": "pass",
+      "expected_exit": 42,
+      "source_blob_sha": "36789f837d541f7dcd1e8ed3cce5a19a824db76c"
+    }
+  ],
+  "backend_status": {
+    "rs-browser": "NOT_EXECUTED",
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm-independent": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED"
+  },
+  "notes": [
+    "Diagnostics describe semantic categories, not existing backend codes. Unsupported is not semantic rejection parity.",
+    "Inspect fixed/unused/conditional-rebind optimized IR for unnecessary reference copies, boxes, retain/release, stores and pointer-slot addresses; verify identity, RHS failure and drop/lifetime separately.",
+    "Field mutation grammar unchanged by parameter correction. v1 fixture blobs remain historical."
+  ]
+}

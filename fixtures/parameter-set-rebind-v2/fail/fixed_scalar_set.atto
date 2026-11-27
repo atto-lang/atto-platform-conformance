@@ -1,0 +1,1 @@
+pub fnc replace(int n): int { set n = 42; return n; }
