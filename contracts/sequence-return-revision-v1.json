@@ -11,7 +11,20 @@
         "kind": "exit",
         "value": 42
       },
-      "confirmedBackends": []
+      "confirmedBackends": [],
+      "evidence": {
+        "rust_native": "not_executed",
+        "rust_browser_wasm": "not_executed",
+        "llvm": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "wasm_independent": "not_executed",
+        "forge": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed"
+      }
     },
     {
       "id": "return-0-sequence-1",
@@ -20,7 +33,20 @@
         "kind": "exit",
         "value": 42
       },
-      "confirmedBackends": []
+      "confirmedBackends": [],
+      "evidence": {
+        "rust_native": "not_executed",
+        "rust_browser_wasm": "not_executed",
+        "llvm": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "wasm_independent": "not_executed",
+        "forge": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed"
+      }
     },
     {
       "id": "return-0-sequence-2",
@@ -29,7 +55,20 @@
         "kind": "exit",
         "value": 42
       },
-      "confirmedBackends": []
+      "confirmedBackends": [],
+      "evidence": {
+        "rust_native": "not_executed",
+        "rust_browser_wasm": "not_executed",
+        "llvm": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "wasm_independent": "not_executed",
+        "forge": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed"
+      }
     },
     {
       "id": "return-0-sequence-3",
@@ -38,7 +77,20 @@
         "kind": "exit",
         "value": 42
       },
-      "confirmedBackends": []
+      "confirmedBackends": [],
+      "evidence": {
+        "rust_native": "not_executed",
+        "rust_browser_wasm": "not_executed",
+        "llvm": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "wasm_independent": "not_executed",
+        "forge": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed"
+      }
     },
     {
       "id": "return-1-sequence-0",
@@ -47,7 +99,20 @@
         "kind": "exit",
         "value": 42
       },
-      "confirmedBackends": []
+      "confirmedBackends": [],
+      "evidence": {
+        "rust_native": "not_executed",
+        "rust_browser_wasm": "not_executed",
+        "llvm": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "wasm_independent": "not_executed",
+        "forge": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed"
+      }
     },
     {
       "id": "return-1-sequence-1",
@@ -56,7 +121,20 @@
         "kind": "exit",
         "value": 42
       },
-      "confirmedBackends": []
+      "confirmedBackends": [],
+      "evidence": {
+        "rust_native": "not_executed",
+        "rust_browser_wasm": "not_executed",
+        "llvm": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "wasm_independent": "not_executed",
+        "forge": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed"
+      }
     },
     {
       "id": "return-1-sequence-2",
@@ -65,7 +143,20 @@
         "kind": "exit",
         "value": 42
       },
-      "confirmedBackends": []
+      "confirmedBackends": [],
+      "evidence": {
+        "rust_native": "not_executed",
+        "rust_browser_wasm": "not_executed",
+        "llvm": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "wasm_independent": "not_executed",
+        "forge": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed"
+      }
     },
     {
       "id": "return-1-sequence-3",
@@ -74,7 +165,20 @@
         "kind": "exit",
         "value": 42
       },
-      "confirmedBackends": []
+      "confirmedBackends": [],
+      "evidence": {
+        "rust_native": "not_executed",
+        "rust_browser_wasm": "not_executed",
+        "llvm": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "wasm_independent": "not_executed",
+        "forge": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed"
+      }
     },
     {
       "id": "ordinary-seq-call",
@@ -83,7 +187,20 @@
         "kind": "exit",
         "value": 42
       },
-      "confirmedBackends": []
+      "confirmedBackends": [],
+      "evidence": {
+        "rust_native": "not_executed",
+        "rust_browser_wasm": "not_executed",
+        "llvm": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "wasm_independent": "not_executed",
+        "forge": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed"
+      }
     },
     {
       "id": "ordinary-seq-call-spaced",
@@ -92,7 +209,20 @@
         "kind": "exit",
         "value": 42
       },
-      "confirmedBackends": []
+      "confirmedBackends": [],
+      "evidence": {
+        "rust_native": "not_executed",
+        "rust_browser_wasm": "not_executed",
+        "llvm": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "wasm_independent": "not_executed",
+        "forge": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed"
+      }
     },
     {
       "id": "warned-scalar",
@@ -102,7 +232,20 @@
         "value": 42,
         "warning": "redundant-return"
       },
-      "confirmedBackends": []
+      "confirmedBackends": [],
+      "evidence": {
+        "rust_native": "not_executed",
+        "rust_browser_wasm": "not_executed",
+        "llvm": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "wasm_independent": "not_executed",
+        "forge": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed"
+      }
     },
     {
       "id": "warned-tuple",
@@ -113,7 +256,20 @@
         "warning": "redundant-return-tuple",
         "requires": "type-check pair as tuple and retain body in checked frontend"
       },
-      "confirmedBackends": []
+      "confirmedBackends": [],
+      "evidence": {
+        "rust_native": "not_executed",
+        "rust_browser_wasm": "not_executed",
+        "llvm": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "wasm_independent": "not_executed",
+        "forge": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed"
+      }
     },
     {
       "id": "legacy-scalar-tuple-reject",
@@ -122,7 +278,20 @@
         "kind": "reject",
         "diagnostic": "return-type-mismatch"
       },
-      "confirmedBackends": []
+      "confirmedBackends": [],
+      "evidence": {
+        "rust_native": "not_executed",
+        "rust_browser_wasm": "not_executed",
+        "llvm": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "wasm_independent": "not_executed",
+        "forge": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed"
+      }
     },
     {
       "id": "reverse-return-reject",
@@ -131,7 +300,20 @@
         "kind": "reject",
         "diagnostic": "invalid-return-marker-order"
       },
-      "confirmedBackends": []
+      "confirmedBackends": [],
+      "evidence": {
+        "rust_native": "not_executed",
+        "rust_browser_wasm": "not_executed",
+        "llvm": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "wasm_independent": "not_executed",
+        "forge": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed"
+      }
     },
     {
       "id": "repeat-caret-reject",
@@ -140,7 +322,20 @@
         "kind": "reject",
         "diagnostic": "invalid-return-marker-order"
       },
-      "confirmedBackends": []
+      "confirmedBackends": [],
+      "evidence": {
+        "rust_native": "not_executed",
+        "rust_browser_wasm": "not_executed",
+        "llvm": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "wasm_independent": "not_executed",
+        "forge": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed"
+      }
     },
     {
       "id": "empty-bang-reject",
@@ -149,7 +344,20 @@
         "kind": "reject",
         "diagnostic": "empty-sequence"
       },
-      "confirmedBackends": []
+      "confirmedBackends": [],
+      "evidence": {
+        "rust_native": "not_executed",
+        "rust_browser_wasm": "not_executed",
+        "llvm": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "wasm_independent": "not_executed",
+        "forge": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed"
+      }
     },
     {
       "id": "empty-short-reject",
@@ -158,7 +366,20 @@
         "kind": "reject",
         "diagnostic": "empty-sequence"
       },
-      "confirmedBackends": []
+      "confirmedBackends": [],
+      "evidence": {
+        "rust_native": "not_executed",
+        "rust_browser_wasm": "not_executed",
+        "llvm": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "wasm_independent": "not_executed",
+        "forge": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed"
+      }
     },
     {
       "id": "trailing-comma-reject",
@@ -167,7 +388,20 @@
         "kind": "reject",
         "diagnostic": "trailing-sequence-comma"
       },
-      "confirmedBackends": []
+      "confirmedBackends": [],
+      "evidence": {
+        "rust_native": "not_executed",
+        "rust_browser_wasm": "not_executed",
+        "llvm": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "wasm_independent": "not_executed",
+        "forge": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed"
+      }
     },
     {
       "id": "ordered-prefix-effects",
@@ -176,7 +410,20 @@
         "kind": "exit",
         "value": 42
       },
-      "confirmedBackends": []
+      "confirmedBackends": [],
+      "evidence": {
+        "rust_native": "not_executed",
+        "rust_browser_wasm": "not_executed",
+        "llvm": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "wasm_independent": "not_executed",
+        "forge": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed"
+      }
     },
     {
       "id": "nested-sequence",
@@ -185,7 +432,20 @@
         "kind": "exit",
         "value": 42
       },
-      "confirmedBackends": []
+      "confirmedBackends": [],
+      "evidence": {
+        "rust_native": "not_executed",
+        "rust_browser_wasm": "not_executed",
+        "llvm": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "wasm_independent": "not_executed",
+        "forge": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed"
+      }
     },
     {
       "id": "heterogeneous-prefix",
@@ -194,7 +454,20 @@
         "kind": "exit",
         "value": 42
       },
-      "confirmedBackends": []
+      "confirmedBackends": [],
+      "evidence": {
+        "rust_native": "not_executed",
+        "rust_browser_wasm": "not_executed",
+        "llvm": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "wasm_independent": "not_executed",
+        "forge": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed"
+      }
     },
     {
       "id": "delimited-argument",
@@ -203,7 +476,20 @@
         "kind": "exit",
         "value": 42
       },
-      "confirmedBackends": []
+      "confirmedBackends": [],
+      "evidence": {
+        "rust_native": "not_executed",
+        "rust_browser_wasm": "not_executed",
+        "llvm": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "wasm_independent": "not_executed",
+        "forge": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed"
+      }
     },
     {
       "id": "bare-final-argument",
@@ -212,7 +498,145 @@
         "kind": "exit",
         "value": 42
       },
-      "confirmedBackends": []
+      "confirmedBackends": [],
+      "evidence": {
+        "rust_native": "not_executed",
+        "rust_browser_wasm": "not_executed",
+        "llvm": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "wasm_independent": "not_executed",
+        "forge": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed"
+      }
+    },
+    {
+      "id": "warned-void",
+      "source": "fnc stop(): void { return ^; }\npub fnc main(): int { stop(); return 42; }\n",
+      "expect": {
+        "kind": "exit",
+        "value": 42,
+        "warning": "redundant-return"
+      },
+      "confirmedBackends": [],
+      "evidence": {
+        "rust_native": "not_executed",
+        "rust_browser_wasm": "not_executed",
+        "llvm": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "wasm_independent": "not_executed",
+        "forge": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed"
+      }
+    },
+    {
+      "id": "seq-call-single",
+      "source": "fnc seq(int a): int { return a + 1; }\npub fnc main(): int { return seq(41); }\n",
+      "expect": {
+        "kind": "exit",
+        "value": 42
+      },
+      "confirmedBackends": [],
+      "evidence": {
+        "rust_native": "not_executed",
+        "rust_browser_wasm": "not_executed",
+        "llvm": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "wasm_independent": "not_executed",
+        "forge": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed"
+      }
+    },
+    {
+      "id": "seq-call-zero",
+      "source": "fnc seq(): int { return 42; }\npub fnc main(): int { return seq(); }\n",
+      "expect": {
+        "kind": "exit",
+        "value": 42
+      },
+      "confirmedBackends": [],
+      "evidence": {
+        "rust_native": "not_executed",
+        "rust_browser_wasm": "not_executed",
+        "llvm": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "wasm_independent": "not_executed",
+        "forge": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed"
+      }
+    },
+    {
+      "id": "seq-call-not-a-sequence",
+      "source": "fnc seq(int a, int b): int { return a - b; }\npub fnc main(): int { return seq(50, 8); }\n",
+      "expect": {
+        "kind": "exit",
+        "value": 42
+      },
+      "confirmedBackends": [],
+      "evidence": {
+        "rust_native": "not_executed",
+        "rust_browser_wasm": "not_executed",
+        "llvm": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "wasm_independent": "not_executed",
+        "forge": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed"
+      }
+    },
+    {
+      "id": "seq-bang-not-a-call",
+      "source": "fnc seq(int a, int b): int { return a - b; }\npub fnc main(): int { return seq! (50, 42); }\n",
+      "expect": {
+        "kind": "exit",
+        "value": 42
+      },
+      "confirmedBackends": [],
+      "evidence": {
+        "rust_native": "not_executed",
+        "rust_browser_wasm": "not_executed",
+        "llvm": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "wasm_independent": "not_executed",
+        "forge": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed"
+      }
     }
-  ]
+  ],
+  "backends": [
+    "rust_native",
+    "rust_browser_wasm",
+    "llvm",
+    "java",
+    "net",
+    "wasm_independent",
+    "forge",
+    "cranelift",
+    "js",
+    "atto",
+    "hdl"
+  ],
+  "legacy_registry": "contracts/seq-expression-v1.json"
 }
