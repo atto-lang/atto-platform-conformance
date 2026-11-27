@@ -42,5 +42,47 @@
       "semanticReason": "missing-context-name",
       "artifactAllowed": false
     }
+  ],
+  "embeddedCompilerReceipts": [
+    {
+      "backend": "rs",
+      "head": "01b277d6c7e4482f6006a5916fa002dc50c76eab",
+      "tree": "995b6461a9e9fd57beef6645ef2af4a9bcf40bfd",
+      "pullRequest": 759,
+      "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46064041810/job/140724959884",
+      "scope": "embedded named scalar guest and regression; not byte-pinned shared named corpus"
+    },
+    {
+      "backend": "llvm",
+      "head": "0c52a12e2820e758258aa4612236ad66551a2e9f",
+      "tree": "4e8cde30b09a4a7fd95496d9fdade04f93d21e8f",
+      "pullRequest": 1073,
+      "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46064041810/job/140724959885",
+      "scope": "embedded named scalar guest and regression; not byte-pinned shared named corpus"
+    },
+    {
+      "backend": "js",
+      "head": "c189ca6fb1f0cf26c30f1acddfab824b9a60954e",
+      "tree": "165cc032306070a49c56ab33ffc3094aba0e1aad",
+      "pullRequest": 290,
+      "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46064041810/job/140724959525",
+      "scope": "embedded named scalar guest and regression; not byte-pinned shared named corpus"
+    },
+    {
+      "backend": "java",
+      "head": "c60980276da3f27d2b24a5ebff3c5a04dfde8e7f",
+      "tree": "b48d5fd2f1785e1bdaa044c67ad8d8090b82698a",
+      "pullRequest": 2042,
+      "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46063988259/job/140724787044",
+      "scope": "embedded named scalar guest and regression; not byte-pinned shared named corpus"
+    },
+    {
+      "backend": "net",
+      "head": "c720f461ef96ff5cbcaf9d66bcd8f4073d160e76",
+      "tree": "f3cdb90368b4d8f58dd6d7eb75b93f664adfb52a",
+      "pullRequest": 386,
+      "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46063988259/job/140724787385",
+      "scope": "embedded named scalar guest and regression; not byte-pinned shared named corpus"
+    }
   ]
 }
