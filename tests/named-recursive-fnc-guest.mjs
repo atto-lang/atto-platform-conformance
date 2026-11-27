@@ -10,6 +10,8 @@ const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const fixtures=join(root,'fixtures/named-recursive-fnc-v1');
 const manifest=JSON.parse(readFileSync(join(fixtures,'manifest.json'),'utf8'));
 const backend=process.argv[2];
+const profile=process.argv[3]??'full-smoke';
+assert.ok(process.argv.length<=4&&['full-smoke','direct-stage'].includes(profile),'unknown guest test profile');
 assert.ok(['rust-wasm','forge-native'].includes(backend),'usage: node tests/named-recursive-fnc-guest.mjs rust-wasm|forge-native');
 assert.equal(process.env.ATTOC_RELATIVE,undefined,'prebuilt override denied');
 assert.equal(process.env.FORGE_RELATIVE,undefined,'prebuilt override denied');
@@ -32,6 +34,13 @@ const blob=b=>createHash('sha1').update('blob '+b.length+'\0').update(b).digest(
 const expectedIds=['fib-0','fib-1','fib-10','fib-10-explicit-semicolon','fib-55-linear','fib-92-linear','fib-93-overflow','fib-name-does-not-escape'];
 assert.equal(manifest.status,'CANDIDATE_SOURCE_NOT_EXECUTED');
 assert.deepEqual(manifest.cases.filter(c=>c.tier==='smoke').map(c=>c.id),expectedIds);
+assert.deepEqual(manifest.cases.filter(c=>c.tier==='extended').map(c=>c.id),['fib-55-exact']);
+assert.equal(new Set(manifest.cases.map(c=>c.id)).size,manifest.cases.length);
+const selectedIds=profile==='direct-stage'
+ ? expectedIds.filter(id=>!['fib-55-linear','fib-92-linear','fib-93-overflow'].includes(id))
+ : expectedIds;
+const skippedIds=expectedIds.filter(id=>!selectedIds.includes(id));
+const regular=p=>{try{const s=lstatSync(p);return s.isFile()&&!s.isSymbolicLink();}catch(e){if(e.code==='ENOENT')return false;throw e;}};
 const scratch=mkdtempSync(join(tmpdir(),'atto-recursive-guest-'));
 const cases=[];
 let compiler;
@@ -44,10 +53,11 @@ try {
    ok(run('cmake',['--build',join(scratch,'build'),'--target','forge_scalar','--parallel','2'],600000),'Forge build');
    compiler=join(scratch,'build','forge_scalar');
  }
- assert.ok(existsSync(compiler),'fresh compiler missing');
+ assert.ok(regular(compiler),'fresh compiler missing or not a regular file');
  proof(repo,head,tree);
  const compilerHash=sha(readFileSync(compiler));
- for(const id of expectedIds){
+ // Compile the exact user source, never execute the expensive exponential guest here.
+ for(const id of ['fib-55-exact',...selectedIds]){
    const c=manifest.cases.find(x=>x.id===id);
    assert.equal(c.path,id+'.atto');
    const src=join(fixtures,c.path);
@@ -59,13 +69,20 @@ try {
    if(built.error||built.signal!==null||built.status===null){
      cases.push({...row,status:'infrastructure_error',detail:String(built.error??built.signal)});continue;
    }
+   if(id==='fib-55-exact'){
+     const valid=built.status===0&&regular(out)&&
+       (backend==='rust-wasm'?WebAssembly.validate(readFileSync(out)):readFileSync(out).length>0);
+     cases.push({...row,compiled:valid,status:valid?'compile_only':'fail',
+       ...(valid?{artifact_sha256:sha(readFileSync(out))}:{diagnostic:built.stderr.slice(0,4096)})});
+     continue;
+   }
    if(c.expected.kind==='reject'){
      // Only an exact targeted unbound-name diagnostic at the outside call is accepted.
      // Forge diagnostic mapping is deliberately NOT certified until independently audited.
      const targeted=backend==='rust-wasm'&&built.status===1&&/:9:\d+: E_UNBOUND: unknown name 'fib'\s*$/.test(built.stderr);
      cases.push({...row,status:targeted&&!existsSync(out)?'pass':backend==='forge-native'&&built.status!==0&&!existsSync(out)?'diagnostic_not_verified':'fail',diagnostic:built.stderr.slice(0,4096),artifact_present:existsSync(out)});continue;
    }
-   if(built.status!==0||!existsSync(out)){
+   if(built.status!==0||!regular(out)){
      cases.push({...row,status:'fail',diagnostic:built.stderr.slice(0,4096),artifact_present:existsSync(out)});continue;
    }
    const bytes=readFileSync(out);
@@ -83,7 +100,7 @@ catch(e){if(!(e instanceof WebAssembly.RuntimeError)||i.exports.panic_code.value
    }else{
      const binary=join(scratch,id+'.bin');
      const native=run('c++',['-std=c++20','-Wall','-Wextra','-Werror','-pedantic','-I'+join(repo,'include'),out,'-o',binary],60000);
-     if(native.error||native.signal!==null||native.status!==0||!existsSync(binary)){
+     if(native.error||native.signal!==null||native.status!==0||!regular(binary)){
        cases.push({...row,status:'fail',diagnostic:String(native.error??native.stderr).slice(0,4096)});continue;
      }
      row.native_artifact_sha256=sha(readFileSync(binary));
@@ -106,7 +123,9 @@ catch(e){if(!(e instanceof WebAssembly.RuntimeError)||i.exports.panic_code.value
  }
  proof(repo,head,tree);proof(root,fixtureHead,fixtureTree);
  const passed=cases.filter(c=>c.status==='pass').length;
- const report={schema:'atto.named-recursive-fnc.guest-probe.v1',backend,compiler_head:head,compiler_tree:tree,compiler_sha256:compilerHash,conformance_head:fixtureHead,conformance_tree:fixtureTree,cases,passed,failed:cases.filter(c=>c.status==='fail').length,incomplete:cases.filter(c=>c.status!=='pass'&&c.status!=='fail').length,extended:'not_executed',status:passed===expectedIds.length?'smoke_pass':'smoke_incomplete'};
+ const compileOnly=cases.find(c=>c.id==='fib-55-exact')?.status==='compile_only';
+ const complete=passed===selectedIds.length&&compileOnly;
+ const report={schema:'atto.named-recursive-fnc.guest-probe.v1',backend,profile,compiler_head:head,compiler_tree:tree,compiler_sha256:compilerHash,conformance_head:fixtureHead,conformance_tree:fixtureTree,cases,passed,failed:cases.filter(c=>c.status==='fail').length,incomplete:cases.filter(c=>!['pass','fail','compile_only'].includes(c.status)).length,skipped_smoke:skippedIds,extended:compileOnly?'compile_only_not_executed':'not_executed',status:complete?(profile==='direct-stage'?'direct_stage_pass':'smoke_pass'):'incomplete'};
  console.log(JSON.stringify(report,null,2));
- if(passed!==expectedIds.length)process.exitCode=1;
+ if(!complete)process.exitCode=1;
 }finally{rmSync(scratch,{recursive:true,force:true});}
