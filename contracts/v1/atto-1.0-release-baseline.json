@@ -1,0 +1,157 @@
+{
+  "schema": "atto.release-gates.baseline.v1",
+  "purpose": "Non-promoting target inventory; not a release certificate",
+  "tracker": "atto-platform-conformance#691",
+  "releaseQualified": false,
+  "tierPolicy": "PENDING_RATIFICATION",
+  "initialIntegration": [
+    "java-graalvm",
+    "llvm",
+    "net-nativeaot"
+  ],
+  "parallelQualification": [
+    "rust",
+    "wasm"
+  ],
+  "excludedApplicationGoals": [
+    "kafka-parity",
+    "redis-parity",
+    "nats-parity",
+    "rabbitmq-parity"
+  ],
+  "gates": [
+    {
+      "id": "G1",
+      "name": "memory-safety",
+      "requiredScenarios": [
+        "bounds",
+        "stale-reference",
+        "double-drop",
+        "allocation-failure",
+        "checked-arithmetic",
+        "ffi-boundary",
+        "optimization-differential"
+      ],
+      "trackers": [
+        "atto-platform-conformance#549",
+        "atto-platform-conformance#669",
+        "atto-platform-conformance#239"
+      ],
+      "status": "NOT_RELEASE_QUALIFIED",
+      "evidence": []
+    },
+    {
+      "id": "G2",
+      "name": "actor-isolation",
+      "requiredScenarios": [
+        "private-heap",
+        "private-logical-stack",
+        "single-carrier-context",
+        "quota-survivor",
+        "generation-fence",
+        "quiescent-reclaim"
+      ],
+      "trackers": [
+        "atto-platform-conformance#2",
+        "atto-platform-conformance#200",
+        "atto-platform-conformance#659"
+      ],
+      "status": "NOT_RELEASE_QUALIFIED",
+      "evidence": []
+    },
+    {
+      "id": "G3",
+      "name": "full-aot",
+      "requiredScenarios": [
+        "guest-native-artifact",
+        "no-interpreter-fallback",
+        "no-runtime-compiler",
+        "toolchain-free-execution",
+        "target-abi",
+        "signed-artifact"
+      ],
+      "trackers": [
+        "atto-platform-conformance#196",
+        "atto-target-profiles#27"
+      ],
+      "status": "NOT_RELEASE_QUALIFIED",
+      "evidence": []
+    },
+    {
+      "id": "G4",
+      "name": "core-alloc-std",
+      "requiredScenarios": [
+        "freestanding-import-closure",
+        "canonical-source-identity",
+        "numeric",
+        "option-result",
+        "collections",
+        "byte-buffer",
+        "stable-api-manifest"
+      ],
+      "trackers": [
+        "atto-common-source#66",
+        "atto-common-source#31",
+        "atto-target-profiles#13"
+      ],
+      "status": "NOT_RELEASE_QUALIFIED",
+      "evidence": []
+    },
+    {
+      "id": "G5",
+      "name": "async-networking",
+      "requiredScenarios": [
+        "loopback-tcp",
+        "partial-io",
+        "backpressure",
+        "timeout-cancel-race",
+        "peer-progress",
+        "close-restart",
+        "profile-appropriate-udp-dns-tls"
+      ],
+      "trackers": [
+        "atto-platform-conformance#659",
+        "atto-source.java#171",
+        "atto-source.llvm#113",
+        "atto-source.net#51"
+      ],
+      "status": "NOT_RELEASE_QUALIFIED",
+      "evidence": []
+    },
+    {
+      "id": "G6",
+      "name": "ownership-borrow",
+      "requiredScenarios": [
+        "typed-mir-provenance",
+        "field-loans",
+        "move-copy-share",
+        "branch-loop-dataflow",
+        "suspension",
+        "exactly-once-cleanup"
+      ],
+      "trackers": [
+        "atto-borrow-checker.rs#3",
+        "atto-spec#274"
+      ],
+      "status": "NOT_RELEASE_QUALIFIED",
+      "evidence": []
+    },
+    {
+      "id": "G7",
+      "name": "tier-one-parity",
+      "requiredScenarios": [
+        "unchanged-source",
+        "positive-and-negative",
+        "integrated-main",
+        "target-profile-rejections",
+        "independent-review"
+      ],
+      "trackers": [
+        "atto-platform-conformance#177",
+        "atto-platform-conformance#595"
+      ],
+      "status": "NOT_RELEASE_QUALIFIED",
+      "evidence": []
+    }
+  ]
+}
