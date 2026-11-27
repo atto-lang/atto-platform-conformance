@@ -1,7 +1,7 @@
 // Runs unchanged portable fixtures with a real attoc -> Wasm compiler.
 // Deliberately does not publish backend status or certify independent review.
 import { spawnSync, execFileSync } from 'node:child_process';
-import { readFileSync, mkdtempSync, rmSync, existsSync, realpathSync } from 'node:fs';
+import { readFileSync, mkdtempSync, rmSync, existsSync, realpathSync, readdirSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { resolve, join } from 'node:path';
@@ -9,20 +9,8 @@ import { fileURLToPath } from 'node:url';
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 const git = (dir, ...args) => execFileSync('git', ['-C', dir, ...args], {encoding:'utf8',timeout:10000}).trim();
 const hex40 = /^[0-9a-f]{40}$/;
-export function classifyNegative(f, positivePassed, run, artifact) {
-  if (!run || run.error || run.signal !== null || !Number.isSafeInteger(run.status) || run.status === 2) return 'INFRA_ERROR';
-  if (artifact === true || run.status === 0) return 'UNSAFE_ACCEPT_OR_ARTIFACT';
-  if (artifact !== false) return 'INFRA_ERROR';
-  if (run.status !== 1) return 'UNEXPECTED_EXIT';
-  if (positivePassed !== true) return 'PAIRED_POSITIVE_NOT_EXECUTED';
-  if (typeof run.stderr !== 'string' || typeof f?.path !== 'string' || !Number.isSafeInteger(f.diagnostic_line) || f.diagnostic_line < 1 || !/^E_COPY_READONLY(?:_SLOT)?$/.test(f.expect?.compile_reject ?? '')) return 'WRONG_DIAGNOSTIC';
-  const line = run.stderr.replace(/\r?\n$/, '');
-  const prefix = f.path + ':';
-  const d = !/[\r\n]/.test(line) && line.startsWith(prefix)
-    ? /^ ?([1-9]\d*):([1-9]\d*): (E_[A-Z0-9_]+): \S[^\r\n]*$/.exec(line.slice(prefix.length)) : null;
-  return d && Number(d[1]) === f.diagnostic_line && Number.isSafeInteger(Number(d[2])) &&
-    d[3] === f.expect.compile_reject ? 'EXPECTED_REJECT' : 'WRONG_DIAGNOSTIC';
-}
+import { classifyNegative, checkInventory } from './copy-readonly-receipt-v1.mjs';
+export { classifyNegative };
 const guest = String.raw`
 const fs=require('node:fs'), assert=require('node:assert/strict');
 const bytes=fs.readFileSync(process.argv[1]);
@@ -48,20 +36,16 @@ function runMain() {
   }
   const cwd=process.cwd(), root=realpathSync(compilerRoot), binary=realpathSync(binaryPath);
   if(!binary.startsWith(root+'/')) throw Error('compiler binary outside pinned checkout');
-  for(const [dir,h,t] of [[root,compilerHead,compilerTree],[cwd,corpusHead,corpusTree]]) {
-    if(git(dir,'rev-parse','HEAD')!==h || git(dir,'rev-parse','HEAD^{tree}')!==t ||
-       git(dir,'write-tree')!==t || git(dir,'status','--porcelain','--untracked-files=no')!=='') throw Error('source identity mismatch');
+  function verifyIdentity() {
+    for(const [dir,h,t] of [[root,compilerHead,compilerTree],[cwd,corpusHead,corpusTree]]) {
+      if(git(dir,'rev-parse','HEAD')!==h || git(dir,'rev-parse','HEAD^{tree}')!==t ||
+         git(dir,'write-tree')!==t || git(dir,'status','--porcelain','--untracked-files=no')!=='') throw Error('source identity mismatch');
+    }
   }
+  verifyIdentity();
   const manifestPath='contracts/copy-readonly-sharing-v1.json';
   const manifest=JSON.parse(readFileSync(manifestPath,'utf8'));
-  const known=new Map();
-  for(const f of manifest.fixtures) {
-    if(!/^[a-z0-9-]+$/.test(f.id) || known.has(f.id) ||
-       f.path!=='fixtures/copy-readonly-sharing-v1/'+f.id+'.atto') throw Error('bad fixture inventory');
-    known.set(f.id,f);
-    if(f.status!=='NOT_EXECUTED') throw Error('unexpected promoted fixture');
-    if(!Number.isSafeInteger(f.expect.main_result) && !/^E_COPY_READONLY(?:_SLOT)?$/.test(f.expect.compile_reject??'')) throw Error('bad expectation');
-  }
+  const known=checkInventory(manifest,readdirSync('fixtures/copy-readonly-sharing-v1'));
   for(const f of known.values()) if(f.expect.compile_reject) {
     const p=known.get(f.paired_positive);
     if(!p || !Number.isSafeInteger(p.expect.main_result)) throw Error('missing positive control');
@@ -72,7 +56,7 @@ function runMain() {
   }
   const binarySha256=sha256(readFileSync(binary));
   const dir=mkdtempSync(join(tmpdir(),'atto-copy-parity-'));
-  const results=new Map();
+  const results=new Map(), receipts=[];
   try {
     for(const f of [...known.values()].sort((a,b)=>Number(!!a.expect.compile_reject)-Number(!!b.expect.compile_reject))) {
       const output=join(dir,f.id+'.wasm');
@@ -91,11 +75,14 @@ function runMain() {
         status=!g.error&&!g.signal&&g.status===0&&guestResult===String(f.expect.main_result)?'GUEST_PASS':'GUEST_FAILED';
       }
       results.set(f.id,status);
-      console.log(JSON.stringify({case:f.id,status,compilerHead,compilerTree,corpusHead,corpusTree,binarySha256,
+      receipts.push({case:f.id,status,compilerHead,compilerTree,corpusHead,corpusTree,binarySha256,
         fixtureBlob,sourceSha256:sha256(source),compileExit:run.status,signal:run.signal,error:run.error?.message??null,
         artifact,artifactSha256:artifact?sha256(readFileSync(output)):null,diagnostic:run.stderr?.slice(0,2048),
-        guestResult,guestError,pairedPositive:f.paired_positive??null,expected:f.expect}));
+        guestResult,guestError,pairedPositive:f.paired_positive??null,expected:f.expect});
     }
+    verifyIdentity();
+    if(sha256(readFileSync(binary))!==binarySha256) throw Error('compiler binary changed during execution');
+    for(const receipt of receipts) console.log(JSON.stringify(receipt));
     const counts={}; for(const s of results.values()) counts[s]=(counts[s]??0)+1;
     console.log(JSON.stringify({scope:'EXECUTED_COMPILER_GUEST_CANDIDATE_NOT_INDEPENDENTLY_REVIEWED',counts,fullParity:false}));
     if([...results.values()].some(s=>s!=='GUEST_PASS'&&s!=='EXPECTED_REJECT')) process.exitCode=1;
