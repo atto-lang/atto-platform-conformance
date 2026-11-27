@@ -1,0 +1,15 @@
+define class Order as
+  @ToJson("id")
+  pub val int id;
+  @ToJson("active")
+  pub val bool active;
+  pub val int private_token;
+end
+
+pub fnc main(): void {
+  val Order first = new Order(9223372036854775807, true, 123456);
+  val Order second = new Order(-9223372036854775807 - 1, false, 789);
+  stdio.println(first.to_json().unwrap());
+  stdio.println(second.to_json().unwrap());
+  return;
+}

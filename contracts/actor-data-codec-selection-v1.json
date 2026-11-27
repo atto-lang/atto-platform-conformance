@@ -1,0 +1,485 @@
+{
+  "contract": "actor-data-codec-selection-v1",
+  "status": "DESIGN_ONLY_NOT_EXECUTED",
+  "spec": "https://github.com/atto-lang/atto-spec/pull/228",
+  "existing_vectors": "https://github.com/atto-lang/atto-platform-conformance/pull/530",
+  "profiles": {
+    "messagepack": "default for new endpoints; existing wire compatibility",
+    "protobuf": "first-class",
+    "cbor": "first-class",
+    "flatbuffers": "optional verified immutable buffers"
+  },
+  "targets": [
+    {
+      "target": "java",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "target": "net",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "target": "llvm",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "target": "wasm",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "target": "forge",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "target": "cranelift",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "target": "rs",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "target": "js",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "target": "atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "target": "hdl",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "target": "realtime",
+      "status": "NOT_EXECUTED"
+    }
+  ],
+  "cases": [
+    {
+      "id": "selection-default",
+      "scenario": "MessagePack default on new serialized DATA endpoint; retain existing wire versions",
+      "expected": "accept",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "selection-explicit",
+      "scenario": "Protobuf and CBOR endpoints with matching registered schema; FlatBuffers when supported",
+      "expected": "accept",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "selection-local",
+      "scenario": "borrow/move/checked copy requires Sendable, not unnecessary serialization",
+      "expected": "accept",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "selection-denied",
+      "scenario": "child widens supervisor codec or quota allowlist",
+      "expected": "reject",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "selection-downgrade",
+      "scenario": "unknown codec/version, mismatch, format sniff/fallback or implicit transcoding",
+      "expected": "reject",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "schema-types",
+      "scenario": "roundtrip nominal enum/ADT, tuple, Option/Result, bytes, widths, strings and bigint where specified",
+      "expected": "accept",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "schema-evolution",
+      "scenario": "compatible schema versions; reserved protobuf field tags never reused",
+      "expected": "accept",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "schema-invalid",
+      "scenario": "unknown nominal variant, wrong schema identity, unsupported shape",
+      "expected": "reject",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "malformed",
+      "scenario": "truncation, trailing bytes, invalid UTF-8, overflow, inconsistent lengths",
+      "expected": "reject",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "ambiguity",
+      "scenario": "duplicate keys/fields, disallowed extensions/tags, noncanonical strict profile",
+      "expected": "reject",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "resource",
+      "scenario": "frame, expanded bytes, depth, nodes, collection, parser fuel and concurrent tenant budget boundaries",
+      "expected": "reject_over_limit",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "compression",
+      "scenario": "disabled by default; enforce compressed/expanded/fuel ceilings if enabled",
+      "expected": "reject_over_limit",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "capability",
+      "scenario": "forged ActorRef, pointer, host object, codec object, cross-tenant identity",
+      "expected": "reject",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "control",
+      "scenario": "application payload impersonates supervisor restart/stop/panic CONTROL",
+      "expected": "reject",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "auth",
+      "scenario": "tampered authenticated envelope/payload, unauthorized sender or replay",
+      "expected": "reject",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "generation",
+      "scenario": "stale generation before enqueue or restart during decode",
+      "expected": "reject",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "rollback",
+      "scenario": "queue-full, cancel, decode failure, restart and admission race release credits exactly once",
+      "expected": "no_publication_no_leak",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "flatbuffers",
+      "scenario": "invalid offset, vector length, mutable backing or use after release",
+      "expected": "reject",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "aot",
+      "scenario": "static codecs without reflection/runtime loading across supported native targets",
+      "expected": "accept",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "unsupported",
+      "scenario": "explicit unsupported codec/target diagnostics with no silent fallback",
+      "expected": "reject",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "interop",
+      "scenario": "all supported producer/consumer backend pairs exchange exact shared fixtures, same semantic values",
+      "expected": "accept",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "hot-upgrade",
+      "scenario": "schema/codec migration authenticated and generation-fenced, old in-flight data follows documented policy",
+      "expected": "accept_or_explicit_reject",
+      "status": "NOT_EXECUTED"
+    }
+  ],
+  "evidence": {
+    "required": [
+      "exact compiler head/root tree",
+      "fixture SHA",
+      "target/toolchain",
+      "executed positive and negative .atto guest",
+      "wire vectors and differential fuzz receipts",
+      "independent security review"
+    ],
+    "host_only": "NOT_EXECUTED",
+    "zero_steps": "NOT_EXECUTED"
+  },
+  "transactional_vectors": {
+    "status": "DESIGN_ONLY_NOT_EXECUTED",
+    "scope": "Expected observations at trusted actor DATA admission boundary, independent of codec; no backend execution implied",
+    "unit": "logical credits, not measured bytes",
+    "initial": {
+      "available": 8,
+      "queued": 0,
+      "escrow": 0,
+      "generation": 7
+    },
+    "cases": [
+      {
+        "id": "exact-commit",
+        "events": [
+          "reserve:8",
+          "decode-ok",
+          "commit:7"
+        ],
+        "expected": {
+          "available": 0,
+          "queued": 8,
+          "escrow": 0,
+          "publications": 1
+        }
+      },
+      {
+        "id": "over-limit",
+        "events": [
+          "reserve:9"
+        ],
+        "expected": {
+          "available": 8,
+          "queued": 0,
+          "escrow": 0,
+          "publications": 0
+        }
+      },
+      {
+        "id": "decode-denial",
+        "events": [
+          "reserve:5",
+          "decode-fail",
+          "rollback"
+        ],
+        "expected": {
+          "available": 8,
+          "queued": 0,
+          "escrow": 0,
+          "publications": 0
+        }
+      },
+      {
+        "id": "cancel-double-release",
+        "events": [
+          "reserve:5",
+          "cancel",
+          "rollback",
+          "rollback"
+        ],
+        "expected": {
+          "available": 8,
+          "queued": 0,
+          "escrow": 0,
+          "publications": 0
+        }
+      },
+      {
+        "id": "restart-stale-commit",
+        "events": [
+          "reserve:5",
+          "decode-ok",
+          "restart:8",
+          "commit:7",
+          "rollback"
+        ],
+        "expected": {
+          "available": 8,
+          "queued": 0,
+          "escrow": 0,
+          "publications": 0
+        }
+      },
+      {
+        "id": "queue-full-at-commit",
+        "events": [
+          "reserve:5",
+          "decode-ok",
+          "queue-full",
+          "commit:7",
+          "rollback"
+        ],
+        "expected": {
+          "available": 8,
+          "queued": 0,
+          "escrow": 0,
+          "publications": 0
+        }
+      },
+      {
+        "id": "schema-mismatch-before-decode",
+        "events": [
+          "schema-mismatch",
+          "reserve-denied"
+        ],
+        "expected": {
+          "available": 8,
+          "queued": 0,
+          "escrow": 0,
+          "publications": 0
+        }
+      },
+      {
+        "id": "unsupported-codec-no-fallback",
+        "events": [
+          "codec-mismatch",
+          "reserve-denied"
+        ],
+        "expected": {
+          "available": 8,
+          "queued": 0,
+          "escrow": 0,
+          "publications": 0
+        }
+      },
+      {
+        "id": "commit-then-cancel",
+        "events": [
+          "reserve:5",
+          "decode-ok",
+          "commit:7",
+          "cancel",
+          "rollback"
+        ],
+        "expected": {
+          "available": 3,
+          "queued": 5,
+          "escrow": 0,
+          "publications": 1
+        }
+      },
+      {
+        "id": "dequeue-once",
+        "events": [
+          "reserve:5",
+          "decode-ok",
+          "commit:7",
+          "dequeue",
+          "dequeue"
+        ],
+        "expected": {
+          "available": 8,
+          "queued": 0,
+          "escrow": 0,
+          "publications": 1
+        }
+      }
+    ],
+    "invariants": [
+      "available + queued + escrow = initial available after each atomic transition",
+      "never negative",
+      "publication requires successful decode and current generation, schema and codec authority",
+      "only reservation owner may release escrow; terminal replay is idempotent",
+      "commit transfers credits from escrow to queued; late cancellation does not release queued credits",
+      "failed schema/codec authorization must precede reservation and decoding"
+    ],
+    "required_receipts": [
+      "actual compiler/runtime guest for each applicable backend and codec",
+      "per-transition ledger and publication count",
+      "race interleaving for cancellation, restart and commit",
+      "negative test proves no partial artifact or mailbox publication"
+    ]
+  },
+  "supervisor_permit_vectors": {
+    "status": "DESIGN_ONLY_NOT_EXECUTED",
+    "spec": "https://github.com/atto-lang/atto-spec/pull/228",
+    "semantics": "proposed reconciliation with Java #1531: decode credits do not confer admission; final permit issuance is logical admission, old-generation-only write",
+    "cases": [
+      {
+        "id": "fence-before-final-permit",
+        "events": [
+          "reserve-decode",
+          "decode-ok",
+          "ancestor-fence",
+          "request-final-permit"
+        ],
+        "expected": {
+          "permit": "denied",
+          "oldPublications": 0,
+          "newPublications": 0,
+          "creditsAfterExit": "restored"
+        }
+      },
+      {
+        "id": "permit-before-fence-write-wins",
+        "events": [
+          "reserve-decode",
+          "decode-ok",
+          "final-permit-issued",
+          "ancestor-fence",
+          "old-mailbox-write-success",
+          "settle-commit",
+          "drain-old-incarnation"
+        ],
+        "expected": {
+          "permit": "issued-pre-fence",
+          "oldPublications": 1,
+          "newPublications": 0,
+          "outstandingPermits": 0,
+          "creditsAfterExit": "restored"
+        }
+      },
+      {
+        "id": "permit-before-fence-write-loses",
+        "events": [
+          "reserve-decode",
+          "decode-ok",
+          "final-permit-issued",
+          "ancestor-fence",
+          "old-mailbox-closed",
+          "settle-abort"
+        ],
+        "expected": {
+          "oldPublications": 0,
+          "newPublications": 0,
+          "outstandingPermits": 0,
+          "creditsAfterExit": "restored"
+        }
+      },
+      {
+        "id": "cancel-active-decoder",
+        "events": [
+          "reserve-decode",
+          "decode-start",
+          "cancel",
+          "inspect-budget",
+          "decode-exit",
+          "rollback"
+        ],
+        "expected": {
+          "creditsBeforeExit": "held",
+          "creditsAfterExit": "restored",
+          "oldPublications": 0,
+          "newPublications": 0
+        }
+      },
+      {
+        "id": "restart-with-unsettled-permit",
+        "events": [
+          "final-permit-issued",
+          "ancestor-fence",
+          "attempt-restart",
+          "settle-abort",
+          "physical-release",
+          "attempt-restart"
+        ],
+        "expected": {
+          "firstRestart": "denied",
+          "secondRestart": "eligible-subject-to-policy",
+          "newPublications": 0
+        }
+      },
+      {
+        "id": "shared-runtime-quota",
+        "events": [
+          "endpoint-a-reserve-exact-runtime-budget",
+          "endpoint-b-reserve",
+          "endpoint-a-exit",
+          "endpoint-b-retry"
+        ],
+        "expected": {
+          "secondReservation": "denied",
+          "retry": "eligible-subject-to-endpoint-policy",
+          "creditsNeverNegative": true
+        }
+      }
+    ],
+    "notes": [
+      "Old transactional commit vectors assume no outstanding pre-fence permit. Do not reinterpret old-generation acceptance as delivery.",
+      "Physical release, real mailbox/tenant accounting and actual concurrent compiler/runtime tests required."
+    ]
+  }
+}

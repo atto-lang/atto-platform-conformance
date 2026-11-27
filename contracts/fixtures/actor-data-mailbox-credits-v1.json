@@ -1,0 +1,120 @@
+{
+  "contract": "actor-data-mailbox-credits-v1",
+  "status": "HOST_REFERENCE_VECTORS_NOT_EXECUTED",
+  "reference": "https://github.com/atto-lang/atto-serialization-and-validation/pull/36",
+  "limits": {
+    "mailbox_bytes": 8,
+    "mailbox_slots": 2
+  },
+  "notes": [
+    "Reserve trusted per-message credit before allocation, decode and publication; commit under the endpoint lifecycle lock.",
+    "Reference models owned wire bytes only; decoded heap and tenant-wide reservations are separate requirements.",
+    "Generation-bound pending leases remain charged until completion or drop. Restart clears only queued frames.",
+    "Backend-specific logical allocation costs differ and do not establish equal physical heap or guest parity."
+  ],
+  "cases": [
+    {
+      "id": "zero_byte_slot_cap",
+      "steps": [
+        "reserve(g1,8)->a",
+        "reserve(g1,0)->b",
+        "reserve(g1,0)->Full",
+        "drop(a)",
+        "drop(b)"
+      ],
+      "final_usage": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "publish_pop",
+      "steps": [
+        "reserve(g1,4)->a",
+        "publish(a,4)->OK",
+        "usage(4,1)",
+        "pop(g1)->4",
+        "pop(g1)->None"
+      ],
+      "final_usage": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "size_rollback",
+      "steps": [
+        "reserve(g1,4)->a",
+        "publish(a,3)->Size"
+      ],
+      "final_usage": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "restart_during_decode",
+      "steps": [
+        "reserve(g1,4)->a",
+        "reserve(g1,4)->b",
+        "publish(b,4)->OK",
+        "restart(g1)->g2",
+        "usage(4,1)",
+        "reserve(g1,0)->Stale",
+        "publish(a,4)->Stale",
+        "pop(g2)->None"
+      ],
+      "final_usage": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "close_inflight",
+      "steps": [
+        "reserve(g1,4)->a",
+        "close->OK",
+        "close->OK",
+        "publish(a,4)->Closed"
+      ],
+      "final_usage": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "generation_wrap",
+      "initial_generation": "18446744073709551615",
+      "steps": [
+        "restart(max)->GenerationExhausted"
+      ],
+      "final_usage": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "concurrent_reservation",
+      "limits": {
+        "mailbox_bytes": 8,
+        "mailbox_slots": 1
+      },
+      "steps": [
+        "reserve(g1,8)->a",
+        "other_thread reserve(g1,1)->Full",
+        "drop(a)"
+      ],
+      "final_usage": [
+        0,
+        0
+      ]
+    }
+  ],
+  "guest_gate": [
+    "authenticated sender and recipient",
+    "tenant and capability checks",
+    "generation recheck at atomic enqueue",
+    "actual compiler-backed .atto positive and negative cases",
+    "exact compiler tree and fixture receipts"
+  ]
+}

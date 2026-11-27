@@ -1,0 +1,402 @@
+{
+  "contract": "typed-serialization-methods-v1",
+  "status": "CANDIDATE_VECTORS_GUEST_NOT_EXECUTED",
+  "spec": "https://github.com/atto-lang/atto-spec/pull/281",
+  "source_fixture": {
+    "pr": "https://github.com/atto-lang/atto-serialization-and-validation/pull/100",
+    "head": "9ab30538da84c40a43709631b59c339d2e19c704",
+    "path": "tests/generated_typed_codec_test.ores",
+    "scope": "Manually projected typed JSON and MessagePack fixture with shared metadata validation; not compiler-generated method support",
+    "tree": "f358ffa2b9284e5a56b77b32af387e2391e14385"
+  },
+  "profile": {
+    "schema": "User example, fields displayName string and age signed integer in this fixed order",
+    "json": "compact UTF-8, exact fixture bytes only; no claim of general canonical JSON",
+    "messagepack": "candidate fixmap with shortest fixstr/positive fixint; no change to existing actor DATA wire framing"
+  },
+  "positive": [
+    {
+      "id": "typed.user.v1",
+      "logical": {
+        "displayName": "Alex",
+        "age": 42
+      },
+      "json_utf8": "{\"displayName\":\"Alex\",\"age\":42}",
+      "json_hex": "7b22646973706c61794e616d65223a22416c6578222c22616765223a34327d",
+      "messagepack_hex": "82ab646973706c61794e616d65a4416c6578a36167652a"
+    }
+  ],
+  "negative": [
+    {
+      "id": "missing_required",
+      "json_utf8": "{\"age\":42}",
+      "expected": "reject"
+    },
+    {
+      "id": "unknown_field",
+      "json_utf8": "{\"displayName\":\"Alex\",\"age\":42,\"x\":0}",
+      "expected": "reject under strict unknown-field policy"
+    },
+    {
+      "id": "wrong_type",
+      "json_utf8": "{\"displayName\":\"Alex\",\"age\":\"42\"}",
+      "expected": "reject"
+    },
+    {
+      "id": "duplicate_field",
+      "json_utf8": "{\"displayName\":\"Alex\",\"age\":42,\"age\":43}",
+      "expected": "reject under strict duplicate policy"
+    },
+    {
+      "id": "trailing_data",
+      "json_utf8": "{\"displayName\":\"Alex\",\"age\":42}{}",
+      "expected": "reject"
+    },
+    {
+      "id": "signed_overflow",
+      "json_utf8": "{\"displayName\":\"Alex\",\"age\":9223372036854775808}",
+      "expected": "reject"
+    },
+    {
+      "id": "fractional_integer",
+      "json_utf8": "{\"displayName\":\"Alex\",\"age\":42.5}",
+      "expected": "reject"
+    }
+  ],
+  "targets": [
+    "java-graal-native-image",
+    "llvm-aot",
+    "dotnet-nativeaot",
+    "rust-native",
+    "wasm-browser",
+    "wasm-standalone",
+    "forge",
+    "cranelift",
+    "js"
+  ],
+  "requirements": [
+    "All target cells NOT_VERIFIED until compiler-generated typed .atto methods compile and execute",
+    "Independent backend encoder output must match profile bytes and every receiver must recover both fields",
+    "Existing local Sendable path need not serialize; prove codec invocation count, no actor heap alias",
+    "Remote trusted endpoint binds codec/version/schema; no codec sniff or control/capability admission",
+    "Pin compiler source SHA and root tree, fixture blob, native/AOT mode, real steps and per-case receipts; distinguish host reference from actual guest"
+  ],
+  "limitations": [
+    "No executable runner is wired to this candidate file yet",
+    "Method syntax, general map order and default codec are not ratified by this file",
+    "MessagePack candidate bytes are not an executed guest result"
+  ],
+  "messagepack_source_fixture": {
+    "path": "tests/messagepack_test.ores",
+    "scope": "dynamic MessagePack wire roundtrip and malformed frame tests; no typed constructor lowering",
+    "head": "9ab30538da84c40a43709631b59c339d2e19c704"
+  },
+  "messagepack_negative": [
+    {
+      "id": "duplicate_age",
+      "hex": "83ab646973706c61794e616d65a4416c6578a36167652aa36167652b",
+      "expected": "reject"
+    },
+    {
+      "id": "trailing_byte",
+      "hex": "82ab646973706c61794e616d65a4416c6578a36167652a00",
+      "expected": "reject"
+    },
+    {
+      "id": "truncated_value",
+      "hex": "82ab646973706c61794e616d65a4416c6578a3616765",
+      "expected": "reject"
+    },
+    {
+      "id": "missing_required",
+      "hex": "81a36167652a",
+      "expected": "typed reject"
+    },
+    {
+      "id": "wrong_age_type",
+      "hex": "82ab646973706c61794e616d65a4416c6578a3616765a23432",
+      "expected": "typed reject"
+    },
+    {
+      "id": "scalar_root",
+      "hex": "2a",
+      "expected": "typed reject"
+    },
+    {
+      "id": "unknown_field",
+      "hex": "83ab646973706c61794e616d65a4416c6578a36167652aa17800",
+      "expected": "typed reject"
+    },
+    {
+      "id": "non_string_map_key",
+      "hex": "81012a",
+      "expected": "typed reject"
+    }
+  ],
+  "typed_messagepack_source_fixture": {
+    "path": "tests/generated_typed_codec_test.ores",
+    "head": "9ab30538da84c40a43709631b59c339d2e19c704",
+    "scope": "Shared metadata validation, concrete User constructor, typed errors; guest NOT_EXECUTED"
+  },
+  "messagepack_container_admission": {
+    "scope": "candidate dynamic codec, exact error and no partial value assertions; not guest evidence",
+    "source_path": "tests/messagepack_test.ores",
+    "head": "9ab30538da84c40a43709631b59c339d2e19c704",
+    "negative": [
+      {
+        "hex": "930102",
+        "code": "unexpected_eof"
+      },
+      {
+        "hex": "82010203",
+        "code": "unexpected_eof"
+      },
+      {
+        "hex": "dc001001",
+        "code": "unexpected_eof"
+      },
+      {
+        "hex": "de00100102",
+        "code": "unexpected_eof"
+      }
+    ],
+    "positive": [
+      "920102",
+      "810102"
+    ]
+  },
+  "compiler_admission_receipt": {
+    "backend": "rust",
+    "source_pr": "https://github.com/atto-lang/atto-source.rs/pull/563",
+    "head": "15f4000ba6a5a81ee83673bac503a3d639b19d20",
+    "tree": "94e010e88dd09f107e4a9d742dbe0e04ce30d902",
+    "blobs": 1423,
+    "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45907125524/job/140206424446",
+    "passed": 19,
+    "scope": "actual compiler admission tests: 5 serde-specific, 14 nominal actor/struct; not executed serialization guest, not full CI or backend parity"
+  },
+  "js_compiler_admission_receipt": {
+    "backend": "js",
+    "source_pr": "https://github.com/atto-lang/atto-source.js/pull/147",
+    "head": "5990cfc9f4df9b073bba47cca613456bc67899d3",
+    "tree": "7aac61b22567610361585f0aee769fbc2d5be98b",
+    "blobs": 490,
+    "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45908188519/job/140209936766",
+    "passed": 12,
+    "scope": "three typed serde-specific admission tests and nine existing class compiler tests, includes executed scalar emitted module; not serializer execution"
+  },
+  "java_prior_head_receipt": {
+    "source_head": "19575af2f49754781e54ca6d02ae40a4988aa40f",
+    "source_tree": "d8147c9c67b238afb005ce262e5320d5a0f1db05",
+    "compiler_head": "b229250b7dd4a349e6d3f72a5e00729ad4af2b79",
+    "compiler_tree": "1884a81e71dd4ecc9cd132f7e9c0916ce8e5bf24",
+    "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45908106827/job/140209665708",
+    "scope": "standalone wire arithmetic guest passed via Java/Truffle launcher; core and full suite fail unknown int_to_decimal_bytes; not native AOT, not current head"
+  },
+  "forge_compiler_admission_receipt": {
+    "backend": "forge",
+    "source_pr": "https://github.com/atto-lang/atto-source.forge/pull/243",
+    "head": "a6ee83ca97743d14a6d5224a5610adad525ee03b",
+    "tree": "6a9efa93f5bf26b54676d9b1d1190bac45ffc003",
+    "blobs": 464,
+    "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45909039110/job/140212668347",
+    "scope": "6 actual compiler frontend/IR admission cases and 9 match/tilde regression cases, two CTest targets; not typed codec generation or execution"
+  },
+  "java_followup_receipt": {
+    "source_head": "1a66e849623937f0b3a3d776b2c91b2090945f4f",
+    "source_tree": "fccc1e5b430b376ea01784e1f5bd71f4bafcc1fd",
+    "compiler_head": "b229250b7dd4a349e6d3f72a5e00729ad4af2b79",
+    "compiler_tree": "1884a81e71dd4ecc9cd132f7e9c0916ce8e5bf24",
+    "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45908843324/job/140212023416",
+    "scope": "wire integer guest passed, full and core blocked by Map<int,List<int>> admission; prior head only; not AOT"
+  },
+  "decimal_kernel_candidate": {
+    "head": "1a89ee7aff1f8b3decdb49fc13724d9bf2a7fd75",
+    "path": "src/core/bytes.ores",
+    "guest": "tests/wire_decimal_bytes_test.ores",
+    "scope": "actual decimal encoder kernel isolated from dynamic Value graph, Java/Truffle executed 8 cases; not AOT, no full codec qualification"
+  },
+  "hash_index_candidate": {
+    "head": "1a89ee7aff1f8b3decdb49fc13724d9bf2a7fd75",
+    "path": "src/core/wire_hash_index.ores",
+    "guest": "tests/wire_hash_index_test.ores",
+    "scope": "isolated owner-local scalar lists, 16 assertions; fixed capacity and per-index traversal budget only. Not wired into codecs, no cumulative allocation or semantic-key budget claim"
+  },
+  "java_current_candidate_receipt": {
+    "source_head": "1a89ee7aff1f8b3decdb49fc13724d9bf2a7fd75",
+    "source_tree": "934b3bd0e27cfe59db2fe41ddf58796b53652551",
+    "compiler_head": "b229250b7dd4a349e6d3f72a5e00729ad4af2b79",
+    "compiler_tree": "1884a81e71dd4ecc9cd132f7e9c0916ce8e5bf24",
+    "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45912492648/job/140223916832",
+    "blobs": {
+      "compiler": 3804,
+      "serde": 241
+    },
+    "scope": "3 executed isolated guest entrypoints passed (wire arithmetic, decimal bytes, scalar hash index); core and full failed Map<int,List<int>> admission; Java/Truffle only"
+  },
+  "cranelift_compiler_admission_receipt": {
+    "backend": "cranelift",
+    "source_pr": "https://github.com/atto-lang/atto-source.cranelift/pull/108",
+    "head": "3910e88064ccf4f0bf89e452c9d2561e73d0ebcf",
+    "tree": "c8ff1017d080196d6494eced9593743148bb9a52",
+    "blobs": 338,
+    "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45912411593/job/140223653440",
+    "passed": 5,
+    "scope": "3 serde admission and 2 declaration regression test functions using actual compiler CLI and scalar JIT/IR; not codec generation or AOT"
+  },
+  "net_compiler_admission_receipt": {
+    "source_pr": "https://github.com/atto-lang/atto-source.net/pull/352",
+    "head": "d4006239dd1af6cfce427b12451bd769f6940d7f",
+    "tree": "111398e5e9bdd04f852ddde1b668f2d3034f0489",
+    "blobs": 1720,
+    "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45912622666/job/140224334544",
+    "passed": 6,
+    "scope": "NativeAOT compiler and standalone scalar guest published and executed, five source denials, not serializer execution"
+  },
+  "json_index_candidate": {
+    "head": "84965e5932992a3d574fc3129ad94111c2689d71",
+    "tree": "6701687a414f2096311b1915e51e8d49b47a1aad",
+    "paths": [
+      "src/core/wire_hash_index.ores",
+      "src/json/json.ores",
+      "tests/json_test.ores"
+    ],
+    "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45913335785",
+    "scope": "JSON candidate removes its nested Map, cumulative logical slot and key work budgets, byte equality, duplicate policies, incomplete and zero entry cases; full execution blocked, not physical allocation evidence"
+  },
+  "java_json_index_prior_head_receipt": {
+    "head": "3258162c5d62e551782de7d807d4676e5faedb29",
+    "tree": "80d4d4f3e7728a9087e8ddb663629bf36aebea34",
+    "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45913135177/job/140225971752",
+    "scope": "3 isolated wire arithmetic, decimal and expanded hash index guests passed; full suite fails Map admission in Value; does not qualify JSON or later head"
+  },
+  "llvm_compiler_admission_receipt": {
+    "head": "ee48e0263f0bd805ef3e376ca40dc0d03d1d7df1",
+    "tree": "e92d3b011e880948a79a5f2ad7e313853460d657",
+    "blobs": 3666,
+    "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45913208011/job/140226206226",
+    "passed": 6,
+    "scope": "actual LLVM compiler build, native scalar executable and five absent identifier/member source denials with no IR publication; not serialization generation or wire execution"
+  },
+  "wasm_compiler_admission_receipt": {
+    "head": "0021bade83e7acb9aba2f44f63856e791c33c5ec",
+    "tree": "f6a59140fe941ff89d0e775a2e51aaed1a7feb66",
+    "blobs": 701,
+    "llvm_head": "ee48e0263f0bd805ef3e376ca40dc0d03d1d7df1",
+    "llvm_tree": "e92d3b011e880948a79a5f2ad7e313853460d657",
+    "llvm_blobs": 3666,
+    "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45913269966/job/140226397031",
+    "passed": 9,
+    "scope": "real compiler and linker, executed wasm32 scalar module, four missing identifiers each tested twice including preservation of previously published module and provenance; not generated codec execution"
+  },
+  "java_latest_candidate_receipt": {
+    "source_head": "84965e5932992a3d574fc3129ad94111c2689d71",
+    "source_tree": "6701687a414f2096311b1915e51e8d49b47a1aad",
+    "compiler_head": "b229250b7dd4a349e6d3f72a5e00729ad4af2b79",
+    "compiler_tree": "1884a81e71dd4ecc9cd132f7e9c0916ce8e5bf24",
+    "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45913335785/job/140226603380",
+    "scope": "3 isolated guest suites passed; core/full failed on Value Map admission before JSON tests"
+  },
+  "typed_policy_denials": {
+    "scope": "both metadata-driven typed formats; clean valid fixture frame with unsafe policy must fail before projection",
+    "source_head": "9ab30538da84c40a43709631b59c339d2e19c704",
+    "source_path": "tests/generated_typed_codec_test.ores",
+    "expected": {
+      "status": 2,
+      "error_kind": 1,
+      "code": "unsafe_decode_options",
+      "consumed": 0,
+      "source_fields": 0,
+      "wire_fields": 0
+    },
+    "cases": [
+      {
+        "duplicate_key_policy": 1,
+        "allow_trailing_data": false
+      },
+      {
+        "duplicate_key_policy": 2,
+        "allow_trailing_data": false
+      },
+      {
+        "duplicate_key_policy": 0,
+        "allow_trailing_data": true
+      }
+    ],
+    "formats": [
+      "json",
+      "messagepack"
+    ],
+    "guest_status": "NOT_EXECUTED"
+  },
+  "llvm_wasm_combined_independent_receipt": {
+    "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45914180991/job/140229335510",
+    "runner": 1000001438,
+    "llvm_head": "ee48e0263f0bd805ef3e376ca40dc0d03d1d7df1",
+    "llvm_tree": "e92d3b011e880948a79a5f2ad7e313853460d657",
+    "llvm_blobs": 3666,
+    "llvm_checks": 6,
+    "wasm_head": "0021bade83e7acb9aba2f44f63856e791c33c5ec",
+    "wasm_tree": "f6a59140fe941ff89d0e775a2e51aaed1a7feb66",
+    "wasm_blobs": 701,
+    "wasm_checks": 9,
+    "scope": "Actual LLVM native executable and Wasm32 scalar execution plus diagnosed nonpublication of missing serializer references; not serializer generation or wire interoperability."
+  },
+  "checked_value_binary_index_candidate": {
+    "head": "9561d2a7bfc9af02d34e03707676e121656e102d",
+    "tree": "ec6a937c9a92829a0c2a1be173a4e2dea1f6b35f",
+    "paths": [
+      "src/core/value.ores",
+      "src/core/wire_hash_index.ores",
+      "src/messagepack/messagepack.ores",
+      "src/cbor/cbor.ores"
+    ],
+    "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45914716048",
+    "scope": "candidate tri-state equality, cumulative logical storage/work, binary map collision checks, composite duplicate fixtures and borrowing repairs; legacy bool wrapper traps on resource denial, must audit remaining callers; full guest NOT_EXECUTED",
+    "latest_test_harness_head": "9ab30538da84c40a43709631b59c339d2e19c704",
+    "latest_test_harness_tree": "f358ffa2b9284e5a56b77b32af387e2391e14385",
+    "latest_test_harness_run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45914867766",
+    "prior_executed_receipt": {
+      "head": "9561d2a7bfc9af02d34e03707676e121656e102d",
+      "tree": "ec6a937c9a92829a0c2a1be173a4e2dea1f6b35f",
+      "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45914716048/job/140231063440",
+      "scope": "compiler build, three isolated kernel guests passed, full/core failed unknown decode_default in JSON test source; no full codec execution"
+    }
+  },
+  "java_value_index_prior_receipt": {
+    "head": "f41dc94d4ea3e54474a497ef2252302ab6d5987a",
+    "tree": "ab5c446747111a966bd1b4291345afe1215d0f6f",
+    "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45914538349/job/140230495293",
+    "scope": "3 isolated guest suites passed; original Map admission and projected alias errors no longer first blocker; full/core failed repeated key move in Value lookup; prior head only"
+  },
+  "scalar_json_derivation_candidate": {
+    "spec_status": "provisional @ToJson field annotation and Result<String,String> error shape; no grammar ratification",
+    "fixture": "contracts/fixtures/typed-serde-scalar-projection-v1.atto",
+    "expected": "contracts/fixtures/typed-serde-scalar-projection-v1.expected",
+    "source_pr": "https://github.com/atto-lang/atto-source.java/pull/1992",
+    "head": "e240b8110b812f82cb7016233534a60d02845bca",
+    "tree": "c83db808394bb2b88a58d358b3b6d9bb9d7f9f12",
+    "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45914655677",
+    "prior_receipt": {
+      "head": "45f713b14e874457cacd3b9e733c9b780a5bc08a",
+      "tree": "ab00e309da4280349af56aee5d86d77a4b3766e3",
+      "blobs": 3933,
+      "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45914433353/job/140230153557",
+      "passed": 10,
+      "failed": 1,
+      "scope": "actual compiler-generated scalar JSON guest executed and emitted both exact lines; overall suite fails parser-vs-deriver duplicate annotation diagnostic expectation; not NativeAOT"
+    },
+    "scope": "shared fixture extracted from embedded JUnit guest; standalone conformance fixture not independently executed; other backends must fail closed until lowering exists; no decode, general wire codec or transport support",
+    "executed_receipt": {
+      "head": "e240b8110b812f82cb7016233534a60d02845bca",
+      "tree": "c83db808394bb2b88a58d358b3b6d9bb9d7f9f12",
+      "blobs": 3933,
+      "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45914655677/job/140230875385",
+      "runner": 1000001455,
+      "passed": 13,
+      "failed": 0,
+      "skipped": 0,
+      "scope": "6 new scalar derivation JUnit tests (actual generated guest emits exact min/max i64 JSON) and 7 existing FromJson annotation tests; JVM/Graal Truffle only, no NativeAOT or decoder or wire transport qualification"
+    }
+  }
+}

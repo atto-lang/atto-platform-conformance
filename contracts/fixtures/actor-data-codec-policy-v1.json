@@ -1,0 +1,273 @@
+{
+  "contract": "actor-data-codec-policy-v1",
+  "status": "HOST_REFERENCE_VECTORS_NOT_EXECUTED",
+  "spec": "https://github.com/atto-lang/atto-spec/pull/229",
+  "reference": "https://github.com/atto-lang/atto-serialization-and-validation/pull/34",
+  "notes": [
+    "Labels and masks are host metadata, not wire IDs.",
+    "Positive masks are hypothetical capabilities, not proof of codec support.",
+    "No guest syntax or privilege admission is tested by these vectors."
+  ],
+  "selection": [
+    {
+      "id": "default",
+      "requested": null,
+      "allowed": 15,
+      "supported": 1,
+      "version": 2,
+      "schema": "order.v1",
+      "shape_sha256": "0707070707070707070707070707070707070707070707070707070707070707",
+      "expected": "OK"
+    },
+    {
+      "id": "protobuf",
+      "requested": "protobuf",
+      "allowed": 15,
+      "supported": 2,
+      "version": 1,
+      "schema": "order.v1",
+      "shape_sha256": "0707070707070707070707070707070707070707070707070707070707070707",
+      "expected": "OK"
+    },
+    {
+      "id": "cbor",
+      "requested": "cbor",
+      "allowed": 4,
+      "supported": 4,
+      "version": 1,
+      "schema": "order.v1",
+      "shape_sha256": "0707070707070707070707070707070707070707070707070707070707070707",
+      "expected": "OK"
+    },
+    {
+      "id": "flatbuffers",
+      "requested": "flatbuffers",
+      "allowed": 8,
+      "supported": 8,
+      "version": 1,
+      "schema": "order.v1",
+      "shape_sha256": "0707070707070707070707070707070707070707070707070707070707070707",
+      "expected": "OK"
+    },
+    {
+      "id": "no-default-fallback",
+      "requested": null,
+      "allowed": 2,
+      "supported": 2,
+      "version": 1,
+      "schema": "s",
+      "shape_sha256": "0707070707070707070707070707070707070707070707070707070707070707",
+      "expected": "Denied"
+    },
+    {
+      "id": "explicit-unsupported",
+      "requested": "protobuf",
+      "allowed": 15,
+      "supported": 1,
+      "version": 1,
+      "schema": "s",
+      "shape_sha256": "0707070707070707070707070707070707070707070707070707070707070707",
+      "expected": "Unsupported"
+    },
+    {
+      "id": "case",
+      "requested": "CBOR",
+      "allowed": 15,
+      "supported": 15,
+      "version": 1,
+      "schema": "s",
+      "shape_sha256": "0707070707070707070707070707070707070707070707070707070707070707",
+      "expected": "UnknownCodec"
+    },
+    {
+      "id": "empty",
+      "requested": "",
+      "allowed": 15,
+      "supported": 15,
+      "version": 1,
+      "schema": "s",
+      "shape_sha256": "0707070707070707070707070707070707070707070707070707070707070707",
+      "expected": "UnknownCodec"
+    },
+    {
+      "id": "invalid-mask",
+      "requested": null,
+      "allowed": 16,
+      "supported": 1,
+      "version": 1,
+      "schema": "s",
+      "shape_sha256": "0707070707070707070707070707070707070707070707070707070707070707",
+      "expected": "InvalidMask"
+    },
+    {
+      "id": "version-zero",
+      "requested": null,
+      "allowed": 1,
+      "supported": 1,
+      "version": 0,
+      "schema": "s",
+      "shape_sha256": "0707070707070707070707070707070707070707070707070707070707070707",
+      "expected": "InvalidBinding"
+    },
+    {
+      "id": "empty-schema",
+      "requested": null,
+      "allowed": 1,
+      "supported": 1,
+      "version": 2,
+      "schema": "",
+      "shape_sha256": "0707070707070707070707070707070707070707070707070707070707070707",
+      "expected": "InvalidBinding"
+    },
+    {
+      "id": "space-schema",
+      "requested": null,
+      "allowed": 1,
+      "supported": 1,
+      "version": 2,
+      "schema": "a b",
+      "shape_sha256": "0707070707070707070707070707070707070707070707070707070707070707",
+      "expected": "InvalidBinding"
+    },
+    {
+      "id": "non-ascii",
+      "requested": null,
+      "allowed": 1,
+      "supported": 1,
+      "version": 2,
+      "schema": "é",
+      "shape_sha256": "0707070707070707070707070707070707070707070707070707070707070707",
+      "expected": "InvalidBinding"
+    },
+    {
+      "id": "max-schema",
+      "requested": null,
+      "allowed": 1,
+      "supported": 1,
+      "version": 2,
+      "schema": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "shape_sha256": "0707070707070707070707070707070707070707070707070707070707070707",
+      "expected": "OK"
+    },
+    {
+      "id": "oversized-schema",
+      "requested": null,
+      "allowed": 1,
+      "supported": 1,
+      "version": 2,
+      "schema": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "shape_sha256": "0707070707070707070707070707070707070707070707070707070707070707",
+      "expected": "InvalidBinding"
+    }
+  ],
+  "matching": [
+    {
+      "id": "exact",
+      "binding": {
+        "requested": null,
+        "allowed": 1,
+        "supported": 1,
+        "version": 2,
+        "schema": "order.v1",
+        "shape_sha256": "0707070707070707070707070707070707070707070707070707070707070707"
+      },
+      "incoming": {
+        "codec": "messagepack",
+        "version": 2,
+        "schema": "order.v1",
+        "shape_sha256": "0707070707070707070707070707070707070707070707070707070707070707"
+      },
+      "expected": "OK"
+    },
+    {
+      "id": "wrong-codec",
+      "binding": {
+        "requested": null,
+        "allowed": 1,
+        "supported": 1,
+        "version": 2,
+        "schema": "order.v1",
+        "shape_sha256": "0707070707070707070707070707070707070707070707070707070707070707"
+      },
+      "incoming": {
+        "codec": "protobuf",
+        "version": 2,
+        "schema": "order.v1",
+        "shape_sha256": "0707070707070707070707070707070707070707070707070707070707070707"
+      },
+      "expected": "Mismatch"
+    },
+    {
+      "id": "wrong-version",
+      "binding": {
+        "requested": null,
+        "allowed": 1,
+        "supported": 1,
+        "version": 2,
+        "schema": "order.v1",
+        "shape_sha256": "0707070707070707070707070707070707070707070707070707070707070707"
+      },
+      "incoming": {
+        "codec": "messagepack",
+        "version": 1,
+        "schema": "order.v1",
+        "shape_sha256": "0707070707070707070707070707070707070707070707070707070707070707"
+      },
+      "expected": "Mismatch"
+    },
+    {
+      "id": "wrong-schema",
+      "binding": {
+        "requested": null,
+        "allowed": 1,
+        "supported": 1,
+        "version": 2,
+        "schema": "order.v1",
+        "shape_sha256": "0707070707070707070707070707070707070707070707070707070707070707"
+      },
+      "incoming": {
+        "codec": "messagepack",
+        "version": 2,
+        "schema": "order.v2",
+        "shape_sha256": "0707070707070707070707070707070707070707070707070707070707070707"
+      },
+      "expected": "Mismatch"
+    },
+    {
+      "id": "wrong-shape",
+      "binding": {
+        "requested": null,
+        "allowed": 1,
+        "supported": 1,
+        "version": 2,
+        "schema": "order.v1",
+        "shape_sha256": "0707070707070707070707070707070707070707070707070707070707070707"
+      },
+      "incoming": {
+        "codec": "messagepack",
+        "version": 2,
+        "schema": "order.v1",
+        "shape_sha256": "0808080808080808080808080808080808080808080808080808080808080808"
+      },
+      "expected": "Mismatch"
+    },
+    {
+      "id": "wrong-case",
+      "binding": {
+        "requested": null,
+        "allowed": 1,
+        "supported": 1,
+        "version": 2,
+        "schema": "order.v1",
+        "shape_sha256": "0707070707070707070707070707070707070707070707070707070707070707"
+      },
+      "incoming": {
+        "codec": "MESSAGEPACK",
+        "version": 2,
+        "schema": "order.v1",
+        "shape_sha256": "0707070707070707070707070707070707070707070707070707070707070707"
+      },
+      "expected": "Mismatch"
+    }
+  ]
+}

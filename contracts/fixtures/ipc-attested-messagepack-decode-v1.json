@@ -1,0 +1,52 @@
+{
+  "contract": "ipc-attested-messagepack-decode-v1",
+  "status": "HOST_TESTS_AUTHORED_NOT_EXECUTED",
+  "implementation": "https://github.com/atto-lang/atto-source.java/pull/1815",
+  "decoder_parent": "https://github.com/atto-lang/atto-source.java/pull/1813",
+  "cases": [
+    {
+      "id": "shape_pin",
+      "expect": "wrong registered shape fails before route publication"
+    },
+    {
+      "id": "authenticated_typed_value",
+      "expect": "authenticated MessagePack v2 payload yields pinned typed value hello with sequence 9"
+    },
+    {
+      "id": "raw_bypass",
+      "expect": "profile-bound raw copy rejected; metadata-only registration cannot admit DATA"
+    },
+    {
+      "id": "decode_credit_backpressure",
+      "expect": "quota exhaustion retains original delivery and permits retry without replaying frame"
+    },
+    {
+      "id": "credit_transfer",
+      "expect": "wire lease released after decode, retained decoded credit persists until close"
+    },
+    {
+      "id": "double_decode",
+      "expect": "consumed delivery rejected"
+    },
+    {
+      "id": "wrong_schema",
+      "expect": "authenticated malformed schema poisons session; no decoded value; both accounts released"
+    },
+    {
+      "id": "typed_downgrade",
+      "expect": "metadata-only replacement denied after typed route retirement"
+    },
+    {
+      "id": "stale_or_foreign",
+      "expect": "delivery from another session or retired session cannot decode"
+    }
+  ],
+  "remaining": [
+    "actual compiler-produced shape and attestation",
+    "production ActorRuntime receiver heap ownership transfer; no host value retained after releasing credit",
+    "exact actor generation and escrow permit under mailbox publication lock",
+    "same decoder limits on all targets, including bounded nested Protobuf",
+    "native/AOT and guest execution"
+  ],
+  "evidence": "Imported decoder and legacy harness blobs matched original Git blobs before integration. Full runtime source and test execution not yet verified."
+}
