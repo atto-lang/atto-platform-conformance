@@ -1,0 +1,9 @@
+fnc tick(): int {
+    stdio.out.write("PAIR_TICK");
+    return 5;
+}
+
+pub fnc main(): int {
+    val x := tick();
+    return if x.key == "x" then x.value else 99 fi;
+}
