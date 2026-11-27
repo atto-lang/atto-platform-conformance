@@ -265,7 +265,8 @@
       "concurrent-reader-retirement-revocation-before-physical-release",
       "interrupted-writer-cancellation-is-not-quiescence-until-physical-exit",
       "concurrent-successful-scalar-results-unique-contiguous",
-      "close-racing-mutation-denies-post-close-access"
+      "close-racing-mutation-denies-post-close-access",
+      "validate-exact-owned-schema-snapshot-before-lazy-native-state-initialization"
     ],
     "evidencePolicy": "Track every profile and case separately. For negatives require phase-correct diagnostics and no artifact. For accepted cases require actual compiler and guest execution. Host/model-only and unsupported profiles cannot promote feature evidence.",
     "independentCompilerAdmission": {
