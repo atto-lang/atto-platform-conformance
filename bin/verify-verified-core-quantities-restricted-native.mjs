@@ -43,6 +43,25 @@ extern int32_t oreslang_scalar_entry(int64_t,int64_t,int64_t,int64_t,int64_t*);
 int main(void){int64_t out=0;int32_t rc=oreslang_scalar_entry(0,0,0,0,&out);
 if(rc){if(out!=0)return 99;return rc;}
 printf("%" PRId64 "\\n",out);return 0;}`);
+ // Require a real successful compile/link/run before accepting any rejection.
+ // A wrong CLI, missing input, or broken linker must not pass negative cases.
+ const control=join(original,"legacy-scalar-arithmetic.atto");
+ const controlOut=join(work,"compiler-control"+(backend==="forge"?".cpp":".o"));
+ const controlBin=join(work,"compiler-control.guest");
+ const controlResult=backend==="forge"?run(compiler,[control,"-o",controlOut]):run(compiler,["emit-object",control]);
+ success(controlResult,"positive compiler control");
+ if(backend==="cranelift"){
+   assert.ok(controlResult.stdout.length>0,"positive control emitted no object");
+   writeFileSync(controlOut,controlResult.stdout,{flag:"wx"});
+   success(run("cc",["-std=c11","-Wall","-Werror",harness,controlOut,"-o",controlBin]),"positive control link");
+ }else{
+   assert.ok(existsSync(controlOut),"positive control emitted no C++");
+   success(run(process.env.CXX||"c++",["-std=c++20","-Wall","-Wextra","-Werror","-fsanitize=undefined","-fno-sanitize-recover=all","-I"+include,controlOut,"-o",controlBin]),"positive control link");
+ }
+ const controlGuest=run(controlBin,[]);
+ success(controlGuest,"positive control guest");
+ assert.equal(controlGuest.stdout.toString(),"42\n","positive control value");
+ assert.equal(controlGuest.stderr.length,0,"positive control stderr");
  for(const {source,expected} of selected){
    try {
    const input=join(fixtures,source);
@@ -53,7 +72,10 @@ printf("%" PRId64 "\\n",out);return 0;}`);
      assert.equal(compiled.status,backend==="forge"?2:1,source);
      assert.equal(compiled.stdout.length,0,source);
      assert.equal(existsSync(output),false,source);
-     if(bindings){assert.ok(compiled.stderr.length>0,source);}
+     const diagnostic=compiled.stderr.toString();
+     assert.ok(diagnostic.trim().length>0,source);
+     assert.doesNotMatch(diagnostic, /(?:^|\s)(?:usage:|E_USAGE\b|E_PATH\b|E_SOURCE\b|E_OUTPUT\b)/i, source+" infrastructure failure, not a source diagnostic");
+     if(bindings){assert.ok(diagnostic.trim().length>0,source);}
      else if(full||backend==="cranelift")assert.match(compiled.stderr.toString(),new RegExp('(?:^|\\s)'+expected.category+'(?:[:\\s]|$)'),source);
      // Forge currently has generic parser diagnostics. Rejection is proven,
      // but diagnostic-category parity must remain explicitly unverified.
