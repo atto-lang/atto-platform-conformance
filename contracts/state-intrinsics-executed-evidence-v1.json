@@ -490,5 +490,47 @@
     "moduleBlob": "1583619383fb5a93badc7119f85fb07ccefc3993",
     "newUnitTestGroups": 7,
     "scope": "Candidate live-loan ledger and protected i64 storage; retains existing JSON-safe ID ceiling 2^53-1. No local Rust compiler or actual runtime/guest execution; no parity promotion."
+  },
+  "forgeStage0SealedScalarNativeEvidence": {
+    "status": "LOCAL_COMPILED_RESTRICTED_STAGE0_NATIVE_GUEST_NOT_CI",
+    "repo": "atto-lang/atto-source.forge",
+    "pr": 335,
+    "head": "fda749ff6c899bf7181f3be0354a97b1e40aebf8",
+    "tree": "bd85b2fb98df3b307321543a07fa4d1e9448cc92",
+    "base": "0c893e3b369b122aeb45f8a4d99a7766c77a83d2",
+    "verifiedBlobs": {
+      "compiler/actor_source.cpp": "344c0cd5d63b988a13e20435d439bebc1e38eb74",
+      "compiler/actor_source.hpp": "0ce9f77711e389a73ed3f1bf448d9b04ccef4f7e",
+      "runtime/arena/ActorOwnedI64Heap.c": "1b82bd92a0c883f617292e79b1ca63dd10a48306",
+      "runtime/arena/ActorOwnedI64Heap.h": "3bff2f3f7779bbbb5a780c0541dd392835c710dd",
+      "runtime/actor_frames.hpp": "8825165f99794400da4d8ca7524db21ee6587c86",
+      "runtime/scalar_actor.hpp": "9b623c5f6be43aac6e860625f4b006551b47d615",
+      "runtime/scalar_actor.cpp": "351f164001771b44aff348884adc5a728810d971",
+      "verification/scalar_actor_stage0_emit.cpp": "1746bf24f396eb2c39a918efbc25fddba7d1b87f",
+      "verification/scalar_actor_stage0_guest.cpp": "19f698078c101bdd1b05d0748d59c0bd75117002",
+      "verification/scalar_actor_stage0_read_guest.cpp": "b68cfed232d2c326f0a51fe1451f3fb628517ad9"
+    },
+    "toolchains": [
+      {
+        "name": "GCC/G++ 14.2",
+        "flags": "C11/C++20 O2 warnings-as-errors",
+        "nativeGuestsPassed": 5,
+        "sourceDenialsPassed": 16
+      },
+      {
+        "name": "Clang/Clang++ 17",
+        "flags": "C11/C++20 O1 ASan/UBSan warnings-as-errors",
+        "nativeGuestsPassed": 5,
+        "sourceDenialsPassed": 16
+      }
+    ],
+    "fixtures": [
+      "legacy_add",
+      "legacy_sub",
+      "sealed_add",
+      "sealed_sub",
+      "sealed_read"
+    ],
+    "scope": "Exact manually reconstructed source blobs checked with git hash-object. Built emitter, emitted five actual source variants, compiled and linked generated C++ to real heap, frames and ScalarActor, executed each on both toolchains; checked 16 denials each. Local direct build commands equivalent to harness but did not execute checked-in Python harness or full repository CI. Restricted single-field stage-0 serial actor profile, no production CLI, general state-container, alias, tuple or concurrent-actor parity claim."
   }
 }
