@@ -1,0 +1,514 @@
+{
+  "schema": "atto.namespace-modes-completion.v2",
+  "status": "CORPUS_ONLY_NOT_BACKEND_EXECUTION",
+  "spec": "https://github.com/atto-lang/atto-spec/pull/311",
+  "profile": "namespace-v2",
+  "packageIdentity": "fixture-package",
+  "modes": [
+    {
+      "id": "file-omitted",
+      "path": "src/network/http/client.atto",
+      "header": "",
+      "expect": {
+        "scope": [
+          "FILE",
+          "src/network/http/client.atto"
+        ]
+      }
+    },
+    {
+      "id": "file-default",
+      "path": "src/network/http/client.atto",
+      "header": "use default namespace;",
+      "expect": {
+        "scope": [
+          "FILE",
+          "src/network/http/client.atto"
+        ]
+      }
+    },
+    {
+      "id": "file-explicit",
+      "path": "src/network/http/client.atto",
+      "header": "use file namespace;",
+      "expect": {
+        "scope": [
+          "FILE",
+          "src/network/http/client.atto"
+        ]
+      }
+    },
+    {
+      "id": "file-sibling",
+      "path": "src/network/http/other.atto",
+      "header": "",
+      "expect": {
+        "scope": [
+          "FILE",
+          "src/network/http/other.atto"
+        ]
+      }
+    },
+    {
+      "id": "named",
+      "path": "src/network/http/client.atto",
+      "header": "use namespace network.http;",
+      "expect": {
+        "scope": [
+          "NAMED",
+          "network.http"
+        ]
+      }
+    },
+    {
+      "id": "named-other-dir",
+      "path": "other/client.atto",
+      "header": "use namespace network.http;",
+      "expect": {
+        "scope": [
+          "NAMED",
+          "network.http"
+        ]
+      }
+    },
+    {
+      "id": "numeric-1",
+      "path": "src/network/http/client.atto",
+      "header": "use default namespace(1);",
+      "expect": {
+        "scope": [
+          "NAMED",
+          "http"
+        ]
+      }
+    },
+    {
+      "id": "numeric-2",
+      "path": "src/network/http/client.atto",
+      "header": "use default namespace(2);",
+      "expect": {
+        "scope": [
+          "NAMED",
+          "network.http"
+        ]
+      }
+    },
+    {
+      "id": "numeric-3",
+      "path": "src/network/http/client.atto",
+      "header": "use default namespace(3);",
+      "expect": {
+        "scope": [
+          "NAMED",
+          "src.network.http"
+        ]
+      }
+    },
+    {
+      "id": "numeric-suffix-collision",
+      "path": "other/network/http/client.atto",
+      "header": "use default namespace(2);",
+      "expect": {
+        "scope": [
+          "NAMED",
+          "network.http"
+        ]
+      }
+    },
+    {
+      "id": "folder",
+      "path": "src/network/http/client.atto",
+      "header": "use folder namespace;",
+      "expect": {
+        "scope": [
+          "FOLDER",
+          "src/network/http"
+        ]
+      }
+    },
+    {
+      "id": "folder-sibling",
+      "path": "src/network/http/methods.atto",
+      "header": "use folder namespace;",
+      "expect": {
+        "scope": [
+          "FOLDER",
+          "src/network/http"
+        ]
+      }
+    },
+    {
+      "id": "folder-other-parent",
+      "path": "src/db/http/client.atto",
+      "header": "use folder namespace;",
+      "expect": {
+        "scope": [
+          "FOLDER",
+          "src/db/http"
+        ]
+      }
+    },
+    {
+      "id": "folder-root",
+      "path": "main.atto",
+      "header": "use folder namespace;",
+      "expect": {
+        "scope": [
+          "FOLDER",
+          ""
+        ]
+      }
+    },
+    {
+      "id": "folder-child",
+      "path": "src/network/http/child/client.atto",
+      "header": "use folder namespace;",
+      "expect": {
+        "scope": [
+          "FOLDER",
+          "src/network/http/child"
+        ]
+      }
+    },
+    {
+      "id": "zero",
+      "path": "src/http/main.atto",
+      "header": "use default namespace(0);",
+      "expect": {
+        "diagnostic": "E_NAMESPACE_DEPTH"
+      }
+    },
+    {
+      "id": "over-limit",
+      "path": "src/http/main.atto",
+      "header": "use default namespace(33);",
+      "expect": {
+        "diagnostic": "E_NAMESPACE_DEPTH"
+      }
+    },
+    {
+      "id": "insufficient",
+      "path": "src/http/main.atto",
+      "header": "use default namespace(3);",
+      "expect": {
+        "diagnostic": "E_NAMESPACE_DEPTH"
+      }
+    },
+    {
+      "id": "negative",
+      "path": "src/http/main.atto",
+      "header": "use default namespace(-1);",
+      "expect": {
+        "diagnostic": "E_NAMESPACE_DEPTH"
+      }
+    },
+    {
+      "id": "traversal",
+      "path": "../src/http/main.atto",
+      "header": "use folder namespace;",
+      "expect": {
+        "diagnostic": "E_NAMESPACE_PATH"
+      }
+    },
+    {
+      "id": "absolute",
+      "path": "/src/http/main.atto",
+      "header": "use folder namespace;",
+      "expect": {
+        "diagnostic": "E_NAMESPACE_PATH"
+      }
+    },
+    {
+      "id": "duplicate-separator",
+      "path": "src//http/main.atto",
+      "header": "use folder namespace;",
+      "expect": {
+        "diagnostic": "E_NAMESPACE_PATH"
+      }
+    },
+    {
+      "id": "dot-alias",
+      "path": "src/./http/main.atto",
+      "header": "use folder namespace;",
+      "expect": {
+        "diagnostic": "E_NAMESPACE_PATH"
+      }
+    },
+    {
+      "id": "missing-path",
+      "path": null,
+      "header": "use folder namespace;",
+      "expect": {
+        "diagnostic": "E_NAMESPACE_PATH"
+      }
+    },
+    {
+      "id": "duplicate-header",
+      "path": "src/http/main.atto",
+      "header": "use file namespace; use folder namespace;",
+      "expect": {
+        "diagnostic": "E_DUPLICATE"
+      }
+    },
+    {
+      "id": "late-header",
+      "path": "src/http/main.atto",
+      "header": "import module M from './m.atto'; use file namespace;",
+      "expect": {
+        "diagnostic": "E_SYNTAX"
+      }
+    }
+  ],
+  "parents": [
+    {
+      "id": "one",
+      "current": "network.http",
+      "reference": "parent.config",
+      "expect": {
+        "target": "network.config"
+      }
+    },
+    {
+      "id": "two",
+      "current": "network.http",
+      "reference": "parent.parent.common",
+      "expect": {
+        "target": "common"
+      }
+    },
+    {
+      "id": "mixed",
+      "current": "network.http",
+      "reference": "parent.super.common",
+      "expect": {
+        "target": "common"
+      }
+    },
+    {
+      "id": "legacy",
+      "current": "network.http",
+      "reference": "super.parent.common",
+      "expect": {
+        "target": "common"
+      }
+    },
+    {
+      "id": "self",
+      "current": "network.http",
+      "reference": "self.utils",
+      "expect": {
+        "target": "network.http.utils"
+      }
+    },
+    {
+      "id": "pkg",
+      "current": null,
+      "reference": "pkg.config",
+      "expect": {
+        "target": "config"
+      }
+    },
+    {
+      "id": "escape",
+      "current": "network.http",
+      "reference": "parent.parent.parent.config",
+      "expect": {
+        "diagnostic": "E_IMPORT_PATH"
+      }
+    },
+    {
+      "id": "missing-anchor",
+      "current": null,
+      "reference": "parent.config",
+      "expect": {
+        "diagnostic": "E_IMPORT_PATH"
+      }
+    },
+    {
+      "id": "invalid-before-pop",
+      "current": "network.parent",
+      "reference": "parent.config",
+      "expect": {
+        "diagnostic": "E_IMPORT_PATH"
+      }
+    },
+    {
+      "id": "nonleading",
+      "current": "network.http",
+      "reference": "self.parent.config",
+      "expect": {
+        "diagnostic": "E_IMPORT_PATH"
+      }
+    },
+    {
+      "id": "empty-tail",
+      "current": "network.http",
+      "reference": "parent.super",
+      "expect": {
+        "diagnostic": "E_IMPORT_PATH"
+      }
+    }
+  ],
+  "guests": [
+    {
+      "id": "local-omitted",
+      "entry": "main.atto",
+      "files": {
+        "main.atto": "declare pub[pkg] class Foo;\npub constructor (Foo) () {}\npub mtd (Foo) answer(): int { return 42; }\npub fnc main(): int { const foo = new Foo(); return foo.answer(); }\n"
+      },
+      "expect": {
+        "outcome": "return",
+        "value": 42
+      }
+    },
+    {
+      "id": "local-default",
+      "entry": "main.atto",
+      "files": {
+        "main.atto": "use default namespace;\ndeclare pub[pkg] class Foo;\npub constructor (Foo) () {}\npub mtd (Foo) answer(): int { return 42; }\npub fnc main(): int { const foo = new Foo(); return foo.answer(); }\n"
+      },
+      "expect": {
+        "outcome": "return",
+        "value": 42
+      }
+    },
+    {
+      "id": "local-file",
+      "entry": "main.atto",
+      "files": {
+        "main.atto": "use file namespace;\ndeclare pub[pkg] class Foo;\npub constructor (Foo) () {}\npub mtd (Foo) answer(): int { return 42; }\npub fnc main(): int { const foo = new Foo(); return foo.answer(); }\n"
+      },
+      "expect": {
+        "outcome": "return",
+        "value": 42
+      }
+    },
+    {
+      "id": "named-split",
+      "entry": "src/main.atto",
+      "files": {
+        "src/main.atto": "use namespace example;\ndeclare pub[pkg] class Foo;\npub fnc main(): int { const foo = new Foo(); return foo.answer(); }\n",
+        "other/ctor.atto": "use namespace example;\npub constructor (Foo) () {}\n",
+        "other/methods.atto": "use namespace example;\npub mtd (Foo) answer(): int { return 42; }\n"
+      },
+      "expect": {
+        "outcome": "return",
+        "value": 42
+      }
+    },
+    {
+      "id": "folder-split",
+      "entry": "src/main.atto",
+      "files": {
+        "src/main.atto": "use folder namespace;\ndeclare pub[pkg] class Foo;\npub fnc main(): int { const foo = new Foo(); return foo.answer(); }\n",
+        "src/ctor.atto": "use folder namespace;\npub constructor (Foo) () {}\n",
+        "src/methods.atto": "use folder namespace;\npub mtd (Foo) answer(): int { return 42; }\n"
+      },
+      "expect": {
+        "outcome": "return",
+        "value": 42
+      }
+    },
+    {
+      "id": "numeric-explicit-split",
+      "entry": "src/http/main.atto",
+      "files": {
+        "src/http/main.atto": "use default namespace(1);\ndeclare pub[pkg] class Foo;\npub fnc main(): int { const foo = new Foo(); return foo.answer(); }\n",
+        "other/ctor.atto": "use namespace http;\npub constructor (Foo) () {}\n",
+        "other/methods.atto": "use namespace http;\npub mtd (Foo) answer(): int { return 42; }\n"
+      },
+      "expect": {
+        "outcome": "return",
+        "value": 42
+      }
+    },
+    {
+      "id": "file-boundary",
+      "entry": "src/main.atto",
+      "files": {
+        "src/main.atto": "declare pub[pkg] class Foo;\npub constructor (Foo) () {}\npub fnc main(): int { const foo = new Foo(); return foo.answer(); }\n",
+        "src/methods.atto": "use default namespace;\npub mtd (Foo) answer(): int { return 42; }\n"
+      },
+      "expect": {
+        "outcome": "reject",
+        "reason": "attachment outside owner scope",
+        "noExecutable": true
+      }
+    },
+    {
+      "id": "folder-opt-in",
+      "entry": "src/main.atto",
+      "files": {
+        "src/main.atto": "use folder namespace;\ndeclare pub[pkg] class Foo;\npub constructor (Foo) () {}\npub fnc main(): int { const foo = new Foo(); return foo.answer(); }\n",
+        "src/methods.atto": "pub mtd (Foo) answer(): int { return 42; }\n"
+      },
+      "expect": {
+        "outcome": "reject",
+        "reason": "attachment outside owner scope",
+        "noExecutable": true
+      }
+    },
+    {
+      "id": "nested-folder",
+      "entry": "src/main.atto",
+      "files": {
+        "src/main.atto": "use folder namespace;\ndeclare pub[pkg] class Foo;\npub constructor (Foo) () {}\npub fnc main(): int { const foo = new Foo(); return foo.answer(); }\n",
+        "src/child/methods.atto": "use folder namespace;\npub mtd (Foo) answer(): int { return 42; }\n"
+      },
+      "expect": {
+        "outcome": "reject",
+        "reason": "attachment outside owner scope",
+        "noExecutable": true
+      }
+    },
+    {
+      "id": "named-folder-distinct",
+      "entry": "src/main.atto",
+      "files": {
+        "src/main.atto": "use namespace src;\ndeclare pub[pkg] class Foo;\npub constructor (Foo) () {}\npub fnc main(): int { const foo = new Foo(); return foo.answer(); }\n",
+        "src/methods.atto": "use folder namespace;\npub mtd (Foo) answer(): int { return 42; }\n"
+      },
+      "expect": {
+        "outcome": "reject",
+        "reason": "attachment outside owner scope",
+        "noExecutable": true
+      }
+    },
+    {
+      "id": "duplicate-slot",
+      "entry": "main.atto",
+      "files": {
+        "main.atto": "use namespace demo;\ndeclare pub[pkg] class Foo;\npub constructor (Foo) () {}\npub mtd (Foo) answer(): int { return 42; }\npub fnc main(): int { const foo = new Foo(); return foo.answer(); }\n",
+        "other.atto": "use namespace demo;\npub mtd (Foo) answer(): int { return 42; }\n"
+      },
+      "expect": {
+        "outcome": "reject",
+        "reason": "duplicate method slot",
+        "noExecutable": true
+      }
+    },
+    {
+      "id": "unused-incomplete",
+      "entry": "main.atto",
+      "files": {
+        "main.atto": "declare class Foo;\npub fnc main(): int {return 42;}"
+      },
+      "expect": {
+        "outcome": "reject",
+        "reason": "incomplete owner even unused",
+        "noExecutable": true
+      }
+    }
+  ],
+  "backends": [
+    "java",
+    "rs",
+    "llvm",
+    "wasm",
+    "net",
+    "forge",
+    "cranelift",
+    "js",
+    "hdl"
+  ]
+}
