@@ -21,7 +21,7 @@ test('execution-context unwind registry enumerates all eleven active backends',(
 
 test('complete source-free positive/negative semantics without invented guest passes',()=>{
   const cases=registry.cases;
-  assert.ok(cases.length >= 41);
+  assert.ok(cases.length >= 42);
   assert.equal(registry.extended_spec_candidate,'https://github.com/atto-lang/atto-spec/pull/245');
   assert.equal(new Set(cases.map(x=>x.id)).size,cases.length);
   for(const x of cases){
@@ -45,7 +45,7 @@ test('complete source-free positive/negative semantics without invented guest pa
     'susp-cleanup-stale-wakeup','discarded-fallible-result',
     'scheduled-unwind-next-turn','scheduled-unwind-duplicate-completion',
     'scheduled-recovery-cancel-race','scheduled-unwind-retirement-quiescence',
-    'pipeline-defer-registration','pipeline-recover-registration','pipeline-arity-rejection','pending-future-defer-lifo'])
+    'pipeline-defer-registration','pipeline-recover-registration','pipeline-arity-rejection','pending-future-defer-lifo','pending-body-cleanup-recovery'])
     assert.ok(cases.some(c=>c.id===id),`missing ${id}`);
   assert.ok(cases.some(c=>c.group==='compile-reject'));
 });
@@ -140,6 +140,20 @@ test('pending Future source fixture and candidate Worker receipt are pinned sepa
   assert.equal(f.entry,'run');assert.deepEqual(f.parameters,[{type:'Future<int>',state:'pending'},{type:'Future<int>',state:'pending'}]);
   assert.deepEqual(f.host_completion_order,[{parameter:1,value:2},{parameter:0,value:1}]);
   assert.deepEqual(f.expected,{kind:'return',value:42});
+  assert.match(f.compiler_candidate.compiler_head,/^[a-f0-9]{40}$/);
+  assert.match(f.compiler_candidate.compiler_tree,/^[a-f0-9]{40}$/);
+  assert.match(f.compiler_candidate.job,/^https:\/\/github\.com\/ores-dummy-org-ruby-graal-1\/atto-ci\/actions\/runs\/\d+\/job\/\d+$/);
+  assert.deepEqual(f.compiler_candidate.profiles,['scheduled-unwind-v1-node-worker','scheduled-unwind-v1-chromium-worker']);
+  assert.equal(registry.cases.find(c=>c.id===f.case_id).backend_statuses['atto-source.js'],'not_executed');
+});
+
+test('pending body and recovery fixture pins actual worker candidate separately from main',()=>{
+  const f=registry.pending_recovery_guest_candidate;
+  const b=readFileSync(new URL('../'+f.path,import.meta.url));
+  assert.equal(createHash('sha1').update('blob '+b.length+'\0').update(b).digest('hex'),f.git_blob_sha);
+  assert.equal(f.entry,'run');assert.deepEqual(f.parameters,['Future<int>','Future<int>','Future<int>']);
+  assert.deepEqual(f.host_operations,[{parameter:0,operation:'fail',message:'original'},{parameter:1,operation:'resolve',value:0},{parameter:2,operation:'resolve',value:42}]);
+  assert.deepEqual(f.expected,{kind:'recovered',value:42,original_error_identity:true});
   assert.match(f.compiler_candidate.compiler_head,/^[a-f0-9]{40}$/);
   assert.match(f.compiler_candidate.compiler_tree,/^[a-f0-9]{40}$/);
   assert.match(f.compiler_candidate.job,/^https:\/\/github\.com\/ores-dummy-org-ruby-graal-1\/atto-ci\/actions\/runs\/\d+\/job\/\d+$/);

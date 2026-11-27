@@ -1054,6 +1054,35 @@
         "atto-source.rs": "not_executed",
         "atto-source.wasm": "not_executed"
       }
+    },
+    {
+      "id": "pending-body-cleanup-recovery",
+      "group": "suspend",
+      "expected_trace": [
+        "body_parked",
+        "body_raise_original",
+        "cleanup_parked",
+        "cleanup_complete",
+        "recovery_parked",
+        "fallback_complete",
+        "recovered_42",
+        "retirement_allowed"
+      ],
+      "reason": "A single owner lease must cover an ordinary pending body Future, deferred cleanup and pending recovery while preserving original error identity, no inline resumption and terminal cancellation precedence.",
+      "overall_status": "not_executed",
+      "backend_statuses": {
+        "atto-source.atto": "not_executed",
+        "atto-source.cranelift": "not_executed",
+        "atto-source.forge": "not_executed",
+        "atto-source.hdl": "not_executed",
+        "atto-source.java": "not_executed",
+        "atto-source.js": "not_executed",
+        "atto-source.llvm": "not_executed",
+        "atto-source.net": "not_executed",
+        "atto-source.realtime": "not_executed",
+        "atto-source.rs": "not_executed",
+        "atto-source.wasm": "not_executed"
+      }
     }
   ],
   "extended_spec_candidate": "https://github.com/atto-lang/atto-spec/pull/245",
@@ -1306,6 +1335,51 @@
         "scheduled-unwind-v1-chromium-worker"
       ],
       "limitation": "Exact candidate focused execution steps passed; not current-main general compiler support, general recover, ordinary await, or other backend parity. Final full suite recorded separately."
+    }
+  },
+  "pending_recovery_guest_candidate": {
+    "case_id": "pending-body-cleanup-recovery",
+    "path": "fixtures/execution-context-unwind-v1/pending-body-recover.atto",
+    "git_blob_sha": "373409eeb8e6336908de08960027a4634fafece3",
+    "entry": "run",
+    "parameters": [
+      "Future<int>",
+      "Future<int>",
+      "Future<int>"
+    ],
+    "host_operations": [
+      {
+        "parameter": 0,
+        "operation": "fail",
+        "message": "original"
+      },
+      {
+        "parameter": 1,
+        "operation": "resolve",
+        "value": 0
+      },
+      {
+        "parameter": 2,
+        "operation": "resolve",
+        "value": 42
+      }
+    ],
+    "expected": {
+      "kind": "recovered",
+      "value": 42,
+      "original_error_identity": true
+    },
+    "compiler_candidate": {
+      "backend": "atto-source.js",
+      "pr": "https://github.com/atto-lang/atto-source.js/pull/121",
+      "compiler_head": "6ac3e270712b35c1baba517efd6a737d2f40df90",
+      "compiler_tree": "e77e7ee9b3a9987c6738321f257195602bee2c2b",
+      "job": "https://github.com/ores-dummy-org-ruby-graal-1/atto-ci/actions/runs/45947671071/job/140335992348",
+      "profiles": [
+        "scheduled-unwind-v1-node-worker",
+        "scheduled-unwind-v1-chromium-worker"
+      ],
+      "limitation": "Exact restricted candidate Worker steps passed; not current-main or general body/control-flow/recovery support; other compiler guest status not executed."
     }
   }
 }
