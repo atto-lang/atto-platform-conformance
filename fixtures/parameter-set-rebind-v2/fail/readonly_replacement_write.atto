@@ -1,0 +1,7 @@
+define class Person as
+    pub let int value = 0;
+end
+pub fnc replace(rebind Person p, Person other): void {
+    set p = other;
+    p.value = 42;
+}

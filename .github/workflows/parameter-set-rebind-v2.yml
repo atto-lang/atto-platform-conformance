@@ -1,0 +1,35 @@
+name: Parameter set rebind v2 (HOST_ONLY)
+on:
+  pull_request:
+    paths:
+      - 'models/parameter_set_rebind_v2.mjs'
+      - 'contracts/parameter-set-rebind-v2.json'
+      - 'fixtures/parameter-set-rebind-v2/**'
+      - '.github/workflows/parameter-set-rebind-v2.yml'
+  push:
+    branches: ['conformance/parameter-set-rebind-v2-20261127']
+permissions:
+  contents: read
+jobs:
+  host-model:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact head and fixture blobs
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          test "$(git write-tree)" = "$(git rev-parse 'HEAD^{tree}')"
+          test "$(git hash-object models/parameter_set_rebind_v2.mjs)" = "af717a40e95f328aa48fe5a777ce1b43837b02b4"
+          node --input-type=module -e 'import fs from "node:fs"; import {execFileSync} from "node:child_process"; const r=JSON.parse(fs.readFileSync("contracts/parameter-set-rebind-v2.json")); if(r.required_cases.length!==14) throw Error("count"); for(const c of r.required_cases){if(execFileSync("git",["hash-object","--no-filters",c.path],{encoding:"utf8"}).trim()!==c.source_blob_sha) throw Error(c.path);}'
+      - name: Execute symbolic host checks (not compiler parity)
+        run: |
+          set -euo pipefail
+          test "$(node models/parameter_set_rebind_v2.mjs)" = "HOST_ONLY: 34 parameter-set checks passed"
+          echo "HOST_ONLY: 34 parameter-set checks passed"

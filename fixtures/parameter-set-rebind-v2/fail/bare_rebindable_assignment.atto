@@ -1,0 +1,1 @@
+pub fnc replace(rebind int n): int { n = 42; return n; }

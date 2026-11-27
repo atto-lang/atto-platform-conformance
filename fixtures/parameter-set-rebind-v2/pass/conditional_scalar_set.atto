@@ -1,0 +1,2 @@
+fnc choose(rebind int n, bool change): int { if change { set n = 40; } return n; }
+pub fnc main(): int { return choose(2, false) + choose(2, true); }
