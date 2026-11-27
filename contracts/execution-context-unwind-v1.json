@@ -1025,6 +1025,35 @@
         "atto-source.rs": "not_executed",
         "atto-source.wasm": "not_executed"
       }
+    },
+    {
+      "id": "pending-future-defer-lifo",
+      "group": "suspend",
+      "expected_trace": [
+        "return_snapshot_42",
+        "second_parked",
+        "second_completion_published",
+        "second_resume",
+        "first_parked",
+        "first_completion_published",
+        "first_resume",
+        "returned_42"
+      ],
+      "reason": "A source-compiled function accepting two pending typed Future<int> arguments must run braceless deferred awaits in reverse registration order, resume only through its owner scheduler, and publish its original return after cleanup.",
+      "overall_status": "not_executed",
+      "backend_statuses": {
+        "atto-source.atto": "not_executed",
+        "atto-source.cranelift": "not_executed",
+        "atto-source.forge": "not_executed",
+        "atto-source.hdl": "not_executed",
+        "atto-source.java": "not_executed",
+        "atto-source.js": "not_executed",
+        "atto-source.llvm": "not_executed",
+        "atto-source.net": "not_executed",
+        "atto-source.realtime": "not_executed",
+        "atto-source.rs": "not_executed",
+        "atto-source.wasm": "not_executed"
+      }
     }
   ],
   "extended_spec_candidate": "https://github.com/atto-lang/atto-spec/pull/245",
@@ -1236,5 +1265,47 @@
       ],
       "limitation": "Integrated candidate based on main 465e519f; not standalone atto-source.wasm, browser UI, native executable or current-main certification."
     }
-  ]
+  ],
+  "pending_future_guest_candidate": {
+    "case_id": "pending-future-defer-lifo",
+    "path": "fixtures/execution-context-unwind-v1/pending-future-defer.atto",
+    "git_blob_sha": "48d4a1df950996679512833d754e5dfddec355cf",
+    "entry": "run",
+    "parameters": [
+      {
+        "type": "Future<int>",
+        "state": "pending"
+      },
+      {
+        "type": "Future<int>",
+        "state": "pending"
+      }
+    ],
+    "host_completion_order": [
+      {
+        "parameter": 1,
+        "value": 2
+      },
+      {
+        "parameter": 0,
+        "value": 1
+      }
+    ],
+    "expected": {
+      "kind": "return",
+      "value": 42
+    },
+    "compiler_candidate": {
+      "backend": "atto-source.js",
+      "pr": "https://github.com/atto-lang/atto-source.js/pull/121",
+      "compiler_head": "bffe9b767d9abf51e8d409d1494add207e1be89e",
+      "compiler_tree": "13b84a47e1a7ba17d26b98d65a02666c91ab2797",
+      "job": "https://github.com/ores-dummy-org-ruby-graal-1/atto-ci/actions/runs/45944685180/job/140326574394",
+      "profiles": [
+        "scheduled-unwind-v1-node-worker",
+        "scheduled-unwind-v1-chromium-worker"
+      ],
+      "limitation": "Exact candidate focused execution steps passed; not current-main general compiler support, general recover, ordinary await, or other backend parity. Final full suite recorded separately."
+    }
+  }
 }
