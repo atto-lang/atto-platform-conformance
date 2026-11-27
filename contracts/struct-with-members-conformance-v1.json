@@ -140,6 +140,46 @@
       "diagnostic_category": "duplicate nominal method",
       "no_artifact": true,
       "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "define-grouped-arrow",
+      "expect": "accept",
+      "source": "define struct Point {\n    int x;\n    int y;\n} with {\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mtd int • sum() {\n        return self.x + self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() -> bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\npub fnc main(): int {\n    let p = Point(10, 20);\n    stdio.println(p.sum());\n    stdio.println(p.product());\n    stdio.println(p.is_origin());\n    return 0;\n}",
+      "expected_stdout": "30\n200\nfalse\n",
+      "expected_exit": 0,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "define-chained-arrow",
+      "expect": "accept",
+      "source": "define struct Point {\n    int x;\n    int y;\n} with constructor(int x, int y) {\n    self.x = x;\n    self.y = y;\n} with mtd int • sum() {\n    return self.x + self.y;\n} with mtd int <- product() {\n    return self.x * self.y;\n} with mtd is_origin() -> bool {\n    return self.x == 0 && self.y == 0;\n}\npub fnc main(): int {\n    let p = Point(10, 20);\n    stdio.println(p.sum());\n    stdio.println(p.product());\n    stdio.println(p.is_origin());\n    return 0;\n}",
+      "expected_stdout": "30\n200\nfalse\n",
+      "expected_exit": 0,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "define-all-right-arrow",
+      "expect": "accept",
+      "source": "define struct Point {\n    int x;\n    int y;\n} with {\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mtd sum() -> int {\n        return self.x + self.y;\n    }\n\n    mtd product() -> int {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() -> bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\npub fnc main(): int {\n    let p = Point(10, 20);\n    stdio.println(p.sum());\n    stdio.println(p.product());\n    stdio.println(p.is_origin());\n    return 0;\n}",
+      "expected_stdout": "30\n200\nfalse\n",
+      "expected_exit": 0,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "define-origin-true",
+      "expect": "accept",
+      "source": "define struct Point {\n    int x;\n    int y;\n} with {\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mtd int • sum() {\n        return self.x + self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() -> bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\npub fnc main(): int {\n    let p = Point(0, 0);\n    stdio.println(p.sum());\n    stdio.println(p.product());\n    stdio.println(p.is_origin());\n    return 0;\n}",
+      "expected_stdout": "0\n0\ntrue\n",
+      "expected_exit": 0,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "define-duplicate-arrow",
+      "expect": "reject",
+      "source": "define struct Point {\n    int x;\n    int y;\n} with {\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mtd int • sum() {\n        return self.x + self.y;\n    }\n\n    mtd sum() -> int {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() -> bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\npub fnc main(): int { return 0; }",
+      "diagnostic_category": "duplicate nominal method",
+      "no_artifact": true,
+      "status": "NOT_EXECUTED"
     }
   ]
 }
