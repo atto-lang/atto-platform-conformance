@@ -7,8 +7,8 @@ const byId = Object.fromEntries(r.cases.map(c => [c.id, c]));
 
 test('struct attachment fixture registry does not claim compiler execution', () => {
   assert.equal(r.status, 'TARGET_NOT_EXECUTED');
-  assert.equal(r.cases.length, 26);
-  assert.equal(Object.keys(byId).length, 26);
+  assert.equal(r.cases.length, 40);
+  assert.equal(Object.keys(byId).length, 40);
   assert.equal(Object.keys(r.backend_status).length, 9);
   assert.ok(Object.values(r.backend_status).every(s => s === 'NOT_EXECUTED'));
   assert.deepEqual(r.required_gates, ['parse','semantic','link','emit','guest_execute']);
@@ -19,7 +19,10 @@ test('struct attachment fixture registry does not claim compiler execution', () 
       const expected = {
         'define-origin-true': '0\n0\ntrue\n',
         'distinct-nominal-owners': '30\n-10\n200\n',
-        'distinct-mutable-owner-copies': '40\n4\n-10\n'
+        'distinct-mutable-owner-copies': '40\n4\n-10\n',
+        'nested-nominal-value-copy': '12\n8\n12\n',
+        'nested-three-level': '12\n8\n12\n',
+        'nested-forward-owner': '12\n8\n12\n'
       };
       assert.equal(c.expected_stdout, expected[c.id] ?? '30\n200\nfalse\n');
       assert.equal(c.expected_exit, 0);
@@ -70,4 +73,16 @@ test('nominal owners never become structurally interchangeable', () => {
   assert.equal(byId['duplicate-nominal-owner'].expect, 'reject');
   assert.equal(byId['owner-method-not-structural'].expect, 'reject');
   assert.ok(byId['owner-method-not-structural'].source.includes('mtd int • other()'));
+});
+
+test('nested layout targets preserve exact identities and bounded diagnostic codes', () => {
+  assert.equal(r.cases.filter(c => c.expected_code).length, 9);
+  for (const c of r.cases.filter(c => c.expected_code)) {
+    assert.equal(c.expect, 'reject');
+    assert.match(c.expected_code, /^E_[A-Z_]+$/);
+  }
+  assert.ok(byId['nested-three-level'].source.includes('Rectangle inner;'));
+  assert.equal(byId['nested-cycle'].expected_code, 'E_STRUCT_LAYOUT_CYCLE');
+  assert.equal(byId['nested-mutual-cycle'].expected_code, 'E_STRUCT_LAYOUT_CYCLE');
+  assert.equal(byId['nested-slot-budget'].expected_code, 'E_SOURCE_LIMIT');
 });

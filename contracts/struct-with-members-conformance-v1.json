@@ -228,6 +228,127 @@
       "diagnostic_category": "missing nominal member",
       "no_artifact": true,
       "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "nested-nominal-value-copy",
+      "expect": "accept",
+      "source": "define struct Point {\n    int x;\n    int y;\n} with {\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mut mtd shift(int n): void { self.x = self.x + n; self.y = self.y + n; }\n    mut mtd swap(int old_x, int old_y): void { self.x = old_y; self.y = old_x; return; }\n    mtd int • sum() {\n        return self.x + self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() -> bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\ndefine struct Rectangle {\n    Point top_left;\n    Point bottom_right;\n} with {\n    constructor(Point a, Point b) { self.top_left = a; self.bottom_right = b; }\n    mtd area() -> int { return (self.bottom_right.x - self.top_left.x) * (self.bottom_right.y - self.top_left.y); }\n    mut mtd shift(int n): void { self.top_left.x = self.top_left.x + n; }\n}\npub fnc main(): int {\n    let mut p = Point(1, 2);\n    let q = Point(4, 6);\n    let mut r = Rectangle(p, q);\n    let snapshot: Rectangle = copy! r;\n    p.shift(10);\n    stdio.println(r.area());\n    r.shift(1);\n    stdio.println(r.area());\n    stdio.println(snapshot.area());\n    return 0;\n}",
+      "expected_stdout": "12\n8\n12\n",
+      "expected_exit": 0,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "nested-three-level",
+      "expect": "accept",
+      "source": "define struct Point {\n    int x;\n    int y;\n} with {\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mut mtd shift(int n): void { self.x = self.x + n; self.y = self.y + n; }\n    mut mtd swap(int old_x, int old_y): void { self.x = old_y; self.y = old_x; return; }\n    mtd int • sum() {\n        return self.x + self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() -> bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\ndefine struct Rectangle {\n    Point top_left;\n    Point bottom_right;\n} with {\n    constructor(Point a, Point b) { self.top_left = a; self.bottom_right = b; }\n    mtd area() -> int { return (self.bottom_right.x - self.top_left.x) * (self.bottom_right.y - self.top_left.y); }\n    mut mtd shift(int n): void { self.top_left.x = self.top_left.x + n; }\n}\ndefine struct BoxValue {\n    Rectangle inner;\n} with {\n    constructor(Rectangle r) { self.inner = r; }\n    mtd area() -> int { return (self.inner.bottom_right.x - self.inner.top_left.x) * (self.inner.bottom_right.y - self.inner.top_left.y); }\n}\npub fnc main(): int {\n    let mut p = Point(1, 2);\n    let q = Point(4, 6);\n    let mut r = Rectangle(p, q);\n    let snapshot: Rectangle = copy! r;\n    let b = BoxValue(r);\n    p.shift(10);\n    stdio.println(r.area());\n    r.shift(1);\n    stdio.println(r.area());\n    stdio.println(b.area());\n    return 0;\n}",
+      "expected_stdout": "12\n8\n12\n",
+      "expected_exit": 0,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "nested-forward-owner",
+      "expect": "accept",
+      "source": "define struct Rectangle {\n    Point top_left;\n    Point bottom_right;\n} with {\n    constructor(Point a, Point b) { self.top_left = a; self.bottom_right = b; }\n    mtd area() -> int { return (self.bottom_right.x - self.top_left.x) * (self.bottom_right.y - self.top_left.y); }\n    mut mtd shift(int n): void { self.top_left.x = self.top_left.x + n; }\n}\ndefine struct Point {\n    int x;\n    int y;\n} with {\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mut mtd shift(int n): void { self.x = self.x + n; self.y = self.y + n; }\n    mut mtd swap(int old_x, int old_y): void { self.x = old_y; self.y = old_x; return; }\n    mtd int • sum() {\n        return self.x + self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() -> bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\npub fnc main(): int {\n    let mut p = Point(1, 2);\n    let q = Point(4, 6);\n    let mut r = Rectangle(p, q);\n    let snapshot: Rectangle = copy! r;\n    p.shift(10);\n    stdio.println(r.area());\n    r.shift(1);\n    stdio.println(r.area());\n    stdio.println(snapshot.area());\n    return 0;\n}",
+      "expected_stdout": "12\n8\n12\n",
+      "expected_exit": 0,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "nested-wrong-nominal-argument",
+      "expect": "reject",
+      "source": "define struct Point {\n    int x;\n    int y;\n} with {\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mut mtd shift(int n): void { self.x = self.x + n; self.y = self.y + n; }\n    mut mtd swap(int old_x, int old_y): void { self.x = old_y; self.y = old_x; return; }\n    mtd int • sum() {\n        return self.x + self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() -> bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\ndefine struct Rectangle {\n    Point top_left;\n    Point bottom_right;\n} with {\n    constructor(Point a, Point b) { self.top_left = a; self.bottom_right = b; }\n    mtd area() -> int { return (self.bottom_right.x - self.top_left.x) * (self.bottom_right.y - self.top_left.y); }\n    mut mtd shift(int n): void { self.top_left.x = self.top_left.x + n; }\n}\ndefine struct Offset {\n    int x;\n    int y;\n} with {\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mtd int • sum() {\n        return self.x - self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() -> bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\npub fnc main(): int {\n    let mut p = Point(1, 2);\n    let q = Offset(4, 6);\n    let mut r = Rectangle(p, q);\n    let snapshot: Rectangle = copy! r;\n    p.shift(10);\n    stdio.println(r.area());\n    r.shift(1);\n    stdio.println(r.area());\n    stdio.println(snapshot.area());\n    return 0;\n}",
+      "diagnostic_category": "nominal argument identity",
+      "expected_code": "E_TYPE",
+      "no_artifact": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "nested-wrong-field-identity",
+      "expect": "reject",
+      "source": "define struct Point {\n    int x;\n    int y;\n} with {\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mut mtd shift(int n): void { self.x = self.x + n; self.y = self.y + n; }\n    mut mtd swap(int old_x, int old_y): void { self.x = old_y; self.y = old_x; return; }\n    mtd int • sum() {\n        return self.x + self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() -> bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\ndefine struct Rectangle {\n    Point top_left;\n    Offset bottom_right;\n} with {\n    constructor(Point a, Point b) { self.top_left = a; self.bottom_right = b; }\n    mtd area() -> int { return (self.bottom_right.x - self.top_left.x) * (self.bottom_right.y - self.top_left.y); }\n    mut mtd shift(int n): void { self.top_left.x = self.top_left.x + n; }\n}\ndefine struct Offset {\n    int x;\n    int y;\n} with {\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mtd int • sum() {\n        return self.x - self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() -> bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\npub fnc main(): int {\n    let mut p = Point(1, 2);\n    let q = Point(4, 6);\n    let mut r = Rectangle(p, q);\n    let snapshot: Rectangle = copy! r;\n    p.shift(10);\n    stdio.println(r.area());\n    r.shift(1);\n    stdio.println(r.area());\n    stdio.println(snapshot.area());\n    return 0;\n}",
+      "diagnostic_category": "nominal field identity",
+      "expected_code": "E_TYPE",
+      "no_artifact": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "nested-uninitialized-field",
+      "expect": "reject",
+      "source": "define struct Point {\n    int x;\n    int y;\n} with {\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mut mtd shift(int n): void { self.x = self.x + n; self.y = self.y + n; }\n    mut mtd swap(int old_x, int old_y): void { self.x = old_y; self.y = old_x; return; }\n    mtd int • sum() {\n        return self.x + self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() -> bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\ndefine struct Rectangle {\n    Point top_left;\n    Point bottom_right;\n} with {\n    constructor(Point a, Point b) { self.top_left = a;  }\n    mtd area() -> int { return (self.bottom_right.x - self.top_left.x) * (self.bottom_right.y - self.top_left.y); }\n    mut mtd shift(int n): void { self.top_left.x = self.top_left.x + n; }\n}\npub fnc main(): int {\n    let mut p = Point(1, 2);\n    let q = Point(4, 6);\n    let mut r = Rectangle(p, q);\n    let snapshot: Rectangle = copy! r;\n    p.shift(10);\n    stdio.println(r.area());\n    r.shift(1);\n    stdio.println(r.area());\n    stdio.println(snapshot.area());\n    return 0;\n}",
+      "diagnostic_category": "definite initialization",
+      "expected_code": "E_STRUCT_INIT",
+      "no_artifact": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "nested-duplicate-field",
+      "expect": "reject",
+      "source": "define struct Point {\n    int x;\n    int y;\n} with {\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mut mtd shift(int n): void { self.x = self.x + n; self.y = self.y + n; }\n    mut mtd swap(int old_x, int old_y): void { self.x = old_y; self.y = old_x; return; }\n    mtd int • sum() {\n        return self.x + self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() -> bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\ndefine struct Rectangle {\n    Point top_left;\n    Point bottom_right;\n} with {\n    constructor(Point a, Point b) { self.top_left = a; self.top_left = b; self.bottom_right = b; }\n    mtd area() -> int { return (self.bottom_right.x - self.top_left.x) * (self.bottom_right.y - self.top_left.y); }\n    mut mtd shift(int n): void { self.top_left.x = self.top_left.x + n; }\n}\npub fnc main(): int {\n    let mut p = Point(1, 2);\n    let q = Point(4, 6);\n    let mut r = Rectangle(p, q);\n    let snapshot: Rectangle = copy! r;\n    p.shift(10);\n    stdio.println(r.area());\n    r.shift(1);\n    stdio.println(r.area());\n    stdio.println(snapshot.area());\n    return 0;\n}",
+      "diagnostic_category": "duplicate field initialization",
+      "expected_code": "E_STRUCT_INIT",
+      "no_artifact": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "nested-unknown-owner",
+      "expect": "reject",
+      "source": "define struct Point {\n    int x;\n    int y;\n} with {\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mut mtd shift(int n): void { self.x = self.x + n; self.y = self.y + n; }\n    mut mtd swap(int old_x, int old_y): void { self.x = old_y; self.y = old_x; return; }\n    mtd int • sum() {\n        return self.x + self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() -> bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\ndefine struct Rectangle {\n    Missing top_left;\n    Point bottom_right;\n} with {\n    constructor(Point a, Point b) { self.top_left = a; self.bottom_right = b; }\n    mtd area() -> int { return (self.bottom_right.x - self.top_left.x) * (self.bottom_right.y - self.top_left.y); }\n    mut mtd shift(int n): void { self.top_left.x = self.top_left.x + n; }\n}\npub fnc main(): int {\n    let mut p = Point(1, 2);\n    let q = Point(4, 6);\n    let mut r = Rectangle(p, q);\n    let snapshot: Rectangle = copy! r;\n    p.shift(10);\n    stdio.println(r.area());\n    r.shift(1);\n    stdio.println(r.area());\n    stdio.println(snapshot.area());\n    return 0;\n}",
+      "diagnostic_category": "unknown nominal type",
+      "expected_code": "E_TYPE",
+      "no_artifact": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "nested-cycle",
+      "expect": "reject",
+      "source": "define struct Point {\n    int x;\n    int y;\n} with {\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mut mtd shift(int n): void { self.x = self.x + n; self.y = self.y + n; }\n    mut mtd swap(int old_x, int old_y): void { self.x = old_y; self.y = old_x; return; }\n    mtd int • sum() {\n        return self.x + self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() -> bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\ndefine struct Rectangle {\n    Rectangle top_left;\n    Point bottom_right;\n} with {\n    constructor(Point a, Point b) { self.top_left = a; self.bottom_right = b; }\n    mtd area() -> int { return (self.bottom_right.x - self.top_left.x) * (self.bottom_right.y - self.top_left.y); }\n    mut mtd shift(int n): void { self.top_left.x = self.top_left.x + n; }\n}\npub fnc main(): int {\n    let mut p = Point(1, 2);\n    let q = Point(4, 6);\n    let mut r = Rectangle(p, q);\n    let snapshot: Rectangle = copy! r;\n    p.shift(10);\n    stdio.println(r.area());\n    r.shift(1);\n    stdio.println(r.area());\n    stdio.println(snapshot.area());\n    return 0;\n}",
+      "diagnostic_category": "recursive by-value layout",
+      "expected_code": "E_STRUCT_LAYOUT_CYCLE",
+      "no_artifact": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "nested-missing-projection",
+      "expect": "reject",
+      "source": "define struct Point {\n    int x;\n    int y;\n} with {\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mut mtd shift(int n): void { self.x = self.x + n; self.y = self.y + n; }\n    mut mtd swap(int old_x, int old_y): void { self.x = old_y; self.y = old_x; return; }\n    mtd int • sum() {\n        return self.x + self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() -> bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\ndefine struct Rectangle {\n    Point top_left;\n    Point bottom_right;\n} with {\n    constructor(Point a, Point b) { self.top_left = a; self.bottom_right = b; }\n    mtd area() -> int { return (self.bottom_right.z - self.top_left.x) * (self.bottom_right.y - self.top_left.y); }\n    mut mtd shift(int n): void { self.top_left.x = self.top_left.x + n; }\n}\npub fnc main(): int {\n    let mut p = Point(1, 2);\n    let q = Point(4, 6);\n    let mut r = Rectangle(p, q);\n    let snapshot: Rectangle = copy! r;\n    p.shift(10);\n    stdio.println(r.area());\n    r.shift(1);\n    stdio.println(r.area());\n    stdio.println(snapshot.area());\n    return 0;\n}",
+      "diagnostic_category": "unknown nested field",
+      "no_artifact": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "nested-immutable-receiver",
+      "expect": "reject",
+      "source": "define struct Point {\n    int x;\n    int y;\n} with {\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mut mtd shift(int n): void { self.x = self.x + n; self.y = self.y + n; }\n    mut mtd swap(int old_x, int old_y): void { self.x = old_y; self.y = old_x; return; }\n    mtd int • sum() {\n        return self.x + self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() -> bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\ndefine struct Rectangle {\n    Point top_left;\n    Point bottom_right;\n} with {\n    constructor(Point a, Point b) { self.top_left = a; self.bottom_right = b; }\n    mtd area() -> int { return (self.bottom_right.x - self.top_left.x) * (self.bottom_right.y - self.top_left.y); }\n    mut mtd shift(int n): void { self.top_left.x = self.top_left.x + n; }\n}\npub fnc main(): int {\n    let mut p = Point(1, 2);\n    let q = Point(4, 6);\n    let r = Rectangle(p, q);\n    let snapshot: Rectangle = copy! r;\n    p.shift(10);\n    stdio.println(r.area());\n    r.shift(1);\n    stdio.println(r.area());\n    stdio.println(snapshot.area());\n    return 0;\n}",
+      "diagnostic_category": "immutable receiver authority",
+      "expected_code": "E_BORROW_MUT_REQUIRED",
+      "no_artifact": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "nested-mutual-cycle",
+      "expect": "reject",
+      "source": "define struct Point {\n    Rectangle x;\n    int y;\n} with {\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mut mtd shift(int n): void { self.x = self.x + n; self.y = self.y + n; }\n    mut mtd swap(int old_x, int old_y): void { self.x = old_y; self.y = old_x; return; }\n    mtd int • sum() {\n        return self.x + self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() -> bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\ndefine struct Rectangle {\n    Point top_left;\n    Point bottom_right;\n} with {\n    constructor(Point a, Point b) { self.top_left = a; self.bottom_right = b; }\n    mtd area() -> int { return (self.bottom_right.x - self.top_left.x) * (self.bottom_right.y - self.top_left.y); }\n    mut mtd shift(int n): void { self.top_left.x = self.top_left.x + n; }\n}\npub fnc main(): int {\n    let mut p = Point(1, 2);\n    let q = Point(4, 6);\n    let mut r = Rectangle(p, q);\n    let snapshot: Rectangle = copy! r;\n    p.shift(10);\n    stdio.println(r.area());\n    r.shift(1);\n    stdio.println(r.area());\n    stdio.println(snapshot.area());\n    return 0;\n}",
+      "diagnostic_category": "mutual recursive by-value layout",
+      "expected_code": "E_STRUCT_LAYOUT_CYCLE",
+      "no_artifact": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "nested-slot-budget",
+      "expect": "reject",
+      "source": "define struct Point {\n    int x;\n    int y;\n} with {\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mut mtd shift(int n): void { self.x = self.x + n; self.y = self.y + n; }\n    mut mtd swap(int old_x, int old_y): void { self.x = old_y; self.y = old_x; return; }\n    mtd int • sum() {\n        return self.x + self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() -> bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\ndefine struct Rectangle {\n    Point top_left;\n    Point bottom_right;\n} with {\n    constructor(Point a, Point b) { self.top_left = a; self.bottom_right = b; }\n    mtd area() -> int { return (self.bottom_right.x - self.top_left.x) * (self.bottom_right.y - self.top_left.y); }\n    mut mtd shift(int n): void { self.top_left.x = self.top_left.x + n; }\n}\ndefine struct Wide0 { Rectangle f0; Rectangle f1; Rectangle f2; } with { constructor() {} }\ndefine struct Wide1 { Wide0 f0; Wide0 f1; Wide0 f2; } with { constructor() {} }\ndefine struct Wide2 { Wide1 f0; Wide1 f1; Wide1 f2; } with { constructor() {} }\ndefine struct Wide3 { Wide2 f0; Wide2 f1; Wide2 f2; } with { constructor() {} }\npub fnc main(): int {\n    let mut p = Point(1, 2);\n    let q = Point(4, 6);\n    let mut r = Rectangle(p, q);\n    let snapshot: Rectangle = copy! r;\n    p.shift(10);\n    stdio.println(r.area());\n    r.shift(1);\n    stdio.println(r.area());\n    stdio.println(snapshot.area());\n    return 0;\n}",
+      "diagnostic_category": "bounded flattened slots",
+      "expected_code": "E_SOURCE_LIMIT",
+      "no_artifact": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "nested-parameter-snapshot-budget",
+      "expect": "reject",
+      "source": "define struct Point {\n    int x;\n    int y;\n} with {\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mut mtd shift(int n): void { self.x = self.x + n; self.y = self.y + n; }\n    mut mtd swap(int old_x, int old_y): void { self.x = old_y; self.y = old_x; return; }\n    mtd int • sum() {\n        return self.x + self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() -> bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\ndefine struct Rectangle {\n    Point top_left;\n    Point bottom_right;\n} with {\n    constructor(Point a, Point b) { self.top_left = a; self.bottom_right = b; }\n    mtd area() -> int { return (self.bottom_right.x - self.top_left.x) * (self.bottom_right.y - self.top_left.y); }\n    mut mtd shift(int n): void { self.top_left.x = self.top_left.x + n; }\n}\ndefine struct TooWide { int x; } with { constructor(Rectangle a0, Rectangle a1, Rectangle a2, Rectangle a3, Rectangle a4, Rectangle a5, Rectangle a6, Rectangle a7, Rectangle a8) { self.x = 1; } }\npub fnc main(): int {\n    let mut p = Point(1, 2);\n    let q = Point(4, 6);\n    let mut r = Rectangle(p, q);\n    let snapshot: Rectangle = copy! r;\n    p.shift(10);\n    stdio.println(r.area());\n    r.shift(1);\n    stdio.println(r.area());\n    stdio.println(snapshot.area());\n    return 0;\n}",
+      "diagnostic_category": "bounded flattened constructor parameters",
+      "no_artifact": true,
+      "status": "NOT_EXECUTED"
     }
   ]
 }

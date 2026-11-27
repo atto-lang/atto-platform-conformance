@@ -11,7 +11,7 @@ assert.ok(process.env.ATTOC, 'ATTOC must identify the real built compiler');
 const compiler = resolve(process.env.ATTOC);
 const registry = JSON.parse(await readFile(new URL('../contracts/struct-with-members-conformance-v1.json', import.meta.url), 'utf8'));
 assert.equal(registry.schema, 'atto.struct.with.members.conformance.v1');
-assert.equal(registry.cases.length, 26);
+assert.equal(registry.cases.length, 40);
 const work = await mkdtemp(join(tmpdir(), 'atto-struct-portable-'));
 const receipt = { positive: 0, negative_no_artifact: 0, category_verified: 0 };
 try {
@@ -27,6 +27,12 @@ try {
             assert.equal(build.status, 1, fixture.id + ': must reject with compiler diagnostic');
             assert.match(build.stderr, /E_[A-Z_]+/, fixture.id);
             await assert.rejects(stat(output), {code:'ENOENT'}, fixture.id);
+            if (fixture.expected_code) {
+                assert.match(fixture.expected_code, /^E_[A-Z_]+$/);
+                const codes = [...build.stderr.matchAll(/(?:^|\s)(E_[A-Z_]+):/gm)].map(m => m[1]);
+                assert.equal(codes[0], fixture.expected_code, fixture.id + ': primary diagnostic code');
+                receipt.category_verified++;
+            }
             receipt.negative_no_artifact++;
             console.log('PORTABLE_REJECT_NO_ARTIFACT', fixture.id, JSON.stringify(build.stderr.trim()));
             continue;
@@ -50,8 +56,9 @@ try {
         receipt.positive++;
         console.log('PORTABLE_ACTUAL_GUEST', fixture.id, JSON.stringify(stdout));
     }
-    assert.equal(receipt.positive, 11);
-    assert.equal(receipt.negative_no_artifact, 15);
+    assert.equal(receipt.positive, 14);
+    assert.equal(receipt.negative_no_artifact, 26);
+    assert.equal(receipt.category_verified, 9);
     console.log('PORTABLE_STRUCT_RECEIPT', JSON.stringify(receipt));
 } finally {
     await rm(work, {recursive:true, force:true});
