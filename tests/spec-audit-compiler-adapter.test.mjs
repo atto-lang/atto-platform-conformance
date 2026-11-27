@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtempSync,mkdirSync,writeFileSync,readFileSync,rmSync,chmodSync,renameSync,symlinkSync} from 'node:fs';
+import {mkdtempSync,mkdirSync,writeFileSync,readFileSync,rmSync,chmodSync,renameSync,symlinkSync,linkSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join,dirname} from 'node:path';
 import {createHash} from 'node:crypto';
@@ -10,10 +10,13 @@ const sha='a'.repeat(40);
 const negative='pub fnc main(): int { guard true { return 1; } else { return 2; } return 42; }\n';
 const positive='pub fnc main(): int { return 42; }\n';
 const control=negative.replace('guard true { return 1; } else { return 2; }','guard true { return 1; }');
-function config(){return {schema:'atto.compiler-probe/1',backend:'llvm',compilerHead:sha,compilerTree:sha,conformanceHead:sha,conformanceTree:sha,
-  timeoutMs:1000,resultChannel:'process-exit',compileArgv:['/usr/bin/true','{source}','{artifact}'],runArgv:['{artifact}'],caseIds:['positive','negative']};}
+function config(dir){return {schema:'atto.compiler-probe/1',backend:'llvm',compilerHead:sha,compilerTree:sha,conformanceHead:sha,conformanceTree:sha,
+  timeoutMs:1000,resultChannel:'process-exit',compileArgv:[join(dir,'mock-compiler'),'{source}','{artifact}'],runArgv:['{artifact}'],caseIds:['positive','negative']};}
 function withFixture(fn){const dir=mkdtempSync(join(tmpdir(),'atto-probe-source-'));
  try{
+  // The injected spawn is synthetic; use a private regular file as its identity.
+  // Never depend on a distro executable being single-linked or non-symlinked.
+  writeFileSync(join(dir,'mock-compiler'),'#!/bin/sh\nexit 99\n',{mode:0o700});
   const records=[['fixtures/guard-v1/positive.atto',positive],['fixtures/guard-v1/negative.atto',negative],['fixtures/spec-audit-v1/control.atto',control]];
   for(const [p,s] of records){mkdirSync(dirname(join(dir,p)),{recursive:true});writeFileSync(join(dir,p),s);}
   const manifest={schema:'atto.spec-audit-candidates/1',cases:[
@@ -32,15 +35,21 @@ function stub({diagnostic='error[GUARD_ELSE_FORBIDDEN]: expected semantic reject
   return {exit:0,stdout:'',stderr:''};
  };
 }
-function checkFail(name,mutate,error){test('mutation: '+name,()=>withFixture((dir,m)=>{const c=config();const s={spawn:stub(),root:dir};mutate(c,m,s,dir);assert.throws(()=>probe(m,c,s),error);}));}
+function checkFail(name,mutate,error){test('mutation: '+name,()=>withFixture((dir,m)=>{const c=config(dir);const s={spawn:stub(),root:dir};mutate(c,m,s,dir);assert.throws(()=>probe(m,c,s),error);}));}
 test('local probe cannot claim authenticated guest parity, even if mock commands match',()=>withFixture((dir,m)=>{
- const r=probe(m,config(),{spawn:stub(),root:dir});
+ const r=probe(m,config(dir),{spawn:stub(),root:dir});
  assert.equal(r.classification,'LOCAL_UNAUTHENTICATED_COMPILER_PROBE');
  assert.equal(r.guestParityCertified,false);assert.equal(r.githubJobStepsVerified,false);
  assert.equal(r.cases.length,2);
  assert.equal(r.cases[1].diagnosticClass,'GUARD_ELSE_FORBIDDEN');
 }));
 checkFail('unconfigured compiler denied',(c)=>c.compileArgv[0]='/not/installed/atto',/nonregular|ENOENT/);
+checkFail('symlinked compiler denied',(c,_m,_s,dir)=>{
+  const link=join(dir,'compiler-link');symlinkSync(c.compileArgv[0],link);c.compileArgv[0]=link;
+},/nonregular, linked/);
+checkFail('hardlinked compiler denied',(c,_m,_s,dir)=>{
+  linkSync(c.compileArgv[0],join(dir,'compiler-hardlink'));
+},/nonregular, linked/);
 checkFail('shell invocation denied',(c)=>c.compileArgv=['sh','-c','{source}','{artifact}'],/absolute executable/);
 checkFail('interpolated source token denied',(c)=>c.compileArgv[1]='--source={source}',/unrecognized command placeholder/);
 checkFail('noncanonical typed result denied',(_c,_m,s)=>s.spawn=stub({value:43}),/typed compiled guest result/);
