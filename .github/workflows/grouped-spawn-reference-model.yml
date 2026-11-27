@@ -1,0 +1,30 @@
+name: Grouped spawn reference model (source-free)
+on:
+  pull_request:
+    paths:
+      - 'contracts/actor-spawn-options-v1-oracle.mjs'
+      - '.github/workflows/grouped-spawn-reference-model.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  model:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify head and record tree
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          printf 'head=%s tree=%s\n' "$EXPECTED_HEAD" "$(git rev-parse HEAD^{tree})"
+      - name: Execute reference model assertions
+        run: |
+          node --version
+          node contracts/actor-spawn-options-v1-oracle.mjs
+          echo 'SOURCE_FREE_ONLY; NO COMPILER OR ACTOR RUNTIME PROOF'

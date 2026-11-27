@@ -1,0 +1,1 @@
+pub fnc main(): int { const Record<infer T> r=(a=1); const Record<T> s=(a=true); return 0; }

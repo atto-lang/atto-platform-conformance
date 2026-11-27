@@ -14,7 +14,7 @@ test("missing exit status cannot masquerade as a successful negative-compiler te
   assert.equal(r.verified, 0);
   assert.equal(r.failed, r.results.length);
   assert.ok(r.results.length > 0);
-  assert.deepEqual(new Set(r.results.map(x => x.status)), new Set(["INVALID_EXIT_STATUS"]));
+  assert.deepEqual(new Set(r.results.map(x => x.status)), new Set(["INVALID_EXIT_STATUS","UNSUPPORTED"]));
 });
 
 test("negative or noninteger exit status is rejected even with expected diagnostic", async () => {
@@ -26,7 +26,7 @@ test("negative or noninteger exit status is rejected even with expected diagnost
     assert.equal(r.verified, 0);
     assert.equal(r.ok, false);
     assert.ok(r.results.length > 0);
-    assert.deepEqual(new Set(r.results.map(x => x.status)), new Set(["INVALID_EXIT_STATUS"]));
+    assert.deepEqual(new Set(r.results.map(x => x.status)), new Set(["INVALID_EXIT_STATUS","UNSUPPORTED"]));
   }
 });
 
@@ -37,12 +37,13 @@ test("real nonzero integer exit with explicit unresolved-name diagnostic remains
   });
   assert.equal(r.ok, false);
   assert.equal(r.verified, 1);
+  assert.equal(r.unsupported, 3);
   assert.equal(r.failed, r.results.length - 1);
   const unresolved = r.results.find(x => x.id === "unresolved-identifier");
   assert.ok(unresolved, "missing unresolved-identifier fixture");
   assert.equal(unresolved.status, "VERIFIED");
   assert.deepEqual(
     new Set(r.results.filter(x => x.id !== "unresolved-identifier").map(x => x.status)),
-    new Set(["MISMATCH"])
+    new Set(["MISMATCH","UNSUPPORTED"])
   );
 });

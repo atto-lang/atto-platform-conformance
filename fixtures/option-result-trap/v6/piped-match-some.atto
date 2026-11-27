@@ -1,0 +1,10 @@
+declare type Bounded = int where self >= 1 and self <= 42;
+
+pub fnc main() -> int {
+    val Option<int> x = Some(42);
+
+    return trap! x.unwrap() |> match<int>  over
+        on Ok(n): int -> n,
+        on Err(): int -> 7,
+    end;
+}

@@ -1,0 +1,178 @@
+name: Restricted durable Counter compiled guest parity
+on:
+  pull_request:
+    paths:
+      - 'fixtures/actors/persistence/durable_counter_broker_v1.atto'
+      - 'tests/durable-counter-compiler-parity.mjs'
+      - 'tests/durable-counter-native-replay.mjs'
+      - 'tests/durable-counter-hdl-admission.mjs'
+      - '.github/workflows/durable-counter-compiler-parity.yml'
+permissions:
+  contents: read
+jobs:
+  rust-wasm-js:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Verify source fixture tree and fetch exact public compilers
+        env:
+          EXPECTED: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED"
+          test -z "$(git status --porcelain)"
+          echo "CONFORMANCE_TREE=$(git rev-parse HEAD^{tree})"
+          fetch_compiler() {
+            local backend="$1" sha="$2" tree="$3" dir="$RUNNER_TEMP/atto-$1"
+            mkdir "$dir"
+            git -C "$dir" init
+            GIT_TERMINAL_PROMPT=0 git -C "$dir" -c credential.helper= fetch --depth=1 "https://github.com/atto-lang/atto-source.$backend.git" "$sha"
+            git -C "$dir" checkout --detach FETCH_HEAD
+            git -C "$dir" fsck --full
+            test "$(git -C "$dir" rev-parse HEAD)" = "$sha"
+            test "$(git -C "$dir" rev-parse HEAD^{tree})" = "$tree"
+            test -z "$(git -C "$dir" status --porcelain)"
+          }
+          fetch_compiler rs 56a800ae26c26638c660c1777bf42e934e8ba55c 6852ecc22fd16c3050ee080cca0cd2851085d55d
+          fetch_compiler js a7be3f5afcc0ea404307b26b6fe33ae01e93eb5e 3b3d28fa264c5aec5ac4f4b97a748bb2531a9058
+      - name: Build compiler and execute both generated guests
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.85.1 --profile minimal
+          (cd "$RUNNER_TEMP/atto-rs" && cargo +1.85.1 build --locked --release --bin attoc)
+          node tests/durable-counter-compiler-parity.mjs "$RUNNER_TEMP/atto-rs/target/release/attoc" "$RUNNER_TEMP/atto-js/src/transpile-worker.mjs"
+
+  native-replay:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - backend: forge
+            sha: 99f90be6f272d6be60085b7e177eda8f95f96afa
+          - backend: cranelift
+            sha: 6919399e836f845a613f8a149f83d36a234b8e9f
+          - backend: llvm
+            sha: 6e99ebca842992014542ac91c09556f4d7f2e427
+          - backend: net
+            sha: 312e738a55bf9178e12c96e084510d8ada76044a
+          - backend: java
+            sha: 011e5d8c688a4072d1160112f7c10c8e69131d35
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Verify conformance head and immutable public compiler input
+        env:
+          EXPECTED: ${{ github.event.pull_request.head.sha }}
+          BACKEND: ${{ matrix.backend }}
+          SOURCE_SHA: ${{ matrix.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED"
+          test -z "$(git status --porcelain)"
+          echo "CONFORMANCE_TREE=$(git rev-parse HEAD^{tree})"
+          dir="$RUNNER_TEMP/atto-native"
+          mkdir "$dir"
+          git -C "$dir" init
+          GIT_TERMINAL_PROMPT=0 git -C "$dir" -c credential.helper= fetch --depth=1 "https://github.com/atto-lang/atto-source.$BACKEND.git" "$SOURCE_SHA"
+          git -C "$dir" checkout --detach FETCH_HEAD
+          git -C "$dir" fsck --full
+          test "$(git -C "$dir" rev-parse HEAD)" = "$SOURCE_SHA"
+          test -z "$(git -C "$dir" status --porcelain)"
+          echo "BACKEND=$BACKEND COMMIT=$SOURCE_SHA TREE=$(git -C "$dir" rev-parse HEAD^{tree})"
+      - name: Build Forge and execute native replay
+        if: matrix.backend == 'forge'
+        run: |
+          set -euo pipefail
+          dir="$RUNNER_TEMP/atto-native"
+          cmake -S "$dir" -B "$dir/build" -DCMAKE_BUILD_TYPE=Release
+          cmake --build "$dir/build" --target forge_scalar --parallel 2
+          (cd "$dir" && FORGE_SCALAR="$dir/build/forge_scalar" node tests/durable_counter_native.mjs)
+          node tests/durable-counter-native-replay.mjs forge "$dir/build/forge_scalar"
+      - name: Build Cranelift and execute native replay
+        if: matrix.backend == 'cranelift'
+        run: |
+          set -euo pipefail
+          dir="$RUNNER_TEMP/atto-native"
+          (cd "$dir" && cargo build --locked)
+          (cd "$dir" && ATTO_CRANELIFT_COMPILER="$dir/target/debug/orescranelift" node tests/durable_counter_object.mjs)
+          node tests/durable-counter-native-replay.mjs cranelift "$dir/target/debug/orescranelift"
+      - name: Build LLVM and execute native replay
+        if: matrix.backend == 'llvm'
+        run: |
+          set -euo pipefail
+          dir="$RUNNER_TEMP/atto-native"
+          sudo apt-get update -qq
+          sudo apt-get install -y clang lld llvm-dev cmake ninja-build
+          cmake -G Ninja -S "$dir" -B "$dir/build" -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON -DLLVM_DIR="$(llvm-config --cmakedir)"
+          cmake --build "$dir/build" --target oreslang-llvmc --parallel 2
+          (cd "$dir" && ATTO_LLVM_COMPILER="$dir/build/oreslang-llvmc" node tests/durable_counter_llvm_native.mjs)
+          node tests/durable-counter-native-replay.mjs llvm "$dir/build/oreslang-llvmc"
+          node tests/durable-counter-native-replay.mjs llvm-wasm "$dir/build/oreslang-llvmc"
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        if: matrix.backend == 'net'
+        with:
+          dotnet-version: '10.0.x'
+      - name: Build .NET NativeAOT compiler and execute native replay
+        if: matrix.backend == 'net'
+        run: |
+          set -euo pipefail
+          dir="$RUNNER_TEMP/atto-native"
+          sudo apt-get update -qq
+          sudo apt-get install -y clang zlib1g-dev binutils
+          (cd "$dir" && dotnet publish compiler/Ores.Net.Compiler/Ores.Net.Compiler.csproj -c Release -r linux-x64 -o "$RUNNER_TEMP/atto-net-compiler" -warnaserror)
+          (cd "$dir" && bash verification/assert-linux-native-release.sh "$RUNNER_TEMP/atto-net-compiler/oresnet")
+          (cd "$dir" && ATTO_NET_COMPILER="$RUNNER_TEMP/atto-net-compiler/oresnet" node verification/durable_counter_nativeaot.mjs)
+          node tests/durable-counter-native-replay.mjs net "$RUNNER_TEMP/atto-net-compiler/oresnet"
+      - uses: graalvm/setup-graalvm@27b360dbb857524eaf0b4c4cef364d38e5b4f173
+        if: matrix.backend == 'java'
+        with:
+          version: '25.3'
+          java-version: '25'
+          distribution: graalvm
+      - name: Build Java compiler candidate and execute JVM and Native Image replay
+        if: matrix.backend == 'java'
+        run: |
+          set -euo pipefail
+          dir="$RUNNER_TEMP/atto-native"
+          (
+            cd "$dir"
+            mvn -B -ntp -DskipTests package
+            mvn -B -ntp -q dependency:build-classpath -Dmdep.outputFile=target/conformance-classpath.txt
+          )
+          cp="$dir/target/classes:$(cat "$dir/target/conformance-classpath.txt")"
+          (cd "$dir" && ATTO_JAVA_CP="$cp" ATTO_TEST_NATIVE_IMAGE=1 node tests/durable_counter_jvm_native.mjs)
+          node tests/durable-counter-native-replay.mjs java "$cp"
+  hdl-target-denial:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Verify exact public HDL source and test target-specific denial
+        env:
+          EXPECTED: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED"
+          test -z "$(git status --porcelain)"
+          dir="$RUNNER_TEMP/atto-hdl"
+          git init "$dir"
+          GIT_TERMINAL_PROMPT=0 git -C "$dir" -c credential.helper= fetch --depth=1 https://github.com/atto-lang/atto-source.hdl.git d52bdc72aeb6c1972af856665b95165c1e7aaebb
+          git -C "$dir" checkout --detach FETCH_HEAD
+          git -C "$dir" fsck --full
+          test "$(git -C "$dir" rev-parse HEAD)" = d52bdc72aeb6c1972af856665b95165c1e7aaebb
+          test "$(git -C "$dir" hash-object src/compiler.mjs)" = 7c10d5219dd0dd01650d70e076caf0244958603e
+          test "$(git -C "$dir" hash-object src/closed_quantity.mjs)" = e2e60448dc9674b0459910565041132d6f904659
+          test -z "$(git -C "$dir" status --porcelain)"
+          (cd "$dir" && node --test tests/durable-actor-admission.test.mjs)
+          node tests/durable-counter-hdl-admission.mjs "$dir/src/compiler.mjs"

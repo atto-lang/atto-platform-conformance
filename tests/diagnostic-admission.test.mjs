@@ -44,8 +44,9 @@ test("nonzero process with an unrelated error and echoed source cannot verify ne
  };
  const result=await runSuite({backend:"java",argv,sourceSha:sha,spawn});
  assert.equal(result.ok,false);
- assert.equal(result.verified,1);
- assert.equal(result.failed,1);
+ assert.equal(result.verified,2);
+ assert.equal(result.unsupported,3);
+ assert.equal(result.failed,4);
  assert.equal(result.results[1].status,"MISMATCH");
 });
 
@@ -57,7 +58,9 @@ test("explicit unresolved-name diagnostic verifies negative but unrelated failur
    : {status:0,signal:null,stdout:"",stderr:""};
  };
  const result=await runSuite({backend:"llvm",argv,sourceSha:sha,spawn});
- assert.equal(result.ok,true);
- assert.equal(result.verified,2);
- assert.equal(result.failed,0);
+ assert.equal(result.ok,false); // complete manifest remains unsupported
+ assert.equal(result.verified,3);
+ assert.equal(result.unsupported,3);
+ assert.equal(result.failed,3);
+ assert.equal(result.results.find(x=>x.id==='unresolved-identifier').status,'VERIFIED');
 });

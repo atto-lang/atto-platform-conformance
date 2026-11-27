@@ -1,0 +1,5 @@
+pub fnc main(): int {
+  const Record<infer R> r=(a=-1);
+  const Record<R> s=(a=43);
+  return r.a+s.a;
+}
