@@ -1,0 +1,234 @@
+{
+  "schema": "atto.denote-type-expression-v1",
+  "status": "CANDIDATE_SOURCE_NOT_EXECUTED",
+  "spec": "https://github.com/atto-lang/atto-spec/pull/311",
+  "sourceEncoding": "UTF-8 exact inline source, LF newline; runner must preserve bytes when materializing .atto",
+  "evidencePolicy": "Compile exact source, run positive guests, require negative phase-specific diagnostics and no executable artifact. Unsupported and not_executed are never pass. Record compiler SHA/tree, runner jobs and steps, target, toolchain and source blob SHA. Formatter independently round-trips and preserves declare/define.",
+  "backendResults": {
+    "atto-lang/atto-source.rs": "not_executed",
+    "atto-lang/atto-source.atto": "not_executed",
+    "atto-lang/atto-source.net": "not_executed",
+    "atto-lang/atto-source.hdl": "not_executed",
+    "atto-lang/atto-source.java": "not_executed",
+    "atto-lang/atto-source.realtime": "not_executed",
+    "atto-lang/atto-source.llvm": "not_executed",
+    "atto-lang/atto-source.js": "not_executed",
+    "atto-lang/atto-source.forge": "not_executed",
+    "atto-lang/atto-source.wasm": "not_executed",
+    "atto-lang/atto-source.cranelift": "not_executed"
+  },
+  "cases": [
+    {
+      "id": "transparent-scalar",
+      "source": "denote type Age = int;\npub fnc main(): int { const Age a = 42; const int b = a; const Age c = b; return c; }\n",
+      "expected": {
+        "compile": "accept",
+        "exit": 42
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "literal-union-admission",
+      "source": "denote type Dice = 5 | 6 | 7;\npub fnc main(): int { const Dice a = 5; return 42; }\n",
+      "expected": {
+        "compile": "accept",
+        "exit": 42
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "literal-union-rejection",
+      "source": "denote type Dice = 5 | 6 | 7;\npub fnc main(): int { const Dice a = 8; return 42; }\n",
+      "expected": {
+        "compile": "reject",
+        "reason": "singleton constraint",
+        "noArtifact": true
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "forward-alias",
+      "source": "denote type A = B;\ndenote type B = int;\npub fnc main(): int { const A a = 42; return a; }\n",
+      "expected": {
+        "compile": "accept",
+        "exit": 42
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "public-alias",
+      "source": "denote pub type A = int;\npub fnc main(): int { const A a = 42; return a; }\n",
+      "expected": {
+        "compile": "accept",
+        "exit": 42
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "package-alias",
+      "source": "denote pub[pkg] type A = int;\npub fnc main(): int { const A a = 42; return a; }\n",
+      "expected": {
+        "compile": "accept",
+        "exit": 42
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "generic-tuple",
+      "source": "denote type PairOf<T> = (T, T);\npub fnc main(): int { const PairOf<int> p = (20, 22); return 42; }\n",
+      "expected": {
+        "compile": "accept",
+        "exit": 42
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "comments-and-strings",
+      "source": "// denote type Ignored = bool;\npub fnc main(): int { const String s = \"denote type Ignored = bool;\"; return 42; }\n",
+      "expected": {
+        "compile": "accept",
+        "exit": 42
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "legacy-pair-control",
+      "source": "declare type A = int;\ndefine type A as int;\npub fnc main(): int { const A a = 42; return a; }\n",
+      "expected": {
+        "compile": "accept",
+        "exit": 42
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "missing-rhs",
+      "source": "denote type A = ;\npub fnc main(): int { return 42; }\n",
+      "expected": {
+        "compile": "reject",
+        "reason": "syntax",
+        "noArtifact": true
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "missing-semicolon",
+      "source": "denote type A = int\npub fnc main(): int { return 42; }\n",
+      "expected": {
+        "compile": "reject",
+        "reason": "syntax",
+        "noArtifact": true
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "wrong-separator",
+      "source": "denote type A as int;\npub fnc main(): int { return 42; }\n",
+      "expected": {
+        "compile": "reject",
+        "reason": "syntax",
+        "noArtifact": true
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "wrong-entity",
+      "source": "denote actor Worker;\npub fnc main(): int { return 42; }\n",
+      "expected": {
+        "compile": "reject",
+        "reason": "syntax",
+        "noArtifact": true
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "value-decl",
+      "source": "denote const a = 42;\npub fnc main(): int { return 42; }\n",
+      "expected": {
+        "compile": "reject",
+        "reason": "syntax",
+        "noArtifact": true
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "duplicate-alias",
+      "source": "denote type A = int;\ndenote type A = int;\npub fnc main(): int { return 42; }\n",
+      "expected": {
+        "compile": "reject",
+        "reason": "duplicate",
+        "noArtifact": true
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "builtin-collision",
+      "source": "denote type int = bool;\npub fnc main(): int { return 42; }\n",
+      "expected": {
+        "compile": "reject",
+        "reason": "builtin collision",
+        "noArtifact": true
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "unresolved",
+      "source": "denote type A = NoSuchType;\npub fnc main(): int { return 42; }\n",
+      "expected": {
+        "compile": "reject",
+        "reason": "unresolved type",
+        "noArtifact": true
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "direct-cycle",
+      "source": "denote type A = A;\npub fnc main(): int { return 42; }\n",
+      "expected": {
+        "compile": "reject",
+        "reason": "alias cycle",
+        "noArtifact": true
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "mutual-cycle",
+      "source": "denote type A = B;\ndenote type B = A;\npub fnc main(): int { return 42; }\n",
+      "expected": {
+        "compile": "reject",
+        "reason": "alias cycle",
+        "noArtifact": true
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "nominal-collision",
+      "source": "declare actor A;\ndenote type A = int;\npub fnc main(): int { return 42; }\n",
+      "expected": {
+        "compile": "reject",
+        "reason": "duplicate nominal slot",
+        "noArtifact": true
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "generic-arity",
+      "source": "denote type Alias<T> = T;\npub fnc main(): int { const Alias<int, bool> a = 42; return 42; }\n",
+      "expected": {
+        "compile": "reject",
+        "reason": "generic arity",
+        "noArtifact": true
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "runtime-expression",
+      "source": "denote type A = 5 + 6;\npub fnc main(): int { return 42; }\n",
+      "expected": {
+        "compile": "reject",
+        "reason": "not a type expression",
+        "noArtifact": true
+      },
+      "status": "not_executed"
+    }
+  ]
+}
