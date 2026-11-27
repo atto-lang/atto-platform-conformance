@@ -1460,6 +1460,21 @@
         "scheduled-unwind-v1-chromium-worker"
       ],
       "limitation": "Focused exact candidate steps passed; trusted host handoff is not general guest ownership, cross-realm authentication or main parity."
+    },
+    "rust_compiler_candidate": {
+      "backend": "atto-source.rs",
+      "pr": "https://github.com/atto-lang/atto-source.rs/pull/742",
+      "compiler_head": "1ec0ac459fb9975e54e9fd74884c137e7f64ee23",
+      "compiler_tree": "7eeb6db5589a421fd43d72c4617f315eb1b9d232",
+      "job": "https://github.com/ores-dummy-org-ruby-graal-1/atto-ci/actions/runs/45949121647/job/140340606146",
+      "shared_js_head": "631739c7127e42455fb7f7a31c6b0265f91d1041",
+      "shared_js_tree": "a55f5d345a78c279b8fd4c9ccf0dc56597f1fbfd",
+      "profiles": [
+        "owned-unwind-v1-native-compiler-wasm",
+        "owned-unwind-v1-node-worker",
+        "owned-unwind-v1-chromium-worker"
+      ],
+      "limitation": "Exact candidate compiler and real guest steps passed, not default compiler or main parity. One invocation per Wasm instance, numeric trusted-host credentials, no general MIR or actor STOP deadlines. Rust and JS share the claim domain, not full arbitrary guest interop."
     }
   }
 }

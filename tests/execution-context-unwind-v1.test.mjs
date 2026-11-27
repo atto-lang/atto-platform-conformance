@@ -179,3 +179,16 @@ test('owned Future fixture pins preserve historical unowned receipts and record 
   assert.deepEqual(f.compiler_candidate.profiles,['scheduled-unwind-v1-node-worker','scheduled-unwind-v1-chromium-worker']);
   assert.equal(registry.cases.find(c=>c.id===f.case_id).backend_statuses['atto-source.js'],'not_executed');
 });
+
+test('Rust candidate compiles the same owned fixtures and shares JS claims without promoting main matrix',()=>{
+ const owned=registry.owned_future_candidate;
+ const rust=owned.rust_compiler_candidate;
+ assert.equal(rust.backend,'atto-source.rs');
+ assert.match(rust.compiler_head,/^[a-f0-9]{40}$/);
+ assert.match(rust.compiler_tree,/^[a-f0-9]{40}$/);
+ assert.equal(rust.shared_js_head,owned.compiler_candidate.compiler_head);
+ assert.equal(rust.shared_js_tree,owned.compiler_candidate.compiler_tree);
+ assert.match(rust.job,/^https:\/\/github\.com\/ores-dummy-org-ruby-graal-1\/atto-ci\/actions\/runs\/\d+\/job\/\d+$/);
+ assert.deepEqual(rust.profiles,['owned-unwind-v1-native-compiler-wasm','owned-unwind-v1-node-worker','owned-unwind-v1-chromium-worker']);
+ assert.equal(registry.cases.find(c=>c.id===owned.case_id).backend_statuses['atto-source.rs'],'not_executed');
+});
