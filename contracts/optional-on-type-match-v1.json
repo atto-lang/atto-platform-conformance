@@ -1,0 +1,301 @@
+{
+  "schema": "atto.optional-on-type-match.v1",
+  "status": "target-not-executed",
+  "semantics": "Only is may omit on; on is has identical meaning. Literal before nominal type is ordered specialization. Unreachable arms remain diagnosed. Unsupported types must fail closed, not count as positive parity. Membership arms use in collection; type lists use is in [T,U]; no ons. All added vectors are targets, not execution receipts. Pattern constants and arrays are compile-time-only; no runtime type objects.",
+  "cases": [
+    {
+      "id": "union-literal",
+      "source": "fnc choose(int | string value): int { return match value over { on 42 -> 100; is int -> -20; on _ -> 0; }; }",
+      "expected": [
+        {
+          "input": 42,
+          "result": 100
+        },
+        {
+          "input": 7,
+          "result": -20
+        },
+        {
+          "input": "other",
+          "result": 0
+        }
+      ]
+    },
+    {
+      "id": "union-pipe",
+      "source": "fnc choose(int | string value): int { return value |> match over { on 42 -> 100; is int -> -20; on _ -> 0; }; }",
+      "expected": [
+        {
+          "input": 42,
+          "result": 100
+        },
+        {
+          "input": 7,
+          "result": -20
+        },
+        {
+          "input": "other",
+          "result": 0
+        }
+      ]
+    },
+    {
+      "id": "scalar-await",
+      "source": "pub fnc main(): int { return 7 |> await |> match over { on 42 -> 100; is int -> -20; }; }",
+      "exit_or_return": -20
+    },
+    {
+      "id": "scalar-on-is",
+      "source": "pub fnc main(): int { return match 7 over { on 42 -> 100; on is int -> -20; }; }",
+      "exit_or_return": -20
+    },
+    {
+      "id": "bare-literal",
+      "source": "pub fnc main(): int { return match 7 over { 7 -> 42; on _ -> 0; }; }",
+      "reject": "syntax"
+    },
+    {
+      "id": "bare-wildcard",
+      "source": "pub fnc main(): int { return match 7 over { _ -> 0; }; }",
+      "reject": "syntax"
+    },
+    {
+      "id": "empty-type",
+      "source": "pub fnc main(): int { return match 7 over { is -> 42; }; }",
+      "reject": "syntax"
+    },
+    {
+      "id": "unreachable-fallback",
+      "source": "pub fnc main(): int { return match 7 over { is int -> 42; on _ -> 0; }; }",
+      "reject": "unreachable"
+    },
+    {
+      "id": "membership-literal-hit",
+      "source": "pub fnc main(): int { return match 2 over in [0, 1, 2] -> 42, on _ -> 0 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "membership-literal-miss",
+      "source": "pub fnc main(): int { return match 7 over in [0, 1, 2] -> 0, on _ -> 42 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "membership-priority",
+      "source": "pub fnc main(): int { return match 2 over on 2 -> 42, in [1, 2, 3] -> 0, on _ -> 0 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "membership-guard",
+      "source": "pub fnc main(): int { return match 2 over in [1, 2] when false -> 0, in [1, 2] -> 42, on _ -> 0 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "membership-duplicate",
+      "source": "pub fnc main(): int { return match 2 over in [2, 2] -> 42, on _ -> 0 end; }",
+      "reject": "duplicate"
+    },
+    {
+      "id": "membership-empty",
+      "source": "pub fnc main(): int { return match 2 over in [] -> 0, on _ -> 42 end; }",
+      "reject": "unreachable"
+    },
+    {
+      "id": "type-list-hit",
+      "source": "pub fnc main(): int { return match 7 over is in [int, string] -> 42 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "type-list-union",
+      "source": "fnc choose(int | string value): int { return match value over is in [int, string] -> 42 end; }",
+      "expected": [
+        {
+          "input": 7,
+          "result": 42
+        },
+        {
+          "input": "text",
+          "result": 42
+        }
+      ]
+    },
+    {
+      "id": "type-list-duplicate",
+      "source": "pub fnc main(): int { return match 7 over is in [int, int] -> 42 end; }",
+      "reject": "duplicate"
+    },
+    {
+      "id": "type-list-empty",
+      "source": "pub fnc main(): int { return match 7 over is in [] -> 42, on _ -> 0 end; }",
+      "reject": "syntax"
+    },
+    {
+      "id": "type-list-value",
+      "source": "pub fnc main(): int { return match 7 over is in [int, 42] -> 42, on _ -> 0 end; }",
+      "reject": "type"
+    },
+    {
+      "id": "type-list-shadow",
+      "source": "pub fnc main(): int { return match 7 over is in [int, string] -> 42, is int -> 0 end; }",
+      "reject": "unreachable"
+    },
+    {
+      "id": "no-ons",
+      "source": "pub fnc main(): int { return match 7 over ons [7, 8] -> 42, on _ -> 0 end; }",
+      "reject": "syntax"
+    },
+    {
+      "id": "membership-runtime-array",
+      "source": "pub fnc main(): int { val allowed = [0, 1, 2]; return match 2 over in allowed -> 42, on _ -> 0 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "membership-runtime-returned-array",
+      "source": "fnc values(): Array<int> { return [1, 2]; } pub fnc main(): int { return match 2 over in values() -> 42, on _ -> 0 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "membership-unreached-collection",
+      "source": "fnc values(int n): Array<int> { return [1 / n]; } pub fnc main(): int { return match 2 over on 2 -> 42, in values(0) -> 0, on _ -> 0 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "membership-unreached-guard",
+      "source": "fnc bad(int n): bool { return 1 / n eq 1; } pub fnc main(): int { return match 7 over in [1, 2] when bad(0) -> 0, on _ -> 42 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "membership-runtime-nonexhaustive",
+      "source": "pub fnc main(): int { val allowed = [1, 2]; return match 2 over in allowed -> 42 end; }",
+      "reject": "non-exhaustive"
+    },
+    {
+      "id": "type-list-canonical-alias",
+      "source": "pub fnc main(): int { return match 7 over is in [String, string] -> 42, on _ -> 0 end; }",
+      "reject": "duplicate"
+    },
+    {
+      "id": "type-list-guard-fallthrough",
+      "source": "pub fnc main(): int { return match 7 over is in [int, bool] when false -> 0, is int -> 42 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "type-list-conditional",
+      "source": "pub fnc main(): int { if 7 is in [int, bool] then return 42; fi return 0; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "pattern-constant-literal",
+      "source": "const Pattern p = on 5; pub fnc main(): int { return match 5 over on p -> 42, on _ -> 0 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "pattern-constant-membership",
+      "source": "const Pattern p = in [5, 6, 7]; pub fnc main(): int { return match 6 over on p -> 42, on _ -> 0 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "pattern-array",
+      "source": "const Pattern[] z = [on 1, in [2, 3]]; pub fnc main(): int { return match 3 over in z -> 42, on _ -> 0 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "pattern-array-type-only",
+      "source": "const Pattern[] z = [is int, is bool]; pub fnc main(): int { return match 7 over is in z -> 42 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "pattern-inline",
+      "source": "pub fnc main(): int { return match 2 over in [on 1, in [2, 3]] -> 42, on _ -> 0 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "pattern-type-alias",
+      "source": "type X = int | bool; const Pattern p = is X; pub fnc main(): int { return match 7 over on p -> 42 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "pattern-mixed-type-only-reject",
+      "source": "const Pattern[] z = [is int, on 1]; pub fnc main(): int { return match 7 over is in z -> 42 end; }",
+      "reject": "type"
+    },
+    {
+      "id": "pattern-runtime-escape",
+      "source": "const Pattern p = on 5; fnc use(Pattern x): int { return 42; } pub fnc main(): int { return use(p); }",
+      "reject": "compile-time"
+    },
+    {
+      "id": "pattern-runtime-capture",
+      "source": "fnc f(int n): int { const Pattern p = on n; return match n over on p -> 42, on _ -> 0 end; }",
+      "reject": "compile-time"
+    },
+    {
+      "id": "pattern-cycle",
+      "source": "const Pattern p = on q; const Pattern q = on p; pub fnc main(): int { return 42; }",
+      "reject": "cycle"
+    },
+    {
+      "id": "pattern-array-mixed-values",
+      "source": "const Pattern[] z = [on 1, 2]; pub fnc main(): int { return 42; }",
+      "reject": "type"
+    },
+    {
+      "id": "pattern-array-shadowed-arm",
+      "source": "const Pattern[] z = [on 1, on 2]; pub fnc main(): int { return match 2 over in z -> 42, on 2 -> 0, on _ -> 0 end; }",
+      "reject": "unreachable"
+    },
+    {
+      "id": "pattern-bool-exhaustive",
+      "source": "const Pattern[] z = [on true, on false]; pub fnc main(): int { return match false over in z -> 42 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "pattern-mixed-bool-int",
+      "source": "const Pattern[] z = [on 1, on true]; pub fnc main(): int { return match true over in z -> 42, on _ -> 0 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "pattern-guard-fallback",
+      "source": "const Pattern[] z = [on 1, in [2,3]]; pub fnc main(): int { return match 2 over in z when false -> 0, in z -> 42, on _ -> 0 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "pattern-type-alias-chain",
+      "source": "type X = int; type Y = X | bool; const Pattern[] z = [is Y]; pub fnc main(): int { return match 7 over is in z -> 42 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "pattern-name-shadowing",
+      "source": "const Pattern p = on 5; fnc f(int p): int { return match p over on p -> 42, on _ -> 0 end; } pub fnc main(): int { return f(5); }",
+      "reject": "ambiguous"
+    },
+    {
+      "id": "pattern-type-alias-cycle",
+      "source": "type X = Y; type Y = X; const Pattern p = is X; pub fnc main(): int { return 42; }",
+      "reject": "cycle"
+    },
+    {
+      "id": "pattern-category-array-as-single",
+      "source": "const Pattern[] z = [on 1]; pub fnc main(): int { return match 1 over on z -> 42, on _ -> 0 end; }",
+      "reject": "type"
+    },
+    {
+      "id": "pattern-category-single-as-array",
+      "source": "const Pattern p = on 1; pub fnc main(): int { return match 1 over in p -> 42, on _ -> 0 end; }",
+      "reject": "type"
+    }
+  ],
+  "backend_status": {
+    "atto-source.java": "not_executed",
+    "atto-source.llvm": "not_executed",
+    "atto-source.net": "not_executed",
+    "atto-source.wasm": "not_executed",
+    "atto-source.forge": "not_executed",
+    "atto-source.cranelift": "not_executed",
+    "atto-source.rs": "not_executed",
+    "atto-source.js": "not_executed",
+    "atto-source.hdl": "not_executed",
+    "atto-source.atto": "not_executed",
+    "atto-source.realtime": "not_executed"
+  },
+  "evidence_scope": "Specification target vectors only; each backend requires real compiler invocation, actual guest result or positioned no-artifact rejection, exact compiler head/tree and source identity, and executed test steps. No host-only or zero-step promotion."
+}
