@@ -1,0 +1,37 @@
+name: Pointer slot lifecycle v2 (HOST_ONLY)
+on:
+  pull_request:
+  push:
+    branches:
+      - draft/pointer-slot-lifecycle-model-20261126
+permissions:
+  contents: read
+jobs:
+  lifecycle-model:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact physical checkout and model blob
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          git rev-parse 'HEAD^{tree}'
+          test "$(git hash-object models/pointer_slot_lifecycle_v2.cpp)" = e7280597e1b4a85af17cb33777fe8f40920c6a16
+      - name: Execute optimized model
+        run: |
+          set -euo pipefail
+          g++ -std=c++20 -O2 -Wall -Wextra -Werror -pedantic models/pointer_slot_lifecycle_v2.cpp -o "$RUNNER_TEMP/gcc-pointer-model"
+          test "$("$RUNNER_TEMP/gcc-pointer-model")" = "27 lifecycle checks passed"
+          echo "HOST_ONLY: GCC 27 lifecycle checks passed"
+      - name: Execute sanitizer model
+        run: |
+          set -euo pipefail
+          clang++ -std=c++20 -O1 -g -Wall -Wextra -Werror -pedantic -fsanitize=address,undefined -fno-sanitize-recover=all models/pointer_slot_lifecycle_v2.cpp -o "$RUNNER_TEMP/clang-pointer-model"
+          test "$("$RUNNER_TEMP/clang-pointer-model")" = "27 lifecycle checks passed"
+          echo "HOST_ONLY: Clang ASan+UBSan 27 lifecycle checks passed"
