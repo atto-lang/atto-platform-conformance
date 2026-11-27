@@ -229,6 +229,44 @@
         "noArtifact": true
       },
       "status": "not_executed"
+    },
+    {
+      "id": "scalar-val-chain",
+      "source": "denote type Count = int;\ndenote type Total = Count;\nfnc identity(Count n): Total { return n; }\npub fnc main(): Total { val Count a = 42; return identity(a); }\n",
+      "expected": {
+        "compile": "accept",
+        "exit": 42
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "scalar-val-mismatch",
+      "source": "denote type Count = int;\npub fnc main(): int { val Count a = true; return a; }\n",
+      "expected": {
+        "compile": "reject",
+        "reason": "scalar type mismatch",
+        "noArtifact": true
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "boolean-parameter",
+      "source": "denote type Flag = bool;\nfnc identity(Flag b): Flag { return b; }\npub fnc main(): int { return identity(true) ? 42 : 0; }\n",
+      "expected": {
+        "compile": "accept",
+        "exit": 42
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "boolean-parameter-mismatch",
+      "source": "denote type Flag = bool;\nfnc identity(Flag b): Flag { return b; }\npub fnc main(): int { return identity(42) ? 42 : 0; }\n",
+      "expected": {
+        "compile": "reject",
+        "reason": "scalar argument type mismatch",
+        "noArtifact": true
+      },
+      "status": "not_executed"
     }
   ]
 }
