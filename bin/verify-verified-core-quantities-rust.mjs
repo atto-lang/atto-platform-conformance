@@ -18,7 +18,7 @@ assert.equal(manifest.schemaVersion, 1);
 assert.equal(manifest.profile, "verified-core-quantities-v1");
 const work = mkdtempSync(join(tmpdir(), "atto-quantity-rust-"));
 const results = [];
-const codes = {integerOverflow:1, divisionByZero:2};
+const codes = {integerOverflow:1, divisionByZero:2, refinementViolation:7};
 try {
   const {fixtures,cases} = expandQuantityCases(original, work, manifest);
   for (const {source,expected} of cases) {
@@ -36,7 +36,7 @@ try {
       assert.equal(diagnostics.length, 1, source + ": " + build.stderr);
       assert.ok(diagnostics[0].startsWith(prefix), source + ": " + build.stderr);
       const category = diagnostics[0].slice(prefix.length).match(/^\d+:\d+: ([A-Z0-9_]+): /)?.[1];
-      assert.equal(category, expected.category, source + ": " + build.stderr);
+      if(expected.category===null)assert.ok(category,source+": "+build.stderr);else assert.equal(category, expected.category, source + ": " + build.stderr);
       assert.equal(existsSync(output), false, source + " published rejected artifact");
       results.push({source,sourceSha256:sha(sourceBytes),observed:expected});
     } else {
@@ -50,7 +50,7 @@ try {
         assert.equal(instance.exports.main(), BigInt(expected.decimal), source);
         assert.equal(instance.exports.panic_code.value, 0, source);
       } else {
-        assert.equal(expected.kind, "arithmeticFailure", source);
+        assert.ok(["arithmeticFailure","refinementFailure"].includes(expected.kind),source);
         assert.ok(Object.hasOwn(codes, expected.category), source);
         assert.throws(() => instance.exports.main(), WebAssembly.RuntimeError, source);
         assert.equal(instance.exports.panic_code.value, codes[expected.category], source);

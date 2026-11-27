@@ -13,19 +13,19 @@ const manifest=JSON.parse(readFileSync(join(original,"cases.json"),"utf8"));
 assert.equal(manifest.schemaVersion,1);
 assert.equal(manifest.profile,profile);
 const work=mkdtempSync(join(tmpdir(),"atto-quantity-js-"));
-const errors={divisionByZero:"division_by_zero",integerOverflow:"integer_overflow"};
+const errors={divisionByZero:"division_by_zero",integerOverflow:"integer_overflow",refinementViolation:"refinement_violation"};
 try{
  const {fixtures,cases}=expandQuantityCases(original,work,manifest);
  for(const {source,expected} of cases){
   assert.match(source,/^[a-z0-9-]+\.atto$/);
   const input=readFileSync(join(fixtures,source),"utf8");
   if(expected.kind==="diagnostic"){
-   assert.throws(()=>compileProgramV2(input),err=>String(err.message).includes(expected.category+":"),source);
+   assert.throws(()=>compileProgramV2(input),err=>expected.category===null?String(err.message).length>0:String(err.message).includes(expected.category+":"),source);
   }else{
    const emitted=compileProgramV2(input);
    const m=await import("data:text/javascript;base64,"+Buffer.from(emitted).toString("base64"));
    assert.deepEqual(Object.keys(m),["main"],source);
-   if(expected.kind==="arithmeticFailure"){
+   if(expected.kind==="arithmeticFailure"||expected.kind==="refinementFailure"){
     assert.ok(errors[expected.category],source);
     assert.throws(()=>m.main(),err=>err.code===errors[expected.category],source);
    }else{

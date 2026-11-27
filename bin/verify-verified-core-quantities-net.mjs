@@ -98,7 +98,7 @@ try {
     const compiled = run([compiler, "compile", join(fixtures, source), "--out", assembly]);
     if (expected.kind === "diagnostic") {
       assert.notEqual(compiled.status, 0, source);
-      assert.ok(compiled.stderr.includes(expected.category + ":"), source + ": " + compiled.stderr);
+      if(expected.category===null)assert.ok(compiled.stderr.trim().length>0,source);else assert.ok(compiled.stderr.includes(expected.category + ":"), source + ": " + compiled.stderr);
       assert.equal(existsSync(assembly), false, source + " emitted a rejected assembly");
     } else {
       assert.equal(compiled.status, 0, source + ": " + compiled.stderr);

@@ -11,7 +11,8 @@ import {expandQuantityCases} from "../lib/verified-core-quantity-expansion.mjs";
 const [checkout,shardText,countText]=process.argv.slice(2);
 const shard=Number(shardText),count=Number(countText);
 assert.ok(checkout && Number.isInteger(shard) && Number.isInteger(count) && count>0 && count<=16 && shard>=0 && shard<count);
-assert.equal(process.env.ATTO_VERIFIED_CAST_ASCRIPTION,"1");
+const bindings=process.env.ATTO_VERIFIED_TYPED_BINDINGS==="1";
+if(!bindings)assert.equal(process.env.ATTO_VERIFIED_CAST_ASCRIPTION,"1");
 const root=resolve(checkout),work=mkdtempSync(join(tmpdir(),"atto-nativeaot-quantity-"));
 const profile="verified-core-quantities-v1";
 const original=fileURLToPath(new URL("../fixtures/"+profile+"/",import.meta.url));
@@ -27,10 +28,10 @@ const rid="linux-x64",base=["-c","Release","-r",rid,"-p:PublishAot=true","-warna
 const compilerDir=join(work,"compiler"),compiler=join(compilerDir,"oresnet");
 const host=join(root,"host/Ores.Net.NativeHost/Ores.Net.NativeHost.csproj");
 const verify=exe=>ok(run("bash",["verification/assert-linux-native-release.sh",exe]),exe);
-const errors={divisionByZero:"Oreslang division by zero",integerOverflow:"Oreslang arithmetic overflow"};
+const errors={divisionByZero:"Oreslang division by zero",integerOverflow:"Oreslang arithmetic overflow",refinementViolation:"Oreslang refinement check failed"};
 try{
  const {fixtures,cases}=expandQuantityCases(original,work,manifest);
- assert.equal(cases.length,151);
+ assert.equal(cases.length,bindings?36:151);
  const selected=cases.filter((_,i)=>i%count===shard);
  assert.ok(selected.length>0);
  ok(run("dotnet",["publish","compiler/Ores.Net.Compiler/Ores.Net.Compiler.csproj",...base,"-o",compilerDir]),"NativeAOT compiler");
@@ -44,9 +45,10 @@ try{
   if(expected.kind==="diagnostic"){
    assert.equal(compiled.status,1,source+": "+compiled.stderr);
    assert.equal(compiled.stdout,"",source);
-   assert.ok(compiled.stderr.includes(expected.category+":"),source+": "+compiled.stderr);
+   const category=compiled.stderr.match(/\b([A-Z][A-Z0-9_]+):/)?.[1];
+   assert.ok(category&&(expected.category===null||category===expected.category),source+": "+compiled.stderr);
    assert.equal(existsSync(assembly),false,source);
-   console.log("NATIVE_AOT_REJECT "+source+" "+expected.category+" "+sha(input));
+   console.log("NATIVE_AOT_REJECT "+source+" "+category+" "+sha(input));
   }else{
    ok(compiled,source);assert.ok(statSync(assembly).size>0);
    const output=join(caseDir,"native"),property="-p:GeneratedAssembly="+assembly;
@@ -57,7 +59,7 @@ try{
    if(expected.kind==="value"){
     ok(guest,source);assert.equal(guest.stdout,expected.decimal+"\n",source);assert.equal(guest.stderr,"",source);
    }else{
-    assert.equal(expected.kind,"arithmeticFailure");assert.ok(Object.hasOwn(errors,expected.category));
+    assert.ok(["arithmeticFailure","refinementFailure"].includes(expected.kind));assert.ok(Object.hasOwn(errors,expected.category));
     assert.equal(guest.status,70,source);assert.equal(guest.stdout,"",source);
     assert.equal(guest.stderr,errors[expected.category]+"\n",source);
    }
