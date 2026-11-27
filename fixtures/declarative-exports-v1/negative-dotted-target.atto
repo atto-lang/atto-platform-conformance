@@ -1,0 +1,4 @@
+export pub fnc Math.secret;
+define module Math as
+  fnc secret(): int { return 42; }
+end

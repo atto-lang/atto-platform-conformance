@@ -6,7 +6,10 @@ const manifest=JSON.parse(await readFile(new URL('manifest.json',base),'utf8'));
 const required=new Set(['some-int','some-result-ok','some-result-err','some-none','ordinary-throw','panic-bypass','exactly-once','type-mismatch','result-is-not-throw']);
 test('call-site trap contract is fail-closed and never claims unexecuted backend parity',()=>{
   assert.equal(manifest.schema,'atto.caller-trap-cross-backend.v1');
-  assert.match(manifest.status,/NOT-full-runtime-parity/);
+  assert.equal(manifest.status,'LEGACY_OPTION_TRAP_ORACLE_NOT_CANONICAL');
+  assert.match(manifest.historicalStatus,/NOT-full-runtime-parity/);
+  assert.equal(manifest.canonicalReplacement,'contracts/v2/trap-result-v2.json');
+  assert.match(manifest.evidencePolicy.canonicalWarning,/historical only/);
   assert.deepEqual(manifest.backends,['java-graalvm','llvm-native','dotnet-nativeaot']);
   assert.deepEqual(new Set(manifest.cases.map(x=>x.id)),required);
   for(const backend of manifest.backends){
@@ -39,4 +42,18 @@ test('status never treats rejects/skips or source-only checks as runtime passes'
   assert.match(manifest.evidencePolicy.carriers,/private exact Git tree SHA/);
   assert.ok(manifest.requiredObservations.some(x=>x.includes('panic')));
   assert.ok(manifest.requiredObservations.some(x=>x.includes('exactly once')));
+});
+
+test('canonical trap v2 requires Result semantics and has no executed backend receipts',async()=>{
+  const v2=JSON.parse(await readFile(new URL('../../v2/trap-result-v2.json',base),'utf8'));
+  assert.equal(v2.schema,'atto.trap-result.v2');
+  assert.equal(v2.status,'SOURCE_ONLY_TARGET_NOT_EXECUTED');
+  assert.equal(v2.result_semantics['trap(T)'],'Result<T,Error>');
+  assert.equal(v2.result_semantics['trap(Option<T>)'],'Result<Option<T>,Error>');
+  assert.equal(v2.result_semantics.operand_once,true);
+  for(const effect of ['raise','panic','cancellation','host-fatal','forced-termination'])
+    assert.ok(v2.result_semantics.bypass_effects.includes(effect));
+  assert.equal(Object.keys(v2.backends).length,11);
+  for(const receipt of Object.values(v2.backends))
+    assert.deepEqual(receipt,{status:'NOT_EXECUTED',compiler_sha:null,guest_receipt:null,release_qualified:false});
 });

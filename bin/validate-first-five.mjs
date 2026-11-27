@@ -10,6 +10,29 @@ const manifestFile = resolve(here, '../contracts/first-five.json');
 const BACKENDS = ['java', 'llvm', 'net', 'wasm', 'forge'];
 const IDS = ['grammar', 'types', 'imports', 'ownership', 'shared-hir-mir'];
 const STATES = new Set(['pending', 'unsupported', 'verified']);
+// Version 1 tasks carry fixed minimum semantic obligations; optional checks may extend them.
+const MANDATORY = {
+  "grammar": {
+    checks: ["canonical-member-syntax","inline-self-normalization","capture-allowlist-denylist","rejection-of-unsupported-executable-syntax"],
+    requires: ["real-parser","typed-admission","negative-diagnostic"]
+  },
+  "types": {
+    checks: ["nominal-generic-specialization","structural-readonly","writable-invariance","sound-overload-rejection"],
+    requires: ["real-typechecker","positive-admission","negative-diagnostic"]
+  },
+  "imports": {
+    checks: ["plus-root-imports","declared-package-confinement","symlink-foreign-source-denial","stable-module-identity"],
+    requires: ["real-frontend","filesystem-policy","negative-diagnostic","multi-file-linking"]
+  },
+  "ownership": {
+    checks: ["move-after-use-rejection","exclusive-vs-shared-loans","no-borrow-across-suspension","cleanup-on-all-exits"],
+    requires: ["real-ownership-checker","positive-admission","negative-diagnostic","runtime-when-supported"]
+  },
+  "shared-hir-mir": {
+    checks: ["versioned-envelope","bounded-deterministic-serialization","hir-mir-semantic-verification","actual-compiler-adapter-execution"],
+    requires: ["schema-validation","semantic-verifier","exact-source-provenance","real-java-llvm-adapters"]
+  }
+};
 const REQUIREMENTS = new Set([
   'real-parser', 'typed-admission', 'negative-diagnostic', 'real-typechecker',
   'positive-admission', 'real-frontend', 'filesystem-policy', 'multi-file-linking',
@@ -46,6 +69,11 @@ export function validateBatch(data) {
       throw Error('missing acceptance checks for task ' + t.number);
     if (!uniqueStrings(t.requires) || t.requires.some(x => !REQUIREMENTS.has(x)))
       throw Error('missing or unknown proof requirements for task ' + t.number);
+    const mandatory = MANDATORY[t.id];
+    if (mandatory.checks.some(check => !t.checks.includes(check)))
+      throw Error('mandatory acceptance check missing for task ' + t.number);
+    if (mandatory.requires.some(requirement => !t.requires.includes(requirement)))
+      throw Error('mandatory proof requirement missing for task ' + t.number);
     exactKeys(t.statuses, BACKENDS, 'task ' + t.number + ' statuses');
     for (const backend of BACKENDS) {
       if (!STATES.has(t.statuses[backend])) throw Error('invalid ' + backend + ' status');

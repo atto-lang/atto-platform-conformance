@@ -37,7 +37,7 @@ test('all 24 four-slot runtime call permutations preserve lexical effects and fo
   const formal = names.map(name => ({ name, optional: false }));
   for (const permutation of allPermutations([0, 1, 2, 3])) {
     const plan = plan_named_call(formal,
-      permutation.map(i => ({ name: names[i] })));
+      permutation.map(i => ({ name: names[i], kind: 'value' })));
     assert.deepEqual(plan.sourceToFormal, permutation);
     const seen = [];
     const argumentsInSourceOrder = permutation.map(i => () => {
@@ -54,17 +54,17 @@ test('all 24 four-slot runtime call permutations preserve lexical effects and fo
 test('omittable middle slot stays omitted without reindexing other named slots', () => {
   const formal = [
     { name: 'first' },
-    { name: 'middle', optional: true },
+    { name: 'middle', optional: true, checkedDefault: true },
     { name: 'last' }
   ];
-  const plan = plan_named_call(formal, [{ name: 'last' }, { name: 'first' }]);
+  const plan = plan_named_call(formal, [{ name: 'last', kind: 'value' }, { name: 'first', kind: 'value' }]);
   assert.deepEqual(plan.slotToSource, [1, -1, 0]);
   const output = evaluate_named_call(plan, [() => 42, () => 7]);
   assert.deepEqual([output[0], output[2]], [7, 42]);
   assert.strictEqual(output[1], OMITTED);
 
   const supplied = plan_named_call(formal, [
-    { name: 'last' }, { name: 'middle' }, { name: 'first' }
+    { name: 'last', kind: 'value' }, { name: 'middle', kind: 'value' }, { name: 'first', kind: 'value' }
   ]);
   assert.strictEqual(
     evaluate_named_call(supplied, [() => 42, () => null, () => 7])[1], null);
@@ -83,14 +83,17 @@ test('case-sensitive labels, source ordering and positional collisions reject', 
     assert.throws(() => bind_generic_args(generic, actual, canonical));
   }
   const invalidValues = [
-    [{ name: 'Foo' }],
-    [{ name: null }, { name: 'foo' }],
-    [{ name: 'bar' }, { name: null }],
-    [{ name: 'foo' }, { name: 'foo' }]
+    [{ name: 'Foo', kind: 'value' }],
+    [{ name: null, kind: 'value' }, { name: 'foo', kind: 'value' }],
+    [{ name: 'bar', kind: 'value' }, { name: null, kind: 'value' }],
+    [{ name: 'foo', kind: 'value' }, { name: 'foo', kind: 'value' }]
   ];
-  for (const actual of invalidValues) {
-    assert.throws(() => plan_named_call(callable, actual));
+  const codes = ['unknown-value-label','duplicate-value-slot','value-positional-after-named','duplicate-value-slot'];
+  for (const [index, actual] of invalidValues.entries()) {
+    assert.throws(() => plan_named_call(callable, actual), {code:codes[index]});
   }
+  assert.throws(() => plan_named_call(callable, [{name:'foo'}]), {code:'unsupported-call-item'});
+  assert.throws(() => plan_named_call([{name:'foo',optional:true}], []), {code:'unchecked-optional-default'});
 });
 
 test('new target fixtures pin explicit edge semantics but remain unexecuted', async () => {

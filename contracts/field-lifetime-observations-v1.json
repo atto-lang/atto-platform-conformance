@@ -1,0 +1,128 @@
+{
+  "schema": "atto.field-lifetime-observations.v1",
+  "profile_blob": "700b115960724cf09e598569d24ea5bfe217e96e",
+  "full_parity_certified": false,
+  "observations": [
+    {
+      "repo": "atto-lang/atto-source.rs",
+      "status": "REFERENCE_GUEST_EXECUTED",
+      "commit": "7085fa75b7607400ee1adca5cdfff5c42b6b2778",
+      "tree": "629371f940c5c4a3bec92f8b1f9f42b5c3fb3146",
+      "receipt": "https://github.com/sonus-auris-test/atto-ci/actions/runs/45734393681/job/139623995133",
+      "positive_guest_executed": 8,
+      "negative_rejected": 11,
+      "negative_admitted": 0,
+      "notes": "Snapshot profile, 611 conformance checks, 551 native/Wasm comparisons"
+    },
+    {
+      "repo": "atto-lang/atto-source.wasm",
+      "status": "SHARED_COMPILER_GUEST_EXECUTED",
+      "commit": "fbc876dc89a80b6a95a2ff8e1bcacf67d4a618e8",
+      "tree": "c283c0a3445590fcbec94f0dabec221201ba2a49",
+      "receipt": "https://github.com/sonus-auris-test/atto-ci/actions/runs/45737737565/job/139634949475",
+      "positive_guest_executed": 8,
+      "negative_rejected": 11,
+      "negative_admitted": 0,
+      "notes": "Rust #476 compiler artifact; no independent compiler or actor runtime certification"
+    },
+    {
+      "repo": "atto-lang/atto-source.java",
+      "status": "DISCOVERY_FAILED",
+      "commit": "2adc6e196ee6695a5cff62b25176cbf671d0c4a2",
+      "tree": "f7844cb9cfa5cc7389a66b59f30d641a9ab48154",
+      "receipt": "https://github.com/declarative-migrations/atto-ci/actions/runs/45733526670/job/139621140664",
+      "positive_guest_executed": 0,
+      "negative_rejected": 9,
+      "negative_admitted": 2,
+      "notes": "Five exact E_BORROW and one E_MOVED observed; no artifact guarantee not verified; newer #1897 not run on corpus"
+    },
+    {
+      "repo": "atto-lang/atto-source.llvm",
+      "status": "DISCOVERY_FAILED",
+      "commit": "0c13320727b2a415ded46795dceea7e6d6307919",
+      "tree": "da928db642709c3b745b113a9bfaa3a900777680",
+      "receipt": "https://github.com/sonus-auris-test/atto-ci/actions/runs/45734393729/job/139623995470",
+      "positive_guest_executed": 0,
+      "negative_rejected": 11,
+      "negative_admitted": 0,
+      "notes": "Unsupported lowering, no positive native guests"
+    },
+    {
+      "repo": "atto-lang/atto-source.net",
+      "status": "DISCOVERY_FAILED",
+      "commit": "a3bd0e41b57c0c537f3ce6801ec9638c949524f6",
+      "tree": "138a30b2be40cd633c5817ea6973aa9c30448ed8",
+      "receipt": "https://github.com/sonus-auris-test/atto-ci/actions/runs/45734393729/job/139623995273",
+      "positive_guest_executed": 0,
+      "negative_rejected": 11,
+      "negative_admitted": 0,
+      "notes": "NativeAOT compiler built; ownership lowering unsupported"
+    },
+    {
+      "repo": "atto-lang/atto-source.forge",
+      "status": "DISCOVERY_FAILED",
+      "commit": "191b9364315b333a9cf89aa197b33ed8a88c61ab",
+      "tree": "4c554a87e4dc3d1d0c20411765e3b96d4258223b",
+      "receipt": "https://github.com/sonus-auris-test/atto-ci/actions/runs/45736004520/job/139629306181",
+      "positive_guest_executed": 0,
+      "negative_rejected": 11,
+      "negative_admitted": 0,
+      "notes": "Nominal lowering unsupported"
+    },
+    {
+      "repo": "atto-lang/atto-source.cranelift",
+      "status": "DISCOVERY_FAILED",
+      "commit": "8c962da3e8f01cac912bbca7be512120d266306b",
+      "tree": "61a8030bd3ed58a5f2b002d2374aefb62ece70fc",
+      "receipt": "https://github.com/sonus-auris-test/atto-ci/actions/runs/45736004520/job/139629305805",
+      "positive_guest_executed": 0,
+      "negative_rejected": 11,
+      "negative_admitted": 0,
+      "notes": "Stage-0 scalar compiler; nominal lowering unsupported"
+    },
+    {
+      "repo": "atto-lang/atto-source.js",
+      "status": "DISCOVERY_FAILED",
+      "commit": "94b2c99102e6a9fde0e391c6bd18b0e153561446",
+      "tree": "c61ceec6c168d190e2c1ec105ec8a7aa02728728",
+      "receipt": "https://github.com/sonus-auris-test/atto-ci/actions/runs/45736004520/job/139629306048",
+      "positive_guest_executed": 0,
+      "negative_rejected": 11,
+      "negative_admitted": 0,
+      "notes": "Program-v2 ownership lowering unsupported"
+    },
+    {
+      "repo": "atto-lang/atto-source.hdl",
+      "status": "SPECIALIZED_PROFILE_DISCOVERY",
+      "commit": "afb5cc2f5384d7b0ed962abd5395681d02c54384",
+      "tree": "f0605fd80dc8b97eb60a0960df791cc94fbc7739",
+      "receipt": "https://github.com/sonus-auris-test/atto-ci/actions/runs/45736004520/job/139629306164",
+      "positive_guest_executed": 0,
+      "negative_rejected": 11,
+      "negative_admitted": 0,
+      "notes": "Dynamic object syntax unsupported; hardware-specific contract required"
+    },
+    {
+      "repo": "atto-lang/atto-source.atto",
+      "status": "BOOTSTRAP_NOT_EXECUTED",
+      "commit": "2a839a0bff856b2f6c64116d354fca4a4c72fbcf",
+      "tree": "e291ea41becf367162347a16c6556e2677a3e6d2",
+      "receipt": null,
+      "positive_guest_executed": null,
+      "negative_rejected": null,
+      "negative_admitted": null,
+      "notes": "Stage-0 seed only"
+    },
+    {
+      "repo": "atto-lang/atto-source.realtime",
+      "status": "BOOTSTRAP_NOT_EXECUTED",
+      "commit": "8161daa8654a55abbf6260470272814012ef5911",
+      "tree": "bd06ea4c2be68295ce6439550950ef846d37295d",
+      "receipt": null,
+      "positive_guest_executed": null,
+      "negative_rejected": null,
+      "negative_admitted": null,
+      "notes": "No general source compiler"
+    }
+  ]
+}
