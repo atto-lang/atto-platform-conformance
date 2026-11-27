@@ -142,6 +142,60 @@
       "id": "no-ons",
       "source": "pub fnc main(): int { return match 7 over ons [7, 8] -> 42, on _ -> 0 end; }",
       "reject": "syntax"
+    },
+    {
+      "id": "membership-runtime-array",
+      "source": "pub fnc main(): int { val allowed = [0, 1, 2]; return match 2 over in allowed -> 42, on _ -> 0 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "membership-runtime-returned-array",
+      "source": "fnc values(): Array<int> { return [1, 2]; } pub fnc main(): int { return match 2 over in values() -> 42, on _ -> 0 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "membership-unreached-collection",
+      "source": "fnc values(int n): Array<int> { return [1 / n]; } pub fnc main(): int { return match 2 over on 2 -> 42, in values(0) -> 0, on _ -> 0 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "membership-unreached-guard",
+      "source": "fnc bad(int n): bool { return 1 / n eq 1; } pub fnc main(): int { return match 7 over in [1, 2] when bad(0) -> 0, on _ -> 42 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "membership-runtime-nonexhaustive",
+      "source": "pub fnc main(): int { val allowed = [1, 2]; return match 2 over in allowed -> 42 end; }",
+      "reject": "non-exhaustive"
+    },
+    {
+      "id": "type-list-canonical-alias",
+      "source": "pub fnc main(): int { return match 7 over is in [String, string] -> 42, on _ -> 0 end; }",
+      "reject": "duplicate"
+    },
+    {
+      "id": "type-list-guard-fallthrough",
+      "source": "pub fnc main(): int { return match 7 over is in [int, bool] when false -> 0, is int -> 42 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "type-list-conditional",
+      "source": "pub fnc main(): int { if 7 is in [int, bool] then return 42; fi return 0; }",
+      "exit_or_return": 42
     }
-  ]
+  ],
+  "backend_status": {
+    "atto-source.java": "not_executed",
+    "atto-source.llvm": "not_executed",
+    "atto-source.net": "not_executed",
+    "atto-source.wasm": "not_executed",
+    "atto-source.forge": "not_executed",
+    "atto-source.cranelift": "not_executed",
+    "atto-source.rs": "not_executed",
+    "atto-source.js": "not_executed",
+    "atto-source.hdl": "not_executed",
+    "atto-source.atto": "not_executed",
+    "atto-source.realtime": "not_executed"
+  },
+  "evidence_scope": "Specification target vectors only; each backend requires real compiler invocation, actual guest result or positioned no-artifact rejection, exact compiler head/tree and source identity, and executed test steps. No host-only or zero-step promotion."
 }
