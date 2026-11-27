@@ -1,0 +1,8 @@
+fnc classify(int n): int {
+    return n |> match |x| over
+        on 0 -> 1
+        when x > 0 as positive -> positive
+        when x < 0: val negative -> 0 - negative
+    end;
+}
+pub fnc main(): int { return classify(0) + classify(20) + classify(-21); }
