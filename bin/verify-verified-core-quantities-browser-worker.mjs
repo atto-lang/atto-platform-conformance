@@ -67,12 +67,12 @@ self.onmessage=async({data})=>{
    }
   }
   self.postMessage({ok:true,receipts,pin:data.pin,agent:navigator.userAgent});
- }catch(e){self.postMessage({ok:false,error:String(e.stack??e)});}
+ }catch(e){self.postMessage({ok:false,error:String(e?.stack??e?.message??e)});}
 };`;
 const page=`<!doctype html><meta charset="utf-8"><script type="module">
 const w=new Worker('/worker.mjs',{type:'module'});let done=false;
 async function finish(data){if(done)return;done=true;w.terminate();await fetch('/result',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(data)});}
-w.onmessage=({data})=>finish(data);w.onerror=e=>finish({ok:false,error:e.message});
+w.onmessage=({data})=>finish(data);w.onerror=e=>finish({ok:false,error:e.message||"Worker error without message"});
 w.postMessage({pin:${JSON.stringify(pin)}});
 </script>`;
 let accept,reject;const receipt=new Promise((a,b)=>{accept=a;reject=b;});
@@ -93,7 +93,7 @@ try{
  let err="";child.stderr.on("data",x=>{err=(err+x).slice(-8000);});
  child.once("error",reject);child.once("exit",(c,s)=>reject(Error("Chrome exited "+c+"/"+s+" "+err)));
  timer=setTimeout(()=>reject(Error("Worker timeout "+err)),120000);
- const result=await receipt;assert.equal(result.ok,true,result.error);assert.match(result.agent,/Chrome\//);
+ const result=await receipt;assert.equal(result.ok,true,"Worker result failed: "+JSON.stringify(result));assert.match(result.agent,/Chrome\//);
  assert.equal(result.pin,pin);assert.equal(result.receipts.length,inputs.length);
  for(let i=0;i<inputs.length;i++){
   const r=result.receipts[i],v=inputs[i];assert.equal(r.source,v.source);assert.equal(r.hash,v.hash);assert.equal(r.kind,v.expected.kind);

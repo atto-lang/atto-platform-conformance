@@ -34,7 +34,8 @@ try{
  const {fixtures,cases}=expandQuantityCases(original,work,manifest);
  const selected=(full||bindings)?cases:cases.filter(c=>expectedNames.includes(c.source));
  assert.equal(selected.length,bindings?36:full?151:expectedNames.length);
- let passed=0;const failures=[];
+ let passed=0;const failures=[];const categories=[];
+ const strictCategories=process.env.ATTO_STRICT_QUANTITY_DIAGNOSTICS==="1";
  const harness=join(work,"host.c");
  writeFileSync(harness,`#include <stdint.h>
 #include <inttypes.h>
@@ -75,7 +76,13 @@ printf("%" PRId64 "\\n",out);return 0;}`);
      const diagnostic=compiled.stderr.toString();
      assert.ok(diagnostic.trim().length>0,source);
      assert.doesNotMatch(diagnostic, /(?:^|\s)(?:usage:|E_USAGE\b|E_PATH\b|E_SOURCE\b|E_OUTPUT\b)/i, source+" infrastructure failure, not a source diagnostic");
-     if(bindings){assert.ok(diagnostic.trim().length>0,source);}
+     if(bindings){
+       const observed=diagnostic.match(/\b(E_[A-Z0-9_]+)\b/)?.[1]??null;
+       const exact=expected.category!==null&&observed===expected.category;
+       categories.push({source,expected:expected.category,observed,exact});
+       console.log("NATIVE_QUANTITY_DIAGNOSTIC "+backend+" "+JSON.stringify({source,expected:expected.category,observed,exact,diagnostic:diagnostic.slice(0,512)}));
+       if(strictCategories&&expected.category!==null)assert.equal(observed,expected.category,source+" diagnostic category");
+     }
      else if(full||backend==="cranelift")assert.match(compiled.stderr.toString(),new RegExp('(?:^|\\s)'+expected.category+'(?:[:\\s]|$)'),source);
      // Forge currently has generic parser diagnostics. Rejection is proven,
      // but diagnostic-category parity must remain explicitly unverified.
@@ -107,5 +114,6 @@ printf("%" PRId64 "\\n",out);return 0;}`);
    }catch(e){failures.push(source);console.error("FAIL "+backend+" "+source+" "+String(e.message));}
  }
  console.log("NATIVE_QUANTITY_RESULT "+backend+" "+passed+"/"+selected.length+" diagnostic_categories="+(bindings||(!full&&backend==="forge")?"partial":"verified")+" failures="+JSON.stringify(failures));
+ if(bindings)console.log("NATIVE_QUANTITY_CATEGORY_CENSUS "+backend+" "+JSON.stringify({exact:categories.filter(c=>c.exact).length,specified:categories.filter(c=>c.expected!==null).length,unspecified:categories.filter(c=>c.expected===null).length,total:categories.length}));
  assert.equal(failures.length,0,"shared native corpus failed");
 }finally{rmSync(work,{recursive:true,force:true});}
