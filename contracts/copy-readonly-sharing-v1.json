@@ -337,6 +337,36 @@
       "diagnostic_line": 17,
       "path": "fixtures/copy-readonly-sharing-v1/reject-mutable-call-shared-c.atto",
       "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "mutable-method-detached-control",
+      "expect": {
+        "main_result": 62
+      },
+      "path": "fixtures/copy-readonly-sharing-v1/mutable-method-detached-control.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-mutable-method-shared-a",
+      "expect": {
+        "compile_reject": "E_COPY_READONLY"
+      },
+      "paired_positive": "mutable-method-detached-control",
+      "forbidden_statement": "a.scores.adjust(22);",
+      "diagnostic_line": 16,
+      "path": "fixtures/copy-readonly-sharing-v1/reject-mutable-method-shared-a.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-mutable-method-shared-c",
+      "expect": {
+        "compile_reject": "E_COPY_READONLY"
+      },
+      "paired_positive": "mutable-method-detached-control",
+      "forbidden_statement": "c.scores.adjust(22);",
+      "diagnostic_line": 16,
+      "path": "fixtures/copy-readonly-sharing-v1/reject-mutable-method-shared-c.atto",
+      "status": "NOT_EXECUTED"
     }
   ],
   "negative_policy": "First execute paired positive on same exact compiler tree. Require diagnostic at forbidden statement, no artifact, no E_COPY_SHALLOW_ALIAS or parser rejection as parity. Diagnostic mapping must be reviewed. No source rewriting or skipped negative tests.",
