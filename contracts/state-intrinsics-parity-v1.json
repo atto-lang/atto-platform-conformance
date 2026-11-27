@@ -268,7 +268,8 @@
         "Require nested reference graphs to carry verified transitive borrow provenance; otherwise reject before artifact emission.",
         "For each backend, record exact candidate head/tree, mutation harness and executed result separately.",
         "Where a backend exposes native protected storage, authenticate sealed field metadata independently of opcode selection; ordinary fixed-field and generic-slot APIs must not grant access or loans to a protected field. Preserve legacy unprotected field semantics; distinguish host-ABI negative execution from source and compiler rejection.",
-        "When a storage API receives a lease, authenticate it against the target region identity before checking activity and mode; matching local sequence numbers in distinct regions never confer authority. Avoid foreign gate lock acquisition during denial."
+        "When a storage API receives a lease, authenticate it against the target region identity before checking activity and mode; matching local sequence numbers in distinct regions never confer authority. Avoid foreign gate lock acquisition during denial.",
+        "Protected method invocation must authenticate the receiver's declared state layout/authority, not merely the storage shape or scalar type; conservative preview plan identity may deny independently compiled equivalent plans until a stable nominal identity contract exists."
       ]
     }
   }
