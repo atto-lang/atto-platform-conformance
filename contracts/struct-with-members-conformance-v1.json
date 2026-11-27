@@ -180,6 +180,54 @@
       "diagnostic_category": "duplicate nominal method",
       "no_artifact": true,
       "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "distinct-nominal-owners",
+      "expect": "accept",
+      "source": "define struct Point {\n    int x;\n    int y;\n} with {\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mtd int • sum() {\n        return self.x + self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() -> bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\ndefine struct Offset {\n    int x;\n    int y;\n} with {\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mtd int • sum() {\n        return self.x - self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() -> bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\npub fnc main(): int {\n    let Point p = Point(10, 20);\n    let Offset q = Offset(10, 20);\n    let Offset r = copy! q;\n    stdio.println(p.sum());\n    stdio.println(q.sum());\n    stdio.println(r.product());\n    return 0;\n}",
+      "expected_stdout": "30\n-10\n200\n",
+      "expected_exit": 0,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "distinct-mutable-owner-copies",
+      "expect": "accept",
+      "source": "define struct Point {\n    int x;\n    int y;\n} with {\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mut mtd shift(int n): void { self.x = self.x + n; self.y = self.y + n; }\n    mut mtd swap(int old_x, int old_y): void { self.x = old_y; self.y = old_x; return; }\n    mtd int • sum() {\n        return self.x + self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() -> bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\ndefine struct Offset {\n    int x;\n    int y;\n} with {\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mut mtd shift(int n): void { self.x = self.x + n; self.y = self.y + n; }\n    mut mtd swap(int old_x, int old_y): void { self.x = old_y; self.y = old_x; return; }\n    mtd int • sum() {\n        return self.x - self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() -> bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\npub fnc main(): int {\n    let mut p = Point(10, 20);\n    let mut q = Offset(10, 20);\n    let r = q;\n    p.shift(5);\n    q.swap(3, 7);\n    stdio.println(p.sum());\n    stdio.println(q.sum());\n    stdio.println(r.sum());\n    return 0;\n}",
+      "expected_stdout": "40\n4\n-10\n",
+      "expected_exit": 0,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "wrong-second-owner-annotation",
+      "expect": "reject",
+      "source": "define struct Point {\n    int x;\n    int y;\n} with {\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mtd int • sum() {\n        return self.x + self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() -> bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\ndefine struct Offset {\n    int x;\n    int y;\n} with {\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mtd int • sum() {\n        return self.x - self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() -> bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\npub fnc main(): int {\n    let Point p = Point(10, 20);\n    let Point q = Offset(10, 20);\n    let Offset r = copy! q;\n    stdio.println(p.sum());\n    stdio.println(q.sum());\n    stdio.println(r.product());\n    return 0;\n}",
+      "diagnostic_category": "nominal type mismatch",
+      "no_artifact": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "wrong-second-owner-copy",
+      "expect": "reject",
+      "source": "define struct Point {\n    int x;\n    int y;\n} with {\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mtd int • sum() {\n        return self.x + self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() -> bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\ndefine struct Offset {\n    int x;\n    int y;\n} with {\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mtd int • sum() {\n        return self.x - self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() -> bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\npub fnc main(): int {\n    let Point p = Point(10, 20);\n    let Offset q = Offset(10, 20);\n    let Point r = copy! q;\n    stdio.println(p.sum());\n    stdio.println(q.sum());\n    stdio.println(r.product());\n    return 0;\n}",
+      "diagnostic_category": "nominal type mismatch",
+      "no_artifact": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "duplicate-nominal-owner",
+      "expect": "reject",
+      "source": "define struct Point {\n    int x;\n    int y;\n} with {\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mtd int • sum() {\n        return self.x + self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() -> bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\ndefine struct Point {\n    int x;\n    int y;\n} with {\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mtd int • sum() {\n        return self.x - self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() -> bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\npub fnc main(): int {\n    let Point p = Point(10, 20);\n    let Point q = Point(10, 20);\n    let Point r = copy! q;\n    stdio.println(p.sum());\n    stdio.println(q.sum());\n    stdio.println(r.product());\n    return 0;\n}",
+      "diagnostic_category": "duplicate nominal owner",
+      "no_artifact": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "owner-method-not-structural",
+      "expect": "reject",
+      "source": "define struct Point {\n    int x;\n    int y;\n} with {\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mtd int • sum() {\n        return self.x + self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() -> bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\ndefine struct Offset {\n    int x;\n    int y;\n} with {\n    constructor(int x, int y) {\n        self.x = x;\n        self.y = y;\n    }\n\n    mtd int • other() {\n        return self.x - self.y;\n    }\n\n    mtd int <- product() {\n        return self.x * self.y;\n    }\n\n    mtd is_origin() -> bool {\n        return self.x == 0 && self.y == 0;\n    }\n}\npub fnc main(): int {\n    let Point p = Point(10, 20);\n    let Offset q = Offset(10, 20);\n    let Offset r = copy! q;\n    stdio.println(p.sum());\n    stdio.println(q.sum());\n    stdio.println(r.product());\n    return 0;\n}",
+      "diagnostic_category": "missing nominal member",
+      "no_artifact": true,
+      "status": "NOT_EXECUTED"
     }
   ]
 }

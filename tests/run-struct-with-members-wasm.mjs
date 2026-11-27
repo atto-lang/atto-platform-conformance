@@ -11,7 +11,7 @@ assert.ok(process.env.ATTOC, 'ATTOC must identify the real built compiler');
 const compiler = resolve(process.env.ATTOC);
 const registry = JSON.parse(await readFile(new URL('../contracts/struct-with-members-conformance-v1.json', import.meta.url), 'utf8'));
 assert.equal(registry.schema, 'atto.struct.with.members.conformance.v1');
-assert.equal(registry.cases.length, 20);
+assert.equal(registry.cases.length, 26);
 const work = await mkdtemp(join(tmpdir(), 'atto-struct-portable-'));
 const receipt = { positive: 0, negative_no_artifact: 0, category_verified: 0 };
 try {
@@ -50,8 +50,8 @@ try {
         receipt.positive++;
         console.log('PORTABLE_ACTUAL_GUEST', fixture.id, JSON.stringify(stdout));
     }
-    assert.equal(receipt.positive, 9);
-    assert.equal(receipt.negative_no_artifact, 11);
+    assert.equal(receipt.positive, 11);
+    assert.equal(receipt.negative_no_artifact, 15);
     console.log('PORTABLE_STRUCT_RECEIPT', JSON.stringify(receipt));
 } finally {
     await rm(work, {recursive:true, force:true});

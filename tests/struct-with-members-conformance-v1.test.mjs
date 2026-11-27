@@ -7,8 +7,8 @@ const byId = Object.fromEntries(r.cases.map(c => [c.id, c]));
 
 test('struct attachment fixture registry does not claim compiler execution', () => {
   assert.equal(r.status, 'TARGET_NOT_EXECUTED');
-  assert.equal(r.cases.length, 20);
-  assert.equal(Object.keys(byId).length, 20);
+  assert.equal(r.cases.length, 26);
+  assert.equal(Object.keys(byId).length, 26);
   assert.equal(Object.keys(r.backend_status).length, 9);
   assert.ok(Object.values(r.backend_status).every(s => s === 'NOT_EXECUTED'));
   assert.deepEqual(r.required_gates, ['parse','semantic','link','emit','guest_execute']);
@@ -16,7 +16,12 @@ test('struct attachment fixture registry does not claim compiler execution', () 
     assert.equal(c.status, 'NOT_EXECUTED');
     assert.ok(c.source.includes('pub fnc main():'), c.id);
     if (c.expect === 'accept') {
-      assert.equal(c.expected_stdout, c.id === 'define-origin-true' ? '0\n0\ntrue\n' : '30\n200\nfalse\n');
+      const expected = {
+        'define-origin-true': '0\n0\ntrue\n',
+        'distinct-nominal-owners': '30\n-10\n200\n',
+        'distinct-mutable-owner-copies': '40\n4\n-10\n'
+      };
+      assert.equal(c.expected_stdout, expected[c.id] ?? '30\n200\nfalse\n');
       assert.equal(c.expected_exit, 0);
       assert.equal(c.no_artifact, undefined);
     } else {
@@ -51,4 +56,18 @@ test('canonical define struct and postfix arrow preserve original fixtures', () 
   assert.ok(byId['define-duplicate-arrow'].source.includes('mtd sum() -> int'));
   assert.ok(byId['grouped-exact'].source.startsWith('type Point = struct {'));
   assert.ok(byId['all-colon'].source.includes('mtd is_origin() : bool'));
+});
+
+test('nominal owners never become structurally interchangeable', () => {
+  for (const id of ['distinct-nominal-owners','distinct-mutable-owner-copies','wrong-second-owner-annotation','wrong-second-owner-copy','owner-method-not-structural']) {
+    assert.ok(byId[id].source.includes('define struct Point {'), id);
+    assert.ok(byId[id].source.includes('define struct Offset {'), id);
+  }
+  assert.equal(byId['distinct-mutable-owner-copies'].expect, 'accept');
+  assert.ok(byId['distinct-mutable-owner-copies'].source.includes('q.swap(3, 7)'));
+  assert.equal(byId['wrong-second-owner-copy'].expect, 'reject');
+  assert.ok(byId['wrong-second-owner-copy'].source.includes('let Point r = copy! q;'));
+  assert.equal(byId['duplicate-nominal-owner'].expect, 'reject');
+  assert.equal(byId['owner-method-not-structural'].expect, 'reject');
+  assert.ok(byId['owner-method-not-structural'].source.includes('mtd int • other()'));
 });
