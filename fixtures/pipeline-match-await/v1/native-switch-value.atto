@@ -1,0 +1,6 @@
+pub fnc main(): int {
+    return 7 |> switch |int x| over
+        case 0 -> 1,
+        default -> x * 6
+    end;
+}
