@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import {spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
-import {existsSync, lstatSync, mkdtempSync, readFileSync, realpathSync, rmSync} from 'node:fs';
+import {lstatSync, mkdtempSync, readFileSync, realpathSync, rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join, resolve, dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -40,6 +40,7 @@ const selectedIds=profile==='direct-stage'
  ? expectedIds.filter(id=>!['fib-55-linear','fib-92-linear','fib-93-overflow'].includes(id))
  : expectedIds;
 const skippedIds=expectedIds.filter(id=>!selectedIds.includes(id));
+const present=p=>{try{lstatSync(p);return true;}catch(e){if(e.code==='ENOENT')return false;throw e;}};
 const regular=p=>{try{const s=lstatSync(p);return s.isFile()&&!s.isSymbolicLink();}catch(e){if(e.code==='ENOENT')return false;throw e;}};
 const scratch=mkdtempSync(join(tmpdir(),'atto-recursive-guest-'));
 const cases=[];
@@ -70,20 +71,30 @@ try {
      cases.push({...row,status:'infrastructure_error',detail:String(built.error??built.signal)});continue;
    }
    if(id==='fib-55-exact'){
-     const valid=built.status===0&&regular(out)&&
-       (backend==='rust-wasm'?WebAssembly.validate(readFileSync(out)):readFileSync(out).length>0);
+     let valid=built.status===0&&regular(out),nativeDigest;
+     if(valid&&backend==='rust-wasm')valid=WebAssembly.validate(readFileSync(out));
+     if(valid&&backend==='forge-native'){
+       const binary=join(scratch,id+'.bin');
+       const native=run('c++',['-std=c++20','-Wall','-Wextra','-Werror','-pedantic','-I'+join(repo,'include'),out,'-o',binary],60000);
+       if(native.error||native.signal!==null||native.status===null){
+         cases.push({...row,status:'infrastructure_error',detail:String(native.error??native.signal)});continue;
+       }
+       valid=native.status===0&&regular(binary);
+       if(valid)nativeDigest=sha(readFileSync(binary));
+       else {cases.push({...row,status:'fail',diagnostic:native.stderr.slice(0,4096)});continue;}
+     }
      cases.push({...row,compiled:valid,status:valid?'compile_only':'fail',
-       ...(valid?{artifact_sha256:sha(readFileSync(out))}:{diagnostic:built.stderr.slice(0,4096)})});
+       ...(valid?{artifact_sha256:sha(readFileSync(out)),...(nativeDigest?{native_artifact_sha256:nativeDigest}:{})}:{diagnostic:built.stderr.slice(0,4096)})});
      continue;
    }
    if(c.expected.kind==='reject'){
      // Only an exact targeted unbound-name diagnostic at the outside call is accepted.
      // Forge diagnostic mapping is deliberately NOT certified until independently audited.
      const targeted=backend==='rust-wasm'&&built.status===1&&/:9:\d+: E_UNBOUND: unknown name 'fib'\s*$/.test(built.stderr);
-     cases.push({...row,status:targeted&&!existsSync(out)?'pass':backend==='forge-native'&&built.status!==0&&!existsSync(out)?'diagnostic_not_verified':'fail',diagnostic:built.stderr.slice(0,4096),artifact_present:existsSync(out)});continue;
+     cases.push({...row,status:targeted&&!present(out)?'pass':backend==='forge-native'&&built.status!==0&&!present(out)?'diagnostic_not_verified':'fail',diagnostic:built.stderr.slice(0,4096),artifact_present:present(out)});continue;
    }
    if(built.status!==0||!regular(out)){
-     cases.push({...row,status:'fail',diagnostic:built.stderr.slice(0,4096),artifact_present:existsSync(out)});continue;
+     cases.push({...row,status:'fail',diagnostic:built.stderr.slice(0,4096),artifact_present:present(out)});continue;
    }
    const bytes=readFileSync(out);
    row.compiled=true;row.artifact_sha256=sha(bytes);
