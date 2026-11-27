@@ -1,0 +1,56 @@
+{
+  "schema": "atto.contextual-expression-named.target.v1",
+  "status": "DRAFT_SHARED_NOT_EXECUTED",
+  "supersedes": "contextual-direct-named-v1 bounded sibling denials; historical receipts preserved",
+  "rules": [
+    "Evaluate contextual RHS expressions at their call site in source order, then ordinary arguments; reorder only typed parameter bindings, never actual expressions.",
+    "Bounded scalar static signature specializations or adapters are allowed; code-size budgets apply. No claim of general nested contextual arguments, arbitrary effects, first-class contextual IR or allocator authority.",
+    "Arithmetic sibling positions admitted; prior terminal-only restriction is superseded in this profile."
+  ],
+  "cases": [
+    {
+      "path": "fixtures/contextual-expression-named-v1/pass/direct-terminal.atto",
+      "kind": "execute",
+      "expectedGuestExit": 42
+    },
+    {
+      "path": "fixtures/contextual-expression-named-v1/pass/sibling-before.atto",
+      "kind": "execute",
+      "expectedGuestExit": 43
+    },
+    {
+      "path": "fixtures/contextual-expression-named-v1/pass/sibling-after.atto",
+      "kind": "execute",
+      "expectedGuestExit": 43
+    },
+    {
+      "path": "fixtures/contextual-expression-named-v1/pass/two-permutations.atto",
+      "kind": "execute",
+      "expectedGuestExit": 31
+    },
+    {
+      "path": "fixtures/contextual-expression-named-v1/fail/duplicate-key.atto",
+      "kind": "reject",
+      "semanticReason": "duplicate-context-name",
+      "artifactAllowed": false
+    },
+    {
+      "path": "fixtures/contextual-expression-named-v1/fail/unknown-key.atto",
+      "kind": "reject",
+      "semanticReason": "unknown-context-name",
+      "artifactAllowed": false
+    },
+    {
+      "path": "fixtures/contextual-expression-named-v1/fail/mixed-style.atto",
+      "kind": "reject",
+      "semanticReason": "mixed-context-style",
+      "artifactAllowed": false
+    },
+    {
+      "path": "fixtures/contextual-expression-named-v1/fail/missing-key.atto",
+      "kind": "reject",
+      "semanticReason": "missing-context-name",
+      "artifactAllowed": false
+    }
+  ]
+}
