@@ -1,0 +1,46 @@
+{
+  "schema": "atto.contextual-named.target.v1",
+  "status": "DRAFT_NOT_EXECUTED_AS_SHARED_CORPUS",
+  "scope": "stored scalar context only; canonical set snapshot is separate",
+  "rules": [
+    "All named fields exactly once, no mixed positional/named syntax; evaluate RHS once in source order before mapping slots.",
+    "No direct named call or allocator capability claim.",
+    "Canonical set snapshot must not require legacy bare assignment."
+  ],
+  "cases": [
+    {
+      "path": "fixtures/contextual-named-v1/pass/reordered-names.atto",
+      "kind": "execute",
+      "expectedGuestExit": 42
+    },
+    {
+      "path": "fixtures/contextual-named-v1/pass/canonical-set-snapshot.atto",
+      "kind": "execute",
+      "expectedGuestExit": 34
+    },
+    {
+      "path": "fixtures/contextual-named-v1/fail/duplicate-name.atto",
+      "kind": "reject",
+      "semanticReason": "duplicate-context-name",
+      "artifactAllowed": false
+    },
+    {
+      "path": "fixtures/contextual-named-v1/fail/unknown-name.atto",
+      "kind": "reject",
+      "semanticReason": "unknown-context-name",
+      "artifactAllowed": false
+    },
+    {
+      "path": "fixtures/contextual-named-v1/fail/mixed-names.atto",
+      "kind": "reject",
+      "semanticReason": "mixed-context-argument-style",
+      "artifactAllowed": false
+    },
+    {
+      "path": "fixtures/contextual-named-v1/fail/missing-name.atto",
+      "kind": "reject",
+      "semanticReason": "missing-context-name",
+      "artifactAllowed": false
+    }
+  ]
+}
