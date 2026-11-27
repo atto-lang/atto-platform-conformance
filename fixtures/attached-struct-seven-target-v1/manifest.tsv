@@ -1,0 +1,15 @@
+nested.atto	42
+mutable.atto	1316
+ordered.atto	1336
+immutable-receiver.atto	reject
+wrong-arg.atto	reject
+wrong-field.atto	reject
+missing-init.atto	reject
+duplicate-init.atto	reject
+wrong-owner.atto	reject
+cycle.atto	reject
+wrong-constructor.atto	reject
+lazy-skipped.atto	42
+lazy-and-reached.atto	overflow
+lazy-or-reached.atto	overflow
+lazy-illtyped.atto	reject
