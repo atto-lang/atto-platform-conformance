@@ -1,0 +1,10 @@
+pub fnc classify(int n): string {
+    return n |> match over
+        on 0 -> "zero"
+        when n > 0 as positive -> "positive: " + positive
+        when n < 0: val negative -> "negative: " + negative
+    end;
+}
+pub fnc main(): int {
+    return if (classify(0) eq "zero") and (classify(7) eq "positive: 7") and (classify(-7) eq "negative: -7") then 42 else 99 fi;
+}
