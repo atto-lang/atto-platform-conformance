@@ -267,7 +267,8 @@
         "Keep compiler-private lease tickets inaccessible to guest value locals and detached result stores.",
         "Require nested reference graphs to carry verified transitive borrow provenance; otherwise reject before artifact emission.",
         "For each backend, record exact candidate head/tree, mutation harness and executed result separately.",
-        "Where a backend exposes native protected storage, authenticate sealed field metadata independently of opcode selection; ordinary fixed-field and generic-slot APIs must not grant access or loans to a protected field. Preserve legacy unprotected field semantics; distinguish host-ABI negative execution from source and compiler rejection."
+        "Where a backend exposes native protected storage, authenticate sealed field metadata independently of opcode selection; ordinary fixed-field and generic-slot APIs must not grant access or loans to a protected field. Preserve legacy unprotected field semantics; distinguish host-ABI negative execution from source and compiler rejection.",
+        "When a storage API receives a lease, authenticate it against the target region identity before checking activity and mode; matching local sequence numbers in distinct regions never confer authority. Avoid foreign gate lock acquisition during denial."
       ]
     }
   }
