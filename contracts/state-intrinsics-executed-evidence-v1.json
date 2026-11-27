@@ -573,5 +573,20 @@
     ],
     "receiptComment": 7210663864,
     "scope": "Unmodified checked-in verification script and ten required source blobs manually reconstructed locally and verified with git hash-object; both full restricted harness runs succeeded. Actual source-emitted C++ linked to actor heap and logical frame stack; no production CLI, full repository CI, concurrent or general state-container support. Independent review pending."
+  },
+  "craneliftScopedScalarCandidate": {
+    "status": "NOT_EXECUTED",
+    "repo": "atto-lang/atto-source.cranelift",
+    "pr": 207,
+    "head": "014e0cc64f4e04d79f140832f3ad2d44913e1b39",
+    "tree": "fc40784d44cca48e80d0ee3f47d2eb2071871c77",
+    "moduleBlob": "3c312230470dcf290bdbaf55ad1fcd94fb0c2c07",
+    "newUnitTestGroups": 3,
+    "scope": "Trusted host scoped scalar callback with fixed detached i64 output and RAII release on normal/checked-error/Rust unwind paths. No guest compiler, scheduler, cancellation, panic-abort or general transitive borrow guarantee. Tests authored, no Rust toolchain.",
+    "ci": {
+      "run": 45946085677,
+      "job": 140331003428,
+      "status": "QUEUED_NO_STEPS_AT_SAMPLE"
+    }
   }
 }
