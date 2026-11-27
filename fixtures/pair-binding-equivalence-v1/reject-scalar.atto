@@ -1,0 +1,5 @@
+pub fnc main(): int {
+    const x = x := 5;
+    const int n = x;
+    return n;
+}
