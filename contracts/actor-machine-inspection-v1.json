@@ -1,0 +1,82 @@
+{
+  "schema": "atto.actor-machine-inspection.v1",
+  "status": "TARGET_NOT_EXECUTED",
+  "note": "Metadata inspection only, not typechecked MIR, runtime dispatch or guest proof. Local node/event indices are unsigned UTF-8 lexicographic order, not persistent IDs. No Unicode identifier expansion implied; ASCII fixtures only.",
+  "cases": [
+    {
+      "id": "flat-cycle",
+      "source": "define actor Foo as\n    state { let int count: 0; }\n    state machine as\n        initial state Idle;\n        state Idle as\n            on Start() -> Running;\n        end\n        state Running as\n            on Stop() -> Idle;\n        end\n    end\nend\n",
+      "expect": {
+        "initial": 0,
+        "nodes": [
+          {
+            "name": "Idle",
+            "terminal": false,
+            "edges": [
+              [
+                "Start",
+                1
+              ]
+            ]
+          },
+          {
+            "name": "Running",
+            "terminal": false,
+            "edges": [
+              [
+                "Stop",
+                0
+              ]
+            ]
+          }
+        ],
+        "storage": [
+          "count"
+        ]
+      }
+    },
+    {
+      "id": "flat-order",
+      "source": "define actor Foo as\n    state {}\n    state machine as\n        initial state Zed;\n        final state Alpha;\n        state Zed as\n            on Zulu() -> Zed;\n            on AlphaEvent() -> Alpha;\n        end\n    end\nend\n",
+      "expect": {
+        "initial": 1,
+        "nodes": [
+          {
+            "name": "Alpha",
+            "terminal": true,
+            "edges": []
+          },
+          {
+            "name": "Zed",
+            "terminal": false,
+            "edges": [
+              [
+                "AlphaEvent",
+                0
+              ],
+              [
+                "Zulu",
+                1
+              ]
+            ]
+          }
+        ],
+        "storage": []
+      }
+    },
+    {
+      "id": "wrong-scalar",
+      "source": "define actor Foo as state { let int count: true; } end\n",
+      "expect": {
+        "reject": true
+      }
+    },
+    {
+      "id": "effectful-initializer",
+      "source": "define actor Foo as state { let int count: calculate(); } end\n",
+      "expect": {
+        "reject": true
+      }
+    }
+  ]
+}
