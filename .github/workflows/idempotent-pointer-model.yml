@@ -4,6 +4,10 @@ on:
     paths:
       - models/idempotent_pointer_types_v1.mjs
       - .github/workflows/idempotent-pointer-model.yml
+      - contracts/trusted-idempotent-pointer-v1.json
+  push:
+    branches:
+      - draft/typed-pointer-cfg-v1-20261127
   workflow_dispatch:
 permissions:
   contents: read
