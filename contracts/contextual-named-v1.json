@@ -1,11 +1,12 @@
 {
   "schema": "atto.contextual-named.target.v1",
-  "status": "DRAFT_PARTIAL_SHARED_EXECUTION",
+  "status": "DRAFT_FIVE_PROFILE_SHARED_EXECUTION",
   "scope": "stored scalar context only; canonical set snapshot is separate",
   "rules": [
     "All named fields exactly once, no mixed positional/named syntax; evaluate RHS once in source order before mapping slots.",
     "No direct named call or allocator capability claim.",
-    "Canonical set snapshot must not require legacy bare assignment."
+    "Canonical set snapshot must not require legacy bare assignment.",
+    "A direct named call that occupies an entire terminal return may lower capture slots locally before the return. Nested or sibling named-call expressions remain outside the bounded profile; generalized ordered IR lowering is required."
   ],
   "cases": [
     {
@@ -120,6 +121,15 @@
         "guestPass": 2,
         "rejectedUnclassified": 4,
         "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46064734758/job/140727193846"
+      },
+      {
+        "backend": "net-direct-cil",
+        "head": "9fd2a499435a60547927c413f7a2b89edbfa47dd",
+        "tree": "91a31b5e76b1a621d7df1d32039595719d8db3fc",
+        "guestPass": 2,
+        "nativeAotGuestPass": 2,
+        "rejectedUnclassified": 4,
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46064734758/job/140727194210"
       }
     ],
     "note": "Raw rejection outcomes retained separately from semantic diagnostic classification. Canonical explicit set fixture executed; legacy assignment compatibility does not establish canonical grammar compliance."
