@@ -22,7 +22,7 @@ function check(sections, policy) {
     }
   }
   for(const key of Object.keys(policy.init))if(!Object.hasOwn(opts.init||{},key))fail("REQUIRED");
-  const parallel=opts.schedule?.max_parallelism??policy.max_parallelism;
+  const parallel=opts.schedule?.max_parallelism??(policy.serial?1:policy.max_parallelism);
   if(policy.serial&&parallel!==1)fail("SERIAL");
   if(["pinned","dedicated"].includes(opts.schedule?.affinity)&&parallel!==1)fail("AFFINITY_CAP");
   return opts;
@@ -723,3 +723,27 @@ function runLifecycle() {
   return n;
 }
 console.log("source-free lifecycle assertions passed:",runLifecycle());
+
+// Fixed-cap default regression cases: actor kind determines the serial
+// default even when the host ceiling permits more than one carrier.
+const defaultsInit = ["init", [["name","worker"],["seed",42]]];
+const serialPolicy = {...p,serial:true};
+const defaultCases = [
+  ["serial omitted schedule", [defaultsInit], null, serialPolicy],
+  ["serial empty schedule", [["schedule",[]],defaultsInit], null, serialPolicy],
+  ["serial explicit one", [["schedule",[["max_parallelism",1]]],defaultsInit], null, serialPolicy],
+  ["serial pinned implicit one", [["schedule",[["affinity","pinned"]]],defaultsInit], null, serialPolicy],
+  ["serial dedicated implicit one (shape only)", [["schedule",[["affinity","dedicated"]]],defaultsInit], null, serialPolicy],
+  ["ordinary pinned implicit four", [["schedule",[["affinity","pinned"]]],defaultsInit], "AFFINITY_CAP"],
+  ["ordinary dedicated explicit one (shape only)", [["schedule",[["max_parallelism",1],["affinity","dedicated"]]],defaultsInit], null],
+  ["serial explicit two", [["schedule",[["max_parallelism",2]]],defaultsInit], "SERIAL", serialPolicy],
+  ["fractional init integer", [["init",[["name","worker"],["seed",1.5]]]], "TYPE"],
+  ["init key without schema", [defaultsInit], "UNKNOWN_KEY", {...p,init:{}}]
+];
+console.log("source-free default cases passed:",run(check,defaultCases,p));
+const preserved = check([["resources",[["stack_size",65536]]],defaultsInit,["schedule",[["max_parallelism",1],["affinity","sticky"]]]],p);
+if (preserved.resources.stack_size!==65536 || preserved.init.name!=="worker" || preserved.init.seed!==42 ||
+    preserved.schedule.max_parallelism!==1 || preserved.schedule.affinity!=="sticky") {
+  throw Error("validated supplied option values were not preserved");
+}
+console.log("source-free value preservation assertions passed: 5");
