@@ -1,0 +1,11 @@
+define fnc int • f(x?: string? ?= "bar" ??= "star") {
+    match x over
+        on None -> { return 99; }
+        on Some(v) -> {
+            return v eq "star" ? 20 : (v eq "bar" ? 21 : (v eq "" ? 1 : 99));
+        }
+    end
+}
+define pub fnc int • main() {
+    return f() + f(None) + f(Some(""));
+}
