@@ -6,7 +6,7 @@ import { createHash } from 'node:crypto';
 
 function validate(m,read){
   const need=(ok,msg)=>{if(!ok)throw new Error(msg)};
-  const sha=createHash('sha1').update('blob '+bytes.length).update(Buffer.from([0])).update(bytes).digest('hex');
+  const sha=s=>typeof s==="string"&&/^[0-9a-f]{40}$/.test(s);
   need(m.schema==="atto.state-intrinsics-parity.v1"&&m.status==="CANDIDATE_NOT_FULL_PARITY","candidate scope required");
   need(m.sourceFixtureOrigin?.repo==="atto-lang/atto-source.rs"&&sha(m.sourceFixtureOrigin.head)&&sha(m.sourceFixtureOrigin.tree),"immutable fixture origin required");
   const names=["atto","net","hdl","java","realtime","rs","llvm","js","forge","wasm","cranelift"].map(x=>"atto-lang/atto-source."+x).sort();
@@ -56,7 +56,7 @@ function mutations(){
 const manifest=JSON.parse(readFileSync(new URL('../contracts/state-intrinsics-parity-v1.json',import.meta.url),'utf8'));
 function read(path){
   const bytes=readFileSync(new URL('../'+path,import.meta.url));
-  const sha=createHash('sha1').update('blob '+bytes.length+'\\0'.replace('\\0','\0')).update(bytes).digest('hex');
+  const sha=createHash('sha1').update('blob '+bytes.length).update(Buffer.from([0])).update(bytes).digest('hex');
   return {sha,content:bytes.toString('utf8')};
 }
 test('pinned state intrinsic fixtures and eleven backend candidate inventory',()=>{
