@@ -1,0 +1,124 @@
+{
+  "schema": "atto.actor-machine-scalar-host-reference.v1",
+  "status": "TARGET_NOT_EXECUTED",
+  "scope": "Host reference only. No source compiler, runtime, scheduler, persistence, physical resource ownership, cancellation delivery or authenticated event identity proof. Scalar delta fixed per graph edge; caller supplies expected local version/generation and pre-admission cancellation flag. Nonnegative i64 invariant; initial version 0 and generation 1.",
+  "initial": {
+    "node": 1,
+    "value": "1",
+    "version": "0",
+    "generation": "1"
+  },
+  "nodes": [
+    {
+      "id": 0,
+      "terminal": true
+    },
+    {
+      "id": 1,
+      "terminal": false
+    }
+  ],
+  "events": [
+    "Add",
+    "Finish"
+  ],
+  "edges": [
+    [
+      1,
+      0,
+      1
+    ],
+    [
+      1,
+      1,
+      0
+    ]
+  ],
+  "cases": [
+    {
+      "id": "cancel-before-commit",
+      "expected": "CANCELLED",
+      "unchanged": true
+    },
+    {
+      "id": "invalid-event",
+      "expected": "INVALID_EVENT",
+      "unchanged": true
+    },
+    {
+      "id": "self-transition",
+      "expected": "COMMITTED",
+      "snapshot": {
+        "node": 1,
+        "value": "3",
+        "version": "1",
+        "generation": "2"
+      }
+    },
+    {
+      "id": "stale-version",
+      "expected": "STALE",
+      "unchanged": true
+    },
+    {
+      "id": "stale-generation",
+      "expected": "STALE",
+      "unchanged": true
+    },
+    {
+      "id": "terminal-transition",
+      "expected": "COMMITTED",
+      "snapshot": {
+        "node": 0,
+        "value": "3",
+        "version": "2",
+        "generation": "3"
+      }
+    },
+    {
+      "id": "terminal-fence",
+      "expected": "TERMINAL",
+      "unchanged": true
+    },
+    {
+      "id": "negative-value",
+      "expected": "INVARIANT",
+      "unchanged": true
+    },
+    {
+      "id": "i64-overflow",
+      "expected": "OVERFLOW",
+      "unchanged": true
+    },
+    {
+      "id": "counter-limit",
+      "expected": "EXHAUSTED",
+      "unchanged": true
+    },
+    {
+      "id": "same-version-race",
+      "expected": [
+        "COMMITTED",
+        "STALE"
+      ],
+      "snapshot": {
+        "node": 1,
+        "value": "2",
+        "version": "1",
+        "generation": "2"
+      }
+    },
+    {
+      "id": "incomplete-plan",
+      "expected": "REJECT"
+    },
+    {
+      "id": "duplicate-operation",
+      "expected": "REJECT"
+    },
+    {
+      "id": "unknown-operation",
+      "expected": "REJECT"
+    }
+  ]
+}
