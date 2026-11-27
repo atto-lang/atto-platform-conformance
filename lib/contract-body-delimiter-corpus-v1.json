@@ -1,0 +1,293 @@
+{
+  "schema": "atto.contract-body-delimiters.v1",
+  "status": "candidate-not-verified",
+  "spec": "https://github.com/atto-lang/atto-spec/pull/240",
+  "notes": [
+    "All cases are target semantics, not current compiler support. Unsupported profiles report unsupported explicitly, not pass.",
+    "Compare source hashes and semantic results across actual compiler adapters; rejected cases must produce no executable artifact.",
+    "Legacy :: comma-tail grammar regression, mtd/routine, formatter AST comparison, and runtime MIN/-1 checks need dedicated backend fixtures; do not infer their coverage."
+  ],
+  "cases": [
+    {
+      "id": "brace-inline-keyword",
+      "stage": "execute",
+      "source": "fnc divide(int a, int b) -> int\n    requires b != 0 {\n    return a / b;\n}\npub fnc main() -> int { return divide(84, 2); }\n",
+      "expected": {
+        "value": 42
+      },
+      "equivalenceGroup": "divide"
+    },
+    {
+      "id": "brace-inline-annotation",
+      "stage": "execute",
+      "source": "@requires(b != 0)\nfnc divide(int a, int b) -> int {\n    return a / b;\n}\npub fnc main() -> int { return divide(84, 2); }\n",
+      "expected": {
+        "value": 42
+      },
+      "equivalenceGroup": "divide",
+      "capabilities": [
+        "contract-annotations"
+      ]
+    },
+    {
+      "id": "brace-inline-mixed",
+      "stage": "execute",
+      "source": "@ensures(result == a / b)\nfnc divide(int a, int b) -> int\n    requires b != 0 {\n    return a / b;\n}\npub fnc main() -> int { return divide(84, 2); }\n",
+      "expected": {
+        "value": 42
+      },
+      "equivalenceGroup": "divide",
+      "capabilities": [
+        "contract-annotations",
+        "expression-postconditions"
+      ]
+    },
+    {
+      "id": "brace-next-keyword",
+      "stage": "execute",
+      "source": "fnc divide(int a, int b) -> int\n    requires b != 0\n{\n    return a / b;\n}\npub fnc main() -> int { return divide(84, 2); }\n",
+      "expected": {
+        "value": 42
+      },
+      "equivalenceGroup": "divide"
+    },
+    {
+      "id": "brace-next-annotation",
+      "stage": "execute",
+      "source": "@requires(b != 0)\nfnc divide(int a, int b) -> int\n{\n    return a / b;\n}\npub fnc main() -> int { return divide(84, 2); }\n",
+      "expected": {
+        "value": 42
+      },
+      "equivalenceGroup": "divide",
+      "capabilities": [
+        "contract-annotations"
+      ]
+    },
+    {
+      "id": "brace-next-mixed",
+      "stage": "execute",
+      "source": "@ensures(result == a / b)\nfnc divide(int a, int b) -> int\n    requires b != 0\n{\n    return a / b;\n}\npub fnc main() -> int { return divide(84, 2); }\n",
+      "expected": {
+        "value": 42
+      },
+      "equivalenceGroup": "divide",
+      "capabilities": [
+        "contract-annotations",
+        "expression-postconditions"
+      ]
+    },
+    {
+      "id": "begin-keyword",
+      "stage": "execute",
+      "source": "fnc divide(int a, int b) -> int\n    requires b != 0\nbegin\n    return a / b;\nend\npub fnc main() -> int { return divide(84, 2); }\n",
+      "expected": {
+        "value": 42
+      },
+      "equivalenceGroup": "divide"
+    },
+    {
+      "id": "begin-annotation",
+      "stage": "execute",
+      "source": "@requires(b != 0)\nfnc divide(int a, int b) -> int\nbegin\n    return a / b;\nend\npub fnc main() -> int { return divide(84, 2); }\n",
+      "expected": {
+        "value": 42
+      },
+      "equivalenceGroup": "divide",
+      "capabilities": [
+        "contract-annotations"
+      ]
+    },
+    {
+      "id": "begin-mixed",
+      "stage": "execute",
+      "source": "@ensures(result == a / b)\nfnc divide(int a, int b) -> int\n    requires b != 0\nbegin\n    return a / b;\nend\npub fnc main() -> int { return divide(84, 2); }\n",
+      "expected": {
+        "value": 42
+      },
+      "equivalenceGroup": "divide",
+      "capabilities": [
+        "contract-annotations",
+        "expression-postconditions"
+      ]
+    },
+    {
+      "id": "double-colon-inline-keyword",
+      "stage": "execute",
+      "source": "fnc divide(int a, int b) -> int\n    requires b != 0 ::\n    return a / b;\nend\npub fnc main() -> int { return divide(84, 2); }\n",
+      "expected": {
+        "value": 42
+      },
+      "equivalenceGroup": "divide"
+    },
+    {
+      "id": "double-colon-inline-annotation",
+      "stage": "execute",
+      "source": "@requires(b != 0)\nfnc divide(int a, int b) -> int ::\n    return a / b;\nend\npub fnc main() -> int { return divide(84, 2); }\n",
+      "expected": {
+        "value": 42
+      },
+      "equivalenceGroup": "divide",
+      "capabilities": [
+        "contract-annotations"
+      ]
+    },
+    {
+      "id": "double-colon-inline-mixed",
+      "stage": "execute",
+      "source": "@ensures(result == a / b)\nfnc divide(int a, int b) -> int\n    requires b != 0 ::\n    return a / b;\nend\npub fnc main() -> int { return divide(84, 2); }\n",
+      "expected": {
+        "value": 42
+      },
+      "equivalenceGroup": "divide",
+      "capabilities": [
+        "contract-annotations",
+        "expression-postconditions"
+      ]
+    },
+    {
+      "id": "double-colon-next-keyword",
+      "stage": "execute",
+      "source": "fnc divide(int a, int b) -> int\n    requires b != 0\n::\n    return a / b;\nend\npub fnc main() -> int { return divide(84, 2); }\n",
+      "expected": {
+        "value": 42
+      },
+      "equivalenceGroup": "divide"
+    },
+    {
+      "id": "double-colon-next-annotation",
+      "stage": "execute",
+      "source": "@requires(b != 0)\nfnc divide(int a, int b) -> int\n::\n    return a / b;\nend\npub fnc main() -> int { return divide(84, 2); }\n",
+      "expected": {
+        "value": 42
+      },
+      "equivalenceGroup": "divide",
+      "capabilities": [
+        "contract-annotations"
+      ]
+    },
+    {
+      "id": "double-colon-next-mixed",
+      "stage": "execute",
+      "source": "@ensures(result == a / b)\nfnc divide(int a, int b) -> int\n    requires b != 0\n::\n    return a / b;\nend\npub fnc main() -> int { return divide(84, 2); }\n",
+      "expected": {
+        "value": 42
+      },
+      "equivalenceGroup": "divide",
+      "capabilities": [
+        "contract-annotations",
+        "expression-postconditions"
+      ]
+    },
+    {
+      "id": "cast-and-body-opener",
+      "stage": "execute",
+      "source": "fnc convert(i32 a) -> i64\n    requires a::<i64> >= 0 ::\n    return a::<i64>;\nend\npub fnc main() -> i64 { return convert(<i32>42); }\n",
+      "expected": {
+        "value": 42
+      },
+      "capabilities": [
+        "i32-to-i64-checked-cast"
+      ]
+    },
+    {
+      "id": "uncontracted-fnc-colon",
+      "stage": "execute",
+      "source": "pub fnc main() -> int ::\n    return 42;\nend\n",
+      "expected": {
+        "value": 42
+      }
+    },
+    {
+      "id": "negative-division",
+      "stage": "execute",
+      "source": "fnc divide(int a, int b) -> int\n    requires b != 0 ::\n    return a / b;\nend\npub fnc main() -> int { return divide(-85, 2); }\n",
+      "expected": {
+        "value": -42
+      }
+    },
+    {
+      "id": "zero-precondition",
+      "stage": "reject",
+      "source": "fnc divide(int a, int b) -> int\n    requires b != 0 ::\n    return a / b;\nend\npub fnc main() -> int { return divide(84, 0); }\n",
+      "expected": {
+        "category": "precondition",
+        "artifact": false
+      },
+      "capabilities": [
+        "static-contract-checking"
+      ]
+    },
+    {
+      "id": "same-line-begin",
+      "stage": "reject",
+      "source": "fnc divide(int a, int b) -> int\n    requires b != 0 begin\n    return a / b;\nend\n",
+      "expected": {
+        "category": "syntax",
+        "artifact": false
+      }
+    },
+    {
+      "id": "wrong-close",
+      "stage": "reject",
+      "source": "fnc divide(int a, int b) -> int\n    requires b != 0 ::\n    return a / b;\n}\n",
+      "expected": {
+        "category": "syntax",
+        "artifact": false
+      }
+    },
+    {
+      "id": "missing-end",
+      "stage": "reject",
+      "source": "fnc divide(int a, int b) -> int\n    requires b != 0 ::\n    return a / b;\n",
+      "expected": {
+        "category": "syntax",
+        "artifact": false
+      }
+    },
+    {
+      "id": "malformed-cast",
+      "stage": "reject",
+      "source": "fnc convert(int a) -> int\n    requires a::< > >= 0 ::\n    return a;\nend\n",
+      "expected": {
+        "category": "syntax",
+        "artifact": false
+      }
+    },
+    {
+      "id": "combined-openers",
+      "stage": "reject",
+      "source": "fnc divide(int a, int b) -> int\n    requires b != 0 :: begin\n    return a / b;\nend\nend\n",
+      "expected": {
+        "category": "syntax",
+        "artifact": false
+      }
+    },
+    {
+      "id": "colon-crlf",
+      "stage": "execute",
+      "source": "fnc divide(int a, int b) -> int\r\n    requires b != 0 ::\r\n    return a / b;\r\nend\r\npub fnc main() -> int { return divide(84, 2); }\r\n",
+      "expected": {
+        "value": 42
+      },
+      "equivalenceGroup": "divide"
+    },
+    {
+      "id": "colon-comment-boundary",
+      "stage": "execute",
+      "source": "fnc divide(int a, int b) -> int\n    requires b != 0 /* predicate complete */ ::\n    return a / b;\nend\npub fnc main() -> int { return divide(84, 2); }\n",
+      "expected": {
+        "value": 42
+      },
+      "equivalenceGroup": "divide"
+    },
+    {
+      "id": "colon-multiline-predicate",
+      "stage": "execute",
+      "source": "fnc divide(int a, int b) -> int\n    requires (b !=\n        0) ::\n    return a / b;\nend\npub fnc main() -> int { return divide(84, 2); }\n",
+      "expected": {
+        "value": 42
+      },
+      "equivalenceGroup": "divide"
+    }
+  ]
+}
