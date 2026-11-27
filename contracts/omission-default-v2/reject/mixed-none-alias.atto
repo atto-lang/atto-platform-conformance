@@ -1,0 +1,2 @@
+define fnc int • foo(x?: int? ?= 3 ?? 4) { return 42; }
+define pub fnc int • main() { return foo(); }
