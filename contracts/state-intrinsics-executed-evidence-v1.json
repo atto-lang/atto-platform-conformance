@@ -456,5 +456,39 @@
     ],
     "flags": "C++20 O1 ASan/UBSan -Wall -Wextra -Werror -pedantic",
     "scope": "Serialized trusted host metadata ledger; read/write exclusion, exact provenance and nonreentry, retirement with physical release accounting, owned place lifetime, monotonic loan IDs. No arena read/write integration, actual scheduler integration, full CMake build or guest lowering executed. No promotion."
+  },
+  "forgeProtectedScalarStorage": {
+    "status": "LOCAL_HOST_ONLY_NOT_CI",
+    "repo": "atto-lang/atto-source.forge",
+    "pr": 334,
+    "head": "37ea6e6703e4044531fe18940ae98e4a24592005",
+    "tree": "be461868f5913d68fcfef78b0eadcbd1d43f7ed2",
+    "ledgerBlob": "9561d8c366d0c5b1214e5a7a0d8576cb45653dcf",
+    "provenanceBlob": "b9a86b9357bde047fde7e487f65d6682306c0ae7",
+    "scalarBlob": "9affb757252da8aa14a81aefd1abf8df9f457b94",
+    "testBlob": "ed3bee06b1d84ea31b08cfa364045ba29404907f",
+    "toolchains": [
+      {
+        "name": "GCC 14.2.0",
+        "passed": 3
+      },
+      {
+        "name": "Clang 17.0.0",
+        "passed": 3
+      }
+    ],
+    "flags": "C++20 O1 ASan/UBSan -Wall -Wextra -Werror -pedantic",
+    "scope": "Actual isolated scalar storage with loan-gated access, checked boundaries, retirement and drainage. Caller serializes and authenticates receipt identity. No existing actor arena or compiler integration. CTest registration added, full CMake build not run."
+  },
+  "craneliftHostStateRegionCandidate": {
+    "status": "NOT_EXECUTED",
+    "repo": "atto-lang/atto-source.cranelift",
+    "pr": 201,
+    "head": "7b4c48d2511b798d39829a3aa4458faeea60b485",
+    "tree": "b61e0045ab5bf8e1561c9513b19adb06f50470ae",
+    "base": "d24b1a52cf2eabf91b2905a95db7a5b3910c01de",
+    "moduleBlob": "1583619383fb5a93badc7119f85fb07ccefc3993",
+    "newUnitTestGroups": 7,
+    "scope": "Candidate live-loan ledger and protected i64 storage; retains existing JSON-safe ID ceiling 2^53-1. No local Rust compiler or actual runtime/guest execution; no parity promotion."
   }
 }
