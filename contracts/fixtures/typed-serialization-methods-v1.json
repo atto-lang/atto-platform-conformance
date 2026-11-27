@@ -4,10 +4,10 @@
   "spec": "https://github.com/atto-lang/atto-spec/pull/281",
   "source_fixture": {
     "pr": "https://github.com/atto-lang/atto-serialization-and-validation/pull/100",
-    "head": "9561d2a7bfc9af02d34e03707676e121656e102d",
+    "head": "9ab30538da84c40a43709631b59c339d2e19c704",
     "path": "tests/generated_typed_codec_test.ores",
     "scope": "Manually projected typed JSON and MessagePack fixture with shared metadata validation; not compiler-generated method support",
-    "tree": "ec6a937c9a92829a0c2a1be173a4e2dea1f6b35f"
+    "tree": "f358ffa2b9284e5a56b77b32af387e2391e14385"
   },
   "profile": {
     "schema": "User example, fields displayName string and age signed integer in this fixed order",
@@ -89,7 +89,7 @@
   "messagepack_source_fixture": {
     "path": "tests/messagepack_test.ores",
     "scope": "dynamic MessagePack wire roundtrip and malformed frame tests; no typed constructor lowering",
-    "head": "9561d2a7bfc9af02d34e03707676e121656e102d"
+    "head": "9ab30538da84c40a43709631b59c339d2e19c704"
   },
   "messagepack_negative": [
     {
@@ -135,13 +135,13 @@
   ],
   "typed_messagepack_source_fixture": {
     "path": "tests/generated_typed_codec_test.ores",
-    "head": "9561d2a7bfc9af02d34e03707676e121656e102d",
+    "head": "9ab30538da84c40a43709631b59c339d2e19c704",
     "scope": "Shared metadata validation, concrete User constructor, typed errors; guest NOT_EXECUTED"
   },
   "messagepack_container_admission": {
     "scope": "candidate dynamic codec, exact error and no partial value assertions; not guest evidence",
     "source_path": "tests/messagepack_test.ores",
-    "head": "9561d2a7bfc9af02d34e03707676e121656e102d",
+    "head": "9ab30538da84c40a43709631b59c339d2e19c704",
     "negative": [
       {
         "hex": "930102",
@@ -299,7 +299,7 @@
   },
   "typed_policy_denials": {
     "scope": "both metadata-driven typed formats; clean valid fixture frame with unsafe policy must fail before projection",
-    "source_head": "9561d2a7bfc9af02d34e03707676e121656e102d",
+    "source_head": "9ab30538da84c40a43709631b59c339d2e19c704",
     "source_path": "tests/generated_typed_codec_test.ores",
     "expected": {
       "status": 2,
@@ -352,7 +352,16 @@
       "src/cbor/cbor.ores"
     ],
     "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45914716048",
-    "scope": "candidate tri-state equality, cumulative logical storage/work, binary map collision checks, composite duplicate fixtures and borrowing repairs; legacy bool wrapper traps on resource denial, must audit remaining callers; full guest NOT_EXECUTED"
+    "scope": "candidate tri-state equality, cumulative logical storage/work, binary map collision checks, composite duplicate fixtures and borrowing repairs; legacy bool wrapper traps on resource denial, must audit remaining callers; full guest NOT_EXECUTED",
+    "latest_test_harness_head": "9ab30538da84c40a43709631b59c339d2e19c704",
+    "latest_test_harness_tree": "f358ffa2b9284e5a56b77b32af387e2391e14385",
+    "latest_test_harness_run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45914867766",
+    "prior_executed_receipt": {
+      "head": "9561d2a7bfc9af02d34e03707676e121656e102d",
+      "tree": "ec6a937c9a92829a0c2a1be173a4e2dea1f6b35f",
+      "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45914716048/job/140231063440",
+      "scope": "compiler build, three isolated kernel guests passed, full/core failed unknown decode_default in JSON test source; no full codec execution"
+    }
   },
   "java_value_index_prior_receipt": {
     "head": "f41dc94d4ea3e54474a497ef2252302ab6d5987a",
