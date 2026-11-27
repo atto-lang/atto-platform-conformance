@@ -120,5 +120,19 @@
       "id": "unknown-operation",
       "expected": "REJECT"
     }
-  ]
+  ],
+  "js_host_reference": {
+    "repo": "atto-lang/atto-source.js",
+    "head": "078df848ad3ad486d838d9732ff6c2815ee57f0c",
+    "table_blob": "d07b3e805d1e81f95ba8f92b3def3e9d77f1e301",
+    "reference_blob": "47ffccaf9cbab67b0209d83d7fe79d8b642b99a2",
+    "test_blob": "ff3373b4e25739bbc43e0005e69a5e4f528f707c",
+    "local_test": {
+      "toolchain": "Node v22.16.0",
+      "command": "node --test tests/scalar-machine-commit-v1.test.mjs",
+      "passed": 19,
+      "failed": 0
+    },
+    "limitations": "Test-only synchronous reference; same-version sequential contenders, not concurrent worker proof. Guest NOT_EXECUTED."
+  }
 }
