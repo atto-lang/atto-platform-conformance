@@ -1188,6 +1188,53 @@
         }
       ],
       "limitation": "Focused 14/14 passed; five preexisting ParserTest failures on both candidate and pre-pipeline branch. No whole-suite, recover, native-image or current-main claim."
+    },
+    {
+      "backend": "atto-source.rs",
+      "compiler_head": "81b71507ee4b471e4c34c175b6f32424bfa9d487",
+      "compiler_tree": "fbd8efd59fc585c9bcb39730378bf7fa52f97a4b",
+      "fixture_registry_head": "e4fb01518458cc139f00f297ae480ed361be5309",
+      "fixture_registry_tree": "855029235f61ac038c83bb37f682bebd047ae381",
+      "job": "https://github.com/file-tunnel/atto-ci/actions/runs/45912593307/job/140224244647",
+      "profiles": [
+        "native-compiler",
+        "wasm32-compiler-in-node"
+      ],
+      "compiler_wasm_sha256": "eb733891b8c59a251750637e19e8e1a5c9a700c7bcaa30fb7c470eeaf828a282",
+      "results": [
+        {
+          "case_id": "pipeline-defer-registration",
+          "source_blob": "58b4ca263a178732e79e7e5509092dc9dfabea3d",
+          "observed": {
+            "kind": "return",
+            "value": 42,
+            "stdout": "seed\ntwice\nbody\ntuple\n7\n10\n"
+          },
+          "guest_sha256": "bef8e5fc46a5e74a2c7630b491e5cc6c40124c13a5122e954b0558f190fff40e",
+          "byte_identical": true
+        },
+        {
+          "case_id": "pipeline-recover-registration",
+          "source_blob": "1bb8cf98f5f52d219951ef102acf9bb0f5c1b936",
+          "observed": {
+            "kind": "return",
+            "value": 42,
+            "stdout": "seed\n5\noriginal\n"
+          },
+          "guest_sha256": "3178a57b8b26e89bc2331c1593a7851345b8fb130c5529201006555e0a4e7721",
+          "byte_identical": true
+        },
+        {
+          "case_id": "pipeline-arity-rejection",
+          "source_blob": "e2faa1a2d281f4acd93b405b282b189b0625c946",
+          "observed": {
+            "kind": "compile-reject"
+          },
+          "diagnostic": "E_ARITY",
+          "artifact_emitted": false
+        }
+      ],
+      "limitation": "Integrated candidate based on main 465e519f; not standalone atto-source.wasm, browser UI, native executable or current-main certification."
     }
   ]
 }
