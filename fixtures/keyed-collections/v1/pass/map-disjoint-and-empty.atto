@@ -1,0 +1,10 @@
+// Candidate target: NOT_EXECUTED; see manifest.json.
+pub fnc main(): int {
+  const a = Map.of<string,int>("x" => 0);
+  const b = Map.of<string,int>("y" => 0);
+  const e = Map.of<string,int>();
+  const f = Map.of<string,int>();
+  return !a.overlapping_values_equal(b) && !a.has_overlap(b) &&
+         !a.overlapping_values_equal(e) && e.overlapping_values_equal(f) &&
+         e.same_keys(f) && !e.has_overlap(f) ? 42 : 1;
+}

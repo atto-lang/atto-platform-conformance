@@ -1,0 +1,6 @@
+// Candidate target: NOT_EXECUTED; see manifest.json.
+pub fnc main(): int {
+  const a = Set.of<int>(1);
+  const b = Set.of<string>("1");
+  return a.has_overlap(b) ? 42 : 1;
+}
