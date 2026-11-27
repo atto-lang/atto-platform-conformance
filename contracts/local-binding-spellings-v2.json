@@ -2,7 +2,7 @@
   "schema_version": 2,
   "contract": "local-binding-spellings-v2",
   "status": "AUTHORED_NOT_EXECUTED",
-  "notes": "Source strings are independent candidate programs; no actual compiler run or adapter is implied. Confirm exact diagnostic mapping and canonical entry syntax per lane; do not treat arbitrary parser errors as semantic proof. Additional ownership, cast failure, actor isolation and formatter tests required.",
+  "notes": "Source strings are independent candidate programs; no actual compiler run or adapter is implied. Confirm exact diagnostic mapping and canonical entry syntax per lane; do not treat arbitrary parser errors as semantic proof. Additional ownership, cast failure, actor isolation and formatter tests required. Explicit-counter cases target the proposed strict explicit-rebinding profile (spec #307); backend-specific flag/entry adapters and diagnostic mappings are required. No execution is inferred from manifest addition.",
   "backends": {
     "java": "NOT_EXECUTED",
     "llvm": "NOT_EXECUTED",
@@ -522,6 +522,168 @@
       "expected": {
         "kind": "compile_reject",
         "category": "duplicate_type_annotation",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "explicit-counter-inc",
+      "source": "pub fnc main(): int { let x = 40; set x++; set ++x; return x; }\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "explicit-counter-dec",
+      "source": "pub fnc main(): int { let x = 44; set x--; set --x; return x; }\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "explicit-counter-compound",
+      "source": "pub fnc main(): int { let x = 20; set x += 2; set x -= 1; set x *= 2; return x; }\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "explicit-counter-loop",
+      "source": "pub fnc main(): int { let x = 32; for let i = 0; i < 10; set i++ { set x++; } return x; }\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "explicit-counter-descending",
+      "source": "pub fnc main(): int { let x = 32; for (let i = 10; i > 0; set --i) { set x++; } return x; }\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "explicit-counter-stride",
+      "source": "pub fnc main(): int { let x = 32; for let i = 0; i < 10; set i += 2 { set x += 2; } return x; }\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "explicit-counter-continue-break",
+      "source": "pub fnc main(): int { let n = 0; for let i = 0; i < 10; set i++ { if i == 2 then continue; fi if i == 5 then break; fi set n += 10; } return n + 2; }\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "explicit-counter-scope-shadow",
+      "source": "pub fnc main(): int { let i = 42; for let i = 0; i < 10; set i++ {} return i; }\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "explicit-counter-zero-trip",
+      "source": "pub fnc main(): int { let x = 42; for let i = 10; i < 10; set i++ { set x = 0; } return x; }\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "explicit-counter-bare-inc",
+      "source": "pub fnc main(): int { let x = 40; x++; return x; }\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "explicit_rebinding_required",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "explicit-counter-bare-compound",
+      "source": "pub fnc main(): int { let x = 40; x += 2; return x; }\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "explicit_rebinding_required",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "explicit-counter-bare-loop",
+      "source": "pub fnc main(): int { for let i = 0; i < 10; i++ {} return 42; }\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "explicit_rebinding_required",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "explicit-counter-let-loop",
+      "source": "pub fnc main(): int { for let i = 0; i < 10; let i++ {} return 42; }\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "invalid_update_target",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "explicit-counter-fixed",
+      "source": "pub fnc main(): int { const x = 40; set x++; return x; }\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "immutable_reassignment",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "explicit-counter-unknown",
+      "source": "pub fnc main(): int { set ++x; return 42; }\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "unbound_binding",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "explicit-counter-bool",
+      "source": "pub fnc main(): int { let x = true; set x++; return 42; }\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "type_mismatch",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "explicit-counter-separated",
+      "source": "pub fnc main(): int { let x = 40; set x - = 2; return x; }\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "invalid_update_operator",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "explicit-counter-double-inc",
+      "source": "pub fnc main(): int { let x = 40; set ++x++; return x; }\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "invalid_update_operator",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "explicit-counter-scope-escape",
+      "source": "pub fnc main(): int { for let i = 0; i < 10; set i++ {} return i; }\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "unbound_binding",
         "no_artifact": true
       }
     }
