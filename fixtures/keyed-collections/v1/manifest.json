@@ -1,0 +1,96 @@
+{
+  "schema": "atto.keyed-collections.guest-targets.v1",
+  "status": "PROPOSED_TARGETS_NOT_EXECUTED",
+  "reference": "atto-lang/atto-common-source#171",
+  "equality_contract": "contracts/equality-operators-v1.json",
+  "backend_status": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "rs": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
+    "atto": "NOT_EXECUTED",
+    "hdl": "NOT_EXECUTED",
+    "realtime": "NOT_EXECUTED"
+  },
+  "cases": [
+    {
+      "id": "map-overlap-agrees",
+      "kind": "candidate-pass",
+      "path": "fixtures/keyed-collections/v1/pass/map-overlap-agrees.atto",
+      "expected_exit": 42
+    },
+    {
+      "id": "map-same-keys-conflicting-values",
+      "kind": "candidate-pass",
+      "path": "fixtures/keyed-collections/v1/pass/map-same-keys-conflicting-values.atto",
+      "expected_exit": 42
+    },
+    {
+      "id": "map-disjoint-and-empty",
+      "kind": "candidate-pass",
+      "path": "fixtures/keyed-collections/v1/pass/map-disjoint-and-empty.atto",
+      "expected_exit": 42
+    },
+    {
+      "id": "map-none-present",
+      "kind": "candidate-pass",
+      "path": "fixtures/keyed-collections/v1/pass/map-none-present.atto",
+      "expected_exit": 42
+    },
+    {
+      "id": "map-directional",
+      "kind": "candidate-pass",
+      "path": "fixtures/keyed-collections/v1/pass/map-directional.atto",
+      "expected_exit": 42
+    },
+    {
+      "id": "map-equality-order-independent",
+      "kind": "candidate-pass",
+      "path": "fixtures/keyed-collections/v1/pass/map-equality-order-independent.atto",
+      "expected_exit": 42
+    },
+    {
+      "id": "set-membership-and-overlap",
+      "kind": "candidate-pass",
+      "path": "fixtures/keyed-collections/v1/pass/set-membership-and-overlap.atto",
+      "expected_exit": 42
+    },
+    {
+      "id": "set-symmetric-difference",
+      "kind": "candidate-pass",
+      "path": "fixtures/keyed-collections/v1/pass/set-symmetric-difference.atto",
+      "expected_exit": 42
+    },
+    {
+      "id": "record-overlap",
+      "kind": "candidate-pass",
+      "path": "fixtures/keyed-collections/v1/pass/record-overlap.atto",
+      "expected_exit": 42
+    },
+    {
+      "id": "map-incompatible-key-types",
+      "kind": "candidate-reject",
+      "path": "fixtures/keyed-collections/v1/fail/map-incompatible-key-types.atto",
+      "phase": "type",
+      "expected_error_category": "incompatible comparison domain"
+    },
+    {
+      "id": "map-incompatible-value-types",
+      "kind": "candidate-reject",
+      "path": "fixtures/keyed-collections/v1/fail/map-incompatible-value-types.atto",
+      "phase": "type",
+      "expected_error_category": "incompatible comparison domain"
+    },
+    {
+      "id": "set-incompatible-elements",
+      "kind": "candidate-reject",
+      "path": "fixtures/keyed-collections/v1/fail/set-incompatible-elements.atto",
+      "phase": "type",
+      "expected_error_category": "incompatible comparison domain"
+    }
+  ]
+}

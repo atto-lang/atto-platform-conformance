@@ -1,0 +1,6 @@
+// Candidate target: NOT_EXECUTED; see manifest.json.
+pub fnc main(): int {
+  const a = Map.of<string,int>("x" => 5);
+  const b = Map.of<int,int>(1 => 5);
+  return a.same_keys(b) ? 42 : 1;
+}

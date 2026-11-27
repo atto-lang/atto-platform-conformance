@@ -1,0 +1,8 @@
+// Candidate target: NOT_EXECUTED; see manifest.json.
+pub fnc main(): int {
+  const a = Map.of<string,int>("x" => 5, "y" => 10);
+  const b = Map.of<string,int>("x" => 5);
+  const c = Map.of<string,int>("x" => 6);
+  return a.contains_entries(b) && !b.contains_entries(a) &&
+         a.contains_keys(c) && !a.contains_entries(c) ? 42 : 1;
+}

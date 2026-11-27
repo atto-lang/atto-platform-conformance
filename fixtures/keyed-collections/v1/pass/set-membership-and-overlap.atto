@@ -1,0 +1,9 @@
+// Candidate target: NOT_EXECUTED; see manifest.json.
+pub fnc main(): int {
+  const a = Set.of<int>(1, 2, 3);
+  const b = Set.of<int>(3, 2, 1);
+  const c = Set.of<int>(2, 3);
+  const d = Set.of<int>(4);
+  return (a eq b) && a.has_overlap(c) && !a.has_overlap(d) &&
+         c.is_subset_of(a) && !a.is_subset_of(c) ? 42 : 1;
+}

@@ -1,0 +1,8 @@
+// Candidate target: NOT_EXECUTED; see manifest.json.
+pub fnc main(): int {
+  const a = { name: "Alice", age: 30 };
+  const b = { name: "Alice", city: "Lima" };
+  const c = { name: "Bob", age: 30 };
+  return a.overlapping_values_equal(b) && !a.same_keys(b) &&
+         a.same_keys(c) && !a.overlapping_values_equal(c) ? 42 : 1;
+}
