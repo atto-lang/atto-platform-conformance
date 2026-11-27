@@ -1,0 +1,35 @@
+{
+  "schema": "atto.value-loop-recur.observations.v1",
+  "full_parity_certified": false,
+  "manifest_blob": "37eaf373806c65fd2aefb283f063dc186d332049",
+  "cases": [
+    {
+      "id": "230-stateless-value-loop",
+      "source_blob": "2c0359a6d2876958d6fb6831eb0dac3c6548c15b",
+      "observations": [
+        {
+          "profile": "rs-wasm",
+          "repo": "atto-lang/atto-source.rs",
+          "compiler_family": "rs",
+          "commit": "11ad063c15cf493eb5660c7aaa3aa961da51f171",
+          "tree": "bfc048678138f2bea6669bb33cb2d9cc037fe740",
+          "receipt": "https://github.com/streempilot-test/contract-conformance-tests/actions/runs/45947337466/job/140334944579",
+          "return_i64": "42",
+          "stdout": "",
+          "scope": "native and wasm32 hosts of the same Rust compiler; one family"
+        },
+        {
+          "profile": "js-esm",
+          "repo": "atto-lang/atto-source.js",
+          "compiler_family": "js",
+          "commit": "00fe167ac44b99de631f6f84388379054d952b65",
+          "tree": "400b38cf4e6cdb4bd6d8d0645864aff225e3d486",
+          "receipt": "https://github.com/streempilot-test/contract-conformance-tests/actions/runs/45947833608/job/140336510523",
+          "return_i64": "42",
+          "stdout": "",
+          "scope": "independent JS program-v2 compiler and generated ESM execution"
+        }
+      ]
+    }
+  ]
+}
