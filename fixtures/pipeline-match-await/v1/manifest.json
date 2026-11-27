@@ -207,6 +207,82 @@
       "file": "native-binding-escape.atto",
       "sourceGitBlobSha1": "237303f93daa08f2804f1e137c4525c5a7ba5fa3",
       "confirmedBackends": []
+    },
+    {
+      "id": "delimited-single-subject",
+      "expect": "exit",
+      "exit": 42,
+      "file": "delimited-single-subject.atto",
+      "sourceGitBlobSha1": "b093612f0c6af4e862ad594b629b54659cc99bce",
+      "confirmedBackends": []
+    },
+    {
+      "id": "delimited-switch-product",
+      "expect": "exit",
+      "exit": 42,
+      "file": "delimited-switch-product.atto",
+      "sourceGitBlobSha1": "3b156b096dfc338431bbccc33356b1bd1b6778d6",
+      "confirmedBackends": []
+    },
+    {
+      "id": "delimited-computed-product",
+      "expect": "exit",
+      "exit": 42,
+      "file": "delimited-computed-product.atto",
+      "sourceGitBlobSha1": "fdedb8f37860ae6b434bf9c7e73ef4a9ad56c79a",
+      "confirmedBackends": []
+    },
+    {
+      "id": "delimited-nested-product",
+      "expect": "exit",
+      "exit": 42,
+      "file": "delimited-nested-product.atto",
+      "sourceGitBlobSha1": "c2b8e602275f15eb1665ec97b5b9d43ecb59f469",
+      "confirmedBackends": []
+    },
+    {
+      "id": "delimited-recursive-fib",
+      "expect": "exit",
+      "exit": 55,
+      "file": "delimited-recursive-fib.atto",
+      "sourceGitBlobSha1": "fb37d3e02a10da3e5d85dcdc2840a53670717131",
+      "confirmedBackends": []
+    },
+    {
+      "id": "native-tuple-destructure",
+      "expect": "exit",
+      "exit": 42,
+      "file": "native-tuple-destructure.atto",
+      "sourceGitBlobSha1": "5effe3d17f6aa53628c636da333b5abe1a761ce0",
+      "confirmedBackends": []
+    },
+    {
+      "id": "delimited-unresolved",
+      "expect": "reject",
+      "file": "delimited-unresolved.atto",
+      "sourceGitBlobSha1": "7d4e2c404f11d40f7365fcc0efe125584de4c05b",
+      "confirmedBackends": []
+    },
+    {
+      "id": "native-tuple-duplicate",
+      "expect": "reject",
+      "file": "native-tuple-duplicate.atto",
+      "sourceGitBlobSha1": "992fe53d170b24d7cf7f5a73b9ccff5490b9739f",
+      "confirmedBackends": []
+    },
+    {
+      "id": "native-tuple-arity",
+      "expect": "reject",
+      "file": "native-tuple-arity.atto",
+      "sourceGitBlobSha1": "0705bd2a29fab62a29d7d2515c7e6879f60d3569",
+      "confirmedBackends": []
+    },
+    {
+      "id": "delimited-empty",
+      "expect": "reject",
+      "file": "delimited-empty.atto",
+      "sourceGitBlobSha1": "6f11c2f3bdbf1380cad3e41dcc90f0d0c377dd4a",
+      "confirmedBackends": []
     }
   ]
 }
