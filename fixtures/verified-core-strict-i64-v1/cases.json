@@ -875,6 +875,96 @@
         "kind": "diagnostic",
         "category": "E_REFINEMENT_BINDING"
       }
+    },
+    {
+      "id": "array-first",
+      "tier": "array-bounds",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Index = int where self >= 0 and self <= 1;\npub fnc main() -> int { val a = Array.of(42, 7); return a[0]; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "array-last",
+      "tier": "array-bounds",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Index = int where self >= 0 and self <= 1;\npub fnc main() -> int { val a = Array.of(7, 42); return a[1]; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "array-bounded-index",
+      "tier": "array-bounds",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Index = int where self >= 0 and self <= 1;\nfnc f(Index i) -> int { val a = Array.of(7, 42); return a[i]; } pub fnc main() -> int { return f(1); }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "array-guarded-index",
+      "tier": "array-bounds",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Index = int where self >= 0 and self <= 1;\nfnc f(int i) -> int { val a = Array.of(7, 42); if i >= 0 && i < 2 { return a[i]; } return 42; } pub fnc main() -> int { return f(1); }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "array-initializer-snapshot",
+      "tier": "array-bounds",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Index = int where self >= 0 and self <= 1;\npub fnc main() -> int { let int x = 42; val a = Array.of(x, 7); x = 0; return a[0]; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "array-distinct-receivers",
+      "tier": "array-bounds",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Index = int where self >= 0 and self <= 1;\npub fnc main() -> int { val a = Array.of(1, 2); val b = Array.of(42); return b[0]; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "array-negative-index",
+      "tier": "array-bounds",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Index = int where self >= 0 and self <= 1;\npub fnc main() -> int { val a = Array.of(42, 7); return a[-1]; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "array-one-past-end",
+      "tier": "array-bounds",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Index = int where self >= 0 and self <= 1;\npub fnc main() -> int { val a = Array.of(42, 7); return a[2]; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "array-stale-index",
+      "tier": "array-bounds",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Index = int where self >= 0 and self <= 1;\npub fnc main() -> int { val a = Array.of(42, 7); let int i = 0; i = 2; return a[i]; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "array-wrong-receiver",
+      "tier": "array-bounds",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42; type Index = int where self >= 0 and self <= 1;\nfnc f(Index i) -> int { val a = Array.of(7, 42); val b = Array.of(42); if i < 2 { return b[i]; } return 42; } pub fnc main() -> int { return f(0); }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
     }
   ]
 }
