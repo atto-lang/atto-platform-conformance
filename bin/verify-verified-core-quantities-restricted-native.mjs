@@ -1,5 +1,5 @@
-// Execute the identical eight generated multi-dimensional source fixtures
-// with restricted native compilers. This is deliberately NOT the full corpus.
+// Execute identical shared quantity fixtures through native Forge and Cranelift.
+// Full mode reports every mismatch and fails if any case is not exact.
 import assert from "node:assert/strict";
 import {spawnSync} from "node:child_process";
 import {mkdtempSync,readFileSync,writeFileSync,existsSync,rmSync} from "node:fs";
@@ -13,6 +13,8 @@ assert.ok(["forge","cranelift"].includes(backend));
 assert.ok(compilerPath);
 assert.ok(backend!=="forge"||includePath);
 const bindings=process.env.ATTO_VERIFIED_TYPED_BINDINGS==="1";
+const full=process.env.ATTO_FULL_NATIVE_QUANTITIES==="1";
+assert.ok(!(bindings&&full),"select exactly one corpus mode");
 if(!bindings)assert.equal(process.env.ATTO_VERIFIED_CAST_ASCRIPTION,"1");
 const compiler=resolve(compilerPath);
 const include=includePath?resolve(includePath):"";
@@ -30,9 +32,9 @@ const success=(r,id)=>assert.equal(r.status,0,id+": "+r.stderr.toString());
 const expectedNames=["unit-add","unit-sub","unit-product-order","unit-velocity","unit-area","unit-mixed-add","unit-residual-dimension","unit-residual-area"].map(n=>"generated-boundary-"+n+".atto");
 try{
  const {fixtures,cases}=expandQuantityCases(original,work,manifest);
- const selected=bindings?cases:cases.filter(c=>expectedNames.includes(c.source));
- const count=bindings?36:expectedNames.length;
- assert.equal(selected.length,count);
+ const selected=(full||bindings)?cases:cases.filter(c=>expectedNames.includes(c.source));
+ assert.equal(selected.length,bindings?36:full?151:expectedNames.length);
+ let passed=0;const failures=[];
  const harness=join(work,"host.c");
  writeFileSync(harness,`#include <stdint.h>
 #include <inttypes.h>
@@ -42,6 +44,7 @@ int main(void){int64_t out=0;int32_t rc=oreslang_scalar_entry(0,0,0,0,&out);
 if(rc){if(out!=0)return 99;return rc;}
 printf("%" PRId64 "\\n",out);return 0;}`);
  for(const {source,expected} of selected){
+   try {
    const input=join(fixtures,source);
    const output=join(work,source+(backend==="forge"?".cpp":".o"));
    const binary=join(work,source+".guest");
@@ -50,8 +53,8 @@ printf("%" PRId64 "\\n",out);return 0;}`);
      assert.equal(compiled.status,backend==="forge"?2:1,source);
      assert.equal(compiled.stdout.length,0,source);
      assert.equal(existsSync(output),false,source);
-     if(!bindings&&backend==="cranelift")assert.ok(compiled.stderr.toString().includes(expected.category+":"),source);
-     if(bindings)assert.ok(compiled.stderr.length>0,source);
+     if(bindings){assert.ok(compiled.stderr.length>0,source);}
+     else if(full||backend==="cranelift")assert.match(compiled.stderr.toString(),new RegExp('(?:^|\\s)'+expected.category+'(?:[:\\s]|$)'),source);
      // Forge currently has generic parser diagnostics. Rejection is proven,
      // but diagnostic-category parity must remain explicitly unverified.
    }else{
@@ -68,16 +71,19 @@ printf("%" PRId64 "\\n",out);return 0;}`);
      const guest=run(binary,[]);
      if(expected.kind==="value"){
        success(guest,source+" guest");
-       assert.equal(guest.stdout.toString().trim(),expected.decimal,source);
+       assert.equal(guest.stdout.toString(),expected.decimal+"\n",source);
        assert.equal(guest.stderr.length,0,source);
      }else{
-       const codes=backend==="forge"?{integerOverflow:70,divisionByZero:71,refinementViolation:73}:{integerOverflow:1,divisionByZero:2,refinementViolation:7};
-       assert.equal(guest.status,codes[expected.category],source);
+       const statuses=backend==="forge"?{divisionByZero:71,integerOverflow:70,refinementViolation:73}:{divisionByZero:2,integerOverflow:1,refinementViolation:7};
+       assert.ok(Object.hasOwn(statuses,expected.category));
+       assert.equal(guest.status,statuses[expected.category],source);
        assert.equal(guest.stdout.length,0,source);
-       if(backend==="forge")assert.equal(guest.stderr.toString().trim(),{integerOverflow:"E_OVERFLOW",divisionByZero:"E_DIVZERO",refinementViolation:"E_REFINEMENT_VIOLATION"}[expected.category],source);
+       assert.equal(guest.stderr.toString(),backend==="forge"?{divisionByZero:"E_DIVZERO\n",integerOverflow:"E_OVERFLOW\n",refinementViolation:"E_REFINEMENT_VIOLATION\n"}[expected.category]:"",source);
      }
    }
-   console.log("PASS "+backend+" "+source+" "+expected.kind+" "+sha(readFileSync(input)));
+   console.log("PASS "+backend+" "+source+" "+expected.kind+" "+sha(readFileSync(input)));passed++;
+   }catch(e){failures.push(source);console.error("FAIL "+backend+" "+source+" "+String(e.message));}
  }
- console.log("VERIFIED_RESTRICTED_SUBSET "+backend+" "+selected.length+"/"+count+" diagnostic_categories="+(bindings||backend==="forge"?"partial":"verified"));
+ console.log("NATIVE_QUANTITY_RESULT "+backend+" "+passed+"/"+selected.length+" diagnostic_categories="+(bindings||(!full&&backend==="forge")?"partial":"verified")+" failures="+JSON.stringify(failures));
+ assert.equal(failures.length,0,"shared native corpus failed");
 }finally{rmSync(work,{recursive:true,force:true});}
