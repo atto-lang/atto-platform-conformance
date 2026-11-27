@@ -1499,6 +1499,27 @@
       "base": "ecba7ec3f1a8d69fb8c005fb548b3a399aabfc83",
       "job": "https://github.com/ores-dummy-org-ruby-graal-1/atto-ci/actions/runs/45950049066/job/140343552872",
       "qualification": "Exact focused compiler, Node and Chromium execution steps passed. Historical receipt preserved; main parity unchanged."
+    },
+    "net_compiler_candidate": {
+      "backend": "atto-source.net",
+      "pr": "https://github.com/atto-lang/atto-source.net/pull/381",
+      "compiler_head": "d79d766154c3f1b3716496d433e31ef2e4b1976b",
+      "compiler_tree": "d155e69bbca53fc0ed26100d99078e975f4ffb33",
+      "job": "https://github.com/ores-dummy-org-ruby-graal-1/atto-ci/actions/runs/45950597259/job/140345287397",
+      "profiles": [
+        "owned-unwind-v1-generated-csharp-nativeaot"
+      ],
+      "frame_bytes": 208,
+      "fixture_blobs": [
+        "b1feab27d136b7464944ac2648a81894ae0afbc7",
+        "d46d7ed7a928df044335ee92f29994749510f99b"
+      ],
+      "allocation_probe": {
+        "iterations_per_fixture": 10000,
+        "managed_bytes_current_thread": 0,
+        "scope": "Warmed generated frame transition harness only"
+      },
+      "limitation": "Actual compiler and NativeAOT executable guest steps passed. Source-emission lane, not general CIL/MIR or actor scheduler integration. Trusted caller-owned frame, numeric error receipts; no authenticated Future handoff, physical generation lease, host allocation guarantee or STOP deadline. Main statuses unchanged."
     }
   }
 }

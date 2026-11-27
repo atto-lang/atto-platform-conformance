@@ -204,3 +204,15 @@ test('native LLVM candidate and refreshed Rust integration pin actual owned gues
  for(const job of [llvm.job,f.rust_current_main_integration.job])assert.match(job,/^https:\/\/github\.com\/ores-dummy-org-ruby-graal-1\/atto-ci\/actions\/runs\/\d+\/job\/\d+$/);
  assert.equal(registry.cases.find(c=>c.id===f.case_id).backend_statuses['atto-source.llvm'],'not_executed');
 });
+
+test('NativeAOT candidate pins the same owned fixtures and scoped managed allocation probe',()=>{
+ const f=registry.owned_future_candidate;
+ const net=f.net_compiler_candidate;
+ assert.equal(net.backend,'atto-source.net');assert.equal(net.frame_bytes,208);
+ assert.deepEqual(net.fixture_blobs,f.fixtures.map(x=>x.git_blob_sha));
+ assert.deepEqual(net.profiles,['owned-unwind-v1-generated-csharp-nativeaot']);
+ assert.deepEqual(net.allocation_probe,{iterations_per_fixture:10000,managed_bytes_current_thread:0,scope:'Warmed generated frame transition harness only'});
+ assert.match(net.compiler_head,/^[a-f0-9]{40}$/);assert.match(net.compiler_tree,/^[a-f0-9]{40}$/);
+ assert.match(net.job,/^https:\/\/github\.com\/ores-dummy-org-ruby-graal-1\/atto-ci\/actions\/runs\/\d+\/job\/\d+$/);
+ assert.equal(registry.cases.find(c=>c.id===f.case_id).backend_statuses['atto-source.net'],'not_executed');
+});
