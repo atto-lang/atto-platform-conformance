@@ -2,10 +2,19 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
-const load=name=>JSON.parse(readFileSync(new URL('../contracts/'+name,import.meta.url),'utf8'));
-const observed=load('field-lifetime-observations-v1.json');
+const observationBytes=readFileSync(new URL('../contracts/field-lifetime-observations-v1.json',import.meta.url));
+const observed=JSON.parse(observationBytes);
 const profileBytes=readFileSync(new URL('../contracts/field-lifetime-source-profile-v1.json',import.meta.url));
 const source=JSON.parse(profileBytes);
+
+const gitBlob=bytes=>createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex');
+// Immutable historical receipts: a new observation needs its own reviewed
+// evidence revision, not a replacement of a commit, tree or receipt URL.
+test('historical observation and source profile bytes are pinned',()=>{
+  assert.equal(gitBlob(observationBytes),'91a7ad54be2a4b1dbf00c0067e224ee7dc22efd1');
+  assert.equal(gitBlob(profileBytes),'700b115960724cf09e598569d24ea5bfe217e96e');
+});
+
 // This is a historical observation, not a mutable certification ledger.
 function validateHistoricalCounts(row) {
   const expected = row.repo === 'atto-lang/atto-source.java' ? [0,9,2]
