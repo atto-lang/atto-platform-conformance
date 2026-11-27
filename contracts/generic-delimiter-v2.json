@@ -1,0 +1,612 @@
+{
+  "contract": "generic-delimiter-v2",
+  "status": "NOT_EXECUTED",
+  "upstream": {
+    "repository": "atto-lang/atto-spec",
+    "head": "67fcbd850da47c2e3a9229ed0163490da1eeba49",
+    "path": "conformance/generic-callables-v1.json",
+    "blob": "651f87511e3296451c20320840ab7f7ec4dd2119"
+  },
+  "backends": [
+    {
+      "repo": "atto-source.java",
+      "profiles": [
+        "jvm",
+        "graal-native-image"
+      ],
+      "candidate": "https://github.com/atto-lang/atto-source.java/pull/1888"
+    },
+    {
+      "repo": "atto-source.llvm",
+      "profiles": [
+        "native-aot"
+      ],
+      "candidate": "https://github.com/atto-lang/atto-source.llvm/pull/589"
+    },
+    {
+      "repo": "atto-source.net",
+      "profiles": [
+        "cil",
+        "native-aot"
+      ]
+    },
+    {
+      "repo": "atto-source.rs",
+      "profiles": [
+        "native-hosted-compiler-to-wasm",
+        "wasm-hosted-compiler-to-wasm"
+      ],
+      "candidate": "https://github.com/atto-lang/atto-source.rs/pull/604"
+    },
+    {
+      "repo": "atto-source.wasm",
+      "profiles": [
+        "reviewed-rust-compiler-artifact-wasm-guest"
+      ],
+      "note": "Artifact-driven verification, not an independent second frontend."
+    },
+    {
+      "repo": "atto-source.forge",
+      "profiles": [
+        "native-aot"
+      ],
+      "candidate": "https://github.com/atto-lang/atto-source.forge/pull/163"
+    },
+    {
+      "repo": "atto-source.cranelift",
+      "profiles": [
+        "trusted-scalar-jit",
+        "object-aot"
+      ],
+      "note": "Separate JIT and object-AOT evidence; do not infer executable AOT from JIT."
+    },
+    {
+      "repo": "atto-source.js",
+      "profiles": [
+        "node-esm",
+        "browser-esm"
+      ]
+    },
+    {
+      "repo": "atto-source.atto",
+      "profiles": [
+        "self-hosted-compiler"
+      ],
+      "note": "Stage-0 kernel is not a self-hosted compiler."
+    },
+    {
+      "repo": "atto-source.hdl",
+      "profiles": [
+        "synthesizable-rtl"
+      ],
+      "note": "Target-specific subset; unsupported host/runtime constructs must reject."
+    },
+    {
+      "repo": "atto-source.realtime",
+      "profiles": [
+        "realtime-aot"
+      ],
+      "note": "Repository bootstrap; no compiler support asserted."
+    }
+  ],
+  "cases": [
+    {
+      "id": "named_generic_and_runtime",
+      "source": "fnc identity<T>(T value): T { return value; } pub fnc main(): int { return identity<T=int>(value: 42); }",
+      "expectation": "accept",
+      "proof": "compiled_guest",
+      "expected_exit": 42,
+      "statusByBackend": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "square_callable_specialization",
+      "source": "fnc identity<T>(T value): T { return value; } pub fnc main(): int { return identity[T=int](42); }",
+      "expectation": "reject",
+      "proof": "diagnostic_no_artifact",
+      "statusByBackend": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "square_callable_declaration",
+      "source": "fnc identity[T](T value): T { return value; } pub fnc main(): int { return identity<int>(42); }",
+      "expectation": "reject",
+      "proof": "diagnostic_no_artifact",
+      "statusByBackend": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "square_class_declaration",
+      "source": "define class Box[T] as T value; end pub fnc main(): int { return 42; }",
+      "expectation": "reject",
+      "proof": "diagnostic_no_artifact",
+      "statusByBackend": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "square_custom_type_reference",
+      "source": "define class Box<T> as T value; end fnc consume(Box[int] value): void {} pub fnc main(): int { return 42; }",
+      "expectation": "reject",
+      "proof": "diagnostic_no_artifact",
+      "statusByBackend": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "collection_array_alias",
+      "source": "fnc pass(Array[int] value): Array<int> { return value; } pub fnc main(): int { return 42; }",
+      "expectation": "accept",
+      "proof": "signature_typecheck_only",
+      "statusByBackend": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "collection_list_alias",
+      "source": "fnc pass(List[string] value): List<string> { return value; } pub fnc main(): int { return 42; }",
+      "expectation": "accept",
+      "proof": "signature_typecheck_only",
+      "statusByBackend": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "collection_map_alias",
+      "source": "fnc pass(Map[string, int] value): Map<string, int> { return rt take value; } pub fnc main(): int { return 42; }",
+      "expectation": "accept",
+      "proof": "signature_typecheck_only",
+      "statusByBackend": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "collection_nested_delimiters",
+      "source": "fnc pass(Map<string, Array[int]> value): Map<string, Array<int>> { return rt take value; } pub fnc main(): int { return 42; }",
+      "expectation": "accept",
+      "proof": "signature_typecheck_only",
+      "statusByBackend": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "map_angle_square_mismatch",
+      "source": "fnc consume(Map<string, int] value): void {} pub fnc main(): int { return 42; }",
+      "expectation": "reject",
+      "proof": "diagnostic_no_artifact",
+      "statusByBackend": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "map_square_angle_mismatch",
+      "source": "fnc consume(Map[string, int> value): void {} pub fnc main(): int { return 42; }",
+      "expectation": "reject",
+      "proof": "diagnostic_no_artifact",
+      "statusByBackend": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "square_named_collection",
+      "source": "fnc consume(Array[T=int] value): void {} pub fnc main(): int { return 42; }",
+      "expectation": "reject",
+      "proof": "diagnostic_no_artifact",
+      "statusByBackend": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "tuple_three_ints",
+      "source": "pub fnc main(): int { val Tuple[int, int, int] t = (10, 12, 20); return t[0] + t[1] + t[2]; }",
+      "expectation": "accept",
+      "proof": "compiled_guest",
+      "expected_exit": 42,
+      "statusByBackend": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "tuple_heterogeneous_four",
+      "source": "pub fnc main(): int { val Tuple[string, int, bool, bool] t = (\"ok\", 42, true, false); return t[1]; }",
+      "expectation": "accept",
+      "proof": "compiled_guest",
+      "expected_exit": 42,
+      "statusByBackend": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "tuple_wrong_arity",
+      "source": "pub fnc main(): int { val Tuple[int, int] t = (1, 2, 3); return 42; }",
+      "expectation": "reject",
+      "proof": "diagnostic_no_artifact",
+      "statusByBackend": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "tuple_wrong_type",
+      "source": "pub fnc main(): int { val Tuple[int, bool] t = (1, 2); return 42; }",
+      "expectation": "reject",
+      "proof": "diagnostic_no_artifact",
+      "statusByBackend": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "tuple_value_parameter",
+      "source": "fnc consume(Tuple[int, 3] value): void {} pub fnc main(): int { return 42; }",
+      "expectation": "reject",
+      "proof": "diagnostic_no_artifact",
+      "statusByBackend": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "tuple_constant_index_oob",
+      "source": "pub fnc main(): int { val Tuple[int, int] t = (1, 2); return t[2]; }",
+      "expectation": "reject",
+      "proof": "diagnostic_no_artifact",
+      "statusByBackend": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "const_generic_named_reordered",
+      "source": "define struct Fixed<T, const usize N> as data: Array<T,N>; end fnc pass(Fixed<T=int,N=3> value): Fixed<N=3,T=int> { return value; } pub fnc main(): int { return 42; }",
+      "expectation": "gate",
+      "proof": "capability_gate",
+      "statusByBackend": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "const_generic_square_named",
+      "source": "define struct Fixed<T, const usize N> as data: Array<T,N>; end fnc consume(Fixed[T=int,N=3] value): void {} pub fnc main(): int { return 42; }",
+      "expectation": "reject",
+      "proof": "diagnostic_no_artifact",
+      "statusByBackend": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "const_generic_type_in_value_slot",
+      "source": "define struct Fixed<T, const usize N> as data: Array<T,N>; end fnc consume(Fixed<int,bool> value): void {} pub fnc main(): int { return 42; }",
+      "expectation": "reject",
+      "proof": "diagnostic_no_artifact",
+      "statusByBackend": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "const_generic_value_in_type_slot",
+      "source": "define struct Fixed<T, const usize N> as data: Array<T,N>; end fnc consume(Fixed<3,3> value): void {} pub fnc main(): int { return 42; }",
+      "expectation": "reject",
+      "proof": "diagnostic_no_artifact",
+      "statusByBackend": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "const_generic_wrong_shape",
+      "source": "define struct Fixed<T, const usize N> as data: Array<T,N>; end fnc pass(Fixed<int,3> value): Fixed<int,4> { return value; } pub fnc main(): int { return 42; }",
+      "expectation": "reject",
+      "proof": "diagnostic_no_artifact",
+      "statusByBackend": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "const_generic_duplicate_named",
+      "source": "define struct Fixed<T, const usize N> as data: Array<T,N>; end fnc consume(Fixed<int,N=3,N=4> value): void {} pub fnc main(): int { return 42; }",
+      "expectation": "reject",
+      "proof": "diagnostic_no_artifact",
+      "statusByBackend": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "const_generic_negative_dimension",
+      "source": "define struct Fixed<T, const usize N> as data: Array<T,N>; end fnc consume(Fixed<int,-1> value): void {} pub fnc main(): int { return 42; }",
+      "expectation": "reject",
+      "proof": "diagnostic_no_artifact",
+      "statusByBackend": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "indexing_not_generic",
+      "source": "pub fnc main(): int { val Array[int] a = [42]; return a[0]; }",
+      "expectation": "accept",
+      "proof": "compiled_guest",
+      "expected_exit": 42,
+      "statusByBackend": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "comparison_not_generic",
+      "source": "pub fnc main(): int { if 1 < 2 do return 42; fi return 0; }",
+      "expectation": "accept",
+      "proof": "compiled_guest",
+      "expected_exit": 42,
+      "statusByBackend": {
+        "atto-source.java": "NOT_EXECUTED",
+        "atto-source.llvm": "NOT_EXECUTED",
+        "atto-source.net": "NOT_EXECUTED",
+        "atto-source.rs": "NOT_EXECUTED",
+        "atto-source.wasm": "NOT_EXECUTED",
+        "atto-source.forge": "NOT_EXECUTED",
+        "atto-source.cranelift": "NOT_EXECUTED",
+        "atto-source.js": "NOT_EXECUTED",
+        "atto-source.atto": "NOT_EXECUTED",
+        "atto-source.hdl": "NOT_EXECUTED",
+        "atto-source.realtime": "NOT_EXECUTED"
+      }
+    }
+  ]
+}
