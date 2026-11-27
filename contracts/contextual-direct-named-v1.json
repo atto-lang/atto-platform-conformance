@@ -1,0 +1,52 @@
+{
+  "schema": "atto.contextual-direct-named.target.v1",
+  "status": "DRAFT_SHARED_NOT_EXECUTED",
+  "rules": [
+    "Capture source order then map to schema order, evaluate ordinary arguments after all contextual arguments.",
+    "Terminal return only; sibling-expression denials are current bounded-profile restrictions, not permanent language rules.",
+    "No general factory type or allocator capability claim."
+  ],
+  "cases": [
+    {
+      "path": "fixtures/contextual-direct-named-v1/pass/direct-terminal.atto",
+      "kind": "execute",
+      "expectedGuestExit": 42
+    },
+    {
+      "path": "fixtures/contextual-direct-named-v1/fail/duplicate-key.atto",
+      "kind": "reject",
+      "semanticReason": "duplicate-context-name",
+      "artifactAllowed": false
+    },
+    {
+      "path": "fixtures/contextual-direct-named-v1/fail/unknown-key.atto",
+      "kind": "reject",
+      "semanticReason": "unknown-context-name",
+      "artifactAllowed": false
+    },
+    {
+      "path": "fixtures/contextual-direct-named-v1/fail/mixed-style.atto",
+      "kind": "reject",
+      "semanticReason": "mixed-context-style",
+      "artifactAllowed": false
+    },
+    {
+      "path": "fixtures/contextual-direct-named-v1/fail/missing-key.atto",
+      "kind": "reject",
+      "semanticReason": "missing-context-name",
+      "artifactAllowed": false
+    },
+    {
+      "path": "fixtures/contextual-direct-named-v1/fail/sibling-before.atto",
+      "kind": "reject",
+      "semanticReason": "bounded-profile-no-sibling-hoist",
+      "artifactAllowed": false
+    },
+    {
+      "path": "fixtures/contextual-direct-named-v1/fail/sibling-after.atto",
+      "kind": "reject",
+      "semanticReason": "bounded-profile-no-sibling-hoist",
+      "artifactAllowed": false
+    }
+  ]
+}
