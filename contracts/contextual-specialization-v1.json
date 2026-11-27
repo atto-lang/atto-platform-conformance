@@ -1,0 +1,338 @@
+{
+  "schema": "atto.contextual-specialization.target.v1",
+  "status": "DRAFT_PARTIAL_EXECUTION",
+  "spec": "https://github.com/atto-lang/atto-spec/pull/294",
+  "prototype": "https://github.com/atto-lang/atto-source.rs/pull/750",
+  "parityCertified": false,
+  "cases": [
+    {
+      "id": "direct",
+      "kind": "execute",
+      "path": "fixtures/contextual-specialization-v1/pass/direct.atto",
+      "expectedGuestExit": 42
+    },
+    {
+      "id": "snapshot-reuse",
+      "kind": "execute",
+      "path": "fixtures/contextual-specialization-v1/pass/snapshot-reuse.atto",
+      "expectedGuestExit": 41
+    },
+    {
+      "id": "independent-bindings",
+      "kind": "execute",
+      "path": "fixtures/contextual-specialization-v1/pass/independent-bindings.atto",
+      "expectedGuestExit": 20
+    },
+    {
+      "id": "wrong-context-type",
+      "kind": "reject",
+      "path": "fixtures/contextual-specialization-v1/fail/wrong-context-type.atto",
+      "semanticReason": "context-type",
+      "artifactAllowed": false
+    },
+    {
+      "id": "wrong-context-arity",
+      "kind": "reject",
+      "path": "fixtures/contextual-specialization-v1/fail/wrong-context-arity.atto",
+      "semanticReason": "context-arity",
+      "artifactAllowed": false
+    },
+    {
+      "id": "wrong-call-type",
+      "kind": "reject",
+      "path": "fixtures/contextual-specialization-v1/fail/wrong-call-type.atto",
+      "semanticReason": "ordinary-argument-type",
+      "artifactAllowed": false
+    },
+    {
+      "id": "unbound-call",
+      "kind": "reject",
+      "path": "fixtures/contextual-specialization-v1/fail/unbound-call.atto",
+      "semanticReason": "missing-context",
+      "artifactAllowed": false
+    },
+    {
+      "id": "duplicate-binding",
+      "kind": "reject",
+      "path": "fixtures/contextual-specialization-v1/fail/duplicate-binding.atto",
+      "semanticReason": "duplicate-binding",
+      "artifactAllowed": false
+    },
+    {
+      "id": "wrong-member",
+      "kind": "reject",
+      "path": "fixtures/contextual-specialization-v1/fail/wrong-member.atto",
+      "semanticReason": "unknown-member",
+      "artifactAllowed": false
+    },
+    {
+      "id": "binding-reassignment",
+      "kind": "reject",
+      "path": "fixtures/contextual-specialization-v1/fail/binding-reassignment.atto",
+      "semanticReason": "immutable-binding",
+      "artifactAllowed": false
+    },
+    {
+      "id": "legacy-body",
+      "kind": "execute",
+      "path": "fixtures/contextual-specialization-v1/pass/legacy-body.atto",
+      "expectedGuestExit": 42
+    },
+    {
+      "id": "multi-snapshot",
+      "kind": "execute",
+      "path": "fixtures/contextual-specialization-v1/pass/multi-snapshot.atto",
+      "expectedGuestExit": 34
+    },
+    {
+      "id": "multi-independent",
+      "kind": "execute",
+      "path": "fixtures/contextual-specialization-v1/pass/multi-independent.atto",
+      "expectedGuestExit": 50
+    },
+    {
+      "id": "multi-missing",
+      "kind": "reject",
+      "path": "fixtures/contextual-specialization-v1/fail/multi-missing.atto",
+      "semanticReason": "context-arity",
+      "artifactAllowed": false
+    },
+    {
+      "id": "multi-type",
+      "kind": "reject",
+      "path": "fixtures/contextual-specialization-v1/fail/multi-type.atto",
+      "semanticReason": "context-type",
+      "artifactAllowed": false
+    },
+    {
+      "id": "multi-extra",
+      "kind": "reject",
+      "path": "fixtures/contextual-specialization-v1/fail/multi-extra.atto",
+      "semanticReason": "context-arity",
+      "artifactAllowed": false
+    },
+    {
+      "id": "multi-empty",
+      "kind": "reject",
+      "path": "fixtures/contextual-specialization-v1/fail/multi-empty.atto",
+      "semanticReason": "empty-context-entry",
+      "artifactAllowed": false
+    },
+    {
+      "id": "immutable-alias",
+      "kind": "execute",
+      "path": "fixtures/contextual-specialization-v1/pass/immutable-alias.atto",
+      "expectedGuestExit": 42
+    },
+    {
+      "id": "alias-reassignment",
+      "kind": "reject",
+      "path": "fixtures/contextual-specialization-v1/fail/alias-reassignment.atto",
+      "semanticReason": "immutable-binding",
+      "artifactAllowed": false
+    },
+    {
+      "id": "alias-scalar-escape",
+      "kind": "reject",
+      "path": "fixtures/contextual-specialization-v1/fail/alias-scalar-escape.atto",
+      "semanticReason": "factory-is-not-int",
+      "artifactAllowed": false
+    }
+  ],
+  "backends": {
+    "java": {
+      "state": "NOT_EXECUTED",
+      "repository": "atto-lang/atto-source.java"
+    },
+    "net": {
+      "state": "NOT_EXECUTED",
+      "repository": "atto-lang/atto-source.net"
+    },
+    "llvm": {
+      "state": "NOT_EXECUTED",
+      "repository": "atto-lang/atto-source.llvm"
+    },
+    "forge": {
+      "state": "NOT_EXECUTED",
+      "repository": "atto-lang/atto-source.forge"
+    },
+    "wasm": {
+      "state": "NOT_EXECUTED",
+      "repository": "atto-lang/atto-source.wasm"
+    },
+    "rs": {
+      "state": "NOT_EXECUTED",
+      "repository": "atto-lang/atto-source.rs"
+    },
+    "js": {
+      "state": "NOT_EXECUTED",
+      "repository": "atto-lang/atto-source.js"
+    },
+    "cranelift": {
+      "state": "NOT_EXECUTED",
+      "repository": "atto-lang/atto-source.cranelift"
+    },
+    "atto": {
+      "state": "NOT_EXECUTED",
+      "repository": "atto-lang/atto-source.atto"
+    },
+    "realtime": {
+      "state": "NOT_EXECUTED",
+      "repository": "atto-lang/atto-source.realtime"
+    },
+    "hdl": {
+      "state": "NOT_EXECUTED",
+      "repository": "atto-lang/atto-source.hdl"
+    }
+  },
+  "rules": [
+    "Declaration spelling is a draft; reconcile spec before normative admission.",
+    "Positive tests execute emitted guest code and check exit value; semantic negatives must reject with matching reason, no artifact. Unsupported syntax/profile does not satisfy semantic denial.",
+    "Each backend receipt must identify exact source commit/tree, fixture revision, actual executed steps, and guest result. HDL/realtime unsupported profiles are separate from semantic parity.",
+    "General first-class factory values, generics, multi-member schemas and allocator/resource capabilities need additional fixtures; scalar subset is not full feature parity.",
+    "For hosted Wasm and ESM, expectedGuestExit is the exported main integer return oracle, not the host process exit. Direct CIL host uses process exit. Immutable scalar alias copies may share immutable compiler slots only; this does not certify resource capability copying or general first-class factories.",
+    "Compiler-owned embedded fixtures have separate exact-head receipts; no shared fixture cell is promoted without byte-pinned shared corpus execution.",
+    "Legacy bare assignment in snapshot-reuse and multi-snapshot is historical compatibility, not canonical reassignment syntax. Add separate explicit set reassignment fixtures after shared grammar reconciliation rather than expanding legacy bare assignment to new targets.",
+    "Named stored scalar context extension: evaluate the named RHS expressions in source order, then map to declaration slots; direct named calls remain outside the bounded profile until evaluation order can be preserved without hoisting across ordinary expressions."
+  ],
+  "candidateImplementations": [
+    {
+      "repository": "atto-lang/atto-source.rs",
+      "pullRequest": 759,
+      "state": "NOT_EXECUTED",
+      "candidateHead": "1acc03ad0344efeb8953883c53f411e34fba9b1f",
+      "historicalEmbeddedReceipt": {
+        "head": "44f54311700ac0f7f78014ef69b39cd0b50b918c",
+        "tree": "5b2ca62528b06eeed701b48d932b5b4efeb2b894",
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46052425736/job/140686758472"
+      },
+      "latestEmbeddedReceipt": {
+        "head": "30ce560a82e3132db4957848356e00772709935a",
+        "tree": "a94993aeb93921dc4ac8feb727f4363f432e9d8b",
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46056897778/job/140701486846"
+      }
+    },
+    {
+      "repository": "atto-lang/atto-source.llvm",
+      "pullRequest": 1073,
+      "profile": "Rust-hosted browser Wasm frontend only; not native LLVM",
+      "state": "NOT_EXECUTED",
+      "candidateHead": "a7afe29072c9730780c8ce49f5b5b013484d56ed",
+      "historicalEmbeddedReceipt": {
+        "head": "1065eec28006c3f082c93c255fa231449a4a83e1",
+        "tree": "43d818a3cda761f6ef8c5328ed84019e70581c2b",
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46052425736/job/140686758123"
+      },
+      "latestEmbeddedReceipt": {
+        "head": "a7afe29072c9730780c8ce49f5b5b013484d56ed",
+        "tree": "700b3d59f25da5733d6cd19cb816f76d0bf3462c",
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46062603941/job/140720205234"
+      }
+    },
+    {
+      "repository": "atto-lang/atto-source.js",
+      "pullRequest": 290,
+      "state": "NOT_EXECUTED",
+      "candidateHead": "2c12ced35eddb6f522fcbd3ba4528f2ec6f0a544",
+      "historicalEmbeddedReceipt": {
+        "head": "5d25740ed1ca1bc555ae07117b97f02f777ad7cc",
+        "tree": "1fbdb1795694c7e24a12890e790069e76558d2fd",
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46054395668/job/140693245351"
+      },
+      "latestEmbeddedReceipt": {
+        "head": "2c12ced35eddb6f522fcbd3ba4528f2ec6f0a544",
+        "tree": "2db723a2208d6e238a1d04fb3b86bc39c575cb13",
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46062603941/job/140720204926"
+      }
+    },
+    {
+      "repository": "atto-lang/atto-source.net",
+      "pullRequest": 386,
+      "profile": "direct CIL int-only bounded profile, not structured compiler or general allocator ABI",
+      "state": "NOT_EXECUTED",
+      "candidateHead": "e7a0f77b1717058a6efa04cca5eb90e69325c1a2",
+      "latestEmbeddedReceipt": {
+        "head": "38ef60e7c61cdf687aa5e2624bac2d2a8c86d84c",
+        "tree": "1e85d6f59f4f05b90c12f6d20122b1151a19c71a",
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46056784410/job/140701104692"
+      }
+    },
+    {
+      "repository": "atto-lang/atto-source.java",
+      "pullRequest": 2042,
+      "profile": "JVM/Graal guest, integer context only; not Native Image",
+      "state": "NOT_EXECUTED",
+      "candidateHead": "cfa01ac3dd59a68094094c1246105f7b65e038ec",
+      "latestEmbeddedReceipt": {
+        "head": "20847ea26d2fd6c84d3252a7bc97f8bf45df95ec",
+        "tree": "ac17abdf3e9d682c5aa04126b728d9f8d5ff13c0",
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46058671820/job/140707324180"
+      }
+    }
+  ],
+  "sharedCorpusReceipts": {
+    "fixtureHead": "318571acaa8ccd5ebdea4839ccf7376063ea5f27",
+    "fixtureTree": "c063176b39b38a7289c478b2d8fc9fc468f034fd",
+    "note": "Actual shared source files authenticated against git blobs. Negative inputs rejected with no emitted artifact in the test harness, but semantic diagnostic matching remains unclassified; no overall certification.",
+    "results": [
+      {
+        "backend": "rs",
+        "head": "1acc03ad0344efeb8953883c53f411e34fba9b1f",
+        "tree": "0c9a016050a5cfd34e65b6f51b5c70c8c49cf6e8",
+        "guestPass": 7,
+        "rejectedUnclassified": 13,
+        "mismatch": 0,
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46062603941/job/140720205391"
+      },
+      {
+        "backend": "llvm-browser",
+        "head": "a7afe29072c9730780c8ce49f5b5b013484d56ed",
+        "tree": "700b3d59f25da5733d6cd19cb816f76d0bf3462c",
+        "guestPass": 7,
+        "rejectedUnclassified": 13,
+        "mismatch": 0,
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46062603941/job/140720205234"
+      },
+      {
+        "backend": "js",
+        "head": "2c12ced35eddb6f522fcbd3ba4528f2ec6f0a544",
+        "tree": "2db723a2208d6e238a1d04fb3b86bc39c575cb13",
+        "guestPass": 6,
+        "rejectedUnclassified": 13,
+        "outsideProfile": 1,
+        "outsideCase": "legacy-body",
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46062603941/job/140720204926",
+        "outsideReason": "Compiles successfully but intentionally not exported (private main). Public variant executes 42 in focused test."
+      },
+      {
+        "backend": "java",
+        "head": "cfa01ac3dd59a68094094c1246105f7b65e038ec",
+        "tree": "ad1d2c34e937b4cdf776007e47f5c8ceae7b40bb",
+        "guestPass": 4,
+        "rejectedUnclassified": 13,
+        "outsideProfile": 3,
+        "outsideCases": [
+          "legacy-body",
+          "snapshot-reuse",
+          "multi-snapshot"
+        ],
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46062677054/job/140720454368"
+      },
+      {
+        "backend": "net-direct-cil",
+        "head": "e7a0f77b1717058a6efa04cca5eb90e69325c1a2",
+        "tree": "045c8c88d18b8b495e6dbd31648bfaaea7dbd32f",
+        "guestPass": 4,
+        "nativeAotGuestPass": 2,
+        "rejectedUnclassified": 13,
+        "outsideProfile": 3,
+        "outsideCases": [
+          "legacy-body",
+          "snapshot-reuse",
+          "multi-snapshot"
+        ],
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46062677054/job/140720454768"
+      }
+    ]
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "schema": "atto.contextual-expression-named.target.v1",
+  "status": "DRAFT_FIVE_PROFILE_SHARED_EXECUTION",
+  "supersedes": "contextual-direct-named-v1 bounded sibling denials; historical receipts preserved",
+  "rules": [
+    "Evaluate contextual RHS expressions at their call site in source order, then ordinary arguments; reorder only typed parameter bindings, never actual expressions.",
+    "Bounded scalar static signature specializations or adapters are allowed; code-size budgets apply. No claim of general nested contextual arguments, arbitrary effects, first-class contextual IR or allocator authority.",
+    "Arithmetic sibling positions admitted; prior terminal-only restriction is superseded in this profile."
+  ],
+  "cases": [
+    {
+      "path": "fixtures/contextual-expression-named-v1/pass/direct-terminal.atto",
+      "kind": "execute",
+      "expectedGuestExit": 42
+    },
+    {
+      "path": "fixtures/contextual-expression-named-v1/pass/sibling-before.atto",
+      "kind": "execute",
+      "expectedGuestExit": 43
+    },
+    {
+      "path": "fixtures/contextual-expression-named-v1/pass/sibling-after.atto",
+      "kind": "execute",
+      "expectedGuestExit": 43
+    },
+    {
+      "path": "fixtures/contextual-expression-named-v1/pass/two-permutations.atto",
+      "kind": "execute",
+      "expectedGuestExit": 31
+    },
+    {
+      "path": "fixtures/contextual-expression-named-v1/fail/duplicate-key.atto",
+      "kind": "reject",
+      "semanticReason": "duplicate-context-name",
+      "artifactAllowed": false
+    },
+    {
+      "path": "fixtures/contextual-expression-named-v1/fail/unknown-key.atto",
+      "kind": "reject",
+      "semanticReason": "unknown-context-name",
+      "artifactAllowed": false
+    },
+    {
+      "path": "fixtures/contextual-expression-named-v1/fail/mixed-style.atto",
+      "kind": "reject",
+      "semanticReason": "mixed-context-style",
+      "artifactAllowed": false
+    },
+    {
+      "path": "fixtures/contextual-expression-named-v1/fail/missing-key.atto",
+      "kind": "reject",
+      "semanticReason": "missing-context-name",
+      "artifactAllowed": false
+    }
+  ],
+  "sharedCorpusReceipts": {
+    "fixtureHead": "46d4c01124ab54d1b6093303c8d159fcf97bff10",
+    "fixtureTree": "032631b5e8a70f75359686ab0f07d799e0143bbc",
+    "results": [
+      {
+        "backend": "rs",
+        "head": "5369fede845cf03c2897ca2b425b2d24edc85613",
+        "tree": "f2582efa8cd969cec7126c5408bdc47626ee9a34",
+        "guestPass": 4,
+        "rejectedUnclassified": 4,
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46067203372/job/140735306178"
+      },
+      {
+        "backend": "llvm",
+        "head": "3bf188a86e1b71b9754941b596d22c725c815db4",
+        "tree": "b3bd3fd37f719e8bacc00e7b83bc95fb45446880",
+        "guestPass": 4,
+        "rejectedUnclassified": 4,
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46067203372/job/140735306201"
+      },
+      {
+        "backend": "js",
+        "head": "13efeee74eb7176c57a4073fb68466edf5e8e73f",
+        "tree": "68a82495dc1ca0ab1d755dad454d9a5f2c75740c",
+        "guestPass": 4,
+        "rejectedUnclassified": 4,
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46067203372/job/140735305820"
+      },
+      {
+        "backend": "java",
+        "head": "82441bedad765bf312ff79efc1910b618f78e7a8",
+        "tree": "ce72874a4dcc85df32d0f26505752073d4bbffa0",
+        "guestPass": 4,
+        "rejectedUnclassified": 4,
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46068174508/job/140738444499"
+      },
+      {
+        "backend": "net-direct-cil",
+        "head": "f94f993b2f301ccdedb1c0560fadd4cb9918d96d",
+        "tree": "56b27276fbedfc7a231af8a62bfc05631f0f6b1b",
+        "guestPass": 4,
+        "rejectedUnclassified": 4,
+        "nativeAotGuestPass": 4,
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46068174508/job/140738445119"
+      }
+    ]
+  },
+  "embeddedCompilerReceipts": [
+    {
+      "backend": "java",
+      "head": "f8b2ab462659733994f50d03d9aeb28a41323b5b",
+      "tree": "cf54880ef8615a6256ce253a3d3bfacc583cdbeb",
+      "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46067060765/job/140734826099",
+      "scope": "embedded sibling named guest tests, not shared corpus bytes"
+    },
+    {
+      "backend": "net-direct-cil",
+      "head": "28b08031cbb3cf4038830f520013e15e5407ea2a",
+      "tree": "4f5b0937416ffb3225dc1a1ab77c1dcc143abcc8",
+      "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46067060765/job/140734825828",
+      "scope": "four expression named cases actual CoreCLR and NativeAOT guests, not byte-pinned shared corpus"
+    }
+  ]
+}

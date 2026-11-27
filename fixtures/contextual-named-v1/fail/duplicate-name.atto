@@ -1,0 +1,1 @@
+define class Scale as pub static fnc apply::(int factor, int offset)(int value) -> int { return factor * value + offset; } end fnc main() -> int { const x = Scale::(offset=7,offset=5); return x.apply(7); }
