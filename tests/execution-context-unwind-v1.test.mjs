@@ -94,7 +94,7 @@ test('scheduled JS host receipts never certify scheduler unwind guest parity',()
 
 test('historical exact candidate receipts bind source, compiler revision and observed fixture outcome',()=>{
   const receipts=registry.exact_pipeline_candidate_receipts;
-  assert.equal(receipts.length,2);
+  assert.equal(receipts.length,3);
   const ids=new Set();
   for(const receipt of receipts){
     assert.ok(expected_backends.includes(receipt.backend));
@@ -125,5 +125,10 @@ test('historical exact candidate receipts bind source, compiler revision and obs
       assert.equal(receipt.results.length,2);
     }
   }
-  assert.equal(ids.size,5);
+  assert.equal(ids.size,8);
+  const rust=receipts.filter(r=>r.backend==='atto-source.rs');
+  assert.equal(rust.length,2);
+  assert.notEqual(rust[0].compiler_head,rust[1].compiler_head);
+  assert.notEqual(rust[0].compiler_wasm_sha256,rust[1].compiler_wasm_sha256);
+  assert.deepEqual(rust[0].results,rust[1].results);
 });
