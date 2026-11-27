@@ -191,7 +191,8 @@
     "Each backend receipt must identify exact source commit/tree, fixture revision, actual executed steps, and guest result. HDL/realtime unsupported profiles are separate from semantic parity.",
     "General first-class factory values, generics, multi-member schemas and allocator/resource capabilities need additional fixtures; scalar subset is not full feature parity.",
     "For hosted Wasm and ESM, expectedGuestExit is the exported main integer return oracle, not the host process exit. Direct CIL host uses process exit. Immutable scalar alias copies may share immutable compiler slots only; this does not certify resource capability copying or general first-class factories.",
-    "Compiler-owned embedded fixtures have separate exact-head receipts; no shared fixture cell is promoted without byte-pinned shared corpus execution."
+    "Compiler-owned embedded fixtures have separate exact-head receipts; no shared fixture cell is promoted without byte-pinned shared corpus execution.",
+    "Legacy bare assignment in snapshot-reuse and multi-snapshot is historical compatibility, not canonical reassignment syntax. Add separate explicit set reassignment fixtures after shared grammar reconciliation rather than expanding legacy bare assignment to new targets."
   ],
   "candidateImplementations": [
     {
@@ -301,6 +302,20 @@
         "outsideCase": "legacy-body",
         "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46062603941/job/140720204926",
         "outsideReason": "Compiles successfully but intentionally not exported (private main). Public variant executes 42 in focused test."
+      },
+      {
+        "backend": "java",
+        "head": "cfa01ac3dd59a68094094c1246105f7b65e038ec",
+        "tree": "ad1d2c34e937b4cdf776007e47f5c8ceae7b40bb",
+        "guestPass": 4,
+        "rejectedUnclassified": 13,
+        "outsideProfile": 3,
+        "outsideCases": [
+          "legacy-body",
+          "snapshot-reuse",
+          "multi-snapshot"
+        ],
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46062677054/job/140720454368"
       }
     ]
   }
