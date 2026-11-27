@@ -1,7 +1,7 @@
 {
   "schema": "atto.actor-machine-nominal-inspection.v1",
   "status": "TARGET_NOT_EXECUTED",
-  "note": "Restricted root declarations only; payload-free ordinary empty classes are candidate event declarations. Not Sendable, constructor, package/linker, type-checker or runtime proof. No event identity outside this source unit.",
+  "note": "Restricted root declarations only; payload-free ordinary empty classes are candidate event declarations. Not Sendable, constructor, package/linker, type-checker or runtime proof. No event identity outside this source unit. Source-order class IDs are compilation-unit-local; Java reports parsed class indices, Rust additionally calls its production nominal resolver. Neither is a wire identity or a checked Sendable proof.",
   "cases": [
     {
       "id": "nominal-forward",
@@ -18,6 +18,10 @@
         "declarationIds": [
           0,
           1
+        ],
+        "sourceOrderClassIds": [
+          1,
+          0
         ]
       }
     },
