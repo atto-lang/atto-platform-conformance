@@ -50,3 +50,73 @@ test('unsafe token cannot accidentally be interpreted in string/comment/Symbol e
   assert.ok(source['symbol-not-keyword'].includes('#unsafe'));
   assert.ok(source['identifier-near-miss'].includes('unsafe_tools'));
 });
+
+test('closure, cleanup and nested block boundaries remain distinct target cases', () => {
+  const cases = new Map(registry.cases.map(c => [c.id, c]));
+  const expected = {
+    'unsafe-lambda-no-inherited-context': 'E_UNSAFE_CALL',
+    'unsafe-long-typed-lambda-no-inherited-context': 'E_UNSAFE_CALL',
+    'unsafe-nested-sibling-no-context': 'E_UNSAFE_CONTEXT',
+    'unsafe-lambda-guest-denial': 'E_UNSAFE_DOMAIN',
+    'unsafe-defer-guest-denial': 'E_UNSAFE_DOMAIN',
+  };
+  for (const [id, diagnostic] of Object.entries(expected)) {
+    assert.equal(cases.get(id)?.expect, 'reject', id);
+    assert.equal(cases.get(id)?.diagnostic, diagnostic, id);
+  }
+  for (const id of ['unsafe-outer-context-restored', 'unsafe-nested-comment-near-miss']) {
+    assert.equal(cases.get(id)?.expect, 'accept', id);
+    assert.equal(cases.get(id)?.diagnostic, null, id);
+  }
+  assert.ok(cases.get('unsafe-long-typed-lambda-no-inherited-context').source
+    .split('Tuple<')[1].split('>')[0].split(',').length >= 12);
+});
+
+test('detached cleanup and native unsafe import aliases have explicit expectations', () => {
+  const cases = new Map(registry.cases.map(c => [c.id, c]));
+  for (const [id, diagnostic] of Object.entries({
+    'unsafe-defer-no-inherited-context': 'E_UNSAFE_CALL',
+    'unsafe-callable-value-unresolved': 'E_UNSAFE_CALL',
+    'unsafe-native-import-dotted-alias': 'E_UNSAFE_DOMAIN',
+    'unsafe-native-import-colon-alias': 'E_UNSAFE_DOMAIN'
+  })) {
+    assert.equal(cases.get(id)?.expect, 'reject', id);
+    assert.equal(cases.get(id)?.diagnostic, diagnostic, id);
+  }
+  for (const id of ['unsafe-defer-explicit-inner-context', 'unsafe-lambda-explicit-inner-context', 'unsafe-import-string-near-miss']) {
+    assert.equal(cases.get(id)?.expect, 'accept', id);
+    assert.equal(cases.get(id)?.diagnostic, null, id);
+  }
+});
+
+
+test('unsafe native import traversal cases remain fail closed target-only vectors', () => {
+  const byId = new Map(registry.cases.map(c => [c.id, c]));
+  for (const id of ["unsafe-import-raw-traversal","unsafe-import-canonical-traversal","unsafe-import-colon-traversal","unsafe-import-legacy-colon-traversal","unsafe-import-colon-root-escape","unsafe-import-slash-root-escape","unsafe-import-legacy-root-escape","unsafe-import-normalized-reserved"]) {
+    const c = byId.get(id);
+    assert.equal(c?.profile, 'tenantvm_guest', id);
+    assert.equal(c?.expect, 'reject', id);
+    assert.equal(c?.diagnostic, 'E_UNSAFE_DOMAIN', id);
+    assert.ok(Object.values(c.verification).every(v => v === 'not_executed'), id);
+  }
+});
+
+test('intermediate canonical unsafe import identity cannot be erased', () => {
+  const byId = new Map(registry.cases.map(c => [c.id, c]));
+  for (const id of ["unsafe-import-intermediate-traversal","unsafe-import-intermediate-relative","unsafe-import-intermediate-package","unsafe-import-double-slash-root","unsafe-import-dot-slash-root","unsafe-import-relative-colon-root","unsafe-import-normalized-legacy-root","unsafe-import-vendor-intermediate","unsafe-import-separator-only-root","unsafe-import-intermediate-colon-suffix"]) {
+    const c = byId.get(id);
+    assert.equal(c?.profile, 'tenantvm_guest', id);
+    assert.equal(c?.expect, 'reject', id);
+    assert.equal(c?.diagnostic, 'E_UNSAFE_DOMAIN', id);
+    assert.ok(Object.values(c.verification).every(v => v === 'not_executed'), id);
+  }
+});
+
+
+test('restricted HDL, realtime and Stage-0 Atto targets cannot imply general unsafe support', () => {
+  for (const target of ['hdl_closed_rtl', 'realtime_closed_profiles', 'atto_selfhost']) {
+    assert.ok(registry.targets.includes(target), target);
+    for (const c of registry.cases) assert.equal(c.verification[target], 'not_executed', c.id+' '+target);
+  }
+  assert.match(registry.execution_note, /Stage-0 only/);
+});

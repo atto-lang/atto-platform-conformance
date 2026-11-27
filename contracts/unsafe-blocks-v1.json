@@ -3,7 +3,7 @@
   "contract": "atto-unsafe-blocks-v1",
   "status": "TARGET_ONLY_NOT_EXECUTED",
   "normative_spec": "https://github.com/atto-lang/atto-spec/blob/feat/unsafe-block-contract-v1-20261119/language/unsafe-blocks-v1.md",
-  "execution_note": "Source-only proposed fixtures. No compiler or runtime has run these cases. Target-only intrinsics, native grants and host capabilities are placeholders until defined by the spec/profile. Do not treat a parser, lexical scan, or host-only integrity check as compiled guest conformance.",
+  "execution_note": "Source-only proposed fixtures. No compiler or runtime has run these cases. Target-only intrinsics, native grants and host capabilities are placeholders until defined by the spec/profile. Do not treat a parser, lexical scan, or host-only integrity check as compiled guest conformance. HDL and realtime profiles are restricted compiler targets; atto_selfhost is Stage-0 only. These labels are coverage targets, not general compiler support claims.",
   "profiles": {
     "trusted_native": "Host extension compiled with explicit verified grant and exact ABI",
     "tenantvm_guest": "All untrusted actors and every VM-isolate; native unsafe source and std/unsafe imports forbidden",
@@ -24,7 +24,9 @@
     "independent_wasm",
     "cranelift",
     "js",
-    "atto_selfhost"
+    "atto_selfhost",
+    "hdl_closed_rtl",
+    "realtime_closed_profiles"
   ],
   "cases": [
     {
@@ -43,7 +45,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -62,7 +66,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -81,7 +87,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -100,7 +108,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -119,7 +129,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -138,7 +150,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -157,7 +171,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -176,7 +192,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -195,7 +213,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -214,7 +234,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -233,7 +255,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -252,7 +276,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -271,7 +297,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -290,7 +318,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -309,7 +339,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -328,7 +360,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -347,7 +381,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -366,7 +402,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -385,7 +423,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -404,7 +444,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -423,7 +465,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -442,7 +486,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -461,7 +507,9 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     },
     {
@@ -480,7 +528,681 @@
         "independent_wasm": "not_executed",
         "cranelift": "not_executed",
         "js": "not_executed",
-        "atto_selfhost": "not_executed"
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-lambda-no-inherited-context",
+      "profile": "trusted_native",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_CALL",
+      "source": "pub unsafe fnc host_only(): int { return 42; } pub fnc main(): int { unsafe { val callback = || -> host_only(); } return 42; }",
+      "reason": "Deferred callable body cannot inherit enclosing lexical unsafe context",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-long-typed-lambda-no-inherited-context",
+      "profile": "trusted_native",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_CALL",
+      "source": "pub unsafe fnc host_only(): int { return 42; } pub fnc main(): int { unsafe { val callback = |n|: Tuple<int, int, int, int, int, int, int, int, int, int, int, int> -> host_only(); } return 42; }",
+      "reason": "Long typed lambda header must not evade closure boundary detection; signature type is a target fixture",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-nested-sibling-no-context",
+      "profile": "trusted_native",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_CONTEXT",
+      "source": "pub unsafe fnc host_only(): int { return 42; } pub fnc main(): int { unsafe { unsafe { } } { host_only(); } return 42; }",
+      "reason": "Closing both unsafe regions removes caller authorization from sibling blocks",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-outer-context-restored",
+      "profile": "trusted_native",
+      "expect": "accept",
+      "diagnostic": null,
+      "source": "pub unsafe fnc host_only(): int { return 42; } pub fnc main(): int { unsafe { unsafe { } return host_only(); } }",
+      "reason": "Closing inner unsafe block restores the surrounding explicit lexical region",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-lambda-guest-denial",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "pub fnc main(): int { val callback = || -> { unsafe { } return 42; }; return 42; }",
+      "reason": "Uninvoked lambda cannot hide unsafe guest syntax from AST admission",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-defer-guest-denial",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "pub fnc main(): int { defer { unsafe { } } return 42; }",
+      "reason": "Cleanup body cannot conceal unsafe guest syntax",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-nested-comment-near-miss",
+      "profile": "any",
+      "expect": "accept",
+      "diagnostic": null,
+      "source": "pub fnc main(): int { /* outer /* unsafe { } */ still comment */ return 42; }",
+      "reason": "Nested comments are lexical data, not unsafe blocks",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-defer-no-inherited-context",
+      "profile": "trusted_native",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_CALL",
+      "source": "pub unsafe fnc host_only(): int { return 42; } pub fnc main(): int { unsafe { defer { host_only(); }; } return 42; }",
+      "reason": "Registered cleanup cannot inherit authority from the registration site",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-defer-explicit-inner-context",
+      "profile": "trusted_native",
+      "expect": "accept",
+      "diagnostic": null,
+      "source": "pub unsafe fnc host_only(): int { return 42; } pub fnc main(): int { unsafe { defer { unsafe { host_only(); } }; } return 42; }",
+      "reason": "Deferred cleanup establishes its own lexical region; host grant checks remain separate",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-lambda-explicit-inner-context",
+      "profile": "trusted_native",
+      "expect": "accept",
+      "diagnostic": null,
+      "source": "pub unsafe fnc host_only(): int { return 42; } pub fnc main(): int { unsafe { val callback = || -> { unsafe { return host_only(); } }; } return 42; }",
+      "reason": "Explicit inner unsafe region discharges lexical obligation but not native capability",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-callable-value-unresolved",
+      "profile": "trusted_native",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_CALL",
+      "source": "pub unsafe fnc host_only(): int { return 42; } pub fnc main(): int { unsafe { val callback = host_only; } return 42; }",
+      "reason": "Unresolved callable value must not erase an unsafe effect in the restricted profile",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-native-import-dotted-alias",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"ores.std.unsafe.ffi\"; pub fnc main(): int { return 42; }",
+      "reason": "Dotted native stdlib path is denied even when the imported module name is harmless",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-native-import-colon-alias",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"std::unsafe::ffi\"; pub fnc main(): int { return 42; }",
+      "reason": "Colon alias must not expose native unsafe packages to guest code",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-string-near-miss",
+      "profile": "any",
+      "expect": "accept",
+      "diagnostic": null,
+      "source": "pub fnc main(): int { val string text = \"std/unsafe/ffi\"; return 42; }",
+      "reason": "Ordinary string data is not a package import",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-raw-traversal",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"std/unsafe/../safe\"; pub fnc main(): int { return 42; }",
+      "reason": "Unsafe package identity and reserved root traversal must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-canonical-traversal",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"atto.std/unsafe/../safe\"; pub fnc main(): int { return 42; }",
+      "reason": "Unsafe package identity and reserved root traversal must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-colon-traversal",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"atto::std/unsafe/../safe\"; pub fnc main(): int { return 42; }",
+      "reason": "Unsafe package identity and reserved root traversal must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-legacy-colon-traversal",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"ores:std/unsafe/../safe\"; pub fnc main(): int { return 42; }",
+      "reason": "Unsafe package identity and reserved root traversal must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-colon-root-escape",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"atto::std/../safe\"; pub fnc main(): int { return 42; }",
+      "reason": "Unsafe package identity and reserved root traversal must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-slash-root-escape",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"atto/std/../safe\"; pub fnc main(): int { return 42; }",
+      "reason": "Unsafe package identity and reserved root traversal must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-legacy-root-escape",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"ores/std/../safe\"; pub fnc main(): int { return 42; }",
+      "reason": "Unsafe package identity and reserved root traversal must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-normalized-reserved",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"atto.std/other/../unsafe/ffi\"; pub fnc main(): int { return 42; }",
+      "reason": "Unsafe package identity and reserved root traversal must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-intermediate-traversal",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"std/other/../unsafe/../safe\"; pub fnc main(): int { return 42; }",
+      "reason": "Intermediate reserved unsafe identity or standard-library root escape must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-intermediate-relative",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"./std/other/../unsafe/../safe\"; pub fnc main(): int { return 42; }",
+      "reason": "Intermediate reserved unsafe identity or standard-library root escape must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-intermediate-package",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"pkg/../std/other/../unsafe/../safe\"; pub fnc main(): int { return 42; }",
+      "reason": "Intermediate reserved unsafe identity or standard-library root escape must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-double-slash-root",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"atto//std/../safe\"; pub fnc main(): int { return 42; }",
+      "reason": "Intermediate reserved unsafe identity or standard-library root escape must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-dot-slash-root",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"atto/./std/../safe\"; pub fnc main(): int { return 42; }",
+      "reason": "Intermediate reserved unsafe identity or standard-library root escape must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-relative-colon-root",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"./atto::std/../safe\"; pub fnc main(): int { return 42; }",
+      "reason": "Intermediate reserved unsafe identity or standard-library root escape must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-normalized-legacy-root",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"pkg/../ores.std/../safe\"; pub fnc main(): int { return 42; }",
+      "reason": "Intermediate reserved unsafe identity or standard-library root escape must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-vendor-intermediate",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"atto/std/other/../unsafe/../safe\"; pub fnc main(): int { return 42; }",
+      "reason": "Intermediate reserved unsafe identity or standard-library root escape must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-separator-only-root",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"atto/:/std/../safe\"; pub fnc main(): int { return 42; }",
+      "reason": "Intermediate reserved unsafe identity or standard-library root escape must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-import-intermediate-colon-suffix",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module innocent from \"std/other/../unsafe::ffi/../safe\"; pub fnc main(): int { return 42; }",
+      "reason": "Intermediate reserved unsafe identity or standard-library root escape must fail closed before namespace resolution.",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed",
+        "hdl_closed_rtl": "not_executed",
+        "realtime_closed_profiles": "not_executed"
       }
     }
   ]
