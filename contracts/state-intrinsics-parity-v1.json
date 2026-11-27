@@ -255,7 +255,9 @@
       "stale-incarnation-denial",
       "nonparking-contended-admission",
       "no-implicit-rollback",
-      "mixed-multi-container-contention-retirement-replay-differential"
+      "mixed-multi-container-contention-retirement-replay-differential",
+      "storage-side-foreign-lease-denial-even-at-matching-epoch",
+      "checked-overflow-preserves-value-releases-permit-and-allows-next-write"
     ],
     "evidencePolicy": "Track every profile and case separately. For negatives require phase-correct diagnostics and no artifact. For accepted cases require actual compiler and guest execution. Host/model-only and unsupported profiles cannot promote feature evidence.",
     "independentCompilerAdmission": {
