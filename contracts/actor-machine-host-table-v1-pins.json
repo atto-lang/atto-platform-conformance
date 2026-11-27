@@ -1,0 +1,38 @@
+{
+  "schema": "atto.flat-machine-table.host-v1",
+  "status": "TARGET_NOT_EXECUTED",
+  "scope": "Compiler-owned ASCII graph metadata only; not source parser, nominal message authority, executable MIR or guest evidence.",
+  "bounds": {
+    "nodes": 256,
+    "edges": 256,
+    "identifier_bytes": 1024
+  },
+  "canonical_order": "ASCII lexical",
+  "native_copy_pair": [
+    {
+      "repository": "atto-lang/atto-source.llvm",
+      "head": "2e813716307a0ade60e92bdae4e46ceb4af50126",
+      "path": "src/main/cpp/oreslang/compiler/FlatMachineTable.hpp",
+      "blob": "d26b2e51e670b23f7d099e155203ebc2f9ce7c65",
+      "test_path": "tests/flat_machine_table_v1_test.cpp",
+      "test_blob": "4787ee8f640976f9baf96cf6c38a7ec40c9e1c81"
+    },
+    {
+      "repository": "atto-lang/atto-source.forge",
+      "head": "ded8e62c7b5e54ece661b152100015ee12e667a4",
+      "path": "compiler/FlatMachineTable.hpp",
+      "blob": "d26b2e51e670b23f7d099e155203ebc2f9ce7c65",
+      "test_path": "tests/flat_machine_table_v1_test.cpp",
+      "test_blob": "4787ee8f640976f9baf96cf6c38a7ec40c9e1c81"
+    }
+  ],
+  "independent_js": {
+    "repository": "atto-lang/atto-source.js",
+    "head": "1783dc7d062a5c89ccf17283b6b13672b6bc7434",
+    "path": "src/flat-machine-table-v1.mjs",
+    "blob": "d07b3e805d1e81f95ba8f92b3def3e9d77f1e301",
+    "test_path": "tests/flat-machine-table-v1.test.mjs",
+    "test_blob": "a2ff50251797512248b53df4add730ba7dc1aa76"
+  },
+  "verification": "Read exact pinned Git blobs and compare both native source and test SHA; changes require coordinated pins. No target pass implied."
+}
