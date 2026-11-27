@@ -2,7 +2,7 @@
   "schema_version": 2,
   "contract": "local-binding-spellings-v2",
   "status": "AUTHORED_NOT_EXECUTED",
-  "notes": "Source strings are independent candidate programs; no actual compiler run or adapter is implied. Confirm exact diagnostic mapping and canonical entry syntax per lane; do not treat arbitrary parser errors as semantic proof. Additional ownership, cast failure, actor isolation and formatter tests required. Explicit-counter cases target the proposed strict explicit-rebinding profile (spec #307); backend-specific flag/entry adapters and diagnostic mappings are required. No execution is inferred from manifest addition.",
+  "notes": "Source strings are independent candidate programs; no actual compiler run or adapter is implied. Confirm exact diagnostic mapping and canonical entry syntax per lane; do not treat arbitrary parser errors as semantic proof. Additional ownership, cast failure, actor isolation and formatter tests required. Explicit-counter cases target the proposed strict explicit-rebinding profile (spec #307); backend-specific flag/entry adapters and diagnostic mappings are required. No execution is inferred from manifest addition. Bitwise cases are candidate strict-profile oracles from Rust #679's checked explicit-update subset. The manifest remains unexecuted; other backends must reconcile their existing literal shift-distance admission versus guarded runtime failure before treating shift negatives as portable. No new dynamic shift policy, bare compatibility migration or stream operator semantics are selected.",
   "backends": {
     "java": "NOT_EXECUTED",
     "llvm": "NOT_EXECUTED",
@@ -684,6 +684,125 @@
       "expected": {
         "kind": "compile_reject",
         "category": "unbound_binding",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "explicit-bitwise-and",
+      "source": "pub fnc main(): int { let x = 63; set x &= 42; return x; }\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "explicit-bitwise-or",
+      "source": "pub fnc main(): int { let x = 32; set x |= 10; return x; }\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "explicit-bitwise-xor",
+      "source": "pub fnc main(): int { let x = 40; set x ^^= 2; return x; }\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "explicit-bitwise-left",
+      "source": "pub fnc main(): int { let x = 21; set x <<<= 1; return x; }\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "explicit-bitwise-logical-right",
+      "source": "pub fnc main(): int { let x = 84; set x >>>= 1; return x; }\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "explicit-bitwise-arithmetic-right",
+      "source": "pub fnc main(): int { let x = -84; set x ashr= 1; return 84 + x; }\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "explicit-bitwise-loop",
+      "source": "pub fnc main(): int { let x = 21; for let i = 0; i < 1; set i |= 1 { set x <<<= 1; } return x; }\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "explicit-bitwise-bare",
+      "source": "pub fnc main(): int { let x = 40; x ^^= 2; return x; }\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "explicit_rebinding_required",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "explicit-bitwise-fixed",
+      "source": "pub fnc main(): int { const x = 40; set x |= 2; return x; }\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "immutable_reassignment",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "explicit-bitwise-type",
+      "source": "pub fnc main(): int { let x = true; set x &= 1; return 42; }\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "type_mismatch",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "explicit-bitwise-shift-64",
+      "source": "pub fnc main(): int { let x = 1; set x <<<= 64; return x; }\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "invalid_literal_shift_distance",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "explicit-bitwise-shift-negative",
+      "source": "pub fnc main(): int { let x = 1; set x >>>= -1; return x; }\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "invalid_literal_shift_distance",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "explicit-bitwise-ashr-64",
+      "source": "pub fnc main(): int { let x = 1; set x ashr= 64; return x; }\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "invalid_literal_shift_distance",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "explicit-bitwise-separated",
+      "source": "pub fnc main(): int { let x = 40; set x ^ ^= 2; return x; }\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "invalid_update_operator",
         "no_artifact": true
       }
     }
