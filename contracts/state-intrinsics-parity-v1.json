@@ -229,7 +229,15 @@
       "duplicate-critical-mode",
       "indirect-suspension",
       "ordinary-field-bypass",
-      "intrinsic-shadowing"
+      "intrinsic-shadowing",
+      "independent-schema-validation-public-package-field",
+      "independent-schema-validation-nonsealed-binding",
+      "independent-schema-validation-nonscalar-or-referent-mutable",
+      "independent-schema-validation-missing-initializer-or-empty-schema",
+      "independent-schema-validation-static-method-or-reserved-identifier",
+      "independent-typed-ir-invalid-nominal-field-slot",
+      "independent-typed-ir-invalid-scalar-local-or-private-ticket-slot",
+      "independent-typed-ir-invalid-detached-result-slot"
     ],
     "runtime": [
       "overlapping-readers-where-supported",
@@ -243,6 +251,17 @@
       "nonparking-contended-admission",
       "no-implicit-rollback"
     ],
-    "evidencePolicy": "Track every profile and case separately. For negatives require phase-correct diagnostics and no artifact. For accepted cases require actual compiler and guest execution. Host/model-only and unsupported profiles cannot promote feature evidence."
+    "evidencePolicy": "Track every profile and case separately. For negatives require phase-correct diagnostics and no artifact. For accepted cases require actual compiler and guest execution. Host/model-only and unsupported profiles cannot promote feature evidence.",
+    "independentCompilerAdmission": {
+      "status": "TARGET_NOT_EXECUTED",
+      "scope": "Compiler-specific mutation of AST or typed IR where the compiler exposes such a boundary; source-only rejection does not establish independent admission.",
+      "requirements": [
+        "Retain protected nominal field and binding authority across AST and IR lowering.",
+        "Validate result scalar type, field membership and lease mode independently of parser admission.",
+        "Keep compiler-private lease tickets inaccessible to guest value locals and detached result stores.",
+        "Require nested reference graphs to carry verified transitive borrow provenance; otherwise reject before artifact emission.",
+        "For each backend, record exact candidate head/tree, mutation harness and executed result separately."
+      ]
+    }
   }
 }
