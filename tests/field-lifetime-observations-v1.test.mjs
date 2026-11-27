@@ -6,6 +6,12 @@ const load=name=>JSON.parse(readFileSync(new URL('../contracts/'+name,import.met
 const observed=load('field-lifetime-observations-v1.json');
 const profileBytes=readFileSync(new URL('../contracts/field-lifetime-source-profile-v1.json',import.meta.url));
 const source=JSON.parse(profileBytes);
+// This is a historical observation, not a mutable certification ledger.
+function validateHistoricalCounts(row) {
+  const expected = row.repo === 'atto-lang/atto-source.java' ? [0,9,2]
+    : ['atto-lang/atto-source.rs','atto-lang/atto-source.wasm'].includes(row.repo) ? [8,11,0] : [0,11,0];
+  assert.deepEqual([row.positive_guest_executed,row.negative_rejected,row.negative_admitted],expected,'historical count drift: '+row.repo);
+}
 function validate(doc){
   assert.equal(doc.schema,'atto.field-lifetime-observations.v1');
   assert.equal(doc.full_parity_certified,false);
@@ -43,6 +49,7 @@ function validate(doc){
       assert.ok(Number.isSafeInteger(row[key]) && row[key]>=0 && row[key]<=limit, key);
     }
     assert.equal(row.negative_rejected+row.negative_admitted,11);
+    validateHistoricalCounts(row);
     if(row.status==='REFERENCE_GUEST_EXECUTED'||row.status==='SHARED_COMPILER_GUEST_EXECUTED'){
       assert.equal(row.repo,row.status==='REFERENCE_GUEST_EXECUTED'?'atto-lang/atto-source.rs':'atto-lang/atto-source.wasm');
       assert.equal(row.positive_guest_executed,8);assert.equal(row.negative_rejected,11);
@@ -88,5 +95,18 @@ test('reject ambiguous historical evidence identities and silent downgrades',()=
     d=>{row(d,'java').certified=true;}
   ]){
     const d=structuredClone(observed);mutate(d);assert.throws(()=>validate(d));
+  }
+});
+
+test('reject every compensated historical negative-count mutation',()=>{
+  for(const row of observed.observations.filter(r=>r.status!=='BOOTSTRAP_NOT_EXECUTED')){
+    for(let rejected=0;rejected<=11;rejected++){
+      if(rejected===row.negative_rejected)continue;
+      const d=structuredClone(observed);
+      const target=d.observations.find(r=>r.repo===row.repo);
+      target.negative_rejected=rejected;
+      target.negative_admitted=11-rejected;
+      assert.throws(()=>validate(d),/historical count drift|Expected values to be strictly equal/);
+    }
   }
 });
