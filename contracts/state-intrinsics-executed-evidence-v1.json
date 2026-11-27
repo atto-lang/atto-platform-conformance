@@ -826,7 +826,10 @@
       "wholeRegression": "FAIL: misplaced native platform_core_v1 test imports native crate and serde_json from dependency-free browser crate",
       "nextHead": "cb82cb69d35a543fb6583e39cd6c99ecf23297af",
       "nextTree": "007daf36b65600660c23ef1444559b155be00e46",
-      "nextStatus": "Moved unchanged native test except include path to native/tests; exact new tree qualification pending"
+      "nextStatus": "Exact new tree focused IR suite PASS; relocated native platform-core test job PASS; Wasm guests and full browser suite pending at sample",
+      "nextRun": 45950775531,
+      "nextNativeJob": 140345848368,
+      "nextBrowserJob": 140345848331
     },
     "net": {
       "repo": "atto-lang/atto-source.net",
@@ -851,7 +854,9 @@
       "wholeRegression": "FAIL: existing pinned frontend checker mismatch",
       "nextHead": "08523ae63917c85ba36f1df596c48eec8ae1552d",
       "nextTree": "97b8f71d2e8b702859e5d4428c406fe3c509167a",
-      "nextStatus": "Exact diagnostic oracle corrected; retest pending; no integrity pin relaxation"
+      "nextStatus": "Focused native protected actor guest and no-artifact negatives 3/3 test groups PASS; broader regression still FAIL pinned frontend checker",
+      "nextRun": 45950775531,
+      "nextJob": 140345848054
     },
     "promotion": "No merge authorization, broad parity, general transitive ownership, or fair scheduling claim. Exact revisions and independent review required."
   }
