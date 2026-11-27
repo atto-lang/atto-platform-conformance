@@ -1,0 +1,5 @@
+pub fnc main(): int {
+    let mut x = x := 5;
+    const string label = x.key;
+    return if x.key == "x" then x.value else 99 fi;
+}
