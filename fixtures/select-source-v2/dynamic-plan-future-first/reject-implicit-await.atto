@@ -1,0 +1,7 @@
+// Target: reject before guest artifact; no implicit suspension or conversion.
+pub suspends fnc main(): int {
+  val ch = Channel<int>.bounded(1);
+  val plan = SelectPlan.from_list([SelectCase.read(ch)]);
+  val SelectResult result = select fair from plan;
+  return result.value;
+}

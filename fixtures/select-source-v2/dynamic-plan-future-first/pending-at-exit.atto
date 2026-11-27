@@ -1,0 +1,7 @@
+// Proposed lifecycle target: unresolved plan Future must not silently succeed.
+pub suspends fnc main(): int {
+  val ch = Channel<int>.bounded(1);
+  val plan = SelectPlan.from_list([SelectCase.read(ch)]);
+  val Future<SelectResult> pending = select fair from plan;
+  return 42;
+}

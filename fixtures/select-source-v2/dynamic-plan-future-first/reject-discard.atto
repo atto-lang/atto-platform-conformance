@@ -1,0 +1,7 @@
+// Target: reject before guest artifact; detached pending operation unsupported.
+pub suspends fnc main(): int {
+  val ch = Channel<int>.bounded(1);
+  val plan = SelectPlan.from_list([SelectCase.read(ch)]);
+  select fair from plan;
+  return 42;
+}
