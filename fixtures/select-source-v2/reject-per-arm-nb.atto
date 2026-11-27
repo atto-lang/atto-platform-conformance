@@ -1,0 +1,1 @@
+pub fnc main(): int { val Channel<int> incoming = Channel.new<int>(1); do select { when nb readch incoming: val value {} } return 0; }

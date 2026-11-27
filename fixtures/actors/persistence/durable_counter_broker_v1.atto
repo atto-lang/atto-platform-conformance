@@ -1,0 +1,6 @@
+define durable actor Counter as
+    state count: int = 0;
+    receive(ActorMail<int> mail) -> void {
+        self.count = self.count + mail.value;
+    }
+end

@@ -1,0 +1,1 @@
+fnc main(): int { return await select<int> { default: -> { return 42; } }; }

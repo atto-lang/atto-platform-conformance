@@ -10,7 +10,8 @@ test('missing/unhashable executable cannot be VERIFIED by fabricated successful 
  });
  assert.equal(r.ok,false);
  assert.equal(r.verified,0);
- assert.deepEqual(r.results.map(x=>x.status),['UNHASHABLE_EXECUTABLE','UNHASHABLE_EXECUTABLE']);
+ assert.deepEqual(r.results.map(x=>x.status),['UNHASHABLE_EXECUTABLE','UNHASHABLE_EXECUTABLE','UNSUPPORTED','UNSUPPORTED','UNSUPPORTED','UNHASHABLE_EXECUTABLE']);
+ assert.equal(r.unsupported,3);
  assert.equal(r.executableSha256,null);
 });
 
@@ -33,8 +34,10 @@ test('a legitimate warning with successful exit does not invalidate positive fix
     ? {status:1,signal:null,stdout:'',stderr:'error: unresolved identifier nonexistent_symbol'}
     : {status:0,signal:null,stdout:'',stderr:'warning: unused variable'}
  });
- assert.equal(r.ok,true);
- assert.equal(r.verified,2);
+ assert.equal(r.ok,false); // unsupported generators cannot certify the full suite
+ assert.equal(r.verified,3);
+ assert.equal(r.unsupported,3);
+ for (const id of ['int-arithmetic','unresolved-identifier','liveview-revision-order']) assert.equal(r.results.find(x=>x.id===id).status,'VERIFIED');
 });
 
 test('negative fixture cannot verify when executable is unhashable even with a matching diagnostic',async()=>{

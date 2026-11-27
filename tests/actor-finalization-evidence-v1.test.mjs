@@ -60,7 +60,7 @@ test("all five backends remain separate and unverified",()=>{
   assert.deepEqual(ledger({backends}),{valid:true,parityCertified:false,errors:[]});
   assert.ok(ledger({backends:backends.slice(1)}).errors.includes(
     "MISSING_DUPLICATE_OR_UNKNOWN_BACKEND"));
-  assert.ok(ledger({backends:[...backends.slice(0,4),backends[0]]).errors.includes(
+  assert.ok(ledger({backends:[...backends.slice(0,4),backends[0]]}).errors.includes(
     "MISSING_DUPLICATE_OR_UNKNOWN_BACKEND"));
   backends[0].status="guest-claimed";
   assert.ok(ledger({backends}).errors.includes("GUEST_CLAIM_WITHOUT_RECEIPT"));

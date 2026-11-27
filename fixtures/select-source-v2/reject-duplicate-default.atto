@@ -1,0 +1,1 @@
+pub fnc main(): int { do select over default: {} default: {} end return 0; }
