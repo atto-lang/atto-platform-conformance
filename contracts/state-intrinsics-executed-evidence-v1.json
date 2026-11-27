@@ -373,5 +373,33 @@
       "main": "1a261e20f9566fc8c172acd2e07a6f028881b27f",
       "testBlob": "91377c919c4251bdc51af4575d6bc677fa46f183"
     }
-  ]
+  ],
+  "syntheticWasmStateImportAbiEvidence": {
+    "status": "LOCAL_SYNTHETIC_WASM_ABI_ONLY_NOT_CI",
+    "node": "22.16.0",
+    "runtimeBlob": "23ce944e66a50fd63765ec5d55b712f993774d15",
+    "records": [
+      {
+        "repo": "atto-lang/atto-source.rs",
+        "pr": 720,
+        "head": "eaeb26d2185f59ff736631cfaecf85cb1b769c29",
+        "tree": "d54b2ec7d4472cef2227879bba8dbd61abc227d2",
+        "testBlob": "a1c5f17cfa456fc6b93e2563e3077f2ea632ad5f",
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "repo": "atto-lang/atto-source.wasm",
+        "pr": 358,
+        "head": "cb8c9d333774413b0aa7a7cbf4786ce62fbaeb6a",
+        "tree": "725b1e58b297dd1e756e71f5c91a8a4bba4c66f7",
+        "testBlob": "865f43af51a542e3522bd449b0e05541b110c966",
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      }
+    ],
+    "scope": "Actual Node WebAssembly engine execution of fixed synthetic modules with real state import signatures; balanced i64 ticket transfer, physical trap unwind, incomplete return rejection, incompatible admission. Exact runtime and test Git blobs verified. Not Atto compiler output, trusted compiler admission, browser worker, or full guest parity. No promotion."
+  }
 }
