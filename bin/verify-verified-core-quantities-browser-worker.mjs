@@ -21,6 +21,9 @@ const profile=join(work,"chrome");
 const sha=bytes=>createHash("sha256").update(bytes).digest("hex");
 const compiler=readFileSync(resolve(compilerPath)),pin=sha(compiler);
 const bridge=readFileSync(join(resolve(bridgePath),"src/canonical-browser-compiler.mjs"));
+// Serve the bridge dependency from the same authenticated checkout, not a stub.
+const unicodeImport=bridge.toString("utf8").includes("./source-unicode-identifiers.mjs");
+const unicodeSource=unicodeImport?readFileSync(join(resolve(bridgePath),"src/source-unicode-identifiers.mjs")):null;
 assert.ok(compiler.length>8&&compiler.length<=16*1024*1024);
 const {fixtures,cases}=expandQuantityCases(original,work,manifest);
 assert.equal(cases.length,bindings?36:151);
@@ -77,13 +80,14 @@ w.postMessage({pin:${JSON.stringify(pin)}});
 </script>`;
 let accept,reject;const receipt=new Promise((a,b)=>{accept=a;reject=b;});
 const resources=new Map([['/',["text/html",page]],['/worker.mjs',["text/javascript",worker]],['/bridge.mjs',["text/javascript",bridge]],['/compiler.wasm',["application/wasm",compiler]],['/cases.json',["application/json",JSON.stringify(inputs)]]]);
+if(unicodeSource!==null)resources.set("/source-unicode-identifiers.mjs",["text/javascript",unicodeSource]);
 const server=createServer(async(req,res)=>{
  try{
   if(req.method==="GET"&&resources.has(req.url)){const [type,body]=resources.get(req.url);res.writeHead(200,{"content-type":type,"cache-control":"no-store"});res.end(body);}
   else if(req.method==="POST"&&req.url==="/result"){
    let data="";for await(const chunk of req){data+=chunk;if(data.length>131072)throw Error("receipt too large");}
    const result=JSON.parse(data);res.writeHead(204);res.end();accept(result);
-  }else{res.writeHead(404);res.end();}
+  }else{console.error("UNEXPECTED_WORKER_REQUEST "+req.method+" "+req.url);res.writeHead(404);res.end();}
  }catch(e){res.destroy();reject(e);}
 });
 let child,timer;
