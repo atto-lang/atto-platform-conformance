@@ -192,3 +192,15 @@ test('Rust candidate compiles the same owned fixtures and shares JS claims witho
  assert.deepEqual(rust.profiles,['owned-unwind-v1-native-compiler-wasm','owned-unwind-v1-node-worker','owned-unwind-v1-chromium-worker']);
  assert.equal(registry.cases.find(c=>c.id===owned.case_id).backend_statuses['atto-source.rs'],'not_executed');
 });
+
+test('native LLVM candidate and refreshed Rust integration pin actual owned guest evidence',()=>{
+ const f=registry.owned_future_candidate;
+ const llvm=f.llvm_compiler_candidate;
+ assert.equal(llvm.backend,'atto-source.llvm');
+ assert.equal(llvm.frame_bytes,208);
+ assert.deepEqual(llvm.fixture_blobs,f.fixtures.map(x=>x.git_blob_sha));
+ assert.deepEqual(llvm.profiles,['owned-unwind-v1-native-llvm','owned-unwind-v1-native-store-harness']);
+ for(const sha of [llvm.compiler_head,llvm.compiler_tree,f.rust_current_main_integration.head,f.rust_current_main_integration.tree,f.rust_current_main_integration.base])assert.match(sha,/^[a-f0-9]{40}$/);
+ for(const job of [llvm.job,f.rust_current_main_integration.job])assert.match(job,/^https:\/\/github\.com\/ores-dummy-org-ruby-graal-1\/atto-ci\/actions\/runs\/\d+\/job\/\d+$/);
+ assert.equal(registry.cases.find(c=>c.id===f.case_id).backend_statuses['atto-source.llvm'],'not_executed');
+});

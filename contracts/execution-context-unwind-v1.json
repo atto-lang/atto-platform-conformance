@@ -1475,6 +1475,30 @@
         "owned-unwind-v1-chromium-worker"
       ],
       "limitation": "Exact candidate compiler and real guest steps passed, not default compiler or main parity. One invocation per Wasm instance, numeric trusted-host credentials, no general MIR or actor STOP deadlines. Rust and JS share the claim domain, not full arbitrary guest interop."
+    },
+    "llvm_compiler_candidate": {
+      "backend": "atto-source.llvm",
+      "pr": "https://github.com/atto-lang/atto-source.llvm/pull/1060",
+      "compiler_head": "7ac4edc5a73ed7142eb92c4aab3839e8e5a6fa89",
+      "compiler_tree": "95d1e42a88804f2ac7820016ce5193b56ba9bb94",
+      "job": "https://github.com/ores-dummy-org-ruby-graal-1/atto-ci/actions/runs/45950103254/job/140343725279",
+      "profiles": [
+        "owned-unwind-v1-native-llvm",
+        "owned-unwind-v1-native-store-harness"
+      ],
+      "frame_bytes": 208,
+      "fixture_blobs": [
+        "b1feab27d136b7464944ac2648a81894ae0afbc7",
+        "d46d7ed7a928df044335ee92f29994749510f99b"
+      ],
+      "limitation": "Exact native compilation, sanitizer guest and store-harness steps passed; not default frontend or production scheduler integration. Trusted caller-owned frame, numeric error receipts, no STOP deadline or authenticated ownership."
+    },
+    "rust_current_main_integration": {
+      "head": "48c0bbfd133b55c93a9d73078c3f4d796661beb6",
+      "tree": "81d5a5dd5b8ae59c19f3668bfac467f9b0be5b47",
+      "base": "ecba7ec3f1a8d69fb8c005fb548b3a399aabfc83",
+      "job": "https://github.com/ores-dummy-org-ruby-graal-1/atto-ci/actions/runs/45950049066/job/140343552872",
+      "qualification": "Exact focused compiler, Node and Chromium execution steps passed. Historical receipt preserved; main parity unchanged."
     }
   }
 }
