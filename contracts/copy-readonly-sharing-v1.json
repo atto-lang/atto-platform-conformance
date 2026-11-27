@@ -1,0 +1,415 @@
+{
+  "schema": "atto.copy-readonly-sharing.v1",
+  "status": "SOURCE_CANDIDATE_ONLY",
+  "spec": "https://github.com/atto-lang/atto-spec/pull/300",
+  "backend_count": 11,
+  "backends": [
+    {
+      "repo": "atto-lang/atto-source.atto",
+      "guest_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.cranelift",
+      "guest_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.forge",
+      "guest_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.hdl",
+      "guest_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.java",
+      "guest_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.js",
+      "guest_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.llvm",
+      "guest_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.net",
+      "guest_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.realtime",
+      "guest_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.rs",
+      "guest_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.wasm",
+      "guest_status": "NOT_EXECUTED",
+      "receipt": null
+    }
+  ],
+  "fixtures": [
+    {
+      "id": "replace-copy",
+      "path": "fixtures/copy-readonly-sharing-v1/replace-copy.atto",
+      "expect": {
+        "main_result": 42
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "replace-original",
+      "path": "fixtures/copy-readonly-sharing-v1/replace-original.atto",
+      "expect": {
+        "main_result": 42
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "independent-root",
+      "path": "fixtures/copy-readonly-sharing-v1/independent-root.atto",
+      "expect": {
+        "main_result": 42
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "block-release",
+      "path": "fixtures/copy-readonly-sharing-v1/block-release.atto",
+      "expect": {
+        "main_result": 42
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "shared-read-control",
+      "path": "fixtures/copy-readonly-sharing-v1/shared-read-control.atto",
+      "expect": {
+        "main_result": 40
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-original-write",
+      "path": "fixtures/copy-readonly-sharing-v1/reject-original-write.atto",
+      "expect": {
+        "compile_reject": "E_COPY_READONLY"
+      },
+      "paired_positive": "shared-read-control",
+      "forbidden_statement": "a.scores.n = 99;",
+      "diagnostic_line": 12,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-copy-write",
+      "path": "fixtures/copy-readonly-sharing-v1/reject-copy-write.atto",
+      "expect": {
+        "compile_reject": "E_COPY_READONLY"
+      },
+      "paired_positive": "shared-read-control",
+      "forbidden_statement": "b.scores.n = 99;",
+      "diagnostic_line": 12,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "third-copy-control",
+      "path": "fixtures/copy-readonly-sharing-v1/third-copy-control.atto",
+      "expect": {
+        "main_result": 20
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-third-copy-write",
+      "path": "fixtures/copy-readonly-sharing-v1/reject-third-copy-write.atto",
+      "expect": {
+        "compile_reject": "E_COPY_READONLY"
+      },
+      "paired_positive": "third-copy-control",
+      "forbidden_statement": "a.scores.n = 99;",
+      "diagnostic_line": 14,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "fixed-slot-control",
+      "path": "fixtures/copy-readonly-sharing-v1/fixed-slot-control.atto",
+      "expect": {
+        "main_result": 40
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-fixed-slot",
+      "path": "fixtures/copy-readonly-sharing-v1/reject-fixed-slot.atto",
+      "expect": {
+        "compile_reject": "E_COPY_READONLY_SLOT"
+      },
+      "paired_positive": "fixed-slot-control",
+      "forbidden_statement": "b.scores = new Scores();",
+      "diagnostic_line": 12,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-shared-containing-object",
+      "path": "fixtures/copy-readonly-sharing-v1/reject-shared-containing-object.atto",
+      "expect": {
+        "compile_reject": "E_COPY_READONLY"
+      },
+      "paired_positive": "shared-read-control",
+      "forbidden_statement": "b.scores.n = 5;",
+      "diagnostic_line": 12,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "fresh-map-entries",
+      "expect": {
+        "main_result": 42
+      },
+      "path": "fixtures/copy-readonly-sharing-v1/fresh-map-entries.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "shared-map-control",
+      "expect": {
+        "main_result": 42
+      },
+      "path": "fixtures/copy-readonly-sharing-v1/shared-map-control.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-shared-map-insert-a",
+      "expect": {
+        "compile_reject": "E_COPY_READONLY"
+      },
+      "paired_positive": "shared-map-control",
+      "forbidden_statement": "a.scores[\"new\"] = 99;",
+      "diagnostic_line": 8,
+      "path": "fixtures/copy-readonly-sharing-v1/reject-shared-map-insert-a.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-shared-map-insert-b",
+      "expect": {
+        "compile_reject": "E_COPY_READONLY"
+      },
+      "paired_positive": "shared-map-control",
+      "forbidden_statement": "b.scores[\"new\"] = 99;",
+      "diagnostic_line": 8,
+      "path": "fixtures/copy-readonly-sharing-v1/reject-shared-map-insert-b.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "successive-copy-transitive-control",
+      "expect": {
+        "main_result": 42
+      },
+      "path": "fixtures/copy-readonly-sharing-v1/successive-copy-transitive-control.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-successive-source-descendant-write",
+      "expect": {
+        "compile_reject": "E_COPY_READONLY"
+      },
+      "paired_positive": "successive-copy-transitive-control",
+      "forbidden_statement": "a.profile.scores.n = 99;",
+      "diagnostic_line": 18,
+      "path": "fixtures/copy-readonly-sharing-v1/reject-successive-source-descendant-write.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-successive-copy-descendant-replacement",
+      "expect": {
+        "compile_reject": "E_COPY_READONLY"
+      },
+      "paired_positive": "successive-copy-transitive-control",
+      "forbidden_statement": "c.profile.scores = new Scores();",
+      "diagnostic_line": 18,
+      "path": "fixtures/copy-readonly-sharing-v1/reject-successive-copy-descendant-replacement.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "nested-scope-loan-control",
+      "expect": {
+        "main_result": 42
+      },
+      "path": "fixtures/copy-readonly-sharing-v1/nested-scope-loan-control.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-a-write-after-inner-scope",
+      "expect": {
+        "compile_reject": "E_COPY_READONLY"
+      },
+      "paired_positive": "nested-scope-loan-control",
+      "forbidden_statement": "a.scores.n = 99;",
+      "diagnostic_line": 18,
+      "path": "fixtures/copy-readonly-sharing-v1/reject-a-write-after-inner-scope.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-b-write-after-inner-scope",
+      "expect": {
+        "compile_reject": "E_COPY_READONLY"
+      },
+      "paired_positive": "nested-scope-loan-control",
+      "forbidden_statement": "b.scores.n = 99;",
+      "diagnostic_line": 18,
+      "path": "fixtures/copy-readonly-sharing-v1/reject-b-write-after-inner-scope.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "deep-copy-from-shallow-control",
+      "path": "fixtures/copy-readonly-sharing-v1/deep-copy-from-shallow-control.atto",
+      "expect": {
+        "main_result": 42
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-source-write-after-deep-copy",
+      "path": "fixtures/copy-readonly-sharing-v1/reject-source-write-after-deep-copy.atto",
+      "expect": {
+        "compile_reject": "E_COPY_READONLY"
+      },
+      "status": "NOT_EXECUTED",
+      "paired_positive": "deep-copy-from-shallow-control",
+      "forbidden_statement": "a.scores.n = 99;",
+      "diagnostic_line": 14
+    },
+    {
+      "id": "reject-shallow-write-after-deep-copy",
+      "path": "fixtures/copy-readonly-sharing-v1/reject-shallow-write-after-deep-copy.atto",
+      "expect": {
+        "compile_reject": "E_COPY_READONLY"
+      },
+      "status": "NOT_EXECUTED",
+      "paired_positive": "deep-copy-from-shallow-control",
+      "forbidden_statement": "b.scores.n = 99;",
+      "diagnostic_line": 14
+    },
+    {
+      "id": "both-roots-detach-third-retains",
+      "path": "fixtures/copy-readonly-sharing-v1/both-roots-detach-third-retains.atto",
+      "expect": {
+        "main_result": 42
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "mutable-call-after-detachment-control",
+      "expect": {
+        "main_result": 62
+      },
+      "path": "fixtures/copy-readonly-sharing-v1/mutable-call-after-detachment-control.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-mutable-call-shared-a",
+      "expect": {
+        "compile_reject": "E_COPY_READONLY"
+      },
+      "paired_positive": "mutable-call-after-detachment-control",
+      "forbidden_statement": "adjust(mut a.scores);",
+      "diagnostic_line": 17,
+      "path": "fixtures/copy-readonly-sharing-v1/reject-mutable-call-shared-a.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-mutable-call-shared-c",
+      "expect": {
+        "compile_reject": "E_COPY_READONLY"
+      },
+      "paired_positive": "mutable-call-after-detachment-control",
+      "forbidden_statement": "adjust(mut c.scores);",
+      "diagnostic_line": 17,
+      "path": "fixtures/copy-readonly-sharing-v1/reject-mutable-call-shared-c.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "mutable-method-detached-control",
+      "expect": {
+        "main_result": 62
+      },
+      "path": "fixtures/copy-readonly-sharing-v1/mutable-method-detached-control.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-mutable-method-shared-a",
+      "expect": {
+        "compile_reject": "E_COPY_READONLY"
+      },
+      "paired_positive": "mutable-method-detached-control",
+      "forbidden_statement": "a.scores.adjust(22);",
+      "diagnostic_line": 16,
+      "path": "fixtures/copy-readonly-sharing-v1/reject-mutable-method-shared-a.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-mutable-method-shared-c",
+      "expect": {
+        "compile_reject": "E_COPY_READONLY"
+      },
+      "paired_positive": "mutable-method-detached-control",
+      "forbidden_statement": "c.scores.adjust(22);",
+      "diagnostic_line": 16,
+      "path": "fixtures/copy-readonly-sharing-v1/reject-mutable-method-shared-c.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "shared-array-detachment-control",
+      "expect": {
+        "main_result": 62
+      },
+      "path": "fixtures/copy-readonly-sharing-v1/shared-array-detachment-control.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-shared-array-index-a",
+      "expect": {
+        "compile_reject": "E_COPY_READONLY"
+      },
+      "paired_positive": "shared-array-detachment-control",
+      "forbidden_statement": "a.scores[0] = 22;",
+      "diagnostic_line": 10,
+      "path": "fixtures/copy-readonly-sharing-v1/reject-shared-array-index-a.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-shared-array-index-c",
+      "expect": {
+        "compile_reject": "E_COPY_READONLY"
+      },
+      "paired_positive": "shared-array-detachment-control",
+      "forbidden_statement": "c.scores[0] = 22;",
+      "diagnostic_line": 10,
+      "path": "fixtures/copy-readonly-sharing-v1/reject-shared-array-index-c.atto",
+      "status": "NOT_EXECUTED"
+    }
+  ],
+  "negative_policy": "First execute paired positive on same exact compiler tree. Require diagnostic at forbidden statement, no artifact, no E_COPY_SHALLOW_ALIAS or parser rejection as parity. Diagnostic mapping must be reviewed. No source rewriting or skipped negative tests.",
+  "required_receipt": [
+    "exact_source_commit",
+    "exact_root_tree",
+    "fixture_blob_sha",
+    "compiler_command",
+    "compile_exit",
+    "executed_steps",
+    "guest_main_result_or_diagnostic_and_location",
+    "artifact_absent_on_reject",
+    "independent_review"
+  ],
+  "full_parity": false
+}

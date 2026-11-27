@@ -1,0 +1,78 @@
+{
+  "schema": "atto.copy-readonly-sharing.admission-evidence.v1",
+  "corpus": {
+    "head": "625923003f99758875ff6a938d5f45cc4c780ace",
+    "tree": "f1b8afcee2a34350ba16842672091d7b452a317d"
+  },
+  "scope": "ADMISSION_ONLY_NOT_GUEST_PARITY",
+  "certified_nested_backends": 0,
+  "results": [
+    {
+      "backend": "rs",
+      "compiler_head": "a2ddc94bf3caaa464adde1656fe6466fa5bfc3db",
+      "compiler_tree": "7a30b6b0b6348d101324b9f8fd758c7399ca37ed",
+      "attempted": 12,
+      "admitted": 0,
+      "rejected_no_artifact": 12,
+      "diagnostic": "E_UNSUPPORTED_TYPE (class field Scores)",
+      "receipt": "https://github.com/beamscale/bmscl-compiler/actions/runs/45733571342/job/139621286040"
+    },
+    {
+      "backend": "llvm",
+      "compiler_head": "0c13320727b2a415ded46795dceea7e6d6307919",
+      "compiler_tree": "da928db642709c3b745b113a9bfaa3a900777680",
+      "attempted": 12,
+      "admitted": 0,
+      "rejected_no_artifact": 12,
+      "diagnostic": "expected val or final for native nested class field; fixed-slot controls expected semicolon",
+      "receipt": "https://github.com/beamscale/bmscl-compiler/actions/runs/45734298120/job/139623676710",
+      "note": "scalar guest controls NOT RUN, mandatory parser/checker executable missing; corrected carrier PR #77"
+    },
+    {
+      "backend": "net",
+      "compiler_head": "a3bd0e41b57c0c537f3ce6801ec9638c949524f6",
+      "compiler_tree": "138a30b2be40cd633c5817ea6973aa9c30448ed8",
+      "attempted": 12,
+      "admitted": 0,
+      "rejected_no_artifact": 12,
+      "diagnostic": "OWNERSHIP_BANG_BACKEND_UNSUPPORTED",
+      "receipt": "https://github.com/beamscale/bmscl-compiler/actions/runs/45734298120/job/139623676481",
+      "note": "bounded CFG/CIL verification emitter, exit 134 unhandled FormatException; no native execution"
+    }
+  ],
+  "remaining": [
+    {
+      "backend": "atto",
+      "status": "NOT_EXECUTED_ON_THIS_CORPUS"
+    },
+    {
+      "backend": "cranelift",
+      "status": "NOT_EXECUTED_ON_THIS_CORPUS"
+    },
+    {
+      "backend": "forge",
+      "status": "NOT_EXECUTED_ON_THIS_CORPUS"
+    },
+    {
+      "backend": "hdl",
+      "status": "NOT_EXECUTED_ON_THIS_CORPUS"
+    },
+    {
+      "backend": "java",
+      "status": "NOT_EXECUTED_ON_THIS_CORPUS"
+    },
+    {
+      "backend": "js",
+      "status": "NOT_EXECUTED_ON_THIS_CORPUS"
+    },
+    {
+      "backend": "realtime",
+      "status": "NOT_EXECUTED_ON_THIS_CORPUS"
+    },
+    {
+      "backend": "wasm",
+      "status": "NOT_EXECUTED_ON_THIS_CORPUS"
+    }
+  ],
+  "notes": "No rejected fixture satisfies matched positive/negative ownership criteria. The tested source corpus is the prior immutable commit even after adding this evidence file."
+}

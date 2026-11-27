@@ -1,0 +1,15 @@
+pub fnc main(): int {
+    let mut Map<string,int> a = {"old" => 1};
+    let mut Map<string,int> b = copy! a;
+    a["left"] = 10;
+    b["right"] = 20;
+    a["left"] = 20;
+    b["right"] = 22;
+    if a.get("right").is_some() then
+        return 1;
+    fi
+    if b.get("left").is_some() then
+        return 2;
+    fi
+    return a.get("left").unwrap() + b.get("right").unwrap();
+}

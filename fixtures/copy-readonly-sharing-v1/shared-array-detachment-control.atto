@@ -1,0 +1,12 @@
+define class Person as
+    pub let mut Array<int> scores = Array.of(20);
+end
+
+pub fnc main(): int {
+    let mut Person a = new Person();
+    let mut Person b = copy! a;
+    let mut Person c = copy! b;
+    b.scores = Array.of(20);
+    b.scores[0] = 22;
+    return a.scores[0] + b.scores[0] + c.scores[0];
+}

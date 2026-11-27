@@ -1,0 +1,18 @@
+define class Scores as
+    pub let int n = 20;
+end
+define class Person as
+    pub let mut Scores scores = new Scores();
+    pub let int age = 1;
+end
+
+pub fnc main(): int {
+    let mut Person a = new Person();
+    let mut Person b = copy! a;
+    let mut Person c = copy! a;
+    a.scores = new Scores();
+    b.scores = new Scores();
+    a.scores.n = 10;
+    b.scores.n = 12;
+    return a.scores.n + b.scores.n + c.scores.n;
+}
