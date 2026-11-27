@@ -1,7 +1,7 @@
 {
   "schema": "atto.optional-on-type-match.v1",
   "status": "target-not-executed",
-  "semantics": "Only is may omit on; on is has identical meaning. Literal before nominal type is ordered specialization. Unreachable arms remain diagnosed. Unsupported types must fail closed, not count as positive parity. Membership arms use in collection; type lists use is in [T,U]; no ons. All added vectors are targets, not execution receipts.",
+  "semantics": "Only is may omit on; on is has identical meaning. Literal before nominal type is ordered specialization. Unreachable arms remain diagnosed. Unsupported types must fail closed, not count as positive parity. Membership arms use in collection; type lists use is in [T,U]; no ons. All added vectors are targets, not execution receipts. Pattern constants and arrays are compile-time-only; no runtime type objects.",
   "cases": [
     {
       "id": "union-literal",
@@ -182,6 +182,66 @@
       "id": "type-list-conditional",
       "source": "pub fnc main(): int { if 7 is in [int, bool] then return 42; fi return 0; }",
       "exit_or_return": 42
+    },
+    {
+      "id": "pattern-constant-literal",
+      "source": "const Pattern p = on 5; pub fnc main(): int { return match 5 over on p -> 42, on _ -> 0 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "pattern-constant-membership",
+      "source": "const Pattern p = in [5, 6, 7]; pub fnc main(): int { return match 6 over on p -> 42, on _ -> 0 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "pattern-array",
+      "source": "const Pattern[] z = [on 1, in [2, 3]]; pub fnc main(): int { return match 3 over in z -> 42, on _ -> 0 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "pattern-array-type-only",
+      "source": "const Pattern[] z = [is int, is bool]; pub fnc main(): int { return match 7 over is in z -> 42 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "pattern-inline",
+      "source": "pub fnc main(): int { return match 2 over in [on 1, in [2, 3]] -> 42, on _ -> 0 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "pattern-type-alias",
+      "source": "type X = int | bool; const Pattern p = is X; pub fnc main(): int { return match 7 over on p -> 42 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "pattern-mixed-type-only-reject",
+      "source": "const Pattern[] z = [is int, on 1]; pub fnc main(): int { return match 7 over is in z -> 42 end; }",
+      "reject": "type"
+    },
+    {
+      "id": "pattern-runtime-escape",
+      "source": "const Pattern p = on 5; fnc use(Pattern x): int { return 42; } pub fnc main(): int { return use(p); }",
+      "reject": "compile-time"
+    },
+    {
+      "id": "pattern-runtime-capture",
+      "source": "fnc f(int n): int { const Pattern p = on n; return match n over on p -> 42, on _ -> 0 end; }",
+      "reject": "compile-time"
+    },
+    {
+      "id": "pattern-cycle",
+      "source": "const Pattern p = on q; const Pattern q = on p; pub fnc main(): int { return 42; }",
+      "reject": "cycle"
+    },
+    {
+      "id": "pattern-array-mixed-values",
+      "source": "const Pattern[] z = [on 1, 2]; pub fnc main(): int { return 42; }",
+      "reject": "type"
+    },
+    {
+      "id": "pattern-array-shadowed-arm",
+      "source": "const Pattern[] z = [on 1, on 2]; pub fnc main(): int { return match 2 over in z -> 42, on 2 -> 0, on _ -> 0 end; }",
+      "reject": "unreachable"
     }
   ],
   "backend_status": {
