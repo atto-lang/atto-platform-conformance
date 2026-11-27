@@ -1,17 +1,20 @@
 {
   "schema": "atto.susp-effect-alias.v1",
   "version": 1,
-  "status": "PORTABLE_CONTRACT_AND_RS_FOCUSED_EVIDENCE",
-  "normative_spec": "atto-lang/atto-spec:language/susp-effect-shorthand-v1.md",
+  "status": "FOUR_ALIAS_CONTRACT_CANDIDATE_NOT_EXECUTED",
+  "normative_spec": "atto-lang/atto-spec:language/susp-effect-shorthand-v1.md (candidate update PR #284)",
   "canonical": "susp",
   "aliases": [
     "susp",
-    "suspends"
+    "suspends",
+    "⧖",
+    "∂"
   ],
   "forbidden_aliases": [
-    "#"
+    "#",
+    "▽"
   ],
-  "effect_identity": "susp and suspends are identical; susp fnc(T)->R is distinct from plain fnc(T)->R",
+  "effect_identity": "All four spellings are identical suspension effects; susp fnc(T)->R is distinct from plain fnc(T)->R. Duplicate spellings must reject.",
   "required_cases": [
     {
       "id": "await_short",
@@ -84,10 +87,89 @@
       "stage": "parse",
       "path": "fixtures/susp/fail/not_a_callable_type.atto",
       "expected_error": "E_TYPE"
+    },
+    {
+      "id": "await_hourglass",
+      "kind": "pass",
+      "stage": "guest_jspsi",
+      "path": "fixtures/susp/pass/await_hourglass.atto",
+      "expected_result": 42,
+      "expected_yields_min": 1
+    },
+    {
+      "id": "await_partial",
+      "kind": "pass",
+      "stage": "guest_jspsi",
+      "path": "fixtures/susp/pass/await_partial.atto",
+      "expected_result": 42,
+      "expected_yields_min": 1
+    },
+    {
+      "id": "unicode_class_and_type_parse",
+      "kind": "pass",
+      "stage": "frontend_parse",
+      "path": "fixtures/susp/pass/unicode_class_and_type_parse.atto",
+      "note": "Require identical semantic suspension flags and callable type identity, not executable closure support."
+    },
+    {
+      "id": "generator_hourglass_parse",
+      "kind": "pass",
+      "stage": "frontend_parse",
+      "path": "fixtures/susp/pass/generator_hourglass_parse.atto",
+      "note": "Parse-only generator and suspension flags."
+    },
+    {
+      "id": "generator_partial_parse",
+      "kind": "pass",
+      "stage": "frontend_parse",
+      "path": "fixtures/susp/pass/generator_partial_parse.atto",
+      "note": "Parse-only generator and suspension flags."
+    },
+    {
+      "id": "duplicate_symbol_markers",
+      "kind": "fail",
+      "stage": "parse",
+      "path": "fixtures/susp/fail/duplicate_symbol_markers.atto",
+      "expected_error": "E_UNSUPPORTED"
+    },
+    {
+      "id": "duplicate_mixed_marker",
+      "kind": "fail",
+      "stage": "parse",
+      "path": "fixtures/susp/fail/duplicate_mixed_marker.atto",
+      "expected_error": "E_UNSUPPORTED"
+    },
+    {
+      "id": "pure_hourglass",
+      "kind": "fail",
+      "stage": "compile",
+      "path": "fixtures/susp/fail/pure_hourglass.atto",
+      "expected_error": "E_PURE"
+    },
+    {
+      "id": "pure_partial",
+      "kind": "fail",
+      "stage": "compile",
+      "path": "fixtures/susp/fail/pure_partial.atto",
+      "expected_error": "E_PURE"
+    },
+    {
+      "id": "lookalike_triangle",
+      "kind": "fail",
+      "stage": "parse",
+      "path": "fixtures/susp/fail/lookalike_triangle.atto",
+      "note": "Reject with a positioned lexical or syntax diagnostic; no guest artifact."
+    },
+    {
+      "id": "unicode_trivia_and_word_boundary",
+      "kind": "pass",
+      "stage": "frontend_parse",
+      "path": "fixtures/susp/pass/unicode_trivia_and_word_boundary.atto",
+      "note": "Comment/string content must not become effect tokens; word prefix is not a marker."
     }
   ],
   "backend_status": {
-    "rs-browser": "FOCUSED_VERIFIED_NOT_FULL_REGISTRY",
+    "rs-browser": "NOT_EXECUTED",
     "java": "NOT_EXECUTED",
     "llvm": "NOT_EXECUTED",
     "net": "NOT_EXECUTED",
@@ -95,7 +177,9 @@
     "forge": "NOT_EXECUTED",
     "cranelift": "NOT_EXECUTED",
     "js": "NOT_EXECUTED",
-    "hdl": "NOT_EXECUTED"
+    "hdl": "NOT_EXECUTED",
+    "atto": "NOT_EXECUTED",
+    "realtime": "NOT_EXECUTED"
   },
   "focused_evidence": {
     "source_repo": "atto-lang/atto-source.rs",
@@ -105,7 +189,7 @@
     "carrier_tree": "de3243d6b76c1aae489c246587f9b79a5eb3820a",
     "carrier_run_url": "https://github.com/agent-pontifex/atto-ci/actions/runs/43803038123",
     "mirrored_source_test_blob_count": 35,
-    "scope": "Exact-source Rust focused tests, wasm32 compiler build and Chromium JSPI suite; this registry's fixture paths have not been individually executed"
+    "scope": "Exact-source Rust focused tests, wasm32 compiler build and Chromium JSPI suite; this registry's fixture paths have not been individually executed; historical two-spelling subset only, not evidence for Unicode cases or the current registry."
   },
   "evidence_rule": "Record exact backend compiler HEAD/tree, generated guest, executed positive and negative cases and runtime/toolchain. Zero-step workflows are NOT_EXECUTED; host-only/parser evidence is not guest parity."
 }
