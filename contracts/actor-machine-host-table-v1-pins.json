@@ -34,5 +34,25 @@
     "test_path": "tests/flat-machine-table-v1.test.mjs",
     "test_blob": "a2ff50251797512248b53df4add730ba7dc1aa76"
   },
-  "verification": "Read exact pinned Git blobs and compare both native source and test SHA; changes require coordinated pins. No target pass implied."
+  "verification": "Read exact pinned Git blobs and compare both native source and test SHA; changes require coordinated pins. No target pass implied.",
+  "independent_cranelift": {
+    "repository": "atto-lang/atto-source.cranelift",
+    "head": "942baa72b2df5c44b38ae2fe7ba9ca33f41513f3",
+    "path": "src/flat_machine_table_v1.rs",
+    "blob": "1bbb3fba5b0f9d652ce874c00ca098b5d73052f5",
+    "test_path": "tests/flat_machine_table_v1.rs",
+    "test_blob": "987ec1f57a4e0968e17c247c98f8a902a92e7387",
+    "execution": "NOT_EXECUTED"
+  },
+  "independent_net": {
+    "repository": "atto-lang/atto-source.net",
+    "head": "cf872e59f27a56dd33434d3e7884fe45e3fe9b8f",
+    "path": "verification/flat-machine-table-v1/FlatMachineTable.cs",
+    "blob": "60fae887dbfca1a9b9b275637af3155716892a75",
+    "test_path": "verification/flat-machine-table-v1/Program.cs",
+    "test_blob": "3169cbe278bdf53aa69bcd102aa61aa0fe22586c",
+    "project_path": "verification/flat-machine-table-v1/FlatMachineTable.Host.csproj",
+    "project_blob": "461ef8c5d427e91c3d14b881f1c2dbd225882840",
+    "execution": "NOT_EXECUTED"
+  }
 }
