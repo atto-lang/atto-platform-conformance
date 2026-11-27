@@ -13,7 +13,8 @@ const manifest=JSON.parse(readFileSync(join(fixtures,'manifest.json'),'utf8'));
 const backend=process.argv[2];
 const profile=process.argv[3]??'full-smoke';
 assert.ok(process.argv.length<=4&&['full-smoke','direct-stage'].includes(profile),'unknown guest test profile');
-assert.ok(['rust-wasm','forge-native','js-esm'].includes(backend),'usage: node tests/named-recursive-fnc-guest.mjs rust-wasm|forge-native|js-esm [direct-stage|full-smoke]');
+assert.ok(['rust-wasm','llvm-browser-wasm','forge-native','js-esm'].includes(backend),'usage: node tests/named-recursive-fnc-guest.mjs rust-wasm|llvm-browser-wasm|forge-native|js-esm [direct-stage|full-smoke]');
+const wasmBackend=backend==='rust-wasm'||backend==='llvm-browser-wasm';
 assert.equal(process.env.ATTOC_RELATIVE,undefined,'prebuilt override denied');
 assert.equal(process.env.FORGE_RELATIVE,undefined,'prebuilt override denied');
 const pin=(key)=>{const v=process.env[key];assert.match(v??'',/^[0-9a-f]{40}$/,key+' must be an independent immutable pin');return v;};
@@ -39,8 +40,10 @@ const scratch=mkdtempSync(join(tmpdir(),'atto-recursive-guest-'));
 const cases=[];
 let compiler;
 try {
- if(backend==='rust-wasm'){
-   ok(run('cargo',['build','--locked','--release','--bin','attoc','--target-dir',join(scratch,'target')],600000,{cwd:repo}),'fresh compiler build');
+ if(wasmBackend){
+   const buildRoot=backend==='llvm-browser-wasm'?join(repo,'frontend'):repo;
+   assert.ok(regular(join(buildRoot,'Cargo.toml'))&&regular(join(buildRoot,'Cargo.lock')),'missing locked compiler source');
+   ok(run('cargo',['build','--locked','--release','--bin','attoc','--target-dir',join(scratch,'target')],600000,{cwd:buildRoot}),'fresh compiler build');
    compiler=join(scratch,'target','release','attoc');
  }else if(backend==='js-esm'){
    compiler=join(repo,'src','program-v2.mjs');
@@ -74,7 +77,7 @@ catch(e){if(!(e instanceof RangeError)||e.name!=='ArithmeticOverflowError'||e.co
    const src=join(fixtures,c.path);
    assert.ok(lstatSync(src).isFile()&&!lstatSync(src).isSymbolicLink(),'fixture must be a regular file');
    assert.equal(blob(readFileSync(src)),c.blob,'fixture blob mismatch: '+id);
-   const out=join(scratch,id+(backend==='rust-wasm'?'.wasm':backend==='js-esm'?'.mjs':'.cpp'));
+   const out=join(scratch,id+(wasmBackend?'.wasm':backend==='js-esm'?'.mjs':'.cpp'));
    const built=backend==='js-esm'?run(process.execPath,['--input-type=module','-e',jsCompilerWorker,compiler,src,out]):run(compiler,[src,'-o',out]);
    const row={id,source_blob:c.blob,expected:c.expected,compiled:false,executed:false};
    if(built.error||built.signal!==null||built.status===null){
@@ -82,7 +85,7 @@ catch(e){if(!(e instanceof RangeError)||e.name!=='ArithmeticOverflowError'||e.co
    }
    if(id==='fib-55-exact'){
      let valid=built.status===0&&regular(out),nativeDigest;
-     if(valid&&backend==='rust-wasm')valid=WebAssembly.validate(readFileSync(out));
+     if(valid&&wasmBackend)valid=WebAssembly.validate(readFileSync(out));
      if(valid&&backend==='js-esm'){
        const syntax=run(process.execPath,['--check',out],5000);
        valid=!syntax.error&&syntax.signal===null&&syntax.status===0;
@@ -104,7 +107,7 @@ catch(e){if(!(e instanceof RangeError)||e.name!=='ArithmeticOverflowError'||e.co
    if(c.expected.kind==='reject'){
      // Only an exact targeted unbound-name diagnostic at the outside call is accepted.
      // Forge diagnostic mapping is deliberately NOT certified until independently audited.
-     const targeted=(backend==='rust-wasm'&&built.status===1&&/:9:\d+: E_UNBOUND: unknown name 'fib'\s*$/.test(built.stderr))||
+     const targeted=(wasmBackend&&built.status===1&&built.stdout===''&&/:9:\d+: E_UNBOUND: unknown name 'fib'\s*$/.test(built.stderr))||
        (backend==='js-esm'&&built.status===2&&built.stdout===''&&built.stderr==='error: program v2: unresolved callable @file/fib\n');
      cases.push({...row,status:targeted&&!present(out)?'pass':backend==='forge-native'&&built.status!==0&&!present(out)?'diagnostic_not_verified':'fail',diagnostic:built.stderr.slice(0,4096),artifact_present:present(out)});continue;
    }
@@ -114,7 +117,7 @@ catch(e){if(!(e instanceof RangeError)||e.name!=='ArithmeticOverflowError'||e.co
    const bytes=readFileSync(out);
    row.compiled=true;row.artifact_sha256=sha(bytes);
    let guest;
-   if(backend==='rust-wasm'){
+   if(wasmBackend){
      // A separate process is essential: malformed/infinite guests cannot hang this harness.
      const worker=`import {readFileSync} from 'node:fs';
 const b=readFileSync(process.argv[1]);if(!WebAssembly.validate(b))throw Error('invalid Wasm');
@@ -139,7 +142,7 @@ catch(e){if(!(e instanceof WebAssembly.RuntimeError)||i.exports.panic_code.value
    }
    row.executed=true;
    let actual=null;
-   if((backend==='rust-wasm'||backend==='js-esm')&&guest.status===0&&guest.stderr===''){
+   if((wasmBackend||backend==='js-esm')&&guest.status===0&&guest.stderr===''){
      try{actual=JSON.parse(guest.stdout);}catch{}
    }else if(backend==='forge-native'){
      if(guest.status===0&&guest.stderr===''&&/^-?(?:0|[1-9][0-9]*)\n$/.test(guest.stdout))actual={kind:'value',value:guest.stdout.trim()};
