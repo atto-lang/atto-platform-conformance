@@ -77,6 +77,46 @@
       "kind": "execute",
       "path": "fixtures/contextual-specialization-v1/pass/legacy-body.atto",
       "expectedGuestExit": 42
+    },
+    {
+      "id": "multi-snapshot",
+      "kind": "execute",
+      "path": "fixtures/contextual-specialization-v1/pass/multi-snapshot.atto",
+      "expectedGuestExit": 34
+    },
+    {
+      "id": "multi-independent",
+      "kind": "execute",
+      "path": "fixtures/contextual-specialization-v1/pass/multi-independent.atto",
+      "expectedGuestExit": 50
+    },
+    {
+      "id": "multi-missing",
+      "kind": "reject",
+      "path": "fixtures/contextual-specialization-v1/fail/multi-missing.atto",
+      "semanticReason": "context-arity",
+      "artifactAllowed": false
+    },
+    {
+      "id": "multi-type",
+      "kind": "reject",
+      "path": "fixtures/contextual-specialization-v1/fail/multi-type.atto",
+      "semanticReason": "context-type",
+      "artifactAllowed": false
+    },
+    {
+      "id": "multi-extra",
+      "kind": "reject",
+      "path": "fixtures/contextual-specialization-v1/fail/multi-extra.atto",
+      "semanticReason": "context-arity",
+      "artifactAllowed": false
+    },
+    {
+      "id": "multi-empty",
+      "kind": "reject",
+      "path": "fixtures/contextual-specialization-v1/fail/multi-empty.atto",
+      "semanticReason": "empty-context-entry",
+      "artifactAllowed": false
     }
   ],
   "backends": {
@@ -130,5 +170,18 @@
     "Positive tests execute emitted guest code and check exit value; semantic negatives must reject with matching reason, no artifact. Unsupported syntax/profile does not satisfy semantic denial.",
     "Each backend receipt must identify exact source commit/tree, fixture revision, actual executed steps, and guest result. HDL/realtime unsupported profiles are separate from semantic parity.",
     "General first-class factory values, generics, multi-member schemas and allocator/resource capabilities need additional fixtures; scalar subset is not full feature parity."
+  ],
+  "candidateImplementations": [
+    {
+      "repository": "atto-lang/atto-source.rs",
+      "pullRequest": 759,
+      "state": "NOT_EXECUTED"
+    },
+    {
+      "repository": "atto-lang/atto-source.llvm",
+      "pullRequest": 1073,
+      "profile": "Rust-hosted browser Wasm frontend only; not native LLVM",
+      "state": "NOT_EXECUTED"
+    }
   ]
 }

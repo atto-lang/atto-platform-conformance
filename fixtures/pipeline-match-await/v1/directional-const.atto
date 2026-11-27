@@ -1,0 +1,1 @@
+pub fnc main(): int { 42 |> if > 10 then 30 else 20 fi >> const int x; return x; }

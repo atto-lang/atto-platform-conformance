@@ -1,0 +1,2 @@
+fnc divide(int a, int b): int { return a / b; }
+pub fnc main(): int { 42 |> trap! divide(0) >> val r; return r.is_err() ? 42 : 0; }

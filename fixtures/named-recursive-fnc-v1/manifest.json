@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 1,
+  "status": "CANDIDATE_SOURCE_NOT_EXECUTED",
+  "specIssue": "https://github.com/atto-lang/atto-spec/issues/295",
+  "integerProfile": "checked_signed_i64",
+  "evidenceRule": "Full signed 64-bit guest result via typed export or exact decimal output; never POSIX exit-code truncation. Compile and execute all positive cases on pinned compiler and fixture SHAs; overflow requires typed guest failure, reject requires targeted diagnostic and no artifact. Extended fixture has explicit resource limit and is not a regular CI run. No host oracle or source-only test certifies guest support.",
+  "cases": [
+    {
+      "id": "fib-55-exact",
+      "path": "fib-55-exact.atto",
+      "blob": "ab60c8c4ad9726a526a4b0aa9ba76c0acca50b9d",
+      "input": 55,
+      "tier": "extended",
+      "expected": {
+        "kind": "value",
+        "value": "139583862445"
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "fib-0",
+      "path": "fib-0.atto",
+      "blob": "74c186d5447406cd77469423f64e586645d2017d",
+      "input": 0,
+      "tier": "smoke",
+      "expected": {
+        "kind": "value",
+        "value": "0"
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "fib-1",
+      "path": "fib-1.atto",
+      "blob": "8c5b03e745c18f08a10d0ca27b39502369cb132b",
+      "input": 1,
+      "tier": "smoke",
+      "expected": {
+        "kind": "value",
+        "value": "1"
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "fib-10",
+      "path": "fib-10.atto",
+      "blob": "60b65a868d5f8bfda05d2fbaddf01ac319147fd2",
+      "input": 10,
+      "tier": "smoke",
+      "expected": {
+        "kind": "value",
+        "value": "55"
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "fib-10-explicit-semicolon",
+      "path": "fib-10-explicit-semicolon.atto",
+      "blob": "0369c7b6f95df2334227b9740f0757cdd01ca0cc",
+      "input": 10,
+      "tier": "smoke",
+      "expected": {
+        "kind": "value",
+        "value": "55"
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "fib-55-linear",
+      "path": "fib-55-linear.atto",
+      "blob": "8e0ba91f6e1fc83126caa8b7bd9862c930330619",
+      "input": 55,
+      "tier": "smoke",
+      "expected": {
+        "kind": "value",
+        "value": "139583862445"
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "fib-92-linear",
+      "path": "fib-92-linear.atto",
+      "blob": "b360b6f0f6cb3f92da6d2bfb52fc754514cecb7d",
+      "input": 92,
+      "tier": "smoke",
+      "expected": {
+        "kind": "value",
+        "value": "7540113804746346429"
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "fib-93-overflow",
+      "path": "fib-93-overflow.atto",
+      "blob": "0edd6281a158fb9ce6df5b8ad79048dda3e675e1",
+      "input": 93,
+      "tier": "smoke",
+      "expected": {
+        "kind": "error",
+        "code": "ArithmeticOverflowError"
+      },
+      "status": "not_executed"
+    },
+    {
+      "id": "fib-name-does-not-escape",
+      "path": "fib-name-does-not-escape.atto",
+      "blob": "2d225a567238b1a38731d2d80083bc1f4942d9ef",
+      "input": 10,
+      "tier": "smoke",
+      "expected": {
+        "kind": "reject",
+        "code": "unresolved_callable"
+      },
+      "status": "not_executed"
+    }
+  ],
+  "backendResults": {
+    "java": "not_executed",
+    "llvm": "not_executed",
+    "net": "not_executed",
+    "wasm-independent": "not_executed",
+    "forge": "not_executed",
+    "rs": "not_executed",
+    "rs-browser": "not_executed",
+    "cranelift": "not_executed",
+    "js": "not_executed",
+    "hdl": "not_executed",
+    "atto": "not_executed",
+    "realtime": "not_executed"
+  }
+}

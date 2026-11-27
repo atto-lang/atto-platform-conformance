@@ -1,0 +1,4 @@
+pub fnc main(): int {
+    const int result = 7 |> match |pipeline_subject| over on _ -> pipeline_subject * 6 end;
+    return pipeline_subject;
+}
