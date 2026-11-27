@@ -1,0 +1,155 @@
+{
+  "schema": "atto.callable.intrinsics.v1",
+  "version": 1,
+  "status": "TARGET_NOT_EXECUTED",
+  "contract": "https://github.com/atto-lang/atto-spec/pull/282",
+  "required_cases": [
+    {
+      "id": "direct",
+      "kind": "pass",
+      "path": "fixtures/callable-intrinsics/pass/direct.atto",
+      "expected_result": 42,
+      "git_blob_sha": "22c215a2d5e072c8f4010e5124cc2bac44515539"
+    },
+    {
+      "id": "call",
+      "kind": "pass",
+      "path": "fixtures/callable-intrinsics/pass/call.atto",
+      "expected_result": 42,
+      "git_blob_sha": "52a48f5c8fd7224a03509aeb9995b768bb168c31"
+    },
+    {
+      "id": "apply_literal",
+      "kind": "pass",
+      "path": "fixtures/callable-intrinsics/pass/apply_literal.atto",
+      "expected_result": 42,
+      "git_blob_sha": "f8f58ce8840b2c381c66f50b313763c1ca4b0752"
+    },
+    {
+      "id": "apply_existing",
+      "kind": "pass",
+      "path": "fixtures/callable-intrinsics/pass/apply_existing.atto",
+      "expected_result": 42,
+      "git_blob_sha": "9cf4fc0612ef747c4b31580a8a9b6b969eb0e0ad"
+    },
+    {
+      "id": "apply_pipeline",
+      "kind": "pass",
+      "path": "fixtures/callable-intrinsics/pass/apply_pipeline.atto",
+      "expected_result": 42,
+      "git_blob_sha": "01c831605e89d09a1b632bc1c727882021406142"
+    },
+    {
+      "id": "wrong_arity",
+      "kind": "fail",
+      "path": "fixtures/callable-intrinsics/fail/wrong_arity.atto",
+      "expected_diagnostic_category": "arity",
+      "expected_artifact": "NONE",
+      "git_blob_sha": "2e94d05bffe31daf67a0fdf8e74d77a28c0e5e05"
+    },
+    {
+      "id": "wrong_tuple_arity",
+      "kind": "fail",
+      "path": "fixtures/callable-intrinsics/fail/wrong_tuple_arity.atto",
+      "expected_diagnostic_category": "arity",
+      "expected_artifact": "NONE",
+      "git_blob_sha": "28f7bc950830dc3b56e1590a9c6bd09a6c02fe1b"
+    },
+    {
+      "id": "wrong_tuple_type",
+      "kind": "fail",
+      "path": "fixtures/callable-intrinsics/fail/wrong_tuple_type.atto",
+      "expected_diagnostic_category": "type",
+      "expected_artifact": "NONE",
+      "git_blob_sha": "7a11172f777a7ae83bc1691bec8421b1742eedb2"
+    },
+    {
+      "id": "bind_absent",
+      "kind": "fail",
+      "path": "fixtures/callable-intrinsics/fail/bind_absent.atto",
+      "expected_diagnostic_category": "unavailable_callable_member",
+      "expected_artifact": "NONE",
+      "git_blob_sha": "2d43ff7a94453b75fa9f4097d2698ad1e0fec7a0"
+    },
+    {
+      "id": "extra_receiver",
+      "kind": "fail",
+      "path": "fixtures/callable-intrinsics/fail/extra_receiver.atto",
+      "expected_diagnostic_category": "arity",
+      "expected_artifact": "NONE",
+      "git_blob_sha": "2c600a6484cfedae2ff1cec3c1c847807e9232b2"
+    }
+  ],
+  "backend_status": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "rs": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm-independent": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
+    "atto": "NOT_EXECUTED",
+    "realtime": "NOT_EXECUTED",
+    "hdl": "NOT_EXECUTED"
+  },
+  "footprint_gates": [
+    "canonical_call_ir",
+    "unchanged_callable_layout",
+    "no_intrinsic_heap_allocation",
+    "no_extra_dispatch",
+    "no_runtime_method_table",
+    "existing_tuple_projection_baseline"
+  ],
+  "evidence_rule": "No backend PASS without exact-head compiled guest execution; negative cases require matching semantic diagnostic and no guest artifact. Footprint requires separate IR/artifact and allocation evidence.",
+  "scoped_backend_evidence": {
+    "js": {
+      "status": "RESTRICTED_PROFILE_EXECUTED",
+      "source_repository": "atto-lang/atto-source.js",
+      "source_commit": "bc74a795bafba7fd88dbc32eab6771084552b8f6",
+      "source_tree": "752aa9eed1707ba0266a1cab15ea0b9c56abcfd9",
+      "source_entries": 744,
+      "carrier_repository": "wasm-xprs/atto-ci",
+      "carrier_commit": "71e0eac6f4c0cdf186da415b586d90e84991b95d",
+      "run_id": 45913226844,
+      "job_id": 140226267096,
+      "focused": {
+        "passed": 30,
+        "failed": 0,
+        "skipped": 0
+      },
+      "full": {
+        "passed": 2191,
+        "failed": 0,
+        "skipped": 0
+      },
+      "scope": "Production compiler and generated ESM for restricted scalar call/apply. Newer typed-local candidate 16c0388892f0c78ebfb85bc7b13405f22993eca7 not certified by this receipt."
+    },
+    "rs": {
+      "status": "RESTRICTED_PROFILE_EXECUTED",
+      "source_repository": "atto-lang/atto-source.rs",
+      "source_commit": "8058124d385e930a39255146ecc346c19d4d4077",
+      "source_tree": "27d477855d1f48003dd3ae8909e0aa5e5d349ad8",
+      "source_entries": 1422,
+      "carrier_repository": "wasm-xprs/atto-ci",
+      "carrier_commit": "71e0eac6f4c0cdf186da415b586d90e84991b95d",
+      "run_id": 45913226844,
+      "job_id": 140226267393,
+      "focused": {
+        "passed": 54,
+        "failed": 0,
+        "ignored": 0
+      },
+      "full": {
+        "passed": 1141,
+        "failed": 0,
+        "ignored": 3
+      },
+      "guest": {
+        "positive_executions": 33,
+        "intrinsic_executions": 28
+      },
+      "scope": "Native compiler built and generated Wasm independently instantiated. Literal scalar apply, closed typed local callables, bounded siblings and inferred scalar snapshot calls. CLI guest negative checks passed as part of harness. Canonical ten fixture bytes, general tuples, ownership/effect parity and physical allocations remain unverified."
+    }
+  }
+}

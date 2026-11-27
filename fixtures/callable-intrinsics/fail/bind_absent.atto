@@ -1,0 +1,5 @@
+fnc main() -> int {
+    val f = |int a, int b| -> a + b;
+    val bound = f.bind(20);
+    return bound(22);
+}

@@ -1,0 +1,5 @@
+fnc main() -> int {
+    val f = |int a, int b| -> a + b;
+    val args = tuple(20, 22);
+    return f.apply(args);
+}
