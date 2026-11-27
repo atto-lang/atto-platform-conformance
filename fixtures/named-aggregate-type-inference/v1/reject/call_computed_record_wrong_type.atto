@@ -1,0 +1,6 @@
+const Record<infer R> exemplar=(a=1);
+fnc process(bool value): int {
+    const Record<R> arg=(a=value);
+    return 0;
+}
+pub fnc main(): int { return process(true); }

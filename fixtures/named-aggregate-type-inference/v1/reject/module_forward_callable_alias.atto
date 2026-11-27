@@ -1,0 +1,3 @@
+fnc process(Record<R> input): int { return input.c; }
+const Record<infer R> exemplar=(c=42);
+pub fnc main(): int { return 0; }

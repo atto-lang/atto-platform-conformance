@@ -1,0 +1,6 @@
+const Tuple<infer T> exemplar=(true,5);
+fnc process(int value): int {
+    const Tuple<T> result=(value,true);
+    return 0;
+}
+pub fnc main(): int { return process(42); }
