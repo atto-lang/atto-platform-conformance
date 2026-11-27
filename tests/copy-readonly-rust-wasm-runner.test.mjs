@@ -23,3 +23,13 @@ test('artifact, process failure, timeout and compiler usage errors never pass',(
   assert.equal(classifyNegative(f,true,{...good,error:new Error('timeout')},false),'INFRA_ERROR');
   assert.equal(classifyNegative(f,true,{...good,status:101},false),'UNEXPECTED_EXIT');
 });
+
+test('LLVM compact source location matches the same strict rejection contract',()=>{
+  const good={status:1,signal:null,stderr:f.path+':12:5: E_COPY_READONLY: shared value\n'};
+  assert.equal(classifyNegative(f,true,good,false),'EXPECTED_REJECT');
+  assert.equal(classifyNegative(f,false,good,false),'PAIRED_POSITIVE_NOT_EXECUTED');
+  assert.equal(classifyNegative(f,true,good,true),'UNSAFE_ACCEPT_OR_ARTIFACT');
+  for(const stderr of [f.path+':  12:5: E_COPY_READONLY: extra space', f.path+':11:5: E_COPY_READONLY: wrong line', f.path+':12:0: E_COPY_READONLY: bad column', f.path+':12:5: E_COPY_READONLY_SLOT: wrong code', f.path+'.bak:12:5: E_COPY_READONLY: wrong file',f.path+':12:5: E_COPY_READONLY: shared value\nextra line']) {
+    assert.equal(classifyNegative(f,true,{...good,stderr},false),'WRONG_DIAGNOSTIC');
+  }
+});

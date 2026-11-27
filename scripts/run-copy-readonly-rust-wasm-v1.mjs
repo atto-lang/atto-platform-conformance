@@ -14,9 +14,12 @@ export function classifyNegative(f, positivePassed, run, artifact) {
   if (artifact || run.status === 0) return 'UNSAFE_ACCEPT_OR_ARTIFACT';
   if (run.status !== 1) return 'UNEXPECTED_EXIT';
   const lines = String(run.stderr).trim().split(/\r?\n/);
-  const prefix = f.path + ': ';
+  // Rust prints `path: line:col`, LLVM browser prints `path:line:col`.
+  // Accept exactly those two representations; keep the exact path, line,
+  // positive column, diagnostic code, single line and no-artifact gates.
+  const prefix = f.path + ':';
   const d = lines.length === 1 && lines[0].startsWith(prefix)
-    ? /^(\d+):(\d+): (E_[A-Z0-9_]+): .+$/.exec(lines[0].slice(prefix.length)) : null;
+    ? /^ ?(\d+):(\d+): (E_[A-Z0-9_]+): .+$/.exec(lines[0].slice(prefix.length)) : null;
   if (!positivePassed) return 'PAIRED_POSITIVE_NOT_EXECUTED';
   return d && Number(d[1]) === f.diagnostic_line && Number(d[2]) > 0 &&
     d[3] === f.expect.compile_reject ? 'EXPECTED_REJECT' : 'WRONG_DIAGNOSTIC';
