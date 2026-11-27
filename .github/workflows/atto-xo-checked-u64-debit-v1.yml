@@ -11,6 +11,7 @@ on:
       - 'tests/checked-u64-forge-target-matrix.test.mjs'
       - 'tests/checked-u64-generated-wasm.test.mjs'
       - 'tests/checked-u64-generated-native.test.mjs'
+      - 'tests/checked-u64-generated-java.test.mjs'
       - '.github/workflows/atto-xo-checked-u64-debit-v1.yml'
 permissions:
   contents: read
@@ -136,3 +137,27 @@ jobs:
           fi
           grep -F '752d1ad3fb3564eed9067a0a530eb2150d1c14b4' native-altered.log
           echo 'Generated native execution: NOT_EXECUTED (no source staging)'
+      - name: Generated Java gate admission (no compiler source staged)
+        shell: bash
+        run: |
+          set -euo pipefail
+          unset ATTO_U64_JAVA_SOURCE ATTO_U64_GENERATED_JAVA_REQUIRED ATTO_U64_JAVA_FAMILY
+          node --test tests/checked-u64-generated-java.test.mjs > java-skip.log 2>&1
+          grep -F 'NOT_EXECUTED: exact Java compiler source unavailable' java-skip.log
+          if ATTO_U64_GENERATED_JAVA_REQUIRED=1 node --test tests/checked-u64-generated-java.test.mjs > java-missing.log 2>&1; then
+            exit 1
+          fi
+          grep -F 'ATTO_U64_JAVA_SOURCE required' java-missing.log
+          if ATTO_U64_GENERATED_JAVA_REQUIRED=typo node --test tests/checked-u64-generated-java.test.mjs > java-mode.log 2>&1; then
+            exit 1
+          fi
+          grep -F 'ATTO_U64_GENERATED_JAVA_REQUIRED must be 0 or 1' java-mode.log
+          if ATTO_U64_JAVA_FAMILY=typo node --test tests/checked-u64-generated-java.test.mjs > java-family.log 2>&1; then
+            exit 1
+          fi
+          grep -F 'invalid generated Java family' java-family.log
+          if ATTO_U64_GENERATED_JAVA_REQUIRED=1 ATTO_U64_JAVA_SOURCE=tests/fixed-width-integer-oracle.test.mjs node --test tests/checked-u64-generated-java.test.mjs > java-altered.log 2>&1; then
+            exit 1
+          fi
+          grep -F '02037fb8fd3b4056fc9eab4d75b51e95d03dd65b' java-altered.log
+          echo 'Generated Java execution: NOT_EXECUTED (no source staging)'
