@@ -1,0 +1,14 @@
+define fnc int • probe(x?: string? ?= "bar" ??= "star") {
+    match x over
+        on None -> { return 99; }
+        on Some(v) -> {
+            if x is omitted do
+                return v eq "star" ? 20 : 99;
+            fi
+            return v eq "bar" ? 22 : (v eq "" ? 0 : 99);
+        }
+    end
+}
+define pub fnc int • main() {
+    return probe() + probe(None) + probe(Some(""));
+}
