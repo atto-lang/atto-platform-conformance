@@ -1,0 +1,5 @@
+pub fnc main(): int {
+    const x = x := x;
+    const Pair<int> p = x;
+    return if p.key == "x" then p.value else 99 fi;
+}
