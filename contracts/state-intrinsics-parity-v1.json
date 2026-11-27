@@ -242,7 +242,9 @@
       "forged-protected-constructor-initialization-registration-order",
       "protected-field-legacy-abi-read-write-bypass",
       "protected-field-generic-slot-borrow-bypass",
-      "protected-field-unauthorized-readonly-loan-write"
+      "protected-field-unauthorized-readonly-loan-write",
+      "call-shaped-scalar-parameter-identifier",
+      "call-shaped-protected-field-projection"
     ],
     "runtime": [
       "overlapping-readers-where-supported",
@@ -257,7 +259,11 @@
       "no-implicit-rollback",
       "mixed-multi-container-contention-retirement-replay-differential",
       "storage-side-foreign-lease-denial-even-at-matching-epoch",
-      "checked-overflow-preserves-value-releases-permit-and-allows-next-write"
+      "checked-overflow-preserves-value-releases-permit-and-allows-next-write",
+      "concurrent-reader-retirement-revocation-before-physical-release",
+      "interrupted-writer-cancellation-is-not-quiescence-until-physical-exit",
+      "concurrent-successful-scalar-results-unique-contiguous",
+      "close-racing-mutation-denies-post-close-access"
     ],
     "evidencePolicy": "Track every profile and case separately. For negatives require phase-correct diagnostics and no artifact. For accepted cases require actual compiler and guest execution. Host/model-only and unsupported profiles cannot promote feature evidence.",
     "independentCompilerAdmission": {
