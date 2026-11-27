@@ -21,7 +21,7 @@ function run_actor_retry_undo_model() {
     for(let i=1;i<attempt&&n<max;i++)n=n>max/2n?max:n*2n;
     return n;
   };
-  const state=()=>({value:10,version:0,epoch:1,undo:[],redo:[],receipts:new Map()});
+  const state=(receiptCapacity=8)=>({value:10,version:0,epoch:1,undo:[],redo:[],receipts:new Map(),receiptCapacity});
   const op=(s,{id,expected,epoch=s.epoch,kind,value,capacity=2,target,fail=false,external=false})=>{
     if(epoch!==s.epoch)return "STALE_EPOCH";
     if(s.receipts.has(id)){
@@ -29,6 +29,7 @@ function run_actor_retry_undo_model() {
       return r.expected===expected&&r.kind===kind&&r.value===value&&r.target===target?r.result:"COMMAND_CONFLICT";
     }
     if(expected!==s.version)return "STALE_VERSION";
+    if(s.receipts.size>=s.receiptCapacity)return "QUOTA";
     if(fail)return "ROLLED_BACK";
     if(kind==="commit"){
       if(s.undo.length>=capacity)return "QUOTA";
@@ -69,6 +70,8 @@ function run_actor_retry_undo_model() {
   test("quota",()=>{const s=state();start(s,"a",0,{capacity:1});assert(start(s,"b",2,{capacity:1})==="QUOTA"&&s.version===1&&s.value===0,"quota")});
   test("published effects",()=>{const s=state();start(s,"a",0,{external:true});assert(undo(s,"u","a")==="COMPENSATION_REQUIRED"&&s.version===1,"external")});
   test("stale epoch",()=>{const s=state();s.epoch=2;assert(start(s,"a",0,{epoch:1})==="STALE_EPOCH"&&s.version===0,"fence")});
+  test("finite committed receipt quota preserves history and replay",()=>{const s=state(3);assert(start(s,"a",0)==="COMMITTED:1","commit");assert(undo(s,"u","a")==="COMMITTED:2","undo");assert(redo(s,"r","a")==="COMMITTED:3","redo");assert(undo(s,"v","a")==="QUOTA","receipt capacity");assert(s.value===0&&s.version===3&&s.undo.length===1&&s.redo.length===0&&s.receipts.size===3,"no mutation");assert(redo(s,"r","a",{expected:2})==="COMMITTED:3","duplicate before quota");assert(redo(s,"r","a",{expected:3})==="COMMAND_CONFLICT","changed identity before quota")});
+  test("failed commands do not consume receipt quota",()=>{const s=state(1);assert(start(s,"bad",0,{fail:true})==="ROLLED_BACK","rollback");assert(undo(s,"missing","a")==="NOT_TAIL","invalid history");assert(s.receipts.size===0&&s.version===0,"no receipt admission");assert(start(s,"a",4)==="COMMITTED:1","capacity still available");assert(start(s,"b",5)==="QUOTA"&&s.value===4,"no second receipt")});
   return count;
 }
 console.log(`${run_actor_retry_undo_model()} source-free actor retry/undo model checks passed`);
