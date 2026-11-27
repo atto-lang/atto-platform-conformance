@@ -1,0 +1,72 @@
+{
+  "schema": "atto.callable-patterns.shared-scalar-corpus.v1",
+  "profile": "flat immutable i64 tuple root, unary expression-bodied pipeline, no general aggregate ABI",
+  "expectedSemantics": "ordinary checked arithmetic; positive results limited to 3..125 to disambiguate launcher exits; no effectful output",
+  "cases": [
+    {
+      "id": "flat-three",
+      "source": "pub fnc main(): int { return (5, 3, 5) |> |(a, b, c)| -> a + b + c; }\n",
+      "expected": 13
+    },
+    {
+      "id": "order-weighted",
+      "source": "pub fnc main(): int { return (2, 7, 11) |> |(a, b, c)| -> 2*a + 3*b + 4*c; }\n",
+      "expected": 69
+    },
+    {
+      "id": "discard-middle",
+      "source": "pub fnc main(): int { return (5, 99, 8) |> |(a, _, c)| -> a + c; }\n",
+      "expected": 13
+    },
+    {
+      "id": "discard-first",
+      "source": "pub fnc main(): int { return (99, 8) |> |(_, b)| -> b + 3; }\n",
+      "expected": 11
+    },
+    {
+      "id": "discard-last",
+      "source": "pub fnc main(): int { return (6, 99) |> |(a, _)| -> a + 5; }\n",
+      "expected": 11
+    },
+    {
+      "id": "discard-all",
+      "source": "pub fnc main(): int { return (5, 8) |> |(_, _)| -> 19; }\n",
+      "expected": 19
+    },
+    {
+      "id": "singleton",
+      "source": "pub fnc main(): int { return (9,) |> |(a,)| -> a; }\n",
+      "expected": 9
+    },
+    {
+      "id": "empty",
+      "source": "pub fnc main(): int { return () |> |()| -> 7; }\n",
+      "expected": 7
+    },
+    {
+      "id": "typed-leaves",
+      "source": "pub fnc main(): int { return (5, 8) |> |(a: int, b: int)| -> a + b; }\n",
+      "expected": 13
+    },
+    {
+      "id": "parenthesized-stage",
+      "source": "pub fnc main(): int { return ((5, 8) |> |(a, b)| -> a + b) + 1; }\n",
+      "expected": 14
+    },
+    {
+      "id": "nested-scalar-stage",
+      "source": "pub fnc main(): int { return (5, 8) |> |(a, b)| -> ((a, 2) |> |(x, y)| -> x*y) + b; }\n",
+      "expected": 18
+    },
+    {
+      "id": "signed-values",
+      "source": "pub fnc main(): int { return (-5, 8, 12) |> |(a, b, c)| -> a + b + c; }\n",
+      "expected": 15
+    },
+    {
+      "id": "maximum-arity",
+      "source": "pub fnc main(): int { return (1, 2, 3, 4, 5, 6, 7, 8) |> |(a,b,c,d,e,f,g,h)| -> a+b+c+d+e+f+g+h; }\n",
+      "expected": 36
+    }
+  ]
+}
