@@ -588,5 +588,49 @@
       "job": 140331003428,
       "status": "QUEUED_NO_STEPS_AT_SAMPLE"
     }
+  },
+  "forgeSealedFieldAuthorityEvidence": {
+    "status": "LOCAL_EXACT_BLOB_COMPILED_STAGE0_NATIVE_GUEST_NOT_CI",
+    "repo": "atto-lang/atto-source.forge",
+    "pr": 339,
+    "head": "d27f44201a49f727b7b15d40704eb53979494a89",
+    "tree": "05063367f78c026b2e2ccb6497d3c357340afd31",
+    "base": "1e147d15b91fd09b17286876de7755f31205fe48",
+    "verifiedBlobs": {
+      "compiler/actor_source.cpp": "ec3569b59c59d8f81ddf71673650b46161031b38",
+      "compiler/actor_source.hpp": "0ce9f77711e389a73ed3f1bf448d9b04ccef4f7e",
+      "runtime/arena/ActorOwnedI64Heap.c": "3d988d0b87a991b9d617a32c9a75cc67b6756c18",
+      "runtime/arena/ActorOwnedI64Heap.h": "0aa882c3ab96b26a1847369dea0a3d2c3ae30c7d",
+      "runtime/actor_frames.hpp": "8825165f99794400da4d8ca7524db21ee6587c86",
+      "runtime/scalar_actor.hpp": "9b623c5f6be43aac6e860625f4b006551b47d615",
+      "runtime/scalar_actor.cpp": "351f164001771b44aff348884adc5a728810d971",
+      "verification/scalar_actor_stage0_emit.cpp": "1746bf24f396eb2c39a918efbc25fddba7d1b87f",
+      "verification/scalar_actor_stage0_guest.cpp": "19f698078c101bdd1b05d0748d59c0bd75117002",
+      "verification/scalar_actor_stage0_read_guest.cpp": "b68cfed232d2c326f0a51fe1451f3fb628517ad9",
+      "verification/scalar_actor_stage0_native.py": "431ed0040e8997144d8060996dc1dce83dfa8fe5"
+    },
+    "toolchains": [
+      {
+        "name": "GCC/G++ 14.2",
+        "exit": 0,
+        "nativeGuestsPassed": 5,
+        "aliasEmissionChecksPassed": 14,
+        "sourceDenialsPassed": 22,
+        "heapAuthorityControlsPassed": 9
+      },
+      {
+        "name": "Clang/Clang++ 17 ASan/UBSan",
+        "exit": 0,
+        "nativeGuestsPassed": 5,
+        "aliasEmissionChecksPassed": 14,
+        "sourceDenialsPassed": 22,
+        "heapAuthorityControlsPassed": 9
+      }
+    ],
+    "ci": {
+      "run": 45946321796,
+      "status": "FAILED_NO_JOB_RECORDS"
+    },
+    "scope": "Distinct protected field metadata and constructor initialization; raw field and generic slot bypasses denied, protected read/write loan and legacy-field control succeeds. Eight abort subprocess checks per toolchain; one positive control. Complete checked-in bounded native harness locally executed with exact modified blob hashes, inherited verified dependencies. Trusted native ABI, not hostile native process sandbox or full repo CI. No general concurrent or multi-field state guarantee; independent review pending."
   }
 }
