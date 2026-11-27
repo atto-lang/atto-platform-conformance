@@ -200,5 +200,49 @@
     "release before result publication",
     "independent review"
   ],
-  "evidenceNotes": "Prior Rust snapshot receipt is for older exact head ae6e6ab66d0a5fc1b7b26b089b8d754a60ab44fe, not current candidate; PR #599 first run found constructor regression. No current head parity claim."
+  "evidenceNotes": "Prior Rust snapshot receipt is for older exact head ae6e6ab66d0a5fc1b7b26b089b8d754a60ab44fe, not current candidate; PR #599 first run found constructor regression. No current head parity claim.",
+  "hardeningGates": {
+    "status": "TARGET_NOT_EXECUTED",
+    "specAmendment": "https://github.com/atto-lang/atto-spec/commit/c60cc50beb79dcba806ca5c971f81ed98faea5e3",
+    "profiles": [
+      "owned-state-container",
+      "shared-state-container",
+      "concurrent-actor",
+      "serial-actor",
+      "virtual-actor",
+      "attached-protected-class"
+    ],
+    "compileAccept": [
+      "consistent-correlated-field-snapshot",
+      "write-result-released-before-publication",
+      "source-evaluation-order",
+      "short-circuit-no-acquire",
+      "independent-instances",
+      "alias-normalization"
+    ],
+    "compileReject": [
+      "readonly-derived-mutable-loan",
+      "readonly-transitive-mutator",
+      "aggregate-or-closure-loan-escape",
+      "helper-mediated-reacquire",
+      "remote-actor-receiver",
+      "duplicate-critical-mode",
+      "indirect-suspension",
+      "ordinary-field-bypass",
+      "intrinsic-shadowing"
+    ],
+    "runtime": [
+      "overlapping-readers-where-supported",
+      "writer-exclusion",
+      "normal-and-early-exit-balanced-release",
+      "checked-error-balanced-release",
+      "throw-raise-panic-cleanup",
+      "cancel-stop-retirement",
+      "failed-initialization-no-ready",
+      "stale-incarnation-denial",
+      "nonparking-contended-admission",
+      "no-implicit-rollback"
+    ],
+    "evidencePolicy": "Track every profile and case separately. For negatives require phase-correct diagnostics and no artifact. For accepted cases require actual compiler and guest execution. Host/model-only and unsupported profiles cannot promote feature evidence."
+  }
 }
