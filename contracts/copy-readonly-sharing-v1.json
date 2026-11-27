@@ -307,6 +307,36 @@
         "main_result": 42
       },
       "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "mutable-call-after-detachment-control",
+      "expect": {
+        "main_result": 62
+      },
+      "path": "fixtures/copy-readonly-sharing-v1/mutable-call-after-detachment-control.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-mutable-call-shared-a",
+      "expect": {
+        "compile_reject": "E_COPY_READONLY"
+      },
+      "paired_positive": "mutable-call-after-detachment-control",
+      "forbidden_statement": "adjust(mut a.scores);",
+      "diagnostic_line": 17,
+      "path": "fixtures/copy-readonly-sharing-v1/reject-mutable-call-shared-a.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-mutable-call-shared-c",
+      "expect": {
+        "compile_reject": "E_COPY_READONLY"
+      },
+      "paired_positive": "mutable-call-after-detachment-control",
+      "forbidden_statement": "adjust(mut c.scores);",
+      "diagnostic_line": 17,
+      "path": "fixtures/copy-readonly-sharing-v1/reject-mutable-call-shared-c.atto",
+      "status": "NOT_EXECUTED"
     }
   ],
   "negative_policy": "First execute paired positive on same exact compiler tree. Require diagnostic at forbidden statement, no artifact, no E_COPY_SHALLOW_ALIAS or parser rejection as parity. Diagnostic mapping must be reviewed. No source rewriting or skipped negative tests.",
