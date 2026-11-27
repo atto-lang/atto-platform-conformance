@@ -632,5 +632,27 @@
       "status": "FAILED_NO_JOB_RECORDS"
     },
     "scope": "Distinct protected field metadata and constructor initialization; raw field and generic slot bypasses denied, protected read/write loan and legacy-field control succeeds. Eight abort subprocess checks per toolchain; one positive control. Complete checked-in bounded native harness locally executed with exact modified blob hashes, inherited verified dependencies. Trusted native ABI, not hostile native process sandbox or full repo CI. No general concurrent or multi-field state guarantee; independent review pending."
+  },
+  "javaTargetOwnedLeaseEvidence": {
+    "status": "LOCAL_EXACT_RUNTIME_BLOBS_NOT_CI",
+    "repo": "atto-lang/atto-source.java",
+    "pr": 2021,
+    "head": "1c3e3f8032f2c613bf2dc3e947efcc6543677393",
+    "tree": "121a19d6b753725c804a6ede3aebfce28339026e",
+    "base": "36904769e8469c0c06ee99167cf16420f900f089",
+    "runtimeBlobs": {
+      "StateContainerAccessGate.java": "664d1d8bcd0b1a69d249238a452f964952dd82b1",
+      "ScalarStateContainer.java": "129440ab6c050a36fbffbe57460e19689086ed0f"
+    },
+    "testBlob": "96da1820310d17f1bf54ecdcd6a0d066f1ed2784",
+    "toolchain": "javac 21.0.12.1 -Xlint:all -Werror",
+    "assertionsPassed": 409,
+    "crossGateTrials": 128,
+    "scope": "Exact runtime source blob hashes verified locally. Standalone local Java probe executed: matching-version foreign read/write rejection, missing/revoked/replayed leases, read-only denial, scalar operations and overflow neutrality, concurrent cross-gate rejection. Committed JUnit test not executed. No full compiler/guest or hosted CI evidence.",
+    "ci": {
+      "run": 45946759434,
+      "job": 140333109650,
+      "status": "QUEUED_NO_STEPS_AT_SAMPLE"
+    }
   }
 }
