@@ -1,0 +1,35 @@
+name: Omission default V2 reference only
+on:
+  pull_request:
+    paths:
+      - 'contracts/omission-default-v2/**'
+      - '.github/workflows/omission-default-v2-reference.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  reference:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Reference oracle (not compiler execution)
+        run: node contracts/omission-default-v2/reference.mjs
+      - name: Verify candidate guest blobs
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          import {execFileSync} from 'node:child_process';
+          import assert from 'node:assert/strict';
+          const root='contracts/omission-default-v2/';
+          const m=JSON.parse(readFileSync(root+'manifest.json','utf8'));
+          for (const f of m.fixtures) {
+            assert.match(f.path,/^(guests|reject)\/[a-z0-9-]+\.atto$/);
+            assert.equal(execFileSync('git',['hash-object',root+f.path],{encoding:'utf8'}).trim(),f.git_blob_sha);
+            assert.equal(f.status,'NOT_EXECUTED');
+          }
+          console.log('Verified fixture blobs:',m.fixtures.length,'; guest execution NOT_EXECUTED');
+          JS
