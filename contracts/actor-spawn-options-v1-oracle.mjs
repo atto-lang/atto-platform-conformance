@@ -618,12 +618,13 @@ function lifecycle(limit) {
   let used=0, generation=0;
   const actors=new Map();
   const lookup=ref=>actors.get(ref);
-  function admit(charge,payload) {
+  function admit(charge,payload,maxLiveReceives=Number.MAX_SAFE_INTEGER) {
+    if(!Number.isSafeInteger(maxLiveReceives)||maxLiveReceives<=0)throw Error("POLICY");
     if(!Number.isSafeInteger(charge)||charge<=0||charge>limit-used)throw Error("QUOTA");
     if(generation===Number.MAX_SAFE_INTEGER)throw Error("GENERATION_EXHAUSTED");
     const ref=Object.freeze({generation:++generation});
     used+=charge;
-    actors.set(ref,{charge,payload,phase:"initializing",started:false,taken:false,init:null,receives:new Set()});
+    actors.set(ref,{charge,payload,maxLiveReceives,phase:"initializing",started:false,taken:false,init:null,receives:new Set()});
     return ref;
   }
   function begin(ref) {
@@ -656,7 +657,7 @@ function lifecycle(limit) {
   }
   function enter(ref) {
     const a=lookup(ref);
-    if(!a||a.phase!=="ready")return null;
+    if(!a||a.phase!=="ready"||a.receives.size>=a.maxLiveReceives)return null;
     const lease=Object.freeze({ref});
     a.receives.add(lease);return lease;
   }
@@ -713,6 +714,25 @@ function runLifecycle() {
   denies(()=>other.leave(er),"STALE_LEASE");l.leave(er);l.release(e);eq(l.used(),0);
   denies(()=>l.admit(0,{}),"QUOTA");denies(()=>l.admit(Number.MAX_SAFE_INTEGER+1,{}),"QUOTA");
   denies(()=>lifecycle(0),"QUOTA");
+  // Logical receive admission is independently capped per actor. A
+  // suspended receive still holds its lease until explicit settlement.
+  const cap=lifecycle(10);
+  for(const bad of [0,-1,1.5,Infinity,Number.MAX_SAFE_INTEGER+1]){
+    denies(()=>cap.admit(1,{},bad),"POLICY");eq(cap.used(),0);
+  }
+  const one=cap.admit(4,{},1),two=cap.admit(6,{},2);
+  eq(one.generation,1);eq(cap.settle(cap.begin(one),true),true);
+  eq(cap.settle(cap.begin(two),true),true);
+  const a1=cap.enter(one),b1=cap.enter(two),b2=cap.enter(two);
+  eq(a1!==null,true);eq(b1!==null,true);eq(b2!==null,true);
+  eq(cap.enter(one),null);eq(cap.enter(two),null);
+  cap.leave(a1);const a2=cap.enter(one);eq(a2!==null,true);
+  denies(()=>cap.leave(a1),"STALE_LEASE");eq(cap.enter(one),null);
+  eq(cap.stop(one),true);eq(cap.enter(one),null);
+  denies(()=>cap.release(one),"IN_FLIGHT");eq(cap.used(),10);
+  cap.leave(a2);cap.release(one);eq(cap.used(),6);
+  eq(cap.stop(two),true);cap.leave(b1);cap.leave(b2);cap.release(two);
+  eq(cap.used(),0);
   // Deterministic transition traces, not real concurrent execution.
   for(let i=0;i<10000;i++){
     const x=l.admit(10,{}),xi=l.begin(x);
