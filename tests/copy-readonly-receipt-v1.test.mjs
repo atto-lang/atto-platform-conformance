@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { classifyNegative, checkInventory } from '../scripts/copy-readonly-receipt-v1.mjs';
 const f={id:'negative',path:'fixtures/copy-readonly-sharing-v1/negative.atto',status:'NOT_EXECUTED',diagnostic_line:12,forbidden_statement:'a.scores.n = 22;',paired_positive:'positive',expect:{compile_reject:'E_COPY_READONLY'}};
 const p={id:'positive',path:'fixtures/copy-readonly-sharing-v1/positive.atto',status:'NOT_EXECUTED',expect:{main_result:42}};
-const manifest={schema:'atto.copy-readonly-sharing.v1',status:'SOURCE_CANDIDATE_ONLY',full_parity:false,fixtures:[p,f]};
+const backends=['atto','cranelift','forge','hdl','java','js','llvm','net','realtime','rs','wasm'].map(x=>({repo:'atto-lang/atto-source.'+x,guest_status:'NOT_EXECUTED',receipt:null}));
+const manifest={schema:'atto.copy-readonly-sharing.v1',status:'SOURCE_CANDIDATE_ONLY',full_parity:false,backend_count:11,backends,fixtures:[p,f]};
 const names=['positive.atto','negative.atto'];
 const good={status:1,signal:null,stderr:f.path+':12:5: E_COPY_READONLY: shared value\n'};
 test('strict receipt accepts compact or spaced positions and one optional newline',()=>{
@@ -45,4 +46,28 @@ test('fixture inventory rejects ambiguity, missing controls and incomplete corpu
   ]) assert.throws(()=>checkInventory(bad,names));
   assert.throws(()=>checkInventory(manifest,['positive.atto']));
   assert.throws(()=>checkInventory(manifest,[...names,'unregistered.atto']));
+});
+
+function backendMutations() {
+  return [
+    ['missing backend', m=>m.backends.pop()],
+    ['duplicate backend', m=>m.backends[1]=m.backends[0]],
+    ['foreign organization', m=>m.backends[0].repo='other/atto-source.atto'],
+    ['unknown backend', m=>m.backends[0].repo='atto-lang/atto-source.other'],
+    ['wrong backend count', m=>m.backend_count=10],
+    ['promoted backend', m=>m.backends[0].guest_status='GUEST_PASS'],
+    ['premature receipt', m=>m.backends[0].receipt={status:'PASS'}],
+    ['missing receipt field', m=>delete m.backends[0].receipt],
+    ['missing backend status', m=>delete m.backends[0].guest_status],
+    ['null entry', m=>m.backends[0]=null],
+    ['missing inventory', m=>delete m.backends],
+  ];
+}
+
+test('require exact eleven-backend inventory without premature evidence',()=>{
+  assert.equal(checkInventory({...manifest,backends:[...backends].reverse()},names).size,2);
+  for(const [name,change] of backendMutations()){
+    const m=JSON.parse(JSON.stringify(manifest));change(m);
+    assert.throws(()=>checkInventory(m,names),undefined,name);
+  }
 });
