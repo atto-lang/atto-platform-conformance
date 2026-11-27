@@ -54,5 +54,23 @@
     "project_path": "verification/flat-machine-table-v1/FlatMachineTable.Host.csproj",
     "project_blob": "461ef8c5d427e91c3d14b881f1c2dbd225882840",
     "execution": "NOT_EXECUTED"
+  },
+  "wasm_fixed_lookup": {
+    "repository": "atto-lang/atto-source.wasm",
+    "head": "31d77fa953e2b856e2314420c4d1d848622e1863",
+    "path": "verification/flat-machine-lookup-v1/flat_machine_lookup.c",
+    "blob": "30bb5518eb58ae825efc0d82a3f01455f92349db",
+    "test_path": "verification/flat-machine-lookup-v1/verify.mjs",
+    "test_blob": "0a048eef2421ed8f380bba5f84d0e9db037d1c08",
+    "scope": "Fixed two-graph hand-authored C wasm32 lookup witness, not graph verifier or compiler guest",
+    "guest": "NOT_EXECUTED"
+  },
+  "hdl_negative_admission": {
+    "repository": "atto-lang/atto-source.hdl",
+    "head": "e84d5804b9be715d4ab86e5ce74cec438dadb62a",
+    "test_path": "tests/actor_machine_fail_closed_v1.test.mjs",
+    "test_blob": "ac39e3e78567df38edd17a62ce14a68cea2c7713",
+    "scope": "Unsupported actor rejection and positive combinational scalar control; no synthesis claim",
+    "execution": "NOT_EXECUTED"
   }
 }
