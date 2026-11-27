@@ -5,6 +5,8 @@ function run_actor_retry_undo_model() {
   let count=0;
   const test=(name,body)=>{body();count++;};
   const retry=({attempt,max,now,deadline,delay,error,cancelled=false})=>{
+    // Fatal control effects are routed before entering ordinary retry admission.
+    if(error==="panic"||error==="raise")return {kind:"propagate",error};
     if(cancelled)return {kind:"cancelled"};
     if(now>=deadline)return {kind:"deadline"};
     if(error!=="transient")return {kind:"propagate",error};
@@ -55,6 +57,7 @@ function run_actor_retry_undo_model() {
   test("cancellation",()=>assert(retry({attempt:1,max:3,now:0,deadline:100,delay:1,error:"transient",cancelled:true}).kind==="cancelled","cancel"));
   test("deadline boundary",()=>assert(retry({attempt:1,max:3,now:9,deadline:10,delay:1,error:"transient"}).kind==="deadline","exclusive boundary"));
   test("retry decision precedence",()=>{const p={attempt:3,max:3,now:100,deadline:100,delay:1,error:"permanent"};assert(retry(p).kind==="deadline","expired before eligibility/exhaustion");assert(retry({...p,cancelled:true}).kind==="cancelled","cancel before deadline");assert(retry({...p,now:99}).kind==="propagate","eligibility before exhaustion")});
+  test("control effects never masked by retry",()=>{for(const error of ["panic","raise"])assert(retry({attempt:3,max:3,now:100,deadline:100,delay:1,error,cancelled:true}).error===error,"control propagation")});
   test("capped delay",()=>{assert(delay(10,100,1)===10n,"initial");assert(delay(10,100,1000000)===100n,"cap");assert(delay(0,100,1000000)===0n,"zero");assert(delay(2n**62n,2n**63n-1n,5)===2n**63n-1n,"overflow")});
   test("rollback",()=>{const s=state();assert(start(s,"a",0,{fail:true})==="ROLLED_BACK","failure");assert(s.value===10&&s.version===0&&s.undo.length===0&&s.receipts.size===0,"no publication")});
   test("undo overwritten value",()=>{const s=state();start(s,"a",0);undo(s,"u","a");assert(s.value===10&&s.version===2,"inverse and monotonic version")});
