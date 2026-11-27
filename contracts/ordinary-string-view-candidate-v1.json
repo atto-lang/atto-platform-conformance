@@ -1,0 +1,61 @@
+{
+  "id": "ordinary-string-view-candidate-v1",
+  "status": "authored_not_executed",
+  "scope": "Candidate ordinary literal/view observations; not general dynamic string or ownership transfer support. Do not replace or inflate explicit-local-initialization-v1 results. Positive results require compiled guest execution; no host folding-only receipt or independent Wasm claim. These vectors observe bytes/equality and rebinding; they do not by themselves prove a runtime representation or lifetime safety.",
+  "cases": [
+    {
+      "id": "empty-content",
+      "path": "fixtures/ordinary-string-view-candidate-v1/pass/empty-content.atto",
+      "source_blob_sha": "9aca0bc19b2bd442cc42af0c72c48a2c41e7d1a6",
+      "expect": "accept",
+      "expected_exit": 42
+    },
+    {
+      "id": "nonempty-content",
+      "path": "fixtures/ordinary-string-view-candidate-v1/pass/nonempty-content.atto",
+      "source_blob_sha": "fd13c7789de03fa9fbb1cba8374f483de5970f8a",
+      "expect": "accept",
+      "expected_exit": 42
+    },
+    {
+      "id": "different-length",
+      "path": "fixtures/ordinary-string-view-candidate-v1/pass/different-length.atto",
+      "source_blob_sha": "de7c4b25ae33ae808c6b0375484548ae6b9744c8",
+      "expect": "accept",
+      "expected_exit": 42
+    },
+    {
+      "id": "utf8-content",
+      "path": "fixtures/ordinary-string-view-candidate-v1/pass/utf8-content.atto",
+      "source_blob_sha": "42246dc0b8dc2d8e1ed0f097c7ae4dce7cafcf52",
+      "expect": "accept",
+      "expected_exit": 42
+    },
+    {
+      "id": "escaped-content",
+      "path": "fixtures/ordinary-string-view-candidate-v1/pass/escaped-content.atto",
+      "source_blob_sha": "cbe238e59744898a3dd060d061a711d5792bc5cc",
+      "expect": "accept",
+      "expected_exit": 42
+    },
+    {
+      "id": "rebind-preserves-prior-view",
+      "path": "fixtures/ordinary-string-view-candidate-v1/pass/rebind-preserves-prior-view.atto",
+      "source_blob_sha": "90557800f35459b7aa08905a819fe9764c65565d",
+      "expect": "accept",
+      "expected_exit": 42
+    },
+    {
+      "id": "uninitialized-string-let",
+      "path": "fixtures/ordinary-string-view-candidate-v1/fail/uninitialized-string-let.atto",
+      "source_blob_sha": "45afca69654147cf435ebae9de86619013d201ca",
+      "expect": "reject"
+    },
+    {
+      "id": "uninitialized-string-val",
+      "path": "fixtures/ordinary-string-view-candidate-v1/fail/uninitialized-string-val.atto",
+      "source_blob_sha": "bdac5e7086a8c0604af083ff0dfb09e0f8655cb2",
+      "expect": "reject"
+    }
+  ]
+}
