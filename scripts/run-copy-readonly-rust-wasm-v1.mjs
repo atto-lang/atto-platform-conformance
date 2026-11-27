@@ -10,18 +10,17 @@ const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 const git = (dir, ...args) => execFileSync('git', ['-C', dir, ...args], {encoding:'utf8',timeout:10000}).trim();
 const hex40 = /^[0-9a-f]{40}$/;
 export function classifyNegative(f, positivePassed, run, artifact) {
-  if (run.error || run.signal || run.status === null || run.status === 2) return 'INFRA_ERROR';
-  if (artifact || run.status === 0) return 'UNSAFE_ACCEPT_OR_ARTIFACT';
+  if (!run || run.error || run.signal !== null || !Number.isSafeInteger(run.status) || run.status === 2) return 'INFRA_ERROR';
+  if (artifact === true || run.status === 0) return 'UNSAFE_ACCEPT_OR_ARTIFACT';
+  if (artifact !== false) return 'INFRA_ERROR';
   if (run.status !== 1) return 'UNEXPECTED_EXIT';
-  const lines = String(run.stderr).trim().split(/\r?\n/);
-  // Rust prints `path: line:col`, LLVM browser prints `path:line:col`.
-  // Accept exactly those two representations; keep the exact path, line,
-  // positive column, diagnostic code, single line and no-artifact gates.
+  if (positivePassed !== true) return 'PAIRED_POSITIVE_NOT_EXECUTED';
+  if (typeof run.stderr !== 'string' || typeof f?.path !== 'string' || !Number.isSafeInteger(f.diagnostic_line) || f.diagnostic_line < 1 || !/^E_COPY_READONLY(?:_SLOT)?$/.test(f.expect?.compile_reject ?? '')) return 'WRONG_DIAGNOSTIC';
+  const line = run.stderr.replace(/\r?\n$/, '');
   const prefix = f.path + ':';
-  const d = lines.length === 1 && lines[0].startsWith(prefix)
-    ? /^ ?(\d+):(\d+): (E_[A-Z0-9_]+): .+$/.exec(lines[0].slice(prefix.length)) : null;
-  if (!positivePassed) return 'PAIRED_POSITIVE_NOT_EXECUTED';
-  return d && Number(d[1]) === f.diagnostic_line && Number(d[2]) > 0 &&
+  const d = !/[\r\n]/.test(line) && line.startsWith(prefix)
+    ? /^ ?([1-9]\d*):([1-9]\d*): (E_[A-Z0-9_]+): \S[^\r\n]*$/.exec(line.slice(prefix.length)) : null;
+  return d && Number(d[1]) === f.diagnostic_line && Number.isSafeInteger(Number(d[2])) &&
     d[3] === f.expect.compile_reject ? 'EXPECTED_REJECT' : 'WRONG_DIAGNOSTIC';
 }
 const guest = String.raw`
