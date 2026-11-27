@@ -1,0 +1,32 @@
+{
+  "contract": "omission-default-v2",
+  "status": "AUTHORED_NOT_EXECUTED",
+  "spec": "https://github.com/atto-lang/atto-spec/pull/309",
+  "fixtures": [
+    {
+      "path": "guests/provenance-colon.atto",
+      "expected": "exit_42",
+      "git_blob_sha": "3ea38db52949896e7c5bd3758f512fb3dbd7ae7d",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "path": "guests/arity-types.atto",
+      "expected": "exit_42",
+      "git_blob_sha": "1c6f45a28f6e9279839cffe9321ec42ba041702b",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "path": "reject/ambiguous-none.atto",
+      "expected": "E_AMBIGUOUS_OVERLOAD",
+      "git_blob_sha": "b8a6c07a7925810e7cc05931e20a4401f30e626d",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "path": "reject/ambiguous-omission.atto",
+      "expected": "E_AMBIGUOUS_OVERLOAD",
+      "git_blob_sha": "5cf0bb56e70f937caec81bca2b4b1bc85d3c01db",
+      "status": "NOT_EXECUTED"
+    }
+  ],
+  "limitations": "Candidate syntax; diagnostics named provisionally. No backend results yet. Reference oracle does not exercise parser, native ABI, named binding, generics or actor effects."
+}

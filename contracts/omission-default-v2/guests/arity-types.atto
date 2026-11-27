@@ -1,0 +1,6 @@
+define fnc int • foo(x: int) { return 10; }
+define fnc int • foo(int x, y?: int ??= 4) { return 20; }
+define fnc int • foo(x?: string? ?? "bar" ??= "star") { return 2; }
+define pub fnc int • main() {
+    return foo(1) + foo(1, 2) + foo(Some("x")) + foo() + foo(None) + 6;
+}

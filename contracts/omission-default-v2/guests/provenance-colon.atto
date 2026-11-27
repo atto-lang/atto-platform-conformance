@@ -1,0 +1,9 @@
+define fnc int • probe(x?: int? ?? 3 ??= 4) {
+    if x is omitted do
+        return 10;
+    fi
+    return 1;
+}
+define pub fnc int • main() {
+    return probe() + probe(None) + probe(Some(4)) + probe(omit) + probe(_) + 10;
+}
