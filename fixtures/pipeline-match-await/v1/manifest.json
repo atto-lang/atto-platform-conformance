@@ -289,7 +289,7 @@
       "expect": "exit",
       "exit": 42,
       "file": "guard-alias-elided-pipe.atto",
-      "sourceGitBlobSha1": "128610fb0f8f21d195efcfa625bd215d553b96d4",
+      "sourceGitBlobSha1": "ff73351baf381b35049cbdf881a12344fd8486b3",
       "confirmedBackends": []
     },
     {
@@ -297,7 +297,7 @@
       "expect": "exit",
       "exit": 42,
       "file": "guard-alias-explicit.atto",
-      "sourceGitBlobSha1": "0cfa53ac497db520ded78faa6cd23c872f668a9e",
+      "sourceGitBlobSha1": "8b7b9f389949c0af0c81536e287b3293d9209a10",
       "confirmedBackends": []
     },
     {
@@ -305,7 +305,7 @@
       "expect": "exit",
       "exit": 42,
       "file": "guard-alias-delimited.atto",
-      "sourceGitBlobSha1": "27e2ea3164bb378aaa010eeba01058bec7915f88",
+      "sourceGitBlobSha1": "524c7a25ed300b4a4bd2b5aebcf76e5d39668a0d",
       "confirmedBackends": []
     },
     {
@@ -313,7 +313,7 @@
       "expect": "exit",
       "exit": 42,
       "file": "guard-alias-named-pipe.atto",
-      "sourceGitBlobSha1": "da732dd82c828e7edcd6c7d4838ebf36cc65f4ad",
+      "sourceGitBlobSha1": "8e77ea3c5394635a203e71159f1d0b9d4d89a7fc",
       "confirmedBackends": []
     },
     {
