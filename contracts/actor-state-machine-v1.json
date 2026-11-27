@@ -1,0 +1,257 @@
+{
+  "schema": "atto.actor-state-machine.v1",
+  "status": "TARGET_NOT_EXECUTED",
+  "spec": "https://github.com/atto-lang/atto-spec/pull/286",
+  "related_retry_contract": "contracts/actor-retry-undo-v1.json",
+  "notes": [
+    "All sources are proposed grammar probes, not verified runnable programs. SM02 requires additional real guest driver; SM03 requires a separate negative fixture; SM15 requires lexical/parser/formatter execution. Inline source is exact UTF-8 with LF; do not rewrite candidate syntax per backend.",
+    "Every profile and case remains NOT_EXECUTED. A host model, source parser, skipped job, unsupported target or test stub cannot count as compiled guest evidence. Unsupported profile must be reported separately with refusal before artifact.",
+    "SM12 and SM21–SM25 depend on the retry/undo contract; do not implement a second divergent ledger."
+  ],
+  "profiles": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "rs": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
+    "hdl": "NOT_EXECUTED",
+    "realtime": "NOT_EXECUTED",
+    "atto": "NOT_EXECUTED",
+    "embedded": "NOT_EXECUTED"
+  },
+  "cases": [
+    {
+      "id": "SM01",
+      "group": "storage",
+      "expectation": "Legacy empty state; no behavioral machine",
+      "evidence": "compile_accept",
+      "status": "TARGET_NOT_EXECUTED",
+      "source": "define actor Foo as\n    state {}\nend\n",
+      "source_status": "CANDIDATE_UNEXECUTED"
+    },
+    {
+      "id": "SM02",
+      "group": "storage",
+      "expectation": "Inline nonempty storage and machine coexist; separate instances",
+      "evidence": "guest_trace",
+      "status": "TARGET_NOT_EXECUTED",
+      "source": "define actor Foo as\n    state { let int count: 0; }\n    state machine as\n        initial state Idle;\n        state Idle as\n            on Start() -> Running;\n        end\n        state Running as\n            on Stop() -> Idle;\n        end\n    end\nend\n",
+      "source_status": "CANDIDATE_UNEXECUTED"
+    },
+    {
+      "id": "SM03",
+      "group": "storage",
+      "expectation": "Attached storage accepted; inline plus attached rejected",
+      "evidence": "compile_accept_and_reject",
+      "status": "TARGET_NOT_EXECUTED",
+      "source": "define actor Foo as\n    state machine as\n        initial state Idle;\n        state Idle as\n        end\n    end\nend\ndefine state on actor Foo as {}\n",
+      "source_status": "CANDIDATE_UNEXECUTED"
+    },
+    {
+      "id": "SM04",
+      "group": "grammar",
+      "expectation": "Duplicate machine or missing/duplicate initial rejected",
+      "evidence": "compile_reject",
+      "status": "TARGET_NOT_EXECUTED",
+      "source": "define actor Foo as\n    state {}\n    state machine as\n        state Idle as\n        end\n    end\nend\n",
+      "source_status": "CANDIDATE_UNEXECUTED"
+    },
+    {
+      "id": "SM05",
+      "group": "grammar",
+      "expectation": "Duplicate node, unknown successor and invalid scope rejected",
+      "evidence": "compile_reject",
+      "status": "TARGET_NOT_EXECUTED",
+      "source": "define actor Foo as\n    state machine as\n        initial state Idle;\n        state Idle as\n            on Start() -> Missing;\n        end\n    end\nend\n",
+      "source_status": "CANDIDATE_UNEXECUTED"
+    },
+    {
+      "id": "SM06",
+      "group": "guards",
+      "expectation": "Pure guard, deterministic dispatch; reject ambiguity and effects",
+      "evidence": "mixed",
+      "status": "TARGET_NOT_EXECUTED",
+      "source_status": "NEEDS_CANONICAL_FIXTURE"
+    },
+    {
+      "id": "SM07",
+      "group": "transaction",
+      "expectation": "Node, changed data and version are one committed snapshot",
+      "evidence": "guest_trace",
+      "status": "TARGET_NOT_EXECUTED",
+      "source_status": "NEEDS_CANONICAL_FIXTURE"
+    },
+    {
+      "id": "SM08",
+      "group": "transaction",
+      "expectation": "Throw or cancellation before commit retains previous snapshot",
+      "evidence": "guest_trace",
+      "status": "TARGET_NOT_EXECUTED",
+      "source_status": "NEEDS_CANONICAL_FIXTURE"
+    },
+    {
+      "id": "SM09",
+      "group": "ownership",
+      "expectation": "Reject escaped loan, direct field access, suspension and send under guard",
+      "evidence": "compile_reject",
+      "status": "TARGET_NOT_EXECUTED",
+      "source_status": "NEEDS_CANONICAL_FIXTURE"
+    },
+    {
+      "id": "SM10",
+      "group": "fencing",
+      "expectation": "Old activation timer and incarnation completion rejected",
+      "evidence": "guest_trace",
+      "status": "TARGET_NOT_EXECUTED",
+      "source_status": "NEEDS_CANONICAL_FIXTURE"
+    },
+    {
+      "id": "SM11",
+      "group": "bounds",
+      "expectation": "Exhausted version, queue or attempt budget cannot partially publish",
+      "evidence": "guest_trace",
+      "status": "TARGET_NOT_EXECUTED",
+      "source_status": "NEEDS_CANONICAL_FIXTURE"
+    },
+    {
+      "id": "SM12",
+      "group": "retry_undo",
+      "expectation": "Bounded retry, monotonic undo and duplicate effect reconciliation",
+      "evidence": "guest_trace",
+      "status": "TARGET_NOT_EXECUTED",
+      "source_status": "NEEDS_CANONICAL_FIXTURE"
+    },
+    {
+      "id": "SM13",
+      "group": "supervision",
+      "expectation": "Panic goes to runtime CONTROL, not behavioral DATA handler",
+      "evidence": "guest_trace",
+      "status": "TARGET_NOT_EXECUTED",
+      "source_status": "NEEDS_CANONICAL_FIXTURE"
+    },
+    {
+      "id": "SM14",
+      "group": "admission",
+      "expectation": "Unsupported profile rejects before emitting any guest artifact",
+      "evidence": "compile_reject",
+      "status": "TARGET_NOT_EXECUTED",
+      "source_status": "NEEDS_CANONICAL_FIXTURE"
+    },
+    {
+      "id": "SM15",
+      "group": "grammar",
+      "expectation": "Contextual introducers do not reserve ordinary identifiers; formatter preserves storage",
+      "evidence": "compile_accept",
+      "status": "TARGET_NOT_EXECUTED",
+      "source": "define actor Foo as\n    state { let int saga: 0; let int migrate: 0; let int invariant: 0; let int owned: 0; let int enter: 0; let int exit: 0; }\nend\n",
+      "source_status": "CANDIDATE_UNEXECUTED"
+    },
+    {
+      "id": "SM16",
+      "group": "lifecycle",
+      "expectation": "Entry/exit ordering, self-transition renewal and rejected guard",
+      "evidence": "guest_trace",
+      "status": "TARGET_NOT_EXECUTED",
+      "source_status": "NEEDS_CANONICAL_FIXTURE"
+    },
+    {
+      "id": "SM17",
+      "group": "lifecycle",
+      "expectation": "Hook failure aborts data, node, version and ownership publication",
+      "evidence": "guest_trace",
+      "status": "TARGET_NOT_EXECUTED",
+      "source_status": "NEEDS_CANONICAL_FIXTURE"
+    },
+    {
+      "id": "SM18",
+      "group": "invariants",
+      "expectation": "Invariant failure on activation, transition and ordinary write prevents publication",
+      "evidence": "guest_trace",
+      "status": "TARGET_NOT_EXECUTED",
+      "source_status": "NEEDS_CANONICAL_FIXTURE"
+    },
+    {
+      "id": "SM19",
+      "group": "ownership",
+      "expectation": "Reject effectful invariant, suspension in hook and borrowed resource escape",
+      "evidence": "compile_reject",
+      "status": "TARGET_NOT_EXECUTED",
+      "source_status": "NEEDS_CANONICAL_FIXTURE"
+    },
+    {
+      "id": "SM20",
+      "group": "ownership",
+      "expectation": "Abort preserves owner; commit transfers/retires once; cleanup fences DONE",
+      "evidence": "guest_trace",
+      "status": "TARGET_NOT_EXECUTED",
+      "source_status": "NEEDS_CANONICAL_FIXTURE"
+    },
+    {
+      "id": "SM21",
+      "group": "saga",
+      "expectation": "Receipt before next step; compensate confirmed operations in reverse order",
+      "evidence": "guest_trace",
+      "status": "TARGET_NOT_EXECUTED",
+      "source_status": "NEEDS_CANONICAL_FIXTURE"
+    },
+    {
+      "id": "SM22",
+      "group": "saga",
+      "expectation": "Unknown forward/compensation outcome fences progression until reconciliation",
+      "evidence": "guest_trace",
+      "status": "TARGET_NOT_EXECUTED",
+      "source_status": "NEEDS_CANONICAL_FIXTURE"
+    },
+    {
+      "id": "SM23",
+      "group": "retry_undo",
+      "expectation": "Attempts include first, bounded deadline and stable key; replay jitter",
+      "evidence": "guest_trace",
+      "status": "TARGET_NOT_EXECUTED",
+      "source_status": "NEEDS_CANONICAL_FIXTURE"
+    },
+    {
+      "id": "SM24",
+      "group": "saga",
+      "expectation": "Duplicate receipt idempotent, conflict/stale rejection, irreversible explicit",
+      "evidence": "guest_trace",
+      "status": "TARGET_NOT_EXECUTED",
+      "source_status": "NEEDS_CANONICAL_FIXTURE"
+    },
+    {
+      "id": "SM25",
+      "group": "durability",
+      "expectation": "Crash around durable intent, dispatch, receipt and compensation commit",
+      "evidence": "crash_recovery",
+      "status": "TARGET_NOT_EXECUTED",
+      "source_status": "NEEDS_CANONICAL_FIXTURE"
+    },
+    {
+      "id": "SM26",
+      "group": "migration",
+      "expectation": "Preserve obligations and stable IDs; reject missing/ambiguous mapping",
+      "evidence": "guest_trace",
+      "status": "TARGET_NOT_EXECUTED",
+      "source_status": "NEEDS_CANONICAL_FIXTURE"
+    },
+    {
+      "id": "SM27",
+      "group": "migration",
+      "expectation": "Abort preserves snapshot; coherent schema after crash; stale completion fenced",
+      "evidence": "crash_recovery",
+      "status": "TARGET_NOT_EXECUTED",
+      "source_status": "NEEDS_CANONICAL_FIXTURE"
+    },
+    {
+      "id": "SM28",
+      "group": "admission",
+      "expectation": "Volatile has no persistence claim; unsupported profiles reject before artifact",
+      "evidence": "mixed",
+      "status": "TARGET_NOT_EXECUTED",
+      "source_status": "NEEDS_CANONICAL_FIXTURE"
+    }
+  ]
+}

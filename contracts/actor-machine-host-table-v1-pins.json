@@ -1,0 +1,76 @@
+{
+  "schema": "atto.flat-machine-table.host-v1",
+  "status": "TARGET_NOT_EXECUTED",
+  "scope": "Compiler-owned ASCII graph metadata only; not source parser, nominal message authority, executable MIR or guest evidence.",
+  "bounds": {
+    "nodes": 256,
+    "edges": 256,
+    "identifier_bytes": 1024
+  },
+  "canonical_order": "ASCII lexical",
+  "native_copy_pair": [
+    {
+      "repository": "atto-lang/atto-source.llvm",
+      "head": "2e813716307a0ade60e92bdae4e46ceb4af50126",
+      "path": "src/main/cpp/oreslang/compiler/FlatMachineTable.hpp",
+      "blob": "d26b2e51e670b23f7d099e155203ebc2f9ce7c65",
+      "test_path": "tests/flat_machine_table_v1_test.cpp",
+      "test_blob": "4787ee8f640976f9baf96cf6c38a7ec40c9e1c81"
+    },
+    {
+      "repository": "atto-lang/atto-source.forge",
+      "head": "ded8e62c7b5e54ece661b152100015ee12e667a4",
+      "path": "compiler/FlatMachineTable.hpp",
+      "blob": "d26b2e51e670b23f7d099e155203ebc2f9ce7c65",
+      "test_path": "tests/flat_machine_table_v1_test.cpp",
+      "test_blob": "4787ee8f640976f9baf96cf6c38a7ec40c9e1c81"
+    }
+  ],
+  "independent_js": {
+    "repository": "atto-lang/atto-source.js",
+    "head": "1783dc7d062a5c89ccf17283b6b13672b6bc7434",
+    "path": "src/flat-machine-table-v1.mjs",
+    "blob": "d07b3e805d1e81f95ba8f92b3def3e9d77f1e301",
+    "test_path": "tests/flat-machine-table-v1.test.mjs",
+    "test_blob": "a2ff50251797512248b53df4add730ba7dc1aa76"
+  },
+  "verification": "Read exact pinned Git blobs and compare both native source and test SHA; changes require coordinated pins. No target pass implied.",
+  "independent_cranelift": {
+    "repository": "atto-lang/atto-source.cranelift",
+    "head": "942baa72b2df5c44b38ae2fe7ba9ca33f41513f3",
+    "path": "src/flat_machine_table_v1.rs",
+    "blob": "1bbb3fba5b0f9d652ce874c00ca098b5d73052f5",
+    "test_path": "tests/flat_machine_table_v1.rs",
+    "test_blob": "987ec1f57a4e0968e17c247c98f8a902a92e7387",
+    "execution": "NOT_EXECUTED"
+  },
+  "independent_net": {
+    "repository": "atto-lang/atto-source.net",
+    "head": "cf872e59f27a56dd33434d3e7884fe45e3fe9b8f",
+    "path": "verification/flat-machine-table-v1/FlatMachineTable.cs",
+    "blob": "60fae887dbfca1a9b9b275637af3155716892a75",
+    "test_path": "verification/flat-machine-table-v1/Program.cs",
+    "test_blob": "3169cbe278bdf53aa69bcd102aa61aa0fe22586c",
+    "project_path": "verification/flat-machine-table-v1/FlatMachineTable.Host.csproj",
+    "project_blob": "461ef8c5d427e91c3d14b881f1c2dbd225882840",
+    "execution": "NOT_EXECUTED"
+  },
+  "wasm_fixed_lookup": {
+    "repository": "atto-lang/atto-source.wasm",
+    "head": "31d77fa953e2b856e2314420c4d1d848622e1863",
+    "path": "verification/flat-machine-lookup-v1/flat_machine_lookup.c",
+    "blob": "30bb5518eb58ae825efc0d82a3f01455f92349db",
+    "test_path": "verification/flat-machine-lookup-v1/verify.mjs",
+    "test_blob": "0a048eef2421ed8f380bba5f84d0e9db037d1c08",
+    "scope": "Fixed two-graph hand-authored C wasm32 lookup witness, not graph verifier or compiler guest",
+    "guest": "NOT_EXECUTED"
+  },
+  "hdl_negative_admission": {
+    "repository": "atto-lang/atto-source.hdl",
+    "head": "e84d5804b9be715d4ab86e5ce74cec438dadb62a",
+    "test_path": "tests/actor_machine_fail_closed_v1.test.mjs",
+    "test_blob": "ac39e3e78567df38edd17a62ce14a68cea2c7713",
+    "scope": "Unsupported actor rejection and positive combinational scalar control; no synthesis claim",
+    "execution": "NOT_EXECUTED"
+  }
+}
