@@ -31,8 +31,10 @@ test("compiler diagnostic is accepted only at semantic rejection exit 1", async 
     backend: "llvm", argv: command, sourceSha,
     spawn: fakeCompiler(1),
   });
-  assert.equal(genuine.verified, 2);
-  assert.equal(genuine.ok, true);
+  assert.equal(genuine.verified, 3);
+  assert.equal(genuine.unsupported, 3);
+  assert.equal(genuine.results.find(x=>x.id==='unresolved-identifier').status,'VERIFIED');
+  assert.equal(genuine.ok, false);
 });
 
 test("a crash quoting the expected symbol is not a negative compiler proof", async () => {
@@ -46,15 +48,21 @@ test("a crash quoting the expected symbol is not a negative compiler proof", asy
       backend: "java", argv: command, sourceSha,
       spawn: fakeCompiler(1, failure),
     });
-    assert.equal(result.results.at(-1).status, "MISMATCH", failure);
+    assert.equal(result.results.find(x=>x.id==="unresolved-identifier").status, "MISMATCH", failure);
   }
 });
 
 test("all six source backends require real case outcomes; uncovered browser never creates proof", async () => {
   for (const backend of ["java","llvm","net","forge","wasm","js"]) {
     const report=await runSuite({backend,argv:command,sourceSha,spawn:fakeCompiler(1)});
-    assert.equal(report.verified,2,backend);
-    assert.equal(report.ok,true,backend);
+    assert.equal(report.verified,backend==='js'?2:3,backend);
+    assert.equal(report.unsupported,3,backend);
+    assert.equal(report.failed,3,backend);
+    assert.deepEqual(report.results.filter(x=>x.status==='UNSUPPORTED').map(x=>x.id),
+      ['generator-sync','generator-async','generator-suspend']);
+    assert.equal(report.results.find(x=>x.id==='int-arithmetic').status,'VERIFIED',backend);
+    assert.equal(report.results.find(x=>x.id==='unresolved-identifier').status,'VERIFIED',backend);
+    assert.equal(report.ok,false,backend);
     assert.equal(report.runtimeVerified,false,backend);
     const unconfigured=await runSuite({backend});
     assert.equal(unconfigured.ok,false,backend);

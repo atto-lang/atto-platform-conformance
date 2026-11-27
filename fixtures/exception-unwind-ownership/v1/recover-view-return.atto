@@ -1,0 +1,4 @@
+pub fnc main(): int {
+    recover |err, cursor| -> { return err; };
+    raise! new Error("raised");
+}

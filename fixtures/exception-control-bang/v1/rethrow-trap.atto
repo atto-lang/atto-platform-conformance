@@ -1,0 +1,4 @@
+fnc fail_now(): int { try { throw! new Error("original"); } catch (err) { throw! err; } }
+pub fnc main(): int {
+    val r = trap! fail_now(); return r.is_err() ? 42 : 0;
+}

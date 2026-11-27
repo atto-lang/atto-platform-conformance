@@ -1,0 +1,36 @@
+define pub class Container[T]
+    implements Newable[Container[T]] as
+  pub new(): Container[T] {
+    return new Container[T]();
+  }
+
+  val int count = 21;
+  val bool ready = true;
+  val string label = "ok";
+
+  pub echo(T value): T {
+    return value;
+  }
+
+  pub get_count(): int {
+    return self.count;
+  }
+
+  pub is_ready(): bool {
+    return self.ready;
+  }
+
+  pub get_label(): string {
+    return self.label;
+  }
+end
+
+pub fnc main(): int {
+  val a = Container[int].new();
+  val b = Container[bool].new();
+  val c = Container[string].new();
+  if b.echo(b.is_ready()) && c.echo(c.get_label()) == "ok" then
+    return a.echo(a.get_count()) + b.get_count();
+  fi
+  return 0;
+}

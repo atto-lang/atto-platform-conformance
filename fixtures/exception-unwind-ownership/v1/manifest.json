@@ -1,0 +1,598 @@
+{
+  "schema": "atto.exception-unwind-ownership.guest.v1",
+  "status": "TARGET_NOT_CERTIFIED",
+  "normative_spec": "https://github.com/atto-lang/atto-spec/pull/245",
+  "scenario_registry": {
+    "path": "contracts/execution-context-unwind-v1.json",
+    "git_blob_sha1": "676536b204ba120de8c53469cdae382d35057036"
+  },
+  "backend_names": [
+    "atto",
+    "cranelift",
+    "forge",
+    "hdl",
+    "java",
+    "js",
+    "llvm",
+    "net",
+    "realtime",
+    "rs",
+    "wasm"
+  ],
+  "cases": [
+    {
+      "id": "return-lifo",
+      "scenario": "return-lifo",
+      "expected": {
+        "kind": "guest_trace",
+        "stdout": [
+          "body",
+          "B",
+          "A"
+        ],
+        "return_i64": "42",
+        "required_observations": []
+      },
+      "path": "return-lifo.atto",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "77d80ab17343210777e2f59e51c42a5d1aaa51d7"
+    },
+    {
+      "id": "return-snapshot",
+      "scenario": "return-lifo",
+      "expected": {
+        "kind": "guest_trace",
+        "stdout": [],
+        "return_i64": "42",
+        "required_observations": [
+          "return_value_snapshotted_before_cleanup"
+        ]
+      },
+      "path": "return-snapshot.atto",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "0fd31da247744136464a396fb8383919a29d788c"
+    },
+    {
+      "id": "return-no-recover",
+      "scenario": "return-lifo",
+      "expected": {
+        "kind": "guest_trace",
+        "stdout": [
+          "cleanup"
+        ],
+        "return_i64": "42",
+        "required_observations": []
+      },
+      "path": "return-no-recover.atto",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "510ef2a029aa22157334e40e24b6b16fcb6076b5"
+    },
+    {
+      "id": "nested-finally-lifo",
+      "scenario": "return-lifo",
+      "expected": {
+        "kind": "guest_trace",
+        "stdout": [
+          "inner",
+          "outer",
+          "B",
+          "A"
+        ],
+        "return_i64": "42",
+        "required_observations": []
+      },
+      "path": "nested-finally-lifo.atto",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "4cd80f9e39bee994a9c20e438d2426c785b71163"
+    },
+    {
+      "id": "ordinary-catch-cleanup",
+      "scenario": "throw-outer-catch",
+      "expected": {
+        "kind": "guest_trace",
+        "stdout": [
+          "catch",
+          "finally",
+          "cleanup"
+        ],
+        "return_i64": "42",
+        "required_observations": []
+      },
+      "path": "ordinary-catch-cleanup.atto",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "f9f2f37c5ae195ceb0740400abd2e55c8296e637"
+    },
+    {
+      "id": "caller-catch-precedence",
+      "scenario": "throw-outer-catch",
+      "expected": {
+        "kind": "guest_trace",
+        "stdout": [
+          "callee cleanup",
+          "caller catch",
+          "caller finally"
+        ],
+        "return_i64": "42",
+        "required_observations": []
+      },
+      "path": "caller-catch-precedence.atto",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "58e33eb96dd709b0194591f95412f1c73b8a5f01"
+    },
+    {
+      "id": "caller-trap-precedence",
+      "scenario": "throw-outer-catch",
+      "expected": {
+        "kind": "guest_trace",
+        "stdout": [
+          "callee cleanup"
+        ],
+        "return_i64": "42",
+        "required_observations": [
+          "original_error_identity_preserved"
+        ]
+      },
+      "path": "caller-trap-precedence.atto",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "77147544b8a05ad2c54f6b6c8d77dbf768b49d43"
+    },
+    {
+      "id": "raise-cleanup-recover",
+      "scenario": "raise-catch-bypass",
+      "expected": {
+        "kind": "guest_trace",
+        "stdout": [
+          "finally",
+          "cleanup",
+          "recover"
+        ],
+        "return_i64": "42",
+        "required_observations": []
+      },
+      "path": "raise-cleanup-recover.atto",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "aead16cfdeb1eb21e5e9d6aafdf7f4882bf57caa"
+    },
+    {
+      "id": "recover-delegation",
+      "scenario": "recovery-one-shot",
+      "expected": {
+        "kind": "guest_trace",
+        "stdout": [
+          "cleanup",
+          "newer",
+          "older"
+        ],
+        "return_i64": "42",
+        "required_observations": [
+          "same_error_identity_at_both_recovery_callbacks"
+        ]
+      },
+      "path": "recover-delegation.atto",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "6322cf134f728ffb0eca0b3cd9559ae1328f03f7"
+    },
+    {
+      "id": "recover-cursor-double-next",
+      "scenario": "recovery-one-shot",
+      "expected": {
+        "kind": "compile_rejection",
+        "diagnostic": "recovery_cursor_reuse_or_unreachable"
+      },
+      "path": "recover-cursor-double-next.atto",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "3c3a6657032533f67901bdd6adc1dbf29d59ef4a"
+    },
+    {
+      "id": "recover-view-return",
+      "scenario": "recovery-one-shot",
+      "expected": {
+        "kind": "compile_rejection",
+        "diagnostic": "recovery_view_escape_or_return_type_mismatch"
+      },
+      "path": "recover-view-return.atto",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "83f6a35fcf42577654b17af74728e59dcd279396"
+    },
+    {
+      "id": "error-owner-transfer",
+      "scenario": "throw-outer-catch",
+      "expected": {
+        "kind": "guest_trace",
+        "stdout": [],
+        "return_i64": "42",
+        "required_observations": [
+          "error_payload_moved_once",
+          "source_place_not_destroyed_after_move",
+          "caught_payload_retired_once"
+        ]
+      },
+      "path": "error-owner-transfer.atto",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "27a6034ebbbfde7f314629632b7cca76b2686ae4"
+    },
+    {
+      "id": "moved-owner-normal-exit",
+      "scenario": "return-lifo",
+      "expected": {
+        "kind": "guest_trace",
+        "stdout": [
+          "cleanup"
+        ],
+        "return_i64": "42",
+        "required_observations": [
+          "parcel_allocation_once",
+          "first_place_move",
+          "parcel_destruction_once"
+        ]
+      },
+      "path": "moved-owner-normal-exit.atto",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "acdbd1855e22d9fe54ceaa644f8f935762b9881d"
+    },
+    {
+      "id": "moved-owner-catch-exit",
+      "scenario": "throw-outer-catch",
+      "expected": {
+        "kind": "guest_trace",
+        "stdout": [],
+        "return_i64": "42",
+        "required_observations": [
+          "parcel_allocation_once",
+          "first_place_move",
+          "parcel_destruction_once"
+        ]
+      },
+      "path": "moved-owner-catch-exit.atto",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "33b6bdfe5c86fc5107598481f5bb33babc8ce0c1"
+    },
+    {
+      "id": "moved-owner-catch-use",
+      "scenario": "throw-outer-catch",
+      "expected": {
+        "kind": "compile_rejection",
+        "diagnostic": "use_after_move"
+      },
+      "path": "moved-owner-catch-use.atto",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "99da44c6b5bafff3dfae1c56aaf6669929fa9c2b"
+    },
+    {
+      "id": "dropped-owner-catch-use",
+      "scenario": "throw-outer-catch",
+      "expected": {
+        "kind": "compile_rejection",
+        "diagnostic": "use_after_drop"
+      },
+      "path": "dropped-owner-catch-use.atto",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "2c70c27ab84b79ebc93a02841f529168eb79d0e6"
+    },
+    {
+      "id": "explicit-drop-no-double-cleanup",
+      "scenario": "no-double-defer",
+      "expected": {
+        "kind": "guest_trace",
+        "stdout": [
+          "cleanup"
+        ],
+        "return_i64": "42",
+        "required_observations": [
+          "parcel_allocation_once",
+          "explicit_drop_once",
+          "no_implicit_second_drop"
+        ]
+      },
+      "path": "explicit-drop-no-double-cleanup.atto",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "733de941f68e0da0ed09ea2029fd4ace1ee49fb8"
+    },
+    {
+      "id": "panic-safe-cleanup",
+      "scenario": "panic-fatal",
+      "expected": {
+        "kind": "escaping_guest_effect",
+        "effect": "panic",
+        "message": "fatal",
+        "stdout": [
+          "B",
+          "A"
+        ],
+        "required_observations": [
+          "no_recovery",
+          "root_fatal_policy"
+        ]
+      },
+      "path": "panic-safe-cleanup.atto",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "68c80c1cc7843dcb425cfd079584eaa77b6628de"
+    },
+    {
+      "id": "cleanup-stronger-effect",
+      "scenario": "cleanup-failure",
+      "expected": {
+        "kind": "escaping_guest_effect",
+        "effect": "panic",
+        "message": "cleanup panic",
+        "stdout": [
+          "remaining"
+        ],
+        "required_observations": [
+          "original_throw_preserved_as_suppressed",
+          "both_cleanups_attempted_once"
+        ]
+      },
+      "path": "cleanup-stronger-effect.atto",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "4f54b3c3efbc1e08bb56bcdd963cc6602601e23a"
+    },
+    {
+      "id": "failed-defer-registration",
+      "scenario": "no-double-defer",
+      "expected": {
+        "kind": "escaping_guest_effect",
+        "effect": "throw",
+        "message": "capture failed",
+        "stdout": [
+          "previous"
+        ],
+        "required_observations": [
+          "failed_registration_not_installed",
+          "previous_defer_once",
+          "original_failure_identity"
+        ]
+      },
+      "path": "failed-defer-registration.atto",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      },
+      "git_blob_sha1": "972df02fee4d3aaa9e7b59b231b115e1b69747d5"
+    }
+  ],
+  "evidence_policy": {
+    "stdout": "Ordered complete guest stdout lines, exact line content. No host-generated substitute trace.",
+    "required_observations": "Independent runtime or compiler instrumentation with per-resource and invocation identity, actual event counts and ordering; return 42 alone does not satisfy lifecycle evidence.",
+    "escaping_guest_effect": "Observe pending guest effect at the unwind boundary before root escalation and separately verify terminal policy. Panic cleanup is required only where guest cleanup is safe.",
+    "compile_rejection": "Semantic diagnostic for the stated ownership or recovery violation, no emitted artifact. Generic parse or unsupported capability does not count.",
+    "source_status": "Design-intent fixtures; parser admission not yet verified. Non-Error marker extension, async and ownership instrumentation are independently gated."
+  }
+}

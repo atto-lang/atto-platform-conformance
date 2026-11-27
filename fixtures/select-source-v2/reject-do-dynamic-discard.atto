@@ -1,0 +1,1 @@
+pub fnc main(): int { do select from cases; return 0; }

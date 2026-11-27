@@ -1,0 +1,4 @@
+pub fnc main(): int {
+    recover |err, cursor| -> { cursor.next(); cursor.next(); };
+    raise! new Error("raised");
+}

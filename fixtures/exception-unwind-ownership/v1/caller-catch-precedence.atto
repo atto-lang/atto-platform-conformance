@@ -1,0 +1,8 @@
+fnc fail_now(): int {
+    recover |err, cursor| -> { stdio.println("unexpected recover"); return 0; };
+    defer { stdio.println("callee cleanup"); };
+    throw! new Error("ordinary");
+}
+pub fnc main(): int {
+    try { return fail_now(); } catch (err) { stdio.println("caller catch"); return 42; } finally { stdio.println("caller finally"); }
+}

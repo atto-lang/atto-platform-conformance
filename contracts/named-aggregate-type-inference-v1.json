@@ -1,0 +1,823 @@
+{
+  "schema_version": 1,
+  "contract": "atto-named-aggregate-type-inference-v1",
+  "status": "TARGET_NOT_EXECUTED",
+  "spec": "https://github.com/atto-lang/atto-spec/pull/255",
+  "related": [
+    "https://github.com/atto-lang/atto-source.js/pull/163",
+    "https://github.com/atto-lang/atto-format/pull/92",
+    "https://github.com/atto-lang/atto-source.java/pull/1899",
+    "https://github.com/atto-lang/atto-source.rs/pull/613",
+    "https://github.com/atto-lang/atto-source.net/pull/286",
+    "https://github.com/atto-lang/atto-source.forge/pull/272",
+    "https://github.com/atto-lang/atto-source.llvm/pull/929",
+    "https://github.com/atto-lang/atto-source.cranelift/pull/126"
+  ],
+  "evidence_policy": "PASS requires exact compiler/fixture SHAs, real guest execution with expected result or a relevant compiler diagnostic and no artifact; source-only/reference results do not count.",
+  "backend_status": {
+    "java": "not_executed",
+    "llvm": "not_executed",
+    "wasm-independent": "not_executed",
+    "forge": "not_executed",
+    "net": "not_executed",
+    "cranelift": "not_executed",
+    "rs-browser-wasm": "not_executed",
+    "js": "not_executed",
+    "hdl": "not_executed",
+    "atto": "not_executed",
+    "realtime": "not_executed"
+  },
+  "cases": [
+    {
+      "id": "named_reuse_42",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/pass/named_reuse_42.atto",
+      "expect": "accept",
+      "expected_exit": 42,
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "anonymous_record_42",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/pass/anonymous_record_42.atto",
+      "expect": "accept",
+      "expected_exit": 42,
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "bare_infer",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/reject/bare_infer.atto",
+      "expect": "reject",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "unknown_alias",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/reject/unknown_alias.atto",
+      "expect": "reject",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "duplicate_alias",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/reject/duplicate_alias.atto",
+      "expect": "reject",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "field_type",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/reject/field_type.atto",
+      "expect": "reject",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "missing_field",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/reject/missing_field.atto",
+      "expect": "reject",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "extra_field",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/reject/extra_field.atto",
+      "expect": "reject",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "duplicate_field",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/reject/duplicate_field.atto",
+      "expect": "reject",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "tuple_arity",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/reject/tuple_arity.atto",
+      "expect": "reject",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "tuple_order",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/reject/tuple_order.atto",
+      "expect": "reject",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "kind_mismatch",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/reject/kind_mismatch.atto",
+      "expect": "reject",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "anonymous_no_alias",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/reject/anonymous_no_alias.atto",
+      "expect": "reject",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "ambiguous_initializer",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/reject/ambiguous_initializer.atto",
+      "expect": "reject",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "scope_leak",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/reject/scope_leak.atto",
+      "expect": "reject",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "call_tuple_42",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/pass/call_tuple_42.atto",
+      "expect": "accept",
+      "expected_exit": 42,
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "call_seq_typeof_42",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/pass/call_seq_typeof_42.atto",
+      "expect": "accept",
+      "expected_exit": 42,
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "call_tuple_wrong_order",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/reject/call_tuple_wrong_order.atto",
+      "expect": "reject",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "call_typeof_missing_field",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/reject/call_typeof_missing_field.atto",
+      "expect": "reject",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "call_seq_wrong_tail",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/reject/call_seq_wrong_tail.atto",
+      "expect": "reject",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "call_bare_seq_typeof_42",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/pass/call_bare_seq_typeof_42.atto",
+      "expect": "accept",
+      "expected_exit": 42,
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "call_bare_seq_trailing_comma",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/reject/call_bare_seq_trailing_comma.atto",
+      "expect": "reject",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "call_bare_seq_wrong_tail",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/reject/call_bare_seq_wrong_tail.atto",
+      "expect": "reject",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "scalar_named_reuse_42",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/pass/scalar_named_reuse_42.atto",
+      "expect": "accept",
+      "expected_exit": 42,
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "scalar_anonymous_all_42",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/pass/scalar_anonymous_all_42.atto",
+      "expect": "accept",
+      "expected_exit": 42,
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "signed_scalar_reuse_42",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/pass/signed_scalar_reuse_42.atto",
+      "expect": "accept",
+      "expected_exit": 42,
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "reserved_record_map",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/reject/reserved_record_map.atto",
+      "expect": "reject",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "reserved_tuple_option",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/reject/reserved_tuple_option.atto",
+      "expect": "reject",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "reserved_struct_int",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/reject/reserved_struct_int.atto",
+      "expect": "reject",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "bare_tuple_infer",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/reject/bare_tuple_infer.atto",
+      "expect": "reject",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "bare_struct_infer",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/reject/bare_struct_infer.atto",
+      "expect": "reject",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "nominal_struct_cross_assignment",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/reject/nominal_struct_cross_assignment.atto",
+      "expect": "reject",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "forward_type_reference",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/reject/forward_type_reference.atto",
+      "expect": "reject",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "tuple_projection_out_of_bounds",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/reject/tuple_projection_out_of_bounds.atto",
+      "expect": "reject",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "tuple_cannot_spread_as_row",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/reject/tuple_cannot_spread_as_row.atto",
+      "expect": "reject",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "named_reuse_48",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/pass/named_reuse_48.atto",
+      "expect": "accept",
+      "expected_exit": 48,
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "call_tuple_two_values_48",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/pass/call_tuple_two_values_48.atto",
+      "expect": "accept",
+      "expected_exit": 48,
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "call_tuple_all_slots_two_calls_42",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/pass/call_tuple_all_slots_two_calls_42.atto",
+      "expect": "accept",
+      "expected_exit": 42,
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "call_bare_seq_two_calls_42",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/pass/call_bare_seq_two_calls_42.atto",
+      "expect": "accept",
+      "expected_exit": 42,
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "call_record_extra_field",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/reject/call_record_extra_field.atto",
+      "expect": "reject",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "call_typeof_wrong_parameter",
+      "fixture": "fixtures/named-aggregate-type-inference/v1/reject/call_typeof_wrong_parameter.atto",
+      "expect": "reject",
+      "status": "not_executed",
+      "evidence": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm-independent": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "rs-browser-wasm": "not_executed",
+        "js": "not_executed",
+        "hdl": "not_executed",
+        "atto": "not_executed",
+        "realtime": "not_executed"
+      }
+    }
+  ]
+}

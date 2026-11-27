@@ -1,0 +1,7 @@
+define struct Flag { bool value; } with { constructor(bool value) { self.value = value; } }
+define struct Point { int x; } with {
+ constructor(int x) { self.x = x; }
+ mtd and_probe() -> bool { return false && self.x; }
+ mtd or_probe() -> bool { return true || (self.x + 9223372036854775807 == 0); }
+}
+pub fnc main():int { let p = Point(1); let a = Flag(p.and_probe()); let b = Flag(p.or_probe()); return 42; }

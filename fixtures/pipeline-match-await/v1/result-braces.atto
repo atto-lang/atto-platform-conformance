@@ -1,0 +1,8 @@
+fnc increment(int n): int { return n + 1; }
+fnc choose(Result<int,int> result): int {
+    return result |> match<int> over {
+        on Ok(value) -> value,
+        on Err(error) -> 42,
+    } |> increment;
+}
+pub fnc main(): int { return choose(Ok(41)); }

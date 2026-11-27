@@ -1,0 +1,702 @@
+{
+  "schema": "atto.exception-control-bang.guest.v1",
+  "status": "TARGET_NOT_CERTIFIED",
+  "spec_proposal": "https://github.com/atto-lang/atto-spec/pull/245",
+  "backend_names": [
+    "atto",
+    "cranelift",
+    "forge",
+    "hdl",
+    "java",
+    "js",
+    "llvm",
+    "net",
+    "realtime",
+    "rs",
+    "wasm"
+  ],
+  "cases": [
+    {
+      "id": "canonical-catch",
+      "category": "propagation",
+      "expected": {
+        "kind": "return_i64",
+        "value": "42"
+      },
+      "profile": "core",
+      "path": "canonical-catch.atto",
+      "git_blob_sha1": "ab54e338fbef70dff0a4c892f33d1b63efc311df",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "ordinary-trap",
+      "category": "propagation",
+      "expected": {
+        "kind": "return_i64",
+        "value": "42"
+      },
+      "profile": "core",
+      "path": "ordinary-trap.atto",
+      "git_blob_sha1": "b8538857beed9574f90928f7e78b79d8e0d2a92e",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "normal-trap",
+      "category": "propagation",
+      "expected": {
+        "kind": "return_i64",
+        "value": "42"
+      },
+      "profile": "core",
+      "path": "normal-trap.atto",
+      "git_blob_sha1": "ed9c40c9580f3407022495044c4f460c6c45a127",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "normal-catch-skip",
+      "category": "propagation",
+      "expected": {
+        "kind": "return_i64",
+        "value": "42"
+      },
+      "profile": "core",
+      "path": "normal-catch-skip.atto",
+      "git_blob_sha1": "0f8f04fa0e8948992441050678d2f191a976f595",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "outer-catch",
+      "category": "propagation",
+      "expected": {
+        "kind": "return_i64",
+        "value": "42"
+      },
+      "profile": "core",
+      "path": "outer-catch.atto",
+      "git_blob_sha1": "fb606c555a00af53e9c2ccedf0fa98c607e98e75",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "nested-catch",
+      "category": "propagation",
+      "expected": {
+        "kind": "return_i64",
+        "value": "42"
+      },
+      "profile": "core",
+      "path": "nested-catch.atto",
+      "git_blob_sha1": "7e6562009a117278238b243854d3f5221b7d2828",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "rethrow-trap",
+      "category": "propagation",
+      "expected": {
+        "kind": "return_i64",
+        "value": "42"
+      },
+      "profile": "core",
+      "path": "rethrow-trap.atto",
+      "git_blob_sha1": "cb6b86f7863c5d36c1e6ecf9052e56143b4c9342",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "catch-before-trap",
+      "category": "propagation",
+      "expected": {
+        "kind": "return_i64",
+        "value": "42"
+      },
+      "profile": "core",
+      "path": "catch-before-trap.atto",
+      "git_blob_sha1": "89ece27752ad3107896adea92859c9b8922956ac",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "raise-bypass-catch",
+      "category": "propagation",
+      "expected": {
+        "kind": "escaping_guest_effect",
+        "effect": "raise",
+        "message": "raised"
+      },
+      "profile": "core",
+      "path": "raise-bypass-catch.atto",
+      "git_blob_sha1": "22f9451a5d949e79692eb4a527342c3618ea14af",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "panic-bypass-catch",
+      "category": "propagation",
+      "expected": {
+        "kind": "escaping_guest_effect",
+        "effect": "panic",
+        "message": "fatal"
+      },
+      "profile": "core",
+      "path": "panic-bypass-catch.atto",
+      "git_blob_sha1": "9e3f98b5868c9ef8ef3b2e46234b359ebeefb3af",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "raise-bypass-trap",
+      "category": "propagation",
+      "expected": {
+        "kind": "escaping_guest_effect",
+        "effect": "raise",
+        "message": "raised"
+      },
+      "profile": "core",
+      "path": "raise-bypass-trap.atto",
+      "git_blob_sha1": "e34796970e8c3bd9f25b02c4332ae0a603eaab2c",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "panic-bypass-trap",
+      "category": "propagation",
+      "expected": {
+        "kind": "escaping_guest_effect",
+        "effect": "panic",
+        "message": "fatal"
+      },
+      "profile": "core",
+      "path": "panic-bypass-trap.atto",
+      "git_blob_sha1": "22e2c9129fdd9dbca3054449f6c7ee134eb56f72",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "numeric-catch",
+      "category": "propagation",
+      "expected": {
+        "kind": "return_i64",
+        "value": "42"
+      },
+      "profile": "core",
+      "path": "numeric-catch.atto",
+      "git_blob_sha1": "889894473de2fac868ce1c33e866f8dfc0934dd3",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "numeric-overflow-catch",
+      "category": "propagation",
+      "expected": {
+        "kind": "return_i64",
+        "value": "42"
+      },
+      "profile": "core",
+      "path": "numeric-overflow-catch.atto",
+      "git_blob_sha1": "08351b28774065c65504880990c9276a411530c2",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "option-trap",
+      "category": "propagation",
+      "expected": {
+        "kind": "return_i64",
+        "value": "42"
+      },
+      "profile": "core",
+      "path": "option-trap.atto",
+      "git_blob_sha1": "26a6e2837ffe920771c2d3a3493fa82414ddc833",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "catch-fallthrough",
+      "category": "propagation",
+      "expected": {
+        "kind": "return_i64",
+        "value": "42"
+      },
+      "profile": "full-control",
+      "path": "catch-fallthrough.atto",
+      "git_blob_sha1": "5630e5ba1ff42f614b8099c9833cc827a21bead7",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "throw-integer",
+      "category": "admission",
+      "expected": {
+        "kind": "compile_rejection",
+        "diagnostic": "throw_requires_throwable"
+      },
+      "profile": "core",
+      "path": "throw-integer.atto",
+      "git_blob_sha1": "d704ba4af2c29987b5c953f12e70bddbbf0d3191",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "throw-string",
+      "category": "admission",
+      "expected": {
+        "kind": "compile_rejection",
+        "diagnostic": "throw_requires_throwable"
+      },
+      "profile": "core",
+      "path": "throw-string.atto",
+      "git_blob_sha1": "86af9be4ced06b4e36706ba9c3ce65b8b7fec6c3",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "throw-null",
+      "category": "admission",
+      "expected": {
+        "kind": "compile_rejection",
+        "diagnostic": "throw_requires_throwable"
+      },
+      "profile": "core",
+      "path": "throw-null.atto",
+      "git_blob_sha1": "ec52c7a75622093a9d8af79dbb3f1178e674e7e1",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "raise-integer",
+      "category": "admission",
+      "expected": {
+        "kind": "compile_rejection",
+        "diagnostic": "raise_requires_raisable"
+      },
+      "profile": "core",
+      "path": "raise-integer.atto",
+      "git_blob_sha1": "e2ac35dad197b7e327552eba8f1dfa5dc039e200",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "raise-string",
+      "category": "admission",
+      "expected": {
+        "kind": "compile_rejection",
+        "diagnostic": "raise_requires_raisable"
+      },
+      "profile": "core",
+      "path": "raise-string.atto",
+      "git_blob_sha1": "3f2f936f09b2e31836aa69073d2ea46922334e42",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "raise-null",
+      "category": "admission",
+      "expected": {
+        "kind": "compile_rejection",
+        "diagnostic": "raise_requires_raisable"
+      },
+      "profile": "core",
+      "path": "raise-null.atto",
+      "git_blob_sha1": "5f34ba1af0fbc4e68bd8584ef4f7f9e0210a38c5",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "panic-integer",
+      "category": "admission",
+      "expected": {
+        "kind": "compile_rejection",
+        "diagnostic": "panic_requires_panicable"
+      },
+      "profile": "core",
+      "path": "panic-integer.atto",
+      "git_blob_sha1": "abb8bbaa3c97f5906a1affc18992b60cb790a8b9",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "panic-string",
+      "category": "admission",
+      "expected": {
+        "kind": "compile_rejection",
+        "diagnostic": "panic_requires_panicable"
+      },
+      "profile": "core",
+      "path": "panic-string.atto",
+      "git_blob_sha1": "b09a6d4f452a82dc7d71bf948624b011243cd7af",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "panic-null",
+      "category": "admission",
+      "expected": {
+        "kind": "compile_rejection",
+        "diagnostic": "panic_requires_panicable"
+      },
+      "profile": "core",
+      "path": "panic-null.atto",
+      "git_blob_sha1": "1572aca26127849b63eb7450f445a5d0ebc8a51d",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "catch-invalid-integer",
+      "category": "admission",
+      "expected": {
+        "kind": "compile_rejection",
+        "diagnostic": "throw_requires_throwable"
+      },
+      "profile": "core",
+      "path": "catch-invalid-integer.atto",
+      "git_blob_sha1": "4352cdb7f2ecfa2f10b622069002186dbe978f70",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "unmarked-nominal",
+      "category": "admission",
+      "expected": {
+        "kind": "compile_rejection",
+        "diagnostic": "throw_requires_throwable"
+      },
+      "profile": "nominal",
+      "path": "unmarked-nominal.atto",
+      "git_blob_sha1": "3c71d7746e1d842f99da282fa96b05462850c7e1",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "inherited-throwable",
+      "category": "admission",
+      "expected": {
+        "kind": "return_i64",
+        "value": "42"
+      },
+      "profile": "nominal",
+      "path": "inherited-throwable.atto",
+      "git_blob_sha1": "859eaf7fb0a9cc4e70fee465ef1e9749f11688b8",
+      "backend_statuses": {
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    }
+  ],
+  "evidence_policy": {
+    "positive": "Actual compiled guest return, with exact source and compiler tree, emitted artifact digest and executed command.",
+    "compile_rejection": "Required semantic diagnostic and no artifact; generic syntax or unsupported feature does not count.",
+    "escaping_guest_effect": "Observe the original effect at the declared root/task boundary, no successful return; do not confuse a host crash with guest failure.",
+    "allocation": "Separate native AOT and guest allocation measurements; JS ESM execution does not certify either."
+  }
+}

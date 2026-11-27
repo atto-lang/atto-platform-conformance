@@ -1,0 +1,3 @@
+define private class Foo as
+end
+export pub[pkg] class Foo;
