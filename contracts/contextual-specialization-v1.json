@@ -192,7 +192,8 @@
     "General first-class factory values, generics, multi-member schemas and allocator/resource capabilities need additional fixtures; scalar subset is not full feature parity.",
     "For hosted Wasm and ESM, expectedGuestExit is the exported main integer return oracle, not the host process exit. Direct CIL host uses process exit. Immutable scalar alias copies may share immutable compiler slots only; this does not certify resource capability copying or general first-class factories.",
     "Compiler-owned embedded fixtures have separate exact-head receipts; no shared fixture cell is promoted without byte-pinned shared corpus execution.",
-    "Legacy bare assignment in snapshot-reuse and multi-snapshot is historical compatibility, not canonical reassignment syntax. Add separate explicit set reassignment fixtures after shared grammar reconciliation rather than expanding legacy bare assignment to new targets."
+    "Legacy bare assignment in snapshot-reuse and multi-snapshot is historical compatibility, not canonical reassignment syntax. Add separate explicit set reassignment fixtures after shared grammar reconciliation rather than expanding legacy bare assignment to new targets.",
+    "Named stored scalar context extension: evaluate the named RHS expressions in source order, then map to declaration slots; direct named calls remain outside the bounded profile until evaluation order can be preserved without hoisting across ordinary expressions."
   ],
   "candidateImplementations": [
     {
@@ -316,6 +317,21 @@
           "multi-snapshot"
         ],
         "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46062677054/job/140720454368"
+      },
+      {
+        "backend": "net-direct-cil",
+        "head": "e7a0f77b1717058a6efa04cca5eb90e69325c1a2",
+        "tree": "045c8c88d18b8b495e6dbd31648bfaaea7dbd32f",
+        "guestPass": 4,
+        "nativeAotGuestPass": 2,
+        "rejectedUnclassified": 13,
+        "outsideProfile": 3,
+        "outsideCases": [
+          "legacy-body",
+          "snapshot-reuse",
+          "multi-snapshot"
+        ],
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46062677054/job/140720454768"
       }
     ]
   }
