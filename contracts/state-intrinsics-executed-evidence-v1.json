@@ -433,5 +433,28 @@
       }
     ],
     "scope": "Oracle accepts real host traces, rejects wrong container/mode/order, invalid releases, conflicting claims, missing/duplicate terminal events, potential truncation and live completion. Guest harnesses wired with independently specified expected traces, not executed. No current compiler binary downloaded or built; no promotion."
+  },
+  "forgeHostStateRegionLedger": {
+    "status": "LOCAL_HOST_ONLY_NOT_CI",
+    "repo": "atto-lang/atto-source.forge",
+    "pr": 334,
+    "head": "863cb050054c782978b81f51a11991d429da49f1",
+    "tree": "c92e3066e8ca1a4b9eb94ee598db6c8dda2f9d15",
+    "base": "a453c6d9d4340dc12a87de119cc80061a4df3fe4",
+    "runtimeBlob": "9561d8c366d0c5b1214e5a7a0d8576cb45653dcf",
+    "provenanceBlob": "b9a86b9357bde047fde7e487f65d6682306c0ae7",
+    "testBlob": "dd4d8fac1c6c50832d79b0513e7f7ab3425edfc0",
+    "toolchains": [
+      {
+        "name": "GCC 14.2.0",
+        "passed": 4
+      },
+      {
+        "name": "Clang 17.0.0",
+        "passed": 4
+      }
+    ],
+    "flags": "C++20 O1 ASan/UBSan -Wall -Wextra -Werror -pedantic",
+    "scope": "Serialized trusted host metadata ledger; read/write exclusion, exact provenance and nonreentry, retirement with physical release accounting, owned place lifetime, monotonic loan IDs. No arena read/write integration, actual scheduler integration, full CMake build or guest lowering executed. No promotion."
   }
 }
