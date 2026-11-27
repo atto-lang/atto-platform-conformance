@@ -802,5 +802,57 @@
       "status": "FAILED_NO_JOBS"
     },
     "scope": "Exact host module forward-port, no compiler lowering or test execution. Rust SDK absent. Independent review pending."
+  },
+  "publicCarrierStateQualification20261127": {
+    "carrier": "streempilot-test/contract-conformance-tests",
+    "pr": 75,
+    "checkout": "Anonymous public Git fetch, exact commit and root tree verified; no source export or credentials",
+    "rust": {
+      "repo": "atto-lang/atto-source.rs",
+      "pr": 728,
+      "head": "7bcb557a8441fe55f04e5d7327da6ad583e9d853",
+      "tree": "33d22d47db92573b127aba178c316f23d050c935",
+      "run": 45950551836,
+      "job": 140345138654,
+      "focusedTests": {
+        "passed": 15,
+        "failed": 0
+      },
+      "guestMarkers": [
+        "STATE_SNAPSHOT_GUEST_OK",
+        "STATE_WRITE_EXPRESSION_OK",
+        "STATE_RETURN_COMPOSITION_OK"
+      ],
+      "wholeRegression": "FAIL: misplaced native platform_core_v1 test imports native crate and serde_json from dependency-free browser crate",
+      "nextHead": "cb82cb69d35a543fb6583e39cd6c99ecf23297af",
+      "nextTree": "007daf36b65600660c23ef1444559b155be00e46",
+      "nextStatus": "Moved unchanged native test except include path to native/tests; exact new tree qualification pending"
+    },
+    "net": {
+      "repo": "atto-lang/atto-source.net",
+      "pr": 380,
+      "head": "4f82bf614789afdf76610c8b4bc378573ff37297",
+      "tree": "6b18c0414f0050c481db4c912ed0190f09edcf59",
+      "run": 45950608149,
+      "job": 140345322458,
+      "managedSuite": "PASS",
+      "nativeAotCounterGuest": "PASS",
+      "stdout": "1|3|6|10",
+      "scope": "Existing source-checked generated Counter guest executed as static NativeAOT; new schema snapshot regression executed in managed suite, not specifically AOT mutation test; no general guest lowering claim"
+    },
+    "llvm": {
+      "repo": "atto-lang/atto-source.llvm",
+      "pr": 1057,
+      "head": "08aceb74a97db11ec163fbd958cc474ab8f35bfa",
+      "tree": "0c18170858a7c48171b61ace67623f03eabdf724",
+      "run": 45950641187,
+      "job": 140345429059,
+      "focused": "2 passed; final case of call-shaped operand test rejected earlier with E_UNSUPPORTED instead of expected E_UNSUPPORTED_CRITICAL",
+      "wholeRegression": "FAIL: existing pinned frontend checker mismatch",
+      "nextHead": "08523ae63917c85ba36f1df596c48eec8ae1552d",
+      "nextTree": "97b8f71d2e8b702859e5d4428c406fe3c509167a",
+      "nextStatus": "Exact diagnostic oracle corrected; retest pending; no integrity pin relaxation"
+    },
+    "promotion": "No merge authorization, broad parity, general transitive ownership, or fair scheduling claim. Exact revisions and independent review required."
   }
 }
