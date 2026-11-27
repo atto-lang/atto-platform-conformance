@@ -90,6 +90,13 @@
       "tree": "cf54880ef8615a6256ce253a3d3bfacc583cdbeb",
       "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46067060765/job/140734826099",
       "scope": "embedded sibling named guest tests, not shared corpus bytes"
+    },
+    {
+      "backend": "net-direct-cil",
+      "head": "28b08031cbb3cf4038830f520013e15e5407ea2a",
+      "tree": "4f5b0937416ffb3225dc1a1ab77c1dcc143abcc8",
+      "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46067060765/job/140734825828",
+      "scope": "four expression named cases actual CoreCLR and NativeAOT guests, not byte-pinned shared corpus"
     }
   ]
 }
