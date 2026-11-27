@@ -1,0 +1,863 @@
+{
+  "schema": "atto.state-intrinsics-executed-evidence.v1",
+  "scope": "restricted profiles only, no full cross-backend certification",
+  "records": [
+    {
+      "repo": "atto-lang/atto-source.rs",
+      "pr": 599,
+      "head": "4b389ecca77e8b87be605a01d7336eacf0d7a33e",
+      "tree": "c05e4b8368453023a67a6bf673900506b21c3ca1",
+      "runs": [
+        45732185328
+      ],
+      "executed": "Scalar snapshot and write expression guest traces; 626/627 conformance",
+      "blocker": "removed-operator/^"
+    },
+    {
+      "repo": "atto-lang/atto-source.java",
+      "pr": 1891,
+      "head": "665cd65f65557b3e1a0859d47d4f4fd08b34e759",
+      "tree": "d3c2136eae93eae1746ac33d3343f88d9befddc8",
+      "runs": [
+        45732717872,
+        45732890024
+      ],
+      "executed": "7/7 restricted protected scalar MIR; main control reproduced three baseline failures",
+      "blocker": "general guest syntax, Native Image, broader suite"
+    },
+    {
+      "repo": "atto-lang/atto-source.net",
+      "pr": 278,
+      "head": "96dc06d5f6b17c4b63161c9ecd2b56fb197c300b",
+      "tree": "6177484ef9707a1cb1e7180b02b6932c53e0c354",
+      "runs": [
+        45733028543,
+        45733649101
+      ],
+      "executed": "Four aliases compile to identical generated actor and root source; alias-generated NativeAOT guest stdout 1|3|6|10",
+      "blocker": "full suite checked integer division; general state containers"
+    },
+    {
+      "repo": "atto-lang/atto-source.llvm",
+      "pr": 920,
+      "head": "de5b83f727a4f9cb295e04f2aa553a6f9a45b72b",
+      "tree": "771f30dbf1951819616fb894fb9bd59c3c70a894",
+      "runs": [
+        45733564525
+      ],
+      "executed": "Five native scalar actor guest variants and six no-artifact negative variants",
+      "blocker": "general state containers, tuples, concurrent leases"
+    },
+    {
+      "repo": "atto-lang/atto-source.wasm",
+      "pr": 307,
+      "head": "b4c04897eea659c50e69e1680f11aff328e49086",
+      "tree": "3ee0c6788c4e61519e5204c6621898ac8390aea6",
+      "compilerHead": "4b389ecca77e8b87be605a01d7336eacf0d7a33e",
+      "compilerTree": "c05e4b8368453023a67a6bf673900506b21c3ca1",
+      "compilerSha256": "bedc2413529dc635eb0dc2ef761cea4820defaaa211f2479228ce4dacdf91656",
+      "runs": [
+        45734149992
+      ],
+      "executed": "3 exact positive guests, 7 exact negative fixtures, fatal overflow unwind; browser-compiled actual Wasm",
+      "blocker": "opt-in scalar runner only; general tenant actor profile and recoverable trap not certified"
+    }
+  ],
+  "carrier": "https://github.com/canonical-cloud-test/monorepo-submodules-e2e/actions/runs/",
+  "remaining": [
+    "atto-source.forge",
+    "atto-source.cranelift",
+    "atto-source.js",
+    "atto-source.atto",
+    "atto-source.hdl",
+    "atto-source.realtime"
+  ],
+  "promotion": "Recheck current heads, full exact applicable corpus, independent review, integration tree. Do not promote based on this historical record alone.",
+  "additionalEvidence": [
+    {
+      "repo": "atto-lang/atto-source.wasm",
+      "pr": 308,
+      "head": "cba1352e5a922a6bb14540a7af0cf6fe3aded4b0",
+      "tree": "24014dad24924b471193641183dc93f2d6fe283e",
+      "runs": [
+        45734578625
+      ],
+      "executed": "6/6 groups including actual browser compiler guests and 10000-operation differential lease model",
+      "scope": "expected constant-time per-container admission/release/quiescence; no queued multi-worker fairness"
+    },
+    {
+      "repo": "atto-lang/atto-source.forge",
+      "pr": 266,
+      "head": "17e6cabd99e0d87368ae7440f9391a90ed8d39f6",
+      "tree": "725fd6e4c1151bc001db9190d45dbeeb8f1f7f6e",
+      "runs": [
+        45734706766
+      ],
+      "job": 139625011206,
+      "executed": "nine actual CLI denial modes plus scalar controls",
+      "scope": "REJECT_ONLY; no feature parity"
+    },
+    {
+      "repo": "atto-lang/atto-source.cranelift",
+      "pr": 119,
+      "head": "3277b374e5675e5e7edd4cf197a461ce12e9604d",
+      "tree": "392a861a0bfdd5488c76fb140802197fa478ebc5",
+      "runs": [
+        45734706766
+      ],
+      "job": 139625010729,
+      "executed": "three shared state fixtures rejected in run/IR modes, scalar execution control passed",
+      "scope": "REJECT_ONLY; no feature parity"
+    },
+    {
+      "repo": "atto-lang/atto-source.js",
+      "pr": 166,
+      "head": "c86253de781e759cbfecc88fd896aab3aa66074a",
+      "tree": "a31bb68414b0046f35483e079d81c325e7a22fbb",
+      "runs": [
+        45736127049
+      ],
+      "executed": "25/25 selected regression tests; three shared state sources rejected across five compiler APIs; actual scalar ESM controls",
+      "scope": "REJECT_ONLY; no state feature parity"
+    },
+    {
+      "repo": "atto-lang/atto-source.rs",
+      "pr": 612,
+      "head": "41be8f12c142e6fedb6945e32aaf222d7d116897",
+      "tree": "0035e3969291ea52476e69a57d7a71e815927c91",
+      "runs": [
+        45736035107
+      ],
+      "executed": "7/7 typed IR/checker tests, 5/5 fixture groups, 4/4 host runtime tests and both real guests; full 626/627 conformance",
+      "scope": "historical head; newer combined runtime head requires retest",
+      "blocker": "removed-operator/^"
+    },
+    {
+      "repo": "atto-lang/atto-source.hdl",
+      "pr": 82,
+      "head": "5511b4805bf4b6eb95b46e6ca97508a2ee9677b0",
+      "tree": "10550676688cc9e9b3ab8c3063ba44aa569b0a41",
+      "runs": [
+        45737643203
+      ],
+      "executed": "20/20 selected RTL compiler tests; exact state fixtures rejected, combinational control compiled",
+      "scope": "REJECT_ONLY; no synthesized state feature"
+    },
+    {
+      "repo": "atto-lang/atto-source.rs",
+      "pr": 612,
+      "head": "c92d4b094a182a43d939ff4458359d7870cb1a7b",
+      "tree": "6e94edd5709e18c39ae9f292fd232e206ed54357",
+      "runs": [
+        45738469837
+      ],
+      "executed": "7/7 typed IR/checker tests, 5/5 fixture groups, 11/11 host lease tests, three actual guest traces including STATE_RETURN_COMPOSITION_OK; 627/628 conformance and 568 native-vs-Wasm comparisons",
+      "scope": "Historical exact head; restricted scalar state only; newer candidate requires independent retest",
+      "blocker": "infix caret discrepancy; Java differential skipped"
+    }
+  ],
+  "qualification": [
+    {
+      "repo": "atto-lang/atto-source.atto",
+      "head": "2a839a0bff856b2f6c64116d354fca4a4c72fbcf",
+      "tree": "e291ea41becf367162347a16c6556e2677a3e6d2",
+      "scope": "STAGE0_SCALAR_GUEST_ONLY",
+      "status": "UNSUPPORTED",
+      "stateGuest": "NOT_EXECUTED",
+      "basis": "README.md; contracts/hybrid-actor-memory-bootstrap-v1.json; no general compiler CLI"
+    },
+    {
+      "repo": "atto-lang/atto-source.realtime",
+      "head": "8161daa8654a55abbf6260470272814012ef5911",
+      "tree": "bd06ea4c2be68295ce6439550950ef846d37295d",
+      "scope": "BOOTSTRAP_ONLY",
+      "status": "UNSUPPORTED",
+      "stateGuest": "NOT_EXECUTED",
+      "basis": "README.md; atto-capabilities.json; compiler NOT_IMPLEMENTED"
+    }
+  ],
+  "localHostEvidence": {
+    "status": "LOCAL_HOST_ONLY_NOT_CI",
+    "node": "22.16.0",
+    "baselineRustBlob": "d5816802b1b659aa5e4b2646ff461eb03192a215",
+    "baselineWasmBlob": "c08581c988891848b214b4365c5c5191cdbb2ec9",
+    "patchedRuntimeBlob": "23ce944e66a50fd63765ec5d55b712f993774d15",
+    "candidates": [
+      {
+        "repo": "atto-lang/atto-source.rs",
+        "pr": 715,
+        "head": "1c52b71e91f942d67965b23b5861d4a130b3313e",
+        "tree": "6610474d5b53d7b173970349fc024c73fd594a99"
+      },
+      {
+        "repo": "atto-lang/atto-source.wasm",
+        "pr": 355,
+        "head": "e08ca48748396928ad43c94e597844577bf65c8c",
+        "tree": "8c46bc0e25d4766f069e0497efb9883897a9fd01"
+      }
+    ],
+    "baselineLifecycle": {
+      "passed": 1,
+      "failed": 2
+    },
+    "patchedHost": {
+      "passed": 4,
+      "failed": 0,
+      "cases": [
+        "idempotent retire/complete",
+        "abort cannot become complete",
+        "live lease rejects complete without terminalizing",
+        "signed-i32 pointer boundary and unchanged ledger"
+      ]
+    },
+    "limits": "Identical tested host runtime blob only; local authored regression commands, not full repository CI, compiled guest, cross-worker, or actor lifecycle evidence. Both candidates remain drafts."
+  },
+  "localTerminalMatrixEvidence": {
+    "status": "LOCAL_HOST_ONLY_NOT_CI",
+    "node": "22.16.0",
+    "runtimeBlob": "23ce944e66a50fd63765ec5d55b712f993774d15",
+    "passed": 6,
+    "failed": 0,
+    "skipped": 0,
+    "additionalCoverage": [
+      "read/write lease and complete/abort matrix across two containers",
+      "throwing terminal observer and one-shot notification"
+    ],
+    "candidates": [
+      {
+        "repo": "atto-lang/atto-source.rs",
+        "pr": 715,
+        "head": "52e3fa74898c1a1d8fe440abfbc605b4d96c3c7a",
+        "tree": "69c1646d184614a572aa3590ca7eede663a61f4e",
+        "testBlob": "ed8557a575889a9956ea074aabe4b2f0a3bb85fb"
+      },
+      {
+        "repo": "atto-lang/atto-source.wasm",
+        "pr": 355,
+        "head": "718c9144c66b3bea530a6e38c5fab33283dbe828",
+        "tree": "cfe6c46a31e1670cd1dd69609c3663518c5ae0f6",
+        "testBlob": "f7739b65f43736916032066d64b04dc552dab1cf"
+      }
+    ],
+    "limits": "Locally executed shared host implementation; import path adjusted for WASM. No new compiler, browser, or actor guest execution; no promotion."
+  },
+  "integrationReconciliations": [
+    {
+      "repo": "atto-lang/atto-source.net",
+      "pr": 278,
+      "head": "de26d3f946db5864b890c7f769bac86c68c1d1a9",
+      "base": "e3cd9df855d2a6525f8dc98bad79a71aa212c9c2",
+      "tree": "dc416defded27e3e2c59204b06567c96fd47625e",
+      "status": "MERGEABLE_DRAFT_CI_NOT_VERIFIED",
+      "changedPaths": 3
+    },
+    {
+      "repo": "atto-lang/atto-source.js",
+      "pr": 166,
+      "head": "dd66eb3336a524a7cd5b9a27d498bf7d95ecc5cc",
+      "base": "9925750caa21faa9d3bf91b30a1918f95ba639aa",
+      "tree": "80fd97bf29d4c84338217eb323e2b79f85f6308b",
+      "status": "MERGEABLE_DRAFT_CI_NOT_VERIFIED",
+      "changedPaths": 6
+    }
+  ],
+  "nativeHostTerminalEvidence": {
+    "status": "LOCAL_HOST_ONLY_NOT_CI",
+    "records": [
+      {
+        "repo": "atto-lang/atto-source.java",
+        "pr": 2005,
+        "head": "77980cf1d984521a13e77233e3d031cc52fa8b6c",
+        "tree": "e128cde467492f0d58033f7adad32fe16e7965cd",
+        "runtimeBlobs": [
+          "918bfaf18bf32ea711c3740a870bb01079771172",
+          "0cd05a277676a9d08c3ea348ca9cad65585755be"
+        ],
+        "testBlob": "483d37a42bbbcfa53f66ffb5a78cbd71a1e11cb6",
+        "toolchain": "JDK 21.0.12.1",
+        "groupsPassed": 3,
+        "concurrentRaces": 128,
+        "scope": "close/drain, checked overflow releases writer, concurrent close/read/write; standalone Java oracle only, JUnit wrapper not executed"
+      },
+      {
+        "repo": "atto-lang/atto-source.llvm",
+        "pr": 1044,
+        "head": "b169c804d89b47beb81c9d6f534038d1801f7c32",
+        "tree": "b31b35e2d1f198d03f899e2ea055a802e771874b",
+        "runtimeBlob": "f262a98340f1d7172a692774672e4614f2fef20d",
+        "testBlob": "91377c919c4251bdc51af4575d6bc677fa46f183",
+        "toolchains": [
+          "GCC 14.2 C++17 O1 ASan/UBSan",
+          "Clang C++17 O2 ASan/UBSan"
+        ],
+        "racesPerToolchain": 256,
+        "toolchainRunsPassed": 2,
+        "scope": "logical retirement versus request/release handoff; existing CMake test wired but full CMake suite not run; no physical guest-frame quiescence claim"
+      }
+    ],
+    "limits": "Exact source and regression blob identities verified; standalone host tests only. No new compiler, guest, AOT, or scheduler execution evidence; do not promote."
+  },
+  "netHostTerminalCandidate": {
+    "status": "NOT_EXECUTED",
+    "repo": "atto-lang/atto-source.net",
+    "pr": 368,
+    "head": "02c0b819a711d22abf3358bbf1d25143ce8dd2b6",
+    "tree": "4524e3eb408ffda2ab505912783c1fcd18a8c4b9",
+    "runtimeBlob": "c9520fef7983f5ea78fccc903c1ff742d85bce3c",
+    "testBlob": "7100e82f350cdab48fe9d5c3264653fad9efe966",
+    "scope": "Monotonic nested host loan permissions; terminal cancellation and stale release fences; existing verification suite entrypoint. No local .NET SDK, no executable test proof.",
+    "ci": {
+      "status": "INCOMPLETE_JOB_EVIDENCE",
+      "runs": [
+        45930697445,
+        45930697935,
+        45930697990
+      ],
+      "note": "Completed failures, job endpoint returned zero records. Not a compiler failure or success claim."
+    }
+  },
+  "wasmMainHostRecheck": {
+    "status": "LOCAL_HOST_ONLY_NOT_CI",
+    "pr": 355,
+    "merged": true,
+    "runtimeBlob": "23ce944e66a50fd63765ec5d55b712f993774d15",
+    "node": "22.16.0",
+    "passed": 6,
+    "failed": 0,
+    "skipped": 0,
+    "localTestBlobs": [
+      "5fe83a0781edb0f732171bdab59086362fba0d96",
+      "ed8557a575889a9956ea074aabe4b2f0a3bb85fb"
+    ],
+    "scope": "Local shared host lifecycle tests; runtime blob matches WASM main. No compiler/guest certification."
+  },
+  "rustIndependentHostForwardPort": {
+    "status": "LOCAL_HOST_ONLY_NOT_CI",
+    "repo": "atto-lang/atto-source.rs",
+    "pr": 720,
+    "head": "a2c82d57158731cf0d83553646f5c86e5e65d412",
+    "tree": "b2671f51fd097ce3377b7a9a75ccc8f2ac6fc437",
+    "base": "c96a4879176e0a98b7cb513b2921e2e7e1eb3ab5",
+    "runtimeBlob": "23ce944e66a50fd63765ec5d55b712f993774d15",
+    "testBlobs": [
+      "18338ea620dfad9dfb2ff76a75c00dc9a075777a",
+      "ed8557a575889a9956ea074aabe4b2f0a3bb85fb"
+    ],
+    "node": "22.16.0",
+    "passed": 17,
+    "failed": 0,
+    "skipped": 0,
+    "differentialOperations": 10000,
+    "changedPaths": 3,
+    "ci": {
+      "status": "NO_JOB_RECORDS",
+      "runs": [
+        45931797067,
+        45931797021
+      ]
+    },
+    "scope": "Exact local host source/test blobs; independent main-based forward-port; compiler stack remains outstanding."
+  },
+  "nativeHostTerminalMerged": [
+    {
+      "repo": "atto-lang/atto-source.java",
+      "pr": 2005,
+      "mergeCommit": "f8fe2a42690dae011139f824ba849659f7e89cf1",
+      "main": "f8fe2a42690dae011139f824ba849659f7e89cf1",
+      "testBlob": "483d37a42bbbcfa53f66ffb5a78cbd71a1e11cb6"
+    },
+    {
+      "repo": "atto-lang/atto-source.llvm",
+      "pr": 1044,
+      "mergeCommit": "f0701efbbd8aca2491b5c7bf63c26902cd244079",
+      "main": "1a261e20f9566fc8c172acd2e07a6f028881b27f",
+      "testBlob": "91377c919c4251bdc51af4575d6bc677fa46f183"
+    }
+  ],
+  "syntheticWasmStateImportAbiEvidence": {
+    "status": "LOCAL_SYNTHETIC_WASM_ABI_ONLY_NOT_CI",
+    "node": "22.16.0",
+    "runtimeBlob": "23ce944e66a50fd63765ec5d55b712f993774d15",
+    "records": [
+      {
+        "repo": "atto-lang/atto-source.rs",
+        "pr": 720,
+        "head": "eaeb26d2185f59ff736631cfaecf85cb1b769c29",
+        "tree": "d54b2ec7d4472cef2227879bba8dbd61abc227d2",
+        "testBlob": "a1c5f17cfa456fc6b93e2563e3077f2ea632ad5f",
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "repo": "atto-lang/atto-source.wasm",
+        "pr": 358,
+        "head": "cb8c9d333774413b0aa7a7cbf4786ce62fbaeb6a",
+        "tree": "725b1e58b297dd1e756e71f5c91a8a4bba4c66f7",
+        "testBlob": "865f43af51a542e3522bd449b0e05541b110c966",
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      }
+    ],
+    "scope": "Actual Node WebAssembly engine execution of fixed synthetic modules with real state import signatures; balanced i64 ticket transfer, physical trap unwind, incomplete return rejection, incompatible admission. Exact runtime and test Git blobs verified. Not Atto compiler output, trusted compiler admission, browser worker, or full guest parity. No promotion."
+  },
+  "stateTraceOracleEvidence": {
+    "status": "LOCAL_HOST_AND_SYNTHETIC_WASM_ONLY_NOT_CI",
+    "node": "22.16.0",
+    "runtimeBlob": "23ce944e66a50fd63765ec5d55b712f993774d15",
+    "sharedOracleBlob": "1df5606662aae9e80c2bff67702f9cdeaab9735e",
+    "records": [
+      {
+        "repo": "atto-lang/atto-source.rs",
+        "pr": 715,
+        "head": "d49237e6bba3f291504cb0cc770603c739d4f256",
+        "tree": "e86b1a9b77ca4b12ad2387d0b393fef4e83dd6b7",
+        "oracleTestBlob": "cea16edcbb7b400284ace67f48b14efc3f2c3277",
+        "guestHarnessBlobs": [
+          "4dae7c561cb26fb71859de82f84511677de1a4ed",
+          "b0d4157b613eabe5dffb3c86ff79dc6b64f95eb6"
+        ],
+        "oracleTestsPassed": 4,
+        "syntheticAbiRetestsPassed": 4
+      },
+      {
+        "repo": "atto-lang/atto-source.wasm",
+        "pr": 358,
+        "head": "1a76ea4efb865ba3785df04e454a0418bd17ca36",
+        "tree": "28471b6c192866b4ea06f06a9a4fde0d841da88a",
+        "oracleTestBlob": "5629c9d1011fa494fb5f528991d1d9181eec863f",
+        "guestHarnessBlob": "b5b5b6e32164414aee390617369a5d729439fd1d",
+        "oracleTestsPassed": 4,
+        "syntheticAbiRetestsPassed": 4
+      }
+    ],
+    "scope": "Oracle accepts real host traces, rejects wrong container/mode/order, invalid releases, conflicting claims, missing/duplicate terminal events, potential truncation and live completion. Guest harnesses wired with independently specified expected traces, not executed. No current compiler binary downloaded or built; no promotion."
+  },
+  "forgeHostStateRegionLedger": {
+    "status": "LOCAL_HOST_ONLY_NOT_CI",
+    "repo": "atto-lang/atto-source.forge",
+    "pr": 334,
+    "head": "863cb050054c782978b81f51a11991d429da49f1",
+    "tree": "c92e3066e8ca1a4b9eb94ee598db6c8dda2f9d15",
+    "base": "a453c6d9d4340dc12a87de119cc80061a4df3fe4",
+    "runtimeBlob": "9561d8c366d0c5b1214e5a7a0d8576cb45653dcf",
+    "provenanceBlob": "b9a86b9357bde047fde7e487f65d6682306c0ae7",
+    "testBlob": "dd4d8fac1c6c50832d79b0513e7f7ab3425edfc0",
+    "toolchains": [
+      {
+        "name": "GCC 14.2.0",
+        "passed": 4
+      },
+      {
+        "name": "Clang 17.0.0",
+        "passed": 4
+      }
+    ],
+    "flags": "C++20 O1 ASan/UBSan -Wall -Wextra -Werror -pedantic",
+    "scope": "Serialized trusted host metadata ledger; read/write exclusion, exact provenance and nonreentry, retirement with physical release accounting, owned place lifetime, monotonic loan IDs. No arena read/write integration, actual scheduler integration, full CMake build or guest lowering executed. No promotion."
+  },
+  "forgeProtectedScalarStorage": {
+    "status": "LOCAL_HOST_ONLY_NOT_CI",
+    "repo": "atto-lang/atto-source.forge",
+    "pr": 334,
+    "head": "37ea6e6703e4044531fe18940ae98e4a24592005",
+    "tree": "be461868f5913d68fcfef78b0eadcbd1d43f7ed2",
+    "ledgerBlob": "9561d8c366d0c5b1214e5a7a0d8576cb45653dcf",
+    "provenanceBlob": "b9a86b9357bde047fde7e487f65d6682306c0ae7",
+    "scalarBlob": "9affb757252da8aa14a81aefd1abf8df9f457b94",
+    "testBlob": "ed3bee06b1d84ea31b08cfa364045ba29404907f",
+    "toolchains": [
+      {
+        "name": "GCC 14.2.0",
+        "passed": 3
+      },
+      {
+        "name": "Clang 17.0.0",
+        "passed": 3
+      }
+    ],
+    "flags": "C++20 O1 ASan/UBSan -Wall -Wextra -Werror -pedantic",
+    "scope": "Actual isolated scalar storage with loan-gated access, checked boundaries, retirement and drainage. Caller serializes and authenticates receipt identity. No existing actor arena or compiler integration. CTest registration added, full CMake build not run."
+  },
+  "craneliftHostStateRegionCandidate": {
+    "status": "NOT_EXECUTED",
+    "repo": "atto-lang/atto-source.cranelift",
+    "pr": 201,
+    "head": "7b4c48d2511b798d39829a3aa4458faeea60b485",
+    "tree": "b61e0045ab5bf8e1561c9513b19adb06f50470ae",
+    "base": "d24b1a52cf2eabf91b2905a95db7a5b3910c01de",
+    "moduleBlob": "1583619383fb5a93badc7119f85fb07ccefc3993",
+    "newUnitTestGroups": 7,
+    "scope": "Candidate live-loan ledger and protected i64 storage; retains existing JSON-safe ID ceiling 2^53-1. No local Rust compiler or actual runtime/guest execution; no parity promotion."
+  },
+  "forgeStage0SealedScalarNativeEvidence": {
+    "status": "LOCAL_COMPILED_RESTRICTED_STAGE0_NATIVE_GUEST_NOT_CI",
+    "repo": "atto-lang/atto-source.forge",
+    "pr": 335,
+    "head": "fda749ff6c899bf7181f3be0354a97b1e40aebf8",
+    "tree": "bd85b2fb98df3b307321543a07fa4d1e9448cc92",
+    "base": "0c893e3b369b122aeb45f8a4d99a7766c77a83d2",
+    "verifiedBlobs": {
+      "compiler/actor_source.cpp": "344c0cd5d63b988a13e20435d439bebc1e38eb74",
+      "compiler/actor_source.hpp": "0ce9f77711e389a73ed3f1bf448d9b04ccef4f7e",
+      "runtime/arena/ActorOwnedI64Heap.c": "1b82bd92a0c883f617292e79b1ca63dd10a48306",
+      "runtime/arena/ActorOwnedI64Heap.h": "3bff2f3f7779bbbb5a780c0541dd392835c710dd",
+      "runtime/actor_frames.hpp": "8825165f99794400da4d8ca7524db21ee6587c86",
+      "runtime/scalar_actor.hpp": "9b623c5f6be43aac6e860625f4b006551b47d615",
+      "runtime/scalar_actor.cpp": "351f164001771b44aff348884adc5a728810d971",
+      "verification/scalar_actor_stage0_emit.cpp": "1746bf24f396eb2c39a918efbc25fddba7d1b87f",
+      "verification/scalar_actor_stage0_guest.cpp": "19f698078c101bdd1b05d0748d59c0bd75117002",
+      "verification/scalar_actor_stage0_read_guest.cpp": "b68cfed232d2c326f0a51fe1451f3fb628517ad9"
+    },
+    "toolchains": [
+      {
+        "name": "GCC/G++ 14.2",
+        "flags": "C11/C++20 O2 warnings-as-errors",
+        "nativeGuestsPassed": 5,
+        "sourceDenialsPassed": 16
+      },
+      {
+        "name": "Clang/Clang++ 17",
+        "flags": "C11/C++20 O1 ASan/UBSan warnings-as-errors",
+        "nativeGuestsPassed": 5,
+        "sourceDenialsPassed": 16
+      }
+    ],
+    "fixtures": [
+      "legacy_add",
+      "legacy_sub",
+      "sealed_add",
+      "sealed_sub",
+      "sealed_read"
+    ],
+    "scope": "Exact manually reconstructed source blobs checked with git hash-object. Built emitter, emitted five actual source variants, compiled and linked generated C++ to real heap, frames and ScalarActor, executed each on both toolchains; checked 16 denials each. Local direct build commands equivalent to harness but did not execute checked-in Python harness or full repository CI. Restricted single-field stage-0 serial actor profile, no production CLI, general state-container, alias, tuple or concurrent-actor parity claim."
+  },
+  "forgeStage0AliasNativeEvidence": {
+    "status": "LOCAL_EXACT_BLOB_COMPILED_STAGE0_NATIVE_GUEST_NOT_CI",
+    "repo": "atto-lang/atto-source.forge",
+    "pr": 337,
+    "head": "1e147d15b91fd09b17286876de7755f31205fe48",
+    "tree": "051e202b76ac11d135e867924436dc0d2b7d376e",
+    "base": "fda749ff6c899bf7181f3be0354a97b1e40aebf8",
+    "verifiedBlobs": {
+      "compiler/actor_source.cpp": "a120b4df5fc0d9d14641ae935bad08448da40d80",
+      "compiler/actor_source.hpp": "0ce9f77711e389a73ed3f1bf448d9b04ccef4f7e",
+      "runtime/arena/ActorOwnedI64Heap.c": "1b82bd92a0c883f617292e79b1ca63dd10a48306",
+      "runtime/arena/ActorOwnedI64Heap.h": "3bff2f3f7779bbbb5a780c0541dd392835c710dd",
+      "runtime/actor_frames.hpp": "8825165f99794400da4d8ca7524db21ee6587c86",
+      "runtime/scalar_actor.hpp": "9b623c5f6be43aac6e860625f4b006551b47d615",
+      "runtime/scalar_actor.cpp": "351f164001771b44aff348884adc5a728810d971",
+      "verification/scalar_actor_stage0_emit.cpp": "1746bf24f396eb2c39a918efbc25fddba7d1b87f",
+      "verification/scalar_actor_stage0_guest.cpp": "19f698078c101bdd1b05d0748d59c0bd75117002",
+      "verification/scalar_actor_stage0_read_guest.cpp": "b68cfed232d2c326f0a51fe1451f3fb628517ad9",
+      "verification/scalar_actor_stage0_native.py": "72100acc5d26017ec80dc4fd410b3bc2d7ca2b3c"
+    },
+    "toolchains": [
+      {
+        "name": "GCC/G++ 14.2",
+        "command": "python verification/scalar_actor_stage0_native.py --cc gcc --cxx g++",
+        "exit": 0,
+        "nativeGuestsPassed": 5,
+        "aliasEmissionChecksPassed": 14,
+        "sourceDenialsPassed": 22
+      },
+      {
+        "name": "Clang/Clang++ 17",
+        "command": "python verification/scalar_actor_stage0_native.py --cc clang --cxx clang++ --sanitize",
+        "exit": 0,
+        "nativeGuestsPassed": 5,
+        "aliasEmissionChecksPassed": 14,
+        "sourceDenialsPassed": 22
+      }
+    ],
+    "receiptComment": 7210663864,
+    "scope": "Unmodified checked-in verification script and ten required source blobs manually reconstructed locally and verified with git hash-object; both full restricted harness runs succeeded. Actual source-emitted C++ linked to actor heap and logical frame stack; no production CLI, full repository CI, concurrent or general state-container support. Independent review pending."
+  },
+  "craneliftScopedScalarCandidate": {
+    "status": "NOT_EXECUTED",
+    "repo": "atto-lang/atto-source.cranelift",
+    "pr": 207,
+    "head": "014e0cc64f4e04d79f140832f3ad2d44913e1b39",
+    "tree": "fc40784d44cca48e80d0ee3f47d2eb2071871c77",
+    "moduleBlob": "3c312230470dcf290bdbaf55ad1fcd94fb0c2c07",
+    "newUnitTestGroups": 3,
+    "scope": "Trusted host scoped scalar callback with fixed detached i64 output and RAII release on normal/checked-error/Rust unwind paths. No guest compiler, scheduler, cancellation, panic-abort or general transitive borrow guarantee. Tests authored, no Rust toolchain.",
+    "ci": {
+      "run": 45946085677,
+      "job": 140331003428,
+      "status": "QUEUED_NO_STEPS_AT_SAMPLE"
+    }
+  },
+  "forgeSealedFieldAuthorityEvidence": {
+    "status": "LOCAL_EXACT_BLOB_COMPILED_STAGE0_NATIVE_GUEST_NOT_CI",
+    "repo": "atto-lang/atto-source.forge",
+    "pr": 339,
+    "head": "d27f44201a49f727b7b15d40704eb53979494a89",
+    "tree": "05063367f78c026b2e2ccb6497d3c357340afd31",
+    "base": "1e147d15b91fd09b17286876de7755f31205fe48",
+    "verifiedBlobs": {
+      "compiler/actor_source.cpp": "ec3569b59c59d8f81ddf71673650b46161031b38",
+      "compiler/actor_source.hpp": "0ce9f77711e389a73ed3f1bf448d9b04ccef4f7e",
+      "runtime/arena/ActorOwnedI64Heap.c": "3d988d0b87a991b9d617a32c9a75cc67b6756c18",
+      "runtime/arena/ActorOwnedI64Heap.h": "0aa882c3ab96b26a1847369dea0a3d2c3ae30c7d",
+      "runtime/actor_frames.hpp": "8825165f99794400da4d8ca7524db21ee6587c86",
+      "runtime/scalar_actor.hpp": "9b623c5f6be43aac6e860625f4b006551b47d615",
+      "runtime/scalar_actor.cpp": "351f164001771b44aff348884adc5a728810d971",
+      "verification/scalar_actor_stage0_emit.cpp": "1746bf24f396eb2c39a918efbc25fddba7d1b87f",
+      "verification/scalar_actor_stage0_guest.cpp": "19f698078c101bdd1b05d0748d59c0bd75117002",
+      "verification/scalar_actor_stage0_read_guest.cpp": "b68cfed232d2c326f0a51fe1451f3fb628517ad9",
+      "verification/scalar_actor_stage0_native.py": "431ed0040e8997144d8060996dc1dce83dfa8fe5"
+    },
+    "toolchains": [
+      {
+        "name": "GCC/G++ 14.2",
+        "exit": 0,
+        "nativeGuestsPassed": 5,
+        "aliasEmissionChecksPassed": 14,
+        "sourceDenialsPassed": 22,
+        "heapAuthorityControlsPassed": 9
+      },
+      {
+        "name": "Clang/Clang++ 17 ASan/UBSan",
+        "exit": 0,
+        "nativeGuestsPassed": 5,
+        "aliasEmissionChecksPassed": 14,
+        "sourceDenialsPassed": 22,
+        "heapAuthorityControlsPassed": 9
+      }
+    ],
+    "ci": {
+      "run": 45946321796,
+      "status": "FAILED_NO_JOB_RECORDS"
+    },
+    "scope": "Distinct protected field metadata and constructor initialization; raw field and generic slot bypasses denied, protected read/write loan and legacy-field control succeeds. Eight abort subprocess checks per toolchain; one positive control. Complete checked-in bounded native harness locally executed with exact modified blob hashes, inherited verified dependencies. Trusted native ABI, not hostile native process sandbox or full repo CI. No general concurrent or multi-field state guarantee; independent review pending."
+  },
+  "javaTargetOwnedLeaseEvidence": {
+    "status": "LOCAL_EXACT_RUNTIME_BLOBS_NOT_CI",
+    "repo": "atto-lang/atto-source.java",
+    "pr": 2021,
+    "head": "1c3e3f8032f2c613bf2dc3e947efcc6543677393",
+    "tree": "121a19d6b753725c804a6ede3aebfce28339026e",
+    "base": "36904769e8469c0c06ee99167cf16420f900f089",
+    "runtimeBlobs": {
+      "StateContainerAccessGate.java": "664d1d8bcd0b1a69d249238a452f964952dd82b1",
+      "ScalarStateContainer.java": "129440ab6c050a36fbffbe57460e19689086ed0f"
+    },
+    "testBlob": "96da1820310d17f1bf54ecdcd6a0d066f1ed2784",
+    "toolchain": "javac 21.0.12.1 -Xlint:all -Werror",
+    "assertionsPassed": 409,
+    "crossGateTrials": 128,
+    "scope": "Exact runtime source blob hashes verified locally. Standalone local Java probe executed: matching-version foreign read/write rejection, missing/revoked/replayed leases, read-only denial, scalar operations and overflow neutrality, concurrent cross-gate rejection. Committed JUnit test not executed. No full compiler/guest or hosted CI evidence.",
+    "ci": {
+      "run": 45946759434,
+      "job": 140333109650,
+      "status": "QUEUED_NO_STEPS_AT_SAMPLE"
+    }
+  },
+  "javaBoundMirReceiverCandidate": {
+    "status": "LOCAL_RUNTIME_AND_MIR_METHOD_EXCERPT_NOT_CI",
+    "repo": "atto-lang/atto-source.java",
+    "pr": 2022,
+    "head": "fdea37bb27419496a2acbcb0fe3239024a681e1d",
+    "tree": "576dda8f28d0a440061e0a5471a34fccb73c1a1b",
+    "base": "ea9360c9fd8eb16411e02c89d26fe9797635a15e",
+    "runtimeBlobs": {
+      "StateContainerAccessGate.java": "918bfaf18bf32ea711c3740a870bb01079771172",
+      "ScalarStateContainer.java": "559a8298f98921e986ad1057e47d84ebb705cb18"
+    },
+    "mirBlob": "846b07494d4770e9dc93b5758caa144f12745898",
+    "mirMethodExcerpt": {
+      "bytes": 872,
+      "fnv1a": 1617929887
+    },
+    "testBlob": "5df5eee6cd0621750037eeb6577a912d7cdb4810",
+    "toolchain": "JDK 21.0.12.1 javac -Xlint:all -Werror",
+    "assertionsPassed": 275,
+    "concurrentCrossPlanRounds": 128,
+    "scope": "Standalone surrogate record harness compiled with exact checked runtime blobs and checksum-matched factory/invoke excerpt. Reject equal-but-distinct plans, foreign and unbound state, preserve same-plan independent instances and checked overflow. Authored JUnit and AST naming negatives not executed. No full compiler, guest, CI or transitive borrow evidence. Exact plan object ownership is a conservative restricted-profile policy; reconcile with #2021.",
+    "ci": {
+      "run": 45947273221,
+      "job": 140334738896,
+      "status": "QUEUED_NO_STEPS_AT_SAMPLE"
+    }
+  },
+  "javaConsolidatedAuthorityEvidence": {
+    "status": "LOCAL_RUNTIME_AND_MIR_METHOD_EXCERPT_NOT_CI",
+    "repo": "atto-lang/atto-source.java",
+    "pr": 2028,
+    "head": "4b38a0ca8a4cf9b2e16601606c25ea655195c773",
+    "tree": "ce3a93f7ce3d759d7f716ec08ad9ca877a25452c",
+    "base": "cdc1e5fccd7c79b2c88fd1ddfd08084b03148986",
+    "mergedDependency": {
+      "pr": 2021,
+      "mergeCommit": "b2eeac182d97899260a1a609f246ee68b68eb5db"
+    },
+    "supersedesCandidates": [
+      1891,
+      2016,
+      2022
+    ],
+    "runtimeBlobs": {
+      "StateContainerAccessGate.java": "664d1d8bcd0b1a69d249238a452f964952dd82b1",
+      "ScalarStateContainer.java": "9c10de6acd0759caba5d530a24aa05c0c3ed04e1"
+    },
+    "mirBlob": "846b07494d4770e9dc93b5758caa144f12745898",
+    "assertionsPassed": 684,
+    "concurrentTrials": 256,
+    "toolchain": "JDK 21.0.12.1 javac -Xlint:all -Werror",
+    "scope": "Main-based semantic forward-port, unique exact context hunks, no whole-file rollback. Both previous standalone probes rerun against exact combined runtime blobs; MIR excerpt only, full parser/JUnit/guest tests not executed. Predecessors remain drafts pending independent replacement review.",
+    "ci": {
+      "run": 45947841740,
+      "status": "FAILED_NO_JOBS"
+    }
+  },
+  "currentMainStateMatrixRecheck": {
+    "status": "ADAPTED_V8_HOST_ONLY_NOT_CI",
+    "runtimeBlob": "23ce944e66a50fd63765ec5d55b712f993774d15",
+    "records": [
+      {
+        "repo": "atto-lang/atto-source.rs",
+        "head": "5688db5f862434c1fec462e8d7887aa46fc74974",
+        "tree": "bfc048678138f2bea6669bb33cb2d9cc037fe740",
+        "testBlob": "939ef5612b961e010ea477f6a5fcbf9ededbfeaa",
+        "passed": 4
+      },
+      {
+        "repo": "atto-lang/atto-source.wasm",
+        "head": "76dc592d271d05eb9bcf473932898d2490674f36",
+        "tree": "d3043ee136a726537d4e5424561613c32c320fe9",
+        "testBlob": "a1f6fd32a191cdce7d72cd33cf7ef19276442e53",
+        "passed": 4
+      }
+    ],
+    "differentialOperationsPerBackend": 8192,
+    "scope": "Actual fetched exact runtime and test callback bodies executed with import/assert/test adapter; not native Node runner, full CI or compiler guest. Both main trees already contain capacity and deterministic matrix tests. Wasm #366 current head a8d16718d3f21d6431d5fdd512727af1a62a8d98 has identical root tree to sampled main; Rust #731 capacity test present on main. Do not duplicate or count as a merge."
+  },
+  "forgeConsolidatedNativeEvidence": {
+    "status": "LOCAL_EXACT_BLOB_COMPILED_STAGE0_NATIVE_GUEST_NOT_CI",
+    "repo": "atto-lang/atto-source.forge",
+    "pr": 343,
+    "head": "91d0098f08c8ac20e2b9905af985db7eed8d4ec6",
+    "tree": "7045b59a97a36a5d991a8f09ae3e6184697a17b0",
+    "base": "927efe04c294f687d6d66522a3ee72d5af6958b9",
+    "supersedesCandidates": [
+      335,
+      337,
+      339
+    ],
+    "verifiedBlobs": {
+      "compiler/actor_source.cpp": "ec3569b59c59d8f81ddf71673650b46161031b38",
+      "compiler/actor_source.hpp": "0ce9f77711e389a73ed3f1bf448d9b04ccef4f7e",
+      "runtime/arena/ActorOwnedI64Heap.c": "3d988d0b87a991b9d617a32c9a75cc67b6756c18",
+      "runtime/arena/ActorOwnedI64Heap.h": "0aa882c3ab96b26a1847369dea0a3d2c3ae30c7d",
+      "runtime/actor_frames.hpp": "8825165f99794400da4d8ca7524db21ee6587c86",
+      "runtime/scalar_actor.hpp": "9b623c5f6be43aac6e860625f4b006551b47d615",
+      "runtime/scalar_actor.cpp": "351f164001771b44aff348884adc5a728810d971",
+      "verification/scalar_actor_stage0_emit.cpp": "1746bf24f396eb2c39a918efbc25fddba7d1b87f",
+      "verification/scalar_actor_stage0_guest.cpp": "19f698078c101bdd1b05d0748d59c0bd75117002",
+      "verification/scalar_actor_stage0_read_guest.cpp": "b68cfed232d2c326f0a51fe1451f3fb628517ad9",
+      "verification/scalar_actor_stage0_native.py": "431ed0040e8997144d8060996dc1dce83dfa8fe5"
+    },
+    "toolchains": [
+      {
+        "command": "python verification/scalar_actor_stage0_native.py --cc gcc --cxx g++",
+        "exit": 0,
+        "nativeGuestsPassed": 5,
+        "aliasEmissionChecksPassed": 14,
+        "sourceDenialsPassed": 22,
+        "heapAuthorityControlsPassed": 9
+      },
+      {
+        "command": "python verification/scalar_actor_stage0_native.py --cc clang --cxx clang++ --sanitize",
+        "exit": 0,
+        "nativeGuestsPassed": 5,
+        "aliasEmissionChecksPassed": 14,
+        "sourceDenialsPassed": 22,
+        "heapAuthorityControlsPassed": 9
+      }
+    ],
+    "receiptComment": 7210995859,
+    "ci": {
+      "run": 45948118616,
+      "status": "FAILED_NO_JOBS"
+    },
+    "scope": "Fresh local execution of unmodified restricted harness; all eleven local git hash-object hashes match candidate tree. Main-based exact blob integration; no full repository CI, general compiler CLI, or independent review claim."
+  },
+  "craneliftConsolidatedScopeCandidate": {
+    "status": "NOT_EXECUTED",
+    "repo": "atto-lang/atto-source.cranelift",
+    "pr": 213,
+    "head": "74da31db307cd3d253d814c2b0a28bfb2cfa5956",
+    "tree": "ff82508abdbc2e95ae67a055ee2ed8ab039128a7",
+    "base": "1b73ae0fd69d1521cc7f13bf3029796e8ed3ad57",
+    "supersedesCandidates": [
+      201,
+      207
+    ],
+    "moduleBlob": "3c312230470dcf290bdbaf55ad1fcd94fb0c2c07",
+    "newUnitTestGroups": 10,
+    "ci": {
+      "run": 45948243923,
+      "status": "FAILED_NO_JOBS"
+    },
+    "scope": "Exact host module forward-port, no compiler lowering or test execution. Rust SDK absent. Independent review pending."
+  },
+  "publicCarrierStateQualification20261127": {
+    "carrier": "streempilot-test/contract-conformance-tests",
+    "pr": 75,
+    "checkout": "Anonymous public Git fetch, exact commit and root tree verified; no source export or credentials",
+    "rust": {
+      "repo": "atto-lang/atto-source.rs",
+      "pr": 728,
+      "head": "7bcb557a8441fe55f04e5d7327da6ad583e9d853",
+      "tree": "33d22d47db92573b127aba178c316f23d050c935",
+      "run": 45950551836,
+      "job": 140345138654,
+      "focusedTests": {
+        "passed": 15,
+        "failed": 0
+      },
+      "guestMarkers": [
+        "STATE_SNAPSHOT_GUEST_OK",
+        "STATE_WRITE_EXPRESSION_OK",
+        "STATE_RETURN_COMPOSITION_OK"
+      ],
+      "wholeRegression": "FAIL: misplaced native platform_core_v1 test imports native crate and serde_json from dependency-free browser crate",
+      "nextHead": "cb82cb69d35a543fb6583e39cd6c99ecf23297af",
+      "nextTree": "007daf36b65600660c23ef1444559b155be00e46",
+      "nextStatus": "Exact new tree focused IR suite PASS; relocated native platform-core test job PASS; Wasm guests and full browser suite pending at sample",
+      "nextRun": 45950775531,
+      "nextNativeJob": 140345848368,
+      "nextBrowserJob": 140345848331
+    },
+    "net": {
+      "repo": "atto-lang/atto-source.net",
+      "pr": 380,
+      "head": "4f82bf614789afdf76610c8b4bc378573ff37297",
+      "tree": "6b18c0414f0050c481db4c912ed0190f09edcf59",
+      "run": 45950608149,
+      "job": 140345322458,
+      "managedSuite": "PASS",
+      "nativeAotCounterGuest": "PASS",
+      "stdout": "1|3|6|10",
+      "scope": "Existing source-checked generated Counter guest executed as static NativeAOT; new schema snapshot regression executed in managed suite, not specifically AOT mutation test; no general guest lowering claim"
+    },
+    "llvm": {
+      "repo": "atto-lang/atto-source.llvm",
+      "pr": 1057,
+      "head": "08aceb74a97db11ec163fbd958cc474ab8f35bfa",
+      "tree": "0c18170858a7c48171b61ace67623f03eabdf724",
+      "run": 45950641187,
+      "job": 140345429059,
+      "focused": "2 passed; final case of call-shaped operand test rejected earlier with E_UNSUPPORTED instead of expected E_UNSUPPORTED_CRITICAL",
+      "wholeRegression": "FAIL: existing pinned frontend checker mismatch",
+      "nextHead": "08523ae63917c85ba36f1df596c48eec8ae1552d",
+      "nextTree": "97b8f71d2e8b702859e5d4428c406fe3c509167a",
+      "nextStatus": "Focused native protected actor guest and no-artifact negatives 3/3 test groups PASS; broader regression still FAIL pinned frontend checker",
+      "nextRun": 45950775531,
+      "nextJob": 140345848054
+    },
+    "promotion": "No merge authorization, broad parity, general transitive ownership, or fair scheduling claim. Exact revisions and independent review required."
+  }
+}
