@@ -1,0 +1,126 @@
+{
+  "profile": "trusted-idempotent-pointer-v1",
+  "status": "TARGET_ONLY_NOT_EXECUTED",
+  "spec": "https://github.com/atto-lang/atto-spec/pull/287",
+  "notes": [
+    "Trust context must be set by authenticated external compiler/actor harness; no guest flag grants authority.",
+    "The code uses target syntax, not a claim of frontend acceptance. The initial separately retained read-only lease profile requires an explicit release per independently retained binding.",
+    "A rejection due solely to unsupported whole profile is UNSUPPORTED, not semantic PASS. Negative test requires no emitted executable artifact.",
+    "IDP-006 requires a proved roundtrip that does not mint an independently retained lease.",
+    "Additional structured test cases need concrete backend syntax/harness before certification: aliases, generic specialization, qualifier escalation, ownership family separation, effects exactly once, lifetime escape, actor transport, stale generation, pointer slot address/FFI, binary & and &&, generator delegation."
+  ],
+  "cases": [
+    {
+      "id": "IDP-001",
+      "context": "trusted",
+      "expected": "exit",
+      "oracle": 42,
+      "source": "pub fnc main(): int {\n  let int x = 42;\n  val Pointer<int> p = &x;\n  val int answer = *p;\n  unref! p;\n  return answer;\n}\n"
+    },
+    {
+      "id": "IDP-002",
+      "context": "trusted",
+      "expected": "exit",
+      "oracle": 42,
+      "source": "pub fnc main(): int {\n  let int x = 42;\n  val int* p = ref! x;\n  val int answer = deref! p;\n  unref! p;\n  return answer;\n}\n"
+    },
+    {
+      "id": "IDP-003",
+      "context": "trusted",
+      "expected": "exit",
+      "oracle": 42,
+      "source": "pub fnc main(): int {\n  let int x = 42;\n  val Pointer<int> p = &x;\n  val int answer = *(&(&p));\n  unref! p;\n  return answer;\n}\n"
+    },
+    {
+      "id": "IDP-004",
+      "context": "trusted",
+      "expected": "exit",
+      "oracle": 42,
+      "source": "pub fnc main(): int {\n  let int x = 42;\n  val Pointer<Pointer<int>> p = &x;\n  val int answer = *p;\n  unref! p;\n  return answer;\n}\n"
+    },
+    {
+      "id": "IDP-005",
+      "context": "trusted",
+      "expected": "exit",
+      "oracle": 42,
+      "source": "pub fnc main(): int {\n  let int x = 42;\n  val Pointer<int> p = &x;\n  val int* q = &p;\n  unref! p;\n  val int answer = *q;\n  unref! q;\n  return answer;\n}\n"
+    },
+    {
+      "id": "IDP-006",
+      "context": "trusted",
+      "expected": "exit",
+      "oracle": 42,
+      "source": "pub fnc main(): int {\n  let int x = 42;\n  val Pointer<int> p = &x;\n  val int answer = *(&(*p));\n  unref! p;\n  return answer;\n}\n"
+    },
+    {
+      "id": "IDP-007",
+      "context": "trusted",
+      "expected": "reject",
+      "oracle": "nested-star",
+      "source": "pub fnc main(): int {\n  let int x = 42;\n  val int** p = &x;\n  return 0;\n}\n"
+    },
+    {
+      "id": "IDP-008",
+      "context": "trusted",
+      "expected": "reject",
+      "oracle": "nonpointer-deref",
+      "source": "pub fnc main(): int {\n  let int x = 42;\n  return *x;\n}\n"
+    },
+    {
+      "id": "IDP-009",
+      "context": "trusted",
+      "expected": "reject",
+      "oracle": "nonpointer-deref",
+      "source": "pub fnc main(): int {\n  let int x = 42;\n  val Pointer<int> p = &x;\n  return *(*p);\n}\n"
+    },
+    {
+      "id": "IDP-010",
+      "context": "trusted",
+      "expected": "reject",
+      "oracle": "detached",
+      "source": "pub fnc main(): int {\n  let int x = 42;\n  val Pointer<int> p = &x;\n  unref! p;\n  val int* q = &p;\n  return *q;\n}\n"
+    },
+    {
+      "id": "IDP-011",
+      "context": "trusted",
+      "expected": "reject",
+      "oracle": "nonaddressable",
+      "source": "pub fnc main(): int {\n  val int* p = &(40 + 2);\n  return *p;\n}\n"
+    },
+    {
+      "id": "IDP-012",
+      "context": "trusted",
+      "expected": "reject",
+      "oracle": "null-assignment",
+      "source": "pub fnc main(): int {\n  let int x = 42;\n  val Pointer<int> p = &x;\n  p = null;\n  return 0;\n}\n"
+    },
+    {
+      "id": "IDP-013",
+      "context": "untrusted",
+      "expected": "reject",
+      "oracle": "trust",
+      "source": "pub fnc main(): int {\n  let int x = 42;\n  val Pointer<int> p = &x;\n  val int answer = *p;\n  unref! p;\n  return answer;\n}\n"
+    },
+    {
+      "id": "IDP-014",
+      "context": "untrusted",
+      "expected": "reject",
+      "oracle": "trust",
+      "source": "pub fnc main(): int {\n  let int x = 42;\n  val Pointer<int> p = ref! x;\n  val int answer = deref! p;\n  unref! p;\n  return answer;\n}\n"
+    },
+    {
+      "id": "IDP-015",
+      "context": "trusted",
+      "expected": "exit",
+      "oracle": 42,
+      "source": "pub fnc main(): int {\n  return 6 * 7;\n}\n"
+    },
+    {
+      "id": "IDP-016",
+      "context": "trusted",
+      "expected": "exit",
+      "oracle": 42,
+      "source": "pub fnc main(): int {\n  let int x = 42;\n  val int* p = &x;\n  val int answer = *p;\n  unref! p;\n  return x;\n}\n"
+    }
+  ]
+}
