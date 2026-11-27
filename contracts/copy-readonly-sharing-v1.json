@@ -239,6 +239,36 @@
       "diagnostic_line": 18,
       "path": "fixtures/copy-readonly-sharing-v1/reject-successive-copy-descendant-replacement.atto",
       "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "nested-scope-loan-control",
+      "expect": {
+        "main_result": 42
+      },
+      "path": "fixtures/copy-readonly-sharing-v1/nested-scope-loan-control.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-a-write-after-inner-scope",
+      "expect": {
+        "compile_reject": "E_COPY_READONLY"
+      },
+      "paired_positive": "nested-scope-loan-control",
+      "forbidden_statement": "a.scores.n = 99;",
+      "diagnostic_line": 18,
+      "path": "fixtures/copy-readonly-sharing-v1/reject-a-write-after-inner-scope.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-b-write-after-inner-scope",
+      "expect": {
+        "compile_reject": "E_COPY_READONLY"
+      },
+      "paired_positive": "nested-scope-loan-control",
+      "forbidden_statement": "b.scores.n = 99;",
+      "diagnostic_line": 18,
+      "path": "fixtures/copy-readonly-sharing-v1/reject-b-write-after-inner-scope.atto",
+      "status": "NOT_EXECUTED"
     }
   ],
   "negative_policy": "First execute paired positive on same exact compiler tree. Require diagnostic at forbidden statement, no artifact, no E_COPY_SHALLOW_ALIAS or parser rejection as parity. Diagnostic mapping must be reviewed. No source rewriting or skipped negative tests.",
