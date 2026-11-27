@@ -610,39 +610,69 @@ function run(check,cases,p){let passed=0;for(const [name,sections,want,policy] o
 console.log('source-free cases passed:',run(check,cases,p));
 
 
-// Sequential lifecycle model only: no real scheduler, threads or memory.
-// Each transition is explicit so race orderings can be exercised as traces.
+// Sequential logical-lease oracle only: no real scheduler, threads or memory.
+// stop fences new work; release requires settled init and receive leases.
+// Physical task/FFI/allocator quiescence remains a separate runtime obligation.
 function lifecycle(limit) {
-  let used=0, next=1;
+  if (!Number.isSafeInteger(limit) || limit <= 0) throw Error("QUOTA");
+  let used=0, generation=0;
   const actors=new Map();
-  const lookup=ref=>actors.get(ref.generation);
-  function admit(charge,payload) {
+  const lookup=ref=>actors.get(ref);
+  function admit(charge,payload,maxLiveReceives=Number.MAX_SAFE_INTEGER) {
+    if(!Number.isSafeInteger(maxLiveReceives)||maxLiveReceives<=0)throw Error("POLICY");
     if(!Number.isSafeInteger(charge)||charge<=0||charge>limit-used)throw Error("QUOTA");
-    const ref=Object.freeze({generation:next++});
+    if(generation===Number.MAX_SAFE_INTEGER)throw Error("GENERATION_EXHAUSTED");
+    const ref=Object.freeze({generation:++generation});
     used+=charge;
-    actors.set(ref.generation,{ref,charge,payload,phase:"initializing",taken:false});
+    actors.set(ref,{charge,payload,maxLiveReceives,phase:"initializing",started:false,taken:false,init:null,receives:new Set()});
     return ref;
   }
-  function take(ref) {
+  function begin(ref) {
     const a=lookup(ref);
-    if(!a||a.ref!==ref||a.phase!=="initializing"||a.taken)throw Error("INIT_AUTHORITY");
-    a.taken=true;const p=a.payload;a.payload=undefined;return p;
+    if(!a||a.phase!=="initializing"||a.started)throw Error("INIT_AUTHORITY");
+    a.started=true;
+    a.init=Object.freeze({ref});
+    return a.init;
   }
-  function ready(ref) {
-    const a=lookup(ref);
-    if(!a||a.ref!==ref||a.phase!=="initializing")return false;
-    a.payload=undefined;a.phase="ready";return true;
+  function take(lease) {
+    const a=lookup(lease?.ref);
+    if(!a||a.init!==lease||a.phase!=="initializing"||a.taken)throw Error("INIT_AUTHORITY");
+    a.taken=true;const payload=a.payload;a.payload=undefined;return payload;
+  }
+  function settle(lease,success) {
+    const a=lookup(lease?.ref);
+    if(!a||a.init!==lease||typeof success!=="boolean")throw Error("INIT_AUTHORITY");
+    a.init=null;a.payload=undefined;
+    if(!success||a.phase==="retiring"){a.phase="retiring";return false;}
+    a.phase="ready";return true;
   }
   function stop(ref) {
     const a=lookup(ref);
-    if(!a||a.ref!==ref)return false;
-    actors.delete(ref.generation);used-=a.charge;a.payload=undefined;return true;
+    if(!a||a.phase==="retiring")return false;
+    a.phase="retiring";return true;
   }
   function receive(ref) {
     const a=lookup(ref);
-    return !!a&&a.ref===ref&&a.phase==="ready";
+    return !!a&&a.phase==="ready";
   }
-  return {admit,take,ready,stop,receive,used:()=>used};
+  function enter(ref) {
+    const a=lookup(ref);
+    if(!a||a.phase!=="ready"||a.receives.size>=a.maxLiveReceives)return null;
+    const lease=Object.freeze({ref});
+    a.receives.add(lease);return lease;
+  }
+  function leave(lease) {
+    const a=lookup(lease?.ref);
+    if(!a||!a.receives.delete(lease))throw Error("STALE_LEASE");
+  }
+  function release(ref) {
+    const a=lookup(ref);
+    if(!a)throw Error("STALE_REF");
+    if(a.phase!=="retiring")throw Error("NOT_RETIRED");
+    if(a.init!==null||a.receives.size!==0)throw Error("IN_FLIGHT");
+    a.payload=undefined;actors.delete(ref);used-=a.charge;
+  }
+  return {admit,begin,take,settle,stop,receive,enter,leave,release,used:()=>used};
 }
 function runLifecycle() {
   let n=0;
@@ -650,26 +680,70 @@ function runLifecycle() {
   const denies=(f,want)=>{let got;try{f()}catch(e){got=e.message}eq(got,want)};
   const l=lifecycle(10);
   const a=l.admit(6,{name:"worker",seed:42});
-  eq(l.used(),6);eq(l.receive(a),false);
+  eq(l.used(),6);eq(l.receive(a),false);eq(l.enter(a),null);
   denies(()=>l.admit(5,{}),"QUOTA");eq(l.used(),6);
-  denies(()=>l.take({generation:a.generation}),"INIT_AUTHORITY");
-  eq(l.take(a).seed,42);denies(()=>l.take(a),"INIT_AUTHORITY");
-  eq(l.ready(a),true);eq(l.receive(a),true);eq(l.ready(a),false);
-  denies(()=>l.take(a),"INIT_AUTHORITY");
-  eq(l.stop(a),true);eq(l.stop(a),false);eq(l.used(),0);
-  const b=l.admit(10,{});
-  eq(l.receive(b),false);eq(l.stop(b),true);eq(l.ready(b),false);eq(l.used(),0);
-  const c=l.admit(10,{});
-  eq(l.ready(b),false);eq(l.receive(b),false);eq(l.stop(b),false);
-  eq(l.used(),10);eq(l.ready(c),true);eq(l.receive(c),true);
-  denies(()=>l.take(c),"INIT_AUTHORITY");eq(l.stop(c),true);eq(l.used(),0);
+  denies(()=>l.begin({generation:a.generation}),"INIT_AUTHORITY");
+  const init=l.begin(a);
+  denies(()=>l.begin(a),"INIT_AUTHORITY");
+  denies(()=>l.take({ref:a}),"INIT_AUTHORITY");
+  eq(l.take(init).seed,42);denies(()=>l.take(init),"INIT_AUTHORITY");
+  eq(l.settle(init,true),true);eq(l.receive(a),true);
+  denies(()=>l.settle(init,true),"INIT_AUTHORITY");
+  denies(()=>l.release(a),"NOT_RETIRED");
+  const r1=l.enter(a),r2=l.enter(a);
+  eq(r1!==null,true);eq(r2!==null,true);
+  eq(l.stop(a),true);eq(l.stop(a),false);eq(l.receive(a),false);eq(l.enter(a),null);
+  eq(l.used(),6);denies(()=>l.release(a),"IN_FLIGHT");
+  denies(()=>l.leave({ref:a}),"STALE_LEASE");
+  l.leave(r1);denies(()=>l.leave(r1),"STALE_LEASE");denies(()=>l.release(a),"IN_FLIGHT");
+  l.leave(r2);l.release(a);eq(l.used(),0);denies(()=>l.release(a),"STALE_REF");
+  const b=l.admit(10,{seed:1}),bi=l.begin(b);
+  eq(l.stop(b),true);eq(l.used(),10);eq(l.receive(b),false);
+  denies(()=>l.release(b),"IN_FLIGHT");denies(()=>l.admit(1,{}),"QUOTA");
+  denies(()=>l.take(bi),"INIT_AUTHORITY");eq(l.settle(bi,true),false);
+  eq(l.used(),10);l.release(b);eq(l.used(),0);
+  const c=l.admit(10,{});eq(c.generation>b.generation,true);eq(l.stop(b),false);
+  eq(l.receive(b),false);denies(()=>l.settle(bi,true),"INIT_AUTHORITY");
+  const ci=l.begin(c);eq(l.settle(ci,false),false);eq(l.receive(c),false);
+  eq(l.used(),10);l.release(c);eq(l.used(),0);
+  const d=l.admit(10,{});eq(l.stop(d),true);denies(()=>l.begin(d),"INIT_AUTHORITY");
+  eq(l.used(),10);l.release(d);eq(l.used(),0);
+  const other=lifecycle(10);const e=l.admit(10,{}),ei=l.begin(e);
+  denies(()=>other.settle(ei,true),"INIT_AUTHORITY");
+  eq(l.settle(ei,true),true);const er=l.enter(e);eq(l.stop(e),true);
+  denies(()=>other.leave(er),"STALE_LEASE");l.leave(er);l.release(e);eq(l.used(),0);
   denies(()=>l.admit(0,{}),"QUOTA");denies(()=>l.admit(Number.MAX_SAFE_INTEGER+1,{}),"QUOTA");
-  eq(l.used(),0);
+  denies(()=>lifecycle(0),"QUOTA");
+  // Logical receive admission is independently capped per actor. A
+  // suspended receive still holds its lease until explicit settlement.
+  const cap=lifecycle(10);
+  for(const bad of [0,-1,1.5,Infinity,Number.MAX_SAFE_INTEGER+1]){
+    denies(()=>cap.admit(1,{},bad),"POLICY");eq(cap.used(),0);
+  }
+  const one=cap.admit(4,{},1),two=cap.admit(6,{},2);
+  eq(one.generation,1);eq(cap.settle(cap.begin(one),true),true);
+  eq(cap.settle(cap.begin(two),true),true);
+  const a1=cap.enter(one),b1=cap.enter(two),b2=cap.enter(two);
+  eq(a1!==null,true);eq(b1!==null,true);eq(b2!==null,true);
+  eq(cap.enter(one),null);eq(cap.enter(two),null);
+  cap.leave(a1);const a2=cap.enter(one);eq(a2!==null,true);
+  denies(()=>cap.leave(a1),"STALE_LEASE");eq(cap.enter(one),null);
+  eq(cap.stop(one),true);eq(cap.enter(one),null);
+  denies(()=>cap.release(one),"IN_FLIGHT");eq(cap.used(),10);
+  cap.leave(a2);cap.release(one);eq(cap.used(),6);
+  eq(cap.stop(two),true);cap.leave(b1);cap.leave(b2);cap.release(two);
+  eq(cap.used(),0);
+  // Deterministic transition traces, not real concurrent execution.
+  for(let i=0;i<10000;i++){
+    const x=l.admit(10,{}),xi=l.begin(x);
+    if(i%2===0){eq(l.stop(x),true);denies(()=>l.release(x),"IN_FLIGHT");eq(l.settle(xi,true),false);}
+    else{eq(l.settle(xi,true),true);const y=l.enter(x);eq(l.stop(x),true);denies(()=>l.release(x),"IN_FLIGHT");l.leave(y);}
+    eq(l.used(),10);l.release(x);eq(l.used(),0);
+  }
   return n;
 }
 console.log("source-free lifecycle assertions passed:",runLifecycle());
 
- 
 // Fixed-cap default regression cases: actor kind determines the serial
 // default even when the host ceiling permits more than one carrier.
 const defaultsInit = ["init", [["name","worker"],["seed",42]]];
