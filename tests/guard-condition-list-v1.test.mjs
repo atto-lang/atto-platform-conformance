@@ -11,7 +11,13 @@ import {createHash} from "node:crypto";
 const pins = [
   [
     "trap-sync-task-defer.atto",
-    "f8c78c4c36e62a840224af04aa59bd90de9dd65d",
+    "bcd5e2692aaaaf4c4c070a5746cd6c3ab9e5082a",
+    42,
+    "D"
+  ],
+  [
+    "trap-sync-task-defer-process.atto",
+    "c511c17818f725c9fc5d52a129ca257790276477",
     42,
     "D"
   ],
