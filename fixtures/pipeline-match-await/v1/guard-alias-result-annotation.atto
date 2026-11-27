@@ -1,0 +1,5 @@
+pub fnc main(): int {
+    return match 42 over
+        when true as x : int -> x
+    end;
+}

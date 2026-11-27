@@ -1,0 +1,1 @@
+pub fnc main(): int { return match over when true as x -> x end; }

@@ -1,0 +1,1 @@
+pub fnc main(): int { return match 42 over when true: const x -> x + 1 end; }

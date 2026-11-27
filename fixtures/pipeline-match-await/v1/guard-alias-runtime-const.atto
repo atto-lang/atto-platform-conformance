@@ -1,0 +1,2 @@
+fnc f(int n): int { return match n over when true: const x -> x end; }
+pub fnc main(): int { return f(42); }

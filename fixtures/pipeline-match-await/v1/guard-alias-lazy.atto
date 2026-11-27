@@ -1,0 +1,7 @@
+fnc run(int n): int {
+    return n |> match first over
+        when n < 0 as x -> 1 / (x - x)
+        when true as x -> x
+    end;
+}
+pub fnc main(): int { return run(42); }

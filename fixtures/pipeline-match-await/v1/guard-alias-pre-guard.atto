@@ -1,0 +1,6 @@
+pub fnc main(): int {
+    return match first (10, 20) over
+        on _ as (x, y) when x < y -> x + y
+        on _ -> 0
+    end;
+}
