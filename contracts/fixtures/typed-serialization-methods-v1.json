@@ -4,10 +4,10 @@
   "spec": "https://github.com/atto-lang/atto-spec/pull/281",
   "source_fixture": {
     "pr": "https://github.com/atto-lang/atto-serialization-and-validation/pull/100",
-    "head": "1ea6d0ce1dc9273b07b52a35c859d834ba176ee4",
+    "head": "9561d2a7bfc9af02d34e03707676e121656e102d",
     "path": "tests/generated_typed_codec_test.ores",
     "scope": "Manually projected typed JSON and MessagePack fixture with shared metadata validation; not compiler-generated method support",
-    "tree": "1312ffe0e1910d1c61fabd7a4b4445bdc0ddc11e"
+    "tree": "ec6a937c9a92829a0c2a1be173a4e2dea1f6b35f"
   },
   "profile": {
     "schema": "User example, fields displayName string and age signed integer in this fixed order",
@@ -89,7 +89,7 @@
   "messagepack_source_fixture": {
     "path": "tests/messagepack_test.ores",
     "scope": "dynamic MessagePack wire roundtrip and malformed frame tests; no typed constructor lowering",
-    "head": "1ea6d0ce1dc9273b07b52a35c859d834ba176ee4"
+    "head": "9561d2a7bfc9af02d34e03707676e121656e102d"
   },
   "messagepack_negative": [
     {
@@ -135,13 +135,13 @@
   ],
   "typed_messagepack_source_fixture": {
     "path": "tests/generated_typed_codec_test.ores",
-    "head": "1ea6d0ce1dc9273b07b52a35c859d834ba176ee4",
+    "head": "9561d2a7bfc9af02d34e03707676e121656e102d",
     "scope": "Shared metadata validation, concrete User constructor, typed errors; guest NOT_EXECUTED"
   },
   "messagepack_container_admission": {
     "scope": "candidate dynamic codec, exact error and no partial value assertions; not guest evidence",
     "source_path": "tests/messagepack_test.ores",
-    "head": "1ea6d0ce1dc9273b07b52a35c859d834ba176ee4",
+    "head": "9561d2a7bfc9af02d34e03707676e121656e102d",
     "negative": [
       {
         "hex": "930102",
@@ -299,7 +299,7 @@
   },
   "typed_policy_denials": {
     "scope": "both metadata-driven typed formats; clean valid fixture frame with unsafe policy must fail before projection",
-    "source_head": "1ea6d0ce1dc9273b07b52a35c859d834ba176ee4",
+    "source_head": "9561d2a7bfc9af02d34e03707676e121656e102d",
     "source_path": "tests/generated_typed_codec_test.ores",
     "expected": {
       "status": 2,
@@ -341,5 +341,42 @@
     "wasm_blobs": 701,
     "wasm_checks": 9,
     "scope": "Actual LLVM native executable and Wasm32 scalar execution plus diagnosed nonpublication of missing serializer references; not serializer generation or wire interoperability."
+  },
+  "checked_value_binary_index_candidate": {
+    "head": "9561d2a7bfc9af02d34e03707676e121656e102d",
+    "tree": "ec6a937c9a92829a0c2a1be173a4e2dea1f6b35f",
+    "paths": [
+      "src/core/value.ores",
+      "src/core/wire_hash_index.ores",
+      "src/messagepack/messagepack.ores",
+      "src/cbor/cbor.ores"
+    ],
+    "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45914716048",
+    "scope": "candidate tri-state equality, cumulative logical storage/work, binary map collision checks, composite duplicate fixtures and borrowing repairs; legacy bool wrapper traps on resource denial, must audit remaining callers; full guest NOT_EXECUTED"
+  },
+  "java_value_index_prior_receipt": {
+    "head": "f41dc94d4ea3e54474a497ef2252302ab6d5987a",
+    "tree": "ab5c446747111a966bd1b4291345afe1215d0f6f",
+    "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45914538349/job/140230495293",
+    "scope": "3 isolated guest suites passed; original Map admission and projected alias errors no longer first blocker; full/core failed repeated key move in Value lookup; prior head only"
+  },
+  "scalar_json_derivation_candidate": {
+    "spec_status": "provisional @ToJson field annotation and Result<String,String> error shape; no grammar ratification",
+    "fixture": "contracts/fixtures/typed-serde-scalar-projection-v1.atto",
+    "expected": "contracts/fixtures/typed-serde-scalar-projection-v1.expected",
+    "source_pr": "https://github.com/atto-lang/atto-source.java/pull/1992",
+    "head": "e240b8110b812f82cb7016233534a60d02845bca",
+    "tree": "c83db808394bb2b88a58d358b3b6d9bb9d7f9f12",
+    "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45914655677",
+    "prior_receipt": {
+      "head": "45f713b14e874457cacd3b9e733c9b780a5bc08a",
+      "tree": "ab00e309da4280349af56aee5d86d77a4b3766e3",
+      "blobs": 3933,
+      "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45914433353/job/140230153557",
+      "passed": 10,
+      "failed": 1,
+      "scope": "actual compiler-generated scalar JSON guest executed and emitted both exact lines; overall suite fails parser-vs-deriver duplicate annotation diagnostic expectation; not NativeAOT"
+    },
+    "scope": "shared fixture extracted from embedded JUnit guest; standalone conformance fixture not independently executed; other backends must fail closed until lowering exists; no decode, general wire codec or transport support"
   }
 }
