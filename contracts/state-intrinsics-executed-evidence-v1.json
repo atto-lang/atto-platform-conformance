@@ -532,5 +532,46 @@
       "sealed_read"
     ],
     "scope": "Exact manually reconstructed source blobs checked with git hash-object. Built emitter, emitted five actual source variants, compiled and linked generated C++ to real heap, frames and ScalarActor, executed each on both toolchains; checked 16 denials each. Local direct build commands equivalent to harness but did not execute checked-in Python harness or full repository CI. Restricted single-field stage-0 serial actor profile, no production CLI, general state-container, alias, tuple or concurrent-actor parity claim."
+  },
+  "forgeStage0AliasNativeEvidence": {
+    "status": "LOCAL_EXACT_BLOB_COMPILED_STAGE0_NATIVE_GUEST_NOT_CI",
+    "repo": "atto-lang/atto-source.forge",
+    "pr": 337,
+    "head": "1e147d15b91fd09b17286876de7755f31205fe48",
+    "tree": "051e202b76ac11d135e867924436dc0d2b7d376e",
+    "base": "fda749ff6c899bf7181f3be0354a97b1e40aebf8",
+    "verifiedBlobs": {
+      "compiler/actor_source.cpp": "a120b4df5fc0d9d14641ae935bad08448da40d80",
+      "compiler/actor_source.hpp": "0ce9f77711e389a73ed3f1bf448d9b04ccef4f7e",
+      "runtime/arena/ActorOwnedI64Heap.c": "1b82bd92a0c883f617292e79b1ca63dd10a48306",
+      "runtime/arena/ActorOwnedI64Heap.h": "3bff2f3f7779bbbb5a780c0541dd392835c710dd",
+      "runtime/actor_frames.hpp": "8825165f99794400da4d8ca7524db21ee6587c86",
+      "runtime/scalar_actor.hpp": "9b623c5f6be43aac6e860625f4b006551b47d615",
+      "runtime/scalar_actor.cpp": "351f164001771b44aff348884adc5a728810d971",
+      "verification/scalar_actor_stage0_emit.cpp": "1746bf24f396eb2c39a918efbc25fddba7d1b87f",
+      "verification/scalar_actor_stage0_guest.cpp": "19f698078c101bdd1b05d0748d59c0bd75117002",
+      "verification/scalar_actor_stage0_read_guest.cpp": "b68cfed232d2c326f0a51fe1451f3fb628517ad9",
+      "verification/scalar_actor_stage0_native.py": "72100acc5d26017ec80dc4fd410b3bc2d7ca2b3c"
+    },
+    "toolchains": [
+      {
+        "name": "GCC/G++ 14.2",
+        "command": "python verification/scalar_actor_stage0_native.py --cc gcc --cxx g++",
+        "exit": 0,
+        "nativeGuestsPassed": 5,
+        "aliasEmissionChecksPassed": 14,
+        "sourceDenialsPassed": 22
+      },
+      {
+        "name": "Clang/Clang++ 17",
+        "command": "python verification/scalar_actor_stage0_native.py --cc clang --cxx clang++ --sanitize",
+        "exit": 0,
+        "nativeGuestsPassed": 5,
+        "aliasEmissionChecksPassed": 14,
+        "sourceDenialsPassed": 22
+      }
+    ],
+    "receiptComment": 7210663864,
+    "scope": "Unmodified checked-in verification script and ten required source blobs manually reconstructed locally and verified with git hash-object; both full restricted harness runs succeeded. Actual source-emitted C++ linked to actor heap and logical frame stack; no production CLI, full repository CI, concurrent or general state-container support. Independent review pending."
   }
 }
