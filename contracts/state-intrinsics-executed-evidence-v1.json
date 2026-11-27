@@ -175,5 +175,41 @@
       "stateGuest": "NOT_EXECUTED",
       "basis": "README.md; atto-capabilities.json; compiler NOT_IMPLEMENTED"
     }
-  ]
+  ],
+  "localHostEvidence": {
+    "status": "LOCAL_HOST_ONLY_NOT_CI",
+    "node": "22.16.0",
+    "baselineRustBlob": "d5816802b1b659aa5e4b2646ff461eb03192a215",
+    "baselineWasmBlob": "c08581c988891848b214b4365c5c5191cdbb2ec9",
+    "patchedRuntimeBlob": "23ce944e66a50fd63765ec5d55b712f993774d15",
+    "candidates": [
+      {
+        "repo": "atto-lang/atto-source.rs",
+        "pr": 715,
+        "head": "1c52b71e91f942d67965b23b5861d4a130b3313e",
+        "tree": "6610474d5b53d7b173970349fc024c73fd594a99"
+      },
+      {
+        "repo": "atto-lang/atto-source.wasm",
+        "pr": 355,
+        "head": "e08ca48748396928ad43c94e597844577bf65c8c",
+        "tree": "8c46bc0e25d4766f069e0497efb9883897a9fd01"
+      }
+    ],
+    "baselineLifecycle": {
+      "passed": 1,
+      "failed": 2
+    },
+    "patchedHost": {
+      "passed": 4,
+      "failed": 0,
+      "cases": [
+        "idempotent retire/complete",
+        "abort cannot become complete",
+        "live lease rejects complete without terminalizing",
+        "signed-i32 pointer boundary and unchanged ledger"
+      ]
+    },
+    "limits": "Identical tested host runtime blob only; local authored regression commands, not full repository CI, compiled guest, cross-worker, or actor lifecycle evidence. Both candidates remain drafts."
+  }
 }
