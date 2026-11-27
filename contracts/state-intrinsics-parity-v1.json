@@ -244,7 +244,9 @@
       "protected-field-generic-slot-borrow-bypass",
       "protected-field-unauthorized-readonly-loan-write",
       "call-shaped-scalar-parameter-identifier",
-      "call-shaped-protected-field-projection"
+      "call-shaped-protected-field-projection",
+      "short-long-attached-protected-declaration-denial-diagnostic-parity-on-unsupported-profiles",
+      "quoted-comment-and-nonkeyword-token-spoof-controls"
     ],
     "runtime": [
       "overlapping-readers-where-supported",
