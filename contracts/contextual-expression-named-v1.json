@@ -1,6 +1,6 @@
 {
   "schema": "atto.contextual-expression-named.target.v1",
-  "status": "DRAFT_SHARED_NOT_EXECUTED",
+  "status": "DRAFT_PARTIAL_SHARED_EXECUTION",
   "supersedes": "contextual-direct-named-v1 bounded sibling denials; historical receipts preserved",
   "rules": [
     "Evaluate contextual RHS expressions at their call site in source order, then ordinary arguments; reorder only typed parameter bindings, never actual expressions.",
@@ -51,6 +51,45 @@
       "kind": "reject",
       "semanticReason": "missing-context-name",
       "artifactAllowed": false
+    }
+  ],
+  "sharedCorpusReceipts": {
+    "fixtureHead": "46d4c01124ab54d1b6093303c8d159fcf97bff10",
+    "fixtureTree": "032631b5e8a70f75359686ab0f07d799e0143bbc",
+    "results": [
+      {
+        "backend": "rs",
+        "head": "5369fede845cf03c2897ca2b425b2d24edc85613",
+        "tree": "f2582efa8cd969cec7126c5408bdc47626ee9a34",
+        "guestPass": 4,
+        "rejectedUnclassified": 4,
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46067203372/job/140735306178"
+      },
+      {
+        "backend": "llvm",
+        "head": "3bf188a86e1b71b9754941b596d22c725c815db4",
+        "tree": "b3bd3fd37f719e8bacc00e7b83bc95fb45446880",
+        "guestPass": 4,
+        "rejectedUnclassified": 4,
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46067203372/job/140735306201"
+      },
+      {
+        "backend": "js",
+        "head": "13efeee74eb7176c57a4073fb68466edf5e8e73f",
+        "tree": "68a82495dc1ca0ab1d755dad454d9a5f2c75740c",
+        "guestPass": 4,
+        "rejectedUnclassified": 4,
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46067203372/job/140735305820"
+      }
+    ]
+  },
+  "embeddedCompilerReceipts": [
+    {
+      "backend": "java",
+      "head": "f8b2ab462659733994f50d03d9aeb28a41323b5b",
+      "tree": "cf54880ef8615a6256ce253a3d3bfacc583cdbeb",
+      "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46067060765/job/140734826099",
+      "scope": "embedded sibling named guest tests, not shared corpus bytes"
     }
   ]
 }
