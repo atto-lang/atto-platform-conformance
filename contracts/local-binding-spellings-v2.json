@@ -1,0 +1,529 @@
+{
+  "schema_version": 2,
+  "contract": "local-binding-spellings-v2",
+  "status": "AUTHORED_NOT_EXECUTED",
+  "notes": "Source strings are independent candidate programs; no actual compiler run or adapter is implied. Confirm exact diagnostic mapping and canonical entry syntax per lane; do not treat arbitrary parser errors as semantic proof. Additional ownership, cast failure, actor isolation and formatter tests required.",
+  "backends": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "rs": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED"
+  },
+  "cases": [
+    {
+      "id": "scalar-form-1",
+      "source": "define fnc int • main() {\n    int x = 42;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "scalar-form-2",
+      "source": "define fnc int • main() {\n    const x = 42;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "scalar-form-3",
+      "source": "define fnc int • main() {\n    const int x = 42;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "scalar-form-4",
+      "source": "define fnc int • main() {\n    const x : int = 42;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "scalar-form-5",
+      "source": "define fnc int • main() {\n    const x :int = 42;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "scalar-form-6",
+      "source": "define fnc int • main() {\n    const x = 42 as int;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "scalar-form-7",
+      "source": "define fnc int • main() {\n    const x as int = 42;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "scalar-form-8",
+      "source": "define fnc int • main() {\n    val int x = 42;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "scalar-form-9",
+      "source": "define fnc int • main() {\n    const mut int x = 42;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "scalar-form-10",
+      "source": "define fnc int • main() {\n    val x : int = 42;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "scalar-form-11",
+      "source": "define fnc int • main() {\n    const mut x : int = 42;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "scalar-form-12",
+      "source": "define fnc int • main() {\n    val x as int = 42;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "scalar-form-13",
+      "source": "define fnc int • main() {\n    const mut x as int = 42;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "scalar-form-14",
+      "source": "define fnc int • main() {\n    let int x = 42;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "scalar-form-15",
+      "source": "define fnc int • main() {\n    let x :int = 42;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "scalar-form-16",
+      "source": "define fnc int • main() {\n    let x : int = 42;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "scalar-form-17",
+      "source": "define fnc int • main() {\n    let x as int = 42;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "scalar-form-18",
+      "source": "define fnc int • main() {\n    let x = 42 as int;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "string-default",
+      "source": "define fnc int • main() {\n    string name = \"Alice\";\n    return name == \"Alice\" ? 42 : 0;\n}\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "let-shadow-four-forms",
+      "source": "define fnc int • main() {\n    let int z = 10;\n    let int z = 20;\n    let z :int = 10;\n    let z : int = 42;\n    return z;\n}\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "let-shadow-initializer-old-binding",
+      "source": "define fnc int • main() {\n    let int z = 40;\n    let z as int = z + 2;\n    return z;\n}\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "runtime-default",
+      "source": "define fnc int • main() {\n    let int a = 40;\n    int x = a + 2;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "runtime-explicit",
+      "source": "define fnc int • main() {\n    let int a = 40;\n    const x : int = a + 2;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "runtime-name-as",
+      "source": "define fnc int • main() {\n    let int a = 40;\n    const x as int = a + 2;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "runtime-postfix-cast",
+      "source": "define fnc int • main() {\n    let int a = 40;\n    const x = (a + 2) as int;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "list-val",
+      "source": "define fnc int • main() {\n    val List[int] numbers = [1, 2, 3];\n    return numbers[0] + 41;\n}\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "list-const-mut",
+      "source": "define fnc int • main() {\n    const mut List[int] other = [4, 5, 6];\n    return other[0] + 38;\n}\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "list-name-colon",
+      "source": "define fnc int • main() {\n    val numbers : List[int] = [1, 2, 3];\n    return numbers[0] + 41;\n}\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "list-name-as",
+      "source": "define fnc int • main() {\n    const mut other as List[int] = [4, 5, 6];\n    return other[0] + 38;\n}\n",
+      "expected": {
+        "kind": "compile_execute",
+        "result": 42
+      }
+    },
+    {
+      "id": "duplicate-const-1",
+      "source": "define fnc int • main() {\n    int x = 42;\n    const x = 4;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "duplicate_binding",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "bare-assignment-1",
+      "source": "define fnc int • main() {\n    int x = 42;\n    x = 4;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "bare_reassignment",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "set-fixed-1",
+      "source": "define fnc int • main() {\n    int x = 42;\n    set x = 4;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "immutable_reassignment",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "duplicate-const-2",
+      "source": "define fnc int • main() {\n    const x = 42;\n    const x = 4;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "duplicate_binding",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "bare-assignment-2",
+      "source": "define fnc int • main() {\n    const x = 42;\n    x = 4;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "bare_reassignment",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "set-fixed-2",
+      "source": "define fnc int • main() {\n    const x = 42;\n    set x = 4;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "immutable_reassignment",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "duplicate-const-3",
+      "source": "define fnc int • main() {\n    const int x = 42;\n    const x = 4;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "duplicate_binding",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "bare-assignment-3",
+      "source": "define fnc int • main() {\n    const int x = 42;\n    x = 4;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "bare_reassignment",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "set-fixed-3",
+      "source": "define fnc int • main() {\n    const int x = 42;\n    set x = 4;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "immutable_reassignment",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "duplicate-const-4",
+      "source": "define fnc int • main() {\n    const x : int = 42;\n    const x = 4;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "duplicate_binding",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "bare-assignment-4",
+      "source": "define fnc int • main() {\n    const x : int = 42;\n    x = 4;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "bare_reassignment",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "set-fixed-4",
+      "source": "define fnc int • main() {\n    const x : int = 42;\n    set x = 4;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "immutable_reassignment",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "duplicate-const-5",
+      "source": "define fnc int • main() {\n    const x :int = 42;\n    const x = 4;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "duplicate_binding",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "bare-assignment-5",
+      "source": "define fnc int • main() {\n    const x :int = 42;\n    x = 4;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "bare_reassignment",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "set-fixed-5",
+      "source": "define fnc int • main() {\n    const x :int = 42;\n    set x = 4;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "immutable_reassignment",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "duplicate-const-6",
+      "source": "define fnc int • main() {\n    const x = 42 as int;\n    const x = 4;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "duplicate_binding",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "bare-assignment-6",
+      "source": "define fnc int • main() {\n    const x = 42 as int;\n    x = 4;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "bare_reassignment",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "set-fixed-6",
+      "source": "define fnc int • main() {\n    const x = 42 as int;\n    set x = 4;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "immutable_reassignment",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "duplicate-const-7",
+      "source": "define fnc int • main() {\n    const x as int = 42;\n    const x = 4;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "duplicate_binding",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "bare-assignment-7",
+      "source": "define fnc int • main() {\n    const x as int = 42;\n    x = 4;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "bare_reassignment",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "set-fixed-7",
+      "source": "define fnc int • main() {\n    const x as int = 42;\n    set x = 4;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "immutable_reassignment",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "val-set-fixed",
+      "source": "define fnc int • main() {\n    val int x = 42;\n    set x = 4;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "immutable_reassignment",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "val-duplicate",
+      "source": "define fnc int • main() {\n    val int x = 42;\n    val int x = 42;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "duplicate_binding",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "const-mut-set-fixed",
+      "source": "define fnc int • main() {\n    const mut int x = 42;\n    set x = 4;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "immutable_reassignment",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "const-mut-duplicate",
+      "source": "define fnc int • main() {\n    const mut int x = 42;\n    const mut int x = 42;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "duplicate_binding",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "wrong-prefix-type",
+      "source": "define fnc int • main() {\n    const int x = \"Alice\";\n    return 42;\n}\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "type_mismatch",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "wrong-colon-type",
+      "source": "define fnc int • main() {\n    const x : int = \"Alice\";\n    return 42;\n}\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "type_mismatch",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "wrong-name-as-type",
+      "source": "define fnc int • main() {\n    const x as int = \"Alice\";\n    return 42;\n}\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "type_mismatch",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "missing-initializer",
+      "source": "define fnc int • main() {\n    int x;\n    return 42;\n}\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "missing_initializer",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "bare-mut",
+      "source": "define fnc int • main() {\n    mut int x = 42;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "missing_binding_qualifier",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "double-type",
+      "source": "define fnc int • main() {\n    const int x : int = 42;\n    return x;\n}\n",
+      "expected": {
+        "kind": "compile_reject",
+        "category": "duplicate_type_annotation",
+        "no_artifact": true
+      }
+    }
+  ]
+}
