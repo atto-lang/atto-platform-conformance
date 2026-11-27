@@ -1,0 +1,26 @@
+name: Namespace v2 host corpus (not guest parity)
+on:
+  pull_request:
+    paths:
+      - 'fixtures/namespace-modes-v2/**'
+      - 'tests/namespace-modes-v2.test.mjs'
+      - '.github/workflows/namespace-modes-v2.yml'
+permissions:
+  contents: read
+jobs:
+  reference:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Verify immutable checkout and run host reference
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -eu
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          node --version
+          node --test tests/namespace-modes-v2.test.mjs
