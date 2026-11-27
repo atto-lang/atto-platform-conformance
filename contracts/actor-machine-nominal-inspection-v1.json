@@ -1,0 +1,53 @@
+{
+  "schema": "atto.actor-machine-nominal-inspection.v1",
+  "status": "TARGET_NOT_EXECUTED",
+  "note": "Restricted root declarations only; payload-free ordinary empty classes are candidate event declarations. Not Sendable, constructor, package/linker, type-checker or runtime proof. No event identity outside this source unit.",
+  "cases": [
+    {
+      "id": "nominal-forward",
+      "source": "define actor Foo as\n    state machine as\n        initial state Idle;\n        state Idle as\n            on Start() -> Running;\n        end\n        state Running as\n            on Stop() -> Idle;\n        end\n    end\nend\ndefine class Stop as end\ndefine class Start as end\n",
+      "expect": {
+        "declarations": [
+          "Start",
+          "Stop"
+        ],
+        "eventSlots": [
+          "Start",
+          "Stop"
+        ],
+        "declarationIds": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "id": "nominal-unknown",
+      "source": "define actor Foo as\n    state machine as\n        initial state Idle;\n        state Idle as\n            on Start() -> Running;\n        end\n        state Running as\n            on Stop() -> Idle;\n        end\n    end\nend\ndefine class Start as end\n",
+      "expect": {
+        "reject": true
+      }
+    },
+    {
+      "id": "nominal-actor",
+      "source": "define actor Foo as\n    state machine as\n        initial state Idle;\n        state Idle as\n            on Start() -> Running;\n        end\n        state Running as\n            on Stop() -> Idle;\n        end\n    end\nend\ndefine class Start as end\ndefine actor Stop as end\n",
+      "expect": {
+        "reject": true
+      }
+    },
+    {
+      "id": "nominal-payload",
+      "source": "define actor Foo as\n    state machine as\n        initial state Idle;\n        state Idle as\n            on Start() -> Running;\n        end\n        state Running as\n            on Stop() -> Idle;\n        end\n    end\nend\ndefine class Start as end\ndefine class Stop as let int value = 1; end\n",
+      "expect": {
+        "reject": true
+      }
+    },
+    {
+      "id": "nominal-duplicate",
+      "source": "define class Stop as end\ndefine class Start as end\ndefine actor Foo as\n    state machine as\n        initial state Idle;\n        state Idle as\n            on Start() -> Running;\n        end\n        state Running as\n            on Stop() -> Idle;\n        end\n    end\nend\ndefine class Start as end\n",
+      "expect": {
+        "reject": true
+      }
+    }
+  ]
+}
