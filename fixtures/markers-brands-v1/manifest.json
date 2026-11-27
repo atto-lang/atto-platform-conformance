@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "contract": "https://github.com/atto-lang/atto-spec/pull/273",
+  "specHead": "19e4d8e2849efb0714e8f4b6dbe18a3e2da5218e",
+  "status": "CANDIDATE_SOURCE_NOT_EXECUTED",
+  "note": "Provisional source syntax; compiler rejections count only for the specific semantic reason after positive controls pass. Unsupported syntax is not a passing negative.",
+  "backendResults": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "rs": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
+    "hdl": "NOT_EXECUTED",
+    "atto": "NOT_EXECUTED",
+    "realtime": "NOT_EXECUTED"
+  },
+  "cases": [
+    {
+      "id": "MB001",
+      "path": "same-brand-nominal.atto",
+      "blob": "2ce6818fdb2f078d73f466886e542bcb2a6f9104",
+      "expected": {
+        "kind": "value",
+        "value": 42
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "MB002",
+      "path": "same-brand-cross-nominal.atto",
+      "blob": "51cd7f042f51d5d6100ad2a69155a9894851088f",
+      "expected": {
+        "kind": "value",
+        "value": 42
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "MB003",
+      "path": "reject-wrong-brand.atto",
+      "blob": "75327797926a2ba0dba59b8b3fff6719f259d9f9",
+      "expected": {
+        "kind": "compile_reject",
+        "reason": "missing_required_brand"
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "MB004",
+      "path": "reject-unbranded.atto",
+      "blob": "04fe1e6b5c14789c6fbc83d50fa155b6a558aba0",
+      "expected": {
+        "kind": "compile_reject",
+        "reason": "missing_required_brand"
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "MB005",
+      "path": "anonymous-shape-read.atto",
+      "blob": "7c49b3df376ad06011e4a7fb6d83c885c2be9130",
+      "expected": {
+        "kind": "value",
+        "value": 42
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "MB007",
+      "path": "all-markers.atto",
+      "blob": "27b3d442b55b97d491f22581e1fa7d694d641d45",
+      "expected": {
+        "kind": "value",
+        "value": 42
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "MB008",
+      "path": "reject-missing-marker.atto",
+      "blob": "68952543de6237ecdd553c22f851d6ef909d9b3b",
+      "expected": {
+        "kind": "compile_reject",
+        "reason": "missing_required_marker"
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "MB027",
+      "path": "structural-alias.atto",
+      "blob": "c93adf1f4f059759169b34eb0412db866b5cded8",
+      "expected": {
+        "kind": "value",
+        "value": 84
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "MB028",
+      "path": "integer-tilde.atto",
+      "blob": "f5a8636cee02b6e5a3e7b88539230e493a33b786",
+      "expected": {
+        "kind": "value",
+        "value": -13
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "MB036",
+      "path": "distinct-instance.atto",
+      "blob": "5d5cc69ec47049fb9e3560a1444a2a122af0c970",
+      "expected": {
+        "kind": "value",
+        "value": 42
+      },
+      "status": "NOT_EXECUTED"
+    }
+  ]
+}
