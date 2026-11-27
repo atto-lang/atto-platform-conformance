@@ -264,5 +264,191 @@
   "host_ticket_status_semantics": {
     "SOURCE_EXACT_HOST_TESTED": "Current PR head's imported implementation/test blobs were verified byte-for-byte and executed on a runner; not necessarily full-tree or guest proof.",
     "CURRENT_HEAD_NOT_EXECUTED": "Implementation/test files committed, but no executable CI steps on current head. Prior-head runs do not count."
+  },
+  "destination_scope_hardening": {
+    "snapshot": "2026-11-25",
+    "required_guest_gates": [
+      "tenant_bound_to_trusted_destination_before_mailbox_admission",
+      "wrong_tenant_empty_mailbox_no_ticket_or_credit",
+      "numeric_target_and_incarnation_match",
+      "valid_retry_after_rejection"
+    ],
+    "evidence_scope": "Candidate snapshots, not main integration or authenticated compiled guest parity. Local exact-blob host results are not full-tree CI.",
+    "backends": [
+      {
+        "id": "java",
+        "pr": "https://github.com/atto-lang/atto-source.java/pull/1900",
+        "head": "eb924b6e233f6967e9ee232bbce27726f10750ff",
+        "scope": "REAL_MAILBOX",
+        "local_evidence": null,
+        "guest_status": "NOT_EXECUTED",
+        "full_tree_ci_status": "RESTRICTED_M10_SUITE_PASSED",
+        "historical_scoped_ci_evidence": {
+          "status": "PASSED",
+          "source_head": "6dfcfc27b2da6b4a51312a95680b099ab0709f62",
+          "source_root_tree": "e54a964255652adb9515102db12e068f3ee80faf",
+          "carrier_head": "ec1213fb888826496b94dc477d88c0de1eb066f6",
+          "carrier_scoped_tree": "736e55b3fdf0179dd3b1ed575b30ed7a196b1ad3",
+          "verified_original_blobs": 3,
+          "executed_job_steps": 5,
+          "passing_probes": 2,
+          "ci_url": "https://github.com/attomq/atto-ci/actions/runs/45748483819/job/139670230788",
+          "scope": "HOST_RUNTIME_SCOPED_EXACT_BLOBS_NOT_FULL_TREE"
+        },
+        "full_tree_ci_evidence": {
+          "source_head": "eb924b6e233f6967e9ee232bbce27726f10750ff",
+          "source_root_tree": "45800a5b009286a753fd2d82578b627f5739fce5",
+          "carrier_head": "95dc44f7e95f4832335c70d4bbc3d4dea1f8ec40",
+          "carrier_source_subtree": "45800a5b009286a753fd2d82578b627f5739fce5",
+          "carrier_composite_tree": "0854d099ad34156df5f33c83c2ad2dc2737ed961",
+          "verified_original_blobs": 126,
+          "verified_recursive_entries": 182,
+          "executed_job_steps": 6,
+          "ci_url": "https://github.com/attomq/atto-ci/actions/runs/45753217932/job/139685656166",
+          "scope": "RESTRICTED_M6_M10_NOT_CANONICAL_GUEST",
+          "transport_auth_scope": "PARTIAL"
+        }
+      },
+      {
+        "id": "llvm",
+        "pr": "https://github.com/atto-lang/atto-source.llvm/pull/925",
+        "head": "39d5f2d74a782316d56695b359414ec96d68577c",
+        "scope": "REAL_MAILBOX",
+        "local_evidence": {
+          "verified_blob_count": 4,
+          "passing_tests_or_runs": 100,
+          "negative_control_reproduced": true
+        },
+        "guest_status": "NOT_EXECUTED",
+        "full_tree_ci_status": "NOT_EXECUTED"
+      },
+      {
+        "id": "net",
+        "pr": "https://github.com/atto-lang/atto-source.net/pull/285",
+        "head": "c904c0aae10dbce2d4dad0f350b659b0cf78f57f",
+        "scope": "HOST_MODEL",
+        "local_evidence": null,
+        "guest_status": "NOT_EXECUTED",
+        "full_tree_ci_status": "NOT_EXECUTED",
+        "scoped_ci_evidence": {
+          "status": "PASSED",
+          "source_head": "c904c0aae10dbce2d4dad0f350b659b0cf78f57f",
+          "source_root_tree": "f6a818fd39bec37e4a9b4cfb1be92bd38505ac49",
+          "carrier_head": "05212930b98743d5d274f12d94c6f97ebaa5b865",
+          "carrier_scoped_tree": "2780bae6e5aea7c590eca9fdc7fbb42a6e3de43d",
+          "verified_original_blobs": 4,
+          "executed_job_steps": 5,
+          "passing_tests_or_projects": 1,
+          "ci_url": "https://github.com/attomq/atto-ci/actions/runs/45753122316/job/139685356084",
+          "scope": "HOST_MODEL_SCOPED_EXACT_BLOBS_NOT_FULL_TREE"
+        }
+      },
+      {
+        "id": "wasm",
+        "pr": "https://github.com/atto-lang/atto-source.wasm/pull/310",
+        "head": "2616024d329748a2ab74dd44f66981b35426502d",
+        "scope": "HOST_MODEL",
+        "local_evidence": {
+          "verified_blob_count": 3,
+          "passing_tests_or_runs": 5,
+          "negative_control_reproduced": true
+        },
+        "guest_status": "NOT_EXECUTED",
+        "full_tree_ci_status": "NOT_EXECUTED"
+      },
+      {
+        "id": "rs",
+        "pr": "https://github.com/atto-lang/atto-source.rs/pull/611",
+        "head": "aa1783525a4849fc19d9a69478f659d191d6969e",
+        "scope": "HOST_MODEL",
+        "local_evidence": null,
+        "guest_status": "NOT_EXECUTED",
+        "full_tree_ci_status": "NOT_EXECUTED",
+        "scoped_ci_evidence": {
+          "status": "PASSED",
+          "source_head": "aa1783525a4849fc19d9a69478f659d191d6969e",
+          "source_root_tree": "a337ccaa979dc882c30f6c97b90578a4af635d63",
+          "carrier_head": "05212930b98743d5d274f12d94c6f97ebaa5b865",
+          "carrier_scoped_tree": "2780bae6e5aea7c590eca9fdc7fbb42a6e3de43d",
+          "verified_original_blobs": 4,
+          "executed_job_steps": 5,
+          "passing_tests_or_projects": 9,
+          "ci_url": "https://github.com/attomq/atto-ci/actions/runs/45753122316/job/139685356513",
+          "scope": "HOST_MODEL_SCOPED_EXACT_BLOBS_NOT_FULL_TREE"
+        }
+      },
+      {
+        "id": "forge",
+        "pr": "https://github.com/atto-lang/atto-source.forge/pull/268",
+        "head": "c440442d2bfb15d946ea436236110ee6cb8d862d",
+        "scope": "HOST_MODEL",
+        "local_evidence": {
+          "verified_blob_count": 3,
+          "passing_tests_or_runs": 40,
+          "negative_control_reproduced": true
+        },
+        "guest_status": "NOT_EXECUTED",
+        "full_tree_ci_status": "NOT_EXECUTED"
+      },
+      {
+        "id": "cranelift",
+        "pr": "https://github.com/atto-lang/atto-source.cranelift/pull/120",
+        "head": "57386829d791e3595fdb8b199b5ef09c2eba7498",
+        "scope": "HOST_MODEL",
+        "local_evidence": null,
+        "guest_status": "NOT_EXECUTED",
+        "full_tree_ci_status": "NOT_EXECUTED",
+        "scoped_ci_evidence": {
+          "status": "PASSED",
+          "source_head": "57386829d791e3595fdb8b199b5ef09c2eba7498",
+          "source_root_tree": "594d9a5eff8490a9b9b1f9dd863e532ee249350f",
+          "carrier_head": "05212930b98743d5d274f12d94c6f97ebaa5b865",
+          "carrier_scoped_tree": "2780bae6e5aea7c590eca9fdc7fbb42a6e3de43d",
+          "verified_original_blobs": 4,
+          "executed_job_steps": 5,
+          "passing_tests_or_projects": 9,
+          "ci_url": "https://github.com/attomq/atto-ci/actions/runs/45753122316/job/139685356279",
+          "scope": "HOST_MODEL_SCOPED_EXACT_BLOBS_NOT_FULL_TREE"
+        }
+      },
+      {
+        "id": "js",
+        "pr": "https://github.com/atto-lang/atto-source.js/pull/164",
+        "head": "7efb04544885d5b1087a9178b78d13f1f725222e",
+        "scope": "HOST_MODEL",
+        "local_evidence": {
+          "verified_blob_count": 3,
+          "passing_tests_or_runs": 5,
+          "negative_control_reproduced": true
+        },
+        "guest_status": "NOT_EXECUTED",
+        "full_tree_ci_status": "NOT_EXECUTED"
+      }
+    ],
+    "other_profiles": [
+      {
+        "id": "atto",
+        "profile": "SELF_HOST_BOOTSTRAP",
+        "guest_status": "NOT_EXECUTED"
+      },
+      {
+        "id": "realtime",
+        "profile": "BOOTSTRAP",
+        "guest_status": "NOT_EXECUTED"
+      },
+      {
+        "id": "hdl",
+        "profile": "NO_DYNAMIC_ACTOR_RUNTIME",
+        "guest_status": "UNSUPPORTED",
+        "rejection_test_status": "SCOPED_V8_PASSED",
+        "rejection_evidence": {
+          "pr": "https://github.com/atto-lang/atto-source.hdl/pull/83",
+          "head": "a4c84e0f000f2b185a75c4c49b1e6b6f4ac59aa2",
+          "test_bodies": 4,
+          "assertions": 38,
+          "scope": "V8_HARNESS_NOT_NODE_CLI_OR_SYNTHESIS"
+        }
+      }
+    ]
   }
 }

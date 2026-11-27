@@ -144,3 +144,66 @@ test('proxy actor API registry remains canonical and cross-backend complete', ()
       assert.equal(b.compiled_guest_ipc_status, 'PASSED');
   }
 });
+
+test('destination scope hardening tracks all eleven profiles without promoting host evidence', () => {
+  const scope = c.destination_scope_hardening;
+  assert.ok(scope);
+  assert.deepEqual(scope.backends.map(b => b.id).sort(), c.backends.map(b => b.id).sort());
+  assert.deepEqual(scope.other_profiles.map(b => b.id).sort(), ['atto','hdl','realtime']);
+  assert.equal(new Set(scope.required_guest_gates).size, 4);
+  for (const gate of ['tenant_bound_to_trusted_destination_before_mailbox_admission',
+      'wrong_tenant_empty_mailbox_no_ticket_or_credit',
+      'numeric_target_and_incarnation_match','valid_retry_after_rejection'])
+    assert.ok(scope.required_guest_gates.includes(gate), gate);
+  for (const b of scope.backends) {
+    assert.match(b.head, /^[0-9a-f]{40}$/);
+    assert.match(b.pr, new RegExp('^https://github\\.com/atto-lang/atto-source\\.' + b.id + '/pull/[0-9]+$'));
+    assert.ok(['REAL_MAILBOX','HOST_MODEL'].includes(b.scope));
+    if (b.local_evidence) {
+      assert.ok(Number.isInteger(b.local_evidence.verified_blob_count) && b.local_evidence.verified_blob_count > 0);
+      assert.ok(Number.isInteger(b.local_evidence.passing_tests_or_runs) && b.local_evidence.passing_tests_or_runs > 0);
+      assert.equal(b.local_evidence.negative_control_reproduced, true);
+    }
+    assert.equal(b.guest_status, 'NOT_EXECUTED');
+    assert.equal(b.full_tree_ci_status, b.id === 'java' ? 'RESTRICTED_M10_SUITE_PASSED' : 'NOT_EXECUTED');
+    if (['rs','net','cranelift'].includes(b.id)) {
+      const e = b.scoped_ci_evidence;
+      assert.equal(e.status, 'PASSED');
+      assert.equal(e.source_head, b.head);
+      assert.match(e.source_root_tree, /^[0-9a-f]{40}$/);
+      assert.match(e.carrier_scoped_tree, /^[0-9a-f]{40}$/);
+      assert.notEqual(e.source_root_tree, e.carrier_scoped_tree);
+      assert.match(e.carrier_head, /^[0-9a-f]{40}$/);
+      assert.equal(e.verified_original_blobs, 4);
+      assert.equal(e.executed_job_steps, 5);
+      assert.equal(e.passing_tests_or_projects, b.id === 'net' ? 1 : 9);
+      assert.equal(e.scope, 'HOST_MODEL_SCOPED_EXACT_BLOBS_NOT_FULL_TREE');
+    }
+    assert.notEqual(c.backends.find(x => x.id === b.id).compiled_guest_ipc_status, 'PASSED',
+      'host candidate status cannot unlock compiled guest parity');
+  }
+  const hdl = scope.other_profiles.find(x => x.id === 'hdl');
+  assert.equal(hdl.guest_status, 'UNSUPPORTED');
+  assert.equal(hdl.rejection_test_status, 'SCOPED_V8_PASSED');
+  assert.match(hdl.rejection_evidence.head, /^[0-9a-f]{40}$/);
+  assert.equal(hdl.rejection_evidence.scope, 'V8_HARNESS_NOT_NODE_CLI_OR_SYNTHESIS');
+  assert.ok(hdl.rejection_evidence.assertions > 0);
+  const java = scope.backends.find(x => x.id === 'java');
+  const receipt = java.full_tree_ci_evidence;
+  assert.equal(receipt.source_head, java.head);
+  assert.match(receipt.source_root_tree, /^[0-9a-f]{40}$/);
+  assert.equal(receipt.carrier_source_subtree, receipt.source_root_tree);
+  assert.match(receipt.carrier_composite_tree, /^[0-9a-f]{40}$/);
+  assert.notEqual(receipt.carrier_composite_tree, receipt.source_root_tree);
+  assert.match(receipt.carrier_head, /^[0-9a-f]{40}$/);
+  assert.equal(receipt.verified_original_blobs, 126);
+  assert.equal(receipt.verified_recursive_entries, 182);
+  assert.equal(receipt.executed_job_steps, 6);
+  assert.equal(receipt.scope, 'RESTRICTED_M6_M10_NOT_CANONICAL_GUEST');
+  assert.equal(receipt.transport_auth_scope, 'PARTIAL');
+  assert.equal(java.full_tree_ci_status, 'RESTRICTED_M10_SUITE_PASSED');
+  assert.notEqual(java.historical_scoped_ci_evidence.source_head, java.head);
+  assert.equal(java.guest_status, 'NOT_EXECUTED');
+  for (const b of scope.other_profiles.filter(x => x.id !== 'hdl'))
+    assert.equal(b.guest_status, 'NOT_EXECUTED');
+});
