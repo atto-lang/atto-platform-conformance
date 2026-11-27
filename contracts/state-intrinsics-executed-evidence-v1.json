@@ -681,5 +681,57 @@
       "job": 140334738896,
       "status": "QUEUED_NO_STEPS_AT_SAMPLE"
     }
+  },
+  "javaConsolidatedAuthorityEvidence": {
+    "status": "LOCAL_RUNTIME_AND_MIR_METHOD_EXCERPT_NOT_CI",
+    "repo": "atto-lang/atto-source.java",
+    "pr": 2028,
+    "head": "4b38a0ca8a4cf9b2e16601606c25ea655195c773",
+    "tree": "ce3a93f7ce3d759d7f716ec08ad9ca877a25452c",
+    "base": "cdc1e5fccd7c79b2c88fd1ddfd08084b03148986",
+    "mergedDependency": {
+      "pr": 2021,
+      "mergeCommit": "b2eeac182d97899260a1a609f246ee68b68eb5db"
+    },
+    "supersedesCandidates": [
+      1891,
+      2016,
+      2022
+    ],
+    "runtimeBlobs": {
+      "StateContainerAccessGate.java": "664d1d8bcd0b1a69d249238a452f964952dd82b1",
+      "ScalarStateContainer.java": "9c10de6acd0759caba5d530a24aa05c0c3ed04e1"
+    },
+    "mirBlob": "846b07494d4770e9dc93b5758caa144f12745898",
+    "assertionsPassed": 684,
+    "concurrentTrials": 256,
+    "toolchain": "JDK 21.0.12.1 javac -Xlint:all -Werror",
+    "scope": "Main-based semantic forward-port, unique exact context hunks, no whole-file rollback. Both previous standalone probes rerun against exact combined runtime blobs; MIR excerpt only, full parser/JUnit/guest tests not executed. Predecessors remain drafts pending independent replacement review.",
+    "ci": {
+      "run": 45947841740,
+      "status": "FAILED_NO_JOBS"
+    }
+  },
+  "currentMainStateMatrixRecheck": {
+    "status": "ADAPTED_V8_HOST_ONLY_NOT_CI",
+    "runtimeBlob": "23ce944e66a50fd63765ec5d55b712f993774d15",
+    "records": [
+      {
+        "repo": "atto-lang/atto-source.rs",
+        "head": "5688db5f862434c1fec462e8d7887aa46fc74974",
+        "tree": "bfc048678138f2bea6669bb33cb2d9cc037fe740",
+        "testBlob": "939ef5612b961e010ea477f6a5fcbf9ededbfeaa",
+        "passed": 4
+      },
+      {
+        "repo": "atto-lang/atto-source.wasm",
+        "head": "76dc592d271d05eb9bcf473932898d2490674f36",
+        "tree": "d3043ee136a726537d4e5424561613c32c320fe9",
+        "testBlob": "a1f6fd32a191cdce7d72cd33cf7ef19276442e53",
+        "passed": 4
+      }
+    ],
+    "differentialOperationsPerBackend": 8192,
+    "scope": "Actual fetched exact runtime and test callback bodies executed with import/assert/test adapter; not native Node runner, full CI or compiler guest. Both main trees already contain capacity and deterministic matrix tests. Wasm #366 current head a8d16718d3f21d6431d5fdd512727af1a62a8d98 has identical root tree to sampled main; Rust #731 capacity test present on main. Do not duplicate or count as a merge."
   }
 }
