@@ -1,0 +1,178 @@
+{
+  "schema": "atto.pair-binding-equivalence.v1",
+  "status": "SOURCE_CANDIDATE_ONLY",
+  "spec": "https://github.com/atto-lang/atto-spec/pull/299",
+  "spec_head": "c84d81b9637a771490019f6d77a2d2c7f51bb70a",
+  "backend_count": 11,
+  "backends": [
+    {
+      "repo": "atto-lang/atto-source.atto",
+      "guest_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.cranelift",
+      "guest_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.forge",
+      "guest_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.hdl",
+      "guest_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.java",
+      "guest_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.js",
+      "guest_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.llvm",
+      "guest_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.net",
+      "guest_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.realtime",
+      "guest_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.rs",
+      "guest_status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "repo": "atto-lang/atto-source.wasm",
+      "guest_status": "NOT_EXECUTED",
+      "receipt": null
+    }
+  ],
+  "notes": [
+    "Run unchanged fixtures against real compiler and generated guest. Compare canonical Pair type, key/value and stdout witness. Runtime stdout marker must occur exactly once; compare raw stdout between the paired forms without assuming line termination.",
+    "Reject only with diagnostic on specified line and intended semantic category, no emitted executable, and successful paired positive. Backend-specific diagnostic IDs must be reviewed before certification. Unsupported or zero-step is NOT_EXECUTED, never a negative pass."
+  ],
+  "fixtures": [
+    {
+      "id": "short",
+      "expected": {
+        "main_result": 5
+      },
+      "path": "fixtures/pair-binding-equivalence-v1/short.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "expanded",
+      "expected": {
+        "main_result": 5
+      },
+      "path": "fixtures/pair-binding-equivalence-v1/expanded.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "factory",
+      "expected": {
+        "main_result": 5
+      },
+      "path": "fixtures/pair-binding-equivalence-v1/factory.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "different-key",
+      "expected": {
+        "main_result": 5
+      },
+      "path": "fixtures/pair-binding-equivalence-v1/different-key.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "runtime-short",
+      "expected": {
+        "main_result": 5,
+        "stdout_marker": "PAIR_TICK",
+        "stdout_marker_count": 1
+      },
+      "path": "fixtures/pair-binding-equivalence-v1/runtime-short.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "runtime-expanded",
+      "expected": {
+        "main_result": 5,
+        "stdout_marker": "PAIR_TICK",
+        "stdout_marker_count": 1
+      },
+      "path": "fixtures/pair-binding-equivalence-v1/runtime-expanded.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "scalar-control",
+      "expected": {
+        "main_result": 5
+      },
+      "path": "fixtures/pair-binding-equivalence-v1/scalar-control.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-scalar",
+      "paired_positive": "scalar-control",
+      "diagnostic_line": 3,
+      "expected": {
+        "compile_reject": "Pair is not implicitly convertible to int"
+      },
+      "path": "fixtures/pair-binding-equivalence-v1/reject-scalar.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-unbound-expanded",
+      "paired_positive": "expanded",
+      "diagnostic_line": 2,
+      "expected": {
+        "compile_reject": "unresolved value operand x"
+      },
+      "path": "fixtures/pair-binding-equivalence-v1/reject-unbound-expanded.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-unbound-short",
+      "paired_positive": "short",
+      "diagnostic_line": 2,
+      "expected": {
+        "compile_reject": "unresolved value operand x"
+      },
+      "path": "fixtures/pair-binding-equivalence-v1/reject-unbound-short.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "slot-control",
+      "expected": {
+        "main_result": 5
+      },
+      "path": "fixtures/pair-binding-equivalence-v1/slot-control.atto",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-key-write",
+      "paired_positive": "slot-control",
+      "diagnostic_line": 3,
+      "expected": {
+        "compile_reject": "read-only key projection"
+      },
+      "path": "fixtures/pair-binding-equivalence-v1/reject-key-write.atto",
+      "status": "NOT_EXECUTED"
+    }
+  ]
+}
