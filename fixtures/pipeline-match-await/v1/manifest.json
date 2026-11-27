@@ -283,6 +283,83 @@
       "file": "delimited-empty.atto",
       "sourceGitBlobSha1": "6f11c2f3bdbf1380cad3e41dcc90f0d0c377dd4a",
       "confirmedBackends": []
+    },
+    {
+      "id": "guard-alias-elided-pipe",
+      "expect": "exit",
+      "exit": 42,
+      "file": "guard-alias-elided-pipe.atto",
+      "sourceGitBlobSha1": "128610fb0f8f21d195efcfa625bd215d553b96d4",
+      "confirmedBackends": []
+    },
+    {
+      "id": "guard-alias-explicit",
+      "expect": "exit",
+      "exit": 42,
+      "file": "guard-alias-explicit.atto",
+      "sourceGitBlobSha1": "0cfa53ac497db520ded78faa6cd23c872f668a9e",
+      "confirmedBackends": []
+    },
+    {
+      "id": "guard-alias-delimited",
+      "expect": "exit",
+      "exit": 42,
+      "file": "guard-alias-delimited.atto",
+      "sourceGitBlobSha1": "27e2ea3164bb378aaa010eeba01058bec7915f88",
+      "confirmedBackends": []
+    },
+    {
+      "id": "guard-alias-named-pipe",
+      "expect": "exit",
+      "exit": 42,
+      "file": "guard-alias-named-pipe.atto",
+      "sourceGitBlobSha1": "da732dd82c828e7edcd6c7d4838ebf36cc65f4ad",
+      "confirmedBackends": []
+    },
+    {
+      "id": "guard-alias-tuple",
+      "expect": "exit",
+      "exit": 30,
+      "file": "guard-alias-tuple.atto",
+      "sourceGitBlobSha1": "4d316d5e09ec3d70defd3321c28518b0972d64d1",
+      "confirmedBackends": []
+    },
+    {
+      "id": "guard-alias-const",
+      "expect": "exit",
+      "exit": 43,
+      "file": "guard-alias-const.atto",
+      "sourceGitBlobSha1": "16eb3238dc9d9d7d53c0c6bed4bf6dc14dcf38e6",
+      "confirmedBackends": []
+    },
+    {
+      "id": "guard-alias-transformed",
+      "expect": "exit",
+      "exit": 42,
+      "file": "guard-alias-transformed.atto",
+      "sourceGitBlobSha1": "5215c52d496a15264e7e49ae331598d34671e554",
+      "confirmedBackends": []
+    },
+    {
+      "id": "guard-alias-scope-reject",
+      "expect": "reject",
+      "file": "guard-alias-scope-reject.atto",
+      "sourceGitBlobSha1": "bde59d6e52d8c5f4ed70d0b96bee08219c0c4cd2",
+      "confirmedBackends": []
+    },
+    {
+      "id": "guard-alias-nonbool-reject",
+      "expect": "reject",
+      "file": "guard-alias-nonbool-reject.atto",
+      "sourceGitBlobSha1": "7520a3be7ef9017169bc8e416bdeb8b61cd417ff",
+      "confirmedBackends": []
+    },
+    {
+      "id": "guard-alias-runtime-const-reject",
+      "expect": "reject",
+      "file": "guard-alias-runtime-const-reject.atto",
+      "sourceGitBlobSha1": "8c677a1564f749475363ad04b851beacd4153a78",
+      "confirmedBackends": []
     }
   ]
 }
