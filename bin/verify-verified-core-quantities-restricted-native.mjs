@@ -1,5 +1,5 @@
-// Execute the identical eight generated multi-dimensional source fixtures
-// with restricted native compilers. This is deliberately NOT the full corpus.
+// Execute identical shared quantity fixtures through native Forge and Cranelift.
+// Full mode reports every mismatch and fails if any case is not exact.
 import assert from "node:assert/strict";
 import {spawnSync} from "node:child_process";
 import {mkdtempSync,readFileSync,writeFileSync,existsSync,rmSync} from "node:fs";
@@ -29,8 +29,10 @@ const success=(r,id)=>assert.equal(r.status,0,id+": "+r.stderr.toString());
 const expectedNames=["unit-add","unit-sub","unit-product-order","unit-velocity","unit-area","unit-mixed-add","unit-residual-dimension","unit-residual-area"].map(n=>"generated-boundary-"+n+".atto");
 try{
  const {fixtures,cases}=expandQuantityCases(original,work,manifest);
- const selected=cases.filter(c=>expectedNames.includes(c.source));
- assert.equal(selected.length,expectedNames.length);
+ const full=process.env.ATTO_FULL_NATIVE_QUANTITIES==='1';
+ const selected=full?cases:cases.filter(c=>expectedNames.includes(c.source));
+ assert.equal(selected.length,full?151:expectedNames.length);
+ let passed=0;const failures=[];
  const harness=join(work,"host.c");
  writeFileSync(harness,`#include <stdint.h>
 #include <inttypes.h>
@@ -40,6 +42,7 @@ int main(void){int64_t out=0;int32_t rc=oreslang_scalar_entry(0,0,0,0,&out);
 if(rc)return rc;
 printf("%" PRId64 "\\n",out);return 0;}`);
  for(const {source,expected} of selected){
+   try {
    const input=join(fixtures,source);
    const output=join(work,source+(backend==="forge"?".cpp":".o"));
    const binary=join(work,source+".guest");
@@ -48,11 +51,11 @@ printf("%" PRId64 "\\n",out);return 0;}`);
      assert.equal(compiled.status,backend==="forge"?2:1,source);
      assert.equal(compiled.stdout.length,0,source);
      assert.equal(existsSync(output),false,source);
-     if(backend==="cranelift")assert.ok(compiled.stderr.toString().includes(expected.category+":"),source);
+     if(full||backend==="cranelift")assert.match(compiled.stderr.toString(),new RegExp('(?:^|\\s)'+expected.category+'(?:[:\\s]|$)'),source);
      // Forge currently has generic parser diagnostics. Rejection is proven,
      // but diagnostic-category parity must remain explicitly unverified.
    }else{
-     assert.equal(expected.kind,"value");
+     assert.ok(["value","arithmeticFailure"].includes(expected.kind));
      success(compiled,source);
      if(backend==="cranelift"){
        assert.ok(compiled.stdout.length>0,source);
@@ -63,11 +66,21 @@ printf("%" PRId64 "\\n",out);return 0;}`);
        success(run(process.env.CXX||"c++",["-std=c++20","-Wall","-Wextra","-Werror","-fsanitize=undefined","-fno-sanitize-recover=all","-I"+include,output,"-o",binary]),source+" link");
      }
      const guest=run(binary,[]);
-     success(guest,source+" guest");
-     assert.equal(guest.stdout.toString().trim(),expected.decimal,source);
-     assert.equal(guest.stderr.length,0,source);
+     if(expected.kind==="value"){
+       success(guest,source+" guest");
+       assert.equal(guest.stdout.toString(),expected.decimal+"\n",source);
+       assert.equal(guest.stderr.length,0,source);
+     }else{
+       const statuses=backend==="forge"?{divisionByZero:71,integerOverflow:70}:{divisionByZero:2,integerOverflow:1};
+       assert.ok(Object.hasOwn(statuses,expected.category));
+       assert.equal(guest.status,statuses[expected.category],source);
+       assert.equal(guest.stdout.length,0,source);
+       assert.equal(guest.stderr.toString(),backend==="forge"?(expected.category==="divisionByZero"?"E_DIVZERO\n":"E_OVERFLOW\n"):"",source);
+     }
    }
-   console.log("PASS "+backend+" "+source+" "+expected.kind+" "+sha(readFileSync(input)));
+   console.log("PASS "+backend+" "+source+" "+expected.kind+" "+sha(readFileSync(input)));passed++;
+   }catch(e){failures.push(source);console.error("FAIL "+backend+" "+source+" "+String(e.message));}
  }
- console.log("VERIFIED_RESTRICTED_SUBSET "+backend+" "+selected.length+"/"+expectedNames.length+" diagnostic_categories="+(backend==="forge"?"partial":"verified"));
+ console.log("NATIVE_QUANTITY_RESULT "+backend+" "+passed+"/"+selected.length+" failures="+JSON.stringify(failures));
+ assert.equal(failures.length,0,"shared native corpus failed");
 }finally{rmSync(work,{recursive:true,force:true});}

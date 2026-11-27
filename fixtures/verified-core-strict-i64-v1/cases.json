@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "profile": "verified-core-strict-i64-v1",
+  "description": "Candidate opt-in strict source proof contract. Unsupported profile is a coverage gap, not a passed negative. Expected values must execute on actual emitted target. Diagnostics must occur before artifact emission.",
+  "cases": [
+    {
+      "id": "bounded-add",
+      "tier": "arithmetic",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc f(Bounded x) -> int { return x + 1; } pub fnc main() -> int { return f(41); }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "safe-scalar-div",
+      "tier": "arithmetic",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { return 84 / 2; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "cast-safe",
+      "tier": "arithmetic",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { return 42 as Bounded; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "unknown-add",
+      "tier": "arithmetic",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc f(int x) -> int { return x + 1; } pub fnc main() -> int { return f(41); }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "zero-div",
+      "tier": "arithmetic",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { return 42 / 0; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "min-div",
+      "tier": "arithmetic",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { return -9223372036854775808 / -1; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "eager-unused",
+      "tier": "arithmetic",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { val int n = 9223372036854775807+1; return 42; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "unknown-cast",
+      "tier": "arithmetic",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc f(int x) -> Bounded { return x as Bounded; } pub fnc main() -> int { return f(42); }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "guard-nonzero",
+      "tier": "control-flow",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc f(int x) -> int { if x != 0 { return 42 / x; } return 0; } pub fnc main() -> int { return f(1); }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "short-circuit",
+      "tier": "control-flow",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\nfnc f(int x) -> int { if x != 0 && 42 / x > 0 { return 1; } return 42; } pub fnc main() -> int { return f(0); }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "stale-rebind",
+      "tier": "control-flow",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { let int x = 1; x = 0; return 42 / x; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "loop-counter",
+      "tier": "loops",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { let Bounded x = 1; while x < 42 { x = x + 1; } return x; }\n",
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "loop-overflow",
+      "tier": "loops",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { let int x = 0; while x >= 0 { x = x + 1; } return x; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_VERIFY_UNPROVEN"
+      }
+    },
+    {
+      "id": "loop-invariant",
+      "tier": "loops",
+      "source": "define dimension Time; define unit Second: Time; type Bounded = int where self >= 1 and self <= 42;\npub fnc main() -> int { let Bounded x = 1; while x <= 42 { x = x + 1; } return x; }\n",
+      "expected": {
+        "kind": "diagnostic",
+        "category": "E_REFINEMENT_BINDING"
+      }
+    }
+  ]
+}
