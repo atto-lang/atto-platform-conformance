@@ -1,0 +1,11 @@
+pub fnc main(): int {
+    return 55 |> fnc fib(int v): int {
+        ^ (fnc step(int n, int a, int b): int {
+            ^ match n over
+                on 0 -> a,
+                on 1 -> b,
+                on _ -> step(n - 1, b, a + b)
+            end;
+        })(v, 0, 1);
+    };
+}
