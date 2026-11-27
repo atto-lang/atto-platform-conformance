@@ -9,3 +9,7 @@ duplicate-init.atto	reject
 wrong-owner.atto	reject
 cycle.atto	reject
 wrong-constructor.atto	reject
+lazy-skipped.atto	42
+lazy-and-reached.atto	overflow
+lazy-or-reached.atto	overflow
+lazy-illtyped.atto	reject

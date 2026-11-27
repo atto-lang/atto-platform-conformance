@@ -6,7 +6,7 @@ trap 'rm -rf -- "$work"' EXIT
 project=verification/Ores.Net.AttachedStructFixtures/Ores.Net.AttachedStructFixtures.csproj
 host=host/Ores.Net.NativeHost/Ores.Net.NativeHost.csproj
 dotnet build "$project" -c Release
-positive=0; negative=0
+positive=0; negative=0; overflow=0
 while IFS=$'\t' read -r name expected; do
   [[ "$name" =~ ^[a-z-]+\.atto$ ]]
   dll="$work/OresGenerated.dll"
@@ -28,8 +28,19 @@ while IFS=$'\t' read -r name expected; do
   app="$work/published/oreslang-app"
   file "$app" | grep -q 'ELF 64-bit'
   test ! -e "$work/published/OresGenerated.dll"
-  test "$("$app")" = "$expected"
-  positive=$((positive+1))
+  if [[ "$expected" == overflow ]]; then
+    set +e
+    "$app" >"$work/stdout" 2>"$work/stderr"
+    status=$?
+    set -e
+    test "$status" = 70
+    test ! -s "$work/stdout"
+    grep -Fx 'Oreslang arithmetic overflow' "$work/stderr"
+    overflow=$((overflow+1))
+  else
+    test "$("$app")" = "$expected"
+    positive=$((positive+1))
+  fi
 done < "$root/manifest.tsv"
-test "$positive" = 3; test "$negative" = 8
-echo "SEVEN_TARGET_RECEIPT target=net-native positive=$positive reject=$negative"
+test "$positive" = 4; test "$negative" = 9; test "$overflow" = 2
+echo "SEVEN_TARGET_RECEIPT target=net-native positive=$positive reject=$negative overflow=$overflow"
