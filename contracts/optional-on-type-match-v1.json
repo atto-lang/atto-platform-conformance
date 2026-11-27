@@ -242,6 +242,46 @@
       "id": "pattern-array-shadowed-arm",
       "source": "const Pattern[] z = [on 1, on 2]; pub fnc main(): int { return match 2 over in z -> 42, on 2 -> 0, on _ -> 0 end; }",
       "reject": "unreachable"
+    },
+    {
+      "id": "pattern-bool-exhaustive",
+      "source": "const Pattern[] z = [on true, on false]; pub fnc main(): int { return match false over in z -> 42 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "pattern-mixed-bool-int",
+      "source": "const Pattern[] z = [on 1, on true]; pub fnc main(): int { return match true over in z -> 42, on _ -> 0 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "pattern-guard-fallback",
+      "source": "const Pattern[] z = [on 1, in [2,3]]; pub fnc main(): int { return match 2 over in z when false -> 0, in z -> 42, on _ -> 0 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "pattern-type-alias-chain",
+      "source": "type X = int; type Y = X | bool; const Pattern[] z = [is Y]; pub fnc main(): int { return match 7 over is in z -> 42 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "pattern-name-shadowing",
+      "source": "const Pattern p = on 5; fnc f(int p): int { return match p over on p -> 42, on _ -> 0 end; } pub fnc main(): int { return f(5); }",
+      "reject": "ambiguous"
+    },
+    {
+      "id": "pattern-type-alias-cycle",
+      "source": "type X = Y; type Y = X; const Pattern p = is X; pub fnc main(): int { return 42; }",
+      "reject": "cycle"
+    },
+    {
+      "id": "pattern-category-array-as-single",
+      "source": "const Pattern[] z = [on 1]; pub fnc main(): int { return match 1 over on z -> 42, on _ -> 0 end; }",
+      "reject": "type"
+    },
+    {
+      "id": "pattern-category-single-as-array",
+      "source": "const Pattern p = on 1; pub fnc main(): int { return match 1 over in p -> 42, on _ -> 0 end; }",
+      "reject": "type"
     }
   ],
   "backend_status": {
