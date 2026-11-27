@@ -1,0 +1,27 @@
+name: Sequence return registry (host only)
+on:
+  pull_request:
+    paths:
+      - 'contracts/seq-expression-v1.json'
+      - 'contracts/sequence-return-revision-v1.json'
+      - 'tests/seq-expression-v1.test.mjs'
+      - 'tests/sequence-return-revision-v1.test.mjs'
+      - '.github/workflows/sequence-return-revision-host.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  host-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact tested head
+        env:
+          EXPECTED: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED"
+      - name: Run focused host tests (not compiler parity)
+        run: node --test tests/seq-expression-v1.test.mjs tests/sequence-return-revision-v1.test.mjs
