@@ -39,12 +39,13 @@ class WorkflowRepositoryIdentityTests(unittest.TestCase):
             }}},
         }
 
-    def run_guard(self, payload, event="pull_request", repository=EXPECTED_REPO):
+    def run_guard(self, payload, event="pull_request", repository=EXPECTED_REPO,
+                  missing_event_path=False):
         with tempfile.TemporaryDirectory() as directory:
             p = Path(directory) / "event.json"
             p.write_text(json.dumps(payload), encoding="utf-8")
-            env = dict(os.environ, GH_EVENT_PATH=str(p),
-                       GH_EVENT_NAME=event, GH_REPOSITORY=repository)
+            env = dict(os.environ, GITHUB_EVENT_PATH="" if missing_event_path else str(p),
+                       GITHUB_EVENT_NAME=event, GITHUB_REPOSITORY=repository)
             return subprocess.run([sys.executable, "-c", self.script],
                                   env=env, capture_output=True, text=True,
                                   timeout=10, check=False)
@@ -83,6 +84,16 @@ class WorkflowRepositoryIdentityTests(unittest.TestCase):
 
     def test_unrecognized_event_denied(self):
         self.assertNotEqual(self.run_guard(self.payload(), event="push").returncode, 0)
+
+    def test_missing_runner_event_path_fails_closed(self):
+        result = self.run_guard(self.payload(), missing_event_path=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("MISSING_GITHUB_EVENT_PATH", result.stderr)
+
+    def test_non_object_event_payload_denied(self):
+        result = self.run_guard([])
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("INVALID_GITHUB_EVENT_PAYLOAD", result.stderr)
 
     def test_missing_event_repository_denied(self):
         self.assertNotEqual(self.run_guard({}).returncode, 0)
