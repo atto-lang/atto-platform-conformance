@@ -1,0 +1,163 @@
+name: Atto-XO unsigned debit source oracle
+on:
+  pull_request:
+    paths:
+      - 'contracts/atto-xo-checked-u64-debit-v1/**'
+      - 'tests/atto-xo-checked-u64-debit-v1.test.mjs'
+      - 'tests/fixed-width-integer-oracle.test.mjs'
+      - 'tests/fixed-width-division-oracle.test.mjs'
+      - 'tests/checked-u64-cross-candidates.test.mjs'
+      - 'tests/checked-u64-target-matrix.test.mjs'
+      - 'tests/checked-u64-forge-target-matrix.test.mjs'
+      - 'tests/checked-u64-generated-wasm.test.mjs'
+      - 'tests/checked-u64-generated-native.test.mjs'
+      - 'tests/checked-u64-generated-java.test.mjs'
+      - '.github/workflows/atto-xo-checked-u64-debit-v1.yml'
+permissions:
+  contents: read
+jobs:
+  source-oracle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - run: node --test tests/atto-xo-checked-u64-debit-v1.test.mjs
+      - name: Fixed-width host reference (not compiler parity)
+        run: node --test tests/fixed-width-integer-oracle.test.mjs
+      - name: Fixed-width division reference (not compiler parity)
+        run: node --test tests/fixed-width-division-oracle.test.mjs
+      - name: Cross-candidate harness fail-closed controls (no guest execution)
+        shell: bash
+        run: |
+          set -euo pipefail
+          unset ATTO_U64_JS_SOURCE ATTO_U64_LLVM_SOURCE ATTO_U64_FORGE_SOURCE ATTO_U64_JAVA_SOURCE
+          node --test --test-name-pattern='new independent boundary inventory' tests/checked-u64-cross-candidates.test.mjs
+          if ATTO_U64_CROSS_REQUIRED=1 node --test tests/checked-u64-cross-candidates.test.mjs > missing.log 2>&1; then
+            echo 'Missing source unexpectedly passed'
+            exit 1
+          fi
+          grep -F 'JS: exact source required' missing.log
+          if ATTO_U64_CROSS_REQUIRED=typo node --test tests/checked-u64-cross-candidates.test.mjs > invalid-mode.log 2>&1; then
+            echo 'Invalid strict mode unexpectedly passed'
+            exit 1
+          fi
+          grep -F 'ATTO_U64_CROSS_REQUIRED must be 0 or 1' invalid-mode.log
+          if ATTO_U64_CROSS_REQUIRED=1 ATTO_U64_JS_SOURCE=tests/fixed-width-integer-oracle.test.mjs node --test tests/checked-u64-cross-candidates.test.mjs > altered.log 2>&1; then
+            echo 'Altered source unexpectedly passed'
+            exit 1
+          fi
+          grep -F '7726e7093bb66b10b88757004473c6fa38d8deed' altered.log
+          echo 'Candidate guest execution: NOT_EXECUTED (no source staging)'
+      - name: Target matrix fail-closed admission (no source staging)
+        shell: bash
+        run: |
+          set -euo pipefail
+          unset ATTO_U64_LLVM_SOURCE ATTO_U64_TARGET_REQUIRED
+          node --test tests/checked-u64-target-matrix.test.mjs > target-skip.log 2>&1
+          grep -F 'NOT_EXECUTED: exact compiler source unavailable' target-skip.log
+          if ATTO_U64_TARGET_REQUIRED=1 node --test tests/checked-u64-target-matrix.test.mjs > target-missing.log 2>&1; then
+            echo 'Missing target source unexpectedly passed'
+            exit 1
+          fi
+          grep -F 'ATTO_U64_LLVM_SOURCE required' target-missing.log
+          if ATTO_U64_TARGET_REQUIRED=typo node --test tests/checked-u64-target-matrix.test.mjs > target-mode.log 2>&1; then
+            echo 'Invalid target mode unexpectedly passed'
+            exit 1
+          fi
+          grep -F 'ATTO_U64_TARGET_REQUIRED must be 0 or 1' target-mode.log
+          if ATTO_U64_TARGET_REQUIRED=1 ATTO_U64_LLVM_SOURCE=tests/fixed-width-integer-oracle.test.mjs node --test tests/checked-u64-target-matrix.test.mjs > target-altered.log 2>&1; then
+            echo 'Altered target source unexpectedly passed'
+            exit 1
+          fi
+          grep -F '752d1ad3fb3564eed9067a0a530eb2150d1c14b4' target-altered.log
+          echo 'Target matrix guest execution: NOT_EXECUTED (no source staging)'
+      - name: Forge target matrix fail-closed admission (no source staging)
+        shell: bash
+        run: |
+          set -euo pipefail
+          unset ATTO_U64_FORGE_SOURCE ATTO_U64_FORGE_TARGET_REQUIRED
+          node --test tests/checked-u64-forge-target-matrix.test.mjs > forge-skip.log 2>&1
+          grep -F 'NOT_EXECUTED: exact Forge compiler source unavailable' forge-skip.log
+          if ATTO_U64_FORGE_TARGET_REQUIRED=1 node --test tests/checked-u64-forge-target-matrix.test.mjs > forge-missing.log 2>&1; then
+            exit 1
+          fi
+          grep -F 'ATTO_U64_FORGE_SOURCE required' forge-missing.log
+          if ATTO_U64_FORGE_TARGET_REQUIRED=typo node --test tests/checked-u64-forge-target-matrix.test.mjs > forge-mode.log 2>&1; then
+            exit 1
+          fi
+          grep -F 'ATTO_U64_FORGE_TARGET_REQUIRED must be 0 or 1' forge-mode.log
+          if ATTO_U64_FORGE_TARGET_REQUIRED=1 ATTO_U64_FORGE_SOURCE=tests/fixed-width-integer-oracle.test.mjs node --test tests/checked-u64-forge-target-matrix.test.mjs > forge-altered.log 2>&1; then
+            exit 1
+          fi
+          grep -F '752d1ad3fb3564eed9067a0a530eb2150d1c14b4' forge-altered.log
+          echo 'Forge target matrix execution: NOT_EXECUTED (no source staging)'
+      - name: Generated Wasm gate admission (no compiler source staged)
+        shell: bash
+        run: |
+          set -euo pipefail
+          unset ATTO_U64_LLVM_SOURCE ATTO_U64_GENERATED_WASM_REQUIRED ATTO_U64_WASM_FAMILY
+          node --test tests/checked-u64-generated-wasm.test.mjs > wasm-skip.log 2>&1
+          grep -F 'NOT_EXECUTED: exact LLVM compiler source unavailable' wasm-skip.log
+          if ATTO_U64_GENERATED_WASM_REQUIRED=1 node --test tests/checked-u64-generated-wasm.test.mjs > wasm-missing.log 2>&1; then
+            exit 1
+          fi
+          grep -F 'ATTO_U64_LLVM_SOURCE required' wasm-missing.log
+          if ATTO_U64_GENERATED_WASM_REQUIRED=typo node --test tests/checked-u64-generated-wasm.test.mjs > wasm-mode.log 2>&1; then
+            exit 1
+          fi
+          grep -F 'ATTO_U64_GENERATED_WASM_REQUIRED must be 0 or 1' wasm-mode.log
+          if ATTO_U64_WASM_FAMILY=typo node --test tests/checked-u64-generated-wasm.test.mjs > wasm-family.log 2>&1; then
+            exit 1
+          fi
+          grep -F 'invalid generated Wasm family' wasm-family.log
+          if ATTO_U64_GENERATED_WASM_REQUIRED=1 ATTO_U64_LLVM_SOURCE=tests/fixed-width-integer-oracle.test.mjs node --test tests/checked-u64-generated-wasm.test.mjs > wasm-altered.log 2>&1; then
+            exit 1
+          fi
+          grep -F '752d1ad3fb3564eed9067a0a530eb2150d1c14b4' wasm-altered.log
+          echo 'Generated Wasm execution: NOT_EXECUTED (no source staging)'
+      - name: Generated native gate admission (no compiler source staged)
+        shell: bash
+        run: |
+          set -euo pipefail
+          unset ATTO_U64_LLVM_SOURCE ATTO_U64_FORGE_SOURCE ATTO_U64_GENERATED_NATIVE_REQUIRED ATTO_U64_NATIVE_BACKEND ATTO_U64_NATIVE_FAMILY
+          node --test tests/checked-u64-generated-native.test.mjs > native-skip.log 2>&1
+          grep -F 'NOT_EXECUTED: exact native compiler source unavailable' native-skip.log
+          if ATTO_U64_GENERATED_NATIVE_REQUIRED=1 node --test tests/checked-u64-generated-native.test.mjs > native-missing.log 2>&1; then
+            exit 1
+          fi
+          grep -F 'exact native compiler source required' native-missing.log
+          if ATTO_U64_NATIVE_BACKEND=typo node --test tests/checked-u64-generated-native.test.mjs > native-backend.log 2>&1; then
+            exit 1
+          fi
+          grep -F 'invalid native backend' native-backend.log
+          if ATTO_U64_GENERATED_NATIVE_REQUIRED=1 ATTO_U64_LLVM_SOURCE=tests/fixed-width-integer-oracle.test.mjs node --test tests/checked-u64-generated-native.test.mjs > native-altered.log 2>&1; then
+            exit 1
+          fi
+          grep -F '752d1ad3fb3564eed9067a0a530eb2150d1c14b4' native-altered.log
+          echo 'Generated native execution: NOT_EXECUTED (no source staging)'
+      - name: Generated Java gate admission (no compiler source staged)
+        shell: bash
+        run: |
+          set -euo pipefail
+          unset ATTO_U64_JAVA_SOURCE ATTO_U64_GENERATED_JAVA_REQUIRED ATTO_U64_JAVA_FAMILY
+          node --test tests/checked-u64-generated-java.test.mjs > java-skip.log 2>&1
+          grep -F 'NOT_EXECUTED: exact Java compiler source unavailable' java-skip.log
+          if ATTO_U64_GENERATED_JAVA_REQUIRED=1 node --test tests/checked-u64-generated-java.test.mjs > java-missing.log 2>&1; then
+            exit 1
+          fi
+          grep -F 'ATTO_U64_JAVA_SOURCE required' java-missing.log
+          if ATTO_U64_GENERATED_JAVA_REQUIRED=typo node --test tests/checked-u64-generated-java.test.mjs > java-mode.log 2>&1; then
+            exit 1
+          fi
+          grep -F 'ATTO_U64_GENERATED_JAVA_REQUIRED must be 0 or 1' java-mode.log
+          if ATTO_U64_JAVA_FAMILY=typo node --test tests/checked-u64-generated-java.test.mjs > java-family.log 2>&1; then
+            exit 1
+          fi
+          grep -F 'invalid generated Java family' java-family.log
+          if ATTO_U64_GENERATED_JAVA_REQUIRED=1 ATTO_U64_JAVA_SOURCE=tests/fixed-width-integer-oracle.test.mjs node --test tests/checked-u64-generated-java.test.mjs > java-altered.log 2>&1; then
+            exit 1
+          fi
+          grep -F '02037fb8fd3b4056fc9eab4d75b51e95d03dd65b' java-altered.log
+          echo 'Generated Java execution: NOT_EXECUTED (no source staging)'
