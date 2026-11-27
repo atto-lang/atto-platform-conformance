@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "status": "TARGET_NOT_EXECUTED",
+  "contract": "atto-spec#299/#315",
+  "description": "Complete scalar guest source targets shared between Rust #754 and JS #306. Distinguish literal source reorder from formal slot order. Semantic rejection must not publish an artifact. Effectful reordering, Pair expressions and Tuple/Record conversions are separate targets, not claimed by this subset.",
+  "cases": [
+    {
+      "id": "colon",
+      "source": "fnc f(int a, int b): int { return a * 10 + b; } pub fnc main(): int { return f(b: 2, a: 4); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "equals",
+      "source": "fnc f(int a, int b): int { return a * 10 + b; } pub fnc main(): int { return f(b=2,a=4); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "mixed",
+      "source": "fnc f(int a, int b): int { return a * 10 + b; } pub fnc main(): int { return f(b:2,a=4); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "mixed-reverse",
+      "source": "fnc f(int a, int b): int { return a * 10 + b; } pub fnc main(): int { return f(b=2,a:4); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "positional-named",
+      "source": "fnc f(int a, int b): int { return a * 10 + b; } pub fnc main(): int { return f(4,b=2); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "distinct-result",
+      "source": "fnc f(int a, int b): int { return a * 10 + b; } pub fnc main(): int { return f(b=4,a=2); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "24"
+      }
+    },
+    {
+      "id": "duplicate-mixed",
+      "source": "fnc f(int a, int b): int { return a * 10 + b; } pub fnc main(): int { return f(a=4,a:2); }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "duplicate-parameter",
+        "artifact": false
+      }
+    },
+    {
+      "id": "duplicate-positional",
+      "source": "fnc f(int a, int b): int { return a * 10 + b; } pub fnc main(): int { return f(4,a=2); }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "duplicate-parameter",
+        "artifact": false
+      }
+    },
+    {
+      "id": "unknown",
+      "source": "fnc f(int a, int b): int { return a * 10 + b; } pub fnc main(): int { return f(z=4,b:2); }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "unknown-parameter",
+        "artifact": false
+      }
+    },
+    {
+      "id": "positional-after-named",
+      "source": "fnc f(int a, int b): int { return a * 10 + b; } pub fnc main(): int { return f(a=4,2); }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "positional-after-named",
+        "artifact": false
+      }
+    }
+  ]
+}
