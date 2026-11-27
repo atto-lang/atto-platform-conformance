@@ -198,11 +198,16 @@
       "repository": "atto-lang/atto-source.rs",
       "pullRequest": 759,
       "state": "NOT_EXECUTED",
-      "candidateHead": "30ce560a82e3132db4957848356e00772709935a",
+      "candidateHead": "1acc03ad0344efeb8953883c53f411e34fba9b1f",
       "historicalEmbeddedReceipt": {
         "head": "44f54311700ac0f7f78014ef69b39cd0b50b918c",
         "tree": "5b2ca62528b06eeed701b48d932b5b4efeb2b894",
         "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46052425736/job/140686758472"
+      },
+      "latestEmbeddedReceipt": {
+        "head": "30ce560a82e3132db4957848356e00772709935a",
+        "tree": "a94993aeb93921dc4ac8feb727f4363f432e9d8b",
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46056897778/job/140701486846"
       }
     },
     {
@@ -210,11 +215,16 @@
       "pullRequest": 1073,
       "profile": "Rust-hosted browser Wasm frontend only; not native LLVM",
       "state": "NOT_EXECUTED",
-      "candidateHead": "f2c3f52a48babcb585fcad9106a5784ecb7c5357",
+      "candidateHead": "ea9f28ec9517dd0a3a03f1f45c6838e81d5cbd11",
       "historicalEmbeddedReceipt": {
         "head": "1065eec28006c3f082c93c255fa231449a4a83e1",
         "tree": "43d818a3cda761f6ef8c5328ed84019e70581c2b",
         "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46052425736/job/140686758123"
+      },
+      "latestEmbeddedReceipt": {
+        "head": "f2c3f52a48babcb585fcad9106a5784ecb7c5357",
+        "tree": "032e2063e0c7baf85b93b2f2e7cadc0eab4a7399",
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46056897778/job/140701487157"
       }
     },
     {
@@ -226,6 +236,11 @@
         "head": "5d25740ed1ca1bc555ae07117b97f02f777ad7cc",
         "tree": "1fbdb1795694c7e24a12890e790069e76558d2fd",
         "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46054395668/job/140693245351"
+      },
+      "latestEmbeddedReceipt": {
+        "head": "5ac060c935f9fef1b2b98bc72ab220eb31726f38",
+        "tree": "d26ff27d172c129ae29edf355de4d9e969bca961",
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46056897778/job/140701487167"
       }
     },
     {
@@ -233,7 +248,12 @@
       "pullRequest": 386,
       "profile": "direct CIL int-only bounded profile, not structured compiler or general allocator ABI",
       "state": "NOT_EXECUTED",
-      "candidateHead": "38ef60e7c61cdf687aa5e2624bac2d2a8c86d84c"
+      "candidateHead": "38ef60e7c61cdf687aa5e2624bac2d2a8c86d84c",
+      "latestEmbeddedReceipt": {
+        "head": "38ef60e7c61cdf687aa5e2624bac2d2a8c86d84c",
+        "tree": "1e85d6f59f4f05b90c12f6d20122b1151a19c71a",
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46056784410/job/140701104692"
+      }
     }
   ]
 }
