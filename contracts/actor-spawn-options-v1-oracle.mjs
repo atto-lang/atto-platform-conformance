@@ -608,3 +608,63 @@ const cases=[
 ];
 function run(check,cases,p){let passed=0;for(const [name,sections,want,policy] of cases){let got=null;try{check(sections,policy??p)}catch(e){got=e.message}if(got!==want)throw new Error(name+": "+got+" != "+want);passed++}return passed}
 console.log('source-free cases passed:',run(check,cases,p));
+
+
+// Sequential lifecycle model only: no real scheduler, threads or memory.
+// Each transition is explicit so race orderings can be exercised as traces.
+function lifecycle(limit) {
+  let used=0, next=1;
+  const actors=new Map();
+  const lookup=ref=>actors.get(ref.generation);
+  function admit(charge,payload) {
+    if(!Number.isSafeInteger(charge)||charge<=0||charge>limit-used)throw Error("QUOTA");
+    const ref=Object.freeze({generation:next++});
+    used+=charge;
+    actors.set(ref.generation,{ref,charge,payload,phase:"initializing",taken:false});
+    return ref;
+  }
+  function take(ref) {
+    const a=lookup(ref);
+    if(!a||a.ref!==ref||a.phase!=="initializing"||a.taken)throw Error("INIT_AUTHORITY");
+    a.taken=true;const p=a.payload;a.payload=undefined;return p;
+  }
+  function ready(ref) {
+    const a=lookup(ref);
+    if(!a||a.ref!==ref||a.phase!=="initializing")return false;
+    a.payload=undefined;a.phase="ready";return true;
+  }
+  function stop(ref) {
+    const a=lookup(ref);
+    if(!a||a.ref!==ref)return false;
+    actors.delete(ref.generation);used-=a.charge;a.payload=undefined;return true;
+  }
+  function receive(ref) {
+    const a=lookup(ref);
+    return !!a&&a.ref===ref&&a.phase==="ready";
+  }
+  return {admit,take,ready,stop,receive,used:()=>used};
+}
+function runLifecycle() {
+  let n=0;
+  const eq=(a,b)=>{if(a!==b)throw Error("lifecycle assertion "+(n+1)+": "+a+" != "+b);n++};
+  const denies=(f,want)=>{let got;try{f()}catch(e){got=e.message}eq(got,want)};
+  const l=lifecycle(10);
+  const a=l.admit(6,{name:"worker",seed:42});
+  eq(l.used(),6);eq(l.receive(a),false);
+  denies(()=>l.admit(5,{}),"QUOTA");eq(l.used(),6);
+  denies(()=>l.take({generation:a.generation}),"INIT_AUTHORITY");
+  eq(l.take(a).seed,42);denies(()=>l.take(a),"INIT_AUTHORITY");
+  eq(l.ready(a),true);eq(l.receive(a),true);eq(l.ready(a),false);
+  denies(()=>l.take(a),"INIT_AUTHORITY");
+  eq(l.stop(a),true);eq(l.stop(a),false);eq(l.used(),0);
+  const b=l.admit(10,{});
+  eq(l.receive(b),false);eq(l.stop(b),true);eq(l.ready(b),false);eq(l.used(),0);
+  const c=l.admit(10,{});
+  eq(l.ready(b),false);eq(l.receive(b),false);eq(l.stop(b),false);
+  eq(l.used(),10);eq(l.ready(c),true);eq(l.receive(c),true);
+  denies(()=>l.take(c),"INIT_AUTHORITY");eq(l.stop(c),true);eq(l.used(),0);
+  denies(()=>l.admit(0,{}),"QUOTA");denies(()=>l.admit(Number.MAX_SAFE_INTEGER+1,{}),"QUOTA");
+  eq(l.used(),0);
+  return n;
+}
+console.log("source-free lifecycle assertions passed:",runLifecycle());
