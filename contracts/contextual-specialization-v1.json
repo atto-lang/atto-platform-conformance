@@ -1,6 +1,6 @@
 {
   "schema": "atto.contextual-specialization.target.v1",
-  "status": "DRAFT_NOT_EXECUTED",
+  "status": "DRAFT_PARTIAL_EXECUTION",
   "spec": "https://github.com/atto-lang/atto-spec/pull/294",
   "prototype": "https://github.com/atto-lang/atto-source.rs/pull/750",
   "parityCertified": false,
@@ -254,6 +254,54 @@
         "tree": "1e85d6f59f4f05b90c12f6d20122b1151a19c71a",
         "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46056784410/job/140701104692"
       }
+    },
+    {
+      "repository": "atto-lang/atto-source.java",
+      "pullRequest": 2042,
+      "profile": "JVM/Graal guest, integer context only; not Native Image",
+      "state": "NOT_EXECUTED",
+      "candidateHead": "20847ea26d2fd6c84d3252a7bc97f8bf45df95ec",
+      "latestEmbeddedReceipt": {
+        "head": "20847ea26d2fd6c84d3252a7bc97f8bf45df95ec",
+        "tree": "ac17abdf3e9d682c5aa04126b728d9f8d5ff13c0",
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46058671820/job/140707324180"
+      }
     }
-  ]
+  ],
+  "sharedCorpusReceipts": {
+    "fixtureHead": "318571acaa8ccd5ebdea4839ccf7376063ea5f27",
+    "fixtureTree": "c063176b39b38a7289c478b2d8fc9fc468f034fd",
+    "note": "Actual shared source files authenticated against git blobs. Negative inputs rejected with no emitted artifact in the test harness, but semantic diagnostic matching remains unclassified; no overall certification.",
+    "results": [
+      {
+        "backend": "rs",
+        "head": "1acc03ad0344efeb8953883c53f411e34fba9b1f",
+        "tree": "0c9a016050a5cfd34e65b6f51b5c70c8c49cf6e8",
+        "guestPass": 7,
+        "rejectedUnclassified": 13,
+        "mismatch": 0,
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46058995674/job/140708378909"
+      },
+      {
+        "backend": "llvm-browser",
+        "head": "ea9f28ec9517dd0a3a03f1f45c6838e81d5cbd11",
+        "tree": "0fb111b4b7723f537ecd5ca5873b6719d8c1e377",
+        "guestPass": 6,
+        "rejectedUnclassified": 13,
+        "mismatch": 1,
+        "mismatchCase": "legacy-body",
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46058995674/job/140708378423"
+      },
+      {
+        "backend": "js",
+        "head": "5ac060c935f9fef1b2b98bc72ab220eb31726f38",
+        "tree": "d26ff27d172c129ae29edf355de4d9e969bca961",
+        "guestPass": 6,
+        "rejectedUnclassified": 13,
+        "outsideProfile": 1,
+        "outsideCase": "legacy-body",
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46058995674/job/140708379099"
+      }
+    ]
+  }
 }
