@@ -401,5 +401,37 @@
       }
     ],
     "scope": "Actual Node WebAssembly engine execution of fixed synthetic modules with real state import signatures; balanced i64 ticket transfer, physical trap unwind, incomplete return rejection, incompatible admission. Exact runtime and test Git blobs verified. Not Atto compiler output, trusted compiler admission, browser worker, or full guest parity. No promotion."
+  },
+  "stateTraceOracleEvidence": {
+    "status": "LOCAL_HOST_AND_SYNTHETIC_WASM_ONLY_NOT_CI",
+    "node": "22.16.0",
+    "runtimeBlob": "23ce944e66a50fd63765ec5d55b712f993774d15",
+    "sharedOracleBlob": "1df5606662aae9e80c2bff67702f9cdeaab9735e",
+    "records": [
+      {
+        "repo": "atto-lang/atto-source.rs",
+        "pr": 715,
+        "head": "d49237e6bba3f291504cb0cc770603c739d4f256",
+        "tree": "e86b1a9b77ca4b12ad2387d0b393fef4e83dd6b7",
+        "oracleTestBlob": "cea16edcbb7b400284ace67f48b14efc3f2c3277",
+        "guestHarnessBlobs": [
+          "4dae7c561cb26fb71859de82f84511677de1a4ed",
+          "b0d4157b613eabe5dffb3c86ff79dc6b64f95eb6"
+        ],
+        "oracleTestsPassed": 4,
+        "syntheticAbiRetestsPassed": 4
+      },
+      {
+        "repo": "atto-lang/atto-source.wasm",
+        "pr": 358,
+        "head": "1a76ea4efb865ba3785df04e454a0418bd17ca36",
+        "tree": "28471b6c192866b4ea06f06a9a4fde0d841da88a",
+        "oracleTestBlob": "5629c9d1011fa494fb5f528991d1d9181eec863f",
+        "guestHarnessBlob": "b5b5b6e32164414aee390617369a5d729439fd1d",
+        "oracleTestsPassed": 4,
+        "syntheticAbiRetestsPassed": 4
+      }
+    ],
+    "scope": "Oracle accepts real host traces, rejects wrong container/mode/order, invalid releases, conflicting claims, missing/duplicate terminal events, potential truncation and live completion. Guest harnesses wired with independently specified expected traces, not executed. No current compiler binary downloaded or built; no promotion."
   }
 }
