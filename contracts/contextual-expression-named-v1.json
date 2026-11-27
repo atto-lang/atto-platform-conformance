@@ -1,6 +1,6 @@
 {
   "schema": "atto.contextual-expression-named.target.v1",
-  "status": "DRAFT_PARTIAL_SHARED_EXECUTION",
+  "status": "DRAFT_FIVE_PROFILE_SHARED_EXECUTION",
   "supersedes": "contextual-direct-named-v1 bounded sibling denials; historical receipts preserved",
   "rules": [
     "Evaluate contextual RHS expressions at their call site in source order, then ordinary arguments; reorder only typed parameter bindings, never actual expressions.",
@@ -80,6 +80,23 @@
         "guestPass": 4,
         "rejectedUnclassified": 4,
         "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46067203372/job/140735305820"
+      },
+      {
+        "backend": "java",
+        "head": "82441bedad765bf312ff79efc1910b618f78e7a8",
+        "tree": "ce72874a4dcc85df32d0f26505752073d4bbffa0",
+        "guestPass": 4,
+        "rejectedUnclassified": 4,
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46068174508/job/140738444499"
+      },
+      {
+        "backend": "net-direct-cil",
+        "head": "f94f993b2f301ccdedb1c0560fadd4cb9918d96d",
+        "tree": "56b27276fbedfc7a231af8a62bfc05631f0f6b1b",
+        "guestPass": 4,
+        "rejectedUnclassified": 4,
+        "nativeAotGuestPass": 4,
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46068174508/job/140738445119"
       }
     ]
   },
