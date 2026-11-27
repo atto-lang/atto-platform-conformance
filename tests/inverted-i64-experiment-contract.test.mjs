@@ -87,7 +87,8 @@ test("experimental i64 guest status cannot be represented as verified backend pa
     "560b7a1aae0225a61de1656a3780650bc6af518d");
   assert.equal(production.llvm_emitter_blob_sha,
     "27c6ec16303b33749be973e9bdacbc1c0d874e5d");
-  assert.match(production.runtime_bounds_trap_gate, /SIGILL\/SIGTRAP/);
+  assert.match(production.runtime_bounds_trap_gate, /negative returncode -SIGILL\/-SIGTRAP/);
+  assert.match(production.runtime_bounds_trap_gate, /rejecting ordinary 132\/133 exits/);
   assert.match(production.runner_admission, /zero-step/);
   assert.match(production.runner_admission, /Source transfer NOT_PERFORMED/);
   assert.deepEqual(production.declaration_rejection, [
