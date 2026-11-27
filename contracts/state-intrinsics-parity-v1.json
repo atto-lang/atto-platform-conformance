@@ -239,7 +239,10 @@
       "independent-typed-ir-invalid-scalar-local-or-private-ticket-slot",
       "independent-typed-ir-invalid-detached-result-slot",
       "ordinary-protected-field-opcode-bypass",
-      "forged-protected-constructor-initialization-registration-order"
+      "forged-protected-constructor-initialization-registration-order",
+      "protected-field-legacy-abi-read-write-bypass",
+      "protected-field-generic-slot-borrow-bypass",
+      "protected-field-unauthorized-readonly-loan-write"
     ],
     "runtime": [
       "overlapping-readers-where-supported",
@@ -263,7 +266,8 @@
         "Validate result scalar type, field membership and lease mode independently of parser admission.",
         "Keep compiler-private lease tickets inaccessible to guest value locals and detached result stores.",
         "Require nested reference graphs to carry verified transitive borrow provenance; otherwise reject before artifact emission.",
-        "For each backend, record exact candidate head/tree, mutation harness and executed result separately."
+        "For each backend, record exact candidate head/tree, mutation harness and executed result separately.",
+        "Where a backend exposes native protected storage, authenticate sealed field metadata independently of opcode selection; ordinary fixed-field and generic-slot APIs must not grant access or loans to a protected field. Preserve legacy unprotected field semantics; distinguish host-ABI negative execution from source and compiler rejection."
       ]
     }
   }
