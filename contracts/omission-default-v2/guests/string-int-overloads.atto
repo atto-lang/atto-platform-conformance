@@ -1,0 +1,5 @@
+define fnc int • foo(x?: int? ?= 3 ??= 4) { return 20; }
+define fnc int • foo(x?: string? ?= "bar" ??= "star") { return 22; }
+define pub fnc int • main() {
+    return foo(Some(1)) + foo(Some("x"));
+}
