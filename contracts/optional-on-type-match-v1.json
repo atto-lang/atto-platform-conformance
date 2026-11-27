@@ -1,7 +1,7 @@
 {
   "schema": "atto.optional-on-type-match.v1",
   "status": "target-not-executed",
-  "semantics": "Only is may omit on; on is has identical meaning. Literal before nominal type is ordered specialization. Unreachable arms remain diagnosed. Unsupported types must fail closed, not count as positive parity.",
+  "semantics": "Only is may omit on; on is has identical meaning. Literal before nominal type is ordered specialization. Unreachable arms remain diagnosed. Unsupported types must fail closed, not count as positive parity. Membership arms use in collection; type lists use is in [T,U]; no ons. All added vectors are targets, not execution receipts.",
   "cases": [
     {
       "id": "union-literal",
@@ -68,6 +68,80 @@
       "id": "unreachable-fallback",
       "source": "pub fnc main(): int { return match 7 over { is int -> 42; on _ -> 0; }; }",
       "reject": "unreachable"
+    },
+    {
+      "id": "membership-literal-hit",
+      "source": "pub fnc main(): int { return match 2 over in [0, 1, 2] -> 42, on _ -> 0 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "membership-literal-miss",
+      "source": "pub fnc main(): int { return match 7 over in [0, 1, 2] -> 0, on _ -> 42 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "membership-priority",
+      "source": "pub fnc main(): int { return match 2 over on 2 -> 42, in [1, 2, 3] -> 0, on _ -> 0 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "membership-guard",
+      "source": "pub fnc main(): int { return match 2 over in [1, 2] when false -> 0, in [1, 2] -> 42, on _ -> 0 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "membership-duplicate",
+      "source": "pub fnc main(): int { return match 2 over in [2, 2] -> 42, on _ -> 0 end; }",
+      "reject": "duplicate"
+    },
+    {
+      "id": "membership-empty",
+      "source": "pub fnc main(): int { return match 2 over in [] -> 0, on _ -> 42 end; }",
+      "reject": "unreachable"
+    },
+    {
+      "id": "type-list-hit",
+      "source": "pub fnc main(): int { return match 7 over is in [int, string] -> 42 end; }",
+      "exit_or_return": 42
+    },
+    {
+      "id": "type-list-union",
+      "source": "fnc choose(int | string value): int { return match value over is in [int, string] -> 42 end; }",
+      "expected": [
+        {
+          "input": 7,
+          "result": 42
+        },
+        {
+          "input": "text",
+          "result": 42
+        }
+      ]
+    },
+    {
+      "id": "type-list-duplicate",
+      "source": "pub fnc main(): int { return match 7 over is in [int, int] -> 42 end; }",
+      "reject": "duplicate"
+    },
+    {
+      "id": "type-list-empty",
+      "source": "pub fnc main(): int { return match 7 over is in [] -> 42, on _ -> 0 end; }",
+      "reject": "syntax"
+    },
+    {
+      "id": "type-list-value",
+      "source": "pub fnc main(): int { return match 7 over is in [int, 42] -> 42, on _ -> 0 end; }",
+      "reject": "type"
+    },
+    {
+      "id": "type-list-shadow",
+      "source": "pub fnc main(): int { return match 7 over is in [int, string] -> 42, is int -> 0 end; }",
+      "reject": "unreachable"
+    },
+    {
+      "id": "no-ons",
+      "source": "pub fnc main(): int { return match 7 over ons [7, 8] -> 42, on _ -> 0 end; }",
+      "reject": "syntax"
     }
   ]
 }
