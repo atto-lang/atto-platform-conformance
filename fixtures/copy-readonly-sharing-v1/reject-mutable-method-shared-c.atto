@@ -1,0 +1,18 @@
+define class Scores as
+    pub let int n = 20;
+    pub mut mtd adjust(int value): void {
+        self.n = value;
+    }
+end
+define class Person as
+    pub let mut Scores scores = new Scores();
+end
+
+pub fnc main(): int {
+    let mut Person a = new Person();
+    let mut Person b = copy! a;
+    let mut Person c = copy! b;
+    b.scores = new Scores();
+    c.scores.adjust(22);
+    return a.scores.n + b.scores.n + c.scores.n;
+}
