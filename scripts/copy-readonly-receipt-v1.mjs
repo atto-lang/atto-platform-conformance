@@ -17,7 +17,22 @@ export function classifyNegative(f, positivePassed, run, artifact) {
     d[3] === f.expect.compile_reject ? 'EXPECTED_REJECT' : 'WRONG_DIAGNOSTIC';
 }
 
+function checkBackends(manifest) {
+  const expected = ['atto','cranelift','forge','hdl','java','js','llvm','net','realtime','rs','wasm'].map(x=>'atto-lang/atto-source.'+x);
+  if (manifest.backend_count !== expected.length || !Array.isArray(manifest.backends) || manifest.backends.length !== expected.length) {
+    throw Error('invalid eleven-backend inventory');
+  }
+  const names = new Set();
+  for (const b of manifest.backends) {
+    if (!b || !expected.includes(b.repo) || names.has(b.repo) || b.guest_status !== 'NOT_EXECUTED' || b.receipt !== null) {
+      throw Error('invalid backend identity or premature evidence');
+    }
+    names.add(b.repo);
+  }
+}
+
 export function checkInventory(manifest, actualNames) {
+  checkBackends(manifest);
   if (manifest.schema !== 'atto.copy-readonly-sharing.v1' || manifest.status !== 'SOURCE_CANDIDATE_ONLY' ||
       manifest.full_parity !== false || !Array.isArray(manifest.fixtures) || manifest.fixtures.length === 0) {
     throw Error('invalid fixture manifest');
