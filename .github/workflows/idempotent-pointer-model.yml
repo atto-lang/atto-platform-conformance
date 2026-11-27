@@ -1,0 +1,35 @@
+name: Trusted single-level pointer model (HOST_ONLY)
+on:
+  pull_request:
+    paths:
+      - models/idempotent_pointer_types_v1.mjs
+      - .github/workflows/idempotent-pointer-model.yml
+      - contracts/trusted-idempotent-pointer-v1.json
+  push:
+    branches:
+      - draft/typed-pointer-cfg-v1-20261127
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  host-model:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact head, tree and model blob
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          git rev-parse 'HEAD^{tree}'
+          test "$(git hash-object models/idempotent_pointer_types_v1.mjs)" = "d33bef46dc810e14bbb5ec13aaa6b5f875e85979"
+      - name: Run host model (not compiler evidence)
+        run: |
+          set -euo pipefail
+          test "$(node models/idempotent_pointer_types_v1.mjs)" = "HOST_ONLY: 26 pointer normalization checks passed"
+          echo "HOST_ONLY: 26 pointer normalization checks passed"
