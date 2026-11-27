@@ -211,5 +211,52 @@
       ]
     },
     "limits": "Identical tested host runtime blob only; local authored regression commands, not full repository CI, compiled guest, cross-worker, or actor lifecycle evidence. Both candidates remain drafts."
-  }
+  },
+  "localTerminalMatrixEvidence": {
+    "status": "LOCAL_HOST_ONLY_NOT_CI",
+    "node": "22.16.0",
+    "runtimeBlob": "23ce944e66a50fd63765ec5d55b712f993774d15",
+    "passed": 6,
+    "failed": 0,
+    "skipped": 0,
+    "additionalCoverage": [
+      "read/write lease and complete/abort matrix across two containers",
+      "throwing terminal observer and one-shot notification"
+    ],
+    "candidates": [
+      {
+        "repo": "atto-lang/atto-source.rs",
+        "pr": 715,
+        "head": "52e3fa74898c1a1d8fe440abfbc605b4d96c3c7a",
+        "tree": "69c1646d184614a572aa3590ca7eede663a61f4e",
+        "testBlob": "ed8557a575889a9956ea074aabe4b2f0a3bb85fb"
+      },
+      {
+        "repo": "atto-lang/atto-source.wasm",
+        "pr": 355,
+        "head": "718c9144c66b3bea530a6e38c5fab33283dbe828",
+        "tree": "cfe6c46a31e1670cd1dd69609c3663518c5ae0f6",
+        "testBlob": "f7739b65f43736916032066d64b04dc552dab1cf"
+      }
+    ],
+    "limits": "Locally executed shared host implementation; import path adjusted for WASM. No new compiler, browser, or actor guest execution; no promotion."
+  },
+  "integrationReconciliations": [
+    {
+      "repo": "atto-lang/atto-source.net",
+      "pr": 278,
+      "head": "49dd5b27a4f598f79b14752aa2f5dfe6329a1839",
+      "tree": "6177484ef9707a1cb1e7180b02b6932c53e0c354",
+      "base": "a3bd0e41b57c0c537f3ce6801ec9638c949524f6",
+      "status": "TWO_PARENT_RECONCILIATION; CI_NOT_EXECUTED; GITHUB_MERGEABILITY_NOT_CLEARED"
+    },
+    {
+      "repo": "atto-lang/atto-source.js",
+      "pr": 166,
+      "head": "fbc43dbfe59c8b2afa46fe23ac02a69252006139",
+      "tree": "a31bb68414b0046f35483e079d81c325e7a22fbb",
+      "base": "94b2c99102e6a9fde0e391c6bd18b0e153561446",
+      "status": "TWO_PARENT_RECONCILIATION; CI_NOT_EXECUTED; GITHUB_MERGEABILITY_NOT_CLEARED"
+    }
+  ]
 }
