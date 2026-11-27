@@ -31,7 +31,7 @@ const expectedNames=["unit-add","unit-sub","unit-product-order","unit-velocity",
 try{
  const {fixtures,cases}=expandQuantityCases(original,work,manifest);
  const selected=bindings?cases:cases.filter(c=>expectedNames.includes(c.source));
- const count=bindings?24:expectedNames.length;
+ const count=bindings?36:expectedNames.length;
  assert.equal(selected.length,count);
  const harness=join(work,"host.c");
  writeFileSync(harness,`#include <stdint.h>
