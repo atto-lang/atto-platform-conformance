@@ -1,5 +1,6 @@
 // Real guest gate, separate from source/oracle checks. Run only with trusted pinned compiler checkouts.
 import assert from 'node:assert/strict';
+import {selectCases,summarizeCases} from './named-recursive-fnc-receipt.mjs';
 import {spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {lstatSync, mkdtempSync, readFileSync, realpathSync, rmSync} from 'node:fs';
@@ -31,15 +32,7 @@ const fixtureHead=pin('ATTO_EXPECTED_CONFORMANCE_HEAD'),fixtureTree=pin('ATTO_EX
 proof(repo,head,tree);proof(root,fixtureHead,fixtureTree);
 const sha=b=>createHash('sha256').update(b).digest('hex');
 const blob=b=>createHash('sha1').update('blob '+b.length+'\0').update(b).digest('hex');
-const expectedIds=['fib-0','fib-1','fib-10','fib-10-explicit-semicolon','fib-55-linear','fib-92-linear','fib-93-overflow','fib-name-does-not-escape'];
-assert.equal(manifest.status,'CANDIDATE_SOURCE_NOT_EXECUTED');
-assert.deepEqual(manifest.cases.filter(c=>c.tier==='smoke').map(c=>c.id),expectedIds);
-assert.deepEqual(manifest.cases.filter(c=>c.tier==='extended').map(c=>c.id),['fib-55-exact']);
-assert.equal(new Set(manifest.cases.map(c=>c.id)).size,manifest.cases.length);
-const selectedIds=profile==='direct-stage'
- ? expectedIds.filter(id=>!['fib-55-linear','fib-92-linear','fib-93-overflow'].includes(id))
- : expectedIds;
-const skippedIds=expectedIds.filter(id=>!selectedIds.includes(id));
+const {selected:selectedIds}=selectCases(manifest,profile);
 const present=p=>{try{lstatSync(p);return true;}catch(e){if(e.code==='ENOENT')return false;throw e;}};
 const regular=p=>{try{const s=lstatSync(p);return s.isFile()&&!s.isSymbolicLink();}catch(e){if(e.code==='ENOENT')return false;throw e;}};
 const scratch=mkdtempSync(join(tmpdir(),'atto-recursive-guest-'));
@@ -133,10 +126,8 @@ catch(e){if(!(e instanceof WebAssembly.RuntimeError)||i.exports.panic_code.value
    cases.push({...row,status:match?'pass':'fail',actual,guest_status:guest.status});
  }
  proof(repo,head,tree);proof(root,fixtureHead,fixtureTree);
- const passed=cases.filter(c=>c.status==='pass').length;
- const compileOnly=cases.find(c=>c.id==='fib-55-exact')?.status==='compile_only';
- const complete=passed===selectedIds.length&&compileOnly;
- const report={schema:'atto.named-recursive-fnc.guest-probe.v1',backend,profile,compiler_head:head,compiler_tree:tree,compiler_sha256:compilerHash,conformance_head:fixtureHead,conformance_tree:fixtureTree,cases,passed,failed:cases.filter(c=>c.status==='fail').length,incomplete:cases.filter(c=>!['pass','fail','compile_only'].includes(c.status)).length,skipped_smoke:skippedIds,extended:compileOnly?'compile_only_not_executed':'not_executed',status:complete?(profile==='direct-stage'?'direct_stage_pass':'smoke_pass'):'incomplete'};
+ const summary=summarizeCases(manifest,profile,cases);
+ const report={schema:'atto.named-recursive-fnc.guest-probe.v1',backend,profile,compiler_head:head,compiler_tree:tree,compiler_sha256:compilerHash,conformance_head:fixtureHead,conformance_tree:fixtureTree,cases,...summary};
  console.log(JSON.stringify(report,null,2));
- if(!complete)process.exitCode=1;
+ if(summary.status==='incomplete')process.exitCode=1;
 }finally{rmSync(scratch,{recursive:true,force:true});}
