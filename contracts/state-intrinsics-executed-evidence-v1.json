@@ -654,5 +654,32 @@
       "job": 140333109650,
       "status": "QUEUED_NO_STEPS_AT_SAMPLE"
     }
+  },
+  "javaBoundMirReceiverCandidate": {
+    "status": "LOCAL_RUNTIME_AND_MIR_METHOD_EXCERPT_NOT_CI",
+    "repo": "atto-lang/atto-source.java",
+    "pr": 2022,
+    "head": "fdea37bb27419496a2acbcb0fe3239024a681e1d",
+    "tree": "576dda8f28d0a440061e0a5471a34fccb73c1a1b",
+    "base": "ea9360c9fd8eb16411e02c89d26fe9797635a15e",
+    "runtimeBlobs": {
+      "StateContainerAccessGate.java": "918bfaf18bf32ea711c3740a870bb01079771172",
+      "ScalarStateContainer.java": "559a8298f98921e986ad1057e47d84ebb705cb18"
+    },
+    "mirBlob": "846b07494d4770e9dc93b5758caa144f12745898",
+    "mirMethodExcerpt": {
+      "bytes": 872,
+      "fnv1a": 1617929887
+    },
+    "testBlob": "5df5eee6cd0621750037eeb6577a912d7cdb4810",
+    "toolchain": "JDK 21.0.12.1 javac -Xlint:all -Werror",
+    "assertionsPassed": 275,
+    "concurrentCrossPlanRounds": 128,
+    "scope": "Standalone surrogate record harness compiled with exact checked runtime blobs and checksum-matched factory/invoke excerpt. Reject equal-but-distinct plans, foreign and unbound state, preserve same-plan independent instances and checked overflow. Authored JUnit and AST naming negatives not executed. No full compiler, guest, CI or transitive borrow evidence. Exact plan object ownership is a conservative restricted-profile policy; reconcile with #2021.",
+    "ci": {
+      "run": 45947273221,
+      "job": 140334738896,
+      "status": "QUEUED_NO_STEPS_AT_SAMPLE"
+    }
   }
 }
