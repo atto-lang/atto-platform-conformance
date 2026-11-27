@@ -160,7 +160,7 @@
     },
     {
       "id": "string-default",
-      "source": "define fnc int • main() {\n    string name = \"Alice\";\n    return name == \"Alice\" ? 42 : 0;\n}\n",
+      "source": "define fnc int • main() {\n    string name = \"Alice\";\n    return name eq \"Alice\" ? 42 : 0;\n}\n",
       "expected": {
         "kind": "compile_execute",
         "result": 42
