@@ -154,6 +154,59 @@
       "file": "directional-duplicate.atto",
       "sourceGitBlobSha1": "aa8db575e5db9f8bdaabc5d38d0b82922ba923f3",
       "confirmedBackends": []
+    },
+    {
+      "id": "native-switch-value",
+      "expect": "exit",
+      "exit": 42,
+      "file": "native-switch-value.atto",
+      "sourceGitBlobSha1": "103baa583222c1320e9ab714f8c402bca212037a",
+      "confirmedBackends": []
+    },
+    {
+      "id": "native-switch-return",
+      "expect": "exit",
+      "exit": 42,
+      "file": "native-switch-return.atto",
+      "sourceGitBlobSha1": "a86cac8e15a820b4cd3bcbdb57a4ce1c43aa8e67",
+      "confirmedBackends": []
+    },
+    {
+      "id": "native-if-binding",
+      "expect": "exit",
+      "exit": 42,
+      "file": "native-if-binding.atto",
+      "sourceGitBlobSha1": "d7f2375b8277ee390c0db1acdcc9ab5e14988b2d",
+      "confirmedBackends": []
+    },
+    {
+      "id": "native-match-binding",
+      "expect": "exit",
+      "exit": 42,
+      "file": "native-match-binding.atto",
+      "sourceGitBlobSha1": "d029b11105afcfdfca595ab4e13c0591eb68fa4c",
+      "confirmedBackends": []
+    },
+    {
+      "id": "native-switch-multi-root",
+      "expect": "reject",
+      "file": "native-switch-multi-root.atto",
+      "sourceGitBlobSha1": "3107c2e8c8795a8d5ec85dc14db472b137cbdebc",
+      "confirmedBackends": []
+    },
+    {
+      "id": "native-switch-nonexhaustive",
+      "expect": "reject",
+      "file": "native-switch-nonexhaustive.atto",
+      "sourceGitBlobSha1": "ff73eb72e6f654bbfebd5aa6fab5921609ee2f01",
+      "confirmedBackends": []
+    },
+    {
+      "id": "native-binding-escape",
+      "expect": "reject",
+      "file": "native-binding-escape.atto",
+      "sourceGitBlobSha1": "237303f93daa08f2804f1e137c4525c5a7ba5fa3",
+      "confirmedBackends": []
     }
   ]
 }
