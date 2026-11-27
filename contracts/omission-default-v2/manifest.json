@@ -50,6 +50,30 @@
       "expected": "E_AMBIGUOUS_OVERLOAD",
       "git_blob_sha": "5035fe92b64265c719cab978d2b76e3fc65ebba6",
       "status": "NOT_EXECUTED"
+    },
+    {
+      "path": "guests/string-default-contents.atto",
+      "expected": "exit_42",
+      "git_blob_sha": "da778c5153895778a908e0e63a156f5a402a3fdb",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "path": "guests/string-option-overloads.atto",
+      "expected": "exit_42",
+      "git_blob_sha": "8bbb72be7d596b2a1ec56dc7e9ad739df8abb863",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "path": "reject/mixed-none-aliases.atto",
+      "expected": "E_DEFAULT_CLAUSE",
+      "git_blob_sha": "cf0f17a0851ee1e73db5325605fdc12dc3acea1d",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "path": "reject/ambiguous-int-string-none.atto",
+      "expected": "E_AMBIGUOUS_OVERLOAD",
+      "git_blob_sha": "1d56f4a199c60534c7aa1bb77df2994393d8d968",
+      "status": "NOT_EXECUTED"
     }
   ],
   "limitations": "Candidate syntax; diagnostics named provisionally. No backend results yet. Reference oracle does not exercise parser, native ABI, named binding, generics or actor effects."
