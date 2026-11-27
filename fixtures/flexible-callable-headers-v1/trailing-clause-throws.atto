@@ -1,0 +1,8 @@
+fnc checked_identity(int x)
+    effects { allocate: 0, suspend: false }
+    budget { stack: 4096, operations: 10000 }
+-> int
+    throws Error
+{ return x; }
+
+pub fnc main() -> int { return checked_identity(42); }
