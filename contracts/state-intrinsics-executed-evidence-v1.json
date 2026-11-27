@@ -258,5 +258,41 @@
       "base": "94b2c99102e6a9fde0e391c6bd18b0e153561446",
       "status": "TWO_PARENT_RECONCILIATION; CI_NOT_EXECUTED; GITHUB_MERGEABILITY_NOT_CLEARED"
     }
-  ]
+  ],
+  "nativeHostTerminalEvidence": {
+    "status": "LOCAL_HOST_ONLY_NOT_CI",
+    "records": [
+      {
+        "repo": "atto-lang/atto-source.java",
+        "pr": 2005,
+        "head": "77980cf1d984521a13e77233e3d031cc52fa8b6c",
+        "tree": "e128cde467492f0d58033f7adad32fe16e7965cd",
+        "runtimeBlobs": [
+          "918bfaf18bf32ea711c3740a870bb01079771172",
+          "0cd05a277676a9d08c3ea348ca9cad65585755be"
+        ],
+        "testBlob": "483d37a42bbbcfa53f66ffb5a78cbd71a1e11cb6",
+        "toolchain": "JDK 21.0.12.1",
+        "groupsPassed": 3,
+        "concurrentRaces": 128,
+        "scope": "close/drain, checked overflow releases writer, concurrent close/read/write; standalone Java oracle only, JUnit wrapper not executed"
+      },
+      {
+        "repo": "atto-lang/atto-source.llvm",
+        "pr": 1044,
+        "head": "b169c804d89b47beb81c9d6f534038d1801f7c32",
+        "tree": "b31b35e2d1f198d03f899e2ea055a802e771874b",
+        "runtimeBlob": "f262a98340f1d7172a692774672e4614f2fef20d",
+        "testBlob": "91377c919c4251bdc51af4575d6bc677fa46f183",
+        "toolchains": [
+          "GCC 14.2 C++17 O1 ASan/UBSan",
+          "Clang C++17 O2 ASan/UBSan"
+        ],
+        "racesPerToolchain": 256,
+        "toolchainRunsPassed": 2,
+        "scope": "logical retirement versus request/release handoff; existing CMake test wired but full CMake suite not run; no physical guest-frame quiescence claim"
+      }
+    ],
+    "limits": "Exact source and regression blob identities verified; standalone host tests only. No new compiler, guest, AOT, or scheduler execution evidence; do not promote."
+  }
 }
