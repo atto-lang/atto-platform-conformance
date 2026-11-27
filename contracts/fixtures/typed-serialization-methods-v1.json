@@ -377,6 +377,17 @@
       "failed": 1,
       "scope": "actual compiler-generated scalar JSON guest executed and emitted both exact lines; overall suite fails parser-vs-deriver duplicate annotation diagnostic expectation; not NativeAOT"
     },
-    "scope": "shared fixture extracted from embedded JUnit guest; standalone conformance fixture not independently executed; other backends must fail closed until lowering exists; no decode, general wire codec or transport support"
+    "scope": "shared fixture extracted from embedded JUnit guest; standalone conformance fixture not independently executed; other backends must fail closed until lowering exists; no decode, general wire codec or transport support",
+    "executed_receipt": {
+      "head": "e240b8110b812f82cb7016233534a60d02845bca",
+      "tree": "c83db808394bb2b88a58d358b3b6d9bb9d7f9f12",
+      "blobs": 3933,
+      "run": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/45914655677/job/140230875385",
+      "runner": 1000001455,
+      "passed": 13,
+      "failed": 0,
+      "skipped": 0,
+      "scope": "6 new scalar derivation JUnit tests (actual generated guest emits exact min/max i64 JSON) and 7 existing FromJson annotation tests; JVM/Graal Truffle only, no NativeAOT or decoder or wire transport qualification"
+    }
   }
 }
