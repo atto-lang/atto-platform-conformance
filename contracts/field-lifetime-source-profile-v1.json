@@ -1,0 +1,264 @@
+{
+  "schema": "atto.field-lifetime-source-profile.v1",
+  "parent_registry": "contracts/atto-source-repository-parity-audit-v1.json",
+  "source": {
+    "repo": "atto-lang/atto-source.rs",
+    "commit": "78d30c0ca0ba0fc3c7a335b545db3c524b8ae39a",
+    "tree": "5d1056b38ad2f22e1896b6636c968363d64b7f5e",
+    "tracked_blobs": 1189
+  },
+  "scope": "bounded scalar field loans, last-use inference and flat deep-copy; not general mutable place loans",
+  "cases": [
+    {
+      "source_path": "tests/fixtures/fail/996-copy-doublebang-exclusive-loan.atto",
+      "blob_sha": "39e2ce59944d6e1ab08711d344ab4a35b27bb759",
+      "expected": {
+        "decision": "REJECT",
+        "reference_diagnostic": "E_BORROW",
+        "artifact": "NONE"
+      },
+      "profile": "lifetime-invariant"
+    },
+    {
+      "source_path": "tests/fixtures/fail/field-loan-nll-borrowed-class-never-becomes-owner.atto",
+      "blob_sha": "fddaa26f4b9cf8dd4719836d7e80c4ce1466e953",
+      "expected": {
+        "decision": "REJECT",
+        "reference_diagnostic": "E_BORROW",
+        "artifact": "NONE"
+      },
+      "profile": "lifetime-invariant"
+    },
+    {
+      "source_path": "tests/fixtures/fail/field-loan-nll-reject-later-branch-use.atto",
+      "blob_sha": "2899ca70bcfa667e436f710d2cd40bbed40e4b6a",
+      "expected": {
+        "decision": "REJECT",
+        "reference_diagnostic": "E_BORROW",
+        "artifact": "NONE"
+      },
+      "profile": "lifetime-invariant"
+    },
+    {
+      "source_path": "tests/fixtures/fail/field-loan-reject-disjoint-on-unverified-owner.atto",
+      "blob_sha": "4308274a71fbeab2f875ed0ba5696d77338082ba",
+      "expected": {
+        "decision": "REJECT",
+        "reference_diagnostic": "E_OWNERSHIP",
+        "artifact": "NONE"
+      },
+      "profile": "restricted-unproven-authority-v1"
+    },
+    {
+      "source_path": "tests/fixtures/fail/field-loan-reject-mut-scalar-projection.atto",
+      "blob_sha": "37f95c1b6772b4fad88bdcf769f9be983655e181",
+      "expected": {
+        "decision": "REJECT",
+        "reference_diagnostic": "E_BORROW",
+        "artifact": "NONE"
+      },
+      "profile": "restricted-snapshot-field-v1-only"
+    },
+    {
+      "source_path": "tests/fixtures/fail/field-loan-reject-opaque-receiver-method.atto",
+      "blob_sha": "f5b67c8d934fd57c788e20b4b0683614c7e7d35e",
+      "expected": {
+        "decision": "REJECT",
+        "reference_diagnostic": "E_BORROW",
+        "artifact": "NONE"
+      },
+      "profile": "restricted-unproven-authority-v1"
+    },
+    {
+      "source_path": "tests/fixtures/fail/field-loan-reject-overlap.atto",
+      "blob_sha": "95ff1264bc24c31ddccfe609f9aac93d2c130be3",
+      "expected": {
+        "decision": "REJECT",
+        "reference_diagnostic": "E_BORROW",
+        "artifact": "NONE"
+      },
+      "profile": "lifetime-invariant"
+    },
+    {
+      "source_path": "tests/fixtures/fail/field-loan-reject-owner-moved-during-rhs.atto",
+      "blob_sha": "121106b655cfe1e133c3362b8fced57f3cfaf4fa",
+      "expected": {
+        "decision": "REJECT",
+        "reference_diagnostic": "E_MOVED",
+        "artifact": "NONE"
+      },
+      "profile": "lifetime-invariant"
+    },
+    {
+      "source_path": "tests/fixtures/fail/field-loan-reject-owner-take.atto",
+      "blob_sha": "a5f76acc8a59f7a369a5ffb56c3e91d043e61393",
+      "expected": {
+        "decision": "REJECT",
+        "reference_diagnostic": "E_BORROW",
+        "artifact": "NONE"
+      },
+      "profile": "lifetime-invariant"
+    },
+    {
+      "source_path": "tests/fixtures/fail/field-loan-reject-unverified-alias-root.atto",
+      "blob_sha": "423c4b9fdebdb235b36577b31e8fec75f245337f",
+      "expected": {
+        "decision": "REJECT",
+        "reference_diagnostic": "E_BORROW",
+        "artifact": "NONE"
+      },
+      "profile": "restricted-unproven-authority-v1"
+    },
+    {
+      "source_path": "tests/fixtures/fail/field-loan-reject-whole-owner.atto",
+      "blob_sha": "1899460a10c89925f4f24df6f3a6bfd9046bdd45",
+      "expected": {
+        "decision": "REJECT",
+        "reference_diagnostic": "E_BORROW",
+        "artifact": "NONE"
+      },
+      "profile": "lifetime-invariant"
+    },
+    {
+      "source_path": "tests/fixtures/pass/field-loan-disjoint-name-age.atto",
+      "blob_sha": "10200f91020718cbefe0ff764f89b3055553c181",
+      "expected": {
+        "decision": "ACCEPT",
+        "exit": 42,
+        "stdout": [
+          "Alice"
+        ]
+      },
+      "profile": "lifetime-invariant"
+    },
+    {
+      "source_path": "tests/fixtures/pass/field-loan-disjoint-other-direction.atto",
+      "blob_sha": "30b04bf1fde852893fad11028b13866c7d4e120b",
+      "expected": {
+        "decision": "ACCEPT",
+        "exit": 42,
+        "stdout": [
+          "Bob",
+          "42"
+        ]
+      },
+      "profile": "lifetime-invariant"
+    },
+    {
+      "source_path": "tests/fixtures/pass/field-loan-nll-branch-join.atto",
+      "blob_sha": "d98c6d87dfda2dee0a8aaabb6d5c65335cd05e02",
+      "expected": {
+        "decision": "ACCEPT",
+        "exit": 42,
+        "stdout": [
+          "30"
+        ]
+      },
+      "profile": "lifetime-invariant"
+    },
+    {
+      "source_path": "tests/fixtures/pass/field-loan-nll-copy-after-last-mut-use.atto",
+      "blob_sha": "2736980bdebb97f8d98cf1d7f320dfb79d816f9a",
+      "expected": {
+        "decision": "ACCEPT",
+        "exit": 42,
+        "stdout": []
+      },
+      "profile": "lifetime-invariant"
+    },
+    {
+      "source_path": "tests/fixtures/pass/field-loan-nll-copy-after-unused-mut.atto",
+      "blob_sha": "c64f0948143c823c03ed91a419b39289882e209c",
+      "expected": {
+        "decision": "ACCEPT",
+        "exit": 42,
+        "stdout": []
+      },
+      "profile": "lifetime-invariant"
+    },
+    {
+      "source_path": "tests/fixtures/pass/field-loan-nll-same-field-after-last-use.atto",
+      "blob_sha": "7e41ae347c2465aa08ec62e2f63f061c434ab6f5",
+      "expected": {
+        "decision": "ACCEPT",
+        "exit": 42,
+        "stdout": [
+          "Alice"
+        ]
+      },
+      "profile": "lifetime-invariant"
+    },
+    {
+      "source_path": "tests/fixtures/pass/field-loan-nll-whole-class-reader-then-writer.atto",
+      "blob_sha": "84d7eda992a0a3879abbd4e152df6f3c12c4a8af",
+      "expected": {
+        "decision": "ACCEPT",
+        "exit": 42,
+        "stdout": [
+          "30"
+        ]
+      },
+      "profile": "lifetime-invariant"
+    },
+    {
+      "source_path": "tests/fixtures/pass/field-loan-two-readers-same-owner.atto",
+      "blob_sha": "d33cbc1c65328f563534c639a23b2d18365d9b7b",
+      "expected": {
+        "decision": "ACCEPT",
+        "exit": 42,
+        "stdout": [
+          "Alice",
+          "30"
+        ]
+      },
+      "profile": "lifetime-invariant"
+    }
+  ],
+  "backend_targets": {
+    "atto-lang/atto-source.atto": {
+      "status": "TARGET_NOT_CERTIFIED",
+      "receipts": []
+    },
+    "atto-lang/atto-source.net": {
+      "status": "TARGET_NOT_CERTIFIED",
+      "receipts": []
+    },
+    "atto-lang/atto-source.hdl": {
+      "status": "TARGET_NOT_CERTIFIED",
+      "receipts": []
+    },
+    "atto-lang/atto-source.java": {
+      "status": "TARGET_NOT_CERTIFIED",
+      "receipts": []
+    },
+    "atto-lang/atto-source.realtime": {
+      "status": "TARGET_NOT_CERTIFIED",
+      "receipts": []
+    },
+    "atto-lang/atto-source.rs": {
+      "status": "TARGET_NOT_CERTIFIED",
+      "receipts": []
+    },
+    "atto-lang/atto-source.llvm": {
+      "status": "TARGET_NOT_CERTIFIED",
+      "receipts": []
+    },
+    "atto-lang/atto-source.js": {
+      "status": "TARGET_NOT_CERTIFIED",
+      "receipts": []
+    },
+    "atto-lang/atto-source.forge": {
+      "status": "TARGET_NOT_CERTIFIED",
+      "receipts": []
+    },
+    "atto-lang/atto-source.wasm": {
+      "status": "TARGET_NOT_CERTIFIED",
+      "receipts": []
+    },
+    "atto-lang/atto-source.cranelift": {
+      "status": "TARGET_NOT_CERTIFIED",
+      "receipts": []
+    }
+  },
+  "full_parity_certified": false
+}
