@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 // Explicitly configured real-compiler guest execution; no host model or shell.
-import {readFile,writeFile,mkdtemp,rm,stat,realpath} from 'node:fs/promises';
+import {readFile,writeFile,mkdtemp,rm,lstat,realpath} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {spawnSync} from 'node:child_process';
 import {tmpdir} from 'node:os';
 import {isAbsolute,join,resolve,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {loadSuite,selectCases,classifyReceipt,summarize} from '../lib/portable-task-v1.mjs';
+import {loadSuite,selectCases,classifyReceipt,summarize,portableTaskBackends} from '../lib/portable-task-v1.mjs';
 
 const here=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const sha40=x=>typeof x==='string'&&/^[0-9a-f]{40}$/.test(x);
@@ -35,22 +35,26 @@ function git(root,...args){
 }
 async function digest(path){
  required(isPath(path),'expected an absolute identity/artifact path');
- const resolved=await realpath(path),s=await stat(resolved);
+ const resolved=await realpath(path),s=await lstat(path);
+ required(resolved===path&&!s.isSymbolicLink(),'artifact path must be canonical and not a symlink');
  required(s.isFile()&&s.size>0&&s.size<=256*1024*1024,'missing or oversized compiler/guest artifact');
  return createHash('sha256').update(await readFile(resolved)).digest('hex');
 }
 async function run(cfg){
  required(cfg&&typeof cfg==='object'&&!Array.isArray(cfg),'invalid run configuration');
- required(['java','llvm','wasm','rs','forge','net'].includes(cfg.backend),'invalid backend');
+ required(portableTaskBackends.includes(cfg.backend),'invalid backend');
  required(isPath(cfg.compilerRoot)&&sha40(cfg.compilerCommit),'pinned absolute compiler checkout and full SHA required');
  required(sha40(cfg.fixtureCommit),'pinned fixture checkout SHA required');
  required(isPath(cfg.compilerIdentity),'compiled compiler identity file required');
- required(isPath(cfg.artifactPath)||cfg.artifactPath==='{out}','guest runtime or executable artifact identity required');
+ required(cfg.artifactPath==='{out}','fresh per-case compiler output artifact required; preexisting launcher identity is not guest artifact evidence');
  required(Array.isArray(cfg.compileArgv)&&Array.isArray(cfg.guestArgv),'explicit compiler and guest argv required');
- required(cfg.compileArgv.includes('{file}')&&cfg.guestArgv.length>0,'compile/guest command must use the fixture');
+ required(cfg.compileArgv.includes('{file}')&&cfg.compileArgv.includes('{out}')&&cfg.guestArgv.includes('{out}'),'compile must bind fixture and fresh output; guest must consume that output');
+ required(cfg.compileArgv[0]===cfg.compilerIdentity,'compiler command must bind the hashed executable identity');
  const head=git(cfg.compilerRoot,'rev-parse','HEAD');
  required(head===cfg.compilerCommit,'compiler source HEAD differs from pinned commit');
  required(git(here,'rev-parse','HEAD')===cfg.fixtureCommit,'fixture source HEAD differs from pinned commit');
+ required(git(cfg.compilerRoot,'status','--porcelain','--untracked-files=no')==='','compiler tracked source differs from pinned tree');
+ required(git(here,'status','--porcelain','--untracked-files=no')==='','fixture tracked source differs from pinned tree');
  const compilerSha256=await digest(cfg.compilerIdentity);
  const suite=await loadSuite();
  const allIds=suite.cases.map(c=>c.id);
@@ -66,12 +70,14 @@ async function run(cfg){
    required(createHash('sha256').update(bytes).digest('hex')===c.fixtureSha256,'fixture content changed');
    await writeFile(file,bytes,{flag:'wx',mode:0o400});
    const vars={'{file}':file,'{out}':out};
+   required(await digest(cfg.compilerIdentity)===compilerSha256,'compiler executable changed before invocation');
    const compileArgv=command(cfg.compileArgv,vars),compiled=invoke(compileArgv,cfg.compilerRoot);
+   required(await digest(cfg.compilerIdentity)===compilerSha256,'compiler executable changed during invocation');
    const compilerOutput=(compiled.stdout+'\n'+compiled.stderr).slice(0,131072);
    // Negative admissions must not leave a linked guest artifact. An unexpected
    // compiler output file is a failure even when the diagnostic looks correct.
    let artifactFileExists=false;
-   try{await stat(out);artifactFileExists=true;}catch(e){if(e.code!=='ENOENT')throw e;}
+   try{await lstat(out);artifactFileExists=true;}catch(e){if(e.code!=='ENOENT')throw e;}
    let status='failed',guestExecuted=false,guestArgv=[],guestExit=null,guestOutput='',artifactSha256=null;
    const stepNames=['compile'];
    const safeCompile=compiled.error===null&&compiled.signal===null&&Number.isSafeInteger(compiled.exit);
@@ -80,15 +86,17 @@ async function run(cfg){
     // Negative semantic rejection is distinct from an unsupported negative fixture.
     else if(c.expect==='negative')status='passed';
    }else if(safeCompile&&compiled.exit===0&&c.expect==='positive'){
+    // Validate and hash the newly emitted artifact before any guest launch.
+    // A dangling symlink, preexisting launcher or absent artifact cannot count.
+    artifactSha256=await digest(out);
     guestArgv=command(cfg.guestArgv,vars);
     const guest=invoke(guestArgv,cfg.compilerRoot);
+    required(await digest(out)===artifactSha256,'guest artifact changed during execution');
     stepNames.push('guest');
     guestExecuted=guest.error===null&&guest.signal===null&&Number.isSafeInteger(guest.exit);
     guestExit=guest.exit;
     guestOutput=guest.stdout.slice(0,131072);
-    if(guestExecuted){
-     try{artifactSha256=await digest(cfg.artifactPath==='{out}'?out:cfg.artifactPath)}catch{}
-    }
+    if(!guestExecuted)artifactSha256=null;
     status='passed';
    }
    const baseUrl=typeof process.env.GITHUB_SERVER_URL==='string'&&typeof process.env.GITHUB_REPOSITORY==='string'&&/^\d+$/.test(process.env.GITHUB_RUN_ID||'')
@@ -103,7 +111,7 @@ async function run(cfg){
      fixtureCommit:cfg.fixtureCommit,compilerExit:compiled.exit,compilerOutput,compileArgv,
      guestExit,guestExecuted,guestOutput,guestArgv,artifactSha256,rejectedEmittedArtifact:(compiled.exit!==0&&artifactFileExists),runnerJobUrl:baseUrl,
      stepNames,fixtureBlobSha:c.fixtureBlobSha,fixtureSha256:c.fixtureSha256,compilerSha256,
-     artifactKind:cfg.backend==='java'?'jvm-launcher-identity':cfg.backend==='llvm'?'native-guest-executable':'backend-declared'});
+     artifactKind:cfg.backend==='llvm'?'native-guest-executable':'fresh-compiler-output'});
   }
   const summary=summarize(cases,receipts);
   console.log(JSON.stringify({schema:'atto.portable-task-v1-run-candidate',compilerCommit:cfg.compilerCommit,

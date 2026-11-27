@@ -1,0 +1,126 @@
+{
+  "schema": "atto.portable-task.v2-pilot",
+  "specCommit": "af7418096768d003e3dfbb83ff35069ca3f2c274",
+  "specPaths": [
+    "language/task-future-control-v1.md",
+    "language/typed-task-payload-sync-v1.md"
+  ],
+  "executionVerified": false,
+  "backends": [
+    "java",
+    "llvm",
+    "wasm",
+    "rs",
+    "forge",
+    "net",
+    "cranelift",
+    "js",
+    "atto",
+    "hdl",
+    "realtime"
+  ],
+  "cases": [
+    {
+      "id": "taskfuture-int",
+      "file": "taskfuture-int.atto",
+      "expect": "positive",
+      "fixtureBlobSha": "32aa66ebc3ee9418d1da088393bb66762a67a881",
+      "expectedGuestExit": 42,
+      "baseline": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "future-int",
+      "file": "future-int.atto",
+      "expect": "positive",
+      "fixtureBlobSha": "63d69d589614250aa191510fee2990e7f3499aef",
+      "expectedGuestExit": 42,
+      "baseline": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "taskfuture-string",
+      "file": "taskfuture-string.atto",
+      "expect": "positive",
+      "fixtureBlobSha": "29eea1fc75ae3bd79a7156a06efa3318a94a4c63",
+      "expectedGuestExit": 42,
+      "baseline": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "reject-double-await",
+      "file": "reject-double-await.atto",
+      "expect": "negative",
+      "fixtureBlobSha": "bb866b2baf700a85e1c105b623c485aaa4189bbe",
+      "expectedGuestExit": null,
+      "expectedDiagnosticCode": "E_TASK_RESULT_CONSUMED",
+      "baseline": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed",
+        "realtime": "not_executed"
+      }
+    },
+    {
+      "id": "reject-const-taskfuture",
+      "file": "reject-const-taskfuture.atto",
+      "expect": "negative",
+      "fixtureBlobSha": "34eb2855945e9196f522fdb7e34ad609cd971d43",
+      "expectedGuestExit": null,
+      "expectedDiagnosticCode": "E_CONST",
+      "baseline": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed",
+        "realtime": "not_executed"
+      }
+    }
+  ]
+}

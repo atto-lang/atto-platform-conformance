@@ -6,10 +6,10 @@ const {manifest,cases}=await loadSuite();
 const hex40='a'.repeat(40),hex64='b'.repeat(64);
 const positive=cases.find(c=>c.expect==='positive'&&c.mustObserve.length===0);
 function receipt(c=positive){return {status:'passed',caseId:c.id,backend:'java',compilerCommit:hex40,fixtureCommit:hex40,fixtureBlobSha:c.fixtureBlobSha,fixtureSha256:c.fixtureSha256,compilerSha256:hex64,compileArgv:['/absolute/compiler','--check',c.file],completedSteps:2,stepNames:['compile','guest'],runnerJobUrl:'https://github.com/ores-truffle-oreslang/oreslang-source.java/actions/runs/123',compilerExit:0,compilerOutput:'',rejectedEmittedArtifact:false,guestExecuted:true,artifactSha256:hex64,guestArgv:['/absolute/guest'],guestExit:42,guestOutput:''};}
-test('16 distinct immutable .atto source cases cover all six backends',()=>{
+test('16 distinct immutable .atto source cases cover all eleven backend roles',()=>{
  assert.equal(cases.length,16);assert.equal(new Set(cases.map(c=>c.fixtureBlobSha)).size,16);
  assert.equal(manifest.executionVerified,false);
- assert.deepEqual(Object.keys(summarize(cases,{})),['java','llvm','wasm','rs','forge','net']);
+ assert.deepEqual(Object.keys(summarize(cases,{})),["java","llvm","wasm","rs","forge","net","cranelift","js","atto","hdl","realtime"]);
  for(const v of Object.values(summarize(cases,{})))assert.deepEqual([v.passed,v.failed,v.unsupported,v.not_executed,v.releaseQualified],[0,0,0,16,false]);
  assert.equal(summarize(cases,{}).rs.not_executed,16);
 });
@@ -165,7 +165,90 @@ test('two-phase actor suspension race candidates are present but not guest-certi
    assert.equal(classifyReceipt(c,b,null).status,'not_executed');
   }
  }
- assert.equal(Object.keys(matrix).length,6);
- assert.equal(Object.values(matrix).reduce((sum,b)=>sum+b.not_executed,0),96);
+ assert.equal(Object.keys(matrix).length,11);
+ assert.equal(Object.values(matrix).reduce((sum,b)=>sum+b.not_executed,0),176);
  assert.ok(Object.values(matrix).every(b=>b.releaseQualified===false));
+});
+
+test('each unchanged source is pinned independently of candidate evidence',()=>{
+ for(const c of cases) assert.equal(c.fixtureBlobSha,manifest.cases.find(x=>x.id===c.id).fixtureBlobSha);
+ const mutate=(patch)=>({...manifest,cases:manifest.cases.map((x,i)=>i===0?{...x,...patch}:x)});
+ assert.throws(()=>validateManifest(mutate({fixtureBlobSha:null})),/invalid portable Task case/);
+ assert.throws(()=>validateManifest(mutate({baseline:{...manifest.cases[0].baseline,realtime:'passed'}})));
+ assert.throws(()=>validateManifest({...manifest,backends:manifest.backends.filter(b=>b!=='hdl')}));
+});
+test('new backends remain separate and require executed evidence; restricted profiles cannot self-promote',()=>{
+ for(const backend of ['cranelift','js','atto','hdl','realtime']){
+  assert.equal(classifyReceipt(positive,backend,null).status,'not_executed');
+  const candidate={...receipt(),backend,status:'unsupported',compilerExit:1,compilerOutput:'error: unsupported Task lowering',guestExecuted:false,artifactSha256:null,guestArgv:[],guestExit:null,completedSteps:1,stepNames:['compile']};
+  const result=classifyReceipt(positive,backend,candidate);
+  assert.equal(result.status,'unsupported');
+  assert.equal(result.releaseQualified,false);
+  assert.equal(classifyReceipt(positive,backend,{...candidate,completedSteps:0,stepNames:[]}).status,'failed');
+ }
+ assert.throws(()=>classifyReceipt(positive,'rust',null),/unknown backend/);
+});
+
+test('negative fixture polarity cannot be rewritten as positive',()=>{
+ const c=manifest.cases.find(x=>x.expect==='negative');
+ const altered={...c,expect:'positive',expectedGuestExit:42};
+ delete altered.expectedDiagnosticCode;
+ assert.throws(()=>validateManifest({...manifest,cases:manifest.cases.map(x=>x.id===c.id?altered:x)}),/invalid portable Task case/);
+});
+test('compile-only rejection cannot claim a guest command, exit or output',()=>{
+ const c=cases.find(x=>x.expect==='negative');
+ const denied={...receipt(c),compilerExit:1,compilerOutput:'error: '+c.expectedDiagnosticCode+' invalid capture',
+ guestExecuted:false,artifactSha256:null,guestArgv:[],guestExit:null,guestOutput:'',completedSteps:1,stepNames:['compile']};
+ for(const backend of manifest.backends){
+  const negative={...denied,backend};
+  const unsupported={...negative,status:'unsupported',compilerOutput:'error: unsupported Task lowering'};
+  for(const r of [negative,unsupported]){
+   assert.notEqual(classifyReceipt(c,backend,r).status,'failed');
+   for(const mutation of [{guestArgv:['/fake/guest']},{guestExit:42},{guestOutput:'forged guest'},{compilerExit:-1}]){
+    assert.equal(classifyReceipt(c,backend,{...r,...mutation}).status,'failed');
+   }
+  }
+  for(const compilerOutput of ['warning: unsupported operation','unsupported','note: not supported']){
+   assert.equal(classifyReceipt(c,backend,{...unsupported,compilerOutput}).status,'failed');
+  }
+ }
+});
+test('falsey non-null receipt data is malformed, not absent',()=>{
+ for(const r of [false,0,''])assert.equal(classifyReceipt(positive,'java',r).status,'failed');
+ assert.equal(classifyReceipt(positive,'java',null).status,'not_executed');
+});
+
+
+test('required and forbidden observations cannot drift from the portable contract',()=>{
+ for(const c of manifest.cases){
+  const mutate=patch=>({...manifest,cases:manifest.cases.map(x=>x.id===c.id?{...x,...patch}:x)});
+  for(const field of ['mustObserve','mustNotObserve']){
+   const original=c[field];
+   assert.throws(()=>validateManifest(mutate({[field]:[...original,'unexpected_marker']})),/invalid portable Task case/,c.id+': '+field);
+   if(original.length){
+    assert.throws(()=>validateManifest(mutate({[field]:original.slice(1)})),/invalid portable Task case/,c.id+': missing '+field);
+    assert.throws(()=>validateManifest(mutate({[field]:['changed_marker',...original.slice(1)]})),/invalid portable Task case/,c.id+': changed '+field);
+   }
+   if(original.length>1) assert.throws(()=>validateManifest(mutate({[field]:[...original].reverse()})),/invalid portable Task case/,c.id+': order '+field);
+  }
+ }
+ assert.equal(validateManifest(manifest),manifest);
+});
+
+
+test('direct fixture selection rejects missing array entries',()=>{
+ const sparse=(length,entries)=>Object.assign(new Array(length),entries);
+ const first=cases[0],second=cases[1];
+ for(const selected of [new Array(1),sparse(2,{0:first.id}),sparse(2,{1:second.id})])
+  assert.throws(()=>selectCases([first,second],selected),/fixture selection/);
+ assert.deepEqual(selectCases([first,second],[second.id,first.id]),[first,second]);
+});
+test('all backend roles reject malformed argument arrays without throwing',()=>{
+ const sparse=(length,entries)=>Object.assign(new Array(length),entries);
+ for(const backend of manifest.backends){
+  const valid={...receipt(),backend};
+  assert.equal(classifyReceipt(positive,backend,valid).status,'passed');
+  for(const patch of [{compileArgv:sparse(2,{0:'/compiler'})},{compileArgv:sparse(2,{1:'a.atto'})},{guestArgv:sparse(2,{0:'/guest'})},{guestArgv:new Array(1)}])
+   assert.equal(classifyReceipt(positive,backend,{...valid,...patch}).status,'failed',backend);
+ }
 });

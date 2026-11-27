@@ -9,7 +9,12 @@
     "wasm",
     "rs",
     "forge",
-    "net"
+    "net",
+    "cranelift",
+    "js",
+    "atto",
+    "hdl",
+    "realtime"
   ],
   "statuses": [
     "passed",
@@ -35,8 +40,14 @@
         "wasm": "not_executed",
         "rs": "not_executed",
         "forge": "not_executed",
-        "net": "not_executed"
-      }
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed",
+        "realtime": "not_executed"
+      },
+      "fixtureBlobSha": "9cd23f775c00e3cd749c552a7e40bb10174d0bed"
     },
     {
       "id": "fire-and-continue",
@@ -56,8 +67,14 @@
         "wasm": "not_executed",
         "rs": "not_executed",
         "forge": "not_executed",
-        "net": "not_executed"
-      }
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed",
+        "realtime": "not_executed"
+      },
+      "fixtureBlobSha": "7b33ac8d4ff103ed52c6cfd7c3f0e04cda6fabdf"
     },
     {
       "id": "typed-int",
@@ -74,8 +91,14 @@
         "wasm": "not_executed",
         "rs": "not_executed",
         "forge": "not_executed",
-        "net": "not_executed"
-      }
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed",
+        "realtime": "not_executed"
+      },
+      "fixtureBlobSha": "597d5f56cb92d4452f5a8413d38df7bcf1161edd"
     },
     {
       "id": "typed-string",
@@ -92,8 +115,14 @@
         "wasm": "not_executed",
         "rs": "not_executed",
         "forge": "not_executed",
-        "net": "not_executed"
-      }
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed",
+        "realtime": "not_executed"
+      },
+      "fixtureBlobSha": "1d56fffa690d6dd5cb038989b225db72518f1546"
     },
     {
       "id": "generic-hasfuture-once",
@@ -112,8 +141,14 @@
         "wasm": "not_executed",
         "rs": "not_executed",
         "forge": "not_executed",
-        "net": "not_executed"
-      }
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed",
+        "realtime": "not_executed"
+      },
+      "fixtureBlobSha": "9eae03934e46030dcf7f46bef5dbd19cf15b2b9a"
     },
     {
       "id": "actorref-readiness",
@@ -132,8 +167,14 @@
         "wasm": "not_executed",
         "rs": "not_executed",
         "forge": "not_executed",
-        "net": "not_executed"
-      }
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed",
+        "realtime": "not_executed"
+      },
+      "fixtureBlobSha": "4cb3b7260cb1286d76e81624de4631fe72ca9aa4"
     },
     {
       "id": "cancel-before-start",
@@ -154,8 +195,14 @@
         "wasm": "not_executed",
         "rs": "not_executed",
         "forge": "not_executed",
-        "net": "not_executed"
-      }
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed",
+        "realtime": "not_executed"
+      },
+      "fixtureBlobSha": "a80807832dc109c59a188a662513fa9e19de70b7"
     },
     {
       "id": "cancel-while-suspended",
@@ -177,8 +224,14 @@
         "wasm": "not_executed",
         "rs": "not_executed",
         "forge": "not_executed",
-        "net": "not_executed"
-      }
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed",
+        "realtime": "not_executed"
+      },
+      "fixtureBlobSha": "1eb6fb2bf1e7e2f7420b994d60405caf6d05281e"
     },
     {
       "id": "cancel-owned-descendants",
@@ -198,8 +251,14 @@
         "wasm": "not_executed",
         "rs": "not_executed",
         "forge": "not_executed",
-        "net": "not_executed"
-      }
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed",
+        "realtime": "not_executed"
+      },
+      "fixtureBlobSha": "3be355049cd0f3c0f5bfa5f2c2ee6f397a7c7731"
     },
     {
       "id": "physical-cleanup-before-done",
@@ -219,8 +278,14 @@
         "wasm": "not_executed",
         "rs": "not_executed",
         "forge": "not_executed",
-        "net": "not_executed"
-      }
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed",
+        "realtime": "not_executed"
+      },
+      "fixtureBlobSha": "20944062c92d9ee91ca9e44b9baa72a7fe0ca7a9"
     },
     {
       "id": "reject-duck-hasfuture",
@@ -237,9 +302,15 @@
         "wasm": "not_executed",
         "rs": "not_executed",
         "forge": "not_executed",
-        "net": "not_executed"
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed",
+        "realtime": "not_executed"
       },
-      "expectedDiagnosticCode": "ATTO_TASK_E_HASFUTURE_WITNESS"
+      "expectedDiagnosticCode": "ATTO_TASK_E_HASFUTURE_WITNESS",
+      "fixtureBlobSha": "0b2c33b9cd64b30858917bb9cff34e6c77370849"
     },
     {
       "id": "reject-actor-self-capture",
@@ -256,9 +327,15 @@
         "wasm": "not_executed",
         "rs": "not_executed",
         "forge": "not_executed",
-        "net": "not_executed"
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed",
+        "realtime": "not_executed"
       },
-      "expectedDiagnosticCode": "ATTO_TASK_E_ACTOR_SELF_CAPTURE"
+      "expectedDiagnosticCode": "ATTO_TASK_E_ACTOR_SELF_CAPTURE",
+      "fixtureBlobSha": "297f6a5e908a36a181cd85b469031e9ac45fdcac"
     },
     {
       "id": "reject-mut-borrow-capture",
@@ -275,9 +352,15 @@
         "wasm": "not_executed",
         "rs": "not_executed",
         "forge": "not_executed",
-        "net": "not_executed"
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed",
+        "realtime": "not_executed"
       },
-      "expectedDiagnosticCode": "ATTO_TASK_E_MUT_BORROW_CAPTURE"
+      "expectedDiagnosticCode": "ATTO_TASK_E_MUT_BORROW_CAPTURE",
+      "fixtureBlobSha": "a60fc96b7ad0283b72466faba15e3c57913f68ca"
     },
     {
       "id": "reject-await-in-critical",
@@ -294,9 +377,15 @@
         "wasm": "not_executed",
         "rs": "not_executed",
         "forge": "not_executed",
-        "net": "not_executed"
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed",
+        "realtime": "not_executed"
       },
-      "expectedDiagnosticCode": "ATTO_TASK_E_CRITICAL_SUSPEND"
+      "expectedDiagnosticCode": "ATTO_TASK_E_CRITICAL_SUSPEND",
+      "fixtureBlobSha": "a01944a4c010f61fb5b89c1506deb2072799ac85"
     },
     {
       "id": "no-resume-before-physical-exit",
@@ -319,8 +408,14 @@
         "wasm": "not_executed",
         "rs": "not_executed",
         "forge": "not_executed",
-        "net": "not_executed"
-      }
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed",
+        "realtime": "not_executed"
+      },
+      "fixtureBlobSha": "0d4398af42f957879b042779783a81920a3dc4f3"
     },
     {
       "id": "stop-while-suspending",
@@ -341,8 +436,14 @@
         "wasm": "not_executed",
         "rs": "not_executed",
         "forge": "not_executed",
-        "net": "not_executed"
-      }
+        "net": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto": "not_executed",
+        "hdl": "not_executed",
+        "realtime": "not_executed"
+      },
+      "fixtureBlobSha": "8bb1d141575c19d0219eb46541038f2f98c06a5a"
     }
   ]
 }

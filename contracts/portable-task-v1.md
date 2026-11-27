@@ -1,6 +1,6 @@
 # Portable AttoLang Task / HasFuture<T> contract v1 (candidate)
 
-**Scope:** same `.atto` source across Java/GraalVM, LLVM, Rust/Cranelift (`rs`), Wasm, Forge and .NET. This is a proposed normative semantic contract, **not** proof that existing backends implement it. Source names and probe hooks are provisional until the actual frontend accepts them. Review by compiler/runtime owners is required before declaring it frozen. All suite entries begin **not_executed**.
+**Scope:** same `.atto` source across Java/GraalVM, LLVM, Rust-authored compiler (`rs`), Wasm integration, Forge, .NET, separate Cranelift, JavaScript, Atto bootstrap, HDL and realtime profiles. The last two are constrained; unsupported operations must be rejected explicitly. This is a proposed normative semantic contract, **not** proof that existing backends implement it. Source names and probe hooks are provisional until the actual frontend accepts them. Review by compiler/runtime owners is required before declaring it frozen. All suite entries begin **not_executed**.
 
 ## Portable semantics
 
@@ -24,3 +24,7 @@
 For each backend/case require immutable compiler **commit** and executable SHA-256, fixture source commit and Git blob plus SHA-256, actual compiler command, complete compile steps, compiler exit/diagnostic, guest artifact SHA-256 (when applicable), guest launch command and exit, bounded stdout/stderr trace, named Actions job/runner with positive completed-step count, and a public-to-reviewers source-local receipt URL. A host-only test, zero-step job or self-authored status field never upgrades a case to passed. The verifier rejects missing identities and mismatches. Report each case as **passed**, **failed**, **unsupported**, or **not_executed**, with source-only tests called out separately. Branches, merges, SHA pins and executed receipts must be reviewed independently before release-gate promotion.
 
 Existing older draft examples: `fixtures/task-blocks/v0`, `fixtures/task-blocks/v1`, `fixtures/async-task-borrow-safety-v1`. The new suite does not supersede them without review.
+
+## Eleven-role coverage extension
+
+The existing 16 immutable fixtures are retained byte-for-byte (manifest Git blob pins). The 176 role/case cells begin `not_executed`. See [deterministic replay conformance #562](https://github.com/atto-lang/atto-platform-conformance/issues/562) and [Java dispatcher #1734](https://github.com/atto-lang/atto-source.java/pull/1734); those tracks require runtime-attested schedule events and are not discharged by a structural Task receipt. Do not treat `rs` and `wasm` as independently compiled source guests without separate provenance, or a pinned external compiler as self-hosting. HDL/realtime must not claim a positive for unsupported dynamic scheduling or unbounded operations. Require real diagnostics and no artifact for restricted-profile rejection; `unsupported` is never release qualified.
