@@ -1,0 +1,2 @@
+fnc increment(int n): int { return n + 1; }
+pub fnc main(): int { return 42 |> await |> if > 10 then 30 else 20 fi |> increment |> > 30 |> ? 100 : 200; }

@@ -1,0 +1,9 @@
+// Branch-local hidden cannot escape into the callable continuation.
+pub fnc main(): int {
+  do select over
+    default: {
+      const int hidden = 44;
+    }
+  end
+  return hidden;
+}

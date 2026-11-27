@@ -1,0 +1,5 @@
+pub fnc main(): int {
+    recover |err, cursor| -> { stdio.println("recover"); if err.is_raise then return 42; fi return 0; };
+    defer { stdio.println("cleanup"); };
+    try { raise! new Error("raised"); } catch (err) { stdio.println("unexpected catch"); return 0; } finally { stdio.println("finally"); }
+}

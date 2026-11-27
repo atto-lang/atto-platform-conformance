@@ -1,0 +1,332 @@
+{
+  "schema": "atto.value-loop-recur.targets.v1",
+  "status": "TARGET_NOT_EXECUTED",
+  "origin": {
+    "repo": "atto-lang/atto-source.rs",
+    "commit": "05d1cf6841f2f91b1678c8e0c296dc476f5e3789",
+    "historical_commit": "24a2102ecb7902a0274db59086ec513ce5050cc9"
+  },
+  "profile_status": {
+    "java-graalvm": "NOT_EXECUTED",
+    "llvm-native": "NOT_EXECUTED",
+    "wasm-independent": "NOT_EXECUTED",
+    "net-nativeaot": "NOT_EXECUTED",
+    "forge-native": "NOT_EXECUTED",
+    "cranelift-native": "NOT_EXECUTED",
+    "rs-wasm": "NOT_EXECUTED",
+    "js-esm": "NOT_EXECUTED",
+    "hdl-specialized": "NOT_EXECUTED",
+    "realtime-specialized": "NOT_EXECUTED"
+  },
+  "policy": "Source integrity is not guest evidence. Native/wasm32 hosts of one compiler are not independent implementations. Rejections require a semantic diagnostic and no artifact; historical Rust codes need explicit backend mapping. Specialized profiles may declare unsupported, never pass.",
+  "cases": [
+    {
+      "id": "230-recur-outside-loop",
+      "path": "fail/230-recur-outside-loop.atto",
+      "blob": "9e30cf3d66b1822dbe0b26dc6a9452f1fdef85e5",
+      "origin_path": "tests/fixtures/fail/230-recur-outside-loop.atto",
+      "expected": {
+        "kind": "reject",
+        "historical_rust_diagnostic": "E_RECUR",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "231-recur-in-ordinary-loop",
+      "path": "fail/231-recur-in-ordinary-loop.atto",
+      "blob": "80f43655697a6d93af6ff85b871cdd3371ddab51",
+      "origin_path": "tests/fixtures/fail/231-recur-in-ordinary-loop.atto",
+      "expected": {
+        "kind": "reject",
+        "historical_rust_diagnostic": "E_RECUR",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "232-recur-arity-low",
+      "path": "fail/232-recur-arity-low.atto",
+      "blob": "a26ca09c729aa4580fb356188aaa077477dcbe0a",
+      "origin_path": "tests/fixtures/fail/232-recur-arity-low.atto",
+      "expected": {
+        "kind": "reject",
+        "historical_rust_diagnostic": "E_RECUR_ARITY",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "233-recur-arity-high",
+      "path": "fail/233-recur-arity-high.atto",
+      "blob": "4e2f47dc07b631d800820a5d536a039655dd354a",
+      "origin_path": "tests/fixtures/fail/233-recur-arity-high.atto",
+      "expected": {
+        "kind": "reject",
+        "historical_rust_diagnostic": "E_RECUR_ARITY",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "234-recur-wrong-type",
+      "path": "fail/234-recur-wrong-type.atto",
+      "blob": "a70bb1ef9f3438bf9333b2cb6580004b7eede54c",
+      "origin_path": "tests/fixtures/fail/234-recur-wrong-type.atto",
+      "expected": {
+        "kind": "reject",
+        "historical_rust_diagnostic": "E_TYPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "235-recur-non-tail",
+      "path": "fail/235-recur-non-tail.atto",
+      "blob": "284dd73f4c50bd84a910d91d72143a440cf0d53f",
+      "origin_path": "tests/fixtures/fail/235-recur-non-tail.atto",
+      "expected": {
+        "kind": "reject",
+        "historical_rust_diagnostic": "E_RECUR_TAIL",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "236-recur-nested-non-tail",
+      "path": "fail/236-recur-nested-non-tail.atto",
+      "blob": "fc208cd65bcfabb74574e7dff5b1200687fd09d5",
+      "origin_path": "tests/fixtures/fail/236-recur-nested-non-tail.atto",
+      "expected": {
+        "kind": "reject",
+        "historical_rust_diagnostic": "E_RECUR_TAIL",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "237-recur-break-mismatched-result",
+      "path": "fail/237-recur-break-mismatched-result.atto",
+      "blob": "d818823920a05df7e2427f09c33da20d71247d60",
+      "origin_path": "tests/fixtures/fail/237-recur-break-mismatched-result.atto",
+      "expected": {
+        "kind": "reject",
+        "historical_rust_diagnostic": "E_TYPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "238-recur-bare-break",
+      "path": "fail/238-recur-bare-break.atto",
+      "blob": "a298e3b8a521f570969d899f05e32b4638cd4055",
+      "origin_path": "tests/fixtures/fail/238-recur-bare-break.atto",
+      "expected": {
+        "kind": "reject",
+        "historical_rust_diagnostic": "E_RECUR_TAIL",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "239-recur-bare-continue",
+      "path": "fail/239-recur-bare-continue.atto",
+      "blob": "9c7d5c9a206b6df190a8f7650a1134d6f9b2d375",
+      "origin_path": "tests/fixtures/fail/239-recur-bare-continue.atto",
+      "expected": {
+        "kind": "reject",
+        "historical_rust_diagnostic": "E_RECUR_TAIL",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "240-recur-let-binding-rejected",
+      "path": "fail/240-recur-let-binding-rejected.atto",
+      "blob": "7cf380fa616f4b2b33ebd67c2e2489182bf95b9e",
+      "origin_path": "tests/fixtures/fail/240-recur-let-binding-rejected.atto",
+      "expected": {
+        "kind": "reject",
+        "historical_rust_diagnostic": "E_RECUR_BINDING",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "241-recur-empty-state-rejected",
+      "path": "fail/241-recur-empty-state-rejected.atto",
+      "blob": "a34c3bdc157cd00e77a2fd1c92b1748aac2a167c",
+      "origin_path": "tests/fixtures/fail/241-recur-empty-state-rejected.atto",
+      "expected": {
+        "kind": "reject",
+        "historical_rust_diagnostic": "E_RECUR_ARITY",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "242-recur-without-break-value",
+      "path": "fail/242-recur-without-break-value.atto",
+      "blob": "df3059cdcccf216c5f8a8481db2679455fd02916",
+      "origin_path": "tests/fixtures/fail/242-recur-without-break-value.atto",
+      "expected": {
+        "kind": "reject",
+        "historical_rust_diagnostic": "E_LOOP_VALUE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "243-recur-duplicate-state",
+      "path": "fail/243-recur-duplicate-state.atto",
+      "blob": "72e93458d731a596d2bc2f9e26cb9b2124b7edfb",
+      "origin_path": "tests/fixtures/fail/243-recur-duplicate-state.atto",
+      "expected": {
+        "kind": "reject",
+        "historical_rust_diagnostic": "E_DUPLICATE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "244-break-value-outside-loop",
+      "path": "fail/244-break-value-outside-loop.atto",
+      "blob": "ac086e31bc916918cd5da3536d2698803ec91b50",
+      "origin_path": "tests/fixtures/fail/244-break-value-outside-loop.atto",
+      "expected": {
+        "kind": "reject",
+        "historical_rust_diagnostic": "E_BREAK_VALUE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "245-recur-non-exhaustive-tail",
+      "path": "fail/245-recur-non-exhaustive-tail.atto",
+      "blob": "a773737ee5005b824ff0f59e7cf4ca19ffff4cac",
+      "origin_path": "tests/fixtures/fail/245-recur-non-exhaustive-tail.atto",
+      "expected": {
+        "kind": "reject",
+        "historical_rust_diagnostic": "E_RECUR_TAIL",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "220-recur-sum",
+      "path": "pass/220-recur-sum.atto",
+      "blob": "adf984b7e7c7e1dd864460e89db50e47f0ee50dd",
+      "origin_path": "tests/fixtures/pass/220-recur-sum.atto",
+      "expected": {
+        "kind": "execute",
+        "return_i64": "45",
+        "stdout": ""
+      }
+    },
+    {
+      "id": "221-recur-parallel-fibonacci",
+      "path": "pass/221-recur-parallel-fibonacci.atto",
+      "blob": "5ea7a41aa0052b55ff6d10eebce7561dbe78fe8b",
+      "origin_path": "tests/fixtures/pass/221-recur-parallel-fibonacci.atto",
+      "expected": {
+        "kind": "execute",
+        "return_i64": "13",
+        "stdout": ""
+      }
+    },
+    {
+      "id": "222-recur-branch-else",
+      "path": "pass/222-recur-branch-else.atto",
+      "blob": "45e590a6e0eb0bea544ccad2dc9c829580557b6f",
+      "origin_path": "tests/fixtures/pass/222-recur-branch-else.atto",
+      "expected": {
+        "kind": "execute",
+        "return_i64": "3",
+        "stdout": ""
+      }
+    },
+    {
+      "id": "223-recur-break-multiple-branches",
+      "path": "pass/223-recur-break-multiple-branches.atto",
+      "blob": "cd5e393b2ecdef7d09ed34b1fb97e2b0efb82751",
+      "origin_path": "tests/fixtures/pass/223-recur-break-multiple-branches.atto",
+      "expected": {
+        "kind": "execute",
+        "return_i64": "8",
+        "stdout": ""
+      }
+    },
+    {
+      "id": "224-recur-bool-state",
+      "path": "pass/224-recur-bool-state.atto",
+      "blob": "aa479d448a0925f3f176c6c81b5d7b0409485869",
+      "origin_path": "tests/fixtures/pass/224-recur-bool-state.atto",
+      "expected": {
+        "kind": "execute",
+        "return_i64": "0",
+        "stdout": ""
+      }
+    },
+    {
+      "id": "225-recur-float-state",
+      "path": "pass/225-recur-float-state.atto",
+      "blob": "5b1cf621d7d757753fa786ed945a6eae89a4c148",
+      "origin_path": "tests/fixtures/pass/225-recur-float-state.atto",
+      "expected": {
+        "kind": "execute",
+        "return_i64": "4",
+        "stdout": ""
+      }
+    },
+    {
+      "id": "226-recur-string-state",
+      "path": "pass/226-recur-string-state.atto",
+      "blob": "474f73ee88e95c89f485db6f4a138dc6dd31a64c",
+      "origin_path": "tests/fixtures/pass/226-recur-string-state.atto",
+      "expected": {
+        "kind": "execute",
+        "return_i64": "3",
+        "stdout": "abb\n"
+      }
+    },
+    {
+      "id": "227-recur-source-order-init",
+      "path": "pass/227-recur-source-order-init.atto",
+      "blob": "4ec369653a9b333c61449a02b4c06fc8e51f4d07",
+      "origin_path": "tests/fixtures/pass/227-recur-source-order-init.atto",
+      "expected": {
+        "kind": "execute",
+        "return_i64": "6",
+        "stdout": ""
+      }
+    },
+    {
+      "id": "228-recur-evaluation-order",
+      "path": "pass/228-recur-evaluation-order.atto",
+      "blob": "8f50fe0e08b0e3a26b1f83d5395308ea7b0b4bc4",
+      "origin_path": "tests/fixtures/pass/228-recur-evaluation-order.atto",
+      "expected": {
+        "kind": "execute",
+        "return_i64": "72",
+        "stdout": "7\n2\n"
+      }
+    },
+    {
+      "id": "229-recur-constant-stack",
+      "path": "pass/229-recur-constant-stack.atto",
+      "blob": "33d71fc35d920b086cda844577228cb6bdb3d45e",
+      "origin_path": "tests/fixtures/pass/229-recur-constant-stack.atto",
+      "expected": {
+        "kind": "execute",
+        "return_i64": "100000",
+        "stdout": ""
+      }
+    },
+    {
+      "id": "230-stateless-value-loop",
+      "path": "pass/230-stateless-value-loop.atto",
+      "blob": "2c0359a6d2876958d6fb6831eb0dac3c6548c15b",
+      "origin_path": "tests/fixtures/pass/230-stateless-value-loop.atto",
+      "expected": {
+        "kind": "execute",
+        "return_i64": "42",
+        "stdout": ""
+      }
+    },
+    {
+      "id": "231-recur-nested-loop-target",
+      "path": "pass/231-recur-nested-loop-target.atto",
+      "blob": "13ef5751f30f5a2dafd16638086e3bce37f768bd",
+      "origin_path": "tests/fixtures/pass/231-recur-nested-loop-target.atto",
+      "expected": {
+        "kind": "execute",
+        "return_i64": "42",
+        "stdout": ""
+      }
+    }
+  ]
+}

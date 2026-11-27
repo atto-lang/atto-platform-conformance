@@ -63,7 +63,7 @@ def verify(receipt: dict) -> None:
 
     require(receipt.get("compiled_guest") is False, f"{status} cannot claim compiled guest")
     require(receipt.get("observed_exit") is None, f"{status} cannot claim guest exit")
-    require(receipt.get("observed_stdout") in (None, []), f"{status} cannot claim guest stdout")
+    require(receipt.get("observed_stdout") is None, f"{status} cannot claim guest stdout")
 
     if status == "EXPECTED_REJECT":
         require(nonempty_string(receipt.get("compiler_identity")), "compiler identity")

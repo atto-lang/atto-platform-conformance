@@ -1,0 +1,8 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const c=JSON.parse(readFileSync(new URL('../contracts/noalloc-nocopy-guarantees-v1.json',import.meta.url),'utf8'));
+test('eleven unverified profiles, no promoted receipts',()=>{assert.equal(c.status,'TARGET_NOT_EXECUTED');assert.equal(c.backendProfiles.length,11);assert.equal(new Set(c.backendProfiles.map(x=>x.repo)).size,11);assert.ok(c.backendProfiles.every(x=>x.status==='NOT_EXECUTED'));});
+test('all five Buffer spellings retained as ownership-dependent targets',()=>{const a=c.cases.filter(x=>x.id.startsWith('annotated-buffer-'));assert.equal(a.length,5);assert.ok(a.every(x=>x.source.startsWith('@noalloc\\n@nocopy\\n'.replaceAll('\\n','\n'))&&x.kind==='syntax-and-proof-target'));assert.equal(new Set(a.map(x=>x.source)).size,5);assert.match(a[0].source,/Buffer • process/);assert.match(a[1].source,/Buffer <- process/);});
+test('scalar guest cases retain four explicit zero counters and result',()=>{const a=c.cases.filter(x=>x.kind==='guest-positive');assert.equal(a.length,6);for(const x of a){assert.equal(x.exit,42);assert.deepEqual(x.metrics,{dynamicAllocations:0,allocatedBytes:0,payloadCopies:0,copiedBytes:0});}});
+test('fail closed and no false proof',()=>{assert.equal(c.evidence.unknownEffects,'reject');assert.equal(c.evidence.mustNotIgnoreAnnotations,true);assert.equal(c.evidence.ownershipFirst,true);assert.equal(c.evidence.zeroCounterProofAlone,false);assert.equal(c.evidence.missingMetrics,'NOT_MEASURED');assert.equal(new Set(c.cases.map(x=>x.id)).size,c.cases.length);assert.ok(c.cases.some(x=>x.id==='escaping-allocation'&&x.precondition));});

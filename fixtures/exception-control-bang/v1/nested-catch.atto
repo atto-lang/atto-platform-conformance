@@ -1,0 +1,3 @@
+pub fnc main(): int {
+    try { try { throw! new Error("inner"); } catch (inner) { throw! inner; } } catch (outer) { return 42; }
+}

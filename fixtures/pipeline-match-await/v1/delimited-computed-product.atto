@@ -1,0 +1,1 @@
+pub fnc main(): int { return match |2 + 3, 6 * 7| over on (5, 42) -> 42, on _ -> 0 end; }

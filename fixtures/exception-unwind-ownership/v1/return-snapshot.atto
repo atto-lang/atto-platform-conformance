@@ -1,0 +1,5 @@
+pub fnc main(): int {
+    let int n = 42;
+    defer { n = 0; };
+    return n;
+}

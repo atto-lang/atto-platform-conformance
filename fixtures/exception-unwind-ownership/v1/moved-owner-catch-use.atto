@@ -1,0 +1,6 @@
+define class Parcel as pub let int value = 42; end
+pub fnc main(): int {
+    val first = new Parcel();
+    val second = take! first;
+    try { throw! new Error("ordinary"); } catch (err) { return first.value; }
+}

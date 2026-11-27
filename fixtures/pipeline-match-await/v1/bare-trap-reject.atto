@@ -1,0 +1,1 @@
+pub fnc main(): int { 42 |> trap! >> val r; return 0; }

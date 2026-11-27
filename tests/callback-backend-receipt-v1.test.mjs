@@ -129,6 +129,7 @@ test("NOT_EXECUTED cannot smuggle compiler or guest evidence", () => {
     {...receipt, compiled_guest: true},
     {...receipt, observed_exit: 0},
     {...receipt, observed_stdout: stdout},
+    {...receipt, observed_stdout: []},
     {...receipt, diagnostic: "parser said no"},
     {...receipt, reason: ""},
   ]) {

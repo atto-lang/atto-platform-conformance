@@ -1,0 +1,9 @@
+pub fnc main(): int {
+    return 55 |> fnc fib(int v): int {
+        ^ match v over
+            on 0 -> 0,
+            on 1 -> 1,
+            on _ -> fib(v - 2) + fib(v - 1)
+        end
+    };
+}

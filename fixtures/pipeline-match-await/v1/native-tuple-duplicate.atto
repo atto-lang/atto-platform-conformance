@@ -1,0 +1,1 @@
+pub fnc main(): int { return (10, 32) |> match |(x, x)| over on _ -> x end; }

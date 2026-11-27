@@ -1,0 +1,50 @@
+name: Compiled mixed scalar disk revival reference
+on:
+  pull_request:
+    paths:
+      - 'tests/durable-scalar-sqlite-revival.mjs'
+      - '.github/workflows/durable-scalar-sqlite-revival.yml'
+permissions:
+  contents: read
+jobs:
+  process-disk:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Verify exact source trees and build real LLVM compiler
+        env:
+          EXPECTED: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED"
+          test -z "$(git status --porcelain)"
+          git rev-parse HEAD^{tree}
+          fetch() {
+            local repo="$1" sha="$2" tree="$3" dir="$4"
+            git init "$dir"
+            GIT_TERMINAL_PROMPT=0 git -C "$dir" -c credential.helper= fetch --depth=1 "https://github.com/atto-lang/$repo.git" "$sha"
+            git -C "$dir" checkout --detach FETCH_HEAD
+            git -C "$dir" fsck --full
+            test "$(git -C "$dir" rev-parse HEAD)" = "$sha"
+            test "$(git -C "$dir" rev-parse HEAD^{tree})" = "$tree"
+            test -z "$(git -C "$dir" status --porcelain)"
+          }
+          fetch atto-source.js 0fcd29af99f0085856c0405bfeeb51b583b27fbc 3e9980f69bb878875915df6c79be4df0ac5cfe10 "$RUNNER_TEMP/js"
+          fetch atto-source.llvm 21706b5c79ca157d6ccacdc7e3298cc4d124e857 c0bd1c1676bc9146422a5f4df442c34b0a47c640 "$RUNNER_TEMP/llvm"
+          sudo apt-get update -qq
+          sudo apt-get install -y clang lld llvm-dev cmake ninja-build
+          cmake -G Ninja -S "$RUNNER_TEMP/llvm" -B "$RUNNER_TEMP/llvm/build" -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON -DLLVM_DIR="$(llvm-config --cmakedir)"
+          cmake --build "$RUNNER_TEMP/llvm/build" --target oreslang-llvmc --parallel 2
+          printf '%s' 'define durable actor Ledger as state balance: int = -9223372036854775808; state open: bool = true; state last: int = 9223372036854775807; end' > "$RUNNER_TEMP/ledger.atto"
+          "$RUNNER_TEMP/llvm/build/oreslang-llvmc" --durable-scalar-codec-v1 "$RUNNER_TEMP/ledger.atto" > "$RUNNER_TEMP/ledger.ll"
+          clang --target=wasm32 -Wno-override-module -nostdlib -Wl,--no-entry -Wl,--export=atto_scalar_size_v1 -Wl,--export=atto_scalar_fields_v1 -Wl,--export=atto_scalar_initial_v1 -Wl,--export=atto_scalar_encode_v1 -Wl,--export=atto_scalar_decode_v1 -Wl,--export=__heap_base -Wl,--initial-memory=131072 -Wl,--max-memory=131072 "$RUNNER_TEMP/ledger.ll" -o "$RUNNER_TEMP/ledger.wasm"
+      - name: Execute actual compiled guest reference disk recovery
+        run: |
+          set -euo pipefail
+          node --version
+          node -e "require('node:sqlite')"
+          ATTO_JS_COMPILER="$RUNNER_TEMP/js/src/durable-scalar-codec-v1.mjs" ATTO_WASM_CODEC="$RUNNER_TEMP/ledger.wasm" node tests/durable-scalar-sqlite-revival.mjs

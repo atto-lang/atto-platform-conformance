@@ -1,0 +1,7 @@
+define class Parcel as pub let int value = 42; end
+pub fnc main(): int {
+    val first = new Parcel();
+    val second = take! first;
+    defer { stdio.println("cleanup"); };
+    return second.value;
+}

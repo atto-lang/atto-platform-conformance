@@ -1,0 +1,1 @@
+pub fnc main(): int { const int a = 10; const int b = 32; return switch |a, b| over case (10, 32) -> a + b, default -> 0 end; }

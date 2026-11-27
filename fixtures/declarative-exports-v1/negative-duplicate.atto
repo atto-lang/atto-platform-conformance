@@ -1,4 +1,4 @@
 export pub Foo;
-export pub class Foo;
+export pub[pkg] class Foo;
 define class Foo as
 end

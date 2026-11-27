@@ -11,14 +11,19 @@
     "file_root_only": true,
     "forward_reference": true,
     "inferred_kind_requires_unambiguous_target": true,
-    "duplicate_export_same_name": "reject",
     "kind_mismatch": "reject",
     "unknown_target": "reject",
     "conflicting_public_and_package_visibility": "reject",
     "public_external_access": "allow only after proven symbol linking",
     "package_scope_external_access": "deny",
     "package_scope_same_package_access": "allow only after package graph and capability validation",
-    "emitted_metadata_must_not_grant_import_authority": true
+    "emitted_metadata_must_not_grant_import_authority": true,
+    "identical_resolved_export": "accept_idempotent_one_binding",
+    "conflicting_export_scope_or_target": "reject",
+    "internal_export": "reject",
+    "external_prototype_export": "reject",
+    "explicit_private_export": "reject",
+    "dotted_target": "reject"
   },
   "cases": [
     {
@@ -96,7 +101,8 @@
       "id": "negative-duplicate",
       "source": "negative-duplicate.atto",
       "expect": "reject",
-      "diagnostic": "duplicate_export"
+      "diagnostic": "conflicting_export_visibility",
+      "description": "Same local declaration with conflicting public/package scopes (historical fixture ID retained)."
     },
     {
       "id": "negative-unknown-scope",
@@ -115,6 +121,50 @@
       "source": "negative-package-conflict.atto",
       "expect": "reject",
       "diagnostic": "conflicting_export_visibility"
+    },
+    {
+      "id": "public-identical-duplicate",
+      "source": "public-identical-duplicate.atto",
+      "expect": "accept",
+      "target_kind": "class",
+      "visibility": "public",
+      "expected_binding_count": 1
+    },
+    {
+      "id": "negative-internal-public",
+      "source": "negative-internal-public.atto",
+      "expect": "reject",
+      "diagnostic": "conflicting_export_visibility"
+    },
+    {
+      "id": "negative-internal-package",
+      "source": "negative-internal-package.atto",
+      "expect": "reject",
+      "diagnostic": "conflicting_export_visibility"
+    },
+    {
+      "id": "negative-external-prototype",
+      "source": "negative-external-prototype.atto",
+      "expect": "reject",
+      "diagnostic": "unbound_export"
+    },
+    {
+      "id": "negative-explicit-private-public",
+      "source": "negative-explicit-private-public.atto",
+      "expect": "reject",
+      "diagnostic": "conflicting_export_visibility"
+    },
+    {
+      "id": "negative-explicit-private-package",
+      "source": "negative-explicit-private-package.atto",
+      "expect": "reject",
+      "diagnostic": "conflicting_export_visibility"
+    },
+    {
+      "id": "negative-dotted-target",
+      "source": "negative-dotted-target.atto",
+      "expect": "reject",
+      "diagnostic": "invalid_export_target"
     }
   ],
   "backends": {
@@ -146,5 +196,5 @@
       "positive_scope": "metadata decoder only; no source parser"
     }
   },
-  "evidence_policy": "A fixture file is not proof of feature execution; report accepted/rejected/unsupported, exact compiler commit, runner, build and execution receipts separately."
+  "evidence_policy": "A fixture file is not proof of feature execution; report accepted/rejected/unsupported, exact compiler commit, runner, build and execution receipts separately. Identical duplicate acceptance requires one resolved binding; negative cases require the semantic diagnostic, not generic unsupported syntax."
 }

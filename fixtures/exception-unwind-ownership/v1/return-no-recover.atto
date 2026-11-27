@@ -1,0 +1,5 @@
+pub fnc main(): int {
+    recover |err, cursor| -> { stdio.println("unexpected recover"); return 0; };
+    defer { stdio.println("cleanup"); };
+    return 42;
+}

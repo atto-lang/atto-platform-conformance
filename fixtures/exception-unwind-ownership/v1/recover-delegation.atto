@@ -1,0 +1,6 @@
+pub fnc main(): int {
+    recover |err, cursor| -> { stdio.println("older"); return 42; };
+    recover |err, cursor| -> { stdio.println("newer"); cursor.next(); };
+    defer { stdio.println("cleanup"); };
+    raise! new Error("raised");
+}

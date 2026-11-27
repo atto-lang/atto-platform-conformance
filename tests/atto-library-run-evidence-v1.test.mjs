@@ -9,6 +9,7 @@ const run = () => ({
 });
 const job = () => ({
   id: 128190944565, name: "core-baremetal", runner_id: 123,
+  run_id: 42304693725, run_attempt: 1, head_sha: head,
   status: "completed", conclusion: "success",
   steps: [
     {number: 1, name: "Verify exact source revision", status: "completed", conclusion: "success"},
@@ -51,4 +52,38 @@ test("run still in progress, missing jobs and incomplete steps are not PASS", ()
   assert.equal(classify(run(), []).classification, "NOT_EXECUTED");
   const step = job(); step.steps[1].status = "queued"; step.steps[1].conclusion = null;
   assert.equal(classify(run(), [step]).classification, "NO_REQUIRED_EXECUTION");
+});
+
+
+test("job snapshots cannot be substituted from a different run, retry or source head", () => {
+  for (const [field, bad] of [["run_id", 1], ["run_attempt", 2], ["head_sha", "b".repeat(40)]]) {
+    for (const value of [bad, undefined]) {
+      const j = job(); j[field] = value;
+      assert.deepEqual(classify(run(), [j]), {classification: "UNTRUSTED_EVIDENCE",
+        reason: "JOB_RUN_ATTEMPT_HEAD_MISMATCH", executedSteps: 0});
+    }
+  }
+  const retryRun = {...run(), run_attempt: 2};
+  const retryJob = {...job(), run_attempt: 2};
+  assert.equal(classify(retryRun, [retryJob]).classification, "EXECUTED_STEPS_UNVERIFIED");
+});
+test("terminal failure steps cannot be hidden by contradictory green job metadata", () => {
+  for (const conclusion of ["timed_out", "startup_failure", "action_required", "stale"]) {
+    const j = job();
+    j.steps.push({number: 3, name: "Additional execution", status: "completed", conclusion});
+    assert.equal(classify(run(), [j]).classification, "EXECUTION_FAILED");
+  }
+});
+
+
+test("queued empty jobs are pending, and skipped steps are not execution", () => {
+  const pending = classify({...run(), status: "queued", conclusion: null},
+    [{...job(), status: "queued", conclusion: null, runner_id: 0, steps: []}]);
+  assert.deepEqual(pending, {classification: "IN_PROGRESS", reason: "RUN_OR_JOB_INCOMPLETE", executedSteps: 0});
+  const j = job();
+  j.steps.push({number: 3, name: "Skipped optional job step", status: "completed", conclusion: "skipped"});
+  assert.equal(classify(run(), [j]).executedSteps, 2);
+  j.steps[1].conclusion = "skipped";
+  assert.equal(classify(run(), [j]).classification, "NO_REQUIRED_EXECUTION");
+  assert.equal(classify(run(), [j]).executedSteps, 1);
 });

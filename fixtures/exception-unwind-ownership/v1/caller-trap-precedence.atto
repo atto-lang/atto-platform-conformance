@@ -1,0 +1,9 @@
+fnc fail_now(): int {
+    recover |err, cursor| -> { stdio.println("unexpected recover"); return 0; };
+    defer { stdio.println("callee cleanup"); };
+    throw! new Error("ordinary");
+}
+pub fnc main(): int {
+    val r = trap! fail_now();
+    return r.is_err() ? 42 : 0;
+}
