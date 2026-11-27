@@ -21,7 +21,7 @@ test('execution-context unwind registry enumerates all eleven active backends',(
 
 test('complete source-free positive/negative semantics without invented guest passes',()=>{
   const cases=registry.cases;
-  assert.ok(cases.length >= 42);
+  assert.ok(cases.length >= 43);
   assert.equal(registry.extended_spec_candidate,'https://github.com/atto-lang/atto-spec/pull/245');
   assert.equal(new Set(cases.map(x=>x.id)).size,cases.length);
   for(const x of cases){
@@ -45,7 +45,7 @@ test('complete source-free positive/negative semantics without invented guest pa
     'susp-cleanup-stale-wakeup','discarded-fallible-result',
     'scheduled-unwind-next-turn','scheduled-unwind-duplicate-completion',
     'scheduled-recovery-cancel-race','scheduled-unwind-retirement-quiescence',
-    'pipeline-defer-registration','pipeline-recover-registration','pipeline-arity-rejection','pending-future-defer-lifo','pending-body-cleanup-recovery'])
+    'pipeline-defer-registration','pipeline-recover-registration','pipeline-arity-rejection','pending-future-defer-lifo','pending-body-cleanup-recovery','owned-future-handoff'])
     assert.ok(cases.some(c=>c.id===id),`missing ${id}`);
   assert.ok(cases.some(c=>c.group==='compile-reject'));
 });
@@ -157,6 +157,25 @@ test('pending body and recovery fixture pins actual worker candidate separately 
   assert.match(f.compiler_candidate.compiler_head,/^[a-f0-9]{40}$/);
   assert.match(f.compiler_candidate.compiler_tree,/^[a-f0-9]{40}$/);
   assert.match(f.compiler_candidate.job,/^https:\/\/github\.com\/ores-dummy-org-ruby-graal-1\/atto-ci\/actions\/runs\/\d+\/job\/\d+$/);
+  assert.deepEqual(f.compiler_candidate.profiles,['scheduled-unwind-v1-node-worker','scheduled-unwind-v1-chromium-worker']);
+  assert.equal(registry.cases.find(c=>c.id===f.case_id).backend_statuses['atto-source.js'],'not_executed');
+});
+
+test('owned Future fixture pins preserve historical unowned receipts and record real compiler denials',()=>{
+  const f=registry.owned_future_candidate;
+  assert.equal(f.fixtures.length,2);
+  for(const item of f.fixtures){
+    const b=readFileSync(new URL('../'+item.path,import.meta.url));
+    assert.equal(createHash('sha1').update('blob '+b.length+'\0').update(b).digest('hex'),item.git_blob_sha);
+    assert.match(b.toString('utf8'),/take! Future<int>/);
+    assert.equal(item.expected.value,42);
+  }
+  assert.match(f.prior_unowned_fixture_disposition,/Historical/);
+  assert.equal(f.actual_other_compiler_audit.rust.diagnostic,'E_OWNERSHIP');
+  assert.equal(f.actual_other_compiler_audit.rust.artifact_emitted,false);
+  assert.equal(f.actual_other_compiler_audit.net.artifact_emitted,false);
+  assert.match(f.compiler_candidate.compiler_head,/^[a-f0-9]{40}$/);
+  assert.match(f.compiler_candidate.compiler_tree,/^[a-f0-9]{40}$/);
   assert.deepEqual(f.compiler_candidate.profiles,['scheduled-unwind-v1-node-worker','scheduled-unwind-v1-chromium-worker']);
   assert.equal(registry.cases.find(c=>c.id===f.case_id).backend_statuses['atto-source.js'],'not_executed');
 });
