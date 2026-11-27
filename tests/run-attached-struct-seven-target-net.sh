@@ -7,8 +7,14 @@ project=verification/Ores.Net.AttachedStructFixtures/Ores.Net.AttachedStructFixt
 host=host/Ores.Net.NativeHost/Ores.Net.NativeHost.csproj
 dotnet build "$project" -c Release
 positive=0; negative=0; overflow=0
+declare -A seen=()
+shopt -s nullglob
 while IFS=$'\t' read -r name expected; do
   [[ "$name" =~ ^[a-z-]+\.atto$ ]]
+  [[ "$expected" =~ ^(reject|overflow|-?(0|[1-9][0-9]*))$ ]]
+  [[ ! -v 'seen[$name]' ]]
+  seen[$name]=1
+  test -f "$root/$name"
   dll="$work/OresGenerated.dll"
   rm -f "$dll"
   if [[ "$expected" == reject ]]; then
@@ -42,5 +48,10 @@ while IFS=$'\t' read -r name expected; do
     positive=$((positive+1))
   fi
 done < "$root/manifest.tsv"
+for source in "$root"/*.atto; do
+  name="${source##*/}"
+  [[ -v 'seen[$name]' ]]
+done
+test "${#seen[@]}" = 15
 test "$positive" = 4; test "$negative" = 9; test "$overflow" = 2
 echo "SEVEN_TARGET_RECEIPT target=net-native positive=$positive reject=$negative overflow=$overflow"

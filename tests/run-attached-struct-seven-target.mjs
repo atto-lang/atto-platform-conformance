@@ -1,6 +1,6 @@
 // Shared exact-source observer. No source rewriting or reference evaluator.
 import assert from 'node:assert/strict';
-import {readFile,writeFile,mkdtemp,rm,stat} from 'node:fs/promises';
+import {readFile,writeFile,mkdtemp,rm,stat,readdir} from 'node:fs/promises';
 import {spawnSync} from 'node:child_process';
 import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
@@ -11,6 +11,16 @@ const compiler=resolve(compilerArg);
 const root=fileURLToPath(new URL('../fixtures/attached-struct-seven-target-v1/',import.meta.url));
 const cases=(await readFile(join(root,'manifest.tsv'),'utf8')).trim().split('\n').map(l=>l.split('\t'));
 assert.equal(cases.length,15);
+const names=new Set();
+for(const row of cases){
+  assert.equal(row.length,2,'malformed manifest row');
+  const [name,expected]=row;
+  assert.match(name,/^[a-z-]+\.atto$/);
+  assert.ok(!names.has(name),'duplicate fixture: '+name);
+  assert.match(expected,/^(reject|overflow|-?(0|[1-9][0-9]*))$/);
+  names.add(name);
+}
+assert.deepEqual([...names].sort(),(await readdir(root)).filter(n=>n.endsWith('.atto')).sort(),'manifest must cover every source fixture exactly once');
 const work=await mkdtemp(join(tmpdir(),'atto-seven-'));
 const run=(cmd,args)=>{const r=spawnSync(cmd,args,{timeout:60000,maxBuffer:8*1024*1024});assert.ifError(r.error);assert.equal(r.signal,null);return r;};
 const host=join(work,'host.c');

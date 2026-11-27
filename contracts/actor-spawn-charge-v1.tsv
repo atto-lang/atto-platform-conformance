@@ -1,0 +1,27 @@
+# fixed-profile host-only; integers are signed decimal; - means omitted; no guest claim
+# id serial cap defaultCap liveSlots heapLimit stackLimit messageLimit mailboxBytes defaultAffinity defaultHeap defaultStack defaultMessages requestCap requestAffinity requestHeap requestStack requestMessages expected
+base	0	4	2	8	1000	100	50	4096	sticky	500	50	10	-	-	-	-	-	2,sticky,50,500,400,4096,10
+narrow	0	4	2	8	1000	100	50	4096	sticky	500	50	10	1	pinned	300	20	3	1,pinned,20,300,160,4096,3
+wide	0	4	2	8	1000	100	50	4096	sticky	500	50	10	4	none	1000	100	50	4,none,100,1000,800,4096,50
+serial	1	1	1	8	1000	100	50	4096	sticky	500	50	10	-	-	-	-	-	1,sticky,50,500,400,4096,10
+serial_bad	1	1	1	8	1000	100	50	4096	sticky	500	50	10	2	-	-	-	-	E_SPAWN_POLICY
+serial_metadata	1	2	1	8	1000	100	50	4096	sticky	500	50	10	-	-	-	-	-	E_SPAWN_POLICY
+zero_cap	0	4	2	8	1000	100	50	4096	sticky	500	50	10	0	-	-	-	-	E_SPAWN_POLICY
+negative_cap	0	4	2	8	1000	100	50	4096	sticky	500	50	10	-1	-	-	-	-	E_SPAWN_POLICY
+cap_escalation	0	4	2	8	1000	100	50	4096	sticky	500	50	10	5	-	-	-	-	E_SPAWN_POLICY
+pin_conflict	0	4	2	8	1000	100	50	4096	sticky	500	50	10	-	pinned	-	-	-	E_SPAWN_POLICY
+invalid_default_cap	0	4	5	8	1000	100	50	4096	sticky	500	50	10	1	-	-	-	-	E_SPAWN_POLICY
+zero_heap	0	4	2	8	1000	100	50	4096	sticky	500	50	10	-	-	0	-	-	E_SPAWN_QUOTA
+negative_heap	0	4	2	8	1000	100	50	4096	sticky	500	50	10	-	-	-1	-	-	E_SPAWN_QUOTA
+heap_over	0	4	2	8	1000	100	50	4096	sticky	500	50	10	-	-	1001	-	-	E_SPAWN_QUOTA
+stack_over	0	4	2	8	1000	100	50	4096	sticky	500	50	10	-	-	-	101	-	E_SPAWN_QUOTA
+messages_over	0	4	2	8	1000	100	50	4096	sticky	500	50	10	-	-	-	-	51	E_SPAWN_QUOTA
+zero_messages	0	4	2	8	1000	100	50	4096	sticky	500	50	10	-	-	-	-	0	E_SPAWN_QUOTA
+invalid_default	0	4	2	8	1000	100	50	4096	sticky	0	50	10	-	-	10	-	-	E_SPAWN_QUOTA
+zero_mailbox_bytes	0	4	2	8	1000	100	50	0	sticky	500	50	10	-	-	-	-	-	E_SPAWN_POLICY
+zero_live_slots	0	4	2	0	1000	100	50	4096	sticky	500	50	10	-	-	-	-	-	E_SPAWN_POLICY
+exact_i64	0	1	1	9223372036854775807	1	1	1	1	none	1	1	1	-	-	-	-	-	1,none,1,1,9223372036854775807,1,1
+stack_overflow	0	1	1	9223372036854775807	10	10	10	1	none	1	1	1	-	-	-	2	-	E_SPAWN_QUOTA
+bad_default_overflow	0	1	1	9223372036854775807	10	10	10	1	none	1	2	1	-	-	-	1	-	E_SPAWN_QUOTA
+large_exact	0	1	1	1	9223372036854775807	1	1	9223372036854775807	none	9007199254740993	1	1	-	-	-	-	-	1,none,1,9007199254740993,1,9223372036854775807,1
+pin_default_conflict	0	4	2	8	1000	100	50	4096	pinned	500	50	10	1	-	-	-	-	E_SPAWN_POLICY
