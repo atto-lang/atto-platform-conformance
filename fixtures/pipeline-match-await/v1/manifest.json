@@ -355,13 +355,6 @@
       "confirmedBackends": []
     },
     {
-      "id": "guard-alias-runtime-const-reject",
-      "expect": "reject",
-      "file": "guard-alias-runtime-const-reject.atto",
-      "sourceGitBlobSha1": "8c677a1564f749475363ad04b851beacd4153a78",
-      "confirmedBackends": []
-    },
-    {
       "id": "guard-alias-exact-string",
       "expect": "exit",
       "exit": 42,
@@ -405,6 +398,51 @@
       "expect": "reject",
       "file": "guard-alias-shape-reject.atto",
       "sourceGitBlobSha1": "f1918b37bf8f4c70f355eb05cce01cd198a523db",
+      "confirmedBackends": []
+    },
+    {
+      "id": "guard-alias-runtime-const",
+      "expect": "exit",
+      "exit": 42,
+      "file": "guard-alias-runtime-const.atto",
+      "sourceGitBlobSha1": "8c677a1564f749475363ad04b851beacd4153a78",
+      "confirmedBackends": []
+    },
+    {
+      "id": "incoming-alias-typed",
+      "expect": "exit",
+      "exit": 42,
+      "file": "incoming-alias-typed.atto",
+      "sourceGitBlobSha1": "a468f12a990b9e228b3dda649ba839526d3a32f9",
+      "confirmedBackends": []
+    },
+    {
+      "id": "incoming-alias-rebind",
+      "expect": "exit",
+      "exit": 42,
+      "file": "incoming-alias-rebind.atto",
+      "sourceGitBlobSha1": "389e63ac3aea25b4f20d2baac14908d98809b57a",
+      "confirmedBackends": []
+    },
+    {
+      "id": "incoming-alias-fixed-reject",
+      "expect": "reject",
+      "file": "incoming-alias-fixed-reject.atto",
+      "sourceGitBlobSha1": "3f8fbcd373405d950a16bcc2779d78d46027f493",
+      "confirmedBackends": []
+    },
+    {
+      "id": "incoming-alias-type-reject",
+      "expect": "reject",
+      "file": "incoming-alias-type-reject.atto",
+      "sourceGitBlobSha1": "f92cd4e128cafdface1a1e0eb8abd3cb0d14698f",
+      "confirmedBackends": []
+    },
+    {
+      "id": "incoming-alias-duplicate-reject",
+      "expect": "reject",
+      "file": "incoming-alias-duplicate-reject.atto",
+      "sourceGitBlobSha1": "c35ceb04f96e8aab70efded4d6ba09854167a390",
       "confirmedBackends": []
     }
   ]
