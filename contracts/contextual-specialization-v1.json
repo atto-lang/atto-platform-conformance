@@ -1,0 +1,134 @@
+{
+  "schema": "atto.contextual-specialization.target.v1",
+  "status": "DRAFT_NOT_EXECUTED",
+  "spec": "https://github.com/atto-lang/atto-spec/pull/294",
+  "prototype": "https://github.com/atto-lang/atto-source.rs/pull/750",
+  "parityCertified": false,
+  "cases": [
+    {
+      "id": "direct",
+      "kind": "execute",
+      "path": "fixtures/contextual-specialization-v1/pass/direct.atto",
+      "expectedGuestExit": 42
+    },
+    {
+      "id": "snapshot-reuse",
+      "kind": "execute",
+      "path": "fixtures/contextual-specialization-v1/pass/snapshot-reuse.atto",
+      "expectedGuestExit": 41
+    },
+    {
+      "id": "independent-bindings",
+      "kind": "execute",
+      "path": "fixtures/contextual-specialization-v1/pass/independent-bindings.atto",
+      "expectedGuestExit": 20
+    },
+    {
+      "id": "wrong-context-type",
+      "kind": "reject",
+      "path": "fixtures/contextual-specialization-v1/fail/wrong-context-type.atto",
+      "semanticReason": "context-type",
+      "artifactAllowed": false
+    },
+    {
+      "id": "wrong-context-arity",
+      "kind": "reject",
+      "path": "fixtures/contextual-specialization-v1/fail/wrong-context-arity.atto",
+      "semanticReason": "context-arity",
+      "artifactAllowed": false
+    },
+    {
+      "id": "wrong-call-type",
+      "kind": "reject",
+      "path": "fixtures/contextual-specialization-v1/fail/wrong-call-type.atto",
+      "semanticReason": "ordinary-argument-type",
+      "artifactAllowed": false
+    },
+    {
+      "id": "unbound-call",
+      "kind": "reject",
+      "path": "fixtures/contextual-specialization-v1/fail/unbound-call.atto",
+      "semanticReason": "missing-context",
+      "artifactAllowed": false
+    },
+    {
+      "id": "duplicate-binding",
+      "kind": "reject",
+      "path": "fixtures/contextual-specialization-v1/fail/duplicate-binding.atto",
+      "semanticReason": "duplicate-binding",
+      "artifactAllowed": false
+    },
+    {
+      "id": "wrong-member",
+      "kind": "reject",
+      "path": "fixtures/contextual-specialization-v1/fail/wrong-member.atto",
+      "semanticReason": "unknown-member",
+      "artifactAllowed": false
+    },
+    {
+      "id": "binding-reassignment",
+      "kind": "reject",
+      "path": "fixtures/contextual-specialization-v1/fail/binding-reassignment.atto",
+      "semanticReason": "immutable-binding",
+      "artifactAllowed": false
+    },
+    {
+      "id": "legacy-body",
+      "kind": "execute",
+      "path": "fixtures/contextual-specialization-v1/pass/legacy-body.atto",
+      "expectedGuestExit": 42
+    }
+  ],
+  "backends": {
+    "java": {
+      "state": "NOT_EXECUTED",
+      "repository": "atto-lang/atto-source.java"
+    },
+    "net": {
+      "state": "NOT_EXECUTED",
+      "repository": "atto-lang/atto-source.net"
+    },
+    "llvm": {
+      "state": "NOT_EXECUTED",
+      "repository": "atto-lang/atto-source.llvm"
+    },
+    "forge": {
+      "state": "NOT_EXECUTED",
+      "repository": "atto-lang/atto-source.forge"
+    },
+    "wasm": {
+      "state": "NOT_EXECUTED",
+      "repository": "atto-lang/atto-source.wasm"
+    },
+    "rs": {
+      "state": "NOT_EXECUTED",
+      "repository": "atto-lang/atto-source.rs"
+    },
+    "js": {
+      "state": "NOT_EXECUTED",
+      "repository": "atto-lang/atto-source.js"
+    },
+    "cranelift": {
+      "state": "NOT_EXECUTED",
+      "repository": "atto-lang/atto-source.cranelift"
+    },
+    "atto": {
+      "state": "NOT_EXECUTED",
+      "repository": "atto-lang/atto-source.atto"
+    },
+    "realtime": {
+      "state": "NOT_EXECUTED",
+      "repository": "atto-lang/atto-source.realtime"
+    },
+    "hdl": {
+      "state": "NOT_EXECUTED",
+      "repository": "atto-lang/atto-source.hdl"
+    }
+  },
+  "rules": [
+    "Declaration spelling is a draft; reconcile spec before normative admission.",
+    "Positive tests execute emitted guest code and check exit value; semantic negatives must reject with matching reason, no artifact. Unsupported syntax/profile does not satisfy semantic denial.",
+    "Each backend receipt must identify exact source commit/tree, fixture revision, actual executed steps, and guest result. HDL/realtime unsupported profiles are separate from semantic parity.",
+    "General first-class factory values, generics, multi-member schemas and allocator/resource capabilities need additional fixtures; scalar subset is not full feature parity."
+  ]
+}
