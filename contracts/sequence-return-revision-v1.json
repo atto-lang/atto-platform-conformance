@@ -1,0 +1,218 @@
+{
+  "schemaVersion": 1,
+  "contract": "https://github.com/atto-lang/atto-spec/pull/302",
+  "status": "NOT_EXECUTED",
+  "evidence": "Inline source candidates; materialize exact UTF-8 source bytes for each compiler. Diagnostic strings are semantic classes, not mandatory implementation-specific codes. Reject cases require no emitted runnable artifact. No guest or compiler parity claimed.",
+  "cases": [
+    {
+      "id": "return-0-sequence-0",
+      "source": "pub fnc main(): int { return seq 5, 3, 42; }\n",
+      "expect": {
+        "kind": "exit",
+        "value": 42
+      },
+      "confirmedBackends": []
+    },
+    {
+      "id": "return-0-sequence-1",
+      "source": "pub fnc main(): int { return seq! 5, 3, 42; }\n",
+      "expect": {
+        "kind": "exit",
+        "value": 42
+      },
+      "confirmedBackends": []
+    },
+    {
+      "id": "return-0-sequence-2",
+      "source": "pub fnc main(): int { return seq! (5, 3, 42); }\n",
+      "expect": {
+        "kind": "exit",
+        "value": 42
+      },
+      "confirmedBackends": []
+    },
+    {
+      "id": "return-0-sequence-3",
+      "source": "pub fnc main(): int { return (> 5, 3, 42); }\n",
+      "expect": {
+        "kind": "exit",
+        "value": 42
+      },
+      "confirmedBackends": []
+    },
+    {
+      "id": "return-1-sequence-0",
+      "source": "pub fnc main(): int { ^ seq 5, 3, 42; }\n",
+      "expect": {
+        "kind": "exit",
+        "value": 42
+      },
+      "confirmedBackends": []
+    },
+    {
+      "id": "return-1-sequence-1",
+      "source": "pub fnc main(): int { ^ seq! 5, 3, 42; }\n",
+      "expect": {
+        "kind": "exit",
+        "value": 42
+      },
+      "confirmedBackends": []
+    },
+    {
+      "id": "return-1-sequence-2",
+      "source": "pub fnc main(): int { ^ seq! (5, 3, 42); }\n",
+      "expect": {
+        "kind": "exit",
+        "value": 42
+      },
+      "confirmedBackends": []
+    },
+    {
+      "id": "return-1-sequence-3",
+      "source": "pub fnc main(): int { ^ (> 5, 3, 42); }\n",
+      "expect": {
+        "kind": "exit",
+        "value": 42
+      },
+      "confirmedBackends": []
+    },
+    {
+      "id": "ordinary-seq-call",
+      "source": "fnc seq(int a, int b, int c): int { return a + b + c; }\npub fnc main(): int { return seq(10, 12, 20); }\n",
+      "expect": {
+        "kind": "exit",
+        "value": 42
+      },
+      "confirmedBackends": []
+    },
+    {
+      "id": "ordinary-seq-call-spaced",
+      "source": "fnc seq(int a, int b, int c): int { return a + b + c; }\npub fnc main(): int { return seq (10, 12, 20); }\n",
+      "expect": {
+        "kind": "exit",
+        "value": 42
+      },
+      "confirmedBackends": []
+    },
+    {
+      "id": "warned-scalar",
+      "source": "pub fnc main(): int { return ^ 42; }\n",
+      "expect": {
+        "kind": "exit",
+        "value": 42,
+        "warning": "redundant-return"
+      },
+      "confirmedBackends": []
+    },
+    {
+      "id": "warned-tuple",
+      "source": "fnc pair(): (int, int) { return ^ (10, 32); }\npub fnc main(): int { return 42; }\n",
+      "expect": {
+        "kind": "exit",
+        "value": 42,
+        "warning": "redundant-return-tuple",
+        "requires": "type-check pair as tuple and retain body in checked frontend"
+      },
+      "confirmedBackends": []
+    },
+    {
+      "id": "legacy-scalar-tuple-reject",
+      "source": "pub fnc main(): int { return ^ (1, 42); }\n",
+      "expect": {
+        "kind": "reject",
+        "diagnostic": "return-type-mismatch"
+      },
+      "confirmedBackends": []
+    },
+    {
+      "id": "reverse-return-reject",
+      "source": "pub fnc main(): int { ^ return 42; }\n",
+      "expect": {
+        "kind": "reject",
+        "diagnostic": "invalid-return-marker-order"
+      },
+      "confirmedBackends": []
+    },
+    {
+      "id": "repeat-caret-reject",
+      "source": "pub fnc main(): int { ^ ^ 42; }\n",
+      "expect": {
+        "kind": "reject",
+        "diagnostic": "invalid-return-marker-order"
+      },
+      "confirmedBackends": []
+    },
+    {
+      "id": "empty-bang-reject",
+      "source": "pub fnc main(): int { return seq! (); }\n",
+      "expect": {
+        "kind": "reject",
+        "diagnostic": "empty-sequence"
+      },
+      "confirmedBackends": []
+    },
+    {
+      "id": "empty-short-reject",
+      "source": "pub fnc main(): int { return (>); }\n",
+      "expect": {
+        "kind": "reject",
+        "diagnostic": "empty-sequence"
+      },
+      "confirmedBackends": []
+    },
+    {
+      "id": "trailing-comma-reject",
+      "source": "pub fnc main(): int { return seq! (42,); }\n",
+      "expect": {
+        "kind": "reject",
+        "diagnostic": "trailing-sequence-comma"
+      },
+      "confirmedBackends": []
+    },
+    {
+      "id": "ordered-prefix-effects",
+      "source": "pub fnc main(): int { let int n = 1; return seq! (n += 2, n *= 14, n); }\n",
+      "expect": {
+        "kind": "exit",
+        "value": 42
+      },
+      "confirmedBackends": []
+    },
+    {
+      "id": "nested-sequence",
+      "source": "pub fnc main(): int { return (> 0, seq! (1, 42)); }\n",
+      "expect": {
+        "kind": "exit",
+        "value": 42
+      },
+      "confirmedBackends": []
+    },
+    {
+      "id": "heterogeneous-prefix",
+      "source": "pub fnc main(): int { return (> true, \"discard\", 42); }\n",
+      "expect": {
+        "kind": "exit",
+        "value": 42
+      },
+      "confirmedBackends": []
+    },
+    {
+      "id": "delimited-argument",
+      "source": "fnc sum(int a, int b): int { return a + b; }\npub fnc main(): int { return sum(seq! (0, 20), 22); }\n",
+      "expect": {
+        "kind": "exit",
+        "value": 42
+      },
+      "confirmedBackends": []
+    },
+    {
+      "id": "bare-final-argument",
+      "source": "fnc sum(int a, int b): int { return a + b; }\npub fnc main(): int { return sum(20, seq 0, 22); }\n",
+      "expect": {
+        "kind": "exit",
+        "value": 42
+      },
+      "confirmedBackends": []
+    }
+  ]
+}
