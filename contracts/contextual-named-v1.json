@@ -1,6 +1,6 @@
 {
   "schema": "atto.contextual-named.target.v1",
-  "status": "DRAFT_NOT_EXECUTED_AS_SHARED_CORPUS",
+  "status": "DRAFT_PARTIAL_SHARED_EXECUTION",
   "scope": "stored scalar context only; canonical set snapshot is separate",
   "rules": [
     "All named fields exactly once, no mixed positional/named syntax; evaluate RHS once in source order before mapping slots.",
@@ -84,5 +84,44 @@
       "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46063988259/job/140724787385",
       "scope": "embedded named scalar guest and regression; not byte-pinned shared named corpus"
     }
-  ]
+  ],
+  "sharedCorpusReceipts": {
+    "fixtureHead": "9ae50a7fc485eca1ec600038a8f60ce82aa55a01",
+    "fixtureTree": "fc4c73ce78e4dde75cd47e4e5e88efa954c85352",
+    "results": [
+      {
+        "backend": "rs",
+        "head": "e9fd55794e6242d8e9875bf987a03d8b56177b68",
+        "tree": "5b27e70ea6feb45938c63fa762538916415778da",
+        "guestPass": 2,
+        "rejectedUnclassified": 4,
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46064680764/job/140727023515"
+      },
+      {
+        "backend": "llvm-browser",
+        "head": "dc6ba2177d88c0d8bd11dcd02839efd797571389",
+        "tree": "1b5f70895bab9e65ed8717d4342322df071cc548",
+        "guestPass": 2,
+        "rejectedUnclassified": 4,
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46064680764/job/140727023284"
+      },
+      {
+        "backend": "js",
+        "head": "c189ca6fb1f0cf26c30f1acddfab824b9a60954e",
+        "tree": "165cc032306070a49c56ab33ffc3094aba0e1aad",
+        "guestPass": 2,
+        "rejectedUnclassified": 4,
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46064680764/job/140727023546"
+      },
+      {
+        "backend": "java",
+        "head": "c8879132edbd45d4f77f5834eee4dc21c56bca9b",
+        "tree": "f91ebb7fc700a6dd82a05fb020b481ce0f8ca0b3",
+        "guestPass": 2,
+        "rejectedUnclassified": 4,
+        "job": "https://github.com/gha-indie-worker-test/atto-ci/actions/runs/46064734758/job/140727193846"
+      }
+    ],
+    "note": "Raw rejection outcomes retained separately from semantic diagnostic classification. Canonical explicit set fixture executed; legacy assignment compatibility does not establish canonical grammar compliance."
+  }
 }
