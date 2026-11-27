@@ -330,5 +330,48 @@
       "ed8557a575889a9956ea074aabe4b2f0a3bb85fb"
     ],
     "scope": "Local shared host lifecycle tests; runtime blob matches WASM main. No compiler/guest certification."
-  }
+  },
+  "rustIndependentHostForwardPort": {
+    "status": "LOCAL_HOST_ONLY_NOT_CI",
+    "repo": "atto-lang/atto-source.rs",
+    "pr": 720,
+    "head": "a2c82d57158731cf0d83553646f5c86e5e65d412",
+    "tree": "b2671f51fd097ce3377b7a9a75ccc8f2ac6fc437",
+    "base": "c96a4879176e0a98b7cb513b2921e2e7e1eb3ab5",
+    "runtimeBlob": "23ce944e66a50fd63765ec5d55b712f993774d15",
+    "testBlobs": [
+      "18338ea620dfad9dfb2ff76a75c00dc9a075777a",
+      "ed8557a575889a9956ea074aabe4b2f0a3bb85fb"
+    ],
+    "node": "22.16.0",
+    "passed": 17,
+    "failed": 0,
+    "skipped": 0,
+    "differentialOperations": 10000,
+    "changedPaths": 3,
+    "ci": {
+      "status": "NO_JOB_RECORDS",
+      "runs": [
+        45931797067,
+        45931797021
+      ]
+    },
+    "scope": "Exact local host source/test blobs; independent main-based forward-port; compiler stack remains outstanding."
+  },
+  "nativeHostTerminalMerged": [
+    {
+      "repo": "atto-lang/atto-source.java",
+      "pr": 2005,
+      "mergeCommit": "f8fe2a42690dae011139f824ba849659f7e89cf1",
+      "main": "f8fe2a42690dae011139f824ba849659f7e89cf1",
+      "testBlob": "483d37a42bbbcfa53f66ffb5a78cbd71a1e11cb6"
+    },
+    {
+      "repo": "atto-lang/atto-source.llvm",
+      "pr": 1044,
+      "mergeCommit": "f0701efbbd8aca2491b5c7bf63c26902cd244079",
+      "main": "1a261e20f9566fc8c172acd2e07a6f028881b27f",
+      "testBlob": "91377c919c4251bdc51af4575d6bc677fa46f183"
+    }
+  ]
 }
