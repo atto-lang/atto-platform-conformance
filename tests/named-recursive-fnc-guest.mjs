@@ -14,7 +14,8 @@ assert.ok(['rust-wasm','forge-native'].includes(backend),'usage: node tests/name
 assert.equal(process.env.ATTOC_RELATIVE,undefined,'prebuilt override denied');
 assert.equal(process.env.FORGE_RELATIVE,undefined,'prebuilt override denied');
 const pin=(key)=>{const v=process.env[key];assert.match(v??'',/^[0-9a-f]{40}$/,key+' must be an independent immutable pin');return v;};
-const repo=realpathSync(process.env.ATTO_COMPILER_REPO??'');
+assert.ok(process.env.ATTO_COMPILER_REPO,'ATTO_COMPILER_REPO required');
+const repo=realpathSync(process.env.ATTO_COMPILER_REPO);
 const run=(exe,args,timeout=30000,extra={})=>spawnSync(exe,args,{encoding:'utf8',timeout,maxBuffer:4<<20,...extra});
 const ok=(p,label)=>{assert.equal(p.error,undefined,label+' process error');assert.equal(p.signal,null,label+' signal');assert.equal(p.status,0,label+': '+p.stderr);return p.stdout;};
 const git=(cwd,...args)=>ok(run('git',['-C',cwd,...args],10000),'git '+args.join(' ')).trim();
@@ -62,7 +63,7 @@ try {
      // Only an exact targeted unbound-name diagnostic at the outside call is accepted.
      // Forge diagnostic mapping is deliberately NOT certified until independently audited.
      const targeted=backend==='rust-wasm'&&built.status===1&&/:9:\d+: E_UNBOUND: unknown name 'fib'\s*$/.test(built.stderr);
-     cases.push({...row,status:targeted&&!existsSync(out)?'pass':'fail',diagnostic:built.stderr.slice(0,4096),artifact_present:existsSync(out)});continue;
+     cases.push({...row,status:targeted&&!existsSync(out)?'pass':backend==='forge-native'&&built.status!==0&&!existsSync(out)?'diagnostic_not_verified':'fail',diagnostic:built.stderr.slice(0,4096),artifact_present:existsSync(out)});continue;
    }
    if(built.status!==0||!existsSync(out)){
      cases.push({...row,status:'fail',diagnostic:built.stderr.slice(0,4096),artifact_present:existsSync(out)});continue;
@@ -105,7 +106,7 @@ catch(e){if(!(e instanceof WebAssembly.RuntimeError)||i.exports.panic_code.value
  }
  proof(repo,head,tree);proof(root,fixtureHead,fixtureTree);
  const passed=cases.filter(c=>c.status==='pass').length;
- const report={schema:'atto.named-recursive-fnc.guest-probe.v1',backend,compiler_head:head,compiler_tree:tree,compiler_sha256:compilerHash,conformance_head:fixtureHead,conformance_tree:fixtureTree,cases,passed,failed:cases.length-passed,extended:'not_executed',status:passed===expectedIds.length?'smoke_pass':'smoke_incomplete'};
+ const report={schema:'atto.named-recursive-fnc.guest-probe.v1',backend,compiler_head:head,compiler_tree:tree,compiler_sha256:compilerHash,conformance_head:fixtureHead,conformance_tree:fixtureTree,cases,passed,failed:cases.filter(c=>c.status==='fail').length,incomplete:cases.filter(c=>c.status!=='pass'&&c.status!=='fail').length,extended:'not_executed',status:passed===expectedIds.length?'smoke_pass':'smoke_incomplete'};
  console.log(JSON.stringify(report,null,2));
  if(passed!==expectedIds.length)process.exitCode=1;
 }finally{rmSync(scratch,{recursive:true,force:true});}
