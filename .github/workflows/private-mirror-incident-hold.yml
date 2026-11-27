@@ -1,0 +1,61 @@
+name: Private mirror incident-hold source-local tests
+on:
+  # No path filters: all PRs must pass the private-source negative gate.
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  fail-closed-export-admission:
+    # External heads must FAIL, not be skipped and mistaken for passing.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Reject cross-repository PR heads before checkout
+        env:
+          PR_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+        run: |
+          set -euo pipefail
+          if [[ "$PR_HEAD_REPO" != "$GITHUB_REPOSITORY" ]]; then
+            echo "CROSS_REPOSITORY_SOURCE_CHECKOUT_FORBIDDEN" >&2
+            exit 78
+          fi
+          echo "SOURCE_REPOSITORY_CHECKOUT_ALLOWED=true"
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Confirm exact source-repository head
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          echo "SOURCE_LOCAL_SECURITY_TEST_HEAD=$EXPECTED_HEAD"
+      - name: Select pinned Node 22 toolchain
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          check-latest: false
+      - name: Confirm required Node runtime
+        run: |
+          set -euo pipefail
+          node -e 'if (Number(process.versions.node.split(".")[0]) !== 22) process.exit(1)'
+          echo "PRIVATE_CI_NODE_22_READY=true"
+      - name: Execute complete private mirror policy and publisher unit tests
+        run: |
+          set -euo pipefail
+          node --version
+          node --test tests/private-mirror-visibility.test.mjs tests/private-mirror-publish.test.mjs tests/private-mirror-entrypoints.test.mjs tests/private-mirror-deny-only-no-side-effects.test.mjs tests/private-ci-incident-registry.test.mjs tests/diagnose-actions.test.mjs
+          echo "MIRROR_POLICY_TESTS_EXECUTED=true"
+          echo "PRIVATE_SOURCE_CROSS_ORG_TRANSFER=NOT_AUTHORIZED"
+      - name: Execute full source-local Node conformance suite
+        run: |
+          set -euo pipefail
+          node --test
+          echo "CONFORMANCE_NODE_SUITE_EXECUTED=true"
+          echo "PRIVATE_SOURCE_MIRROR=NOT_PERFORMED"

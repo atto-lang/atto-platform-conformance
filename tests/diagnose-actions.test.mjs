@@ -243,3 +243,39 @@ test("a real successful non-housekeeping step remains observed after checkout",(
  assert.equal(out.jobs[0].meaningful_executed_step_count,1);
  assert.equal(out.permits_merging,false);
 });
+
+
+test("real 2026-10-31 metadata-only and source runtime zero-step observations remain non-certifying",()=>{
+ // These are sanitized *observations* from GitHub API job summaries, NOT
+ // evidence of actual runner admission, executed tests or root-cause diagnosis.
+ const observed=[
+  {run:41234744768,sha:"91abe1f8fc2e4a9b468dedfd42a92cf4b258fa52",attempt:1,ids:[124636036885]},
+  {run:41230540723,sha:"b635d8bb6d3e486b77269bc5875c886cb2ed45e8",attempt:1,ids:[124623657504,124623657750]},
+  {run:41234110321,sha:"79d363e655813cb9edb9930212e3fdfbef445b58",attempt:2,ids:[124634163120,124634163248,124634163359,124634163373,124634163380,124634163497]},
+  {run:41233909216,sha:"7941c137da0cb68ca68fccbac7fb9c8813ee0574",attempt:1,ids:[124633551130,124633551386]}
+ ];
+ for(const item of observed) {
+  const jobs=item.ids.map(id=>({
+   id,status:"completed",conclusion:"failure",runner_id:null,steps:[],
+   // The inspected job summary did not independently expose these optional
+   // provenance fields. Leave absent, never forge VERIFIED from run metadata.
+  }));
+  const result=assessRun({
+   id:item.run,run_attempt:item.attempt,head_sha:item.sha,
+   status:"completed",conclusion:"failure"
+  },{total_count:jobs.length,jobs});
+  assert.equal(result.classification,"OBSERVED_NO_STEP_FAILURE");
+  assert.equal(result.job_list_complete,true);
+  assert.equal(result.executed_step_count,0);
+  assert.equal(result.failed_step_count,0);
+  assert.equal(result.root_cause_established,false);
+  assert.equal(result.permits_merging,false);
+  assert.equal(result.all_job_head_shas_verified,false);
+  assert.equal(result.all_job_run_ids_verified,false);
+  assert.equal(result.all_job_run_attempts_verified,false);
+  for(const j of result.jobs){
+   assert.equal(j.runner_allocated,false);
+   assert.equal(j.classification,"OBSERVED_NO_STEP_FAILURE");
+  }
+ }
+});
