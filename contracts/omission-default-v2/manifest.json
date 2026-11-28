@@ -58,12 +58,6 @@
       "status": "NOT_EXECUTED"
     },
     {
-      "path": "guests/string-option-overloads.atto",
-      "expected": "exit_42",
-      "git_blob_sha": "8bbb72be7d596b2a1ec56dc7e9ad739df8abb863",
-      "status": "NOT_EXECUTED"
-    },
-    {
       "path": "reject/mixed-none-aliases.atto",
       "expected": "E_DEFAULT_CLAUSE",
       "git_blob_sha": "cf0f17a0851ee1e73db5325605fdc12dc3acea1d",
