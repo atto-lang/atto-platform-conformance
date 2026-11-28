@@ -33,14 +33,14 @@ function exercise(assert){
     const concrete=resolve(E,{kind});
     const materialized={tag:"value",kind,slots:concrete.slots};
     assert.equal(resolve(materialized,P).kind,kind);
-    assert.throws(()=>resolve(materialized,{kind:kind==="Tuple"?"Record":"Tuple"}),/^type-mismatch$/);
-    assert.throws(()=>resolve(E,{kind,slots:[T]}),/^shape-mismatch$/);
+    assert.throws(()=>resolve(materialized,{kind:kind==="Tuple"?"Record":"Tuple"}),{message:"type-mismatch"});
+    assert.throws(()=>resolve(E,{kind,slots:[T]}),{message:"shape-mismatch"});
   }
   // Overload candidate admissibility is separate from no-context defaulting.
   const candidates=[T,R].filter(shape=>{try{resolve(E,shape);return true}catch{return false}});
   assert.equal(candidates.length,2);
   assert.equal(resolve(E).kind,"Tuple");
-  assert.throws(()=>resolve(E,{kind:"UserDefinedRecord"}),/^type-mismatch$/);
+  assert.throws(()=>resolve(E,{kind:"UserDefinedRecord"}),{message:"type-mismatch"});
   return n;
 }
 test('216 nested context combinations and distinct materialized types',()=>assert.equal(exercise(assert),216));
