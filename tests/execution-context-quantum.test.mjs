@@ -80,3 +80,33 @@ test('unreachable infinite loop is ignored, but reachable recursion is caught',(
  assert.equal(hasYieldFreeCycle({nodes:[{id:'entry'},{id:'unused'}],edges:[['unused','unused']],entry:'entry'}),false);
  assert.equal(hasYieldFreeCycle({nodes:[{id:'entry'},{id:'foo'},{id:'bar'}],edges:[['entry','foo'],['foo','bar'],['bar','foo']],entry:'entry'}),true);
 });
+test('deep acyclic CFG and unsafe backedge do not overflow host stack',()=>{
+ const count=25000,nodes=Array.from({length:count},(_,id)=>({id}));
+ const edges=Array.from({length:count-1},(_,i)=>[i,i+1]);
+ assert.equal(hasYieldFreeCycle({nodes,edges,entry:0}),false);
+ edges.push([count-1,0]);assert.equal(hasYieldFreeCycle({nodes,edges,entry:0}),true);
+ nodes[0].safePoint=true;assert.equal(hasYieldFreeCycle({nodes,edges,entry:0}),false);
+});
+test('wide reachable fanout, including duplicate edges, is handled without argument overflow',()=>{
+ const count=150000,nodes=Array.from({length:count+1},(_,id)=>({id}));
+ const edges=Array.from({length:count},(_,i)=>[0,i+1]);edges.push([0,1]);
+ assert.equal(hasYieldFreeCycle({nodes,edges,entry:0}),false);
+ edges.push([count,count]);assert.equal(hasYieldFreeCycle({nodes,edges,entry:0}),true);
+});
+test('reachable unsafe cycle after a safepoint remains unsafe, unreachable cycle ignored',()=>{
+ const nodes=[{id:0,safePoint:true},{id:1},{id:2},{id:3}];
+ assert.equal(hasYieldFreeCycle({nodes,edges:[[0,1],[2,3],[3,2]],entry:0}),false);
+ assert.equal(hasYieldFreeCycle({nodes,edges:[[0,1],[1,2],[2,3],[3,2]],entry:0}),true);
+});
+test('exhaustive three-node graphs match independent transitive closure oracle',()=>{
+ for(let mask=0;mask<512;mask++)for(let safe=0;safe<8;safe++){
+  const nodes=Array.from({length:3},(_,id)=>({id,safePoint:!!(safe&(1<<id))}));
+  const edges=[];for(let a=0;a<3;a++)for(let b=0;b<3;b++)if(mask&(1<<(a*3+b)))edges.push([a,b]);
+  const reach=Array.from({length:3},()=>Array(3).fill(false)),unsafe=Array.from({length:3},()=>Array(3).fill(false));
+  for(const [a,b] of edges){reach[a][b]=true;if(!nodes[a].safePoint&&!nodes[b].safePoint)unsafe[a][b]=true;}
+  for(let k=0;k<3;k++)for(let a=0;a<3;a++)for(let b=0;b<3;b++){
+   reach[a][b] ||= reach[a][k]&&reach[k][b];unsafe[a][b] ||= unsafe[a][k]&&unsafe[k][b];
+  }
+  assert.equal(hasYieldFreeCycle({nodes,edges,entry:0}),nodes.some(({id})=>(id===0||reach[0][id])&&unsafe[id][id]),`graph ${mask} safe ${safe}`);
+ }
+});
