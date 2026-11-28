@@ -1,0 +1,204 @@
+{
+  "schema": "atto.ownership-arrow.target.v1",
+  "spec": "https://github.com/atto-lang/atto-spec/pull/320",
+  "status": "TARGET_NOT_EXECUTED",
+  "note": "Expected diagnostic categories are normative targets, not backend code spellings. Rejects require semantic rejection, not a generic unsupported parse, except explicit forbidden syntax. No compiled guest evidence yet. Owned class targets cover whole-local admission, invalidation, legal reinitialization and live exclusive loans; drop/unwind and branch/loop fixtures remain outstanding.",
+  "backends": {
+    "rs": "NOT_EXECUTED",
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED"
+  },
+  "cases": [
+    {
+      "id": "scalar-let",
+      "kind": "execute",
+      "expected": 42,
+      "source": "pub fnc main(): int {\n    let b = 21; let a <- b; return a + b;\n}\n"
+    },
+    {
+      "id": "scalar-set",
+      "kind": "execute",
+      "expected": 42,
+      "source": "pub fnc main(): int {\n    let a = 0; let b = 21; set a <- b; return a + b;\n}\n"
+    },
+    {
+      "id": "typed-let",
+      "kind": "execute",
+      "expected": 42,
+      "source": "pub fnc main(): int {\n    let b = 21; let int a <- b; return a + b;\n}\n"
+    },
+    {
+      "id": "literal-set",
+      "kind": "execute",
+      "expected": 42,
+      "source": "pub fnc main(): int {\n    let a = 0; set a <- 42; return a;\n}\n"
+    },
+    {
+      "id": "shadow",
+      "kind": "execute",
+      "expected": 42,
+      "source": "pub fnc main(): int {\n    let a = 21; let a <- a; return a + a;\n}\n"
+    },
+    {
+      "id": "ordinary-set",
+      "kind": "execute",
+      "expected": 42,
+      "source": "pub fnc main(): int {\n    let a = 0; let b = 21; set a = b; return a + b;\n}\n"
+    },
+    {
+      "id": "missing-destination",
+      "kind": "reject",
+      "expected": "unbound",
+      "source": "pub fnc main(): int {\n    let b = 42; set a <- b; return 0;\n}\n"
+    },
+    {
+      "id": "const-destination",
+      "kind": "reject",
+      "expected": "immutable",
+      "source": "pub fnc main(): int {\n    const a = 0; let b = 42; set a <- b; return a;\n}\n"
+    },
+    {
+      "id": "const-declaration",
+      "kind": "reject",
+      "expected": "arrow-not-admitted",
+      "source": "pub fnc main(): int {\n    let b = 42; const a <- b; return a;\n}\n"
+    },
+    {
+      "id": "implicit-const",
+      "kind": "reject",
+      "expected": "arrow-not-admitted",
+      "source": "pub fnc main(): int {\n    let b = 42; int a <- b; return a;\n}\n"
+    },
+    {
+      "id": "val-declaration",
+      "kind": "reject",
+      "expected": "arrow-not-admitted",
+      "source": "pub fnc main(): int {\n    let b = 42; val a <- b; return a;\n}\n"
+    },
+    {
+      "id": "bare-arrow",
+      "kind": "reject",
+      "expected": "arrow-not-admitted",
+      "source": "pub fnc main(): int {\n    let a = 0; let b = 42; a <- b; return a;\n}\n"
+    },
+    {
+      "id": "bullet",
+      "kind": "reject",
+      "expected": "arrow-not-admitted",
+      "source": "pub fnc main(): int {\n    let b = 42; let a • b; return a;\n}\n"
+    },
+    {
+      "id": "spaced-arrow",
+      "kind": "reject",
+      "expected": "arrow-not-admitted",
+      "source": "pub fnc main(): int {\n    let b = 42; let a < - b; return a;\n}\n"
+    },
+    {
+      "id": "wrong-type",
+      "kind": "reject",
+      "expected": "type",
+      "source": "pub fnc main(): int {\n    let a = 0; let b = true; set a <- b; return a;\n}\n"
+    },
+    {
+      "id": "comment-control",
+      "kind": "execute",
+      "expected": 42,
+      "source": "pub fnc main(): int {\n    let a = 42; // set a <- 0; \n return a;\n}\n"
+    },
+    {
+      "id": "comparison-control",
+      "kind": "execute",
+      "expected": 42,
+      "source": "pub fnc main(): int {\n    let a = 1; if a < 2 { return 42; } else { return 0; }\n}\n"
+    },
+    {
+      "id": "self-move",
+      "kind": "reject",
+      "expected": "self-move",
+      "source": "pub fnc main(): int {\n    let a = 42; set a <- a; return a;\n}\n"
+    },
+    {
+      "id": "owned-let",
+      "kind": "execute",
+      "expected": 42,
+      "source": "define class Parcel as\n    pub let int value = 42;\nend\npub fnc main(): int {\n    let b = new Parcel(); let a <- b; return a.value;\n}\n"
+    },
+    {
+      "id": "owned-set",
+      "kind": "execute",
+      "expected": 42,
+      "source": "define class Parcel as\n    pub let int value = 42;\nend\npub fnc main(): int {\n    let a = new Parcel(); let b = new Parcel(); set a <- b; return a.value;\n}\n"
+    },
+    {
+      "id": "owned-read-after-let",
+      "kind": "reject",
+      "expected": "use-after-move",
+      "source": "define class Parcel as\n    pub let int value = 42;\nend\npub fnc main(): int {\n    let b = new Parcel(); let a <- b; return b.value;\n}\n"
+    },
+    {
+      "id": "owned-read-after-set",
+      "kind": "reject",
+      "expected": "use-after-move",
+      "source": "define class Parcel as\n    pub let int value = 42;\nend\npub fnc main(): int {\n    let a = new Parcel(); let b = new Parcel(); set a <- b; return b.value;\n}\n"
+    },
+    {
+      "id": "owned-double-move",
+      "kind": "reject",
+      "expected": "use-after-move",
+      "source": "define class Parcel as\n    pub let int value = 42;\nend\npub fnc main(): int {\n    let b = new Parcel(); let a <- b; let c <- b; return c.value;\n}\n"
+    },
+    {
+      "id": "owned-reinitialize",
+      "kind": "execute",
+      "expected": 84,
+      "source": "define class Parcel as\n    pub let int value = 42;\nend\npub fnc main(): int {\n    let b = new Parcel(); let a <- b; set b = new Parcel(); return a.value + b.value;\n}\n"
+    },
+    {
+      "id": "owned-shadow",
+      "kind": "execute",
+      "expected": 42,
+      "source": "define class Parcel as\n    pub let int value = 42;\nend\npub fnc main(): int {\n    let a = new Parcel(); let a <- a; return a.value;\n}\n"
+    },
+    {
+      "id": "owned-self-move",
+      "kind": "reject",
+      "expected": "self-move",
+      "source": "define class Parcel as\n    pub let int value = 42;\nend\npub fnc main(): int {\n    let a = new Parcel(); set a <- a; return a.value;\n}\n"
+    },
+    {
+      "id": "owned-const-source",
+      "kind": "reject",
+      "expected": "const-source-move",
+      "source": "define class Parcel as\n    pub let int value = 42;\nend\npub fnc main(): int {\n    const b = new Parcel(); let a <- b; return a.value;\n}\n"
+    },
+    {
+      "id": "owned-exclusive-loan",
+      "kind": "reject",
+      "expected": "borrow-conflict",
+      "source": "define class Parcel as\n    pub let int value = 42;\nend\npub fnc main(): int {\n    let b = new Parcel(); block { val loan = borrow! mut b; let a <- b; return loan.value + a.value; } return 0;\n}\n"
+    },
+    {
+      "id": "owned-fresh-rhs",
+      "kind": "execute",
+      "expected": 42,
+      "source": "define class Parcel as\n    pub let int value = 42;\nend\npub fnc main(): int {\n    let a <- new Parcel(); return a.value;\n}\n"
+    },
+    {
+      "id": "set-bullet",
+      "kind": "reject",
+      "expected": "arrow-not-admitted",
+      "source": "pub fnc main(): int { let a = 0; let b = 42; set a • b; return a; }\n"
+    },
+    {
+      "id": "set-bang-arrow",
+      "kind": "reject",
+      "expected": "arrow-not-admitted",
+      "source": "pub fnc main(): int { let a = 0; let b = 42; set! a <- b; return a; }\n"
+    }
+  ]
+}
