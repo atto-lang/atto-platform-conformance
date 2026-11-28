@@ -54,7 +54,7 @@ function exercise(assert) {
   [[operand("tuple",[1,2,3])],"arity"],
   [[operand("tuple",[1])],"missing-parameter"],
   [[operand("unsupported",[])],"unsupported"]
- ])assert.throws(()=>bind(["a","b"],ops),new RegExp("^"+error+"$"));
+ ])assert.throws(()=>bind(["a","b"],ops),{message:error});
  return count;
 }
 test('720 permutations and adversarial binding controls',()=>assert.equal(exercise(assert),720));
