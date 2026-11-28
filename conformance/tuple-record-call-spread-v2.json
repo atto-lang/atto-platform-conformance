@@ -75,7 +75,7 @@
     },
     {
       "id": "pair-tuple-runtime-key",
-      "source": "fnc f(Pair<int> a): int { return a.value; } fnc key(int n): string { return n eq 1 ? \"unknown\" : \"different\"; } pub fnc main(): int { val t=(Pair.of(key(1),42),); return f(...t); }",
+      "source": "fnc f(Pair<int> a): int { return a.value; } fnc make_key(int n): string { return n eq 1 ? \"unknown\" : \"different\"; } pub fnc main(): int { val t=(Pair.of(make_key(1),42),); return f(...t); }",
       "expected": {
         "kind": "return-i64",
         "decimal": "42"
@@ -227,7 +227,7 @@
     },
     {
       "id": "no-implicit-flatten",
-      "source": "fnc f(int a,int b): int { return a*10+b; } pub fnc main(): int { return f(...((4,2),)); }",
+      "source": "fnc f(int a): int { return a; } pub fnc main(): int { return f(...((4,2),)); }",
       "expected": {
         "kind": "semantic-rejection",
         "category": "argument-type",
@@ -241,6 +241,58 @@
         "kind": "semantic-rejection",
         "category": "argument-type",
         "artifact": false
+      }
+    },
+    {
+      "id": "empty-tuple-no-phase-reset-negative",
+      "source": "fnc f(int a,int b): int { return a*10+b; } pub fnc main(): int { return f(a=4,...(),2); }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "positional-after-named",
+        "artifact": false
+      }
+    },
+    {
+      "id": "pair-tuple-too-few-elements",
+      "source": "fnc f(Pair<int> a,Pair<int> b): int { return a.value+b.value; } pub fnc main(): int { return f(...(x:=42,)); }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "missing-parameter",
+        "artifact": false
+      }
+    },
+    {
+      "id": "pair-tuple-too-many-elements",
+      "source": "fnc f(Pair<int> a): int { return a.value; } pub fnc main(): int { return f(...(x:=42,y:=0)); }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "arity",
+        "artifact": false
+      }
+    },
+    {
+      "id": "duplicate-record-field",
+      "source": "fnc f(int a): int { return a; } pub fnc main(): int { return f(...{a:4,a:2}); }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "duplicate-field",
+        "artifact": false
+      }
+    },
+    {
+      "id": "record-pair-field-key-preservation",
+      "source": "fnc f(Pair<int> a): int { return a.key eq \"z\" ? a.value : 0; } pub fnc main(): int { return f(...{a:(z:=42)}); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "tuple-pair-key-preservation",
+      "source": "fnc f(Pair<int> a,Pair<int> b): int { return a.key eq \"b\" && b.key eq \"a\" ? a.value*10+b.value : 0; } pub fnc main(): int { return f(...(b:=2,a:=4)); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "24"
       }
     }
   ]
