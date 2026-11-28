@@ -1,0 +1,27 @@
+name: Contextual empty Product candidate host-only contract
+on:
+  pull_request:
+    paths:
+      - 'conformance/contextual-empty-product-addressing-v1.json'
+      - 'tests/contextual-empty-product-addressing-v1.test.mjs'
+      - '.github/workflows/contextual-empty-product-addressing-v1-host.yml'
+permissions:
+  contents: read
+jobs:
+  host-model:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Verify exact checkout and run candidate host model
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          test "$(git write-tree)" = "$(git rev-parse 'HEAD^{tree}')"
+          git rev-parse HEAD 'HEAD^{tree}'
+          node --test tests/contextual-empty-product-addressing-v1.test.mjs
