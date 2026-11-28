@@ -46,8 +46,8 @@ function exercise(assert){
 test('216 nested context combinations and distinct materialized types',()=>assert.equal(exercise(assert),216));
 test('fixture inventory is unexecuted, decisions are not assertions',()=>{
 const m=JSON.parse(readFileSync(new URL('../conformance/contextual-empty-product-addressing-v1.json',import.meta.url),'utf8'));
-assert.equal(m.status,'TARGET_NOT_EXECUTED');assert.equal(m.cases.length,47);assert.equal(m.decisionProbes.length,23);
-assert.equal(new Set([...m.cases,...m.decisionProbes].map(x=>x.id)).size,70);
+assert.equal(m.status,'TARGET_NOT_EXECUTED');assert.equal(m.cases.length,49);assert.equal(m.decisionProbes.length,23);
+assert.equal(new Set([...m.cases,...m.decisionProbes].map(x=>x.id)).size,72);
 assert.equal(Object.keys(m.backendRoles).length,11);assert.ok(Object.values(m.backendRoles).every(x=>x==='NOT_EXECUTED'));
 for(const p of m.decisionProbes)assert.equal(p.status,'DECISION_REQUIRED');
 for(const c of m.cases){assert.ok(c.source.includes('pub fnc main'));if(c.expected.kind==='semantic-rejection')assert.equal(c.expected.artifact,false);else assert.equal(c.expected.kind,'return-i64');}
