@@ -431,6 +431,132 @@
         "kind": "return-i64",
         "decimal": "24"
       }
+    },
+    {
+      "id": "singleton-contextual-local",
+      "source": "pub fnc main(): int { const Tuple t=(42); return t[0]; }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "singleton-explicit-comma",
+      "source": "pub fnc main(): int { const Tuple t=(42,); return t[0]; }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "singleton-untyped-grouping",
+      "source": "pub fnc main(): int { const t=(42); return t; }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "singleton-typed-scalar-grouping",
+      "source": "pub fnc main(): int { const int t=(42); return t; }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "singleton-contextual-formal",
+      "source": "fnc f(Tuple t): int { return t[0]; } pub fnc main(): int { return f((42)); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "singleton-contextual-return",
+      "source": "fnc make(): Tuple { return (42); } pub fnc main(): int { return make()[0]; }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "singleton-contextual-nested",
+      "source": "pub fnc main(): int { const Tuple[Tuple[int],int] t=((40),2); return t[0][0]+t[1]; }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "singleton-scalar-overload-preferred",
+      "source": "fnc f(int x): int { return x; } fnc f(Tuple x): int { return 0; } pub fnc main(): int { return f((42)); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "singleton-comma-overload",
+      "source": "fnc f(int x): int { return 0; } fnc f(Tuple x): int { return x[0]; } pub fnc main(): int { return f((42,)); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "singleton-bare-scalar-not-wrapped",
+      "source": "fnc f(Tuple t): int { return t[0]; } pub fnc main(): int { return f(42); }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "argument-type",
+        "artifact": false
+      }
+    },
+    {
+      "id": "singleton-materialized-scalar-not-wrapped",
+      "source": "pub fnc main(): int { const x=(42); const Tuple t=x; return 0; }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "type-mismatch",
+        "artifact": false
+      }
+    },
+    {
+      "id": "singleton-wrong-arity",
+      "source": "pub fnc main(): int { const Tuple[int,int] t=(42); return 0; }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "shape-mismatch",
+        "artifact": false
+      }
+    },
+    {
+      "id": "singleton-wrong-element",
+      "source": "pub fnc main(): int { const Tuple[bool] t=(42); return 0; }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "type-mismatch",
+        "artifact": false
+      }
+    },
+    {
+      "id": "singleton-record-not-tuple",
+      "source": "pub fnc main(): int { const Tuple t=(x:42); return 0; }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "type-mismatch",
+        "artifact": false
+      }
+    },
+    {
+      "id": "singleton-untyped-not-indexed",
+      "source": "pub fnc main(): int { const x=(42); return x[0]; }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "index-type",
+        "artifact": false
+      }
     }
   ],
   "decisionProbes": [
