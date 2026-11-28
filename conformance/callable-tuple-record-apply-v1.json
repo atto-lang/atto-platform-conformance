@@ -1,0 +1,233 @@
+{
+  "version": 1,
+  "status": "TARGET_NOT_EXECUTED",
+  "contract": "atto-spec#325; .call ordinary, .apply static Tuple/Record; no implicit Pair extraction",
+  "note": "Complete guest targets. Unsupported syntax, absent runner or host-only models do not pass a semantic-negative case. Exact syntax must be compiled unchanged; no fallback interpreter.",
+  "backendRoles": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net-nativeaot": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "rs": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "hdl": "NOT_EXECUTED",
+    "realtime": "NOT_EXECUTED",
+    "self-hosted": "NOT_EXECUTED"
+  },
+  "cases": [
+    {
+      "id": "direct",
+      "source": "fnc f(int x, int y): int { return x*10+y; } pub fnc main(): int { return f(4,2); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "call",
+      "source": "fnc f(int x, int y): int { return x*10+y; } pub fnc main(): int { return f.call(4,2); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "apply-tuple",
+      "source": "fnc f(int x, int y): int { return x*10+y; } pub fnc main(): int { const t=Tuple.of(4,2); return f.apply(t); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "apply-tuple-reversed",
+      "source": "fnc f(int x, int y): int { return x*10+y; } pub fnc main(): int { const t=Tuple.of(2,4); return f.apply(t); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "24"
+      }
+    },
+    {
+      "id": "apply-record-reversed",
+      "source": "fnc f(int x, int y): int { return x*10+y; } pub fnc main(): int { const r=Record.of(y:=2,x:=4); return f.apply(r); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "apply-record-forward",
+      "source": "fnc f(int x, int y): int { return x*10+y; } pub fnc main(): int { const r=Record.of(x:=4,y:=2); return f.apply(r); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "call-record-single",
+      "source": "fnc g(Record r): int { return r.x*10+r.y; } pub fnc main(): int { const r=Record.of(y:=2,x:=4); return g.call(r); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "call-tuple-single",
+      "source": "fnc g(Tuple[int,int] t): int { return t[0]*10+t[1]; } pub fnc main(): int { const t=Tuple.of(4,2); return g.call(t); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "apply-nested-tuple",
+      "source": "fnc g(Tuple[int,int] t): int { return t[0]*10+t[1]; } pub fnc main(): int { const t=Tuple.of(4,2); return g.apply(Tuple.of(t)); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "apply-duplicate-pair-keys",
+      "source": "fnc g(Pair<int> a,Pair<int> b): int { return a.value*10+b.value; } pub fnc main(): int { const t=Tuple.of(x:=4,x:=2); return g.apply(t); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "apply-pair-record-field",
+      "source": "fnc g(Pair<int> a): int { return a.value; } pub fnc main(): int { const r={a:(z:=42)}; return g.apply(r); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "apply-zero-tuple",
+      "source": "fnc g(): int { return 42; } pub fnc main(): int { return g.apply(Tuple.of()); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "apply-zero-record",
+      "source": "fnc g(): int { return 42; } pub fnc main(): int { const Record r={}; return g.apply(r); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "apply-effects-source-order",
+      "source": "fnc f(int x, int y): int { return x*10+y; } fnc tick(int v): int { stdio.println(v); return v; } pub fnc main(): int { val r=Record.of(y:=tick(2),x:=tick(4)); return f.apply(r); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42",
+        "stdout": "2\n4\n"
+      }
+    },
+    {
+      "id": "call-tuple-not-spread",
+      "source": "fnc f(int x, int y): int { return x*10+y; } pub fnc main(): int { const t=Tuple.of(4,2); return f.call(t); }",
+      "expected": {
+        "kind": "semantic-reject-no-artifact",
+        "reason": "ordinary call has one argument",
+        "matchedPositive": "call-tuple-single"
+      }
+    },
+    {
+      "id": "call-record-not-spread",
+      "source": "fnc f(int x, int y): int { return x*10+y; } pub fnc main(): int { const r=Record.of(y:=2,x:=4); return f.call(r); }",
+      "expected": {
+        "kind": "semantic-reject-no-artifact",
+        "reason": "ordinary call has one argument",
+        "matchedPositive": "call-record-single"
+      }
+    },
+    {
+      "id": "apply-unknown-field",
+      "source": "fnc f(int x, int y): int { return x*10+y; } pub fnc main(): int { const r=Record.of(z:=2,x:=4); return f.apply(r); }",
+      "expected": {
+        "kind": "semantic-reject-no-artifact",
+        "reason": "unknown named slot",
+        "matchedPositive": "apply-record-reversed"
+      }
+    },
+    {
+      "id": "apply-missing-field",
+      "source": "fnc f(int x, int y): int { return x*10+y; } pub fnc main(): int { const r=Record.of(x:=4); return f.apply(r); }",
+      "expected": {
+        "kind": "semantic-reject-no-artifact",
+        "reason": "missing slot",
+        "matchedPositive": "apply-record-forward"
+      }
+    },
+    {
+      "id": "apply-extra-field",
+      "source": "fnc f(int x, int y): int { return x*10+y; } pub fnc main(): int { const r=Record.of(x:=4,y:=2,z:=0); return f.apply(r); }",
+      "expected": {
+        "kind": "semantic-reject-no-artifact",
+        "reason": "unexpected slot",
+        "matchedPositive": "apply-record-forward"
+      }
+    },
+    {
+      "id": "apply-pair-no-unwrapping",
+      "source": "fnc f(int x, int y): int { return x*10+y; } pub fnc main(): int { const t=Tuple.of(x:=4,y:=2); return f.apply(t); }",
+      "expected": {
+        "kind": "semantic-reject-no-artifact",
+        "reason": "whole Pair not int",
+        "matchedPositive": "apply-duplicate-pair-keys"
+      }
+    },
+    {
+      "id": "apply-pair-field-no-unwrapping",
+      "source": "fnc g(int a): int { return a; } pub fnc main(): int { const r={a:(z:=42)}; return g.apply(r); }",
+      "expected": {
+        "kind": "semantic-reject-no-artifact",
+        "reason": "whole Pair field not int",
+        "matchedPositive": "apply-pair-record-field"
+      }
+    },
+    {
+      "id": "apply-array",
+      "source": "fnc f(int x, int y): int { return x*10+y; } pub fnc main(): int { return f.apply([4,2]); }",
+      "expected": {
+        "kind": "semantic-reject-no-artifact",
+        "reason": "dynamic collection is not fixed Product",
+        "matchedPositive": "apply-tuple"
+      }
+    },
+    {
+      "id": "apply-wrong-arity",
+      "source": "fnc f(int x, int y): int { return x*10+y; } pub fnc main(): int { return f.apply(Tuple.of(4)); }",
+      "expected": {
+        "kind": "semantic-reject-no-artifact",
+        "reason": "missing positional slot",
+        "matchedPositive": "apply-tuple"
+      }
+    },
+    {
+      "id": "apply-wrong-type",
+      "source": "fnc f(int x, int y): int { return x*10+y; } pub fnc main(): int { return f.apply(Tuple.of(4,\"2\")); }",
+      "expected": {
+        "kind": "semantic-reject-no-artifact",
+        "reason": "slot type mismatch",
+        "matchedPositive": "apply-tuple"
+      }
+    },
+    {
+      "id": "apply-extra-operand",
+      "source": "fnc f(int x, int y): int { return x*10+y; } pub fnc main(): int { return f.apply(Tuple.of(4,2),0); }",
+      "expected": {
+        "kind": "semantic-reject-no-artifact",
+        "reason": "apply consumes exactly one Product",
+        "matchedPositive": "apply-tuple"
+      }
+    }
+  ]
+}
