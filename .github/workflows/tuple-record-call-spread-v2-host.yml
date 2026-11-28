@@ -1,0 +1,27 @@
+name: Tuple and Record spread v2 host-only contract
+on:
+  pull_request:
+    paths:
+      - 'conformance/tuple-record-call-spread-v2.json'
+      - 'tests/tuple-record-call-spread-v2.test.mjs'
+      - '.github/workflows/tuple-record-call-spread-v2-host.yml'
+permissions:
+  contents: read
+jobs:
+  host-model:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Verify exact checkout and execute host-only model
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          test "$(git write-tree)" = "$(git rev-parse 'HEAD^{tree}')"
+          git rev-parse HEAD 'HEAD^{tree}'
+          node --test tests/tuple-record-call-spread-v2.test.mjs
