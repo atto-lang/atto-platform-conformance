@@ -1,0 +1,702 @@
+{
+  "version": 1,
+  "status": "TARGET_NOT_EXECUTED",
+  "contract": "Contextual empty Product/addressing candidate (companion to spec #303/#306/#315/#321)",
+  "note": "Candidate expected results for owner review, not current compiler behavior. Semantic-negative outcomes require matched positive controls and no emitted artifact; unsupported errors do not pass. Product public spelling and listed unresolved policies are separate decision probes.",
+  "backendRoles": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net-nativeaot": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "rs": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "hdl": "NOT_EXECUTED",
+    "realtime": "NOT_EXECUTED",
+    "self-hosted": "NOT_EXECUTED"
+  },
+  "cases": [
+    {
+      "id": "empty-record-typed-paren",
+      "source": "fnc f(Record r): int { return 42; } pub fnc main(): int { const Record r=(); return f(r); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "empty-record-typed-braces",
+      "source": "fnc f(Record r): int { return 42; } pub fnc main(): int { const Record r={}; return f(r); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "empty-tuple-typed-paren",
+      "source": "fnc f(Tuple t): int { return 42; } pub fnc main(): int { const Tuple t=(); return f(t); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "empty-default-tuple",
+      "source": "fnc f(Tuple t): int { return 42; } pub fnc main(): int { const t=(); return f(t); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "empty-direct-record-argument",
+      "source": "fnc f(Record r): int { return 42; } pub fnc main(): int { return f(()); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "empty-direct-tuple-argument",
+      "source": "fnc f(Tuple t): int { return 42; } pub fnc main(): int { return f(()); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "empty-record-return",
+      "source": "fnc f(Record r): int { return 42; } fnc make(): Record { return (); } pub fnc main(): int { return f(make()); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "empty-tuple-return",
+      "source": "fnc f(Tuple t): int { return 42; } fnc make(): Tuple { return (); } pub fnc main(): int { return f(make()); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "empty-nested-default",
+      "source": "fnc f(Tuple t): int { return 21; } pub fnc main(): int { const t=((),()); return f(t[0])+f(t[1]); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "empty-nested-context",
+      "source": "fnc f(Record r): int { return 40; } fnc g(Tuple t): int { return 2; } pub fnc main(): int { const Tuple[Record,Tuple] t=((),()); return f(t[0])+g(t[1]); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "nested-product-classification",
+      "source": "pub fnc main(): int { let Tuple t=((5,3),(a=5),(a:5)); return t[0][0]*5+t[0][1]+t[1].a+t[2].a+4; }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "nested-record-tuple-sibling",
+      "source": "pub fnc main(): int { const r={a:(4,2), b:{a:5}}; return r.a[0]*10+r.a[1]; }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "unbound-label-is-not-lookup",
+      "source": "pub fnc main(): int { const r={fresh_field:42}; return r.fresh_field; }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "label-does-not-assign",
+      "source": "pub fnc main(): int { let a=2; const r={a=40}; return r.a+a; }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "label-case-sensitive",
+      "source": "pub fnc main(): int { const r={a:40,A:2}; return r.a+r.A; }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "nested-duplicate-label-independent",
+      "source": "pub fnc main(): int { const r={a:{a:42}}; return r.a.a; }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "pair-numeric-string-key",
+      "source": "pub fnc main(): int { const p=\"0\":=42; const t=(p,); return t[0].value; }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "pair-unrestricted-key",
+      "source": "pub fnc main(): int { const p=\"not a variable!\":=42; return p.value; }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "record-reflect-brace-pair",
+      "source": "pub fnc main(): int { const r={a:=42}; return r.a; }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "record-whole-pair-field",
+      "source": "pub fnc main(): int { const r={a:(other:=42)}; return r.a.value; }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "zero-slot-record-spread",
+      "source": "fnc f(): int { return 42; } pub fnc main(): int { const Record r=(); return f(...r); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "zero-slot-tuple-spread",
+      "source": "fnc f(): int { return 42; } pub fnc main(): int { return f(...()); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "plain-empty-is-one-argument",
+      "source": "fnc f(Tuple t): int { return 42; } pub fnc main(): int { return f(()); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "zero-slot-function-return-control",
+      "source": "fnc empty(): Tuple { return (); } fnc f(): int { return 42; } pub fnc main(): int { return f(...empty()); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42",
+        "note": "Value/acceptance control only; effectful trace is a separate probe."
+      }
+    },
+    {
+      "id": "zero-slot-record-after-named",
+      "source": "fnc f(int a,int b): int { return a+b; } pub fnc main(): int { const Record r=(); return f(a=40,...r,b=2); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "existing-empty-tuple-not-record",
+      "source": "pub fnc main(): int { const t=(); const Record r=t; return 0; }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "type-mismatch",
+        "artifact": false
+      }
+    },
+    {
+      "id": "existing-empty-record-not-tuple",
+      "source": "pub fnc main(): int { const Record r=(); const Tuple t=r; return 0; }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "type-mismatch",
+        "artifact": false
+      }
+    },
+    {
+      "id": "existing-tuple-argument-not-record",
+      "source": "fnc f(Record r): int { return 42; } pub fnc main(): int { const t=(); return f(t); }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "argument-type",
+        "artifact": false
+      }
+    },
+    {
+      "id": "existing-record-argument-not-tuple",
+      "source": "fnc f(Tuple t): int { return 42; } pub fnc main(): int { const Record r=(); return f(r); }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "argument-type",
+        "artifact": false
+      }
+    },
+    {
+      "id": "empty-overload-ambiguous",
+      "source": "fnc f(Record r): int { return 42; } fnc f(Tuple t): int { return 24; } pub fnc main(): int { return f(()); }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "ambiguous-overload",
+        "artifact": false
+      }
+    },
+    {
+      "id": "empty-not-nonempty-shape",
+      "source": "pub fnc main(): int { const Tuple[int] t=(); return 0; }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "shape-mismatch",
+        "artifact": false
+      }
+    },
+    {
+      "id": "positional-not-record",
+      "source": "pub fnc main(): int { const Record r=(4,2); return 0; }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "type-mismatch",
+        "artifact": false
+      }
+    },
+    {
+      "id": "record-not-positional",
+      "source": "pub fnc main(): int { const Tuple t=(a:42); return 0; }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "type-mismatch",
+        "artifact": false
+      }
+    },
+    {
+      "id": "pair-tuple-not-record",
+      "source": "pub fnc main(): int { const t=(a:=4,b:=2); const Record r=t; return 0; }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "type-mismatch",
+        "artifact": false
+      }
+    },
+    {
+      "id": "empty-record-no-field",
+      "source": "pub fnc main(): int { const Record r=(); return r.a; }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "unknown-field",
+        "artifact": false
+      }
+    },
+    {
+      "id": "empty-tuple-no-index",
+      "source": "pub fnc main(): int { const t=(); return t[0]; }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "index-out-of-bounds",
+        "artifact": false
+      }
+    },
+    {
+      "id": "tuple-index-too-large",
+      "source": "pub fnc main(): int { const t=(4,2); return t[2]; }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "index-out-of-bounds",
+        "artifact": false
+      }
+    },
+    {
+      "id": "tuple-string-index",
+      "source": "pub fnc main(): int { const t=(4,2); return t[\"0\"]; }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "index-type",
+        "artifact": false
+      }
+    },
+    {
+      "id": "record-numeric-index",
+      "source": "pub fnc main(): int { const r={a:42}; return r[0]; }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "index-type",
+        "artifact": false
+      }
+    },
+    {
+      "id": "tuple-no-pair-name-projection",
+      "source": "pub fnc main(): int { const t=(a:=42,); return t.a; }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "unknown-member",
+        "artifact": false
+      }
+    },
+    {
+      "id": "invalid-record-name-from-pair",
+      "source": "pub fnc main(): int { const r=Record.of(\"bad-name\":=42); return 0; }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "invalid-field-name",
+        "artifact": false
+      }
+    },
+    {
+      "id": "numeric-record-name-from-pair",
+      "source": "pub fnc main(): int { const r=Record.of(\"0\":=42); return 0; }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "invalid-field-name",
+        "artifact": false
+      }
+    },
+    {
+      "id": "empty-record-name-from-pair",
+      "source": "pub fnc main(): int { const r=Record.of(\"\":=42); return 0; }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "invalid-field-name",
+        "artifact": false
+      }
+    },
+    {
+      "id": "duplicate-record-name-across-separators",
+      "source": "pub fnc main(): int { const r={a:4,a=2}; return 0; }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "duplicate-field",
+        "artifact": false
+      }
+    },
+    {
+      "id": "duplicate-record-pair-reflection",
+      "source": "pub fnc main(): int { const r={a:=4,a:2}; return 0; }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "duplicate-field",
+        "artifact": false
+      }
+    },
+    {
+      "id": "empty-spread-not-one-argument",
+      "source": "fnc f(Tuple t): int { return 42; } pub fnc main(): int { return f(...()); }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "missing-parameter",
+        "artifact": false
+      }
+    },
+    {
+      "id": "zero-slot-record-not-phase-reset",
+      "source": "fnc f(int a,int b): int { return a+b; } pub fnc main(): int { const Record r=(); return f(a=40,...r,2); }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "positional-after-named",
+        "artifact": false
+      }
+    },
+    {
+      "id": "empty-overload-explicit-record-control",
+      "source": "fnc f(Record r): int { return 42; } fnc f(Tuple t): int { return 24; } pub fnc main(): int { const Record r=(); return f(r); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "empty-overload-explicit-tuple-control",
+      "source": "fnc f(Record r): int { return 42; } fnc f(Tuple t): int { return 24; } pub fnc main(): int { const Tuple t=(); return f(t); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "24"
+      }
+    },
+    {
+      "id": "singleton-contextual-local",
+      "source": "pub fnc main(): int { const Tuple t=(42); return t[0]; }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "singleton-explicit-comma",
+      "source": "pub fnc main(): int { const Tuple t=(42,); return t[0]; }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "singleton-untyped-grouping",
+      "source": "pub fnc main(): int { const t=(42); return t; }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "singleton-typed-scalar-grouping",
+      "source": "pub fnc main(): int { const int t=(42); return t; }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "singleton-contextual-formal",
+      "source": "fnc f(Tuple t): int { return t[0]; } pub fnc main(): int { return f((42)); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "singleton-contextual-return",
+      "source": "fnc make(): Tuple { return (42); } pub fnc main(): int { return make()[0]; }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "singleton-contextual-nested",
+      "source": "pub fnc main(): int { const Tuple[Tuple[int],int] t=((40),2); return t[0][0]+t[1]; }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "singleton-scalar-overload-preferred",
+      "source": "fnc f(int x): int { return x; } fnc f(Tuple x): int { return 0; } pub fnc main(): int { return f((42)); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "singleton-comma-overload",
+      "source": "fnc f(int x): int { return 0; } fnc f(Tuple x): int { return x[0]; } pub fnc main(): int { return f((42,)); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "singleton-bare-scalar-not-wrapped",
+      "source": "fnc f(Tuple t): int { return t[0]; } pub fnc main(): int { return f(42); }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "argument-type",
+        "artifact": false
+      }
+    },
+    {
+      "id": "singleton-materialized-scalar-not-wrapped",
+      "source": "pub fnc main(): int { const x=(42); const Tuple t=x; return 0; }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "type-mismatch",
+        "artifact": false
+      }
+    },
+    {
+      "id": "singleton-wrong-arity",
+      "source": "pub fnc main(): int { const Tuple[int,int] t=(42); return 0; }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "shape-mismatch",
+        "artifact": false
+      }
+    },
+    {
+      "id": "singleton-wrong-element",
+      "source": "pub fnc main(): int { const Tuple[bool] t=(42); return 0; }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "type-mismatch",
+        "artifact": false
+      }
+    },
+    {
+      "id": "singleton-record-not-tuple",
+      "source": "pub fnc main(): int { const Tuple t=(x:42); return 0; }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "type-mismatch",
+        "artifact": false
+      }
+    },
+    {
+      "id": "singleton-untyped-not-indexed",
+      "source": "pub fnc main(): int { const x=(42); return x[0]; }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "index-type",
+        "artifact": false
+      }
+    }
+  ],
+  "decisionProbes": [
+    {
+      "id": "public-product-type",
+      "source": "const Product p=();",
+      "question": "Choose whether Product is a public structural supertype, trait or compiler-only abstraction; concrete default Tuple proposed.",
+      "status": "DECISION_REQUIRED"
+    },
+    {
+      "id": "erased-product-spread",
+      "source": "fnc f(Product p): int { return g(...p); }",
+      "question": "Reject absent concrete shape proof; determine whether generic specialization can provide it.",
+      "status": "DECISION_REQUIRED"
+    },
+    {
+      "id": "generic-empty-inference",
+      "source": "id(())",
+      "question": "Unconstrained generic defaults to Tuple; expected result constraints and generic witness rules need confirmation.",
+      "status": "DECISION_REQUIRED"
+    },
+    {
+      "id": "product-vs-concrete-overload",
+      "source": "f(()) with Product and Record overloads",
+      "question": "Specificity vs contextual resolution; no hidden overload ranking.",
+      "status": "DECISION_REQUIRED"
+    },
+    {
+      "id": "nested-expected-record-fields",
+      "source": "const Record<Shape> r={inner:()};",
+      "question": "Exact Record shape annotation spelling and row typing need ratification.",
+      "status": "DECISION_REQUIRED"
+    },
+    {
+      "id": "empty-brace-no-context",
+      "source": "const x={};",
+      "question": "Record default vs existing ambiguous empty braces; typed Map must remain available.",
+      "status": "DECISION_REQUIRED"
+    },
+    {
+      "id": "empty-braces-record-map-overload",
+      "source": "f({}) with Record and Map overloads",
+      "question": "No type guessing; decide default empty brace policy.",
+      "status": "DECISION_REQUIRED"
+    },
+    {
+      "id": "parenthesized-inline-pair-mixed",
+      "source": "const r=(a:=4,b:2);",
+      "question": "Earlier #306 accepts mixed; latest ordinary parentheses do not reflect; decide rejection.",
+      "status": "DECISION_REQUIRED"
+    },
+    {
+      "id": "typed-nonempty-pair-parens",
+      "source": "const Record r=(a:=42);",
+      "question": "Prior declaration-local exception conflicts with no implicit Pair reflection; reject proposed, pending reconciliation.",
+      "status": "DECISION_REQUIRED"
+    },
+    {
+      "id": "anonymous-grouped-record-call",
+      "source": "f((a:42)); f((a=42));",
+      "question": "One positional Record vs named argument; #306 had explicit unresolved hold.",
+      "status": "DECISION_REQUIRED"
+    },
+    {
+      "id": "quoted-colon",
+      "source": "const r={\"a\":42};",
+      "question": "Earlier #303 Record vs #306 Map conflict; decide before assigning expected type.",
+      "status": "DECISION_REQUIRED"
+    },
+    {
+      "id": "quoted-decoded-duplicates",
+      "source": "Record.of(\"a\":=4,\"\\\\u0061\":=2)",
+      "question": "If Unicode escapes are admitted, decode then validate exact canonical identifier identity.",
+      "status": "DECISION_REQUIRED"
+    },
+    {
+      "id": "reserved-label",
+      "source": "Record.of(\"return\":=42)",
+      "question": "Ordinary variable/formal name policy must decide reserved/contextual words.",
+      "status": "DECISION_REQUIRED"
+    },
+    {
+      "id": "unicode-label",
+      "source": "Record.of(\"é\":=42) and Record.of(\"é\":=42)",
+      "question": "Use ordinary identifier validation and normalization, not separate Record policy.",
+      "status": "DECISION_REQUIRED"
+    },
+    {
+      "id": "dynamic-tuple-index",
+      "source": "let int i=runtime_index(); t[i]",
+      "question": "Heterogeneous return type, homogeneous tuple exception and bounds policy need design.",
+      "status": "DECISION_REQUIRED"
+    },
+    {
+      "id": "negative-index",
+      "source": "t[-1]",
+      "question": "Reject vs documented negative indexing; distinguish slot identifiers from index operation.",
+      "status": "DECISION_REQUIRED"
+    },
+    {
+      "id": "cross-kind-equality",
+      "source": "() eq empty_record",
+      "question": "No cross-kind equality implied by common supertype; exact type rules pending.",
+      "status": "DECISION_REQUIRED"
+    },
+    {
+      "id": "empty-identity",
+      "source": "empty1 == empty2",
+      "question": "No promise of identity, address or zero-sized representation.",
+      "status": "DECISION_REQUIRED"
+    },
+    {
+      "id": "effectful-zero-spread",
+      "source": "f(...make_empty_with_effect(), next())",
+      "question": "Trace once and before next; even when no slots contributed; fixture requires established effect/sink API.",
+      "status": "DECISION_REQUIRED"
+    },
+    {
+      "id": "empty-vs-omitted",
+      "source": "f(()) with defaulted aggregate formal",
+      "question": "Supplied empty value is not omitted; default syntax and guest instrumentation need integration.",
+      "status": "DECISION_REQUIRED"
+    },
+    {
+      "id": "deep-empty-context-limit",
+      "source": "Nested expected Tuple/Record shapes at depth limit and depth+1",
+      "question": "Accept within budget; fail closed with stable diagnostic beyond, not stack overflow.",
+      "status": "DECISION_REQUIRED"
+    },
+    {
+      "id": "record-dynamic-bracket",
+      "source": "r[runtime_string()]",
+      "question": "Closed-shape access policy vs Map; no runtime arbitrary-key inference.",
+      "status": "DECISION_REQUIRED"
+    },
+    {
+      "id": "record-named-spread-nested",
+      "source": "f(...{x:(), y:{z:42}})",
+      "question": "Contextual typing of empty field through resolved formal vs independent Record construction; decide inference order.",
+      "status": "DECISION_REQUIRED"
+    }
+  ]
+}

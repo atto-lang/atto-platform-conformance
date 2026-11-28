@@ -1,0 +1,299 @@
+{
+  "version": 2,
+  "status": "TARGET_NOT_EXECUTED",
+  "contract": "atto-spec#321 (supersedes #299 all-Pair tuple rule)",
+  "description": "Complete guest source targets. Tuple spreads every whole element by index; only closed Record spreads by name. Unsupported-feature rejection is not a semantic rejection pass. All backend roles unexecuted; applicability must be independently established.",
+  "backendRoles": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net-nativeaot": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "rs": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "hdl": "NOT_EXECUTED",
+    "realtime": "NOT_EXECUTED",
+    "self-hosted": "NOT_EXECUTED"
+  },
+  "cases": [
+    {
+      "id": "tuple-index-order",
+      "source": "fnc f(int a,int b): int { return a*10+b; } pub fnc main(): int { const t=(2,4); return f(...t); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "24"
+      }
+    },
+    {
+      "id": "record-reversed-field-order",
+      "source": "fnc f(int a,int b): int { return a*10+b; } pub fnc main(): int { const r={b:2,a:4}; return f(...r); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "record-brace-or-parenthesized",
+      "source": "fnc f(int a,int b): int { return a*10+b; } pub fnc main(): int { const r=(b:2,a:4); return f(...r); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "pair-tuple-whole-elements",
+      "source": "fnc f(Pair<int> a,Pair<int> b): int { return a.value*10+b.value; } pub fnc main(): int { const t=(b:=2,a:=4); return f(...t); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "24"
+      }
+    },
+    {
+      "id": "pair-tuple-duplicate-keys",
+      "source": "fnc f(Pair<int> a,Pair<int> b): int { return a.value*10+b.value; } pub fnc main(): int { const t=(a:=4,a:=2); return f(...t); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "pair-tuple-unrelated-keys",
+      "source": "fnc f(Pair<int> a,Pair<int> b): int { return a.value*10+b.value; } pub fnc main(): int { return f(...(foo:=4,bar:=2)); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "pair-tuple-nonidentifier-key",
+      "source": "fnc f(Pair<int> a): int { return a.value; } pub fnc main(): int { return f(...(\"not-a-parameter\":=42,)); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "pair-tuple-runtime-key",
+      "source": "fnc f(Pair<int> a): int { return a.value; } fnc make_key(int n): string { return n eq 1 ? \"unknown\" : \"different\"; } pub fnc main(): int { val t=(Pair.of(make_key(1),42),); return f(...t); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "pair-tuple-apply",
+      "source": "fnc f(Pair<int> a,Pair<int> b): int { return a.value*10+b.value; } pub fnc main(): int { const t=(b:=2,a:=4); return f.apply(t); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "24"
+      }
+    },
+    {
+      "id": "pair-payload-explicit",
+      "source": "fnc f(int a,int b): int { return a*10+b; } pub fnc main(): int { const t=(b:=2,a:=4); return f(...(t[0].value,t[1].value)); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "24"
+      }
+    },
+    {
+      "id": "record-pair-field-intact",
+      "source": "fnc f(Pair<int> a): int { return a.value; } pub fnc main(): int { return f(...{a:(z:=42)}); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "mixed-tuple-intact",
+      "source": "fnc f(Pair<int> a,int b): int { return a.value*10+b; } pub fnc main(): int { return f(...(z:=4,2)); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "empty-tuple-zero-slots",
+      "source": "fnc f(int a,int b): int { return a*10+b; } pub fnc main(): int { return f(...(),4,2); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "empty-tuple-does-not-reset-named-phase",
+      "source": "fnc f(int a,int b): int { return a*10+b; } pub fnc main(): int { return f(a=4,...(),b=2); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "positional-before-record",
+      "source": "fnc f(int a,int b): int { return a*10+b; } pub fnc main(): int { return f(4,...{b:2}); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "two-record-spreads",
+      "source": "fnc f(int a,int b): int { return a*10+b; } pub fnc main(): int { return f(...{b:2},...{a:4}); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "nested-tuple-not-flattened",
+      "source": "fnc f(Tuple[int,int] a,Tuple[int,int] b): int { return a[0]*10+b[1]; } pub fnc main(): int { return f(...((4,0),(0,2))); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "pair-tuple-no-scalar-unwrapping",
+      "source": "fnc f(int a,int b): int { return a*10+b; } pub fnc main(): int { const t=(a:=4,b:=2); return f(...t); }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "argument-type",
+        "artifact": false
+      }
+    },
+    {
+      "id": "record-pair-field-no-unwrapping",
+      "source": "fnc f(int a): int { return a; } pub fnc main(): int { return f(...{a:(z:=42)}); }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "argument-type",
+        "artifact": false
+      }
+    },
+    {
+      "id": "record-unknown-field",
+      "source": "fnc f(int a,int b): int { return a*10+b; } pub fnc main(): int { return f(...{z:4,b:2}); }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "unknown-parameter",
+        "artifact": false
+      }
+    },
+    {
+      "id": "record-duplicate-slot",
+      "source": "fnc f(int a,int b): int { return a*10+b; } pub fnc main(): int { return f(...{a:4},a=2,b=2); }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "duplicate-parameter",
+        "artifact": false
+      }
+    },
+    {
+      "id": "record-positional-duplicate",
+      "source": "fnc f(int a,int b): int { return a*10+b; } pub fnc main(): int { return f(4,...{a:2,b:2}); }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "duplicate-parameter",
+        "artifact": false
+      }
+    },
+    {
+      "id": "pair-tuple-after-named",
+      "source": "fnc f(int a,Pair<int> b): int { return a+b.value; } pub fnc main(): int { return f(a=40,...(b:=2,)); }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "positional-after-named",
+        "artifact": false
+      }
+    },
+    {
+      "id": "record-missing-formal",
+      "source": "fnc f(int a,int b): int { return a*10+b; } pub fnc main(): int { return f(...{a:4}); }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "missing-parameter",
+        "artifact": false
+      }
+    },
+    {
+      "id": "tuple-arity",
+      "source": "fnc f(int a,int b): int { return a*10+b; } pub fnc main(): int { return f(...(1,2,3)); }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "arity",
+        "artifact": false
+      }
+    },
+    {
+      "id": "no-implicit-flatten",
+      "source": "fnc f(int a): int { return a; } pub fnc main(): int { return f(...((4,2),)); }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "argument-type",
+        "artifact": false
+      }
+    },
+    {
+      "id": "record-not-apply-tuple",
+      "source": "fnc f(int a,int b): int { return a*10+b; } pub fnc main(): int { return f.apply({a:4,b:2}); }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "argument-type",
+        "artifact": false
+      }
+    },
+    {
+      "id": "empty-tuple-no-phase-reset-negative",
+      "source": "fnc f(int a,int b): int { return a*10+b; } pub fnc main(): int { return f(a=4,...(),2); }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "positional-after-named",
+        "artifact": false
+      }
+    },
+    {
+      "id": "pair-tuple-too-few-elements",
+      "source": "fnc f(Pair<int> a,Pair<int> b): int { return a.value+b.value; } pub fnc main(): int { return f(...(x:=42,)); }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "missing-parameter",
+        "artifact": false
+      }
+    },
+    {
+      "id": "pair-tuple-too-many-elements",
+      "source": "fnc f(Pair<int> a): int { return a.value; } pub fnc main(): int { return f(...(x:=42,y:=0)); }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "arity",
+        "artifact": false
+      }
+    },
+    {
+      "id": "duplicate-record-field",
+      "source": "fnc f(int a): int { return a; } pub fnc main(): int { return f(...{a:4,a:2}); }",
+      "expected": {
+        "kind": "semantic-rejection",
+        "category": "duplicate-field",
+        "artifact": false
+      }
+    },
+    {
+      "id": "record-pair-field-key-preservation",
+      "source": "fnc f(Pair<int> a): int { return a.key eq \"z\" ? a.value : 0; } pub fnc main(): int { return f(...{a:(z:=42)}); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "tuple-pair-key-preservation",
+      "source": "fnc f(Pair<int> a,Pair<int> b): int { return a.key eq \"b\" && b.key eq \"a\" ? a.value*10+b.value : 0; } pub fnc main(): int { return f(...(b:=2,a:=4)); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "24"
+      }
+    }
+  ]
+}
