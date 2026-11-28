@@ -57,18 +57,28 @@ export function hasYieldFreeCycle({nodes,edges,entry}) {
   if(byId.size!==nodes.length||!byId.has(entry))throw TypeError('invalid graph');
   const adj=new Map(nodes.map(n=>[n.id,[]]));
   for(const [a,b] of edges){if(!byId.has(a)||!byId.has(b))throw TypeError('unknown node');adj.get(a).push(b);}
-  const reachable=new Set(),walk=[entry];
-  while(walk.length){const u=walk.pop();if(reachable.has(u))continue;reachable.add(u);walk.push(...adj.get(u));}
-  const remaining=new Set([...reachable].filter(u=>!byId.get(u).safePoint));
-  const seen=new Set(),active=new Set();
-  const dfs=(u)=>{
-    seen.add(u);active.add(u);
-    for(const v of adj.get(u)){
-      if(!remaining.has(v))continue;
-      if(active.has(v))return true;
-      if(!seen.has(v)&&dfs(v))return true;
+  // Visit each reachable node once; avoid variadic push on high fan-out CFGs.
+  const reachable=new Set([entry]),walk=[entry];
+  while(walk.length){
+    const u=walk.pop();
+    for(const v of adj.get(u))if(!reachable.has(v)){reachable.add(v);walk.push(v);}
+  }
+  // Remove proven safepoints, then use Kahn's algorithm on the induced graph.
+  // A nonempty residual after eliminating zero-indegree vertices is a cycle.
+  const indegree=new Map();
+  for(const u of reachable)if(!byId.get(u).safePoint)indegree.set(u,0);
+  for(const u of indegree.keys())for(const v of adj.get(u)){
+    if(indegree.has(v))indegree.set(v,indegree.get(v)+1);
+  }
+  const ready=[];
+  for(const [u,count] of indegree)if(count===0)ready.push(u);
+  let removed=0;
+  while(ready.length){
+    const u=ready.pop();removed++;
+    for(const v of adj.get(u))if(indegree.has(v)){
+      const count=indegree.get(v)-1;indegree.set(v,count);
+      if(count===0)ready.push(v);
     }
-    active.delete(u);return false;
-  };
-  return [...remaining].some(u=>!seen.has(u)&&dfs(u));
+  }
+  return removed!==indegree.size;
 }
