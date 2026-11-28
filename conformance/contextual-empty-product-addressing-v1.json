@@ -202,7 +202,7 @@
       }
     },
     {
-      "id": "zero-slot-effect-evaluated",
+      "id": "zero-slot-function-return-control",
       "source": "fnc empty(): Tuple { return (); } fnc f(): int { return 42; } pub fnc main(): int { return f(...empty()); }",
       "expected": {
         "kind": "return-i64",
@@ -414,6 +414,22 @@
         "kind": "semantic-rejection",
         "category": "positional-after-named",
         "artifact": false
+      }
+    },
+    {
+      "id": "empty-overload-explicit-record-control",
+      "source": "fnc f(Record r): int { return 42; } fnc f(Tuple t): int { return 24; } pub fnc main(): int { const Record r=(); return f(r); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "42"
+      }
+    },
+    {
+      "id": "empty-overload-explicit-tuple-control",
+      "source": "fnc f(Record r): int { return 42; } fnc f(Tuple t): int { return 24; } pub fnc main(): int { const Tuple t=(); return f(t); }",
+      "expected": {
+        "kind": "return-i64",
+        "decimal": "24"
       }
     }
   ],
